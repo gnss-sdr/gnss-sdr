@@ -236,20 +236,14 @@ Rinex_Printer::~Rinex_Printer()
 {
     DLOG(INFO) << "RINEX printer destructor called.";
     // close RINEX files
-    int64_t posn;
-    int64_t poso;
-    int64_t poss;
-    int64_t posng;
-    int64_t posmn;
-    int64_t posnr;
-    int64_t posnc;
-    posn = navFile.tellp();
-    poso = obsFile.tellp();
-    poss = sbsFile.tellp();
-    posng = navGalFile.tellp();
-    posmn = navMixFile.tellp();
-    posnr = navGloFile.tellp();
-    posnc = navBdsFile.tellp();
+    const auto posn = navFile.tellp();
+    const auto poso = obsFile.tellp();
+    const auto poss = sbsFile.tellp();
+    const auto posng = navGalFile.tellp();
+    const auto posmn = navMixFile.tellp();
+    const auto posnr = navGloFile.tellp();
+    const auto posnc = navBdsFile.tellp();
+
     try
         {
             Rinex_Printer::navFile.close();
@@ -263,8 +257,8 @@ Rinex_Printer::~Rinex_Printer()
         {
             std::cerr << e.what() << '\n';
         }
-    // If nothing written, erase the files.
 
+    // If nothing written, erase the files.
     if (posn == 0)
         {
             errorlib::error_code ec;
@@ -339,7 +333,7 @@ void Rinex_Printer::lengthCheck(const std::string& line)
 std::string Rinex_Printer::createFilename(const std::string& type, const std::string& base_name)
 {
     const std::string stationName = "GSDR";  // 4-character station name designator
-    boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+    const boost::gregorian::date today = boost::gregorian::day_clock::local_day();
     const int32_t dayOfTheYear = today.day_of_year();
     std::stringstream strm0;
     if (dayOfTheYear < 100)
@@ -351,7 +345,7 @@ std::string Rinex_Printer::createFilename(const std::string& type, const std::st
             strm0 << "0";  // three digits for day of the year
         }
     strm0 << dayOfTheYear;
-    std::string dayOfTheYearTag = strm0.str();
+    const std::string dayOfTheYearTag = strm0.str();
 
     std::map<std::string, std::string> fileType;
     fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_OBS", "O"));        // O - Observation file.
@@ -366,9 +360,9 @@ std::string Rinex_Printer::createFilename(const std::string& type, const std::st
     fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_SUMMARY", "S"));    // S - Summary file (used e.g., by IGS, not a standard!).
     fileType.insert(std::pair<std::string, std::string>("RINEX_FILE_TYPE_BDS_NAV", "F"));    // G - GLONASS navigation file.
 
-    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
-    tm pt_tm = boost::posix_time::to_tm(pt);
-    int32_t local_hour = pt_tm.tm_hour;
+    const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    const tm pt_tm = boost::posix_time::to_tm(pt);
+    const int32_t local_hour = pt_tm.tm_hour;
     std::stringstream strm;
     strm << local_hour;
 
@@ -398,9 +392,9 @@ std::string Rinex_Printer::createFilename(const std::string& type, const std::st
     Hmap.insert(std::pair<std::string, std::string>("22", "w"));
     Hmap.insert(std::pair<std::string, std::string>("23", "x"));
 
-    std::string hourTag = Hmap[strm.str()];
+    const std::string hourTag = Hmap[strm.str()];
 
-    int32_t local_minute = pt_tm.tm_min;
+    const int32_t local_minute = pt_tm.tm_min;
     std::stringstream strm2;
     if (local_minute < 10)
         {
@@ -408,14 +402,14 @@ std::string Rinex_Printer::createFilename(const std::string& type, const std::st
         }
     strm2 << local_minute;
 
-    std::string minTag = strm2.str();
+    const std::string minTag = strm2.str();
 
-    int32_t local_year = pt_tm.tm_year - 100;  // 2012 is 112
+    const int32_t local_year = pt_tm.tm_year - 100;  // 2012 is 112
     std::stringstream strm3;
     strm3 << local_year;
     std::string yearTag = strm3.str();
 
-    std::string typeOfFile = fileType[type];
+    const std::string typeOfFile = fileType[type];
     std::string filename;
     if (base_name == "-")
         {
@@ -436,7 +430,7 @@ std::string Rinex_Printer::getLocalTime()
     line += std::string(12, ' ');
     std::string username;
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -446,14 +440,14 @@ std::string Rinex_Printer::getLocalTime()
             username = "UNKNOWN USER";
         }
     line += Rinex_Printer::leftJustify(username, 20);
-    boost::gregorian::date today = boost::gregorian::day_clock::local_day();
+    const boost::gregorian::date today = boost::gregorian::day_clock::local_day();
 
-    boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
-    boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
-    tm pt_tm = boost::local_time::to_tm(pt);
+    const boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
+    const boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
+    const tm pt_tm = boost::local_time::to_tm(pt);
 
     std::stringstream strmHour;
-    int32_t utc_hour = pt_tm.tm_hour;
+    const int32_t utc_hour = pt_tm.tm_hour;
     if (utc_hour < 10)
         {
             strmHour << "0";  //  two digits for hours
@@ -461,7 +455,7 @@ std::string Rinex_Printer::getLocalTime()
     strmHour << utc_hour;
 
     std::stringstream strmMin;
-    int32_t utc_minute = pt_tm.tm_min;
+    const int32_t utc_minute = pt_tm.tm_min;
     if (utc_minute < 10)
         {
             strmMin << "0";  //  two digits for minutes
@@ -470,7 +464,7 @@ std::string Rinex_Printer::getLocalTime()
 
     if (version == 2)
         {
-            int32_t day = pt_tm.tm_mday;
+            const int32_t day = pt_tm.tm_mday;
             line += Rinex_Printer::rightJustify(std::to_string(day), 2);
             line += std::string("-");
 
@@ -506,7 +500,7 @@ std::string Rinex_Printer::getLocalTime()
             line += strmMin.str();
 
             std::stringstream strm2;
-            int32_t utc_seconds = pt_tm.tm_sec;
+            const int32_t utc_seconds = pt_tm.tm_sec;
             if (utc_seconds < 10)
                 {
                     strm2 << "0";  //  two digits for seconds
@@ -599,11 +593,11 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
     if (version == 2)
         {
             // Set reference time and its clock corrections
-            boost::posix_time::ptime p_utc_ref_time = glonass_gnav_eph.glot_to_utc(glonass_gnav_eph.d_t_b, 0.0);
-            std::string timestring = boost::posix_time::to_iso_string(p_utc_ref_time);
-            std::string year(timestring, 0, 4);
-            std::string month(timestring, 4, 2);
-            std::string day(timestring, 6, 2);
+            const boost::posix_time::ptime p_utc_ref_time = glonass_gnav_eph.glot_to_utc(glonass_gnav_eph.d_t_b, 0.0);
+            const std::string timestring = boost::posix_time::to_iso_string(p_utc_ref_time);
+            const std::string year(timestring, 0, 4);
+            const std::string month(timestring, 4, 2);
+            const std::string day(timestring, 6, 2);
 
             line.clear();
             line += Rinex_Printer::rightJustify(year, 6);
@@ -971,7 +965,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-    double zero = 0.0;
+    const double zero = 0.0;
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
     line += std::string(7, ' ');
     line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -1078,7 +1072,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.ai0_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.ai1_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.ai2_5, 10, 2), 12);
-    double zero = 0.0;
+    const double zero = 0.0;
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
     line += std::string(7, ' ');
     line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -1300,7 +1294,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& ion
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-    double zero = 0.0;
+    const double zero = 0.0;
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
     line += std::string(7, ' ');
     line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -1679,7 +1673,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-    double zero = 0.0;
+    const double zero = 0.0;
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
     line += std::string(7, ' ');
     line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -2354,7 +2348,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-    double zero = 0.0;
+    const double zero = 0.0;
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
     line += std::string(7, ' ');
     line += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -2463,9 +2457,9 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out)
         }
     line += Rinex_Printer::leftJustify(username, 20);
     // Date of file creation (dd-mmm-yy hhmm)
-    boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
-    boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
-    tm pt_tm = boost::local_time::to_tm(pt);
+    const boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
+    const boost::local_time::local_date_time pt = boost::local_time::local_sec_clock::local_time(zone);
+    const tm pt_tm = boost::local_time::to_tm(pt);
     std::stringstream strYear;
     int32_t utc_year = pt.date().year();
     utc_year -= 2000;  //  two digits for year
@@ -2559,7 +2553,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Glonass_Gnav_Utc_
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -2631,7 +2625,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& gal
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -2653,7 +2647,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& gal
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-                            double zero = 0.0;
+                            const double zero = 0.0;
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
                             line_aux += std::string(7, ' ');
                             line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -2905,7 +2899,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Utc_Mode
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -3000,7 +2994,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Utc_Mode
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -3021,7 +3015,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Utc_Mode
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-                            double zero = 0.0;
+                            const double zero = 0.0;
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
                             line_aux += std::string(7, ' ');
                             line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -3129,7 +3123,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -3163,7 +3157,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-                            double zero = 0.0;
+                            const double zero = 0.0;
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
                             line_aux += std::string(7, ' ');
                             line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -3276,7 +3270,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -3398,7 +3392,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_CNAV_Iono& gp
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -3510,7 +3504,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& gal
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -3532,7 +3526,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Galileo_Iono& gal
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai0_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai1_5, 10, 2), 12);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(galileo_iono.ai2_5, 10, 2), 12);
-                            double zero = 0.0;
+                            const double zero = 0.0;
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(zero, 10, 2), 12);
                             line_aux += std::string(7, ' ');
                             line_aux += Rinex_Printer::leftJustify("IONOSPHERIC CORR", 20);
@@ -3605,7 +3599,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Beidou_Dnav_Utc_M
     std::vector<std::string> data;
     std::string line_aux;
 
-    int64_t pos = out.tellp();
+    const int64_t pos = out.tellp();
     out.seekp(0);
     data.clear();
 
@@ -3703,18 +3697,18 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
          gps_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, gps_ephemeris_iter->second.d_Toc);
-            std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
-            std::string month(timestring, 4, 2);
-            std::string day(timestring, 6, 2);
-            std::string hour(timestring, 9, 2);
-            std::string minutes(timestring, 11, 2);
-            std::string seconds(timestring, 13, 2);
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, gps_ephemeris_iter->second.d_Toc);
+            const std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
+            const std::string month(timestring, 4, 2);
+            const std::string day(timestring, 6, 2);
+            const std::string hour(timestring, 9, 2);
+            const std::string minutes(timestring, 11, 2);
+            const std::string seconds(timestring, 13, 2);
             if (version == 2)
                 {
                     line += Rinex_Printer::rightJustify(std::to_string(gps_ephemeris_iter->second.i_satellite_PRN), 2);
                     line += std::string(1, ' ');
-                    std::string year(timestring, 2, 2);
+                    const std::string year(timestring, 2, 2);
                     line += year;
                     line += std::string(1, ' ');
                     if (boost::lexical_cast<int32_t>(month) < 10)
@@ -3789,7 +3783,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                             line += std::string("0");
                         }
                     line += std::to_string(gps_ephemeris_iter->second.i_satellite_PRN);
-                    std::string year(timestring, 0, 4);
+                    const std::string year(timestring, 0, 4);
                     line += std::string(1, ' ');
                     line += year;
                     line += std::string(1, ' ');
@@ -4086,20 +4080,20 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
          gps_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, gps_ephemeris_iter->second.d_Toc);
-            std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
-            std::string month(timestring, 4, 2);
-            std::string day(timestring, 6, 2);
-            std::string hour(timestring, 9, 2);
-            std::string minutes(timestring, 11, 2);
-            std::string seconds(timestring, 13, 2);
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_GPS_time(gps_ephemeris_iter->second, gps_ephemeris_iter->second.d_Toc);
+            const std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
+            const std::string month(timestring, 4, 2);
+            const std::string day(timestring, 6, 2);
+            const std::string hour(timestring, 9, 2);
+            const std::string minutes(timestring, 11, 2);
+            const std::string seconds(timestring, 13, 2);
             line += satelliteSystem["GPS"];
             if (gps_ephemeris_iter->second.i_satellite_PRN < 10)
                 {
                     line += std::string("0");
                 }
             line += std::to_string(gps_ephemeris_iter->second.i_satellite_PRN);
-            std::string year(timestring, 0, 4);
+            const std::string year(timestring, 0, 4);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
@@ -4253,13 +4247,13 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
          galileo_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_Galileo_time(galileo_ephemeris_iter->second, galileo_ephemeris_iter->second.t0e_1);
-            std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
-            std::string month(timestring, 4, 2);
-            std::string day(timestring, 6, 2);
-            std::string hour(timestring, 9, 2);
-            std::string minutes(timestring, 11, 2);
-            std::string seconds(timestring, 13, 2);
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_Galileo_time(galileo_ephemeris_iter->second, galileo_ephemeris_iter->second.t0e_1);
+            const std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
+            const std::string month(timestring, 4, 2);
+            const std::string day(timestring, 6, 2);
+            const std::string hour(timestring, 9, 2);
+            const std::string minutes(timestring, 11, 2);
+            const std::string seconds(timestring, 13, 2);
 
             line += satelliteSystem["Galileo"];
             if (galileo_ephemeris_iter->second.i_satellite_PRN < 10)
@@ -4267,7 +4261,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
                     line += std::string("0");
                 }
             line += std::to_string(galileo_ephemeris_iter->second.i_satellite_PRN);
-            std::string year(timestring, 0, 4);
+            const std::string year(timestring, 0, 4);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
@@ -4357,7 +4351,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
             double Galileo_week_continuous_number = GST_week + 1024.0 + num_GST_rollovers * 4096.0;
             line += Rinex_Printer::doub2for(Galileo_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
-            double zero = 0.0;
+            const double zero = 0.0;
             line += Rinex_Printer::doub2for(zero, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
@@ -4462,18 +4456,18 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
          glonass_gnav_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = glonass_gnav_ephemeris_iter->second.glot_to_utc(glonass_gnav_ephemeris_iter->second.d_t_b, 0.0);
-            std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
-            std::string month(timestring, 4, 2);
-            std::string day(timestring, 6, 2);
-            std::string hour(timestring, 9, 2);
-            std::string minutes(timestring, 11, 2);
-            std::string seconds(timestring, 13, 2);
+            const boost::posix_time::ptime p_utc_time = glonass_gnav_ephemeris_iter->second.glot_to_utc(glonass_gnav_ephemeris_iter->second.d_t_b, 0.0);
+            const std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
+            const std::string month(timestring, 4, 2);
+            const std::string day(timestring, 6, 2);
+            const std::string hour(timestring, 9, 2);
+            const std::string minutes(timestring, 11, 2);
+            const std::string seconds(timestring, 13, 2);
             if (version == 2)
                 {
                     line += Rinex_Printer::rightJustify(std::to_string(glonass_gnav_ephemeris_iter->second.i_satellite_PRN), 2);
                     line += std::string(1, ' ');
-                    std::string year(timestring, 2, 2);
+                    const std::string year(timestring, 2, 2);
                     line += year;
                     line += std::string(1, ' ');
                     if (boost::lexical_cast<int32_t>(month) < 10)
@@ -4548,7 +4542,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
                             line += std::string("0");
                         }
                     line += std::to_string(glonass_gnav_ephemeris_iter->second.i_satellite_PRN);
-                    std::string year(timestring, 0, 4);
+                    const std::string year(timestring, 0, 4);
                     line += std::string(1, ' ');
                     line += year;
                     line += std::string(1, ' ');
@@ -4703,13 +4697,13 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
          bds_ephemeris_iter++)
         {
             // -------- SV / EPOCH / SV CLK
-            boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_BDS_time(bds_ephemeris_iter->second, bds_ephemeris_iter->second.d_Toc);
-            std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
-            std::string month(timestring, 4, 2);
-            std::string day(timestring, 6, 2);
-            std::string hour(timestring, 9, 2);
-            std::string minutes(timestring, 11, 2);
-            std::string seconds(timestring, 13, 2);
+            const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_BDS_time(bds_ephemeris_iter->second, bds_ephemeris_iter->second.d_Toc);
+            const std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
+            const std::string month(timestring, 4, 2);
+            const std::string day(timestring, 6, 2);
+            const std::string hour(timestring, 9, 2);
+            const std::string minutes(timestring, 11, 2);
+            const std::string seconds(timestring, 13, 2);
 
             line += satelliteSystem["Beidou"];
             if (bds_ephemeris_iter->second.i_satellite_PRN < 10)
@@ -4717,7 +4711,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
                     line += std::string("0");
                 }
             line += std::to_string(bds_ephemeris_iter->second.i_satellite_PRN);
-            std::string year(timestring, 0, 4);
+            const std::string year(timestring, 0, 4);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
@@ -5091,15 +5085,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
         }
 
     // -------- TIME OF FIRST OBS
-    boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_UTC_time(eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const boost::posix_time::ptime p_utc_time = Rinex_Printer::compute_UTC_time(eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_utc_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
     double intpart = 0;
-    double seconds = p_utc_time.time_of_day().seconds() + modf(d_TOW_first_observation, &intpart);
+    const double seconds = p_utc_time.time_of_day().seconds() + modf(d_TOW_first_observation, &intpart);
     line.clear();
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
@@ -5448,15 +5442,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -5772,15 +5766,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_cnav_eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_cnav_eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -6135,15 +6129,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(galileo_eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double galileo_t = d_TOW_first_observation;
-    double seconds = fmod(galileo_t, 60);
+    const boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(galileo_eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double galileo_t = d_TOW_first_observation;
+    const double seconds = fmod(galileo_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -6397,15 +6391,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -6645,15 +6639,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -6920,15 +6914,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -7273,15 +7267,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -7594,15 +7588,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph_cnav, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph_cnav, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -7856,15 +7850,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double galileo_t = d_TOW_first_observation;
-    double seconds = fmod(galileo_t, 60);
+    const boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double galileo_t = d_TOW_first_observation;
+    const double seconds = fmod(galileo_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -8151,15 +8145,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double gps_t = d_TOW_first_observation;
-    double seconds = fmod(gps_t, 60);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double gps_t = d_TOW_first_observation;
+    const double seconds = fmod(gps_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -8381,15 +8375,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
 
     // -------- TIME OF FIRST OBS
     line.clear();
-    boost::posix_time::ptime p_bds_time = Rinex_Printer::compute_BDS_time(eph, d_TOW_first_observation);
-    std::string timestring = boost::posix_time::to_iso_string(p_bds_time);
-    std::string year(timestring, 0, 4);
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const boost::posix_time::ptime p_bds_time = Rinex_Printer::compute_BDS_time(eph, d_TOW_first_observation);
+    const std::string timestring = boost::posix_time::to_iso_string(p_bds_time);
+    const std::string year(timestring, 0, 4);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
     double beidou_t = d_TOW_first_observation;
-    double seconds = fmod(beidou_t, 60);
+    const double seconds = fmod(beidou_t, 60);
     line += Rinex_Printer::rightJustify(year, 6);
     line += Rinex_Printer::rightJustify(month, 6);
     line += Rinex_Printer::rightJustify(day, 6);
@@ -8692,21 +8686,21 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
         {
         }
 
-    boost::posix_time::ptime p_glonass_time = Rinex_Printer::compute_UTC_time(eph, obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_glonass_time);
+    const boost::posix_time::ptime p_glonass_time = Rinex_Printer::compute_UTC_time(eph, obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_glonass_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
+    // const double gps_t = eph.sv_clock_correction(obs_time);
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
-    double utc_sec = modf(obs_time, &int_sec) + p_glonass_time.time_of_day().seconds();
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
+    const double utc_sec = modf(obs_time, &int_sec) + p_glonass_time.time_of_day().seconds();
 
     if (version == 2)
         {
             line.clear();
-            std::string year(timestring, 2, 2);
+            const std::string year(timestring, 2, 2);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
@@ -8792,7 +8786,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
                     // GLONASS L1 CA PHASE
                     lineObs += Rinex_Printer::rightJustify(asString(observables_iter->second.Carrier_phase_rads / TWO_PI, 3), 14);
@@ -8828,7 +8822,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
 
     if (version == 3)
         {
-            std::string year(timestring, 0, 4);
+            const std::string year(timestring, 0, 4);
             line += std::string(1, '>');
             line += std::string(1, ' ');
             line += year;
@@ -8897,7 +8891,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // GLONASS L1 CA PHASE
@@ -8946,21 +8940,21 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     std::string line;
 
     // -------- EPOCH record
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = gps_obs_time;
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+    const double gps_t = gps_obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
     if (version == 2)
         {
             line.clear();
-            std::string year(timestring, 2, 2);
+            const std::string year(timestring, 2, 2);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
@@ -8988,7 +8982,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             line += std::string(1, ' ');
             line += minutes;
             line += std::string(1, ' ');
-            double second_ = fmod(gps_t, 60);
+            const double second_ = fmod(gps_t, 60);
             if (second_ < 10)
                 {
                     line += std::string(1, ' ');
@@ -9000,7 +8994,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
         }
     if (version == 3)
         {
-            std::string year(timestring, 0, 4);
+            const std::string year(timestring, 0, 4);
             line += std::string(1, '>');
             line += std::string(1, ' ');
             line += year;
@@ -9014,7 +9008,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             line += minutes;
 
             line += std::string(1, ' ');
-            double seconds = fmod(gps_t, 60);
+            const double seconds = fmod(gps_t, 60);
             // Add extra 0 if seconds are < 10
             if (seconds < 10)
                 {
@@ -9060,7 +9054,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesR1C.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_glo_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_glo_prns.find(prn_);
             if (it == available_glo_prns.end())
@@ -9073,7 +9067,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesR2C.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_glo_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_glo_prns.find(prn_);
             if (it == available_glo_prns.end())
@@ -9082,9 +9076,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                 }
         }
 
-    int32_t numGloSatellitesObserved = available_glo_prns.size();
-    int32_t numGpsSatellitesObserved = observablesG1C.size();
-    int32_t numSatellitesObserved = numGloSatellitesObserved + numGpsSatellitesObserved;
+    const int32_t numGloSatellitesObserved = available_glo_prns.size();
+    const int32_t numGpsSatellitesObserved = observablesG1C.size();
+    const int32_t numSatellitesObserved = numGloSatellitesObserved + numGpsSatellitesObserved;
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
     if (version == 2)
         {
@@ -9172,7 +9166,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             //    }
 
             // Signal Strength Indicator (SSI)
-            int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
             // PHASE
@@ -9243,7 +9237,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // GLONASS CARRIER PHASE
@@ -9291,18 +9285,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
     std::string line;
 
     // -------- EPOCH record
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = gps_obs_time;
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+    const double gps_t = gps_obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -9361,7 +9355,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
          observables_iter != observablesR1C.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_glo_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_glo_prns.find(prn_);
             if (it == available_glo_prns.end())
@@ -9374,7 +9368,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
          observables_iter != observablesR2C.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_glo_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_glo_prns.find(prn_);
             if (it == available_glo_prns.end())
@@ -9383,9 +9377,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
                 }
         }
 
-    int32_t numGloSatellitesObserved = available_glo_prns.size();
-    int32_t numGpsSatellitesObserved = observablesG2S.size();
-    int32_t numSatellitesObserved = numGloSatellitesObserved + numGpsSatellitesObserved;
+    const int32_t numGloSatellitesObserved = available_glo_prns.size();
+    const int32_t numGpsSatellitesObserved = observablesG2S.size();
+    const int32_t numSatellitesObserved = numGloSatellitesObserved + numGpsSatellitesObserved;
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
 
     line += std::string(80 - line.size(), ' ');
@@ -9432,7 +9426,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
             //    }
 
             // Signal Strength Indicator (SSI)
-            int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
             // PHASE
@@ -9501,7 +9495,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // GLONASS CARRIER PHASE
@@ -9548,18 +9542,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
         }  // avoid warning, not needed
     std::string line;
 
-    boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(galileo_eph, galileo_obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
+    const boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(galileo_eph, galileo_obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-    double galileo_t = galileo_obs_time;
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+    const double galileo_t = galileo_obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -9573,7 +9567,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(galileo_t, 60);
+    const double seconds = fmod(galileo_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -9619,7 +9613,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
          observables_iter != observablesR1C.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_glo_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_glo_prns.find(prn_);
             if (it == available_glo_prns.end())
@@ -9631,7 +9625,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
          observables_iter != observablesR2C.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_glo_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_glo_prns.find(prn_);
             if (it == available_glo_prns.end())
@@ -9640,9 +9634,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
                 }
         }
 
-    int32_t numGloSatellitesObserved = available_glo_prns.size();
-    int32_t numGalSatellitesObserved = observablesE1B.size();
-    int32_t numSatellitesObserved = numGalSatellitesObserved + numGloSatellitesObserved;
+    const int32_t numGloSatellitesObserved = available_glo_prns.size();
+    const int32_t numGalSatellitesObserved = observablesE1B.size();
+    const int32_t numSatellitesObserved = numGalSatellitesObserved + numGloSatellitesObserved;
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
 
     // Receiver clock offset (optional)
@@ -9688,7 +9682,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
             //    }
 
             // Signal Strength Indicator (SSI)
-            int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
             // PHASE
@@ -9754,7 +9748,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // GLONASS CARRIER PHASE
@@ -9799,21 +9793,21 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
     // RINEX observations timestamps are GPS timestamps.
     std::string line;
 
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = obs_time;
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+    const double gps_t = obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
     if (version == 2)
         {
             line.clear();
-            std::string year(timestring, 2, 2);
+            const std::string year(timestring, 2, 2);
             line += std::string(1, ' ');
             line += year;
             line += std::string(1, ' ');
@@ -9841,7 +9835,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
             line += std::string(1, ' ');
             line += minutes;
             line += std::string(1, ' ');
-            double second_ = fmod(gps_t, 60);
+            const double second_ = fmod(gps_t, 60);
             if (second_ < 10)
                 {
                     line += std::string(1, ' ');
@@ -9900,7 +9894,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
                     // GPS L1 CA PHASE
                     lineObs += Rinex_Printer::rightJustify(asString(observables_iter->second.Carrier_phase_rads / TWO_PI, 3), 14);
@@ -9936,7 +9930,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
 
     if (version == 3)
         {
-            std::string year(timestring, 0, 4);
+            const std::string year(timestring, 0, 4);
             line += std::string(1, '>');
             line += std::string(1, ' ');
             line += year;
@@ -9950,7 +9944,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
             line += minutes;
 
             line += std::string(1, ' ');
-            double seconds = fmod(gps_t, 60);
+            const double seconds = fmod(gps_t, 60);
             // Add extra 0 if seconds are < 10
             if (seconds < 10)
                 {
@@ -10006,7 +10000,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // GPS L1 CA PHASE
@@ -10052,18 +10046,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     // RINEX observations timestamps are GPS timestamps.
     std::string line;
 
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = obs_time;
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+    const double gps_t = obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -10077,7 +10071,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(gps_t, 60);
+    const double seconds = fmod(gps_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -10134,7 +10128,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
             //   }
 
             // Signal Strength Indicator (SSI)
-            int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
             // GPS L2 PHASE
@@ -10182,18 +10176,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
     // RINEX observations timestamps are GPS timestamps.
     std::string line;
 
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = obs_time;
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+    const double gps_t = obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -10207,7 +10201,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(gps_t, 60);
+    const double seconds = fmod(gps_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -10289,7 +10283,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
          observables_iter != observablesL1.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             it = available_prns.find(prn_);
             if (it == available_prns.end())
                 {
@@ -10301,7 +10295,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
          observables_iter != observablesL2.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             it = available_prns.find(prn_);
             if (it == available_prns.end())
                 {
@@ -10313,7 +10307,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
          observables_iter != observablesL5.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             it = available_prns.find(prn_);
             if (it == available_prns.end())
                 {
@@ -10321,7 +10315,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                 }
         }
 
-    int32_t numSatellitesObserved = available_prns.size();
+    const int32_t numSatellitesObserved = available_prns.size();
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
     // Receiver clock offset (optional)
     // line += rightJustify(asString(clockOffset, 12), 15);
@@ -10370,7 +10364,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
                     //   }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // GPS CARRIER PHASE
@@ -10416,18 +10410,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
     // See https://gage.upc.edu/sites/default/files/gLAB/HTML/Observation_Rinex_v3.01.html
     std::string line;
 
-    boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(eph, obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
+    const boost::posix_time::ptime p_galileo_time = Rinex_Printer::compute_Galileo_time(eph, obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_galileo_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
-    // double gps_t = eph.sv_clock_correction(obs_time);
-    double galileo_t = obs_time;
+    // const double gps_t = eph.sv_clock_correction(obs_time);
+    const double galileo_t = obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -10441,7 +10435,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(galileo_t, 60);
+    const double seconds = fmod(galileo_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -10492,7 +10486,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                  observables_iter != observablesE1B.cend();
                  observables_iter++)
                 {
-                    uint32_t prn_ = observables_iter->second.PRN;
+                    const uint32_t prn_ = observables_iter->second.PRN;
                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
                     it = available_prns.find(prn_);
                     if (it == available_prns.end())
@@ -10507,7 +10501,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                  observables_iter != observablesE5A.cend();
                  observables_iter++)
                 {
-                    uint32_t prn_ = observables_iter->second.PRN;
+                    const uint32_t prn_ = observables_iter->second.PRN;
                     it = available_prns.find(prn_);
                     if (it == available_prns.end())
                         {
@@ -10532,7 +10526,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                  observables_iter != observablesE5B.cend();
                  observables_iter++)
                 {
-                    uint32_t prn_ = observables_iter->second.PRN;
+                    const uint32_t prn_ = observables_iter->second.PRN;
                     it = available_prns.find(prn_);
                     if (it == available_prns.end())
                         {
@@ -10578,7 +10572,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
                 }
         }
-    int32_t numSatellitesObserved = available_prns.size();
+    const int32_t numSatellitesObserved = available_prns.size();
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
     // Receiver clock offset (optional)
     // line += rightJustify(asString(clockOffset, 12), 15);
@@ -10616,7 +10610,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                     //   }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // Galileo CARRIER PHASE
@@ -10663,18 +10657,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
         }  // avoid warning, not needed
     std::string line;
 
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
     // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = gps_obs_time;
+    const double gps_t = gps_obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -10688,7 +10682,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(gps_t, 60);
+    const double seconds = fmod(gps_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -10739,7 +10733,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesE1B.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -10752,7 +10746,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesE5A.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -10765,7 +10759,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesE5B.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -10774,9 +10768,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                 }
         }
 
-    int32_t numGalSatellitesObserved = available_gal_prns.size();
-    int32_t numGpsSatellitesObserved = observablesG1C.size();
-    int32_t numSatellitesObserved = numGalSatellitesObserved + numGpsSatellitesObserved;
+    const int32_t numGalSatellitesObserved = available_gal_prns.size();
+    const int32_t numGpsSatellitesObserved = observablesG1C.size();
+    const int32_t numSatellitesObserved = numGalSatellitesObserved + numGpsSatellitesObserved;
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
 
     // Receiver clock offset (optional)
@@ -10822,7 +10816,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             //    }
 
             // Signal Strength Indicator (SSI)
-            int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
+            const int32_t ssi = Rinex_Printer::signalStrength(observables_iter->second.CN0_dB_hz);
             lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
             // PHASE
@@ -10888,7 +10882,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // Galileo CARRIER PHASE
@@ -10935,18 +10929,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
         }  // avoid warning, not needed
     std::string line;
 
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, gps_obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(eph, gps_obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
     // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = gps_obs_time;
+    const double gps_t = gps_obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -10960,7 +10954,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(gps_t, 60);
+    const double seconds = fmod(gps_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -11018,7 +11012,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
          observables_iter != observablesE1B.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -11031,7 +11025,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
          observables_iter != observablesE5A.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -11044,7 +11038,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
          observables_iter != observablesE5B.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -11057,7 +11051,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
          observables_iter != observablesG2S.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gps_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gps_prns.find(prn_);
             if (it == available_gps_prns.end())
@@ -11070,7 +11064,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
          observables_iter != observablesGL5.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gps_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gps_prns.find(prn_);
             if (it == available_gps_prns.end())
@@ -11079,9 +11073,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
                 }
         }
 
-    int32_t numGalSatellitesObserved = available_gal_prns.size();
-    int32_t numGpsSatellitesObserved = available_gps_prns.size();
-    int32_t numSatellitesObserved = numGalSatellitesObserved + numGpsSatellitesObserved;
+    const int32_t numGalSatellitesObserved = available_gal_prns.size();
+    const int32_t numGpsSatellitesObserved = available_gps_prns.size();
+    const int32_t numSatellitesObserved = numGalSatellitesObserved + numGpsSatellitesObserved;
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
 
     // Receiver clock offset (optional)
@@ -11123,7 +11117,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // CARRIER PHASE
@@ -11185,7 +11179,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // Galileo CARRIER PHASE
@@ -11232,18 +11226,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
         }  // avoid warning, not needed
     std::string line;
 
-    boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
+    const boost::posix_time::ptime p_gps_time = Rinex_Printer::compute_GPS_time(gps_eph, gps_obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_gps_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
     // double gps_t = eph.sv_clock_correction(obs_time);
-    double gps_t = gps_obs_time;
+    const double gps_t = gps_obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -11257,7 +11251,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(gps_t, 60);
+    const double seconds = fmod(gps_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -11320,7 +11314,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesE1B.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -11333,7 +11327,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesE5A.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -11346,7 +11340,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesE5B.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gal_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gal_prns.find(prn_);
             if (it == available_gal_prns.end())
@@ -11359,7 +11353,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesG1C.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gps_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gps_prns.find(prn_);
             if (it == available_gps_prns.end())
@@ -11372,7 +11366,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesG2S.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gps_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gps_prns.find(prn_);
             if (it == available_gps_prns.end())
@@ -11385,7 +11379,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          observables_iter != observablesGL5.cend();
          observables_iter++)
         {
-            uint32_t prn_ = observables_iter->second.PRN;
+            const uint32_t prn_ = observables_iter->second.PRN;
             total_gps_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
             it = available_gps_prns.find(prn_);
             if (it == available_gps_prns.end())
@@ -11394,9 +11388,9 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                 }
         }
 
-    int32_t numGalSatellitesObserved = available_gal_prns.size();
-    int32_t numGpsSatellitesObserved = available_gps_prns.size();
-    int32_t numSatellitesObserved = numGalSatellitesObserved + numGpsSatellitesObserved;
+    const int32_t numGalSatellitesObserved = available_gal_prns.size();
+    const int32_t numGpsSatellitesObserved = available_gps_prns.size();
+    const int32_t numSatellitesObserved = numGalSatellitesObserved + numGpsSatellitesObserved;
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
 
     // Receiver clock offset (optional)
@@ -11449,7 +11443,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // CARRIER PHASE
@@ -11511,7 +11505,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                     //    }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // Galileo CARRIER PHASE
@@ -11552,18 +11546,18 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
 {
     std::string line;
 
-    boost::posix_time::ptime p_bds_time = Rinex_Printer::compute_BDS_time(eph, obs_time);
-    std::string timestring = boost::posix_time::to_iso_string(p_bds_time);
+    const boost::posix_time::ptime p_bds_time = Rinex_Printer::compute_BDS_time(eph, obs_time);
+    const std::string timestring = boost::posix_time::to_iso_string(p_bds_time);
     // double utc_t = nav_msg.utc_time(nav_msg.sv_clock_correction(obs_time));
     // double gps_t = eph.sv_clock_correction(obs_time);
-    double bds_t = obs_time;
+    const double bds_t = obs_time;
 
-    std::string month(timestring, 4, 2);
-    std::string day(timestring, 6, 2);
-    std::string hour(timestring, 9, 2);
-    std::string minutes(timestring, 11, 2);
+    const std::string month(timestring, 4, 2);
+    const std::string day(timestring, 6, 2);
+    const std::string hour(timestring, 9, 2);
+    const std::string minutes(timestring, 11, 2);
 
-    std::string year(timestring, 0, 4);
+    const std::string year(timestring, 0, 4);
     line += std::string(1, '>');
     line += std::string(1, ' ');
     line += year;
@@ -11577,7 +11571,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
     line += minutes;
 
     line += std::string(1, ' ');
-    double seconds = fmod(bds_t, 60);
+    const double seconds = fmod(bds_t, 60);
     // Add extra 0 if seconds are < 10
     if (seconds < 10)
         {
@@ -11623,7 +11617,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
                  observables_iter != observablesB1I.cend();
                  observables_iter++)
                 {
-                    uint32_t prn_ = observables_iter->second.PRN;
+                    const uint32_t prn_ = observables_iter->second.PRN;
                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
                     it = available_prns.find(prn_);
                     if (it == available_prns.end())
@@ -11638,7 +11632,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
                  observables_iter != observablesB3I.cend();
                  observables_iter++)
                 {
-                    uint32_t prn_ = observables_iter->second.PRN;
+                    const uint32_t prn_ = observables_iter->second.PRN;
                     it = available_prns.find(prn_);
                     if (it == available_prns.end())
                         {
@@ -11658,7 +11652,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
                 }
         }
 
-    int32_t numSatellitesObserved = available_prns.size();
+    const int32_t numSatellitesObserved = available_prns.size();
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
     // Receiver clock offset (optional)
     // line += rightJustify(asString(clockOffset, 12), 15);
@@ -11692,7 +11686,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
                         }
 
                     // Signal Strength Indicator (SSI)
-                    int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
+                    const int32_t ssi = Rinex_Printer::signalStrength(iter->second.CN0_dB_hz);
                     lineObs += Rinex_Printer::rightJustify(Rinex_Printer::asString<int32_t>(ssi), 1);
 
                     // CARRIER PHASE
@@ -11738,7 +11732,7 @@ void Rinex_Printer::to_date_time(int32_t gps_week, int32_t gps_tow, int& year, i
 
     // the GPS epoch is 06.01.1980 00:00, i.e. midnight 5. / 6. January 1980
     // -> seconds since then
-    int32_t secs_since_gps_epoch = gps_week * secs_per_week + gps_tow;
+    const int32_t secs_since_gps_epoch = gps_week * secs_per_week + gps_tow;
 
     // find year, consider leap years
     bool is_leap_year;
@@ -11879,8 +11873,7 @@ void Rinex_Printer::to_date_time(int32_t gps_week, int32_t gps_tow, int& year, i
 
 int32_t Rinex_Printer::signalStrength(const double snr)
 {
-    int32_t ss;
-    ss = static_cast<int>(std::min(std::max(static_cast<int>(floor(snr / 6)), 1), 9));
+    auto ss = static_cast<int32_t>(std::min(std::max(static_cast<int32_t>(floor(snr / 6)), 1), 9));
     return ss;
 }
 
@@ -11890,7 +11883,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
     // if we are processing a file -> wait to leap second to resolve the ambiguity else take the week from the local system time
     // idea: resolve the ambiguity with the leap second
     const double utc_t = nav_msg.utc_time(nav_msg.get_TOW());
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.get_GPS_week())) * 1000));
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.get_GPS_week())) * 1000));
     // Handle week rollover
     if (pre_2009_file_ == false)
         {
@@ -11919,7 +11912,7 @@ boost::posix_time::ptime Rinex_Printer::compute_BDS_time(const Beidou_Dnav_Ephem
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
     const double bds_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((bds_t + 604800 * static_cast<double>(eph.i_BEIDOU_week % 8192)) * 1000));
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((bds_t + 604800 * static_cast<double>(eph.i_BEIDOU_week % 8192)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(2006, 1, 1), t);
     return p_time;
 }
@@ -11965,7 +11958,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_CNAV_Ephemeri
     // (see Section 3 in ftp://igs.org/pub/data/format/rinex211.txt)
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex300.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((obs_time + 604800 * static_cast<double>(eph.i_GPS_week % 1024)) * 1000));
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -11976,8 +11969,8 @@ boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(const Galileo_Ephem
     // The RINEX v2.11 v3.00 format uses Galileo time for the observations epoch, not UTC time, thus, no leap seconds needed here.
     // (see Pag. 17 in ftp://igs.org/pub/data/format/rinex301.pdf)
     // --??? No time correction here, since it will be done in the RINEX processor
-    double galileo_t = obs_time;
-    boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));  //
+    const double galileo_t = obs_time;
+    const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((galileo_t + 604800 * static_cast<double>(eph.WN_5)) * 1000));  //
     boost::posix_time::ptime p_time(boost::gregorian::date(1999, 8, 22), t);
     return p_time;
 }
@@ -11986,7 +11979,7 @@ boost::posix_time::ptime Rinex_Printer::compute_Galileo_time(const Galileo_Ephem
 boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephemeris& eph, const double obs_time)
 {
     double tod = 0.0;
-    double glot2utc = 3 * 3600;
+    const double glot2utc = 3 * 3600;
     double obs_time_glot = 0.0;
     int32_t i = 0;
 
@@ -11997,21 +11990,21 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
     tod = fmod(obs_time_glot, 86400);
 
     // Form date and time duration types
-    boost::posix_time::time_duration t1(0, 0, tod);
-    boost::gregorian::date d1(eph.d_yr, 1, 1);
-    boost::gregorian::days d2(eph.d_N_T - 1);
-    boost::posix_time::ptime glo_time(d1 + d2, t1);
+    const boost::posix_time::time_duration t1(0, 0, tod);
+    const boost::gregorian::date d1(eph.d_yr, 1, 1);
+    const boost::gregorian::days d2(eph.d_N_T - 1);
+    const boost::posix_time::ptime glo_time(d1 + d2, t1);
 
     // Convert to utc
-    boost::posix_time::time_duration t2(0, 0, glot2utc);
+    const boost::posix_time::time_duration t2(0, 0, glot2utc);
     boost::posix_time::ptime utc_time = glo_time - t2;
 
     // Adjust for leap second correction
     for (i = 0; GLONASS_LEAP_SECONDS[i][0] > 0; i++)
         {
-            boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
-            boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
-            boost::posix_time::ptime ls_time(d3, t3);
+            const boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
+            const boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
+            const boost::posix_time::ptime ls_time(d3, t3);
             if (utc_time >= ls_time)
                 {
                     // We subtract the leap second when going from gpst to utc, values store as negatives
@@ -12027,7 +12020,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Glonass_Gnav_Ephe
 double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const double gps_obs_time)
 {
     double tod = 0.0;
-    double glot2utc = 3 * 3600;
+    const double glot2utc = 3 * 3600;
     double obs_time_glot = 0.0;
     int32_t i = 0;
     double leap_second = 0;
@@ -12039,21 +12032,21 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, const d
     tod = fmod(obs_time_glot, 86400);
 
     // Form date and time duration types
-    boost::posix_time::time_duration t1(0, 0, tod);
-    boost::gregorian::date d1(eph.d_yr, 1, 1);
-    boost::gregorian::days d2(eph.d_N_T - 1);
-    boost::posix_time::ptime glo_time(d1 + d2, t1);
+    const boost::posix_time::time_duration t1(0, 0, tod);
+    const boost::gregorian::date d1(eph.d_yr, 1, 1);
+    const boost::gregorian::days d2(eph.d_N_T - 1);
+    const boost::posix_time::ptime glo_time(d1 + d2, t1);
 
     // Convert to utc
-    boost::posix_time::time_duration t2(0, 0, glot2utc);
+    const boost::posix_time::time_duration t2(0, 0, glot2utc);
     boost::posix_time::ptime utc_time = glo_time - t2;
 
     // Adjust for leap second correction
     for (i = 0; GLONASS_LEAP_SECONDS[i][0] > 0; i++)
         {
-            boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
-            boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
-            boost::posix_time::ptime ls_time(d3, t3);
+            const boost::posix_time::time_duration t3(GLONASS_LEAP_SECONDS[i][3], GLONASS_LEAP_SECONDS[i][4], GLONASS_LEAP_SECONDS[i][5]);
+            const boost::gregorian::date d3(GLONASS_LEAP_SECONDS[i][0], GLONASS_LEAP_SECONDS[i][1], GLONASS_LEAP_SECONDS[i][2]);
+            const boost::posix_time::ptime ls_time(d3, t3);
             if (utc_time >= ls_time)
                 {
                     // We subtract the leap second when going from gpst to utc

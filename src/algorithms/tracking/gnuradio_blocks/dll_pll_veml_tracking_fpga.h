@@ -31,11 +31,13 @@
 #include <gnuradio/types.h>                   // for gr_vector_int, gr_vector...
 #include <pmt/pmt.h>                          // for pmt_t
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
+#include <cstddef>                            // for size_t
 #include <cstdint>                            // for int32_t
 #include <fstream>                            // for string, ofstream
 #include <memory>                             // for std::shared_ptr
-#include <string>
-#include <utility>  // for pair
+#include <string>                             // for string
+#include <typeinfo>                           // for typeid
+#include <utility>                            // for pair
 #if GNURADIO_USES_STD_POINTERS
 #else
 #include <boost/shared_ptr.hpp>
@@ -152,6 +154,8 @@ private:
     boost::condition_variable d_m_condition;
 
     boost::mutex d_mutex;
+
+    const size_t int_type_hash_code = typeid(int).hash_code();
 
     double d_signal_carrier_freq;
     double d_code_period;

@@ -114,7 +114,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             d_codelength = 0;
             d_datalength = 0;
             d_max_symbols_without_valid_frame = 0;
-            std::cout << "Galileo unified telemetry decoder error: Unknown frame type \n";
+            std::cout << "Galileo unified telemetry decoder error: Unknown frame type\n";
         }
 
     d_page_part_symbols.reserve(d_frame_length_symbols);
@@ -166,8 +166,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_symbol_history.set_capacity(d_required_symbols + 1);
 
     // vars for Viterbi decoder
-    int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
-    std::array<int32_t, 2> g_encoder{{121, 91}};             // Polynomial G1 and G2
+    const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
+    std::array<int32_t, 2> g_encoder{{121, 91}};                   // Polynomial G1 and G2
     d_out0.reserve(max_states);
     d_out1.reserve(max_states);
     d_state0.reserve(max_states);
@@ -274,21 +274,21 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     if (d_inav_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
+            const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
             std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_inav_nav.have_new_iono_and_GST() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_inav_nav.get_iono());
+            const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_inav_nav.get_iono());
             std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_inav_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
+            const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
             std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             d_delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G_10), 64.0)));
@@ -296,7 +296,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         }
     if (d_inav_nav.have_new_almanac() == true)
         {
-            std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
+            const std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             // debug
             std::cout << "Galileo E1 I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';

@@ -68,7 +68,7 @@
 class Rtklib_Solver : public Pvt_Solution
 {
 public:
-    Rtklib_Solver(int nchannels, const std::string& dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t& rtk);
+    Rtklib_Solver(const rtk_t& rtk, int nchannels, const std::string& dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat);
     ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
@@ -107,7 +107,7 @@ public:
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
 private:
-    bool save_matfile();
+    bool save_matfile() const;
 
     std::array<obsd_t, MAXOBS> obs_data{};
     std::array<double, 4> dop_{};

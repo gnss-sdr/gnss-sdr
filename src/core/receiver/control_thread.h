@@ -26,16 +26,20 @@
 
 #include "agnss_ref_location.h"    // for Agnss_Ref_Location
 #include "agnss_ref_time.h"        // for Agnss_Ref_Time
+#include "channel_event.h"         // for channel_event_sptr
+#include "command_event.h"         // for command_event_sptr
 #include "concurrent_queue.h"      // for Concurrent_Queue
 #include "gnss_sdr_supl_client.h"  // for Gnss_Sdr_Supl_Client
 #include "tcp_cmd_interface.h"     // for TcpCmdInterface
 #include <pmt/pmt.h>
-#include <array>    // for array
-#include <memory>   // for shared_ptr
-#include <string>   // for string
-#include <thread>   // for std::thread
-#include <utility>  // for pair
-#include <vector>   // for vector
+#include <array>     // for array
+#include <cstddef>   // for size_t
+#include <memory>    // for shared_ptr
+#include <string>    // for string
+#include <thread>    // for std::thread
+#include <typeinfo>  // for std::type_info, typeid
+#include <utility>   // for pair
+#include <vector>    // for vector
 
 #ifdef ENABLE_FPGA
 #include <boost/thread.hpp>  // for boost::thread
@@ -161,6 +165,9 @@ private:
     const std::string glo_utc_default_xml_filename_ = "./glo_utc_model.xml";
     const std::string gal_almanac_default_xml_filename_ = "./gal_almanac.xml";
     const std::string gps_almanac_default_xml_filename_ = "./gps_almanac.xml";
+
+    const size_t channel_event_type_hash_code_ = typeid(channel_event_sptr).hash_code();
+    const size_t command_event_type_hash_code_ = typeid(command_event_sptr).hash_code();
 
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;

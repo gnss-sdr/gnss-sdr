@@ -32,10 +32,12 @@
 #include <gnuradio/types.h>                   // for gr_vector_int, gr_vector...
 #include <pmt/pmt.h>                          // for pmt_t
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
+#include <cstddef>                            // for size_t
 #include <cstdint>                            // for int32_t
-#include <fstream>                            // for string, ofstream
-#include <string>
-#include <utility>  // for pair
+#include <fstream>                            // for ofstream
+#include <string>                             // for string
+#include <typeinfo>                           // for typeid
+#include <utility>                            // for pair
 #if GNURADIO_USES_STD_POINTERS
 #include <memory>
 #else
@@ -112,6 +114,8 @@ private:
     boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
     boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
+
+    const size_t int_type_hash_code = typeid(int).hash_code();
 
     double d_signal_carrier_freq;
     double d_code_period;

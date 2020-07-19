@@ -126,7 +126,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
 Nmea_Printer::~Nmea_Printer()
 {
     DLOG(INFO) << "NMEA printer destructor called.";
-    auto pos = nmea_file_descriptor.tellp();
+    const auto pos = nmea_file_descriptor.tellp();
     try
         {
             if (nmea_file_descriptor.is_open())
@@ -170,11 +170,11 @@ int Nmea_Printer::init_serial(const std::string& serial_device)
     // clang-format off
     struct termios options{};
     // clang-format on
-    int64_t BAUD;
-    int64_t DATABITS;
-    int64_t STOPBITS;
-    int64_t PARITYON;
-    int64_t PARITY;
+    const int64_t BAUD = B9600;  // BAUD  =  B38400;
+    const int64_t DATABITS = CS8;
+    const int64_t STOPBITS = 0;
+    const int64_t PARITYON = 0;
+    const int64_t PARITY = 0;
 
     fd = open(serial_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY | O_CLOEXEC);
     if (fd == -1)
@@ -187,13 +187,6 @@ int Nmea_Printer::init_serial(const std::string& serial_device)
             LOG(INFO) << "Error enabling direct I/O";  // clear all flags on descriptor, enable direct I/O
         }
     tcgetattr(fd, &options);  // read serial port options
-
-    BAUD = B9600;
-    // BAUD  =  B38400;
-    DATABITS = CS8;
-    STOPBITS = 0;
-    PARITYON = 0;
-    PARITY = 0;
 
     options.c_cflag = BAUD | DATABITS | STOPBITS | PARITYON | PARITY | CLOCAL | CREAD;
     // enable receiver, set 8 bit data, ignore control lines
@@ -217,11 +210,6 @@ void Nmea_Printer::close_serial()
 
 bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_average_values)
 {
-    std::string GPRMC;
-    std::string GPGGA;
-    std::string GPGSA;
-    std::string GPGSV;
-
     // set the new PVT data
     d_PVT_data = pvt_data;
     print_avg_pos = print_average_values;
@@ -229,13 +217,13 @@ bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_ave
     // generate the NMEA sentences
 
     // GPRMC
-    GPRMC = get_GPRMC();
+    const std::string GPRMC = get_GPRMC();
     // GPGGA (Global Positioning System Fixed Data)
-    GPGGA = get_GPGGA();
+    const std::string GPGGA = get_GPGGA();
     // GPGSA
-    GPGSA = get_GPGSA();
+    const std::string GPGSA = get_GPGSA();
     // GPGSV
-    GPGSV = get_GPGSV();
+    const std::string GPGSV = get_GPGSV();
 
     // write to log file
     if (d_flag_nmea_output_file)
@@ -311,7 +299,7 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
             north = true;
         }
 
-    int deg = static_cast<int>(lat);
+    const int deg = static_cast<int>(lat);
     double mins = lat - static_cast<double>(deg);
     mins *= 60.0;
     std::ostringstream out_string;
@@ -348,7 +336,7 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
         {
             east = true;
         }
-    int deg = static_cast<int>(longitude);
+    const int deg = static_cast<int>(longitude);
     double mins = longitude - static_cast<double>(deg);
     mins *= 60.0;
     std::ostringstream out_string;
@@ -378,11 +366,11 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
     // UTC Time: hhmmss.sss
     std::stringstream sentence_str;
 
-    boost::posix_time::time_duration td = d_position_UTC_time.time_of_day();
-    int utc_hours = td.hours();
-    int utc_mins = td.minutes();
-    int utc_seconds = td.seconds();
-    auto utc_milliseconds = static_cast<int>(td.total_milliseconds() - td.total_seconds() * 1000);
+    const boost::posix_time::time_duration td = d_position_UTC_time.time_of_day();
+    const int utc_hours = td.hours();
+    const int utc_mins = td.minutes();
+    const int utc_seconds = td.seconds();
+    const auto utc_milliseconds = static_cast<int>(td.total_milliseconds() - td.total_seconds() * 1000);
 
     if (utc_hours < 10)
         {

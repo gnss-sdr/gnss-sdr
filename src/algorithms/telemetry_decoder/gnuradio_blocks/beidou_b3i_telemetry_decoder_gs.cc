@@ -242,7 +242,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj =
+            const std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj =
                 std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel"
@@ -253,7 +253,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
     if (d_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj =
+            const std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj =
                 std::make_shared<Beidou_Dnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV UTC Model have been received in channel"
@@ -265,7 +265,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
     if (d_nav.have_new_iono() == true)
         {
             // get object for this SV (mandatory)
-            std::shared_ptr<Beidou_Dnav_Iono> tmp_obj =
+            const std::shared_ptr<Beidou_Dnav_Iono> tmp_obj =
                 std::make_shared<Beidou_Dnav_Iono>(d_nav.get_iono());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Iono have been received in channel" << d_channel
@@ -570,7 +570,7 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
             // Reporting sow as gps time of week
             d_TOW_at_Preamble_ms = static_cast<uint32_t>((d_nav.get_SOW() + BEIDOU_DNAV_BDT2GPST_LEAP_SEC_OFFSET) * 1000.0);
             // check TOW update consistency
-            uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
+            const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // compute new TOW
             d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
             flag_SOW_set = true;

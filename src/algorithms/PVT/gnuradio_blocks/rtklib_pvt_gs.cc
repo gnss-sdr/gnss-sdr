@@ -74,6 +74,7 @@
 #include <stdexcept>                    // for length_error
 #include <sys/ipc.h>                    // for IPC_CREAT
 #include <sys/msg.h>                    // for msgctl
+#include <typeinfo>                     // for std::type_info, typeid
 #include <utility>                      // for pair
 
 #if HAS_GENERIC_LAMBDA
@@ -471,25 +472,45 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
-            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
+            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat);
             d_user_pvt_solver->set_averaging_depth(1);
             d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, false, false, internal_rtk);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, static_cast<int32_t>(nchannels), dump_ls_pvt_filename, false, false);
             d_internal_pvt_solver->set_averaging_depth(1);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
             // only one solver, customized by the user options
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat, rtk);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat);
             d_internal_pvt_solver->set_averaging_depth(1);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
+
+    d_gps_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Ephemeris>).hash_code();
+    d_gps_iono_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Iono>).hash_code();
+    d_gps_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Utc_Model>).hash_code();
+    d_gps_cnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Gps_CNAV_Ephemeris>).hash_code();
+    d_gps_cnav_iono_sptr_type_hash_code = typeid(std::shared_ptr<Gps_CNAV_Iono>).hash_code();
+    d_gps_cnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code();
+    d_gps_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Almanac>).hash_code();
+    d_galileo_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Ephemeris>).hash_code();
+    d_galileo_iono_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Iono>).hash_code();
+    d_galileo_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Utc_Model>).hash_code();
+    d_galileo_almanac_helper_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac_Helper>).hash_code();
+    d_galileo_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac>).hash_code();
+    d_glonass_gnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>).hash_code();
+    d_glonass_gnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>).hash_code();
+    d_glonass_gnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Almanac>).hash_code();
+    d_beidou_dnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>).hash_code();
+    d_beidou_dnav_iono_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code();
+    d_beidou_dnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code();
+    d_beidou_dnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code();
 
     d_start = std::chrono::system_clock::now();
 }
@@ -1050,12 +1071,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
 {
     try
         {
-            // ************* GPS telemetry *****************
-            if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Ephemeris>))
+            const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
+            // ************************* GPS telemetry *************************
+            if (msg_type_hash_code == d_gps_ephemeris_sptr_type_hash_code)
                 {
                     // ### GPS EPHEMERIS ###
-                    std::shared_ptr<Gps_Ephemeris> gps_eph;
-                    gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Gps_Ephemeris> gps_eph = boost::any_cast<std::shared_ptr<Gps_Ephemeris>>(pmt::any_ref(msg));
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                                << gps_eph->i_satellite_PRN << " (Block "
                                << gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
@@ -1135,11 +1156,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
                         }
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Iono>))
+            else if (msg_type_hash_code == d_gps_iono_sptr_type_hash_code)
                 {
                     // ### GPS IONO ###
-                    std::shared_ptr<Gps_Iono> gps_iono;
-                    gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Gps_Iono> gps_iono = boost::any_cast<std::shared_ptr<Gps_Iono>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->gps_iono = *gps_iono;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1147,11 +1167,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Utc_Model>))
+            else if (msg_type_hash_code == d_gps_utc_model_sptr_type_hash_code)
                 {
                     // ### GPS UTC MODEL ###
-                    std::shared_ptr<Gps_Utc_Model> gps_utc_model;
-                    gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Gps_Utc_Model> gps_utc_model = boost::any_cast<std::shared_ptr<Gps_Utc_Model>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->gps_utc_model = *gps_utc_model;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1159,11 +1178,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Ephemeris>))
+            else if (msg_type_hash_code == d_gps_cnav_ephemeris_sptr_type_hash_code)
                 {
                     // ### GPS CNAV message ###
-                    std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris;
-                    gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Gps_CNAV_Ephemeris> gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_header_written)  // The header is already written, we can now log the navigation message data
                         {
@@ -1212,11 +1230,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Iono>))
+            else if (msg_type_hash_code == d_gps_cnav_iono_sptr_type_hash_code)
                 {
                     // ### GPS CNAV IONO ###
-                    std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono;
-                    gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Gps_CNAV_Iono> gps_cnav_iono = boost::any_cast<std::shared_ptr<Gps_CNAV_Iono>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1224,11 +1241,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New CNAV IONO record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_CNAV_Utc_Model>))
+            else if (msg_type_hash_code == d_gps_cnav_utc_model_sptr_type_hash_code)
                 {
                     // ### GPS CNAV UTC MODEL ###
-                    std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model;
-                    gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Gps_CNAV_Utc_Model> gps_cnav_utc_model = boost::any_cast<std::shared_ptr<Gps_CNAV_Utc_Model>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->gps_cnav_utc_model = *gps_cnav_utc_model;
                     {
                         d_user_pvt_solver->gps_cnav_utc_model = *gps_cnav_utc_model;
@@ -1236,11 +1252,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     DLOG(INFO) << "New CNAV UTC record has arrived ";
                 }
 
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Gps_Almanac>))
+            else if (msg_type_hash_code == d_gps_almanac_sptr_type_hash_code)
                 {
                     // ### GPS ALMANAC ###
-                    std::shared_ptr<Gps_Almanac> gps_almanac;
-                    gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Gps_Almanac> gps_almanac = boost::any_cast<std::shared_ptr<Gps_Almanac>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->gps_almanac_map[gps_almanac->i_satellite_PRN] = *gps_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1249,12 +1264,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     DLOG(INFO) << "New GPS almanac record has arrived ";
                 }
 
-            // **************** Galileo telemetry ********************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Ephemeris>))
+            // *********************** Galileo telemetry ***********************
+            else if (msg_type_hash_code == d_galileo_ephemeris_sptr_type_hash_code)
                 {
                     // ### Galileo EPHEMERIS ###
-                    std::shared_ptr<Galileo_Ephemeris> galileo_eph;
-                    galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Galileo_Ephemeris> galileo_eph = boost::any_cast<std::shared_ptr<Galileo_Ephemeris>>(pmt::any_ref(msg));
                     // insert new ephemeris record
                     DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
                                << ", GALILEO Week Number =" << galileo_eph->WN_5
@@ -1320,11 +1334,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;
                         }
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Iono>))
+            else if (msg_type_hash_code == d_galileo_iono_sptr_type_hash_code)
                 {
                     // ### Galileo IONO ###
-                    std::shared_ptr<Galileo_Iono> galileo_iono;
-                    galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Galileo_Iono> galileo_iono = boost::any_cast<std::shared_ptr<Galileo_Iono>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->galileo_iono = *galileo_iono;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1332,11 +1345,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New IONO record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Utc_Model>))
+            else if (msg_type_hash_code == d_galileo_utc_model_sptr_type_hash_code)
                 {
                     // ### Galileo UTC MODEL ###
-                    std::shared_ptr<Galileo_Utc_Model> galileo_utc_model;
-                    galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Galileo_Utc_Model> galileo_utc_model = boost::any_cast<std::shared_ptr<Galileo_Utc_Model>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->galileo_utc_model = *galileo_utc_model;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1344,12 +1356,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New UTC record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac_Helper>))
+            else if (msg_type_hash_code == d_galileo_almanac_helper_sptr_type_hash_code)
                 {
                     // ### Galileo Almanac ###
-                    std::shared_ptr<Galileo_Almanac_Helper> galileo_almanac_helper;
-                    galileo_almanac_helper = boost::any_cast<std::shared_ptr<Galileo_Almanac_Helper>>(pmt::any_ref(msg));
-
+                    const std::shared_ptr<Galileo_Almanac_Helper> galileo_almanac_helper = boost::any_cast<std::shared_ptr<Galileo_Almanac_Helper>>(pmt::any_ref(msg));
                     Galileo_Almanac sv1 = galileo_almanac_helper->get_almanac(1);
                     Galileo_Almanac sv2 = galileo_almanac_helper->get_almanac(2);
                     Galileo_Almanac sv3 = galileo_almanac_helper->get_almanac(3);
@@ -1380,11 +1390,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New Galileo Almanac data have arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Galileo_Almanac>))
+            else if (msg_type_hash_code == d_galileo_almanac_sptr_type_hash_code)
                 {
                     // ### Galileo Almanac ###
-                    std::shared_ptr<Galileo_Almanac> galileo_alm;
-                    galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Galileo_Almanac> galileo_alm = boost::any_cast<std::shared_ptr<Galileo_Almanac>>(pmt::any_ref(msg));
                     // update/insert new almanac record to the global almanac map
                     d_internal_pvt_solver->galileo_almanac_map[galileo_alm->i_satellite_PRN] = *galileo_alm;
                     if (d_enable_rx_clock_correction == true)
@@ -1393,12 +1402,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                 }
 
-            // **************** GLONASS GNAV Telemetry **************************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>))
+            // **************** GLONASS GNAV Telemetry *************************
+            else if (msg_type_hash_code == d_glonass_gnav_ephemeris_sptr_type_hash_code)
                 {
                     // ### GLONASS GNAV EPHEMERIS ###
-                    std::shared_ptr<Glonass_Gnav_Ephemeris> glonass_gnav_eph;
-                    glonass_gnav_eph = boost::any_cast<std::shared_ptr<Glonass_Gnav_Ephemeris>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Glonass_Gnav_Ephemeris> glonass_gnav_eph = boost::any_cast<std::shared_ptr<Glonass_Gnav_Ephemeris>>(pmt::any_ref(msg));
                     // TODO Add GLONASS with gps week number and tow,
                     // insert new ephemeris record
                     DLOG(INFO) << "GLONASS GNAV New Ephemeris record inserted in global map with TOW =" << glonass_gnav_eph->d_TOW
@@ -1478,11 +1486,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->glonass_gnav_ephemeris_map[glonass_gnav_eph->i_satellite_PRN] = *glonass_gnav_eph;
                         }
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>))
+            else if (msg_type_hash_code == d_glonass_gnav_utc_model_sptr_type_hash_code)
                 {
                     // ### GLONASS GNAV UTC MODEL ###
-                    std::shared_ptr<Glonass_Gnav_Utc_Model> glonass_gnav_utc_model;
-                    glonass_gnav_utc_model = boost::any_cast<std::shared_ptr<Glonass_Gnav_Utc_Model>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Glonass_Gnav_Utc_Model> glonass_gnav_utc_model = boost::any_cast<std::shared_ptr<Glonass_Gnav_Utc_Model>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->glonass_gnav_utc_model = *glonass_gnav_utc_model;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1490,11 +1497,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New GLONASS GNAV UTC record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Glonass_Gnav_Almanac>))
+            else if (msg_type_hash_code == d_glonass_gnav_almanac_sptr_type_hash_code)
                 {
                     // ### GLONASS GNAV Almanac ###
-                    std::shared_ptr<Glonass_Gnav_Almanac> glonass_gnav_almanac;
-                    glonass_gnav_almanac = boost::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Glonass_Gnav_Almanac> glonass_gnav_almanac = boost::any_cast<std::shared_ptr<Glonass_Gnav_Almanac>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1504,12 +1510,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
                 }
 
-            // ************* BeiDou telemetry *****************
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>))
+            // *********************** BeiDou telemetry ************************
+            else if (msg_type_hash_code == d_beidou_dnav_ephemeris_sptr_type_hash_code)
                 {
                     // ### Beidou EPHEMERIS ###
-                    std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph;
-                    bds_dnav_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Beidou_Dnav_Ephemeris> bds_dnav_eph = boost::any_cast<std::shared_ptr<Beidou_Dnav_Ephemeris>>(pmt::any_ref(msg));
                     DLOG(INFO) << "Ephemeris record has arrived from SAT ID "
                                << bds_dnav_eph->i_satellite_PRN << " (Block "
                                << bds_dnav_eph->satelliteBlock[bds_dnav_eph->i_satellite_PRN] << ")"
@@ -1552,11 +1557,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->beidou_dnav_ephemeris_map[bds_dnav_eph->i_satellite_PRN] = *bds_dnav_eph;
                         }
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Iono>))
+            else if (msg_type_hash_code == d_beidou_dnav_iono_sptr_type_hash_code)
                 {
                     // ### BeiDou IONO ###
-                    std::shared_ptr<Beidou_Dnav_Iono> bds_dnav_iono;
-                    bds_dnav_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Beidou_Dnav_Iono> bds_dnav_iono = boost::any_cast<std::shared_ptr<Beidou_Dnav_Iono>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->beidou_dnav_iono = *bds_dnav_iono;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1564,11 +1568,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New BeiDou DNAV IONO record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>))
+            else if (msg_type_hash_code == d_beidou_dnav_utc_model_sptr_type_hash_code)
                 {
                     // ### BeiDou UTC MODEL ###
-                    std::shared_ptr<Beidou_Dnav_Utc_Model> bds_dnav_utc_model;
-                    bds_dnav_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Beidou_Dnav_Utc_Model> bds_dnav_utc_model = boost::any_cast<std::shared_ptr<Beidou_Dnav_Utc_Model>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->beidou_dnav_utc_model = *bds_dnav_utc_model;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1576,11 +1579,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     DLOG(INFO) << "New BeiDou DNAV UTC record has arrived ";
                 }
-            else if (pmt::any_ref(msg).type() == typeid(std::shared_ptr<Beidou_Dnav_Almanac>))
+            else if (msg_type_hash_code == d_beidou_dnav_almanac_sptr_type_hash_code)
                 {
                     // ### BeiDou ALMANAC ###
-                    std::shared_ptr<Beidou_Dnav_Almanac> bds_dnav_almanac;
-                    bds_dnav_almanac = boost::any_cast<std::shared_ptr<Beidou_Dnav_Almanac>>(pmt::any_ref(msg));
+                    const std::shared_ptr<Beidou_Dnav_Almanac> bds_dnav_almanac = boost::any_cast<std::shared_ptr<Beidou_Dnav_Almanac>>(pmt::any_ref(msg));
                     d_internal_pvt_solver->beidou_dnav_almanac_map[bds_dnav_almanac->i_satellite_PRN] = *bds_dnav_almanac;
                     if (d_enable_rx_clock_correction == true)
                         {
@@ -1917,7 +1919,7 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                         default:
                             break;
                         }
-                    double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, TWO_PI);
+                    const double wrap_carrier_phase_rad = fmod(observables_iter->second.Carrier_phase_rads, TWO_PI);
                     d_initial_carrier_phase_offset_estimation_rads.at(observables_iter->second.Channel_ID) = TWO_PI * round(observables_iter->second.Pseudorange_m / wavelength_m) - observables_iter->second.Carrier_phase_rads + wrap_carrier_phase_rad;
                     d_channel_initialized.at(observables_iter->second.Channel_ID) = true;
                     DLOG(INFO) << "initialized carrier phase at channel " << observables_iter->second.Channel_ID;
@@ -1948,17 +1950,17 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                 {
                     if (in[i][epoch].Flag_valid_pseudorange)
                         {
-                            auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
-                            auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
-                            auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
-                            auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
-                            auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_gps = d_internal_pvt_solver->gps_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_gal = d_internal_pvt_solver->galileo_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_cnav = d_internal_pvt_solver->gps_cnav_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_glo_gnav = d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(in[i][epoch].PRN);
+                            const auto tmp_eph_iter_bds_dnav = d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(in[i][epoch].PRN);
 
                             bool store_valid_observable = false;
 
                             if (tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                 {
-                                    uint32_t prn_aux = tmp_eph_iter_gps->second.i_satellite_PRN;
+                                    const uint32_t prn_aux = tmp_eph_iter_gps->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and (std::string(in[i][epoch].Signal) == "1C"))
                                         {
                                             store_valid_observable = true;
@@ -1966,7 +1968,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
                                 {
-                                    uint32_t prn_aux = tmp_eph_iter_gal->second.i_satellite_PRN;
+                                    const uint32_t prn_aux = tmp_eph_iter_gal->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1B") or (std::string(in[i][epoch].Signal) == "5X")))
                                         {
                                             store_valid_observable = true;
@@ -1974,7 +1976,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
-                                    uint32_t prn_aux = tmp_eph_iter_cnav->second.i_satellite_PRN;
+                                    const uint32_t prn_aux = tmp_eph_iter_cnav->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "2S") or (std::string(in[i][epoch].Signal) == "L5")))
                                         {
                                             store_valid_observable = true;
@@ -1982,7 +1984,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             if (tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                 {
-                                    uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.i_satellite_PRN;
+                                    const uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1G") or (std::string(in[i][epoch].Signal) == "2G")))
                                         {
                                             store_valid_observable = true;
@@ -1990,7 +1992,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             if (tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                 {
-                                    uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.i_satellite_PRN;
+                                    const uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.i_satellite_PRN;
                                     if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "B1") or (std::string(in[i][epoch].Signal) == "B3")))
                                         {
                                             store_valid_observable = true;
@@ -2138,7 +2140,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // required to report accumulated phase cycles comparable to pseudoranges
                             initialize_and_apply_carrier_phase_offset();
 
-                            double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();
+                            const double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();
                             if (d_enable_rx_clock_correction == true and fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
                                 {
                                     LOG(INFO) << "Warning: Rx clock offset at interpolated RX time: " << Rx_clock_offset_s * 1000.0 << "[ms]"
@@ -3207,7 +3209,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int gps_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
                                                                                     if (system == "G")
@@ -3305,7 +3307,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int glo_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
                                                                                     if (system == "G")
@@ -3365,7 +3367,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int glo_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
                                                                                     if (system == "E")
@@ -3424,7 +3426,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int glo_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
                                                                                     if (system == "G")
@@ -3483,7 +3485,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int glo_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
                                                                                     if (system == "E")
@@ -3542,7 +3544,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int gps_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
                                                                                     if (system == "E")
@@ -3687,7 +3689,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int gal_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
                                                                                     if (system == "G")
@@ -3739,7 +3741,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int gal_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
                                                                                     if (system == "E")
@@ -3823,7 +3825,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int glo_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
                                                                                     if (system == "G")
@@ -3883,7 +3885,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     auto glonass_gnav_eph_iter = d_user_pvt_solver->glonass_gnav_ephemeris_map.cbegin();
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
                                                                                     if (system == "E")
@@ -3943,7 +3945,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int glo_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
                                                                                     if (system == "G")
@@ -4004,7 +4006,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     auto glonass_gnav_eph_iter = d_user_pvt_solver->glonass_gnav_ephemeris_map.cbegin();
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gal_channel == 0)
                                                                                 {
                                                                                     if (system == "E")
@@ -4064,7 +4066,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                     int gal_channel = 0;
                                                                     for (gnss_observables_iter = d_gnss_observables_map.cbegin(); gnss_observables_iter != d_gnss_observables_map.cend(); gnss_observables_iter++)
                                                                         {
-                                                                            std::string system(&gnss_observables_iter->second.System, 1);
+                                                                            const std::string system(&gnss_observables_iter->second.System, 1);
                                                                             if (gps_channel == 0)
                                                                                 {
                                                                                     if (system == "G")
@@ -4177,7 +4179,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // PVT MONITOR
                     if (d_user_pvt_solver->is_valid_position())
                         {
-                            std::shared_ptr<Monitor_Pvt> monitor_pvt = std::make_shared<Monitor_Pvt>(d_user_pvt_solver->get_monitor_pvt());
+                            const std::shared_ptr<Monitor_Pvt> monitor_pvt = std::make_shared<Monitor_Pvt>(d_user_pvt_solver->get_monitor_pvt());
 
                             // publish new position to the gnss_flowgraph channel status monitor
                             if (current_RX_time_ms % d_report_rate_ms == 0)

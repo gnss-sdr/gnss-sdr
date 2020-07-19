@@ -61,15 +61,15 @@ namespace errorlib = boost::system;
 #endif
 
 
-Rtklib_Solver::Rtklib_Solver(int nchannels, const std::string &dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat, const rtk_t &rtk)
+Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk, int nchannels, const std::string &dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat)
 {
     // init empty ephemeris for all the available GNSS channels
+    rtk_ = rtk;
     d_nchannels = nchannels;
     d_dump_filename = dump_filename;
     d_flag_dump_enabled = flag_dump_to_file;
     d_flag_dump_mat_enabled = flag_dump_to_mat;
     this->set_averaging_flag(false);
-    rtk_ = rtk;
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
@@ -96,7 +96,7 @@ Rtklib_Solver::~Rtklib_Solver()
     DLOG(INFO) << "Rtklib_Solver destructor called.";
     if (d_dump_file.is_open() == true)
         {
-            auto pos = d_dump_file.tellp();
+            const auto pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -129,19 +129,18 @@ Rtklib_Solver::~Rtklib_Solver()
 }
 
 
-bool Rtklib_Solver::save_matfile()
+bool Rtklib_Solver::save_matfile() const
 {
     // READ DUMP FILE
-    std::string dump_filename = d_dump_filename;
-    std::ifstream::pos_type size;
-    int32_t number_of_double_vars = 21;
-    int32_t number_of_uint32_vars = 2;
-    int32_t number_of_uint8_vars = 3;
-    int32_t number_of_float_vars = 2;
-    int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
-                               sizeof(uint32_t) * number_of_uint32_vars +
-                               sizeof(uint8_t) * number_of_uint8_vars +
-                               sizeof(float) * number_of_float_vars;
+    const std::string dump_filename = d_dump_filename;
+    const int32_t number_of_double_vars = 21;
+    const int32_t number_of_uint32_vars = 2;
+    const int32_t number_of_uint8_vars = 3;
+    const int32_t number_of_float_vars = 2;
+    const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
+                                     sizeof(uint32_t) * number_of_uint32_vars +
+                                     sizeof(uint8_t) * number_of_uint8_vars +
+                                     sizeof(float) * number_of_float_vars;
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
@@ -158,7 +157,7 @@ bool Rtklib_Solver::save_matfile()
     if (dump_file.is_open())
         {
             std::cout << "Generating .mat file for " << dump_filename << '\n';
-            size = dump_file.tellg();
+            const std::ifstream::pos_type size = dump_file.tellg();
             num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
             dump_file.seekg(0, std::ios::beg);
         }
@@ -433,7 +432,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                 case 'G':
                     {
-                        std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string sig_(gnss_observables_iter->second.Signal);
                         if (sig_ == "1C")
                             {
                                 band1 = true;
@@ -462,7 +461,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                 case 'E':
                     {
-                        std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string sig_(gnss_observables_iter->second.Signal);
                         // Galileo E1
                         if (sig_ == "1B")
                             {
@@ -473,7 +472,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                         eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
-                                        obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                        obsd_t newobs{};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             galileo_ephemeris_iter->second.WN_5,
@@ -512,7 +511,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -543,7 +542,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                         eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second, this->is_pre_2009());
                                         // convert observation from GNSS-SDR class to RTKLIB structure
-                                        obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                        obsd_t newobs{};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             gps_ephemeris_iter->second.i_GPS_week,
@@ -589,7 +588,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -636,7 +635,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -656,7 +655,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     }
                 case 'R':  // TODO This should be using rtk lib nomenclature
                     {
-                        std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string sig_(gnss_observables_iter->second.Signal);
                         // GLONASS GNAV L1
                         if (sig_ == "1G")
                             {
@@ -667,7 +666,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                         geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
-                                        obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                        obsd_t newobs{};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             glonass_gnav_ephemeris_iter->second.d_WN,
@@ -705,7 +704,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 geph_data[glo_valid_obs] = eph_to_rtklib(glonass_gnav_ephemeris_iter->second, gnav_utc);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                                obsd_t newobs{};
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     glonass_gnav_ephemeris_iter->second.d_WN,
@@ -724,7 +723,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     {
                         // BEIDOU B1I
                         //  - find the ephemeris for the current BEIDOU SV observation. The SV PRN ID is the map key
-                        std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string sig_(gnss_observables_iter->second.Signal);
                         if (sig_ == "B1")
                             {
                                 beidou_ephemeris_iter = beidou_dnav_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -733,7 +732,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                         eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
-                                        obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                        obsd_t newobs{};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
                                             beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
@@ -770,7 +769,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
                                                 eph_data[valid_obs] = eph_to_rtklib(beidou_ephemeris_iter->second);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
-                                                auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
                                                     {default_code_, default_code_, default_code_},
                                                     {}, {0.0, 0.0, 0.0}, {}};
@@ -981,12 +980,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     DLOG(INFO) << "RTKLIB Position at RX TOW = " << gnss_observables_map.begin()->second.RX_time
                                << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time[0] << ", " << rx_position_and_time[1] << ", " << rx_position_and_time[2] << ", " << rx_position_and_time[4];
 
-                    boost::posix_time::ptime p_time;
                     // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); // Corrected RX Time (Non integer multiply of 1 ms of granularity)
                     // Uncorrected RX Time (integer multiply of 1 ms and the same observables time reported in RTCM and RINEX)
-                    gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time[3]);  // uncorrected rx time
-                    gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
-                    p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
+                    const gtime_t rtklib_time = timeadd(pvt_sol.time, rx_position_and_time[3]);  // uncorrected rx time
+                    const gtime_t rtklib_utc_time = gpst2utc(rtklib_time);
+                    boost::posix_time::ptime p_time = boost::posix_time::from_time_t(rtklib_utc_time.time);
                     p_time += boost::posix_time::microseconds(static_cast<long>(round(rtklib_utc_time.sec * 1e6)));  // NOLINT(google-runtime-int)
 
                     this->set_position_UTC_time(p_time);
@@ -1048,7 +1046,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     this->set_rx_vel({enuv[0], enuv[1], enuv[2]});
 
-                    double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
+                    const double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);
                     // User clock drift [ppm]

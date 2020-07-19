@@ -101,8 +101,8 @@ GeoJSON_Printer::~GeoJSON_Printer()
 
 bool GeoJSON_Printer::set_headers(const std::string& filename, bool time_tag_name)
 {
-    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
-    tm timeinfo = boost::posix_time::to_tm(pt);
+    const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    const tm timeinfo = boost::posix_time::to_tm(pt);
 
     if (time_tag_name)
         {

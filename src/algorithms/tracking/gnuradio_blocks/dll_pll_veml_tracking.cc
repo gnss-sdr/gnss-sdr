@@ -560,11 +560,9 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
     try
         {
-            if (pmt::any_ref(msg).type() == typeid(int))
+            if (pmt::any_ref(msg).type().hash_code() == int_type_hash_code)
                 {
-                    int tlm_event;
-                    tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
-
+                    const int tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
                     if (tlm_event == 1)
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
@@ -624,7 +622,7 @@ void dll_pll_veml_tracking::start_tracking()
         {
             if (d_trk_parameters.track_pilot)
                 {
-                    std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
+                    const std::array<char, 3> pilot_signal = {{'1', 'C', '\0'}};
                     galileo_e1_code_gen_sinboc11_float(d_tracking_code, pilot_signal, d_acquisition_gnss_synchro->PRN);
                     galileo_e1_code_gen_sinboc11_float(d_data_code, Signal_, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);
@@ -638,7 +636,7 @@ void dll_pll_veml_tracking::start_tracking()
     else if (d_systemName == "Galileo" and d_signal_type == "5X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
-            std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
+            const std::array<char, 3> signal_type_ = {{'5', 'X', '\0'}};
             galileo_e5_a_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, signal_type_);
             if (d_trk_parameters.track_pilot)
                 {
@@ -867,7 +865,7 @@ bool dll_pll_veml_tracking::cn0_and_tracking_lock_status(double coh_integration_
     d_Prompt_buffer[d_cn0_estimation_counter % d_trk_parameters.cn0_samples] = d_P_accu;
     d_cn0_estimation_counter++;
     // Code lock indicator
-    float d_CN0_SNV_dB_Hz_raw = cn0_m2m4_estimator(d_Prompt_buffer.data(), d_trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+    const float d_CN0_SNV_dB_Hz_raw = cn0_m2m4_estimator(d_Prompt_buffer.data(), d_trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
     d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer.data(), 1));
@@ -1360,10 +1358,10 @@ int32_t dll_pll_veml_tracking::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int32_t number_of_double_vars = 1;
-    int32_t number_of_float_vars = 19;
-    int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                               sizeof(float) * number_of_float_vars + sizeof(uint32_t);
+    const int32_t number_of_double_vars = 1;
+    const int32_t number_of_float_vars = 19;
+    const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
     std::string dump_filename_ = d_dump_filename;
     // add channel number to the filename
@@ -1631,21 +1629,21 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 1:  // Pull-in
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
-                double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_trk_parameters.fs_in;
-                double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
+                const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
+                const double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_trk_parameters.fs_in;
+                const double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
 
                 d_code_freq_chips = d_code_chip_rate;
                 d_code_phase_step_chips = d_code_freq_chips / d_trk_parameters.fs_in;
                 d_code_phase_rate_step_chips = 0.0;
-                double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
-                double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
-                double T_prn_mod_samples = T_prn_mod_seconds * d_trk_parameters.fs_in;
+                const double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
+                const double T_prn_mod_seconds = T_chip_mod_seconds * static_cast<double>(d_code_length_chips);
+                const double T_prn_mod_samples = T_prn_mod_seconds * d_trk_parameters.fs_in;
 
                 d_acq_code_phase_samples = T_prn_mod_samples - std::fmod(delta_trk_to_acq_prn_start_samples, T_prn_mod_samples);
                 d_current_prn_length_samples = round(T_prn_mod_samples);
 
-                int32_t samples_offset = round(d_acq_code_phase_samples);
+                const int32_t samples_offset = round(d_acq_code_phase_samples);
                 d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
                 d_state = 2;
                 d_sample_counter += samples_offset;  // count for the processed samples

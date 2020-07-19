@@ -158,7 +158,7 @@ hybrid_observables_gs::~hybrid_observables_gs()
     DLOG(INFO) << "Observables block destructor called.";
     if (d_dump_file.is_open())
         {
-            auto pos = d_dump_file.tellp();
+            const auto pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -196,10 +196,9 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     try
         {
-            if (pmt::any_ref(msg).type() == typeid(double))
+            if (pmt::any_ref(msg).type().hash_code() == d_double_type_hash_code)
                 {
-                    double new_rx_clock_offset_s;
-                    new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
+                    const auto new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
                     d_T_rx_TOW_ms = d_T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
                     // align the receiver clock to integer multiple of 20 ms
                     if (d_T_rx_TOW_ms % 20)
@@ -227,8 +226,8 @@ int32_t hybrid_observables_gs::save_matfile() const
     // READ DUMP FILE
     std::string dump_filename = d_dump_filename;
     std::ifstream::pos_type size;
-    int32_t number_of_double_vars = 7;
-    int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars * d_nchannels_out;
+    const int32_t number_of_double_vars = 7;
+    const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars * d_nchannels_out;
     std::ifstream dump_file;
     std::cout << "Generating .mat file for " << dump_filename << '\n';
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -416,11 +415,11 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
                             interpolated_obs = d_gnss_synchro_history->get(ch, nearest_element);
 
                             // 2nd: Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
-                            double T_rx_s = static_cast<double>(rx_clock) / static_cast<double>(interpolated_obs.fs);
+                            const double T_rx_s = static_cast<double>(rx_clock) / static_cast<double>(interpolated_obs.fs);
 
-                            double time_factor = (T_rx_s - d_gnss_synchro_history->get(ch, t1_idx).RX_time) /
-                                                 (d_gnss_synchro_history->get(ch, t2_idx).RX_time -
-                                                     d_gnss_synchro_history->get(ch, t1_idx).RX_time);
+                            const double time_factor = (T_rx_s - d_gnss_synchro_history->get(ch, t1_idx).RX_time) /
+                                                       (d_gnss_synchro_history->get(ch, t2_idx).RX_time -
+                                                           d_gnss_synchro_history->get(ch, t1_idx).RX_time);
 
                             // CARRIER PHASE INTERPOLATION
                             interpolated_obs.Carrier_phase_rads = d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads + (d_gnss_synchro_history->get(ch, t2_idx).Carrier_phase_rads - d_gnss_synchro_history->get(ch, t1_idx).Carrier_phase_rads) * time_factor;
@@ -517,8 +516,8 @@ void hybrid_observables_gs::compute_pranges(std::vector<Gnss_Synchro> &data) con
     // std::cout.precision(17);
     // std::cout << " d_T_rx_TOW_ms: " << static_cast<double>(d_T_rx_TOW_ms) << '\n';
     std::vector<Gnss_Synchro>::iterator it;
-    auto current_T_rx_TOW_ms = static_cast<double>(d_T_rx_TOW_ms);
-    double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
+    const auto current_T_rx_TOW_ms = static_cast<double>(d_T_rx_TOW_ms);
+    const double current_T_rx_TOW_s = current_T_rx_TOW_ms / 1000.0;
     for (it = data.begin(); it != data.end(); it++)
         {
             if (it->Flag_valid_word)
@@ -591,8 +590,8 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
                         {
                             // 2. Compute the smoothed pseudorange for this channel
                             // Hatch filter algorithm (https://insidegnss.com/can-you-list-all-the-properties-of-the-carrier-smoothing-filter/)
-                            double r_sm = d_channel_last_pseudorange_smooth[it->Channel_ID];
-                            double factor = ((d_smooth_filter_M - 1.0) / d_smooth_filter_M);
+                            const double r_sm = d_channel_last_pseudorange_smooth[it->Channel_ID];
+                            const double factor = ((d_smooth_filter_M - 1.0) / d_smooth_filter_M);
                             it->Pseudorange_m = factor * r_sm + (1.0 / d_smooth_filter_M) * it->Pseudorange_m + wavelength_m * (factor / TWO_PI) * (it->Carrier_phase_rads - d_channel_last_carrier_phase_rads[it->Channel_ID]);
                         }
                     d_channel_last_pseudorange_smooth[it->Channel_ID] = it->Pseudorange_m;
@@ -704,7 +703,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                 {
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
-                            std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data[n]);
+                            const std::shared_ptr<Gnss_Synchro> gnss_synchro_sptr = std::make_shared<Gnss_Synchro>(epoch_data[n]);
                             // publish valid gnss_synchro to the gnss_flowgraph channel status monitor
                             this->message_port_pub(pmt::mp("status"), pmt::make_any(gnss_synchro_sptr));
                         }

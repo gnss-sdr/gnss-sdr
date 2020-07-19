@@ -210,7 +210,7 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
     if (d_acq_parameters.bit_transition_flag)
         {
-            int32_t offset = d_fft_size / 2;
+            const int32_t offset = d_fft_size / 2;
             std::fill_n(d_fft_if->get_inbuf(), offset, gr_complex(0.0, 0.0));
             memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * offset);
         }
@@ -309,7 +309,7 @@ void pcps_acquisition::init()
 
     if (d_dump)
         {
-            uint32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
+            const uint32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
             d_grid = arma::fmat(effective_fft_size, d_num_doppler_bins, arma::fill::zeros);
             d_narrow_grid = arma::fmat(effective_fft_size, d_num_doppler_bins_step2, arma::fill::zeros);
         }
@@ -320,7 +320,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs()
 {
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
-            int32_t doppler = -static_cast<int32_t>(d_acq_parameters.doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
+            const int32_t doppler = -static_cast<int32_t>(d_acq_parameters.doppler_max) + d_doppler_center + d_doppler_step * doppler_index;
             update_local_carrier(d_grid_doppler_wipeoffs[doppler_index], static_cast<float>(d_doppler_bias + doppler));
         }
 }
@@ -330,7 +330,7 @@ void pcps_acquisition::update_grid_doppler_wipeoffs_step2()
 {
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins_step2; doppler_index++)
         {
-            float doppler = (static_cast<float>(doppler_index) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2;
+            const float doppler = (static_cast<float>(doppler_index) - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0))) * d_acq_parameters.doppler_step2;
             update_local_carrier(d_grid_doppler_wipeoffs_step_two[doppler_index], d_doppler_center_step_two + doppler);
         }
 }
@@ -620,7 +620,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
     // Initialize acquisition algorithm
     int32_t doppler = 0;
     uint32_t indext = 0U;
-    int32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
+    const int32_t effective_fft_size = (d_acq_parameters.bit_transition_flag ? d_fft_size / 2 : d_fft_size);
     if (d_cshort)
         {
             volk_gnsssdr_16ic_convert_32fc(d_data_buffer.data(), d_data_buffer_sc.data(), d_consumed_samples);
@@ -666,7 +666,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     d_ifft->execute();
 
                     // Compute squared magnitude (and accumulate in case of non-coherent integration)
-                    size_t offset = (d_acq_parameters.bit_transition_flag ? effective_fft_size : 0);
+                    const size_t offset = (d_acq_parameters.bit_transition_flag ? effective_fft_size : 0);
                     if (d_num_noncoherent_integrations_counter == 1)
                         {
                             volk_32fc_magnitude_squared_32f(d_magnitude_grid[doppler_index].data(), d_ifft->get_outbuf() + offset, effective_fft_size);
@@ -724,7 +724,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     // compute the inverse FFT
                     d_ifft->execute();
 
-                    size_t offset = (d_acq_parameters.bit_transition_flag ? effective_fft_size : 0);
+                    const size_t offset = (d_acq_parameters.bit_transition_flag ? effective_fft_size : 0);
                     if (d_num_noncoherent_integrations_counter == 1)
                         {
                             volk_32fc_magnitude_squared_32f(d_magnitude_grid[doppler_index].data(), d_ifft->get_outbuf() + offset, effective_fft_size);
@@ -811,7 +811,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                         }
                     d_state = 0;
                     d_active = false;
-                    bool was_step_two = d_step_two;
+                    const bool was_step_two = d_step_two;
                     d_step_two = false;
                     if (was_step_two)
                         {
@@ -849,7 +849,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             else
                 {
                     d_state = 0;  // Negative acquisition
-                    bool was_step_two = d_step_two;
+                    const bool was_step_two = d_step_two;
                     d_step_two = false;
                     if (was_step_two)
                         {
@@ -884,17 +884,17 @@ bool pcps_acquisition::start()
 
 void pcps_acquisition::calculate_threshold()
 {
-    float pfa = (d_step_two ? d_acq_parameters.pfa2 : d_acq_parameters.pfa);
+    const float pfa = (d_step_two ? d_acq_parameters.pfa2 : d_acq_parameters.pfa);
 
     if (pfa <= 0.0)
         {
             return;
         }
 
-    auto effective_fft_size = static_cast<int>(d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
-    int num_doppler_bins = (d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins);
+    const auto effective_fft_size = static_cast<int>(d_acq_parameters.bit_transition_flag ? (d_fft_size / 2) : d_fft_size);
+    const int num_doppler_bins = (d_step_two ? d_num_doppler_bins_step2 : d_num_doppler_bins);
 
-    int num_bins = effective_fft_size * num_doppler_bins;
+    const int num_bins = effective_fft_size * num_doppler_bins;
 
     d_threshold = static_cast<float>(2.0 * boost::math::gamma_p_inv(2.0 * d_acq_parameters.max_dwells, std::pow(1.0 - pfa, 1.0 / static_cast<float>(num_bins))));
 }

@@ -466,9 +466,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                 }
         }
     // create multicorrelator class
-    std::string device_name = d_trk_parameters.device_name;
-    uint32_t dev_file_num = d_trk_parameters.dev_file_num;
-    uint32_t num_prev_assigned_ch = d_trk_parameters.num_prev_assigned_ch;
+    const std::string device_name = d_trk_parameters.device_name;
+    const uint32_t dev_file_num = d_trk_parameters.dev_file_num;
+    const uint32_t num_prev_assigned_ch = d_trk_parameters.num_prev_assigned_ch;
     int32_t *ca_codes = d_trk_parameters.ca_codes;
     int32_t *data_codes = d_trk_parameters.data_codes;
     d_multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, device_name, dev_file_num, num_prev_assigned_ch, ca_codes, data_codes, d_code_length_chips, d_trk_parameters.track_pilot, d_code_samples_per_chip);
@@ -489,11 +489,9 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
 {
     try
         {
-            if (pmt::any_ref(msg).type() == typeid(int))
+            if (pmt::any_ref(msg).type().hash_code() == int_type_hash_code)
                 {
-                    int tlm_event;
-                    tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
-
+                    const int tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
                     if (tlm_event == 1)
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
@@ -623,7 +621,7 @@ bool dll_pll_veml_tracking_fpga::cn0_and_tracking_lock_status(double coh_integra
     d_Prompt_buffer[d_cn0_estimation_counter % d_trk_parameters.cn0_samples] = d_P_accu;
     d_cn0_estimation_counter++;
     // Code lock indicator
-    float d_CN0_SNV_dB_Hz_raw = cn0_m2m4_estimator(d_Prompt_buffer.data(), d_trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
+    const float d_CN0_SNV_dB_Hz_raw = cn0_m2m4_estimator(d_Prompt_buffer.data(), d_trk_parameters.cn0_samples, static_cast<float>(coh_integration_time_s));
     d_CN0_SNV_dB_Hz = d_cn0_smoother.smooth(d_CN0_SNV_dB_Hz_raw);
     // Carrier lock indicator
     d_carrier_lock_test = d_carrier_lock_test_smoother.smooth(carrier_lock_detector(d_Prompt_buffer.data(), 1));
@@ -765,10 +763,10 @@ void dll_pll_veml_tracking_fpga::run_dll_pll()
 
                     if (d_dll_filt_history.full())
                         {
-                            float avg_code_error_chips_s = static_cast<float>(std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0)) / static_cast<float>(d_dll_filt_history.capacity());
+                            const float avg_code_error_chips_s = static_cast<float>(std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0)) / static_cast<float>(d_dll_filt_history.capacity());
                             if (fabs(avg_code_error_chips_s) > 1.0)
                                 {
-                                    float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
+                                    const float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
                                     LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                     d_carrier_loop_filter.initialize(static_cast<float>(d_carrier_doppler_hz) - carrier_doppler_error_hz);
                                     d_corrected_doppler = true;
@@ -824,7 +822,7 @@ void dll_pll_veml_tracking_fpga::update_tracking_vars()
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     d_T_prn_samples = d_T_prn_seconds * d_trk_parameters.fs_in;
     d_K_blk_samples = d_T_prn_samples * d_current_fpga_integration_period + d_rem_code_phase_samples;  // initially d_rem_code_phase_samples is zero. It is updated at the end of this function
-    auto actual_blk_length = static_cast<int32_t>(std::floor(d_K_blk_samples));
+    const auto actual_blk_length = static_cast<int32_t>(std::floor(d_K_blk_samples));
     d_next_integration_length_samples = actual_blk_length;
 
     // ################## PLL COMMANDS #################################################
@@ -1119,10 +1117,10 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int32_t number_of_double_vars = 1;
-    int32_t number_of_float_vars = 19;
-    int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                               sizeof(float) * number_of_float_vars + sizeof(uint32_t);
+    const int32_t number_of_double_vars = 1;
+    const int32_t number_of_float_vars = 19;
+    const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
     std::string dump_filename_ = d_dump_filename;
     // add channel number to the filename
@@ -1546,7 +1544,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         uint64_t absolute_samples_offset;
 
                         d_multicorrelator_fpga->lock_channel();
-                        uint64_t counter_value = d_multicorrelator_fpga->read_sample_counter();
+                        const uint64_t counter_value = d_multicorrelator_fpga->read_sample_counter();
                         if (counter_value > (d_acq_sample_stamp + d_acq_code_phase_samples))
                             {
                                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
@@ -1554,7 +1552,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                                 acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_trk_parameters.fs_in;
                                 delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
 
-                                uint32_t num_frames = ceil((delta_trk_to_acq_prn_start_samples) / d_current_integration_length_samples);
+                                const uint32_t num_frames = ceil((delta_trk_to_acq_prn_start_samples) / d_current_integration_length_samples);
                                 absolute_samples_offset = static_cast<uint64_t>(d_acq_code_phase_samples + d_acq_sample_stamp + num_frames * d_current_integration_length_samples);
                             }
                         else
@@ -1572,14 +1570,14 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         d_sample_counter_next = d_sample_counter;
 
                         // Doppler effect Fd = (C / (C + Vr)) * F
-                        double radial_velocity = (d_signal_carrier_freq + d_acq_carrier_doppler_hz) / d_signal_carrier_freq;
+                        const double radial_velocity = (d_signal_carrier_freq + d_acq_carrier_doppler_hz) / d_signal_carrier_freq;
                         // new chip and PRN sequence periods based on acq Doppler
                         d_code_freq_chips = radial_velocity * d_code_chip_rate;
                         d_code_phase_step_chips = d_code_freq_chips / d_trk_parameters.fs_in;
 
                         d_acq_code_phase_samples = absolute_samples_offset;
 
-                        int32_t samples_offset = round(d_acq_code_phase_samples);
+                        const int32_t samples_offset = round(d_acq_code_phase_samples);
                         d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
 
                         d_state = 2;
@@ -1893,8 +1891,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // this must be computed for the secondary prn code
                         if (d_secondary)
                             {
-                                uint32_t next_prn_length = d_current_integration_length_samples / d_fpga_integration_period;
-                                uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length * (d_fpga_integration_period - 1);
+                                const uint32_t next_prn_length = d_current_integration_length_samples / d_fpga_integration_period;
+                                const uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length * (d_fpga_integration_period - 1);
 
                                 d_multicorrelator_fpga->update_prn_code_length(first_prn_length, next_prn_length);
                             }
@@ -1946,8 +1944,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         // this must be computed for the secondary prn code
                         if (d_secondary)
                             {
-                                uint32_t next_prn_length = d_current_integration_length_samples / d_fpga_integration_period;
-                                uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length * (d_fpga_integration_period - 1);
+                                const uint32_t next_prn_length = d_current_integration_length_samples / d_fpga_integration_period;
+                                const uint32_t first_prn_length = d_current_integration_length_samples - next_prn_length * (d_fpga_integration_period - 1);
 
                                 d_multicorrelator_fpga->update_prn_code_length(first_prn_length, next_prn_length);
                             }

@@ -169,7 +169,7 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
     float secondpeak = 0.0;
     uint32_t total_block_exp;
     uint64_t initial_sample;
-    int32_t doppler;
+
     d_acquisition_fpga->set_doppler_sweep(num_doppler_bins, doppler_step, doppler_min);
     d_acquisition_fpga->run_acquisition();
     d_acquisition_fpga->read_acquisition_results(&indext,
@@ -180,7 +180,7 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
         &d_doppler_index,
         &total_block_exp);
 
-    doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
+    const auto doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
 
     if (total_block_exp > d_total_block_exp)
         {
@@ -276,7 +276,7 @@ void pcps_acquisition_fpga::set_active(bool active)
                                     d_state = 0;  // Positive acquisition
                                     break;
                                 }
-                            num_second_acq = num_second_acq + 1;
+                            num_second_acq += 1;
                         }
                     d_acquisition_fpga->close_device();
                     if (d_test_statistics <= d_threshold)

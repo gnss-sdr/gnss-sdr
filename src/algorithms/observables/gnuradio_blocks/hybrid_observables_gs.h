@@ -27,11 +27,13 @@
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <gnuradio/block.h>           // for block
 #include <gnuradio/types.h>           // for gr_vector_int
+#include <cstddef>                    // for size_t
 #include <cstdint>                    // for int32_t
 #include <fstream>                    // for std::ofstream
 #include <map>                        // for std::map
 #include <memory>                     // for std::shared, std:unique_ptr
 #include <string>                     // for std::string
+#include <typeinfo>                   // for typeid
 #include <vector>                     // for std::vector
 #if GNURADIO_USES_STD_POINTERS
 #else
@@ -67,6 +69,8 @@ private:
     friend hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf& conf_);
 
     explicit hybrid_observables_gs(const Obs_Conf& conf_);
+
+    const size_t d_double_type_hash_code = typeid(double).hash_code();
 
     void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
     double compute_T_rx_s(const Gnss_Synchro& a) const;

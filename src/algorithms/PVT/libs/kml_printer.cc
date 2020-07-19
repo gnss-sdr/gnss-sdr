@@ -109,8 +109,8 @@ Kml_Printer::Kml_Printer(const std::string& base_path)
 
 bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
 {
-    boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
-    tm timeinfo = boost::posix_time::to_tm(pt);
+    const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
+    const tm timeinfo = boost::posix_time::to_tm(pt);
 
     if (time_tag_name)
         {
@@ -171,57 +171,57 @@ bool Kml_Printer::set_headers(const std::string& filename, bool time_tag_name)
 
             kml_file << R"(<?xml version="1.0" encoding="UTF-8"?>)" << '\n'
                      << R"(<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">)" << '\n'
-                     << indent << "<Document>" << '\n'
-                     << indent << indent << "<name>GNSS Track</name>" << '\n'
-                     << indent << indent << "<description><![CDATA[" << '\n'
-                     << indent << indent << indent << "<table>" << '\n'
-                     << indent << indent << indent << indent << "<tr><td>GNSS-SDR Receiver position log file created at " << pt << "</td></tr>" << '\n'
-                     << indent << indent << indent << indent << "<tr><td>https://gnss-sdr.org/</td></tr>" << '\n'
-                     << indent << indent << indent << "</table>" << '\n'
-                     << indent << indent << "]]></description>" << '\n'
-                     << indent << indent << "<!-- Normal track style -->" << '\n'
-                     << indent << indent << "<Style id=\"track_n\">" << '\n'
-                     << indent << indent << indent << "<IconStyle>" << '\n'
-                     << indent << indent << indent << indent << "<color>ff00ffff</color>" << '\n'
-                     << indent << indent << indent << indent << "<scale>0.3</scale>" << '\n'
-                     << indent << indent << indent << indent << "<Icon>" << '\n'
-                     << indent << indent << indent << indent << indent << "<href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>" << '\n'
-                     << indent << indent << indent << indent << "</Icon>" << '\n'
-                     << indent << indent << indent << "</IconStyle>" << '\n'
-                     << indent << indent << indent << "<LabelStyle>" << '\n'
-                     << indent << indent << indent << indent << "<scale>0</scale>" << '\n'
-                     << indent << indent << indent << "</LabelStyle>" << '\n'
-                     << indent << indent << "</Style>" << '\n'
-                     << indent << indent << "<!-- Highlighted track style -->" << '\n'
-                     << indent << indent << "<Style id=\"track_h\">" << '\n'
-                     << indent << indent << indent << "<IconStyle>" << '\n'
-                     << indent << indent << indent << indent << "<color>ff00ffff</color>" << '\n'
-                     << indent << indent << indent << indent << "<scale>1</scale>" << '\n'
-                     << indent << indent << indent << indent << "<Icon>" << '\n'
-                     << indent << indent << indent << indent << indent << "<href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>" << '\n'
-                     << indent << indent << indent << indent << "</Icon>" << '\n'
-                     << indent << indent << indent << "</IconStyle>" << '\n'
-                     << indent << indent << "</Style>" << '\n'
-                     << indent << indent << "<StyleMap id=\"track\">" << '\n'
-                     << indent << indent << indent << "<Pair>" << '\n'
-                     << indent << indent << indent << indent << "<key>normal</key>" << '\n'
-                     << indent << indent << indent << indent << "<styleUrl>#track_n</styleUrl>" << '\n'
-                     << indent << indent << indent << "</Pair>" << '\n'
-                     << indent << indent << indent << "<Pair>" << '\n'
-                     << indent << indent << indent << indent << "<key>highlight</key>" << '\n'
-                     << indent << indent << indent << indent << "<styleUrl>#track_h</styleUrl>" << '\n'
-                     << indent << indent << indent << "</Pair>" << '\n'
-                     << indent << indent << "</StyleMap>" << '\n'
-                     << indent << indent << "<Style id=\"yellowLineGreenPoly\">" << '\n'
-                     << indent << indent << indent << "<LineStyle>" << '\n'
-                     << indent << indent << indent << indent << "<color>7f00ffff</color>" << '\n'
-                     << indent << indent << indent << indent << "<width>1</width>" << '\n'
-                     << indent << indent << indent << "</LineStyle>" << '\n'
-                     << indent << indent << indent << "<PolyStyle>" << '\n'
-                     << indent << indent << indent << indent << "<color>7f00ff00</color>" << '\n'
-                     << indent << indent << indent << "</PolyStyle>" << '\n'
-                     << indent << indent << "</Style>" << '\n'
-                     << indent << indent << "<Folder>" << '\n'
+                     << indent << "<Document>\n"
+                     << indent << indent << "<name>GNSS Track</name>\n"
+                     << indent << indent << "<description><![CDATA[\n"
+                     << indent << indent << indent << "<table>\n"
+                     << indent << indent << indent << indent << "<tr><td>GNSS-SDR Receiver position log file created at " << pt << "</td></tr>\n"
+                     << indent << indent << indent << indent << "<tr><td>https://gnss-sdr.org/</td></tr>\n"
+                     << indent << indent << indent << "</table>\n"
+                     << indent << indent << "]]></description>\n"
+                     << indent << indent << "<!-- Normal track style -->\n"
+                     << indent << indent << "<Style id=\"track_n\">\n"
+                     << indent << indent << indent << "<IconStyle>\n"
+                     << indent << indent << indent << indent << "<color>ff00ffff</color>\n"
+                     << indent << indent << indent << indent << "<scale>0.3</scale>\n"
+                     << indent << indent << indent << indent << "<Icon>\n"
+                     << indent << indent << indent << indent << indent << "<href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n"
+                     << indent << indent << indent << indent << "</Icon>\n"
+                     << indent << indent << indent << "</IconStyle>\n"
+                     << indent << indent << indent << "<LabelStyle>\n"
+                     << indent << indent << indent << indent << "<scale>0</scale>\n"
+                     << indent << indent << indent << "</LabelStyle>\n"
+                     << indent << indent << "</Style>\n"
+                     << indent << indent << "<!-- Highlighted track style -->\n"
+                     << indent << indent << "<Style id=\"track_h\">\n"
+                     << indent << indent << indent << "<IconStyle>\n"
+                     << indent << indent << indent << indent << "<color>ff00ffff</color>\n"
+                     << indent << indent << indent << indent << "<scale>1</scale>\n"
+                     << indent << indent << indent << indent << "<Icon>\n"
+                     << indent << indent << indent << indent << indent << "<href>http://maps.google.com/mapfiles/kml/shapes/shaded_dot.png</href>\n"
+                     << indent << indent << indent << indent << "</Icon>\n"
+                     << indent << indent << indent << "</IconStyle>\n"
+                     << indent << indent << "</Style>\n"
+                     << indent << indent << "<StyleMap id=\"track\">\n"
+                     << indent << indent << indent << "<Pair>\n"
+                     << indent << indent << indent << indent << "<key>normal</key>\n"
+                     << indent << indent << indent << indent << "<styleUrl>#track_n</styleUrl>\n"
+                     << indent << indent << indent << "</Pair>\n"
+                     << indent << indent << indent << "<Pair>\n"
+                     << indent << indent << indent << indent << "<key>highlight</key>\n"
+                     << indent << indent << indent << indent << "<styleUrl>#track_h</styleUrl>\n"
+                     << indent << indent << indent << "</Pair>\n"
+                     << indent << indent << "</StyleMap>\n"
+                     << indent << indent << "<Style id=\"yellowLineGreenPoly\">\n"
+                     << indent << indent << indent << "<LineStyle>\n"
+                     << indent << indent << indent << indent << "<color>7f00ffff</color>\n"
+                     << indent << indent << indent << indent << "<width>1</width>\n"
+                     << indent << indent << indent << "</LineStyle>\n"
+                     << indent << indent << indent << "<PolyStyle>\n"
+                     << indent << indent << indent << indent << "<color>7f00ff00</color>\n"
+                     << indent << indent << indent << "</PolyStyle>\n"
+                     << indent << indent << "</Style>\n"
+                     << indent << indent << "<Folder>\n"
                      << indent << indent << indent << "<name>Points</name>\n";
 
             return true;
@@ -239,12 +239,12 @@ bool Kml_Printer::print_position(const Pvt_Solution* position, bool print_averag
 
     positions_printed = true;
 
-    double speed_over_ground = position->get_speed_over_ground();    // expressed in m/s
-    double course_over_ground = position->get_course_over_ground();  // expressed in deg
+    const double speed_over_ground = position->get_speed_over_ground();    // expressed in m/s
+    const double course_over_ground = position->get_course_over_ground();  // expressed in deg
 
-    double hdop = position->get_hdop();
-    double vdop = position->get_vdop();
-    double pdop = position->get_pdop();
+    const double hdop = position->get_hdop();
+    const double vdop = position->get_vdop();
+    const double pdop = position->get_pdop();
     std::string utc_time = to_iso_extended_string(position->get_position_UTC_time());
     if (utc_time.length() < 23)
         {
@@ -269,30 +269,30 @@ bool Kml_Printer::print_position(const Pvt_Solution* position, bool print_averag
     if (kml_file.is_open() && tmp_file.is_open())
         {
             point_id++;
-            kml_file << indent << indent << indent << "<Placemark>" << '\n'
-                     << indent << indent << indent << indent << "<name>" << point_id << "</name>" << '\n'
-                     << indent << indent << indent << indent << "<snippet/>" << '\n'
-                     << indent << indent << indent << indent << "<description><![CDATA[" << '\n'
-                     << indent << indent << indent << indent << indent << "<table>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>Time:</td><td>" << utc_time << "</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>Longitude:</td><td>" << longitude << "</td><td>deg</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>Latitude:</td><td>" << latitude << "</td><td>deg</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>Altitude:</td><td>" << height << "</td><td>m</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>Speed:</td><td>" << speed_over_ground << "</td><td>m/s</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>Course:</td><td>" << course_over_ground << "</td><td>deg</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>HDOP:</td><td>" << hdop << "</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>VDOP:</td><td>" << vdop << "</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << indent << "<tr><td>PDOP:</td><td>" << pdop << "</td></tr>" << '\n'
-                     << indent << indent << indent << indent << indent << "</table>" << '\n'
-                     << indent << indent << indent << indent << "]]></description>" << '\n'
-                     << indent << indent << indent << indent << "<TimeStamp>" << '\n'
-                     << indent << indent << indent << indent << indent << "<when>" << utc_time << "</when>" << '\n'
-                     << indent << indent << indent << indent << "</TimeStamp>" << '\n'
-                     << indent << indent << indent << indent << "<styleUrl>#track</styleUrl>" << '\n'
-                     << indent << indent << indent << indent << "<Point>" << '\n'
-                     << indent << indent << indent << indent << indent << "<altitudeMode>absolute</altitudeMode>" << '\n'
-                     << indent << indent << indent << indent << indent << "<coordinates>" << longitude << "," << latitude << "," << height << "</coordinates>" << '\n'
-                     << indent << indent << indent << indent << "</Point>" << '\n'
+            kml_file << indent << indent << indent << "<Placemark>\n"
+                     << indent << indent << indent << indent << "<name>" << point_id << "</name>\n"
+                     << indent << indent << indent << indent << "<snippet/>\n"
+                     << indent << indent << indent << indent << "<description><![CDATA[\n"
+                     << indent << indent << indent << indent << indent << "<table>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Time:</td><td>" << utc_time << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Longitude:</td><td>" << longitude << "</td><td>deg</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Latitude:</td><td>" << latitude << "</td><td>deg</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Altitude:</td><td>" << height << "</td><td>m</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Speed:</td><td>" << speed_over_ground << "</td><td>m/s</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>Course:</td><td>" << course_over_ground << "</td><td>deg</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>HDOP:</td><td>" << hdop << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>VDOP:</td><td>" << vdop << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << indent << "<tr><td>PDOP:</td><td>" << pdop << "</td></tr>\n"
+                     << indent << indent << indent << indent << indent << "</table>\n"
+                     << indent << indent << indent << indent << "]]></description>\n"
+                     << indent << indent << indent << indent << "<TimeStamp>\n"
+                     << indent << indent << indent << indent << indent << "<when>" << utc_time << "</when>\n"
+                     << indent << indent << indent << indent << "</TimeStamp>\n"
+                     << indent << indent << indent << indent << "<styleUrl>#track</styleUrl>\n"
+                     << indent << indent << indent << indent << "<Point>\n"
+                     << indent << indent << indent << indent << indent << "<altitudeMode>absolute</altitudeMode>\n"
+                     << indent << indent << indent << indent << indent << "<coordinates>" << longitude << "," << latitude << "," << height << "</coordinates>\n"
+                     << indent << indent << indent << indent << "</Point>\n"
                      << indent << indent << indent << "</Placemark>\n";
 
             tmp_file << indent << indent << indent << indent << indent
@@ -311,23 +311,23 @@ bool Kml_Printer::close_file()
             tmp_file.close();
 
             kml_file << indent << indent << "</Folder>"
-                     << indent << indent << "<Placemark>" << '\n'
-                     << indent << indent << indent << "<name>Path</name>" << '\n'
-                     << indent << indent << indent << "<styleUrl>#yellowLineGreenPoly</styleUrl>" << '\n'
-                     << indent << indent << indent << "<LineString>" << '\n'
-                     << indent << indent << indent << indent << "<extrude>0</extrude>" << '\n'
-                     << indent << indent << indent << indent << "<tessellate>1</tessellate>" << '\n'
-                     << indent << indent << indent << indent << "<altitudeMode>absolute</altitudeMode>" << '\n'
+                     << indent << indent << "<Placemark>\n"
+                     << indent << indent << indent << "<name>Path</name>\n"
+                     << indent << indent << indent << "<styleUrl>#yellowLineGreenPoly</styleUrl>\n"
+                     << indent << indent << indent << "<LineString>\n"
+                     << indent << indent << indent << indent << "<extrude>0</extrude>\n"
+                     << indent << indent << indent << indent << "<tessellate>1</tessellate>\n"
+                     << indent << indent << indent << indent << "<altitudeMode>absolute</altitudeMode>\n"
                      << indent << indent << indent << indent << "<coordinates>\n";
 
             // Copy the contents of tmp_file into kml_file
             std::ifstream src(tmp_file_str, std::ios::binary);
             kml_file << src.rdbuf();
 
-            kml_file << indent << indent << indent << indent << "</coordinates>" << '\n'
-                     << indent << indent << indent << "</LineString>" << '\n'
-                     << indent << indent << "</Placemark>" << '\n'
-                     << indent << "</Document>" << '\n'
+            kml_file << indent << indent << indent << indent << "</coordinates>\n"
+                     << indent << indent << indent << "</LineString>\n"
+                     << indent << indent << "</Placemark>\n"
+                     << indent << "</Document>\n"
                      << "</kml>";
 
             kml_file.close();

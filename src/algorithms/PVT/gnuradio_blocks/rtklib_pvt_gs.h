@@ -28,6 +28,7 @@
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
 #include <pmt/pmt.h>              // for pmt_t
 #include <chrono>                 // for system_clock
+#include <cstddef>                // for size_t
 #include <cstdint>                // for int32_t
 #include <ctime>                  // for time_t
 #include <map>                    // for map
@@ -201,6 +202,26 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
 
     boost::posix_time::time_duration d_utc_diff_time;
+
+    size_t d_gps_ephemeris_sptr_type_hash_code;
+    size_t d_gps_iono_sptr_type_hash_code;
+    size_t d_gps_utc_model_sptr_type_hash_code;
+    size_t d_gps_cnav_ephemeris_sptr_type_hash_code;
+    size_t d_gps_cnav_iono_sptr_type_hash_code;
+    size_t d_gps_cnav_utc_model_sptr_type_hash_code;
+    size_t d_gps_almanac_sptr_type_hash_code;
+    size_t d_galileo_ephemeris_sptr_type_hash_code;
+    size_t d_galileo_iono_sptr_type_hash_code;
+    size_t d_galileo_utc_model_sptr_type_hash_code;
+    size_t d_galileo_almanac_helper_sptr_type_hash_code;
+    size_t d_galileo_almanac_sptr_type_hash_code;
+    size_t d_glonass_gnav_ephemeris_sptr_type_hash_code;
+    size_t d_glonass_gnav_utc_model_sptr_type_hash_code;
+    size_t d_glonass_gnav_almanac_sptr_type_hash_code;
+    size_t d_beidou_dnav_ephemeris_sptr_type_hash_code;
+    size_t d_beidou_dnav_iono_sptr_type_hash_code;
+    size_t d_beidou_dnav_utc_model_sptr_type_hash_code;
+    size_t d_beidou_dnav_almanac_sptr_type_hash_code;
 
     double d_rinex_version;
     double d_rx_time;

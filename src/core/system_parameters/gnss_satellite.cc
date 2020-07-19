@@ -242,8 +242,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
 int32_t Gnss_Satellite::get_rf_link() const
 {
     // Get satellite's rf link. Identifies the GLONASS Frequency Channel
-    int32_t rf_link_;
-    rf_link_ = rf_link;
+    int32_t rf_link_ = rf_link;
     return rf_link_;
 }
 
@@ -258,8 +257,7 @@ void Gnss_Satellite::set_rf_link(int32_t rf_link_)
 uint32_t Gnss_Satellite::get_PRN() const
 {
     // Get satellite's PRN
-    uint32_t PRN_;
-    PRN_ = PRN;
+    uint32_t PRN_ = PRN;
     return PRN_;
 }
 
@@ -267,8 +265,7 @@ uint32_t Gnss_Satellite::get_PRN() const
 std::string Gnss_Satellite::get_system() const
 {
     // Get the satellite system {"GPS", "Glonass", "SBAS", "Galileo", "Beidou"}
-    std::string system_;
-    system_ = system;
+    std::string system_ = system;
     return system_;
 }
 
@@ -283,8 +280,7 @@ std::string Gnss_Satellite::get_system_short() const
 std::string Gnss_Satellite::get_block() const
 {
     // Get the satellite block
-    std::string block_;
-    block_ = block;
+    std::string block_ = block;
     return block_;
 }
 

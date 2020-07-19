@@ -43,14 +43,6 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
 {
     uint32_t sum_bits = 0;
     int32_t sum_hamming = 0;
-    int32_t C1 = 0;
-    int32_t C2 = 0;
-    int32_t C3 = 0;
-    int32_t C4 = 0;
-    int32_t C5 = 0;
-    int32_t C6 = 0;
-    int32_t C7 = 0;
-    int32_t C_Sigma = 0;
     std::vector<uint32_t> string_bits(GLONASS_GNAV_STRING_BITS);
 
     // Populate data and hamming code vectors
@@ -65,7 +57,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_bits += string_bits[i - 1];
         }
-    C1 = string_bits[0] ^ (sum_bits % 2);
+    const int32_t C1 = string_bits[0] ^ (sum_bits % 2);
 
     // Compute C2 term
     sum_bits = 0;
@@ -73,7 +65,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_bits += string_bits[j - 1];
         }
-    C2 = (string_bits[1]) ^ (sum_bits % 2);
+    const int32_t C2 = (string_bits[1]) ^ (sum_bits % 2);
 
     // Compute C3 term
     sum_bits = 0;
@@ -81,7 +73,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_bits += string_bits[k - 1];
         }
-    C3 = string_bits[2] ^ (sum_bits % 2);
+    const int32_t C3 = string_bits[2] ^ (sum_bits % 2);
 
     // Compute C4 term
     sum_bits = 0;
@@ -89,7 +81,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_bits += string_bits[l - 1];
         }
-    C4 = string_bits[3] ^ (sum_bits % 2);
+    const int32_t C4 = string_bits[3] ^ (sum_bits % 2);
 
     // Compute C5 term
     sum_bits = 0;
@@ -97,7 +89,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_bits += string_bits[m - 1];
         }
-    C5 = string_bits[4] ^ (sum_bits % 2);
+    const int32_t C5 = string_bits[4] ^ (sum_bits % 2);
 
     // Compute C6 term
     sum_bits = 0;
@@ -105,7 +97,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_bits += string_bits[n - 1];
         }
-    C6 = string_bits[5] ^ (sum_bits % 2);
+    const int32_t C6 = string_bits[5] ^ (sum_bits % 2);
 
     // Compute C7 term
     sum_bits = 0;
@@ -113,11 +105,10 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_bits += string_bits[p - 1];
         }
-    C7 = string_bits[6] ^ (sum_bits % 2);
+    const int32_t C7 = string_bits[6] ^ (sum_bits % 2);
 
     // Compute C_Sigma term
     sum_bits = 0;
-    sum_hamming = 0;
     for (int q : GLONASS_GNAV_CRC_Q_INDEX)
         {
             sum_bits += string_bits[q - 1];
@@ -126,7 +117,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
         {
             sum_hamming += string_bits[q];
         }
-    C_Sigma = (sum_hamming % 2) ^ (sum_bits % 2);
+    const int32_t C_Sigma = (sum_hamming % 2) ^ (sum_bits % 2);
 
     // Verification of the data
     // (a-i) All checksums (C1,...,C7 and C_Sigma) are equal to zero
@@ -164,7 +155,7 @@ bool Glonass_Gnav_Navigation_Message::read_navigation_bool(std::bitset<GLONASS_G
 uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
@@ -184,7 +175,7 @@ int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(std::bitset<GLON
 {
     int64_t value = 0LL;
     int64_t sign = 0LL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
     // read the MSB and perform the sign extension
     if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)
         {
@@ -246,11 +237,10 @@ uint32_t Glonass_Gnav_Navigation_Message::get_frame_number(uint32_t satellite_sl
 int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame_string)
 {
     int32_t J = 0;
-    d_string_ID = 0U;
     d_frame_ID = 0U;
 
     // Unpack bytes to bits
-    std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(frame_string);
+    const std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(frame_string);
 
     // Perform data verification and exit code if error in bit sequence
     flag_CRC_test = CRC_test(string_bits);

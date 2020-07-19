@@ -26,7 +26,7 @@
 Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
 {
     auto gnss_sat = Gnss_Satellite();
-    std::string _system("Beidou");
+    const std::string _system("Beidou");
     for (unsigned int i = 1; i < 36; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
@@ -36,9 +36,8 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
 
 double Beidou_Dnav_Ephemeris::check_t(double time)
 {
-    double corrTime;
-    double half_week = 302400.0;  // seconds
-    corrTime = time;
+    const double half_week = 302400.0;  // seconds
+    double corrTime = time;
     if (time > half_week)
         {
             corrTime = time - 2.0 * half_week;
@@ -53,8 +52,7 @@ double Beidou_Dnav_Ephemeris::check_t(double time)
 
 double Beidou_Dnav_Ephemeris::sv_clock_drift(double transmitTime)
 {
-    double dt;
-    dt = check_t(transmitTime - d_Toc);
+    double dt = check_t(transmitTime - d_Toc);
 
     for (int i = 0; i < 2; i++)
         {
@@ -69,35 +67,30 @@ double Beidou_Dnav_Ephemeris::sv_clock_drift(double transmitTime)
 // compute the relativistic correction term
 double Beidou_Dnav_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 {
-    double tk;
-    double a;
-    double n;
-    double n0;
-    double E;
-    double E_old;
-    double dE;
-    double M;
-
     // Restore semi-major axis
-    a = d_sqrt_A * d_sqrt_A;
+    const double a = d_sqrt_A * d_sqrt_A;
 
     // Time from ephemeris reference epoch
-    tk = check_t(transmitTime - d_Toe);
+    const double tk = check_t(transmitTime - d_Toe);
 
     // Computed mean motion
-    n0 = sqrt(BEIDOU_GM / (a * a * a));
+    const double n0 = sqrt(BEIDOU_GM / (a * a * a));
+
     // Corrected mean motion
-    n = n0 + d_Delta_n;
+    const double n = n0 + d_Delta_n;
+
     // Mean anomaly
-    M = d_M_0 + n * tk;
+    double M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
     M = fmod((M + 2.0 * GNSS_PI), (2.0 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
-    E = M;
+    double E = M;
+    double E_old;
+    double dE;
 
-    // --- Iteratively compute eccentric anomaly ----------------------------
+    // --- Iteratively compute eccentric anomaly -------------------------------
     for (int ii = 1; ii < 20; ii++)
         {
             E_old = E;
@@ -118,45 +111,31 @@ double Beidou_Dnav_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 
 double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
 {
-    double tk;
-    double a;
-    double n;
-    double n0;
-    double M;
-    double E;
-    double E_old;
-    double dE;
-    double nu;
-    double phi;
-    double u;
-    double r;
-    double i;
-    double Omega;
-
-    // Find satellite's position ----------------------------------------------
-
+    // Find satellite's position -----------------------------------------------
     // Restore semi-major axis
-    a = d_sqrt_A * d_sqrt_A;
+    const double a = d_sqrt_A * d_sqrt_A;
 
     // Time from ephemeris reference epoch
-    tk = check_t(transmitTime - d_Toe);
+    double tk = check_t(transmitTime - d_Toe);
 
     // Computed mean motion
-    n0 = sqrt(BEIDOU_GM / (a * a * a));
+    const double n0 = sqrt(BEIDOU_GM / (a * a * a));
 
     // Corrected mean motion
-    n = n0 + d_Delta_n;
+    const double n = n0 + d_Delta_n;
 
     // Mean anomaly
-    M = d_M_0 + n * tk;
+    double M = d_M_0 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
     M = fmod((M + 2.0 * GNSS_PI), (2.0 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
-    E = M;
+    double E = M;
+    double E_old;
+    double dE;
 
-    // --- Iteratively compute eccentric anomaly ----------------------------
+    // --- Iteratively compute eccentric anomaly -------------------------------
     for (int ii = 1; ii < 20; ii++)
         {
             E_old = E;
@@ -170,27 +149,27 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
         }
 
     // Compute the true anomaly
-    double tmp_Y = sqrt(1.0 - d_eccentricity * d_eccentricity) * sin(E);
-    double tmp_X = cos(E) - d_eccentricity;
-    nu = atan2(tmp_Y, tmp_X);
+    const double tmp_Y = sqrt(1.0 - d_eccentricity * d_eccentricity) * sin(E);
+    const double tmp_X = cos(E) - d_eccentricity;
+    const double nu = atan2(tmp_Y, tmp_X);
 
     // Compute angle phi (argument of Latitude)
-    phi = nu + d_OMEGA;
+    double phi = nu + d_OMEGA;
 
     // Reduce phi to between 0 and 2*pi rad
     phi = fmod((phi), (2.0 * GNSS_PI));
 
     // Correct argument of latitude
-    u = phi + d_Cuc * cos(2.0 * phi) + d_Cus * sin(2.0 * phi);
+    const double u = phi + d_Cuc * cos(2.0 * phi) + d_Cus * sin(2.0 * phi);
 
     // Correct radius
-    r = a * (1.0 - d_eccentricity * cos(E)) + d_Crc * cos(2.0 * phi) + d_Crs * sin(2.0 * phi);
+    const double r = a * (1.0 - d_eccentricity * cos(E)) + d_Crc * cos(2.0 * phi) + d_Crs * sin(2.0 * phi);
 
     // Correct inclination
-    i = d_i_0 + d_IDOT * tk + d_Cic * cos(2.0 * phi) + d_Cis * sin(2.0 * phi);
+    const double i = d_i_0 + d_IDOT * tk + d_Cic * cos(2.0 * phi) + d_Cis * sin(2.0 * phi);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe;
+    double Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe;
 
     // Reduce to between 0 and 2*pi rad
     Omega = fmod((Omega + 2.0 * GNSS_PI), (2.0 * GNSS_PI));
@@ -201,7 +180,7 @@ double Beidou_Dnav_Ephemeris::satellitePosition(double transmitTime)
     d_satpos_Z = sin(u) * r * sin(i);
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
-    double Omega_dot = d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT;
+    const double Omega_dot = d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT;
     d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
     d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
     d_satvel_Z = d_satpos_Y * sin(i);

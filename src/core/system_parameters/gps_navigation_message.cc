@@ -31,7 +31,7 @@
 Gps_Navigation_Message::Gps_Navigation_Message()
 {
     auto gnss_sat = Gnss_Satellite();
-    std::string _system("GPS");
+    const std::string _system("GPS");
     for (uint32_t i = 1; i < 33; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
@@ -68,7 +68,7 @@ bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
@@ -87,7 +87,7 @@ uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRA
 int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
     if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[0].first]) == 1)
@@ -117,7 +117,6 @@ int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_
 
 int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
 {
-    int32_t subframe_ID = 0;
     uint32_t gps_word;
 
     // UNPACK BYTES TO BITS AND REMOVE THE CRC REDUNDANCE
@@ -133,7 +132,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                 }
         }
 
-    subframe_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SUBFRAME_ID));
+    const auto subframe_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SUBFRAME_ID));
 
     // Decode all 5 sub-frames
     switch (subframe_ID)
@@ -368,12 +367,12 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
     double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
 
     // Determine if the effectivity time of the leap second event is in the past
-    int32_t weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    const int32_t weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
 
     if ((weeksToLeapSecondEvent) >= 0)  // is not in the past
         {
             // Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
-            int32_t secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
+            const int32_t secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
             if (weeksToLeapSecondEvent > 0)
                 {
                     t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
@@ -399,7 +398,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
                              * proper accommodation of the leap second event with a possible week number
                              * transition is provided by the following expression for UTC:
                              */
-                            int32_t W = static_cast<int32_t>(fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400)) + 43200;
+                            const int32_t W = static_cast<int32_t>(fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400)) + 43200;
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
                             // implement something to handle a leap second event!
                         }
@@ -421,7 +420,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
         }
 
-    double secondsOfWeekBeforeToday = 43200 * floor(gpstime_corrected / 43200);
+    const double secondsOfWeekBeforeToday = 43200 * floor(gpstime_corrected / 43200);
     t_utc = secondsOfWeekBeforeToday + t_utc_daytime;
     return t_utc;
 }

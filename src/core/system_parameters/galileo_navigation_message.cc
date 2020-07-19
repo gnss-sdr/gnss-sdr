@@ -35,7 +35,6 @@ bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> b
 {
     CRC_Galileo_INAV_type CRC_Galileo;
 
-    uint32_t crc_computed;
     // Galileo INAV frame for CRC is not an integer multiple of bytes
     // it needs to be filled with zeroes at the start of the frame.
     // This operation is done in the transformation from bits to bytes
@@ -50,7 +49,7 @@ bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> b
 
     CRC_Galileo.process_bytes(bytes.data(), GALILEO_DATA_FRAME_BYTES);
 
-    crc_computed = CRC_Galileo.checksum();
+    const uint32_t crc_computed = CRC_Galileo.checksum();
     if (checksum == crc_computed)
         {
             return true;
@@ -62,7 +61,7 @@ bool Galileo_Navigation_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> b
 uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
 {
     uint64_t value = 0ULL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
@@ -81,7 +80,7 @@ uint64_t Galileo_Navigation_Message::read_navigation_unsigned(std::bitset<GALILE
 uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
 {
     uint64_t value = 0ULL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
@@ -100,7 +99,7 @@ uint64_t Galileo_Navigation_Message::read_page_type_unsigned(std::bitset<GALILEO
 int64_t Galileo_Navigation_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
 {
     int64_t value = 0LL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
     if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first]) == 1)
@@ -153,41 +152,40 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int32_t fla
 
             if (flag_even_word == 1)  // An odd page has been received but the previous even page is kept in memory and it is considered to join pages
                 {
-                    std::string page_INAV_even = page_Even;
-                    std::string page_INAV = page_INAV_even + page_Odd;  // Join pages: Even + Odd = INAV page
-                    std::string Even_bit = page_INAV.substr(0, 1);
-                    std::string Page_type_even = page_INAV.substr(1, 1);
-                    std::string nominal = "0";
+                    const std::string page_INAV_even = page_Even;
+                    const std::string page_INAV = page_INAV_even + page_Odd;  // Join pages: Even + Odd = INAV page
+                    const std::string Even_bit = page_INAV.substr(0, 1);
+                    const std::string Page_type_even = page_INAV.substr(1, 1);
+                    const std::string nominal = "0";
 
-                    std::string Data_k = page_INAV.substr(2, 112);
-                    std::string Odd_bit = page_INAV.substr(114, 1);
-                    std::string Page_type_Odd = page_INAV.substr(115, 1);
-                    std::string Data_j = page_INAV.substr(116, 16);
+                    const std::string Data_k = page_INAV.substr(2, 112);
+                    const std::string Odd_bit = page_INAV.substr(114, 1);
+                    const std::string Page_type_Odd = page_INAV.substr(115, 1);
+                    const std::string Data_j = page_INAV.substr(116, 16);
 
-                    std::string Reserved_1 = page_INAV.substr(132, 40);
-                    std::string SAR = page_INAV.substr(172, 22);
-                    std::string Spare = page_INAV.substr(194, 2);
-                    std::string CRC_data = page_INAV.substr(196, 24);
-                    std::string Reserved_2 = page_INAV.substr(220, 8);
-                    std::string Tail_odd = page_INAV.substr(228, 6);
+                    const std::string Reserved_1 = page_INAV.substr(132, 40);
+                    const std::string SAR = page_INAV.substr(172, 22);
+                    const std::string Spare = page_INAV.substr(194, 2);
+                    const std::string CRC_data = page_INAV.substr(196, 24);
+                    const std::string Reserved_2 = page_INAV.substr(220, 8);
+                    const std::string Tail_odd = page_INAV.substr(228, 6);
 
                     // ************ CRC checksum control *******/
                     std::stringstream TLM_word_for_CRC_stream;
                     TLM_word_for_CRC_stream << page_INAV;
-                    std::string TLM_word_for_CRC;
-                    TLM_word_for_CRC = TLM_word_for_CRC_stream.str().substr(0, GALILEO_DATA_FRAME_BITS);
-                    std::bitset<GALILEO_DATA_FRAME_BITS> TLM_word_for_CRC_bits(TLM_word_for_CRC);
-                    std::bitset<24> checksum(CRC_data);
+                    const std::string TLM_word_for_CRC = TLM_word_for_CRC_stream.str().substr(0, GALILEO_DATA_FRAME_BITS);
+                    const std::bitset<GALILEO_DATA_FRAME_BITS> TLM_word_for_CRC_bits(TLM_word_for_CRC);
+                    const std::bitset<24> checksum(CRC_data);
 
                     if (CRC_test(TLM_word_for_CRC_bits, checksum.to_ulong()) == true)
                         {
                             flag_CRC_test = true;
                             // CRC correct: Decode word
-                            std::string page_number_bits = Data_k.substr(0, 6);
-                            std::bitset<GALILEO_PAGE_TYPE_BITS> page_type_bits(page_number_bits);  // from string to bitset
+                            const std::string page_number_bits = Data_k.substr(0, 6);
+                            const std::bitset<GALILEO_PAGE_TYPE_BITS> page_type_bits(page_number_bits);  // from string to bitset
                             Page_type = static_cast<int32_t>(read_page_type_unsigned(page_type_bits, TYPE));
                             Page_type_time_stamp = Page_type;
-                            std::string Data_jk_ephemeris = Data_k + Data_j;
+                            const std::string Data_jk_ephemeris = Data_k + Data_j;
                             page_jk_decoder(Data_jk_ephemeris.c_str());
                         }
                     else
@@ -200,7 +198,6 @@ void Galileo_Navigation_Message::split_page(std::string page_string, int32_t fla
     else
         {
             page_Even = page_string.substr(0, 114);
-            std::string tail_Even = page_string.substr(114, 6);
         }
 }
 
@@ -424,12 +421,10 @@ Galileo_Almanac_Helper Galileo_Navigation_Message::get_almanac() const
 
 int32_t Galileo_Navigation_Message::page_jk_decoder(const char* data_jk)
 {
-    int32_t page_number = 0;
+    const std::string data_jk_string = data_jk;
+    const std::bitset<GALILEO_DATA_JK_BITS> data_jk_bits(data_jk_string);
 
-    std::string data_jk_string = data_jk;
-    std::bitset<GALILEO_DATA_JK_BITS> data_jk_bits(data_jk_string);
-
-    page_number = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, PAGE_TYPE_BIT));
+    const auto page_number = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, PAGE_TYPE_BIT));
     DLOG(INFO) << "Page number = " << page_number;
 
     switch (page_number)

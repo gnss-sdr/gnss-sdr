@@ -28,12 +28,12 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int32_t i_GPS_week
     double Delta_t_UTC = d_DeltaT_LS + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
 
     // Determine if the effectivity time of the leap second event is in the past
-    int32_t weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
+    const int32_t weeksToLeapSecondEvent = i_WN_LSF - i_GPS_week;
 
     if (weeksToLeapSecondEvent >= 0)  // is not in the past
         {
             // Detect if the effectivity time and user's time is within six hours  = 6 * 60 *60 = 21600 s
-            int32_t secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
+            const int32_t secondOfLeapSecondEvent = i_DN * 24 * 60 * 60;
             if (weeksToLeapSecondEvent > 0)
                 {
                     t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
@@ -59,7 +59,7 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int32_t i_GPS_week
                              * proper accommodation of the leap second event with a possible week number
                              * transition is provided by the following expression for UTC:
                              */
-                            int32_t W = static_cast<int32_t>(fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400)) + 43200;
+                            const int32_t W = static_cast<int32_t>(fmod(gpstime_corrected - Delta_t_UTC - 43200, 86400)) + 43200;
                             t_utc_daytime = fmod(W, 86400 + d_DeltaT_LSF - d_DeltaT_LS);
                             // implement something to handle a leap second event!
                         }
@@ -78,12 +78,12 @@ double Gps_CNAV_Utc_Model::utc_time(double gpstime_corrected, int32_t i_GPS_week
              * and the user's current time does not fall in the time span as given above
              * in 20.3.3.5.2.4b,*/
             /* FOR CNAV: Replace the 20.3.3.5.2.4c with 30.3.3.6.2 UTC and GPS Time as follows */
-            double tmp_d = (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
+            const double tmp_d = (gpstime_corrected - d_t_OT + 604800 * static_cast<double>(i_GPS_week - i_WN_T));
             Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * tmp_d + d_A2 * tmp_d * tmp_d;
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);
         }
 
-    double secondsOfWeekBeforeToday = 86400 * floor(gpstime_corrected / 86400);
+    const double secondsOfWeekBeforeToday = 86400 * floor(gpstime_corrected / 86400);
     t_utc = secondsOfWeekBeforeToday + t_utc_daytime;
     return t_utc;
 }

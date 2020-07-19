@@ -55,7 +55,7 @@ bool Gps_CNAV_Navigation_Message::read_navigation_bool(std::bitset<GPS_CNAV_DATA
 uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
     for (int32_t i = 0; i < num_of_slices; i++)
         {
             for (int32_t j = 0; j < parameter[i].second; j++)
@@ -74,7 +74,7 @@ uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_C
 int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
-    int32_t num_of_slices = parameter.size();
+    const int32_t num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
     if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first]) == 1)
@@ -104,12 +104,11 @@ int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(std::bitset<GPS_CNAV
 
 void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BITS> data_bits)
 {
-    int32_t PRN;
     int32_t page_type;
     bool alert_flag;
 
     // common to all messages
-    PRN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_PRN));
+    const auto PRN = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_PRN));
     ephemeris_record.i_satellite_PRN = PRN;
 
     d_TOW = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOW));

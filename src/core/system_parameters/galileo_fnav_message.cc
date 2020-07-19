@@ -36,10 +36,10 @@ using CRC_Galileo_FNAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false
 
 void Galileo_Fnav_Message::split_page(const std::string& page_string)
 {
-    std::string message_word = page_string.substr(0, 214);
-    std::string CRC_data = page_string.substr(214, 24);
-    std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> Word_for_CRC_bits(message_word);
-    std::bitset<24> checksum(CRC_data);
+    const std::string message_word = page_string.substr(0, 214);
+    const std::string CRC_data = page_string.substr(214, 24);
+    const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> Word_for_CRC_bits(message_word);
+    const std::bitset<24> checksum(CRC_data);
     if (_CRC_test(Word_for_CRC_bits, checksum.to_ulong()) == true)
         {
             flag_CRC_test = true;
@@ -57,7 +57,6 @@ bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> b
 {
     CRC_Galileo_FNAV_type CRC_Galileo;
 
-    uint32_t crc_computed;
     // Galileo FNAV frame for CRC is not an integer multiple of bytes
     // it needs to be filled with zeroes at the start of the frame.
     // This operation is done in the transformation from bits to bytes
@@ -72,7 +71,7 @@ bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> b
 
     CRC_Galileo.process_bytes(bytes.data(), GALILEO_FNAV_DATA_FRAME_BYTES);
 
-    crc_computed = CRC_Galileo.checksum();
+    const uint32_t crc_computed = CRC_Galileo.checksum();
     if (checksum == crc_computed)
         {
             return true;
@@ -84,7 +83,7 @@ bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> b
 
 void Galileo_Fnav_Message::decode_page(const std::string& data)
 {
-    std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> data_bits(data);
+    const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> data_bits(data);
     page_type = read_navigation_unsigned(data_bits, FNAV_PAGE_TYPE_BIT);
     switch (page_type)
         {
@@ -241,9 +240,9 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
             FNAV_IODa_6 = static_cast<int32_t>(read_navigation_unsigned(data_bits, FNAV_IO_DA_6_BIT));
             // Don't worry about omega pieces. If page 5 has not been received, all_ephemeris
             // flag will be set to false and the data won't be recorded.*/
-            std::string omega0_2 = data.substr(10, 12);
-            std::string Omega0 = omega0_1 + omega0_2;
-            std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> omega_bits(Omega0);
+            const std::string omega0_2 = data.substr(10, 12);
+            const std::string Omega0 = omega0_1 + omega0_2;
+            const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> omega_bits(Omega0);
             const std::vector<std::pair<int32_t, int32_t>> om_bit({{0, 12}});
             FNAV_Omega0_2_6 = static_cast<double>(read_navigation_signed(omega_bits, om_bit));
             FNAV_Omega0_2_6 *= FNAV_OMEGA0_5_LSB;
@@ -286,7 +285,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
 uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    int num_of_slices = parameter.size();
+    const int num_of_slices = parameter.size();
     for (int i = 0; i < num_of_slices; i++)
         {
             for (int j = 0; j < parameter[i].second; j++)
@@ -305,7 +304,7 @@ uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV
 int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
-    int num_of_slices = parameter.size();
+    const int num_of_slices = parameter.size();
 
     // read the MSB and perform the sign extension
     if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[0].first]) == 1)

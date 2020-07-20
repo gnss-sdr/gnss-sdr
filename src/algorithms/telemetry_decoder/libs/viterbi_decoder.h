@@ -58,10 +58,10 @@ private:
         Prev& operator=(const Prev& other);
         ~Prev();
 
-        int get_anchestor_state_of_current_state(int current_state);
-        int get_bit_of_current_state(int current_state);
-        float get_metric_of_current_state(int current_state);
-        int get_t();
+        int get_anchestor_state_of_current_state(int current_state) const;
+        int get_bit_of_current_state(int current_state) const;
+        float get_metric_of_current_state(int current_state) const;
+        int get_t() const;
         void set_current_state_as_ancestor_of_next_state(int next_state, int current_state);
         void set_decoded_bit_for_next_state(int next_state, int bit);
         void set_survivor_branch_metric_of_next_state(int next_state, float metric);

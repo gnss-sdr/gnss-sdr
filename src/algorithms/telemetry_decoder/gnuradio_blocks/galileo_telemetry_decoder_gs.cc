@@ -354,19 +354,19 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
     // 4. Push the new navigation data to the queues
     if (d_fnav_nav.have_new_ephemeris() == true)
         {
-            std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_fnav_nav.get_ephemeris());
+            const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_fnav_nav.get_ephemeris());
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_fnav_nav.have_new_iono_and_GST() == true)
         {
-            std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_fnav_nav.get_iono());
+            const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_fnav_nav.get_iono());
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_fnav_nav.have_new_utc_model() == true)
         {
-            std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_fnav_nav.get_utc_model());
+            const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_fnav_nav.get_utc_model());
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }

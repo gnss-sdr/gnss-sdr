@@ -514,7 +514,7 @@ Viterbi_Decoder::Prev::~Prev()
 }
 
 
-int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_state)
+int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_state) const
 {
     // std::cout << "get prev state: for state " << current_state << " at time " << t << ", the prev state at time " << t - 1 << " is " << state[current_state] << '\n';
     if (num_states > current_state)
@@ -527,7 +527,7 @@ int Viterbi_Decoder::Prev::get_anchestor_state_of_current_state(int current_stat
 }
 
 
-int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
+int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state) const
 {
     // std::cout << "get prev bit  : for state " << current_state << " at time " << t << ", the send bit is " << bit[current_state] << '\n';
     if (num_states > current_state)
@@ -538,7 +538,7 @@ int Viterbi_Decoder::Prev::get_bit_of_current_state(int current_state)
 }
 
 
-float Viterbi_Decoder::Prev::get_metric_of_current_state(int current_state)
+float Viterbi_Decoder::Prev::get_metric_of_current_state(int current_state) const
 {
     if (num_states > current_state)
         {
@@ -548,7 +548,7 @@ float Viterbi_Decoder::Prev::get_metric_of_current_state(int current_state)
 }
 
 
-int Viterbi_Decoder::Prev::get_t()
+int Viterbi_Decoder::Prev::get_t() const
 {
     return t;
 }

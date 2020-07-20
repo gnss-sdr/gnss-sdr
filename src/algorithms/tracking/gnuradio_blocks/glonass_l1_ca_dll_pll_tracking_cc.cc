@@ -156,6 +156,7 @@ Glonass_L1_Ca_Dll_Pll_Tracking_cc::Glonass_L1_Ca_Dll_Pll_Tracking_cc(
 
     d_glonass_freq_ch = 0;
 
+    d_acc_carrier_phase_initialized = false;
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 }
 
@@ -169,31 +170,26 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
     d_acq_carrier_doppler_hz = d_acquisition_gnss_synchro->Acq_doppler_hz;
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
 
-    int64_t acq_trk_diff_samples;
-    double acq_trk_diff_seconds;
-    acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  // -d_vector_length;
+    const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);  // -d_vector_length;
     DLOG(INFO) << "Number of samples between Acquisition and Tracking =" << acq_trk_diff_samples;
-    acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
+    const double acq_trk_diff_seconds = static_cast<float>(acq_trk_diff_samples) / static_cast<float>(d_fs_in);
     // Doppler effect
     // Fd=(C/(C+Vr))*F
     d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (DFRQ1_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
-    double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
+    const double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
     // new chip and prn sequence periods based on acq Doppler
-    double T_chip_mod_seconds;
-    double T_prn_mod_seconds;
-    double T_prn_mod_samples;
     d_code_freq_chips = radial_velocity * GLONASS_L1_CA_CODE_RATE_CPS;
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
-    T_chip_mod_seconds = 1 / d_code_freq_chips;
-    T_prn_mod_seconds = T_chip_mod_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
-    T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
+    const double T_chip_mod_seconds = 1.0 / d_code_freq_chips;
+    const double T_prn_mod_seconds = T_chip_mod_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
+    const double T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
 
     d_current_prn_length_samples = round(T_prn_mod_samples);
 
-    double T_prn_true_seconds = GLONASS_L1_CA_CODE_LENGTH_CHIPS / GLONASS_L1_CA_CODE_RATE_CPS;
-    double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
-    double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
-    double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
+    const double T_prn_true_seconds = GLONASS_L1_CA_CODE_LENGTH_CHIPS / GLONASS_L1_CA_CODE_RATE_CPS;
+    const double T_prn_true_samples = T_prn_true_seconds * static_cast<double>(d_fs_in);
+    const double T_prn_diff_seconds = T_prn_true_seconds - T_prn_mod_seconds;
+    const double N_prn_diff = acq_trk_diff_seconds / T_prn_true_seconds;
     double corrected_acq_phase_samples;
     double delay_correction_samples;
     corrected_acq_phase_samples = fmod((d_acq_code_phase_samples + T_prn_diff_seconds * N_prn_diff * static_cast<double>(d_fs_in)), T_prn_true_samples);
@@ -228,8 +224,9 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::start_tracking()
 
     d_code_phase_samples = d_acq_code_phase_samples;
 
-    std::string sys_ = &d_acquisition_gnss_synchro->System;
+    const std::string sys_ = &d_acquisition_gnss_synchro->System;
     sys = sys_.substr(0, 1);
+    d_acc_carrier_phase_initialized = false;
 
     // DEBUG OUTPUT
     std::cout << "Tracking of GLONASS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
@@ -293,10 +290,10 @@ int32_t Glonass_L1_Ca_Dll_Pll_Tracking_cc::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
-    int32_t number_of_double_vars = 11;
-    int32_t number_of_float_vars = 5;
-    int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                               sizeof(float) * number_of_float_vars + sizeof(uint32_t);
+    const int32_t number_of_double_vars = 11;
+    const int32_t number_of_float_vars = 5;
+    const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t);
     std::ifstream dump_file;
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
@@ -492,6 +489,16 @@ void Glonass_L1_Ca_Dll_Pll_Tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_sy
 }
 
 
+void Glonass_L1_Ca_Dll_Pll_Tracking_cc::check_carrier_phase_coherent_initialization()
+{
+    if (d_acc_carrier_phase_initialized == false)
+        {
+            d_acc_carrier_phase_rad = -d_rem_carr_phase_rad;
+            d_acc_carrier_phase_initialized = true;
+        }
+}
+
+
 int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -515,12 +522,9 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             // Receiver signal alignment
             if (d_pull_in == true)
                 {
-                    int32_t samples_offset;
-                    double acq_trk_shif_correction_samples;
-                    int32_t acq_to_trk_delay_samples;
-                    acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
-                    acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
-                    samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
+                    const int32_t acq_to_trk_delay_samples = d_sample_counter - d_acq_sample_stamp;
+                    const double acq_trk_shif_correction_samples = d_current_prn_length_samples - std::fmod(static_cast<float>(acq_to_trk_delay_samples), static_cast<float>(d_current_prn_length_samples));
+                    const int32_t samples_offset = round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
@@ -560,9 +564,9 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             code_error_chips = dll_nc_e_minus_l_normalized(d_correlator_outs[0], d_correlator_outs[2], static_cast<float>(d_early_late_spc_chips), 1.0);  // [chips/Ti] //early and late
             // Code discriminator filter
             code_error_filt_chips = d_code_loop_filter.get_code_nco(static_cast<float>(code_error_chips));  // [chips/second]
-            double T_chip_seconds = 1.0 / static_cast<double>(d_code_freq_chips);
-            double T_prn_seconds = T_chip_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
-            double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips * T_chip_seconds);  // [seconds]
+            const double T_chip_seconds = 1.0 / static_cast<double>(d_code_freq_chips);
+            const double T_prn_seconds = T_chip_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
+            const double code_error_filt_secs = (T_prn_seconds * code_error_filt_chips * T_chip_seconds);  // [seconds]
             // double code_error_filt_secs = (GPS_L1_CA_CODE_PERIOD * code_error_filt_chips) / GLONASS_L1_CA_CODE_RATE_CPS; // [seconds]
 
             // ################## CARRIER AND CODE NCO BUFFER ALIGNMENT #######################
@@ -570,8 +574,8 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
             // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
             // double T_chip_seconds =  1.0 / static_cast<double>(d_code_freq_chips);
             // double T_prn_seconds = T_chip_seconds * GLONASS_L1_CA_CODE_LENGTH_CHIPS;
-            double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
-            double K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
+            const double T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
+            const double K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
             d_current_prn_length_samples = round(K_blk_samples);  // round to a discrete number of samples
 
             // ################### PLL COMMANDS #################################################
@@ -625,6 +629,7 @@ int Glonass_L1_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false;  // TODO: check if disabling tracking is consistent with the channel state machine
                         }
+                    check_carrier_phase_coherent_initialization();
                 }
             // ########### Output the tracking data to navigation and PVT ##########
             current_synchro_data.Prompt_I = static_cast<double>((d_correlator_outs[1]).real());

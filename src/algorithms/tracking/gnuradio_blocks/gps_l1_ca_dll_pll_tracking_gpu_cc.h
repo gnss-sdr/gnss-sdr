@@ -99,26 +99,37 @@ private:
         float early_late_space_chips);
     void update_local_code();
     void update_local_carrier();
+    void check_carrier_phase_coherent_initialization();
 
-    // tracking configuration vars
-    uint32_t d_vector_length;
-    bool d_dump;
+    // PLL and DLL filter library
+    Tracking_2nd_DLL_filter d_code_loop_filter;
+    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     Gnss_Synchro *d_acquisition_gnss_synchro;
-    uint32_t d_channel;
 
+    std::vector<gr_complex> d_Prompt_buffer;
+
+    // file dump
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+
+    std::map<std::string, std::string> systemName;
+    std::string sys;
+
+    // tracking configuration vars
     int64_t d_if_freq;
     int64_t d_fs_in;
-
     double d_early_late_spc_chips;
+    uint32_t d_vector_length;
+    uint32_t d_channel;
     int32_t d_n_correlator_taps;
 
     // GPU HOST PINNED MEMORY IN/OUT VECTORS
-    gr_complex *in_gpu;
-    float *d_local_code_shift_chips;
-    gr_complex *d_correlator_outs;
     cuda_multicorrelator *multicorrelator_gpu;
+    gr_complex *in_gpu;
+    gr_complex *d_correlator_outs;
     gr_complex *d_ca_code;
+    float *d_local_code_shift_chips;
 
     gr_complex *d_Early;
     gr_complex *d_Prompt;
@@ -128,10 +139,6 @@ private:
     double d_rem_code_phase_samples;
     double d_rem_code_phase_chips;
     double d_rem_carrier_phase_rad;
-
-    // PLL and DLL filter library
-    Tracking_2nd_DLL_filter d_code_loop_filter;
-    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     // acquisition
     double d_acq_code_phase_samples;
@@ -154,23 +161,17 @@ private:
     uint64_t d_acq_sample_stamp;
 
     // CN0 estimation and lock detector
-    int32_t d_cn0_estimation_counter;
-    std::vector<gr_complex> d_Prompt_buffer;
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
     int32_t d_carrier_lock_fail_counter;
+    int32_t d_cn0_estimation_counter;
 
     // control vars
+    bool d_acc_carrier_phase_initialized;
     bool d_enable_tracking;
     bool d_pull_in;
-
-    // file dump
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
-
-    std::map<std::string, std::string> systemName;
-    std::string sys;
+    bool d_dump;
 };
 
 #endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H

@@ -94,6 +94,8 @@ private:
         float dll_bw_hz,
         float early_late_space_chips);
 
+    void check_carrier_phase_coherent_initialization();
+
     int32_t save_matfile() const;
 
     volk_gnsssdr::vector<gr_complex> d_ca_code;
@@ -162,6 +164,7 @@ private:
     // control vars
     bool d_enable_tracking;
     bool d_pull_in;
+    bool d_acc_carrier_phase_initialized;
 
     bool d_dump;
 };

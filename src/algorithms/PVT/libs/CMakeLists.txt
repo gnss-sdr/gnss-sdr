@@ -10,34 +10,30 @@
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/monitor_pvt.proto)
 
 set(PVT_LIB_SOURCES
+    pvt_conf.cc
     pvt_solution.cc
-    ls_pvt.cc
-    hybrid_ls_pvt.cc
-    kml_printer.cc
+    geojson_printer.cc
     gpx_printer.cc
-    rinex_printer.cc
+    kml_printer.cc
     nmea_printer.cc
+    rinex_printer.cc
     rtcm_printer.cc
     rtcm.cc
-    geojson_printer.cc
     rtklib_solver.cc
-    pvt_conf.cc
     monitor_pvt_udp_sink.cc
 )
 
 set(PVT_LIB_HEADERS
+    pvt_conf.h
     pvt_solution.h
-    ls_pvt.h
-    hybrid_ls_pvt.h
-    kml_printer.h
+    geojson_printer.h
     gpx_printer.h
-    rinex_printer.h
+    kml_printer.h
     nmea_printer.h
+    rinex_printer.h
     rtcm_printer.h
     rtcm.h
-    geojson_printer.h
     rtklib_solver.h
-    pvt_conf.h
     monitor_pvt_udp_sink.h
     monitor_pvt.h
     serdes_monitor_pvt.h
@@ -73,13 +69,11 @@ endif()
 
 target_link_libraries(pvt_libs
     PUBLIC
-        Armadillo::armadillo
         Boost::date_time
         protobuf::libprotobuf
         core_system_parameters
         algorithms_libs_rtklib
     PRIVATE
-        algorithms_libs
         Gflags::gflags
         Glog::glog
         Matio::matio
@@ -91,15 +85,11 @@ target_include_directories(pvt_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/receiver
         SYSTEM ${PROTO_INCLUDE_HEADERS}
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique.h
 )
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
-
-if(ENABLE_ARMA_NO_DEBUG)
-    target_compile_definitions(pvt_libs
-        PUBLIC -DARMA_NO_BOUND_CHECKING=1
-    )
-endif()
 
 if(USE_BOOST_ASIO_IO_CONTEXT)
     target_compile_definitions(pvt_libs

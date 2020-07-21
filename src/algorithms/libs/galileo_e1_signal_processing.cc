@@ -23,6 +23,7 @@
 #include "Galileo_E1.h"
 #include "gnss_signal_processing.h"
 #include <cmath>
+#include <cstddef>  // for size_t
 #include <memory>
 #include <string>
 #include <utility>
@@ -112,22 +113,20 @@ void galileo_e1_code_gen_sinboc11_float(own::span<float> _dest, const std::array
 
 void galileo_e1_gen_float(own::span<float> _dest, own::span<int> _prn, const std::array<char, 3>& _Signal)
 {
-    constexpr uint32_t _codeLength = 12 * GALILEO_E1_B_CODE_LENGTH_CHIPS;
+    const auto _codeLength = _dest.size();
     const float alpha = std::sqrt(10.0F / 11.0F);
     const float beta = std::sqrt(1.0F / 11.0F);
     const std::string _galileo_signal = _Signal.data();
 
-    std::array<int32_t, 12 * 4092> sinboc_11{};
-    std::array<int32_t, 12 * 4092> sinboc_61{};
-    own::span<int32_t> sinboc_11_(sinboc_11.data(), _codeLength);
-    own::span<int32_t> sinboc_61_(sinboc_61.data(), _codeLength);
+    std::vector<int32_t> sinboc_11(_codeLength);
+    std::vector<int32_t> sinboc_61(_codeLength);
 
-    galileo_e1_sinboc_11_gen_int(sinboc_11_, _prn);  // generate sinboc(1,1) 12 samples per chip
-    galileo_e1_sinboc_61_gen_int(sinboc_61_, _prn);  // generate sinboc(6,1) 12 samples per chip
+    galileo_e1_sinboc_11_gen_int(sinboc_11, _prn);  // generate sinboc(1,1) 12 samples per chip
+    galileo_e1_sinboc_61_gen_int(sinboc_61, _prn);  // generate sinboc(6,1) 12 samples per chip
 
     if (_galileo_signal.rfind("1B") != std::string::npos && _galileo_signal.length() >= 2)
         {
-            for (uint32_t i = 0; i < _codeLength; i++)
+            for (size_t i = 0; i < _codeLength; i++)
                 {
                     _dest[i] = alpha * static_cast<float>(sinboc_11[i]) +
                                beta * static_cast<float>(sinboc_61[i]);
@@ -135,7 +134,7 @@ void galileo_e1_gen_float(own::span<float> _dest, own::span<int> _prn, const std
         }
     else if (_galileo_signal.rfind("1C") != std::string::npos && _galileo_signal.length() >= 2)
         {
-            for (uint32_t i = 0; i < _codeLength; i++)
+            for (size_t i = 0; i < _codeLength; i++)
                 {
                     _dest[i] = alpha * static_cast<float>(sinboc_11[i]) -
                                beta * static_cast<float>(sinboc_61[i]);

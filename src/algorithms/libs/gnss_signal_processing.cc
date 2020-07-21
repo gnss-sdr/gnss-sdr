@@ -154,20 +154,14 @@ void resampler(const own::span<float> _from, own::span<float> _dest, float _fs_i
 {
     uint32_t _codeValueIndex;
     float aux;
-    // --- Find time constants -------------------------------------------------
-    const float _t_in = 1.0F / _fs_in;    // Incoming sampling  period in sec
-    const float _t_out = 1.0F / _fs_out;  // Out sampling period in sec
+    const float _t_out = 1.0F / _fs_out;  // Output sampling period
     for (size_t i = 0; i < _dest.size() - 1; i++)
         {
-            // === Digitizing ==================================================
-            // --- compute index array to read sampled values ------------------
-            aux = (_t_out * (static_cast<float>(i) + 1.0F)) / _t_in;
+            aux = (_t_out * (static_cast<float>(i) + 1.0F)) * _fs_in;
             _codeValueIndex = AUX_CEIL2(aux) - 1;
-
-            // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }
-    // --- Correct the last index (due to number rounding issues) -----------
+    // Correct the last index (due to number rounding issues)
     _dest[_dest.size() - 1] = _from[_from.size() - 1];
 }
 
@@ -177,19 +171,13 @@ void resampler(own::span<const std::complex<float>> _from, own::span<std::comple
 {
     uint32_t _codeValueIndex;
     float aux;
-    // --- Find time constants -------------------------------------------------
-    const float _t_in = 1.0F / _fs_in;    // Incoming sampling  period in sec
-    const float _t_out = 1.0F / _fs_out;  // Out sampling period in sec
+    const float _t_out = 1.0F / _fs_out;  // Output sampling period
     for (size_t i = 0; i < _dest.size() - 1; i++)
         {
-            // === Digitizing ==================================================
-            // --- compute index array to read sampled values ------------------
-            aux = (_t_out * (static_cast<float>(i) + 1.0F)) / _t_in;
+            aux = (_t_out * (static_cast<float>(i) + 1.0F)) * _fs_in;
             _codeValueIndex = AUX_CEIL2(aux) - 1;
-
-            // if repeat the chip -> upsample by nearest neighborhood interpolation
             _dest[i] = _from[_codeValueIndex];
         }
-    // --- Correct the last index (due to number rounding issues) -----------
+    // Correct the last index (due to number rounding issues)
     _dest[_dest.size() - 1] = _from[_from.size() - 1];
 }

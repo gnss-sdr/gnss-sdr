@@ -6,7 +6,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020 (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  * Satellite Systems receiver
@@ -99,6 +99,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/discriminator_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e1_dll_pll_veml_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/galileo_e5a_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/galileo_e5b_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/glonass_l1_ca_dll_pll_c_aid_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/glonass_l1_ca_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"

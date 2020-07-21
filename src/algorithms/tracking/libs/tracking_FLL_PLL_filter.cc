@@ -105,8 +105,7 @@ float Tracking_FLL_PLL_filter::get_carrier_error(float FLL_discriminator, float 
             /*
              * 2nd order PLL with 1st order FLL assist
              */
-            float pll_w_new;
-            pll_w_new = d_pll_w + PLL_discriminator * d_pll_w0p2 * correlation_time_s + FLL_discriminator * d_pll_w0f * correlation_time_s;
+            const float pll_w_new = d_pll_w + PLL_discriminator * d_pll_w0p2 * correlation_time_s + FLL_discriminator * d_pll_w0f * correlation_time_s;
             carrier_error_hz = 0.5F * (pll_w_new + d_pll_w) + d_pll_a2 * d_pll_w0p * PLL_discriminator;
             d_pll_w = pll_w_new;
             /* std::cout << " d_pll_w = " << carrier_error_hz << ", pll_w_new = " << pll_w_new

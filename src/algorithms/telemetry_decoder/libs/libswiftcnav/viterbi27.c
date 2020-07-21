@@ -115,7 +115,6 @@ void v27_update(v27_t *v, const unsigned char *syms, int nbits)
     unsigned char sym0;
     unsigned char sym1;
     unsigned int *tmp;
-    int normalize = 0;
 
     while (nbits--)
         {
@@ -176,8 +175,6 @@ void v27_update(v27_t *v, const unsigned char *syms, int nbits)
                         {
                             v->new_metrics[i] -= minmetric;
                         }
-
-                    normalize += minmetric;
                 }
 
             /* Advance decision index */

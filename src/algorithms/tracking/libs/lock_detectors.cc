@@ -98,7 +98,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
     float m_2 = 0.0;
     float m_4 = 0.0;
     float aux;
-    auto n = static_cast<float>(length);
+    const auto n = static_cast<float>(length);
     for (int i = 0; i < length; i++)
         {
             Psig += std::abs(Prompt_buffer[i].real());

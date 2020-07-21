@@ -104,9 +104,9 @@ void Tracking_loop_filter::update_coefficients()
 
     // Natural frequency
     float wn;
-    float T = d_update_interval;
+    const float T = d_update_interval;
 
-    float zeta = 1.0F / std::sqrt(2.0F);
+    const float zeta = 1.0F / std::sqrt(2.0F);
 
     // The following is based on the bilinear transform approximation of
     // the analog integrator. The loop format is from Kaplan & Hegarty
@@ -167,8 +167,8 @@ void Tracking_loop_filter::update_coefficients()
             break;
         case 3:
             wn = d_noise_bandwidth / 0.7845F;  // From Kaplan
-            float a3 = 1.1;
-            float b3 = 2.4;
+            const float a3 = 1.1;
+            const float b3 = 2.4;
             g1 = wn * wn * wn;
             g2 = a3 * wn * wn;
             g3 = b3 * wn;

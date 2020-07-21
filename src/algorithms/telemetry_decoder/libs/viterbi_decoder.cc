@@ -74,9 +74,6 @@ void Viterbi_Decoder::reset()
  */
 float Viterbi_Decoder::decode_block(const double input_c[], int output_u_int[], const int LL)
 {
-    int state;
-    int decoding_length_mismatch;
-
     VLOG(FLOW) << "decode_block(): LL=" << LL;
 
     // init
@@ -84,9 +81,9 @@ float Viterbi_Decoder::decode_block(const double input_c[], int output_u_int[], 
     // do add compare select
     do_acs(input_c, LL + d_mm);
     // tail, no need to output -> traceback, but don't decode
-    state = do_traceback(d_mm);
+    const int state = do_traceback(d_mm);
     // traceback and decode
-    decoding_length_mismatch = do_tb_and_decode(d_mm, LL, state, output_u_int, d_indicator_metric);
+    const int decoding_length_mismatch = do_tb_and_decode(d_mm, LL, state, output_u_int, d_indicator_metric);
 
     VLOG(FLOW) << "decoding length mismatch: " << decoding_length_mismatch;
 
@@ -100,18 +97,15 @@ float Viterbi_Decoder::decode_continuous(const double sym[],
     const int nbits_requested,
     int& nbits_decoded)
 {
-    int state;
-    int decoding_length_mismatch;
-
     VLOG(FLOW) << "decode_continuous(): nbits_requested=" << nbits_requested;
 
     // do add compare select
     do_acs(sym, nbits_requested);
     // the ML sequence in the newest part of the trellis can not be decoded
     // since it depends on the future values -> traceback, but don't decode
-    state = do_traceback(traceback_depth);
+    const int state = do_traceback(traceback_depth);
     // traceback and decode
-    decoding_length_mismatch = do_tb_and_decode(traceback_depth, nbits_requested, state, bits, d_indicator_metric);
+    const int decoding_length_mismatch = do_tb_and_decode(traceback_depth, nbits_requested, state, bits, d_indicator_metric);
     nbits_decoded = nbits_requested + decoding_length_mismatch;
 
     VLOG(FLOW) << "decoding length mismatch (continuous decoding): " << decoding_length_mismatch;
@@ -193,11 +187,11 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
             /* step through all states */
             for (state_at_t = 0; state_at_t < d_states; state_at_t++)
                 {
-                    int next_state_if_0 = d_state0[state_at_t];
-                    int next_state_if_1 = d_state1[state_at_t];
+                    const int next_state_if_0 = d_state0[state_at_t];
+                    const int next_state_if_1 = d_state1[state_at_t];
 
                     /* hypothesis: info bit is a zero */
-                    float bm_0 = d_metric_c[d_out0[state_at_t]];
+                    const float bm_0 = d_metric_c[d_out0[state_at_t]];
                     metric = d_pm_t[state_at_t] + bm_0;  // path metric + zerobranch metric
 
                     /* store new metric if more than metric in storage */
@@ -210,7 +204,7 @@ int Viterbi_Decoder::do_acs(const double sym[], int nbits)
                         }
 
                     /* hypothesis: info bit is a one */
-                    float bm_1 = d_metric_c[d_out1[state_at_t]];
+                    const float bm_1 = d_metric_c[d_out1[state_at_t]];
                     metric = d_pm_t[state_at_t] + bm_1;  // path metric + onebranch metric
 
                     /* store new metric if more than metric in storage */
@@ -272,17 +266,14 @@ int Viterbi_Decoder::do_traceback(size_t traceback_length)
 int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decoding_length, int state, int output_u_int[], float& indicator_metric)
 {
     int n_of_branches_for_indicator_metric = 500;
-    int t_out;
     std::deque<Prev>::iterator it;
-    int decoding_length_mismatch;
-    int overstep_length;
     int n_im = 0;
 
     VLOG(FLOW) << "do_tb_and_decode(): requested_decoding_length=" << requested_decoding_length;
     // decode only decode_length bits -> overstep newer bits which are too much
-    decoding_length_mismatch = static_cast<int>(d_trellis_paths.size()) - (traceback_length + requested_decoding_length);
+    const int decoding_length_mismatch = static_cast<int>(d_trellis_paths.size()) - (traceback_length + requested_decoding_length);
     VLOG(BLOCK) << "decoding_length_mismatch=" << decoding_length_mismatch;
-    overstep_length = decoding_length_mismatch >= 0 ? decoding_length_mismatch : 0;
+    const int overstep_length = decoding_length_mismatch >= 0 ? decoding_length_mismatch : 0;
     VLOG(BLOCK) << "overstep_length=" << overstep_length;
 
     for (it = d_trellis_paths.begin() + traceback_length;
@@ -290,7 +281,7 @@ int Viterbi_Decoder::do_tb_and_decode(int traceback_length, int requested_decodi
         {
             state = it->get_anchestor_state_of_current_state(state);
         }
-    t_out = static_cast<int>(d_trellis_paths.end() - (d_trellis_paths.begin() + traceback_length + overstep_length) - 1);  // requested_decoding_length-1;
+    int t_out = static_cast<int>(d_trellis_paths.end() - (d_trellis_paths.begin() + traceback_length + overstep_length) - 1);  // requested_decoding_length-1;
     indicator_metric = 0;
     for (it = d_trellis_paths.begin() + traceback_length + overstep_length; it < d_trellis_paths.end(); ++it)
         {
@@ -358,8 +349,7 @@ void Viterbi_Decoder::nsc_transit(int output_p[], int trans_p[], int input, cons
 {
     int nextstate[1];
     int state;
-    int states;
-    states = static_cast<int>(1U << (KK - 1)); /* The number of states: 2^mm */
+    const int states = static_cast<int>(1U << (KK - 1)); /* The number of states: 2^mm */
 
     /* Determine the output and next state for each possible starting state */
     for (state = 0; state < states; state++)
@@ -410,6 +400,7 @@ int Viterbi_Decoder::nsc_enc_bit(int state_out_p[], int input, int state_in,
     state_out_p[0] = state >> 1;
     return (out);
 }
+
 
 /* function parity_counter()
 

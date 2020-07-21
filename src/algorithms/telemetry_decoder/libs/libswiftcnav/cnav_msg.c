@@ -126,7 +126,7 @@ static void _cnav_rescan_preamble(cnav_v27_part_t *part)
             size_t j = 0;
             for (i = 1, j = part->n_decoded - GPS_CNAV_PREAMBLE_LENGTH; i < j; ++i)
                 {
-                    uint32_t c = getbitu(part->decoded, i, GPS_CNAV_PREAMBLE_LENGTH);
+                    const uint32_t c = getbitu(part->decoded, i, GPS_CNAV_PREAMBLE_LENGTH);
                     if (GPS_CNAV_PREAMBLE1 == c || GPS_CNAV_PREAMBLE2 == c)
                         {
                             part->preamble_seen = true;
@@ -182,7 +182,7 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, uint8_t ch)
 
     /* Feed accumulated symbols into the buffer, reset the number of accumulated
      * symbols. */
-    v27_update(&part->dec, part->symbols, part->n_symbols / 2);
+    v27_update(&part->dec, part->symbols, (int)part->n_symbols / 2);
     part->n_symbols = 0;
 
     /* Decode N+M bits, where:
@@ -230,8 +230,8 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, uint8_t ch)
                 {
                     /* We have collected 300 bits starting from message preamble. Now try
                      * to compute CRC-24Q */
-                    uint32_t crc = _cnav_compute_crc(part);
-                    uint32_t crc2 = _cnav_extract_crc(part);
+                    const uint32_t crc = _cnav_compute_crc(part);
+                    const uint32_t crc2 = _cnav_extract_crc(part);
 
                     if (part->message_lock)
                         {

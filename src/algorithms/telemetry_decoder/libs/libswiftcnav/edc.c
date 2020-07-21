@@ -108,7 +108,7 @@ uint32_t crc24q_bits(uint32_t crc, const uint8_t *buf, uint32_t n_bits, bool inv
 {
     uint16_t acc = 0;
     uint8_t b = 0;
-    uint32_t shift = 8 - n_bits % 8;
+    const uint32_t shift = 8 - n_bits % 8;
 
     uint32_t i = 0;
     for (i = 0; i < n_bits / 8; ++i)

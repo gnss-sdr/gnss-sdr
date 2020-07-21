@@ -693,7 +693,7 @@ void dll_pll_veml_tracking::start_tracking()
     else if (d_systemName == "Galileo" and d_signal_type == "7X")
         {
             volk_gnsssdr::vector<gr_complex> aux_code(d_code_length_chips);
-            std::array<char, 3> signal_type_ = {{'7', 'X', '\0'}};
+            const std::array<char, 3> signal_type_ = {{'7', 'X', '\0'}};
             galileo_e5_b_code_gen_complex_primary(aux_code, d_acquisition_gnss_synchro->PRN, signal_type_);
             if (d_trk_parameters.track_pilot)
                 {
@@ -1076,10 +1076,10 @@ void dll_pll_veml_tracking::run_dll_pll()
 
                     if (d_dll_filt_history.full())
                         {
-                            float avg_code_error_chips_s = static_cast<float>(std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0)) / static_cast<float>(d_dll_filt_history.capacity());
+                            const float avg_code_error_chips_s = static_cast<float>(std::accumulate(d_dll_filt_history.begin(), d_dll_filt_history.end(), 0.0)) / static_cast<float>(d_dll_filt_history.capacity());
                             if (std::fabs(avg_code_error_chips_s) > 1.0)
                                 {
-                                    float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
+                                    const float carrier_doppler_error_hz = static_cast<float>(d_signal_carrier_freq) * avg_code_error_chips_s / static_cast<float>(d_code_chip_rate);
                                     LOG(INFO) << "Detected and corrected carrier doppler error: " << carrier_doppler_error_hz << " [Hz] on sat " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                     d_carrier_loop_filter.initialize(static_cast<float>(d_carrier_doppler_hz) - carrier_doppler_error_hz);
                                     d_corrected_doppler = true;

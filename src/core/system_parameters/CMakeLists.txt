@@ -13,7 +13,6 @@ set(SYSTEM_PARAMETERS_SOURCES
     gnss_signal.cc
     gps_navigation_message.cc
     gps_ephemeris.cc
-    gps_utc_model.cc
     galileo_utc_model.cc
     galileo_ephemeris.cc
     galileo_almanac_helper.cc
@@ -24,7 +23,6 @@ set(SYSTEM_PARAMETERS_SOURCES
     galileo_fnav_message.cc
     gps_cnav_ephemeris.cc
     gps_cnav_navigation_message.cc
-    gps_cnav_utc_model.cc
     glonass_gnav_ephemeris.cc
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc

@@ -70,12 +70,6 @@ public:
         archive& make_nvp("d_DeltaT_LSF", d_DeltaT_LSF);
         archive& make_nvp("valid", valid);
     }
-
-    /*!
-     * \brief Computes the Coordinated Universal Time (UTC) and
-     * returns it in [s] (IS-GPS-200K, 20.3.3.5.2.4)
-     */
-    double utc_time(double gpstime_corrected, int32_t i_GPS_week);
 };
 
 #endif

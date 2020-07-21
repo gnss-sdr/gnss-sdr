@@ -1,6 +1,6 @@
 /*!
  * \file gps_cnav_utc_model.h
- * \brief  Interface of a GPS UTC MODEL storage
+ * \brief  Interface of a GPS CNAV UTC MODEL storage
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -------------------------------------------------------------------------
@@ -36,12 +36,6 @@ public:
      * Default constructor
      */
     Gps_CNAV_Utc_Model() = default;
-
-    /*!
-     * \brief Computes the Coordinated Universal Time (UTC) and
-     * returns it in [s] (IS-GPS-200K, 20.3.3.5.2.4 + 30.3.3.6.2)
-     */
-    double utc_time(double gpstime_corrected, int32_t i_GPS_week);
 
     // UTC parameters
     double d_A2{};           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200K) [s/s]

@@ -5,7 +5,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -21,6 +21,7 @@
 #include "galileo_telemetry_decoder_gs.h"
 #include "Galileo_E1.h"   // for GALILEO_E1_CODE_PERIOD_MS
 #include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIO...
+#include "Galileo_E5b.h"  // for GALILEO_E5B_CODE_PERIOD_MS
 #include "convolutional.h"
 #include "display.h"
 #include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
@@ -48,6 +49,13 @@ galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_typ
     return galileo_telemetry_decoder_gs_sptr(new galileo_telemetry_decoder_gs(satellite, frame_type, dump));
 }
 
+void galileo_telemetry_decoder_gs::set_signal_type(gr_vector_const_void_star &input_items)
+{
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
+    Gnss_Synchro current_symbol{};                                               // structure to save the synchronization information and send the output object to the next block
+    current_symbol = in[0][0];
+    signal = current_symbol.Signal[0];
+}
 
 galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     const Gnss_Satellite &satellite, int frame_type,
@@ -73,7 +81,14 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
         {
         case 1:  // INAV
             {
-                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
+                if (signal == '1')
+                    {
+                        d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
+                    }
+                else if (signal == '7')
+                    {
+                        d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5B_CODE_PERIOD_MS * GALILEO_E5B_I_SECONDARY_CODE_LENGTH);
+                    }
                 d_bits_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 // set the preamble
                 d_samples_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
@@ -255,11 +270,25 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             d_inav_nav.split_page(page_String, flag_even_word_arrived);
             if (d_inav_nav.get_flag_CRC_test() == true)
                 {
-                    DLOG(INFO) << "Galileo E1 CRC correct in channel " << d_channel << " from satellite " << d_satellite;
+                    if (signal == '1')
+                        {
+                            DLOG(INFO) << "Galileo E1 CRC correct in channel " << d_channel << " from satellite " << d_satellite;
+                        }
+                    else if (signal == '7')
+                        {
+                            DLOG(INFO) << "Galileo E5b CRC correct in channel " << d_channel << " from satellite " << d_satellite;
+                        }
                 }
             else
                 {
-                    DLOG(INFO) << "Galileo E1 CRC error in channel " << d_channel << " from satellite " << d_satellite;
+                    if (signal == '1')
+                        {
+                            DLOG(INFO) << "Galileo E1 CRC error in channel " << d_channel << " from satellite " << d_satellite;
+                        }
+                    else if (signal == '7')
+                        {
+                            DLOG(INFO) << "Galileo E5b CRC error in channel " << d_channel << " from satellite " << d_satellite;
+                        }
                 }
             flag_even_word_arrived = 0;
         }
@@ -275,21 +304,42 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
-            std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+            if (signal == '1')
+                {
+                    std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+                }
+            else if (signal == '7')
+                {
+                    std::cout << "New Galileo E5b I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+                }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_inav_nav.have_new_iono_and_GST() == true)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_inav_nav.get_iono());
-            std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << '\n';
+            if (signal == '1')
+                {
+                    std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << '\n';
+                }
+            else if (signal == '7')
+                {
+                    std::cout << "New Galileo E5b I/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << '\n';
+                }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
     if (d_inav_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
-            std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
+            if (signal == '1')
+                {
+                    std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
+                }
+            else if (signal == '7')
+                {
+                    std::cout << "New Galileo E5b I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
+                }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             d_delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G_10), 64.0)));
             DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
@@ -299,7 +349,14 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             const std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             // debug
-            std::cout << "Galileo E1 I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
+            if (signal == '1')
+                {
+                    std::cout << "Galileo E1 I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
+                }
+            else if (signal == '7')
+                {
+                    std::cout << "Galileo E5b I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
+                }
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
             DLOG(INFO) << "d_nav.WN_0=" << d_inav_nav.get_Galileo_week();
@@ -642,7 +699,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW5() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
                                         d_inav_nav.set_TOW5_flag(false);
                                     }
 
@@ -650,13 +707,13 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW6() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * GALILEO_E1_CODE_PERIOD_MS);
+                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
                                         d_inav_nav.set_TOW6_flag(false);
                                     }
                                 else
                                     {
                                         // this page has no timing information
-                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD_S;
+                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(d_PRN_code_period_ms);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD_S;
                                     }
                             }
                         break;

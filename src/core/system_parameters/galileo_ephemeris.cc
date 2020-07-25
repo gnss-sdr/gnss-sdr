@@ -5,7 +5,7 @@
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -19,6 +19,7 @@
 
 #include "galileo_ephemeris.h"
 #include "Galileo_E1.h"
+#include "Galileo_E5b.h"
 #include <cmath>
 
 

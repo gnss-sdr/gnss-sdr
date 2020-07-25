@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
  * GNSS-SDR is a software defined Global Navigation
  *          Satellite Systems receiver
@@ -23,6 +23,7 @@
 #define GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H
 
 #include "Galileo_E1.h"
+#include "Galileo_E5b.h"
 #include "Galileo_INAV.h"
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"

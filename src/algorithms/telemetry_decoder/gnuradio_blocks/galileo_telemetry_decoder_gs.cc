@@ -49,13 +49,6 @@ galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_typ
     return galileo_telemetry_decoder_gs_sptr(new galileo_telemetry_decoder_gs(satellite, frame_type, dump));
 }
 
-void galileo_telemetry_decoder_gs::set_signal_type(gr_vector_const_void_star &input_items)
-{
-    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
-    Gnss_Synchro current_symbol{};                                               // structure to save the synchronization information and send the output object to the next block
-    current_symbol = in[0][0];
-    signal = current_symbol.Signal[0];
-}
 
 galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     const Gnss_Satellite &satellite, int frame_type,
@@ -488,6 +481,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     // add new symbol to the symbol queue
+    signal = current_symbol.Signal[0];
     switch (d_frame_type)
         {
         case 1:  // INAV

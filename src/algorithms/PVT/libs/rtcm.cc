@@ -496,8 +496,8 @@ std::string Rtcm::print_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, co
          observables_iter != observables.cend();
          observables_iter++)
         {
-            std::string system_(&observables_iter->second.System, 1);
-            std::string sig_(observables_iter->second.Signal);
+            const std::string system_(&observables_iter->second.System, 1);
+            const std::string sig_(observables_iter->second.Signal);
             if ((system_ == "G") && (sig_ == "1C"))
                 {
                     observablesL1.insert(std::pair<int32_t, Gnss_Synchro>(observables_iter->first, observables_iter->second));
@@ -3467,7 +3467,7 @@ uint32_t Rtcm::lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gn
     const boost::posix_time::ptime current_time = Rtcm::compute_Galileo_time(eph, obs_time);
 
     boost::posix_time::ptime last_lock_time;
-    std::string sig_(gnss_synchro.Signal);
+    const std::string sig_(gnss_synchro.Signal);
     if (sig_ == "1B")
         {
             last_lock_time = Rtcm::gal_E1_last_lock_time[65 - gnss_synchro.PRN];
@@ -3509,7 +3509,7 @@ uint32_t Rtcm::lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, con
     const boost::posix_time::ptime current_time = Rtcm::compute_GLONASS_time(eph, obs_time);
 
     boost::posix_time::ptime last_lock_time;
-    std::string sig_(gnss_synchro.Signal);
+    const std::string sig_(gnss_synchro.Signal);
     if (sig_ == "1C")
         {
             last_lock_time = Rtcm::glo_L1_last_lock_time[65 - gnss_synchro.PRN];
@@ -5088,10 +5088,10 @@ int32_t Rtcm::set_DF395(const std::map<int32_t, Gnss_Synchro>& gnss_synchro)
          gnss_synchro_iter != gnss_synchro.cend();
          gnss_synchro_iter++)
         {
-            std::string sig_(gnss_synchro_iter->second.Signal);
+            const std::string sig_(gnss_synchro_iter->second.Signal);
             sig = sig_.substr(0, 2);
 
-            std::string sys(&gnss_synchro_iter->second.System, 1);
+            const std::string sys(&gnss_synchro_iter->second.System, 1);
 
             if ((sig == "1C") && (sys == "G"))
                 {
@@ -5167,10 +5167,10 @@ std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
         {
             list_of_sats.push_back(observables_iter->second.PRN);
 
-            std::string sig_(observables_iter->second.Signal);
+            const std::string sig_(observables_iter->second.Signal);
             sig = sig_.substr(0, 2);
 
-            std::string sys(&observables_iter->second.System, 1);
+            const std::string sys(&observables_iter->second.System, 1);
 
             if ((sig == "1C") && (sys == "G"))
                 {
@@ -5219,9 +5219,9 @@ std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
                          observables_iter != observables.cend();
                          observables_iter++)
                         {
-                            std::string sig_(observables_iter->second.Signal);
+                            const std::string sig_(observables_iter->second.Signal);
                             sig = sig_.substr(0, 2);
-                            std::string sys(&observables_iter->second.System, 1);
+                            const std::string sys(&observables_iter->second.System, 1);
 
                             if ((sig == "1C") && (sys == "G") && (list_of_signals.at(row) == 32 - 2) && (observables_iter->second.PRN == list_of_sats.at(sat)))
                                 {

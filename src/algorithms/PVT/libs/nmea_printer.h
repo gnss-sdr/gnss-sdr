@@ -54,19 +54,19 @@ public:
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device
      */
-    bool Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_average_values);
+    bool Print_Nmea_Line(const Rtklib_Solver* const pvt_data, bool print_average_values);
 
 private:
     int init_serial(const std::string& serial_device);  // serial port control
     void close_serial();
-    std::string get_GPGGA();  // fix data
-    std::string get_GPGSV();  // satellite data
-    std::string get_GPGSA();  // overall satellite reception data
-    std::string get_GPRMC();  // minimum recommended data
-    std::string get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time);
-    std::string longitude_to_hm(double longitude);
-    std::string latitude_to_hm(double lat);
-    char checkSum(const std::string& sentence);
+    std::string get_GPGGA() const;  // fix data
+    std::string get_GPGSV() const;  // satellite data
+    std::string get_GPGSA() const;  // overall satellite reception data
+    std::string get_GPRMC() const;  // minimum recommended data
+    std::string get_UTC_NMEA_time(const boost::posix_time::ptime d_position_UTC_time) const;
+    std::string longitude_to_hm(double longitude) const;
+    std::string latitude_to_hm(double lat) const;
+    char checkSum(const std::string& sentence) const;
 
     const Rtklib_Solver* d_PVT_data;
 

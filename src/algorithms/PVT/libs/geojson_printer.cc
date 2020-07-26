@@ -177,7 +177,7 @@ bool GeoJSON_Printer::set_headers(const std::string& filename, bool time_tag_nam
 }
 
 
-bool GeoJSON_Printer::print_position(const Pvt_Solution* position, bool print_average_values)
+bool GeoJSON_Printer::print_position(const Pvt_Solution* const position, bool print_average_values)
 {
     double latitude;
     double longitude;

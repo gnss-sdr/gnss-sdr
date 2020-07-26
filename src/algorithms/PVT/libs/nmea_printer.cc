@@ -208,7 +208,7 @@ void Nmea_Printer::close_serial()
 }
 
 
-bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_average_values)
+bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* const pvt_data, bool print_average_values)
 {
     // set the new PVT data
     d_PVT_data = pvt_data;
@@ -273,7 +273,7 @@ bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* pvt_data, bool print_ave
 }
 
 
-char Nmea_Printer::checkSum(const std::string& sentence)
+char Nmea_Printer::checkSum(const std::string& sentence) const
 {
     char check = 0;
     // iterate over the string, XOR each byte with the total sum:
@@ -286,7 +286,7 @@ char Nmea_Printer::checkSum(const std::string& sentence)
 }
 
 
-std::string Nmea_Printer::latitude_to_hm(double lat)
+std::string Nmea_Printer::latitude_to_hm(double lat) const
 {
     bool north;
     if (lat < 0.0)
@@ -324,7 +324,7 @@ std::string Nmea_Printer::latitude_to_hm(double lat)
 }
 
 
-std::string Nmea_Printer::longitude_to_hm(double longitude)
+std::string Nmea_Printer::longitude_to_hm(double longitude) const
 {
     bool east;
     if (longitude < 0.0)
@@ -361,7 +361,7 @@ std::string Nmea_Printer::longitude_to_hm(double longitude)
 }
 
 
-std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_UTC_time)
+std::string Nmea_Printer::get_UTC_NMEA_time(const boost::posix_time::ptime d_position_UTC_time) const
 {
     // UTC Time: hhmmss.sss
     std::stringstream sentence_str;
@@ -409,7 +409,7 @@ std::string Nmea_Printer::get_UTC_NMEA_time(boost::posix_time::ptime d_position_
 }
 
 
-std::string Nmea_Printer::get_GPRMC()
+std::string Nmea_Printer::get_GPRMC() const
 {
     // Sample -> $GPRMC,161229.487,A,3723.2475,N,12158.3416,W,0.13,309.62,120598,*10
     std::stringstream sentence_str;
@@ -420,7 +420,7 @@ std::string Nmea_Printer::get_GPRMC()
 }
 
 
-std::string Nmea_Printer::get_GPGSA()
+std::string Nmea_Printer::get_GPGSA() const
 {
     // $GPGSA,A,3,07,02,26,27,09,04,15, , , , , ,1.8,1.0,1.5*33
     // GSA-GNSS DOP and Active Satellites
@@ -432,7 +432,7 @@ std::string Nmea_Printer::get_GPGSA()
 }
 
 
-std::string Nmea_Printer::get_GPGSV()
+std::string Nmea_Printer::get_GPGSV() const
 {
     // GSV-GNSS Satellites in View
     // $GPGSV,2,1,07,07,79,048,42,02,51,062,43,26,36,256,42,27,27,138,42*71
@@ -445,7 +445,7 @@ std::string Nmea_Printer::get_GPGSV()
 }
 
 
-std::string Nmea_Printer::get_GPGGA()
+std::string Nmea_Printer::get_GPGGA() const
 {
     std::stringstream sentence_str;
     std::array<unsigned char, 1024> buff{};

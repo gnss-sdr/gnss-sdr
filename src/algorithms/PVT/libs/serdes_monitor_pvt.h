@@ -71,7 +71,7 @@ public:
         return *this;
     }
 
-    inline std::string createProtobuffer(const Monitor_Pvt* monitor)  //!< Serialization into a string
+    inline std::string createProtobuffer(const Monitor_Pvt* const monitor)  //!< Serialization into a string
     {
         monitor_.Clear();
 
@@ -111,7 +111,7 @@ public:
         return data;
     }
 
-    inline Monitor_Pvt readProtobuffer(const gnss_sdr::MonitorPvt& mon)  //!< Deserialization
+    inline Monitor_Pvt readProtobuffer(const gnss_sdr::MonitorPvt& mon) const  //!< Deserialization
     {
         Monitor_Pvt monitor;
 

@@ -38,7 +38,7 @@ class Monitor_Pvt_Udp_Sink
 {
 public:
     Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool protobuf_enabled);
-    bool write_monitor_pvt(const Monitor_Pvt* monitor_pvt);
+    bool write_monitor_pvt(const Monitor_Pvt* const monitor_pvt);
 
 private:
     Serdes_Monitor_Pvt serdes;

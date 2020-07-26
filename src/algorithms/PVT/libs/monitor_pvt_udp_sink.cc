@@ -40,7 +40,7 @@ Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addre
 }
 
 
-bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt* monitor_pvt)
+bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt* const monitor_pvt)
 {
     std::string outbound_data;
     if (use_protobuf == false)

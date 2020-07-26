@@ -39,7 +39,7 @@ public:
     explicit GeoJSON_Printer(const std::string& base_path = ".");
     ~GeoJSON_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
-    bool print_position(const Pvt_Solution* position, bool print_average_values);
+    bool print_position(const Pvt_Solution* const position, bool print_average_values);
     bool close_file();
 
 private:

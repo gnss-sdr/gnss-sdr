@@ -533,7 +533,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     {
                         // GPS L1
                         // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
-                        std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string sig_(gnss_observables_iter->second.Signal);
                         if (sig_ == "1C")
                             {
                                 gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -977,7 +977,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     this->set_time_offset_s(rx_position_and_time[3]);
 
-                    DLOG(INFO) << "RTKLIB Position at RX TOW = " << gnss_observables_map.begin()->second.RX_time
+                    DLOG(INFO) << "RTKLIB Position at RX TOW = " << gnss_observables_map.cbegin()->second.RX_time
                                << " in ECEF (X,Y,Z,t[meters]) = " << rx_position_and_time[0] << ", " << rx_position_and_time[1] << ", " << rx_position_and_time[2] << ", " << rx_position_and_time[4];
 
                     // gtime_t rtklib_utc_time = gpst2utc(pvt_sol.time); // Corrected RX Time (Non integer multiply of 1 ms of granularity)
@@ -996,11 +996,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     // ######## PVT MONITOR #########
                     // TOW
-                    monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
+                    monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                     // WEEK
                     monitor_pvt.week = adjgpsweek(nav_data.eph[0].week, this->is_pre_2009());
                     // PVT GPS time
-                    monitor_pvt.RX_time = gnss_observables_map.begin()->second.RX_time;
+                    monitor_pvt.RX_time = gnss_observables_map.cbegin()->second.RX_time;
                     // User clock offset [s]
                     monitor_pvt.user_clk_offset = rx_position_and_time[3];
 
@@ -1021,11 +1021,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     monitor_pvt.cov_zx = pvt_sol.qr[5];
 
                     // GEO user position Latitude [deg]
-                    monitor_pvt.latitude = get_latitude();
+                    monitor_pvt.latitude = this->get_latitude();
                     // GEO user position Longitude [deg]
-                    monitor_pvt.longitude = get_longitude();
+                    monitor_pvt.longitude = this->get_longitude();
                     // GEO user position Height [m]
-                    monitor_pvt.height = get_height();
+                    monitor_pvt.height = this->get_height();
 
                     // NUMBER OF VALID SATS
                     monitor_pvt.valid_sats = pvt_sol.ns;
@@ -1061,13 +1061,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     double tmp_double;
                                     uint32_t tmp_uint32;
                                     // TOW
-                                    tmp_uint32 = gnss_observables_map.begin()->second.TOW_at_current_symbol_ms;
+                                    tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // WEEK
                                     tmp_uint32 = adjgpsweek(nav_data.eph[0].week, this->is_pre_2009());
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
-                                    tmp_double = gnss_observables_map.begin()->second.RX_time;
+                                    tmp_double = gnss_observables_map.cbegin()->second.RX_time;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     // User clock offset [s]
                                     tmp_double = rx_position_and_time[3];
@@ -1102,13 +1102,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // GEO user position Latitude [deg]
-                                    tmp_double = get_latitude();
+                                    tmp_double = this->get_latitude();
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     // GEO user position Longitude [deg]
-                                    tmp_double = get_longitude();
+                                    tmp_double = this->get_longitude();
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     // GEO user position Height [m]
-                                    tmp_double = get_height();
+                                    tmp_double = this->get_height();
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // NUMBER OF VALID SATS
@@ -1135,5 +1135,5 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                 }
         }
-    return is_valid_position();
+    return this->is_valid_position();
 }

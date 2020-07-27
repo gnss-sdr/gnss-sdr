@@ -92,7 +92,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     // turn switch to A/D position
     const std::string default_device_name("/dev/uio1");
-    std::string device_name = configuration->property(role + ".devicename", default_device_name);
+    const std::string device_name = configuration->property(role + ".devicename", default_device_name);
     switch_position = configuration->property(role + ".switch_position", 0);
     if (switch_position != 0 && switch_position != 2)
         {
@@ -373,7 +373,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
 {
     const int MAX_INPUT_SAMPLES_TOTAL = 16384;
     int max_value = 0;
-    int tx_fd;  // DMA descriptor
     std::ifstream infile1;
     infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
@@ -411,7 +410,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     //**************************************************************************
     // Open DMA device
     //**************************************************************************
-    tx_fd = open("/dev/loop_tx", O_WRONLY);
+    const int tx_fd = open("/dev/loop_tx", O_WRONLY);
     if (tx_fd < 0)
         {
             std::cout << "Cannot open loop device\n";
@@ -535,9 +534,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
 
                     for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                         {
-                            input_samples[index0] = input_samples[index0];
-                            input_samples[index0 + 1] = input_samples[index0 + 1];
-
                             if (input_samples[index0] > max_value)
                                 {
                                     max_value = input_samples[index0];
@@ -570,7 +566,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
             if (nread_elements > 0)
                 {
                     num_transferred_bytes = nread_elements * 2;
-                    int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
+                    const int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
                     if (num_bytes_sent != num_transferred_bytes)
                         {
                             std::cerr << "Error: DMA could not send all the required samples\n";

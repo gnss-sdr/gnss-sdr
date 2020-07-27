@@ -156,7 +156,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    int message = 1;  // bad telemetry
+                    const int message = 1;  // bad telemetry
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;
                 }
@@ -164,7 +164,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
 
     cnav_msg_t msg;
     uint32_t delay;
-    uint8_t symbol_clip = static_cast<uint8_t>(current_synchro_data.Prompt_Q > 0) * 255;
+    const auto symbol_clip = static_cast<uint8_t>(current_synchro_data.Prompt_Q > 0) * 255;
     // 2. Add the telemetry decoder information
     // check if new CNAV frame is available
     if (cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay) == true)

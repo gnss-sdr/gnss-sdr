@@ -334,7 +334,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    int message = 1;  // bad telemetry
+                    const int message = 1;  // bad telemetry
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;
                 }
@@ -376,7 +376,6 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             {
                 // correlate with preamble
                 int32_t corr_value = 0;
-                int32_t preamble_diff = 0;
                 if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
                     {
                         // ******* preamble correlation ********
@@ -395,7 +394,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                 if (abs(corr_value) >= d_samples_per_preamble)
                     {
                         // check preamble separation
-                        preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
+                        const auto preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
                         if (abs(preamble_diff - d_preamble_period_symbols) == 0)
                             {
                                 DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;

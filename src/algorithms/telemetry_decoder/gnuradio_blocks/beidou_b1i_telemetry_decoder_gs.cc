@@ -202,6 +202,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
 {
     // 1. Transform from symbols to bits
     std::string data_bits;
+    data_bits.reserve(BEIDOU_DNAV_WORDS_SUBFRAME * BEIDOU_DNAV_WORD_LENGTH_BITS);
     std::array<int32_t, 30> dec_word_bits{};
 
     // Decode each word in subframe

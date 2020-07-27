@@ -237,6 +237,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 
     // 3. Call the Galileo page decoder
     std::string page_String;
+    page_String.reserve(frame_length / 2);
     for (int32_t i = 0; i < (frame_length / 2); i++)
         {
             if (page_part_bits[i] > 0)
@@ -328,6 +329,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 
     // 3. Call the Galileo page decoder
     std::string page_String;
+    page_String.reserve(frame_length);
     for (int32_t i = 0; i < frame_length; i++)
         {
             if (page_bits[i] > 0)
@@ -458,7 +460,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    int message = 1;  // bad telemetry
+                    const int message = 1;  // bad telemetry
                     DLOG(INFO) << "sent msg sat " << this->d_satellite;
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;

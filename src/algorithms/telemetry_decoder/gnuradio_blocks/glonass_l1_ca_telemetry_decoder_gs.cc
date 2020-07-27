@@ -118,8 +118,11 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
 
     // 1. Transform from symbols to bits
     std::string bi_binary_code;
+    bi_binary_code.reserve(frame_length / GLONASS_GNAV_TELEMETRY_SYMBOLS_PER_BIT);
     std::string relative_code;
+    relative_code.reserve(GLONASS_GNAV_STRING_BITS);
     std::string data_bits;
+    data_bits.reserve(GLONASS_GNAV_STRING_BITS + 1);
 
     // Group samples into bi-binary code
     for (int32_t i = 0; i < (frame_length); i++)

@@ -161,7 +161,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
-                    int message = 1;  // bad telemetry
+                    const int message = 1;  // bad telemetry
                     this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
                     d_sent_tlm_failed_msg = true;
                 }

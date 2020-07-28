@@ -4,7 +4,7 @@
  * \author Matthew C. Valenti, 2006-2008.
  * \author C. Fernandez-Prades, 2019.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
  * Copyright (C) 2006-2008  Matthew C. Valenti
  * Copyright (C) 2019 C. Fernandez-Prades

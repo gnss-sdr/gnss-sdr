@@ -3,7 +3,7 @@
  * \brief Utilities for the convolutional encoder of the libswiftnav library
  * \author Phil Karn, KA9Q
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * This file was originally borrowed from libswiftnav
  * <https://github.com/swift-nav/libswiftnav>,
  * a portable C library implementing GNSS related functions and algorithms,

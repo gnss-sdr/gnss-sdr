@@ -4,7 +4,7 @@
  * \author Henry Hallam <henry@swift-nav.com>
  *         Fergus Noble <fergus@swift-nav.com>
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * This file was originally borrowed from libswiftnav
  * <https://github.com/swift-nav/libswiftnav>,
  * a portable C library implementing GNSS related functions and algorithms,

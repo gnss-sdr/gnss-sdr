@@ -19,7 +19,7 @@
  * Neither the executive binaries nor the shared libraries are required by, used
  * or included in GNSS-SDR.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
  * Copyright (C) 2017, Carles Fernandez
@@ -27,14 +27,15 @@
  *
  * SPDX-License-Identifier: BSD-2-Clause
  *
- *----------------------------------------------------------------------------*/
+ * -----------------------------------------------------------------------------
+ */
 
 #include "rtklib_ephemeris.h"
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
 
-/* constants ------------------------------------------------------*/
+/* constants -----------------------------------------------------------------*/
 
 const double RE_GLO = 6378136.0;      /* radius of earth (m)            ref [2] */
 const double MU_GPS = 3.9860050e14;   /* gravitational constant         ref [1] */

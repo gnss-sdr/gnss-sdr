@@ -6,7 +6,7 @@
  * It sets up the logging system, creates a ControlThread object,
  * makes it run, and releases memory back when the main thread has ended.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
@@ -17,7 +17,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_VERSION

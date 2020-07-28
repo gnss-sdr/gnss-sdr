@@ -19,7 +19,7 @@
  * Neither the executive binaries nor the shared libraries are required by, used
  * or included in GNSS-SDR.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
  * Copyright (C) 2017, Carles Fernandez
@@ -29,15 +29,16 @@
  *
  *
  * References :
- *     [1] S.Hilla, The Extended Standard Product 3 Orbit Format (SP3-c),
- *         12 February, 2007
- *     [2] J.Ray, W.Gurtner, RINEX Extensions to Handle Clock Information,
- *         27 August, 1998
- *     [3] D.D.McCarthy, IERS Technical Note 21, IERS Conventions 1996, July 1996
- *     [4] D.A.Vallado, Fundamentals of Astrodynamics and Applications 2nd ed,
- *         Space Technology Library, 2004
+ *    [1] S.Hilla, The Extended Standard Product 3 Orbit Format (SP3-c),
+ *        12 February, 2007
+ *    [2] J.Ray, W.Gurtner, RINEX Extensions to Handle Clock Information,
+ *        27 August, 1998
+ *    [3] D.D.McCarthy, IERS Technical Note 21, IERS Conventions 1996, July 1996
+ *    [4] D.A.Vallado, Fundamentals of Astrodynamics and Applications 2nd ed,
+ *        Space Technology Library, 2004
  *
- *----------------------------------------------------------------------------*/
+ * -----------------------------------------------------------------------------
+ */
 
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"

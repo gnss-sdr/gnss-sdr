@@ -3,7 +3,7 @@
  * \brief Implements a notch filter algorithm
  * \author Antonio Ramos (antonio.ramosdet(at)gmail.com)
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
  *
@@ -14,7 +14,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_NOTCH_H

@@ -19,7 +19,7 @@
  * Neither the executive binaries nor the shared libraries are required by, used
  * or included in GNSS-SDR.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * Copyright (C) 2015, T. Takasu
  * Copyright (C) 2017, Javier Arribas
  * Copyright (C) 2017, Carles Fernandez
@@ -37,7 +37,8 @@
  *         May 2009
  *     [5] G.Petit and B.Luzum (eds), IERS Technical Note No. 36, IERS
  *         Conventions (2010), 2010
- *----------------------------------------------------------------------------*/
+ * -----------------------------------------------------------------------------
+ */
 
 
 #ifndef GNSS_SDR_RTKLIB_TIDES_H

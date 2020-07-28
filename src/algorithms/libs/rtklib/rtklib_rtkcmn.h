@@ -19,7 +19,7 @@
  * Neither the executive binaries nor the shared libraries are required by, used
  * or included in GNSS-SDR.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
  * Copyright (C) 2017, Carles Fernandez
@@ -52,7 +52,8 @@
  *     [10] GLONASS/GPS/Galileo/Compass/SBAS NV08C receiver series BINR interface
  *         protocol specification ver.1.3, August, 2012
  *
- *----------------------------------------------------------------------------*/
+ * -----------------------------------------------------------------------------
+ */
 
 #ifndef GNSS_SDR_RTKLIB_RTKCMN_H
 #define GNSS_SDR_RTKLIB_RTKCMN_H

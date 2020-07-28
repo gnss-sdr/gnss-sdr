@@ -3,9 +3,8 @@
  * \brief This class implements various functions for BeiDou B1I signal
  * \author Damian Miralles, 2019. dmiralles2009@gmail.com
  *
- * Detailed description of the file here if needed.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2015  (see AUTHORS file for a list of contributors)
  *
@@ -16,7 +15,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "beidou_b3i_signal_processing.h"

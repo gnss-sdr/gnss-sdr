@@ -62,7 +62,7 @@ public:
     std::unique_ptr<GNSSBlockInterface> GetPVT(const ConfigurationInterface* configuration);
 
     /*!
-     * \brief Returns the block with the required role implementation and its configuration parameters 
+     * \brief Returns the block with the required role implementation and its configuration parameters
      */
     std::unique_ptr<GNSSBlockInterface> GetBlock(const ConfigurationInterface* configuration,
         const std::string& role,

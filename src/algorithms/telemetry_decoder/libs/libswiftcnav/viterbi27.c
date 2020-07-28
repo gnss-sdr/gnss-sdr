@@ -3,7 +3,7 @@
  * \author Phil Karn, KA9Q
  * \brief K=7 r=1/2 Viterbi decoder in portable C
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * This file was originally borrowed from libswiftnav
  * <https://github.com/swift-nav/libswiftnav>,
  * a portable C library implementing GNSS related functions and algorithms,

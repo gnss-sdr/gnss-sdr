@@ -3,7 +3,7 @@
  * \brief GNU Radio source block that generates synthesized GNSS signal.
  * \author Marc Molina, 2013. marc.molina.pena@gmail.com
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
@@ -14,7 +14,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H

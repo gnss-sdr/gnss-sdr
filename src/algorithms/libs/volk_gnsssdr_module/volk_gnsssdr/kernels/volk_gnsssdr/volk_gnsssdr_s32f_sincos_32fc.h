@@ -8,7 +8,7 @@
  *
  * VOLK_GNSSSDR kernel that computes the sine and cosine of a vector of floats.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  *
  * Copyright (C) 2007  Julien Pommier
  *

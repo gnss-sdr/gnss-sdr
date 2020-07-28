@@ -19,7 +19,7 @@
  * Neither the executive binaries nor the shared libraries are required by, used
  * or included in GNSS-SDR.
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
  * Copyright (C) 2017, Carles Fernandez
@@ -34,7 +34,8 @@
  *         Maps based on GPS Carrier Phase Data Routinely produced by CODE
  *         Analysis Center, Proceeding of the IGS Analysis Center Workshop, 1996
  *
- *----------------------------------------------------------------------------*/
+ * -----------------------------------------------------------------------------
+ */
 
 #ifndef GNSS_SDR_RTKLIB_IONEX_H
 #define GNSS_SDR_RTKLIB_IONEX_H

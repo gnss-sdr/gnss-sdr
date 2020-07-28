@@ -19,7 +19,7 @@
  * Returns 0 on success, line number of first error on parse error, or -1 on
  * file open error
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  * inih and INIReader are released under the New BSD license:
  *
  * Copyright (c) 2009, Brush Technology
@@ -30,7 +30,7 @@
  * Go to the project home page for more info:
  *
  * https://github.com/benhoyt/inih
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 #include "ini.h"

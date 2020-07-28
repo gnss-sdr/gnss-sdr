@@ -340,7 +340,7 @@ private:
     bool flag_TOW_set{};    // it is true when page 5 or page 6 arrives
     bool flag_utc_model{};  // Flag indicating that utc model parameters (word 6) have been received
 
-    bool flag_all_almanac{};  // Flag indicating that all almanac have been received
+    bool flag_all_almanac{};  // Flag indicating that all Almanac data have been received
     bool flag_almanac_1{};    // Flag indicating that almanac 1/4 (word 7) have been received
     bool flag_almanac_2{};    // Flag indicating that almanac 2/4 (word 8) have been received
     bool flag_almanac_3{};    // Flag indicating that almanac 3/4 (word 9) have been received

@@ -192,7 +192,7 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             // get object for this SV (mandatory)
             const std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "GLONASS GNAV UTC Model have been received in channel" << d_channel << " from satellite " << d_satellite;
+            LOG(INFO) << "GLONASS GNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite;
             std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
         }
     if (d_nav.have_new_almanac() == true)
@@ -201,7 +201,7 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             const std::shared_ptr<Glonass_Gnav_Almanac>
                 tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "GLONASS GNAV Almanac have been received in channel" << d_channel << " in slot number " << slot_nbr;
+            LOG(INFO) << "GLONASS GNAV Almanac data have been received in channel" << d_channel << " in slot number " << slot_nbr;
             std::cout << "New GLONASS L1 GNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
         }
     // 5. Update satellite information on system

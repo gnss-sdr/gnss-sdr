@@ -257,7 +257,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             const std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj =
                 std::make_shared<Beidou_Dnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV UTC Model have been received in channel"
+            LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel"
                       << d_channel << " from satellite " << d_satellite;
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV utc model message received in channel "
                       << d_channel << ": UTC model parameters from satellite "
@@ -269,7 +269,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             const std::shared_ptr<Beidou_Dnav_Iono> tmp_obj =
                 std::make_shared<Beidou_Dnav_Iono>(d_nav.get_iono());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Iono have been received in channel" << d_channel
+            LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel
                       << " from satellite " << d_satellite;
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV Iono message received in channel "
                       << d_channel << ": Iono model parameters from satellite "
@@ -282,7 +282,7 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             //            std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
             //            this->message_port_pub(pmt::mp("telemetry"),
             //            pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Almanac have been received in channel"
+            LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel"
                       << d_channel << " from satellite " << d_satellite << '\n';
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV almanac received in channel " << d_channel
                       << " from satellite " << d_satellite << TEXT_RESET << '\n';

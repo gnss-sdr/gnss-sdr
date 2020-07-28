@@ -978,7 +978,7 @@ bool Beidou_Dnav_Navigation_Message::have_new_almanac()
 {
     if ((flag_d1_sf4 == true) and (flag_d1_sf5 == true))
         {
-            // All almanac have been received
+            // All Almanac data have been received
             flag_d1_sf4 = false;
             flag_d1_sf5 = false;
 

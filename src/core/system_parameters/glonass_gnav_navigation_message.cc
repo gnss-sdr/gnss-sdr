@@ -668,7 +668,7 @@ bool Glonass_Gnav_Navigation_Message::have_new_almanac()  // Check if we have a 
         {
             if (d_previous_Na[i_alm_satellite_slot_number] != gnav_utc_model.d_N_A)
                 {
-                    // All almanac have been received for this satellite
+                    // All Almanac data have been received for this satellite
                     flag_almanac_str_6 = false;
                     flag_almanac_str_7 = false;
                     new_alm = true;

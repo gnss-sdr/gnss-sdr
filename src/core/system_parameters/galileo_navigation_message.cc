@@ -252,7 +252,7 @@ bool Galileo_Navigation_Message::have_new_almanac()  // Check if we have a new a
 {
     if ((flag_almanac_1 == true) and (flag_almanac_2 == true) and (flag_almanac_3 == true) and (flag_almanac_4 == true))
         {
-            // All almanac have been received
+            // All Almanac data have been received
             flag_almanac_1 = false;
             flag_almanac_2 = false;
             flag_almanac_3 = false;

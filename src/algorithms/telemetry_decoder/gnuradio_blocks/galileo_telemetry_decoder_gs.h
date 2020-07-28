@@ -70,6 +70,7 @@ public:
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
+
 private:
     friend galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
@@ -135,6 +136,8 @@ private:
     bool d_flag_parity;
     bool d_flag_preamble;
     bool d_dump;
+
+    char signal;  // This variable will store which signal we are dealing with (Galileo E1 or E5b)
 };
 
 #endif  // GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H

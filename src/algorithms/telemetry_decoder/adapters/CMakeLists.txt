@@ -15,6 +15,7 @@ set(TELEMETRY_DECODER_ADAPTER_SOURCES
     galileo_e1b_telemetry_decoder.cc
     sbas_l1_telemetry_decoder.cc
     galileo_e5a_telemetry_decoder.cc
+    galileo_e5b_telemetry_decoder.cc
     glonass_l1_ca_telemetry_decoder.cc
     glonass_l2_ca_telemetry_decoder.cc
     beidou_b1i_telemetry_decoder.cc
@@ -28,6 +29,7 @@ set(TELEMETRY_DECODER_ADAPTER_HEADERS
     galileo_e1b_telemetry_decoder.h
     sbas_l1_telemetry_decoder.h
     galileo_e5a_telemetry_decoder.h
+    galileo_e5b_telemetry_decoder.h
     glonass_l1_ca_telemetry_decoder.h
     glonass_l2_ca_telemetry_decoder.h
     beidou_b1i_telemetry_decoder.h

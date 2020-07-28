@@ -1,5 +1,5 @@
 /*!
- * \file galileo_navigation_message.h
+ * \file galileo_inav_message.h
  * \brief  Implementation of a Galileo I/NAV Data message
  *         as described in Galileo OS SIS ICD Issue 1.2 (Nov. 2015)
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
@@ -19,11 +19,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H
-#define GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H
+#ifndef GNSS_SDR_GALILEO_INAV_MESSAGE_H
+#define GNSS_SDR_GALILEO_INAV_MESSAGE_H
 
-#include "Galileo_E1.h"
-#include "Galileo_E5b.h"
 #include "Galileo_INAV.h"
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
@@ -41,10 +39,10 @@
  * Galileo Open Service Signal in Space Interface Control Document (OS SIS ICD), Issue 1.2 (Nov 2015).
  * See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf
  */
-class Galileo_Navigation_Message
+class Galileo_Inav_Message
 {
 public:
-    Galileo_Navigation_Message() = default;
+    Galileo_Inav_Message() = default;
 
     /*
      * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
@@ -353,4 +351,4 @@ private:
     bool flag_GGTO_4{};
 };
 
-#endif  // GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H
+#endif  // GNSS_SDR_GALILEO_INAV_MESSAGE_H

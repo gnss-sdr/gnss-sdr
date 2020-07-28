@@ -25,7 +25,7 @@
 
 
 #include "galileo_fnav_message.h"
-#include "galileo_navigation_message.h"
+#include "galileo_inav_message.h"
 #include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
@@ -105,7 +105,7 @@ private:
     Gnss_Satellite d_satellite;
 
     // navigation message vars
-    Galileo_Navigation_Message d_inav_nav;
+    Galileo_Inav_Message d_inav_nav;
     Galileo_Fnav_Message d_fnav_nav;
 
     double d_delta_t;  // GPS-GALILEO time offset

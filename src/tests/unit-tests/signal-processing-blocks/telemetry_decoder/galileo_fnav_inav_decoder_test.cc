@@ -21,8 +21,7 @@
 
 #include "convolutional.h"
 #include "galileo_fnav_message.h"
-#include "galileo_navigation_message.h"
-#include <armadillo>
+#include "galileo_inav_message.h"
 #include <gtest/gtest.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <chrono>
@@ -34,7 +33,7 @@
 class Galileo_FNAV_INAV_test : public ::testing::Test
 {
 public:
-    Galileo_Navigation_Message INAV_decoder;
+    Galileo_Inav_Message INAV_decoder;
     Galileo_Fnav_Message FNAV_decoder;
     // vars for Viterbi decoder
     int32_t *out0, *out1, *state0, *state1;

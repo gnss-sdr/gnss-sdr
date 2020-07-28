@@ -16,7 +16,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     galileo_utc_model.cc
     galileo_ephemeris.cc
     galileo_almanac_helper.cc
-    galileo_navigation_message.cc
+    galileo_inav_message.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
     sbas_ephemeris.cc
@@ -46,7 +46,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     Galileo_FNAV.h
     Galileo_INAV.h
     galileo_iono.h
-    galileo_navigation_message.h
+    galileo_inav_message.h
     sbas_ephemeris.h
     galileo_fnav_message.h
     gps_cnav_ephemeris.h

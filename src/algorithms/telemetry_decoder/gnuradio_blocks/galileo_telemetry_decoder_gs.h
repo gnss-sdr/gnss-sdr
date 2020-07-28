@@ -1,7 +1,9 @@
 /*!
  * \file galileo_telemetry_decoder_gs.h
- * \brief Implementation of a Galileo unified INAV and FNAV message demodulator block
+ * \brief Implementation of a Galileo unified INAV and FNAV message demodulator
+ * block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
+ *
  *
  * -----------------------------------------------------------------------------
  *
@@ -130,14 +132,14 @@ private:
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_max_symbols_without_valid_frame;
 
+    char d_band;  // This variable will store which band we are dealing with (Galileo E1 or E5b)
+
     bool d_sent_tlm_failed_msg;
     bool d_flag_frame_sync;
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_parity;
     bool d_flag_preamble;
     bool d_dump;
-
-    char signal;  // This variable will store which signal we are dealing with (Galileo E1 or E5b)
 };
 
 #endif  // GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H

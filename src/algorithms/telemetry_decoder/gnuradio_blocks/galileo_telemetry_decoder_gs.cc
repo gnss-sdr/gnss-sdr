@@ -1,7 +1,9 @@
 /*!
  * \file galileo_telemetry_decoder_gs.cc
- * \brief Implementation of a Galileo unified INAV and FNAV message demodulator block
+ * \brief Implementation of a Galileo unified INAV and FNAV message demodulator
+ * block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
+ *
  *
  * -----------------------------------------------------------------------------
  *
@@ -63,6 +65,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
+    d_band = '1';
 
     // initialize internal vars
     d_dump = dump;
@@ -74,14 +77,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
         {
         case 1:  // INAV
             {
-                if (signal == '1')
-                    {
-                        d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);
-                    }
-                else if (signal == '7')
-                    {
-                        d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5B_CODE_PERIOD_MS * GALILEO_E5B_I_SECONDARY_CODE_LENGTH);
-                    }
+                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // for Galileo E5b is also 4 ms
                 d_bits_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 // set the preamble
                 d_samples_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
@@ -264,22 +260,22 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             d_inav_nav.split_page(page_String, flag_even_word_arrived);
             if (d_inav_nav.get_flag_CRC_test() == true)
                 {
-                    if (signal == '1')
+                    if (d_band == '1')
                         {
                             DLOG(INFO) << "Galileo E1 CRC correct in channel " << d_channel << " from satellite " << d_satellite;
                         }
-                    else if (signal == '7')
+                    else if (d_band == '7')
                         {
                             DLOG(INFO) << "Galileo E5b CRC correct in channel " << d_channel << " from satellite " << d_satellite;
                         }
                 }
             else
                 {
-                    if (signal == '1')
+                    if (d_band == '1')
                         {
                             DLOG(INFO) << "Galileo E1 CRC error in channel " << d_channel << " from satellite " << d_satellite;
                         }
-                    else if (signal == '7')
+                    else if (d_band == '7')
                         {
                             DLOG(INFO) << "Galileo E5b CRC error in channel " << d_channel << " from satellite " << d_satellite;
                         }
@@ -298,13 +294,13 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
-            if (signal == '1')
+            if (d_band == '1')
                 {
                     std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
                 }
-            else if (signal == '7')
+            else if (d_band == '7')
                 {
-                    std::cout << "New Galileo E5b I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+                    std::cout << TEXT_BLUE << "New Galileo E5b I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
                 }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
@@ -312,13 +308,13 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_inav_nav.get_iono());
-            if (signal == '1')
+            if (d_band == '1')
                 {
                     std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << '\n';
                 }
-            else if (signal == '7')
+            else if (d_band == '7')
                 {
-                    std::cout << "New Galileo E5b I/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << '\n';
+                    std::cout << TEXT_BLUE << "New Galileo E5b I/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                 }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
@@ -326,13 +322,13 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
-            if (signal == '1')
+            if (d_band == '1')
                 {
                     std::cout << "New Galileo E1 I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
                 }
-            else if (signal == '7')
+            else if (d_band == '7')
                 {
-                    std::cout << "New Galileo E5b I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
+                    std::cout << TEXT_BLUE << "New Galileo E5b I/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                 }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             d_delta_t = tmp_obj->A_0G_10 + tmp_obj->A_1G_10 * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G_10 + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G_10), 64.0)));
@@ -343,11 +339,11 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             const std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             // debug
-            if (signal == '1')
+            if (d_band == '1')
                 {
                     std::cout << "Galileo E1 I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
                 }
-            else if (signal == '7')
+            else if (d_band == '7')
                 {
                     std::cout << "Galileo E5b I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
                 }
@@ -482,8 +478,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     Gnss_Synchro current_symbol{};  // structure to save the synchronization information and send the output object to the next block
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
+    d_band = current_symbol.Signal[0];
+
     // add new symbol to the symbol queue
-    signal = current_symbol.Signal[0];
     switch (d_frame_type)
         {
         case 1:  // INAV
@@ -553,7 +550,6 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             {
                 // correlate with preamble
                 int32_t corr_value = 0;
-                int32_t preamble_diff = 0;
                 if (d_symbol_history.size() > d_required_symbols)
                     {
                         // ******* preamble correlation ********
@@ -571,7 +567,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         if (abs(corr_value) >= d_samples_per_preamble)
                             {
                                 // check preamble separation
-                                preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
+                                const auto preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
                                 if (abs(preamble_diff - d_preamble_period_symbols) == 0)
                                     {
                                         // try to decode frame

@@ -5,7 +5,8 @@
  * \author Piyush Gupta 2020 piyush04111999@gmail.com.
  * \note Code added as part of GSoC 2020 Program.
  *
- * -------------------------------------------------------------------------
+ *
+ * -----------------------------------------------------------------------------
  *
  * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  *
@@ -16,7 +17,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * -------------------------------------------------------------------------
+ * -----------------------------------------------------------------------------
  */
 
 
@@ -106,4 +107,4 @@ private:
     bool dump_;
 };
 
-#endif  // GNSS_SDR_GALELIO_E5B_TELEMETRY_DECODER_H
+#endif  // GNSS_SDR_GALILEO_E5B_TELEMETRY_DECODER_H

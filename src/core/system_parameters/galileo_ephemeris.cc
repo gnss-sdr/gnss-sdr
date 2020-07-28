@@ -19,6 +19,7 @@
 
 #include "galileo_ephemeris.h"
 #include "Galileo_E1.h"
+#include "Galileo_E5b.h"
 #include <cmath>
 
 

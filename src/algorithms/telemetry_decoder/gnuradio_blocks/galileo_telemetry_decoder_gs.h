@@ -1,7 +1,9 @@
 /*!
  * \file galileo_telemetry_decoder_gs.h
- * \brief Implementation of a Galileo unified INAV and FNAV message demodulator block
+ * \brief Implementation of a Galileo unified INAV and FNAV message demodulator
+ * block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
+ *
  *
  * -----------------------------------------------------------------------------
  *
@@ -70,6 +72,7 @@ public:
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
+
 private:
     friend galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
@@ -128,6 +131,8 @@ private:
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_max_symbols_without_valid_frame;
+
+    char d_band;  // This variable will store which band we are dealing with (Galileo E1 or E5b)
 
     bool d_sent_tlm_failed_msg;
     bool d_flag_frame_sync;

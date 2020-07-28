@@ -23,6 +23,7 @@
 #define GNSS_SDR_GALILEO_NAVIGATION_MESSAGE_H
 
 #include "Galileo_E1.h"
+#include "Galileo_E5b.h"
 #include "Galileo_INAV.h"
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"

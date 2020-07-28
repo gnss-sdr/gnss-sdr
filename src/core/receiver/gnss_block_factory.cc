@@ -57,6 +57,7 @@
 #include "galileo_e5a_telemetry_decoder.h"
 #include "galileo_e5b_dll_pll_tracking.h"
 #include "galileo_e5b_pcps_acquisition.h"
+#include "galileo_e5b_telemetry_decoder.h"
 #include "glonass_l1_ca_dll_pll_c_aid_tracking.h"
 #include "glonass_l1_ca_dll_pll_tracking.h"
 #include "glonass_l1_ca_pcps_acquisition.h"
@@ -1209,6 +1210,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 out_streams);
             block = std::move(block_);
         }
+    else if (implementation == "Galileo_E5b_Telemetry_Decoder")
+        {
+            std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GalileoE5bTelemetryDecoder>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
     else if (implementation == "GLONASS_L1_CA_Telemetry_Decoder")
         {
             std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GlonassL1CaTelemetryDecoder>(configuration, role, in_streams,
@@ -1631,6 +1638,12 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
     else if (implementation == "Galileo_E5a_Telemetry_Decoder")
         {
             std::unique_ptr<TelemetryDecoderInterface> block_ = std::make_unique<GalileoE5aTelemetryDecoder>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+    else if (implementation == "Galileo_E5b_Telemetry_Decoder")
+        {
+            std::unique_ptr<TelemetryDecoderInterface> block_ = std::make_unique<GalileoE5bTelemetryDecoder>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }

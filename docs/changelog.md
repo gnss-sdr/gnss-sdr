@@ -24,9 +24,6 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   without debugging symbols), smaller in size and potentially providing better
   performance than non-stripped counterparts. Only for GCC in Release build
   mode. Set to `OFF` by default.
-- Add building option `ENABLE_BENCHMARKS`, which activates the building of
-  benchmarks for some code snippets, making it easier to developers to benchmark
-  different implementations for the same purpose. Set to `OFF` by default.
 
 ### Improvements in Maintainability:
 
@@ -62,10 +59,11 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   fallback. The latter has been updated to version
   [0.37.0](https://github.com/gsl-lite/gsl-lite/releases/tag/0.37.0).
 - Improved finding of libgfortran in openSUSE and Fedora distributions.
+- Improved interface for FPGA off-loading.
 - Allow a random name for the build type. If not recognized, it is set to
   `None`. This allows packaging in some distributions that pass an arbitrary
   name as the build type (e.g., Gentoo) to avoid unexpected compiler flags. The
-  building option `ENABLE_PACKAGING` must set to `ON` when packaging.
+  building option `ENABLE_PACKAGING` must be set to `ON` when packaging.
 - Do not stop the receiver if SysV message queues cannot be created.
 
 ### Improvements in Reliability:
@@ -79,6 +77,12 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 - Improved reproducibility of the volk_gnsssdr library: Drop compile-time CPU
   detection.
+
+### Improvements in Testability:
+
+- Add building option `ENABLE_BENCHMARKS`, which activates the building of
+  benchmarks for some code snippets, making it easier to developers to benchmark
+  different implementations for the same purpose. Set to `OFF` by default.
 
 ### Improvements in Usability:
 
@@ -111,6 +115,9 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   of the `PVT.nmea_dump_devname` parameter was ignored).
 - Updated version of the Contributor Covenant to version 2.0. Added badge in the
   README.md file.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
 
 &nbsp;
 

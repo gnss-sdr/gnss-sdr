@@ -149,8 +149,8 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
     // 2.2 set the sample rate for the usrp device
     uhd_source_->set_samp_rate(sample_rate_);
     // the actual sample rate may differ from the rate set
-    std::cout << boost::format("Sampling Rate for the USRP device: %f [sps]...") % (uhd_source_->get_samp_rate()) << '\n';
-    LOG(INFO) << boost::format("Sampling Rate for the USRP device: %f [sps]...") % (uhd_source_->get_samp_rate());
+    std::cout << "Sampling Rate for the USRP device: " << uhd_source_->get_samp_rate() << " [sps]...\n";
+    LOG(INFO) << "Sampling Rate for the USRP device: " << uhd_source_->get_samp_rate() << " [sps]...";
 
     std::vector<std::string> sensor_names;
 
@@ -159,20 +159,20 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
             std::cout << "UHD RF CHANNEL #" << i << " SETTINGS\n";
             // 3. Tune the usrp device to the desired center frequency
             uhd_source_->set_center_freq(freq_.at(i), i);
-            std::cout << boost::format("Actual USRP center freq.: %f [Hz]...") % (uhd_source_->get_center_freq(i)) << '\n';
-            LOG(INFO) << boost::format("Actual USRP center freq. set to: %f [Hz]...") % (uhd_source_->get_center_freq(i));
+            std::cout << "Actual USRP center freq.: " << uhd_source_->get_center_freq(i) << " [Hz]...\n";
+            LOG(INFO) << "Actual USRP center freq. set to: " << uhd_source_->get_center_freq(i) << " [Hz]...";
 
             // TODO: Assign the remnant IF from the PLL tune error
-            std::cout << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq(i) - freq_.at(i)) << '\n';
-            LOG(INFO) << boost::format("PLL Frequency tune error %f [Hz]...") % (uhd_source_->get_center_freq(i) - freq_.at(i));
+            std::cout << "PLL Frequency tune error: " << uhd_source_->get_center_freq(i) - freq_.at(i) << " [Hz]...\n";
+            LOG(INFO) << "PLL Frequency tune error: " << uhd_source_->get_center_freq(i) - freq_.at(i) << " [Hz]...";
 
             // 4. set the gain for the daughterboard
             uhd_source_->set_gain(gain_.at(i), i);
-            std::cout << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i) << '\n';
-            LOG(INFO) << boost::format("Actual daughterboard gain set to: %f dB...") % uhd_source_->get_gain(i);
+            std::cout << "Actual daughterboard gain set to: " << uhd_source_->get_gain(i) << " dB...\n";
+            LOG(INFO) << "Actual daughterboard gain set to: " << uhd_source_->get_gain(i) << " dB...";
 
             // 5.  Set the bandpass filter on the RF frontend
-            std::cout << boost::format("Setting RF bandpass filter bandwidth to: %f [Hz]...") % IF_bandwidth_hz_.at(i) << '\n';
+            std::cout << "Setting RF bandpass filter bandwidth to: " << IF_bandwidth_hz_.at(i) << " [Hz]...\n";
             uhd_source_->set_bandwidth(IF_bandwidth_hz_.at(i), i);
 
             // set the antenna (optional)
@@ -186,7 +186,7 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
             if (std::find(sensor_names.begin(), sensor_names.end(), "lo_locked") != sensor_names.end())
                 {
                     uhd::sensor_value_t lo_locked = uhd_source_->get_sensor("lo_locked", i);
-                    std::cout << boost::format("Check for front-end %s ...") % lo_locked.to_pp_string() << " is ";
+                    std::cout << "Check for front-end " << lo_locked.to_pp_string() << " is ... ";
                     if (lo_locked.to_bool() == true)
                         {
                             std::cout << "Locked\n";

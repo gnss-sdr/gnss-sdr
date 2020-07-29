@@ -23,7 +23,6 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_valve.h"
-#include <boost/format.hpp>
 #include <glog/logging.h>
 #include <cstdint>
 #include <iostream>

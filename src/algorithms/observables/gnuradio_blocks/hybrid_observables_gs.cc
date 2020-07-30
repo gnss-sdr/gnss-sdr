@@ -561,6 +561,9 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
                         case evGAL_5X:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
                             break;
+                        case evGAL_7X:
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ7;
+                            break;
                         case evGPS_2S:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2;
                             break;

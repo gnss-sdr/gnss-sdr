@@ -190,6 +190,7 @@ private:
         evSBAS_1C,
         evGAL_1B,
         evGAL_5X,
+        evGAL_7X,
         evGLO_1G,
         evGLO_2G,
         evBDS_B1,

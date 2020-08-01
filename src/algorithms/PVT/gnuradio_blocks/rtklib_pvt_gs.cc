@@ -134,6 +134,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_mapStringValues["L5"] = evGPS_L5;
     d_mapStringValues["1B"] = evGAL_1B;
     d_mapStringValues["5X"] = evGAL_5X;
+    d_mapStringValues["7X"] = evGAL_7X;
     d_mapStringValues["1G"] = evGLO_1G;
     d_mapStringValues["2G"] = evGLO_2G;
     d_mapStringValues["B1"] = evBDS_B1;
@@ -1802,6 +1803,9 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
                 case evGAL_5X:
                     observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * TWO_PI;
                     break;
+                case evGAL_7X:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ7 * TWO_PI;
+                    break;
                 case evGPS_2S:
                     observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ2 * TWO_PI;
                     break;
@@ -1898,6 +1902,9 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                         case evGAL_5X:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
                             break;
+                        case evGAL_7X:
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ7;
+                            break;
                         case evGPS_2S:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2;
                             break;
@@ -1969,7 +1976,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (tmp_eph_iter_gal != d_internal_pvt_solver->galileo_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_gal->second.i_satellite_PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1B") or (std::string(in[i][epoch].Signal) == "5X")))
+                                    if ((prn_aux == in[i][epoch].PRN) and ((std::string(in[i][epoch].Signal) == "1B") or (std::string(in[i][epoch].Signal) == "5X") or (std::string(in[i][epoch].Signal) == "7X")))
                                         {
                                             store_valid_observable = true;
                                         }

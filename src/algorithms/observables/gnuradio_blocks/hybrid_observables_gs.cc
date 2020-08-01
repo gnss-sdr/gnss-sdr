@@ -150,6 +150,17 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
     d_channel_last_carrier_phase_rads = std::vector<double>(d_nchannels_out, 0.0);
 
     d_smooth_filter_M = static_cast<double>(conf_.smoothing_factor);
+    d_mapStringValues["1C"] = evGPS_1C;
+    d_mapStringValues["2S"] = evGPS_2S;
+    d_mapStringValues["L5"] = evGPS_L5;
+    d_mapStringValues["1B"] = evGAL_1B;
+    d_mapStringValues["5X"] = evGAL_5X;
+    d_mapStringValues["7X"] = evGAL_7X;
+    d_mapStringValues["1G"] = evGLO_1G;
+    d_mapStringValues["2G"] = evGLO_2G;
+    d_mapStringValues["B1"] = evBDS_B1;
+    d_mapStringValues["B2"] = evBDS_B2;
+    d_mapStringValues["B3"] = evBDS_B3;
 }
 
 

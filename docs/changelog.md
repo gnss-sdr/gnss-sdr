@@ -8,6 +8,15 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 )
 <!-- prettier-ignore-end -->
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Usability:
+
+- Fixed a bug when enabling pseudorange carrier smoothing in other bands than
+  L1.
+
+&nbsp;
+
 ## [GNSS-SDR v0.0.13](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.13)
 
 ### Improvements in Efficiency:

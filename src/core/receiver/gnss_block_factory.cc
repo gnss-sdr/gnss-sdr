@@ -242,20 +242,20 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     if (signal_conditioner == "Array_Signal_Conditioner")
         {
             // instantiate the array version
-            std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<ArraySignalConditioner>(configuration,
+            std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<ArraySignalConditioner>(
                 GetBlock(configuration, role_datatypeadapter, 1, 1),
                 GetBlock(configuration, role_inputfilter, 1, 1),
                 GetBlock(configuration, role_resampler, 1, 1),
-                role_conditioner, "Signal_Conditioner");
+                role_conditioner);
             return conditioner_;
         }
 
     // single-antenna version
-    std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<SignalConditioner>(configuration,
+    std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<SignalConditioner>(
         GetBlock(configuration, role_datatypeadapter, 1, 1),
         GetBlock(configuration, role_inputfilter, 1, 1),
         GetBlock(configuration, role_resampler, 1, 1),
-        role_conditioner, "Signal_Conditioner");
+        role_conditioner);
     return conditioner_;
 }
 

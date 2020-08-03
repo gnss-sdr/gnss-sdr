@@ -54,23 +54,27 @@ class Channel : public ChannelInterface
 {
 public:
     //! Constructor
-    Channel(const ConfigurationInterface* configuration, uint32_t channel, std::shared_ptr<AcquisitionInterface> acq,
-        std::shared_ptr<TrackingInterface> trk, std::shared_ptr<TelemetryDecoderInterface> nav,
-        const std::string& role, const std::string& signal_str, Concurrent_Queue<pmt::pmt_t>* queue);
+    Channel(const ConfigurationInterface* configuration,
+        uint32_t channel,
+        std::shared_ptr<AcquisitionInterface> acq,
+        std::shared_ptr<TrackingInterface> trk,
+        std::shared_ptr<TelemetryDecoderInterface> nav,
+        const std::string& role,
+        const std::string& signal_str,
+        Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~Channel() = default;  //!< Destructor
 
-    void connect(gr::top_block_sptr top_block) override;  //!< connects the tracking block to the top_block and to the telemetry
+    void connect(gr::top_block_sptr top_block) override;  //!< Connects the tracking block to the top_block and to the telemetry
     void disconnect(gr::top_block_sptr top_block) override;
-    gr::basic_block_sptr get_left_block() override;      //!< gets the gnuradio tracking block pointer
-    gr::basic_block_sptr get_left_block_trk() override;  //!< gets the gnuradio tracking block pointer
-    gr::basic_block_sptr get_left_block_acq() override;  //!< gets the gnuradio tracking block pointer
-    gr::basic_block_sptr get_right_block() override;
+    gr::basic_block_sptr get_left_block() override;
+    gr::basic_block_sptr get_left_block_trk() override;  //!< Gets the GNU Radio tracking block input pointer
+    gr::basic_block_sptr get_left_block_acq() override;  //!< Gets the GNU Radio acquisition block input pointer
+    gr::basic_block_sptr get_right_block() override;     //!< Gets the GNU Radio channel block output pointer
 
     inline std::string role() override { return role_; }
-    //! Returns "Channel"
-    inline std::string implementation() override { return std::string("Channel"); }
-    inline size_t item_size() override { return 0; }
+    inline std::string implementation() override { return std::string("Channel"); }  //!< Returns "Channel"
+    inline size_t item_size() override { return 2 * sizeof(float); }
     inline Gnss_Signal get_signal() const override { return gnss_signal_; }
     void start_acquisition() override;                          //!< Start the State Machine
     void stop_channel() override;                               //!< Stop the State Machine

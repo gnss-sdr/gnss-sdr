@@ -40,9 +40,10 @@ class ArraySignalConditioner : public GNSSBlockInterface
 {
 public:
     //! Constructor
-    ArraySignalConditioner(const ConfigurationInterface *configuration,
-        std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
+    ArraySignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,
+        std::shared_ptr<GNSSBlockInterface> in_filt,
+        std::shared_ptr<GNSSBlockInterface> res,
+        std::string role);
 
     //! Destructor
     ~ArraySignalConditioner() = default;
@@ -55,7 +56,7 @@ public:
     inline std::string role() override { return role_; }
     //! Returns "Array_Signal_Conditioner"
     inline std::string implementation() override { return "Array_Signal_Conditioner"; }
-    inline size_t item_size() override { return 0; }
+    inline size_t item_size() override { return data_type_adapt_->item_size(); }
 
     inline std::shared_ptr<GNSSBlockInterface> data_type_adapter() { return data_type_adapt_; }
     inline std::shared_ptr<GNSSBlockInterface> input_filter() { return in_filt_; }
@@ -66,7 +67,6 @@ private:
     std::shared_ptr<GNSSBlockInterface> in_filt_;
     std::shared_ptr<GNSSBlockInterface> res_;
     std::string role_;
-    std::string implementation_;
     bool connected_;
 };
 

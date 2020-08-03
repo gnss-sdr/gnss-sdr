@@ -27,8 +27,6 @@
 #include <memory>
 #include <string>
 
-class ConfigurationInterface;
-
 /*!
  * \brief This class wraps blocks to change data_type_adapter, input_filter and resampler
  * to be applied to the input flow of sampled signal.
@@ -37,9 +35,10 @@ class SignalConditioner : public GNSSBlockInterface
 {
 public:
     //! Constructor
-    SignalConditioner(const ConfigurationInterface *configuration,
-        std::shared_ptr<GNSSBlockInterface> data_type_adapt, std::shared_ptr<GNSSBlockInterface> in_filt,
-        std::shared_ptr<GNSSBlockInterface> res, std::string role, std::string implementation);
+    SignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,
+        std::shared_ptr<GNSSBlockInterface> in_filt,
+        std::shared_ptr<GNSSBlockInterface> res,
+        std::string role);
 
     //! Destructor
     ~SignalConditioner() = default;
@@ -53,7 +52,7 @@ public:
 
     inline std::string implementation() override { return "Signal_Conditioner"; }  //!< Returns "Signal_Conditioner"
 
-    inline size_t item_size() override { return 0; }
+    inline size_t item_size() override { return data_type_adapt_->item_size(); }
 
     inline std::shared_ptr<GNSSBlockInterface> data_type_adapter() { return data_type_adapt_; }
     inline std::shared_ptr<GNSSBlockInterface> input_filter() { return in_filt_; }
@@ -64,7 +63,6 @@ private:
     std::shared_ptr<GNSSBlockInterface> in_filt_;
     std::shared_ptr<GNSSBlockInterface> res_;
     std::string role_;
-    std::string implementation_;
     bool connected_;
 };
 

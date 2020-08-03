@@ -38,9 +38,10 @@ channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<Channe
 }
 
 
-channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat) : gr::block("channel_msg_receiver_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)),
-                                                                                                         d_channel_fsm(std::move(channel_fsm)),
-                                                                                                         d_repeat(repeat)
+channel_msg_receiver_cc::channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm,
+    bool repeat) : gr::block("channel_msg_receiver_cc", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)),
+                   d_channel_fsm(std::move(channel_fsm)),
+                   d_repeat(repeat)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),

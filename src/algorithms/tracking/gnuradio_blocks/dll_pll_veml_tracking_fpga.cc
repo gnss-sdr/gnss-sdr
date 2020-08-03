@@ -500,9 +500,9 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
                         }
                 }
         }
-    catch (boost::bad_any_cast &e)
+    catch (const boost::bad_any_cast &e)
         {
-            LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any cast!";
+            LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any_cast: " << e.what();
         }
 }
 

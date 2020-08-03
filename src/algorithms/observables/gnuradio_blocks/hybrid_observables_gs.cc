@@ -225,9 +225,9 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
         }
-    catch (boost::bad_any_cast &e)
+    catch (const boost::bad_any_cast &e)
         {
-            LOG(WARNING) << "msg_handler_pvt_to_observables Bad any cast!";
+            LOG(WARNING) << "msg_handler_pvt_to_observables Bad any_cast: " << e.what();
         }
 }
 

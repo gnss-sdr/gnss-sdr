@@ -112,7 +112,7 @@ class FrontEndCal_msg_rx : public gr::block
 {
 private:
     friend FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
-    void msg_handler_events(const pmt::pmt_t& msg);
+    void msg_handler_channel_events(const pmt::pmt_t& msg);
     FrontEndCal_msg_rx();
 
 public:
@@ -126,7 +126,7 @@ FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make()
 }
 
 
-void FrontEndCal_msg_rx::msg_handler_events(const pmt::pmt_t& msg)
+void FrontEndCal_msg_rx::msg_handler_channel_events(const pmt::pmt_t& msg)
 {
     try
         {
@@ -134,7 +134,7 @@ void FrontEndCal_msg_rx::msg_handler_events(const pmt::pmt_t& msg)
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
-    catch (boost::bad_any_cast& e)
+    catch (const boost::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
             rx_message = 0;
@@ -147,12 +147,12 @@ FrontEndCal_msg_rx::FrontEndCal_msg_rx() : gr::block("FrontEndCal_msg_rx", gr::i
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_channel_events(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&FrontEndCal_msg_rx::msg_handler_events, this, boost::placeholders::_1));
+        boost::bind(&FrontEndCal_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
 #else
-        boost::bind(&FrontEndCal_msg_rx::msg_handler_events, this, _1));
+        boost::bind(&FrontEndCal_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
     rx_message = 0;

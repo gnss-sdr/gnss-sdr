@@ -104,7 +104,7 @@ class TrackingPullInTest_msg_rx : public gr::block
 {
 private:
     friend TrackingPullInTest_msg_rx_sptr TrackingPullInTest_msg_rx_make();
-    void msg_handler_events(pmt::pmt_t msg);
+    void msg_handler_channel_events(const pmt::pmt_t msg);
     TrackingPullInTest_msg_rx();
 
 public:
@@ -119,7 +119,7 @@ TrackingPullInTest_msg_rx_sptr TrackingPullInTest_msg_rx_make()
 }
 
 
-void TrackingPullInTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void TrackingPullInTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
 {
     try
         {
@@ -127,7 +127,7 @@ void TrackingPullInTest_msg_rx::msg_handler_events(pmt::pmt_t msg)
             rx_message = message;  // 3 -> loss of lock
             // std::cout << "Received trk message: " << rx_message << '\n';
         }
-    catch (boost::bad_any_cast& e)
+    catch (const boost::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_tracking Bad cast!";
             rx_message = 0;
@@ -140,12 +140,12 @@ TrackingPullInTest_msg_rx::TrackingPullInTest_msg_rx() : gr::block("TrackingPull
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_channel_events(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&TrackingPullInTest_msg_rx::msg_handler_events, this, boost::placeholders::_1));
+        boost::bind(&TrackingPullInTest_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
 #else
-        boost::bind(&TrackingPullInTest_msg_rx::msg_handler_events, this, _1));
+        boost::bind(&TrackingPullInTest_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
     rx_message = 0;

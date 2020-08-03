@@ -1,6 +1,7 @@
 /*!
  * \file channel_status_msg_receiver.cc
- * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
+ * \brief GNU Radio block that receives asynchronous channel messages from
+ * acquisition and tracking blocks
  * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -45,21 +46,21 @@ channel_status_msg_receiver::channel_status_msg_receiver() : gr::block("channel_
     this->message_port_register_in(pmt::mp("status"));
     this->set_msg_handler(pmt::mp("status"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_channel_status(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&channel_status_msg_receiver::msg_handler_events, this, boost::placeholders::_1));
+        boost::bind(&channel_status_msg_receiver::msg_handler_channel_status, this, boost::placeholders::_1));
 #else
-        boost::bind(&channel_status_msg_receiver::msg_handler_events, this, _1));
+        boost::bind(&channel_status_msg_receiver::msg_handler_channel_status, this, _1));
 #endif
 #endif
     d_pvt_status.RX_time = -1;  // to indicate that the PVT is not available
 }
 
 
-void channel_status_msg_receiver::msg_handler_events(const pmt::pmt_t& msg)
+void channel_status_msg_receiver::msg_handler_channel_status(const pmt::pmt_t& msg)
 {
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_events function called by the scheduler
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -98,22 +99,22 @@ void channel_status_msg_receiver::msg_handler_events(const pmt::pmt_t& msg)
                     LOG(WARNING) << "channel_status_msg_receiver unknown object type!";
                 }
         }
-    catch (boost::bad_any_cast& e)
+    catch (const boost::bad_any_cast& e)
         {
-            LOG(WARNING) << "channel_status_msg_receiver Bad any cast!";
+            LOG(WARNING) << "channel_status_msg_receiver Bad any_cast: " << e.what();
         }
 }
 
 
 std::map<int, std::shared_ptr<Gnss_Synchro>> channel_status_msg_receiver::get_current_status_map()
 {
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_events function called by the scheduler
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
     return d_channel_status_map;
 }
 
 
 Monitor_Pvt channel_status_msg_receiver::get_current_status_pvt()
 {
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_events function called by the scheduler
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_channel_status function called by the scheduler
     return d_pvt_status;
 }

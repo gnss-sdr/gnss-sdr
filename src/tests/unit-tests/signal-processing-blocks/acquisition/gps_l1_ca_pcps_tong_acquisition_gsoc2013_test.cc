@@ -66,7 +66,7 @@ class GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx : public gr::block
 {
 private:
     friend GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
-    void msg_handler_events(pmt::pmt_t msg);
+    void msg_handler_channel_events(const pmt::pmt_t msg);
     explicit GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx(Concurrent_Queue<int>& queue);
     Concurrent_Queue<int>& channel_internal_queue;
 
@@ -82,7 +82,7 @@ GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsTongAcquisitionGSo
 }
 
 
-void GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_events(pmt::pmt_t msg)
+void GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
 {
     try
         {
@@ -90,9 +90,9 @@ void GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_events(pmt::pmt_
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
-    catch (boost::bad_any_cast& e)
+    catch (const boost::bad_any_cast& e)
         {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
+            LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;
         }
 }
@@ -103,12 +103,12 @@ GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::GpsL1CaPcpsTongAcquisitionGSoC201
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
 #if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_events(PH1); });
+        [this](auto&& PH1) { msg_handler_channel_events(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_events, this, boost::placeholders::_1));
+        boost::bind(&GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
 #else
-        boost::bind(&GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_events, this, _1));
+        boost::bind(&GpsL1CaPcpsTongAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
     rx_message = 0;

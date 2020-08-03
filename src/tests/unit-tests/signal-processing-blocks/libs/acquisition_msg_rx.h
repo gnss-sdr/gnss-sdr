@@ -48,7 +48,7 @@ class Acquisition_msg_rx : public gr::block
 {
 private:
     friend Acquisition_msg_rx_sptr Acquisition_msg_rx_make();
-    void msg_handler_events(const pmt::pmt_t& msg);
+    void msg_handler_channel_events(const pmt::pmt_t& msg);
     Acquisition_msg_rx();
 
 public:

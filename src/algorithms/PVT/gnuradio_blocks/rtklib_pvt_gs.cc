@@ -1596,9 +1596,9 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
                 }
         }
-    catch (boost::bad_any_cast& e)
+    catch (const boost::bad_any_cast& e)
         {
-            LOG(WARNING) << "msg_handler_telemetry Bad any cast!";
+            LOG(WARNING) << "msg_handler_telemetry Bad any_cast: " << e.what();
         }
 }
 

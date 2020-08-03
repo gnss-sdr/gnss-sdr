@@ -1,6 +1,7 @@
 /*!
  * \file channel_status_msg_receiver.h
- * \brief GNU Radio block that receives asynchronous channel messages from acquisition and tracking blocks
+ * \brief GNU Radio block that receives asynchronous channel messages from
+ * acquisition and tracking blocks
  * \author Javier Arribas, 2019. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -62,7 +63,7 @@ public:
 private:
     friend channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
     channel_status_msg_receiver();
-    void msg_handler_events(const pmt::pmt_t& msg);
+    void msg_handler_channel_status(const pmt::pmt_t& msg);
     Monitor_Pvt d_pvt_status{};
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_status_map;
 };

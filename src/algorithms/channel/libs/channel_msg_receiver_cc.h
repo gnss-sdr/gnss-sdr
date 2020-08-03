@@ -50,7 +50,7 @@ public:
 private:
     friend channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
     channel_msg_receiver_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
-    void msg_handler_events(pmt::pmt_t msg);
+    void msg_handler_channel_events(const pmt::pmt_t& msg);
     std::shared_ptr<ChannelFsm> d_channel_fsm;
     bool d_repeat;  // todo: change FSM to include repeat value
 };

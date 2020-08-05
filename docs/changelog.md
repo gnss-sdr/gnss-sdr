@@ -23,6 +23,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   parameters for the `DataTypeAdapter`, `InputFilter` and `Resampler` blocks are
   ignored. This was the default behavior in GNSS-SDR v0.0.12, but it changed in
   v0.0.13. This change recovers the old behavior.
+- Improved General Block diagram, both in content and in image resolution.
 
 &nbsp;
 

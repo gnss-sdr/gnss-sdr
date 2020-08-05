@@ -10,10 +10,19 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Efficiency:
+
+- Faster `SignalConditioner` block when its implementation is set to
+  `Pass_Through`.
+
 ### Improvements in Usability:
 
 - Fixed a bug when enabling pseudorange carrier smoothing in other bands than
   L1.
+- If `SignalConditioner.implementation=Pass_Through`, then all the configuration
+  parameters for the `DataTypeAdapter`, `InputFilter` and `Resampler` blocks are
+  ignored. This was the default behavior in GNSS-SDR v0.0.12, but it changed in
+  v0.0.13. This change recovers the old behavior.
 
 &nbsp;
 

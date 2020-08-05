@@ -216,27 +216,45 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
         {
             LOG(WARNING) << e.what();
         }
-    std::string signal_conditioner = configuration->property(role_conditioner + ".implementation", empty_implementation);
+    const std::string signal_conditioner = configuration->property(role_conditioner + ".implementation", empty_implementation);
 
-    std::string data_type_adapter;
-    std::string input_filter;
-    std::string resampler;
+    const std::string data_type_adapter = configuration->property(role_datatypeadapter + ".implementation", empty_implementation);
+    const std::string input_filter = configuration->property(role_inputfilter + ".implementation", empty_implementation);
+    const std::string resampler = configuration->property(role_resampler + ".implementation", empty_implementation);
+
     if (signal_conditioner == "Pass_Through")
         {
-            data_type_adapter = "Pass_Through";
-            input_filter = "Pass_Through";
-            resampler = "Pass_Through";
-        }
-    else
-        {
-            data_type_adapter = configuration->property(role_datatypeadapter + ".implementation", empty_implementation);
-            input_filter = configuration->property(role_inputfilter + ".implementation", empty_implementation);
-            resampler = configuration->property(role_resampler + ".implementation", empty_implementation);
+            if (!data_type_adapter.empty() and (data_type_adapter != "Pass_Through"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << ".implementation\n"
+                                 << "is set to Pass_Through, then the " << role_datatypeadapter << ".implementation\n"
+                                 << "parameter should be either not set or set to Pass_Through.\n"
+                                 << role_datatypeadapter << " configuration parameters will be ignored.";
+                }
+            if (!input_filter.empty() and (input_filter != "Pass_Through"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << ".implementation\n"
+                                 << "is set to Pass_Through, then the " << role_inputfilter << ".implementation\n"
+                                 << "parameter should be either not set or set to Pass_Through.\n"
+                                 << role_inputfilter << " configuration parameters will be ignored.";
+                }
+            if (!resampler.empty() and (resampler != "Pass_Through"))
+                {
+                    LOG(WARNING) << "Configuration warning: if " << role_conditioner << ".implementation\n"
+                                 << "is set to Pass_Through, then the " << role_resampler << ".implementation\n"
+                                 << "parameter should be either not set or set to Pass_Through.\n"
+                                 << role_resampler << " configuration parameters will be ignored.";
+                }
+            LOG(INFO) << "Getting " << role_conditioner << " with Pass_Through implementation";
+
+            std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<Pass_Through>(configuration, role_conditioner, 1, 1);
+
+            return conditioner_;
         }
 
-    LOG(INFO) << "Getting SignalConditioner with DataTypeAdapter implementation: "
-              << data_type_adapter << ", InputFilter implementation: "
-              << input_filter << ", and Resampler implementation: "
+    LOG(INFO) << "Getting " << role_conditioner << " with " << role_datatypeadapter << " implementation: "
+              << data_type_adapter << ", " << role_inputfilter << " implementation: "
+              << input_filter << ", and " << role_resampler << " implementation: "
               << resampler;
 
     if (signal_conditioner == "Array_Signal_Conditioner")
@@ -265,6 +283,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const Confi
     const std::string empty_implementation;
     std::string implementation = configuration->property("Observables.implementation", empty_implementation);
     LOG(INFO) << "Getting Observables with implementation " << implementation;
+    if (implementation != "Hybrid_Observables")
+        {
+            LOG(WARNING) << "Error in configuration file: please set Observables.implementation=Hybrid_Observables";
+        }
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     Galileo_channels += configuration->property("Channels_7X.count", 0);
@@ -294,6 +316,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const Configuration
     const std::string empty_implementation;
     std::string implementation = configuration->property("PVT.implementation", empty_implementation);
     LOG(INFO) << "Getting PVT with implementation " << implementation;
+    if (implementation != "RTKLIB_PVT")
+        {
+            LOG(WARNING) << "Error in configuration file: please set PVT.implementation=RTKLIB_PVT";
+        }
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
     Galileo_channels += configuration->property("Channels_7X.count", 0);

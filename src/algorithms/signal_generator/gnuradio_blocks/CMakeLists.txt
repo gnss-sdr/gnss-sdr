@@ -26,20 +26,25 @@ endif()
 target_link_libraries(signal_generator_gr_blocks
     PUBLIC
         Gnuradio::runtime
-        core_system_parameters
     PRIVATE
-        Volkgnsssdr::volkgnsssdr
         algorithms_libs
-)
-
-target_include_directories(signal_generator_gr_blocks
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        core_system_parameters
+        Volkgnsssdr::volkgnsssdr
 )
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(signal_generator_gr_blocks
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
+# Workaround for CentOS 7
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND
+    (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0"))
+    target_compile_options(signal_generator_gr_blocks
+       PRIVATE
+          $<$<CONFIG:Release>:-O0>
+          $<$<CONFIG:RelWithDebInfo>:-O0>
     )
 endif()
 

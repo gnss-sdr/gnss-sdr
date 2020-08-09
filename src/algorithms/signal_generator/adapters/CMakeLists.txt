@@ -26,11 +26,12 @@ endif()
 target_link_libraries(signal_generator_adapters
     PUBLIC
         Gnuradio::blocks
+        Gnuradio::pmt
         signal_generator_gr_blocks
     PRIVATE
         Gflags::gflags
         Glog::glog
-        algorithms_libs
+        core_system_parameters
 )
 
 target_include_directories(signal_generator_adapters

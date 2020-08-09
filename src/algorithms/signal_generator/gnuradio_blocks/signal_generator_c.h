@@ -20,7 +20,6 @@
 #ifndef GNSS_SDR_SIGNAL_GENERATOR_C_H
 #define GNSS_SDR_SIGNAL_GENERATOR_C_H
 
-#include "gnss_signal.h"
 #include <gnuradio/block.h>
 #include <random>
 #include <string>

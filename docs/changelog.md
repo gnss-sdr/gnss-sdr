@@ -15,6 +15,12 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Faster `SignalConditioner` block when its implementation is set to
   `Pass_Through`.
 
+### Improvements in Portability:
+
+- Fixed `-DENABLE_OWN_GLOG=ON` building option when gflags is installed and it
+  is older than v2.1.2 (_e.g._, in CentOS 7).
+- Fixed static linking of the matio library when downloaded and built by CMake.
+
 ### Improvements in Usability:
 
 - Fixed a bug when enabling pseudorange carrier smoothing in other bands than

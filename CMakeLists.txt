@@ -1192,7 +1192,9 @@ endif()
 # gflags - https://github.com/gflags/gflags
 ################################################################################
 set(LOCAL_GFLAGS FALSE)
-find_package(GFLAGS)
+if(NOT ENABLE_OWN_GLOG)
+    find_package(GFLAGS)
+endif()
 set_package_properties(GFLAGS PROPERTIES
     PURPOSE "Used for commandline flags management."
     TYPE REQUIRED
@@ -2076,20 +2078,20 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                     UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
                     BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
-                    BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}
+                    BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
                 )
             endif()
             set(MATIO_LOCAL TRUE)
             if(NOT TARGET Matio::matio)
                 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/include)
                 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/lib)
-                add_library(Matio::matio SHARED IMPORTED)
+                add_library(Matio::matio STATIC IMPORTED)
                 add_dependencies(Matio::matio matio-${GNSSSDR_MATIO_LOCAL_VERSION})
                 set_target_properties(Matio::matio PROPERTIES
                     IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                    IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}"
+                    IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}"
                     INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/matio/include
-                    INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_SHARED_LIBRARY_SUFFIX}
+                    INTERFACE_LINK_LIBRARIES "${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX};${HDF5_LIBRARIES}"
                 )
             endif()
         else()

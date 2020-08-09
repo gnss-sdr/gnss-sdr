@@ -19,12 +19,9 @@
 
 
 #include "custom_udp_signal_source.h"
-#include "GPS_L1_CA.h"
 #include "configuration_interface.h"
-#include <boost/format.hpp>
 #include <glog/logging.h>
 #include <iostream>
-#include <utility>
 
 
 CustomUDPSignalSource::CustomUDPSignalSource(const ConfigurationInterface* configuration,
@@ -41,7 +38,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(const ConfigurationInterface* confi
     const std::string default_capture_device("eth0");
     const std::string default_address("127.0.0.1");
     const int default_port = 1234;
-    std::string address = configuration->property(role + ".origin_address", default_address);
+    const std::string address = configuration->property(role + ".origin_address", default_address);
     std::string capture_device = configuration->property(role + ".capture_device", default_capture_device);
     int port = configuration->property(role + ".port", default_port);
     int payload_bytes = configuration->property(role + ".payload_bytes", 1024);
@@ -51,7 +48,7 @@ CustomUDPSignalSource::CustomUDPSignalSource(const ConfigurationInterface* confi
     IQ_swap_ = configuration->property(role + ".IQ_swap", false);
 
     const std::string default_sample_type("cbyte");
-    std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
+    const std::string sample_type = configuration->property(role + ".sample_type", default_sample_type);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     // output item size is always gr_complex
     item_size_ = sizeof(gr_complex);

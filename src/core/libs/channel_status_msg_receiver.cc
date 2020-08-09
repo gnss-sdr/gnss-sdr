@@ -67,7 +67,7 @@ void channel_status_msg_receiver::msg_handler_channel_status(const pmt::pmt_t& m
             // ****************** Gnss_Synchro received ************************
             if (msg_type_hash_code == typeid(std::shared_ptr<Gnss_Synchro>).hash_code())
                 {
-                    const std::shared_ptr<Gnss_Synchro> gnss_synchro_obj = boost::any_cast<std::shared_ptr<Gnss_Synchro>>(pmt::any_ref(msg));
+                    const auto gnss_synchro_obj = boost::any_cast<std::shared_ptr<Gnss_Synchro>>(pmt::any_ref(msg));
                     if (gnss_synchro_obj->Flag_valid_pseudorange == true)
                         {
                             d_channel_status_map[gnss_synchro_obj->Channel_ID] = gnss_synchro_obj;
@@ -87,7 +87,7 @@ void channel_status_msg_receiver::msg_handler_channel_status(const pmt::pmt_t& m
             else if (msg_type_hash_code == typeid(std::shared_ptr<Monitor_Pvt>).hash_code())
                 {
                     // ***************** Monitor_Pvt received ******************
-                    const std::shared_ptr<Monitor_Pvt> monitor_pvt_obj = boost::any_cast<std::shared_ptr<Monitor_Pvt>>(pmt::any_ref(msg));
+                    const auto monitor_pvt_obj = boost::any_cast<std::shared_ptr<Monitor_Pvt>>(pmt::any_ref(msg));
                     d_pvt_status = *monitor_pvt_obj.get();
 
                     // std::cout << "-------- \n" << '\n';

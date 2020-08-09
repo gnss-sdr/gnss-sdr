@@ -42,9 +42,9 @@ endif()
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND
     (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0"))
     target_compile_options(signal_generator_gr_blocks
-       PRIVATE
-          $<$<CONFIG:Release>:-O0>
-          $<$<CONFIG:RelWithDebInfo>:-O0>
+        PRIVATE
+            $<$<CONFIG:Release>:-O0>
+            $<$<CONFIG:RelWithDebInfo>:-O0>
     )
 endif()
 

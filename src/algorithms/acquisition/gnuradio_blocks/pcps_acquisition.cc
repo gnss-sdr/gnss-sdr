@@ -592,7 +592,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
         }
 
     int32_t idx = excludeRangeIndex1;
-    memcpy(d_tmp_buffer.data(), d_magnitude_grid[index_doppler].data(), d_fft_size);
+    memcpy(d_tmp_buffer.data(), d_magnitude_grid[index_doppler].data(), d_fft_size * sizeof(float));
     do
         {
             d_tmp_buffer[idx] = 0.0;

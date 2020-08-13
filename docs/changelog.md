@@ -10,6 +10,12 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability:
+
+- Fixed bug in acquisition detection when the configuration parameter
+  `Acquisition_XX.threshold` was set but `Acquisition_XX.pfa` was not, causing
+  false locks.
+
 ### Improvements in Efficiency:
 
 - Faster `SignalConditioner` block when its implementation is set to

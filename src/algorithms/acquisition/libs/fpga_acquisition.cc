@@ -56,7 +56,7 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     uint32_t *all_fft_codes,
     uint32_t excludelimit)
 {
-    uint32_t vector_length = nsamples_total;
+    const uint32_t vector_length = nsamples_total;
 
     // initial values
     d_device_name = std::move(device_name);
@@ -121,13 +121,12 @@ void Fpga_Acquisition::open_device()
 void Fpga_Acquisition::fpga_acquisition_test_register()
 {
     // sanity check : check test register
-    uint32_t writeval = TEST_REG_SANITY_CHECK;
-    uint32_t readval;
+    const uint32_t writeval = TEST_REG_SANITY_CHECK;
 
     // write value to test register
     d_map_base[15] = writeval;
     // read value from test register
-    readval = d_map_base[15];
+    const uint32_t readval = d_map_base[15];
 
     if (writeval != readval)
         {
@@ -145,7 +144,7 @@ void Fpga_Acquisition::run_acquisition()
     // enable interrupts
     int32_t reenable = 1;
     // int32_t disable_int = 0;
-    ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    const ssize_t nbytes = TEMP_FAILURE_RETRY(write(d_fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
     if (nbytes != sizeof(int32_t))
         {
             std::cerr << "Error enabling run in the FPGA.\n";
@@ -154,10 +153,9 @@ void Fpga_Acquisition::run_acquisition()
     // launch the acquisition process
     d_map_base[8] = LAUNCH_ACQUISITION;  // writing a 1 to reg 8 launches the acquisition process
     int32_t irq_count;
-    ssize_t nb;
 
     // wait for interrupt
-    nb = read(d_fd, &irq_count, sizeof(irq_count));
+    const ssize_t nb = read(d_fd, &irq_count, sizeof(irq_count));
     if (nb != sizeof(irq_count))
         {
             std::cout << "acquisition module Read failed to retrieve 4 bytes!\n";
@@ -174,13 +172,10 @@ void Fpga_Acquisition::set_block_exp(uint32_t total_block_exp)
 
 void Fpga_Acquisition::set_doppler_sweep(uint32_t num_sweeps, uint32_t doppler_step, int32_t doppler_min)
 {
-    float phase_step_rad_real;
-    int32_t phase_step_rad_int;
-
     // The doppler step can never be outside the range -pi to +pi, otherwise there would be aliasing
     // The FPGA expects phase_step_rad between -1 (-pi) to +1 (+pi)
-    phase_step_rad_real = 2.0F * (doppler_min) / static_cast<float>(d_fs_in);
-    phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));
+    float phase_step_rad_real = 2.0F * (doppler_min) / static_cast<float>(d_fs_in);
+    auto phase_step_rad_int = static_cast<int32_t>(phase_step_rad_real * (POW_2_31));
     d_map_base[3] = phase_step_rad_int;
 
     // repeat the calculation with the doppler step
@@ -207,18 +202,13 @@ void Fpga_Acquisition::configure_acquisition()
 void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
     float *firstpeak, float *secondpeak, uint64_t *initial_sample, float *power_sum, uint32_t *doppler_index, uint32_t *total_blk_exp)
 {
-    uint64_t initial_sample_tmp = 0;
-    uint32_t readval = 0;
-    uint64_t readval_long = 0;
-    uint64_t readval_long_shifted = 0;
+    uint32_t readval = d_map_base[1];  // read sample counter (LSW)
+    auto initial_sample_tmp = static_cast<uint64_t>(readval);
 
-    readval = d_map_base[1];  // read sample counter (LSW)
-    initial_sample_tmp = readval;
+    uint64_t readval_long = d_map_base[2];               // read sample counter (MSW)
+    uint64_t readval_long_shifted = readval_long << 32;  // 2^32
 
-    readval_long = d_map_base[2];               // read sample counter (MSW)
-    readval_long_shifted = readval_long << 32;  // 2^32
-
-    initial_sample_tmp = initial_sample_tmp + readval_long_shifted;  // 2^32
+    initial_sample_tmp += readval_long_shifted;  // 2^32
     *initial_sample = initial_sample_tmp;
 
     readval = d_map_base[3];  // read first peak value
@@ -262,8 +252,7 @@ void Fpga_Acquisition::reset_acquisition()
 // this function is only used for the unit tests
 void Fpga_Acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)
 {
-    uint32_t readval = 0;
-    readval = d_map_base[8];
+    uint32_t readval = d_map_base[8];
     *total_scale_factor = readval;
     // only the total scale factor is used for the tests (fw scale factor to be removed)
     *fw_scale_factor = 0;
@@ -272,7 +261,6 @@ void Fpga_Acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor
 
 void Fpga_Acquisition::read_result_valid(uint32_t *result_valid)
 {
-    uint32_t readval = 0;
-    readval = d_map_base[0];
+    uint32_t readval = d_map_base[0];
     *result_valid = readval;
 }

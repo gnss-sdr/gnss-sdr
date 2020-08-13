@@ -121,7 +121,9 @@ void GNSSFlowgraph::stop()
             chan->stop_channel();  // stop the acquisition or tracking operation
         }
     top_block_->stop();
+#ifndef ENABLE_FPGA
     top_block_->wait();
+#endif
     running_ = false;
 }
 

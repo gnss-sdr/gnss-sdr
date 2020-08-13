@@ -1223,7 +1223,7 @@ if(NOT GFLAGS_FOUND)
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             PREFIX ${CMAKE_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            GIT_REPOSITORY git://github.com/gflags/gflags.git
+            GIT_REPOSITORY https://github.com/gflags/gflags.git
             GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
@@ -1251,7 +1251,7 @@ if(NOT GFLAGS_FOUND)
         endif()
         ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             PREFIX ${CMAKE_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            GIT_REPOSITORY git://github.com/gflags/gflags.git
+            GIT_REPOSITORY https://github.com/gflags/gflags.git
             GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}

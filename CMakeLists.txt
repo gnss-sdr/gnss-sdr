@@ -311,6 +311,7 @@ set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
 set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "5.300.0")
+set(GNSSSDR_GFLAGS_MIN_VERSION "2.1.2")
 set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 
@@ -1200,7 +1201,12 @@ set_package_properties(GFLAGS PROPERTIES
     TYPE REQUIRED
 )
 if(NOT GFLAGS_FOUND)
-    message(STATUS " gflags library has not been found.")
+    set(ENABLE_OWN_GLOG ON)
+    if(GFLAGS_VERSION)
+        message(STATUS " A version of the gflags library equal or higher than v${GNSSSDR_GFLAGS_MIN_VERSION} has not been found.")
+    else()
+        message(STATUS " The gflags library has not been found.")
+    endif()
     message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
     set(GFLAGS_BUILD_COMMAND ${CMAKE_COMMAND}
@@ -1224,9 +1230,10 @@ if(NOT GFLAGS_FOUND)
             CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
                 -DBUILD_STATIC_LIBS=ON
                 -DBUILD_gflags_LIB=ON
-                -DBUILD_gflags_nothreads_LIB=OFF
+                -DBUILD_gflags_nothreads_LIB=ON
                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 ${GFLAGS_TOOLCHAIN_FILE}
+                -DGFLAGS_NAMESPACE=google
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${GFLAGS_BUILD_COMMAND}
             UPDATE_COMMAND ""
@@ -1316,6 +1323,11 @@ if(NOT GFLAGS_FOUND)
     set_package_properties(GFLAGS PROPERTIES
         PURPOSE "Gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+    if(CMAKE_VERSION VERSION_LESS 3.2)
+        set_property(TARGET Gflags::gflags APPEND PROPERTY
+            INTERFACE_COMPILE_DEFINITIONS GFLAGS_OLD_NAMESPACE=1
+        )
+    endif()
 endif()
 
 

@@ -57,6 +57,13 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 #endif
 
+#if GFLAGS_OLD_NAMESPACE
+namespace gflags
+{
+using namespace google;
+}
+#endif
+
 // For GPS NAVIGATION (L1)
 Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
@@ -988,7 +995,7 @@ int main(int argc, char** argv)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 
     // Run the Tests
@@ -1000,6 +1007,6 @@ int main(int argc, char** argv)
         {
             LOG(WARNING) << "Unexpected catch";
         }
-    google::ShutDownCommandLineFlags();
+    gflags::ShutDownCommandLineFlags();
     return res;
 }

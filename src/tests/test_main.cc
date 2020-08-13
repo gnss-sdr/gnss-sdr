@@ -26,6 +26,13 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
+#if GFLAGS_OLD_NAMESPACE
+namespace gflags
+{
+using namespace google;
+}
+#endif
+
 DECLARE_string(log_dir);
 
 #if UNIT_TESTING_MINIMAL
@@ -164,7 +171,7 @@ int main(int argc, char **argv)
     catch (...)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
     try
         {
@@ -174,6 +181,6 @@ int main(int argc, char **argv)
         {
             LOG(WARNING) << "Unexpected catch";
         }
-    google::ShutDownCommandLineFlags();
+    gflags::ShutDownCommandLineFlags();
     return res;
 }

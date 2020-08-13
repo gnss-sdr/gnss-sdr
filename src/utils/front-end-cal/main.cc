@@ -82,6 +82,13 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 #endif
 
+#if GFLAGS_OLD_NAMESPACE
+namespace gflags
+{
+using namespace google;
+}
+#endif
+
 DECLARE_string(log_dir);
 
 Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
@@ -274,9 +281,9 @@ int main(int argc, char** argv)
         "This program comes with ABSOLUTELY NO WARRANTY;\n" +
         "See COPYING file to see a copy of the General Public License\n \n");
 
-    google::SetUsageMessage(intro_help);
+    gflags::SetUsageMessage(intro_help);
     google::SetVersionString(FRONT_END_CAL_VERSION);
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     std::cout << "Initializing... Please wait.\n";
 
@@ -514,7 +521,7 @@ int main(int argc, char** argv)
             else
                 {
                     std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!\n";
-                    google::ShutDownCommandLineFlags();
+                    gflags::ShutDownCommandLineFlags();
                     std::cout << "GNSS-SDR Front-end calibration program ended.\n";
                     return 0;
                 }
@@ -522,7 +529,7 @@ int main(int argc, char** argv)
     catch (const boost::exception& e)
         {
             std::cout << "Exception in getting Global ephemeris map\n";
-            google::ShutDownCommandLineFlags();
+            gflags::ShutDownCommandLineFlags();
             std::cout << "GNSS-SDR Front-end calibration program ended.\n";
             return 0;
         }
@@ -541,7 +548,7 @@ int main(int argc, char** argv)
     if (doppler_measurements_map.empty())
         {
             std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup...\n";
-            google::ShutDownCommandLineFlags();
+            gflags::ShutDownCommandLineFlags();
             std::cout << "GNSS-SDR Front-end calibration program ended.\n";
             return 0;
         }
@@ -635,6 +642,6 @@ int main(int argc, char** argv)
                 }
         }
 
-    google::ShutDownCommandLineFlags();
+    gflags::ShutDownCommandLineFlags();
     std::cout << "GNSS-SDR Front-end calibration program ended.\n";
 }

@@ -42,6 +42,12 @@
 #include <sys/types.h>
 #include <thread>
 
+#if GFLAGS_OLD_NAMESPACE
+namespace gflags
+{
+using namespace google;
+}
+#endif
 
 DEFINE_int32(fs_in, 4000000, "Sampling rate, in Samples/s");
 DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position fix, in seconds");
@@ -589,7 +595,7 @@ int main(int argc, char **argv)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
 
     // Start queue thread
@@ -624,6 +630,6 @@ int main(int argc, char **argv)
     receive_msg_thread.join();
     msgctl(sysv_msqid, IPC_RMID, nullptr);
 
-    google::ShutDownCommandLineFlags();
+    gflags::ShutDownCommandLineFlags();
     return res;
 }

@@ -19,6 +19,9 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 - Fixed `-DENABLE_OWN_GLOG=ON` building option when gflags is installed and it
   is older than v2.1.2 (_e.g._, in CentOS 7).
+- Improved handling of old gflags versions, minimum version set to 2.1.2.
+  Replaced `google::` by `gflags::` namespace when using functions of the gflags
+  library.
 - Fixed static linking of the matio library when downloaded and built by CMake.
 
 ### Improvements in Usability:

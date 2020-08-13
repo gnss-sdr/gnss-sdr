@@ -62,6 +62,12 @@
 #include <string>
 #include <vector>
 
+#if GFLAGS_OLD_NAMESPACE
+namespace gflags
+{
+using namespace google;
+}
+#endif
 
 // Create the lists of GNSS satellites
 std::set<int> available_gps_prn = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
@@ -1660,7 +1666,7 @@ void RINEX_singlediff()
 int main(int argc, char** argv)
 {
     std::cout << "Running RINEX observables difference tool...\n";
-    google::ParseCommandLineFlags(&argc, &argv, true);
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
     if (FLAGS_single_diff)
         {
             if (FLAGS_dupli_sat)
@@ -1677,6 +1683,6 @@ int main(int argc, char** argv)
             RINEX_doublediff(FLAGS_remove_rx_clock_error);
         }
 
-    google::ShutDownCommandLineFlags();
+    gflags::ShutDownCommandLineFlags();
     return 0;
 }

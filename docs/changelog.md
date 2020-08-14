@@ -28,6 +28,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Improved handling of old gflags versions, minimum version set to 2.1.2.
   Replaced `google::` by `gflags::` namespace when using functions of the gflags
   library.
+- Replaced `git://` by `https://` as the used protocol when downloading Gflags,
+  so it can work through firewalls requiring authentication.
 - Fixed static linking of the matio library when downloaded and built by CMake.
 
 ### Improvements in Usability:

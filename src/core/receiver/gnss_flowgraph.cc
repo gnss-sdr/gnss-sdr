@@ -401,7 +401,7 @@ void GNSSFlowgraph::connect()
                                     double resampler_ratio = 1.0;
                                     double acq_fs = fs;
                                     // find the signal associated to this channel
-                                    switch (mapStringValues_[channels_.at(i)->implementation()])
+                                    switch (mapStringValues_[channels_.at(i)->get_signal().get_signal_str()])
                                         {
                                         case evGPS_1C:
                                             acq_fs = GPS_L1_CA_OPT_ACQ_FS_SPS;
@@ -437,7 +437,7 @@ void GNSSFlowgraph::connect()
                                     if (acq_fs < fs)
                                         {
                                             // check if the resampler is already created for the channel system/signal and for the specific RF Channel
-                                            const std::string map_key = channels_.at(i)->implementation() + std::to_string(selected_signal_conditioner_ID);
+                                            const std::string map_key = channels_.at(i)->get_signal().get_signal_str() + std::to_string(selected_signal_conditioner_ID);
                                             resampler_ratio = static_cast<double>(fs) / acq_fs;
                                             int decimation = floor(resampler_ratio);
                                             while (fs % decimation > 0)
@@ -464,13 +464,13 @@ void GNSSFlowgraph::connect()
                                                             top_block_->connect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
                                                                 acq_resamplers_.at(map_key), 0);
                                                             LOG(INFO) << "Created "
-                                                                      << channels_.at(i)->implementation()
+                                                                      << channels_.at(i)->get_signal().get_signal_str()
                                                                       << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with " << taps.size() << " taps and decimation factor of " << decimation;
                                                         }
                                                     else
                                                         {
                                                             LOG(INFO) << "Found existing "
-                                                                      << channels_.at(i)->implementation()
+                                                                      << channels_.at(i)->get_signal().get_signal_str()
                                                                       << " acquisition resampler for RF channel " << std::to_string(signal_conditioner_ID) << " with " << taps.size() << " taps and decimation factor of " << decimation;
                                                         }
 

@@ -842,7 +842,7 @@ endif()
 
 # Fox for CentOS 7 with cmake3 and gcc8
 if(Boost_VERSION_STRING VERSION_LESS "1.60")
-   set(USE_GENERIC_LAMBDAS OFF)
+    set(USE_GENERIC_LAMBDAS OFF)
 endif()
 
 # Fix for Boost >= 1.73

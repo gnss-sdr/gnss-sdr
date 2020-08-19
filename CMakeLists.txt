@@ -579,6 +579,7 @@ if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
 endif()
 
 
+
 ################################################################################
 # Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
@@ -837,6 +838,11 @@ if(Boost_VERSION_STRING VERSION_LESS 1.70.0)
         { std::string_view sv; }"
         has_string_view
     )
+endif()
+
+# Fox for CentOS 7 with cmake3 and gcc8
+if(Boost_VERSION_STRING VERSION_LESS "1.60")
+   set(USE_GENERIC_LAMBDAS OFF)
 endif()
 
 # Fix for Boost >= 1.73

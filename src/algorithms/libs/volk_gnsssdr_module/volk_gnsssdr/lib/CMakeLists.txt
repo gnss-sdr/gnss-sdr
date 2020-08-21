@@ -82,6 +82,16 @@ endif()
 if(NOT PYTHON_DASH_B)
     set(PYTHON_DASH_B "")
 endif()
+if(USE_CPU_FEATURES)
+    set(VOLK_GNSSSSDR_ARCHS_XML_FILE "archs.xml")
+else()
+    set(VOLK_GNSSSSDR_ARCHS_XML_FILE "archs_old.xml")
+endif()
+configure_file(${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py.in
+    ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py
+    @ONLY
+)
+
 execute_process(
     COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B}
     ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_compile_utils.py
@@ -338,6 +348,11 @@ message(STATUS "Available machines: ${available_machines}")
 
 # dependencies are all python, xml, and header implementation files
 file(GLOB xml_files ${PROJECT_SOURCE_DIR}/gen/*.xml)
+if(USE_CPU_FEATURES)
+    list(REMOVE_ITEM xml_files ${PROJECT_SOURCE_DIR}/gen/archs_old.xml)
+else()
+    list(REMOVE_ITEM xml_files ${PROJECT_SOURCE_DIR}/gen/archs.xml)
+endif()
 list(SORT xml_files)
 file(GLOB py_files ${PROJECT_SOURCE_DIR}/gen/*.py)
 list(SORT py_files)
@@ -361,7 +376,11 @@ gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.tmpl.h              ${PROJE
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.tmpl.c              ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr.c)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_typedefs.tmpl.h     ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_typedefs.h)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.h          ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_cpu.h)
-gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.c          ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_cpu.c)
+if(USE_CPU_FEATURES)
+    gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.c      ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_cpu.c)
+else()
+    gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.old.c  ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_cpu.c)
+endif()
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_config_fixed.tmpl.h ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_config_fixed.h)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_machines.tmpl.h     ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_machines.h)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_machines.tmpl.c     ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_machines.c)
@@ -553,6 +572,12 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    if(USE_CPU_FEATURES)
+        target_include_directories(volk_gnsssdr_obj
+            PRIVATE
+                $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+    endif()
     # Configure object target properties
     if(NOT MSVC)
         set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
@@ -565,7 +590,13 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
 else()
     add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
 endif()
-target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
+if(USE_CPU_FEATURES)
+    target_link_libraries(volk_gnsssdr
+        PRIVATE ${volk_gnsssdr_libraries} cpu_features
+    )
+else()
+    target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
+endif()
 target_include_directories(volk_gnsssdr
     PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -574,7 +605,12 @@ target_include_directories(volk_gnsssdr
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PUBLIC $<INSTALL_INTERFACE:include>
 )
-
+if(USE_CPU_FEATURES)
+    target_include_directories(volk_gnsssdr
+        PRIVATE
+            $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()
 # Configure target properties
 if(NOT MSVC)
     target_link_libraries(volk_gnsssdr PUBLIC m)
@@ -597,6 +633,11 @@ if(ENABLE_STATIC_LIBS)
     else()
         add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
     endif()
+    if(USE_CPU_FEATURES)
+        target_link_libraries(volk_gnsssdr_static
+            PRIVATE cpu_features
+        )
+    endif()
     target_link_libraries(volk_gnsssdr_static PUBLIC ${volk_gnsssdr_libraries} pthread)
     if(NOT MSVC)
         target_link_libraries(volk_gnsssdr_static PUBLIC m)
@@ -609,6 +650,12 @@ if(ENABLE_STATIC_LIBS)
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    if(USE_CPU_FEATURES)
+        target_include_directories(volk_gnsssdr_static
+            PRIVATE
+                $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+    endif()
 
     set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
 

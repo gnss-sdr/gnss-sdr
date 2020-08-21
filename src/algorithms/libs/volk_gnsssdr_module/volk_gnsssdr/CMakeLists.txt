@@ -227,6 +227,15 @@ endif()
 # Dependencies setup
 ########################################################################
 
+# cpu_features
+if(CMAKE_VERSION VERSION_GREATER 3.0)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(BUILD_PIC ON)
+    set(USE_CPU_FEATURES ON)
+    add_subdirectory(cpu_features)
+endif()
+set(USE_CPU_FEATURES OFF)
+
 # Python
 include(VolkPython) # sets PYTHON_EXECUTABLE
 volk_python_check_module("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)

@@ -234,7 +234,6 @@ if(CMAKE_VERSION VERSION_GREATER 3.0)
     set(USE_CPU_FEATURES ON)
     add_subdirectory(cpu_features)
 endif()
-set(USE_CPU_FEATURES OFF)
 
 # Python
 include(VolkPython) # sets PYTHON_EXECUTABLE

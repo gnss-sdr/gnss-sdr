@@ -31,6 +31,15 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Replaced `git://` by `https://` as the used protocol when downloading Gflags,
   so it can work through firewalls requiring authentication.
 - Fixed static linking of the matio library when downloaded and built by CMake.
+- Improved CPU feature detection by switching to Google's
+  [cpu_features](https://github.com/google/cpu_features) library: The
+  `volk_gnsssdr` library had its own CPU feature detection methods, which were
+  not totally reliable and difficult to implement across compilers and OSes.
+  This is now handled by the `cpu_features` library, thus building upon that
+  expertise. Since that library has higher dependency version requirements than
+  GNSS-SDR, the old method is still used in old development environments. No
+  extra dependency is needed. This change is transparent to the user, since
+  everything is managed by the CMake scripts.
 
 ### Improvements in Usability:
 

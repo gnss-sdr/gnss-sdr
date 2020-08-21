@@ -1168,6 +1168,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
         )
+        if(CMAKE_VERSION VERSION_GREATER 3.0) # and GCC, and Clang and PYTHON...
+            set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
+                INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+            )
+        endif()
     endif()
 
     if(CMAKE_VERSION VERSION_LESS 3.2)

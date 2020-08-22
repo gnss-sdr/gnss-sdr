@@ -652,6 +652,12 @@ if(ENABLE_STATIC_LIBS)
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    if(USE_CPU_FEATURES)
+        target_include_directories(volk_gnsssdr_static
+            PRIVATE
+                $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+    endif()
 
     set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
 

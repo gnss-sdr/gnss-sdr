@@ -34,6 +34,9 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
+    enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
+
     const int channel_selector = configuration->property(role + ".selected_channel", 1);
 
     const std::string default_filename("./example_capture.LS3");
@@ -54,12 +57,15 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
         }
-    if (dump_)
+
+    if (enable_throttle_control_)
         {
-            DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
+            throttle_ = gr::blocks::throttle::make(item_size_, sampling_frequency_);
         }
+
     if (in_stream_ > 0)
         {
             LOG(ERROR) << "A signal source does not have an input stream";
@@ -73,23 +79,50 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
 
 void LabsatSignalSource::connect(gr::top_block_sptr top_block)
 {
-    if (dump_)
+    if (enable_throttle_control_ == true)
         {
-            top_block->connect(labsat23_source_, 0, file_sink_, 0);
-            DLOG(INFO) << "connected labsat23_source_ to file sink";
+            top_block->connect(labsat23_source_, 0, throttle_, 0);
+            DLOG(INFO) << "connected labsat23_source_ to throttle";
+            if (dump_)
+                {
+                    top_block->connect(labsat23_source_, 0, file_sink_, 0);
+                    DLOG(INFO) << "connected labsat23_source_to sink";
+                }
         }
     else
         {
-            DLOG(INFO) << "nothing to connect internally";
+            if (dump_)
+                {
+                    top_block->connect(labsat23_source_, 0, file_sink_, 0);
+                    DLOG(INFO) << "connected labsat23_source_ to sink";
+                }
+            else
+                {
+                    DLOG(INFO) << "nothing to connect internally";
+                }
         }
 }
 
 
 void LabsatSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    if (dump_)
+    if (enable_throttle_control_ == true)
         {
-            top_block->disconnect(labsat23_source_, 0, file_sink_, 0);
+            top_block->disconnect(labsat23_source_, 0, throttle_, 0);
+            DLOG(INFO) << "disconnected labsat23_source_ to throttle";
+            if (dump_)
+                {
+                    top_block->disconnect(labsat23_source_, 0, file_sink_, 0);
+                    DLOG(INFO) << "disconnected labsat23_source_ to sink";
+                }
+        }
+    else
+        {
+            if (dump_)
+                {
+                    top_block->disconnect(labsat23_source_, 0, file_sink_, 0);
+                    DLOG(INFO) << "disconnected labsat23_source_ to sink";
+                }
         }
 }
 
@@ -103,5 +136,9 @@ gr::basic_block_sptr LabsatSignalSource::get_left_block()
 
 gr::basic_block_sptr LabsatSignalSource::get_right_block()
 {
+    if (enable_throttle_control_ == true)
+        {
+            return throttle_;
+        }
     return labsat23_source_;
 }

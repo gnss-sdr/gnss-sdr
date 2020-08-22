@@ -573,11 +573,10 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
     if(USE_CPU_FEATURES)
-        # target_include_directories(volk_gnsssdr_obj
-        #    PRIVATE
-        #        $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
-        # )
-        target_link_libraries(volk_gnsssdr_obj PRIVATE cpu_features)
+        target_include_directories(volk_gnsssdr_obj
+            PRIVATE
+                $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+        )
     endif()
     # Configure object target properties
     if(NOT MSVC)

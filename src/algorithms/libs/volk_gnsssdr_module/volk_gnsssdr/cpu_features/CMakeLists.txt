@@ -11,8 +11,11 @@ endif()
 
 project(CpuFeatures VERSION 0.1.0 LANGUAGES C)
 
-set(CMAKE_C_STANDARD 99)
-
+if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+    set(CMAKE_C_STANDARD 99)
+else()
+    add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,C>:-std=gnu99>")
+endif()
 # Default Build Type to be Release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING

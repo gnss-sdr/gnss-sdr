@@ -604,7 +604,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
 }
 
 
-void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process(void)
+void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process()
 {
     bool dynamic_bit_selection_active = true;
 

@@ -103,14 +103,22 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
-    target_link_libraries(tracking_gr_blocks
-        PUBLIC
-            ${CUDA_LIBRARIES}
-    )
-    target_include_directories(tracking_gr_blocks
-        PUBLIC
-            ${CUDA_INCLUDE_DIRS}
+if(ENABLE_CUDA)
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        target_include_directories(tracking_gr_blocks
+            PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        )
+    else()
+        target_link_libraries(tracking_gr_blocks
+            PUBLIC cuda_correlator_lib
+        )
+        target_include_directories(tracking_gr_blocks
+            PUBLIC ${CUDA_INCLUDE_DIRS}
+        )
+    endif()
+    set_target_properties(tracking_gr_blocks PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON
     )
 endif()
 

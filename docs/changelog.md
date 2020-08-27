@@ -31,6 +31,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Replaced `git://` by `https://` as the used protocol when downloading Gflags,
   so it can work through firewalls requiring authentication.
 - Fixed static linking of the matio library when downloaded and built by CMake.
+- Fix building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
 
 ### Improvements in Usability:
 

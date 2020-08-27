@@ -42,8 +42,6 @@ set(TRACKING_LIB_HEADERS
     exponential_smoother.h
 )
 
-set(OPT_TRACKING_LIBRARIES "")
-set(OPT_TRACKING_INCLUDES "")
 if(ENABLE_CUDA)
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} cuda_multicorrelator.cu)
@@ -53,9 +51,7 @@ if(ENABLE_CUDA)
         set(CUDA_PROPAGATE_HOST_FLAGS OFF)
         cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
         set(LIB_TYPE STATIC) #set the lib type
-        cuda_add_library(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
-        set(OPT_TRACKING_LIBRARIES ${OPT_TRACKING_LIBRARIES} CUDA_CORRELATOR_LIB)
-        set(OPT_TRACKING_INCLUDES ${OPT_TRACKING_INCLUDES} ${CUDA_INCLUDE_DIRS})
+        cuda_add_library(cuda_correlator_lib ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
     endif()
 endif()
 
@@ -94,20 +90,27 @@ target_link_libraries(tracking_libs
         Volkgnsssdr::volkgnsssdr
         core_system_parameters
         algorithms_libs
-        ${OPT_TRACKING_LIBRARIES}
     PRIVATE
         gnss_sdr_flags
         Glog::glog
 )
 
-if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
-    target_link_libraries(tracking_libs
-        PUBLIC
-            ${OPT_TRACKING_LIBRARIES}
-    )
-    target_include_directories(tracking_libs
-        PUBLIC
-            ${OPT_TRACKING_INCLUDES}
+if(ENABLE_CUDA)
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        target_include_directories(tracking_libs
+            PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        )
+    else()
+        target_link_libraries(tracking_libs
+            PUBLIC ${CUDA_LIBRARIES}
+        )
+        target_include_directories(tracking_libs
+            PUBLIC ${CUDA_INCLUDE_DIRS}
+        )
+    endif()
+    set_target_properties(tracking_libs PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON
     )
 endif()
 

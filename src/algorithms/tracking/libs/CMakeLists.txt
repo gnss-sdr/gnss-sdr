@@ -47,7 +47,7 @@ if(ENABLE_CUDA)
         set(TRACKING_LIB_SOURCES ${TRACKING_LIB_SOURCES} cuda_multicorrelator.cu)
         set(TRACKING_LIB_HEADERS ${TRACKING_LIB_HEADERS} cuda_multicorrelator.h)
     else()
-        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++14;-O3; -use_fast_math -default-stream per-thread")
+        list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_30,code=sm_30; -std=c++11;-O3; -use_fast_math -default-stream per-thread")
         set(CUDA_PROPAGATE_HOST_FLAGS OFF)
         cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
         set(LIB_TYPE STATIC) #set the lib type

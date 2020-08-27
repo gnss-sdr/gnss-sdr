@@ -110,7 +110,7 @@ if(ENABLE_CUDA)
         )
     else()
         target_link_libraries(tracking_gr_blocks
-            PUBLIC ${CUDA_LIBRARIES}
+            PUBLIC cuda_correlator_lib
         )
         target_include_directories(tracking_gr_blocks
             PUBLIC ${CUDA_INCLUDE_DIRS}

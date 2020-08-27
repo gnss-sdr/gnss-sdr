@@ -51,7 +51,7 @@ if(ENABLE_CUDA)
         set(CUDA_PROPAGATE_HOST_FLAGS OFF)
         cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
         set(LIB_TYPE STATIC) #set the lib type
-        cuda_add_library(CUDA_CORRELATOR_LIB ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
+        cuda_add_library(cuda_correlator_lib ${LIB_TYPE} cuda_multicorrelator.h cuda_multicorrelator.cu)
     endif()
 endif()
 

@@ -42,6 +42,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   v0.0.13. This change recovers the old behavior.
 - Fixed the termination of the receiver with `q` + `[Enter]` keys when using the
   `Osmosdr_Signal_Source` implementation of the `SignalSource` block.
+- The `Labsat_Signal_Source` implementation of the `SignalSource` block now can
+  be throttled with the new parameters `SignalSource.enable_throttle_control`
+  and `SignalSource.throttle_frequency_sps`, thus allowing the emulation of
+  real-time operation.
 - Improved General Block diagram, both in content and in image resolution.
 
 &nbsp;

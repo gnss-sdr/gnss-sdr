@@ -70,19 +70,19 @@ public:
 private:
     gr::block_sptr labsat23_source_;
     gr::blocks::file_sink::sptr file_sink_;
+    gr::blocks::throttle::sptr throttle_;
+
     std::string role_;
     std::string item_type_;
     std::string filename_;
     std::string dump_filename_;
 
-
-    int64_t sampling_frequency_;
-    bool enable_throttle_control_;
-    gr::blocks::throttle::sptr throttle_;
+    size_t item_size_;
 
     unsigned int in_stream_;
     unsigned int out_stream_;
-    size_t item_size_;
+
+    bool enable_throttle_control_;
     bool dump_;
 };
 

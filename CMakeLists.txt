@@ -2672,16 +2672,14 @@ if(DEFINED ENV{CUDA_GPU_ACCEL})
 endif()
 
 if(ENABLE_CUDA)
+    set(CMAKE_CUDA_STANDARD 14)
+    set(CMAKE_CUDA_EXTENSIONS ON)
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         include(CheckLanguage)
         check_language(CUDA)
         if(CMAKE_CUDA_COMPILER)
             enable_language(CUDA)
             set(CUDA_FOUND TRUE)
-            if(NOT DEFINED CMAKE_CUDA_STANDARD)
-                set(CMAKE_CUDA_STANDARD 11)
-                set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-            endif()
         else()
             set(ENABLE_CUDA OFF)
         endif()
@@ -2689,12 +2687,19 @@ if(ENABLE_CUDA)
         find_package(CUDA REQUIRED)
         set_package_properties(CUDA PROPERTIES
             URL "https://developer.nvidia.com/cuda-downloads"
-            DESCRIPTION "Library for parallel programming in Nvidia GPUs"
             PURPOSE "Used in some processing block implementations."
             TYPE REQUIRED
         )
-        set(CMAKE_CUDA_STANDARD 14)
-        if(NOT CUDA_FOUND)
+        if(CUDA_FOUND)
+            set_package_properties(CUDA PROPERTIES
+                DESCRIPTION "Library for parallel programming in Nvidia GPUs (found: v${CUDA_VERSION_STRING})"
+            )
+            set(CMAKE_CUDA_COMPILER_ID "NVIDIA")  # only for reporting purposes
+            set(CMAKE_CUDA_COMPILER_VERSION ${CUDA_VERSION_STRING})  # only for reporting purposes
+        else()
+            set_package_properties(CUDA PROPERTIES
+                DESCRIPTION "Library for parallel programming in Nvidia GPUs"
+            )
             set(ENABLE_CUDA OFF)
         endif()
     endif()
@@ -2704,7 +2709,6 @@ if(ENABLE_CUDA)
     message(STATUS " You can disable it with 'cmake -DENABLE_CUDA=OFF ..'")
 else()
     message(STATUS "NVIDIA CUDA GPU Acceleration will be not enabled.")
-    message(STATUS " Enable it with 'cmake -DENABLE_CUDA=ON ..' to add support for GPU-based acceleration using CUDA.")
 endif()
 
 
@@ -3156,6 +3160,9 @@ endif()
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "The CXX compiler identification is ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}. Standard: C++${CMAKE_CXX_STANDARD}.")
 message(STATUS "The C compiler identification is ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}. Standard: C${CMAKE_C_STANDARD}.")
+if(CUDA_FOUND)
+    message(STATUS "The CUDA compiler identification is ${CMAKE_CUDA_COMPILER_ID} ${CMAKE_CUDA_COMPILER_VERSION}. Standard: C++${CMAKE_CUDA_STANDARD}.")
+endif()
 message(STATUS "")
 file(REMOVE ${CMAKE_BINARY_DIR}/features.log)
 file(WRITE ${CMAKE_BINARY_DIR}/features.log "**********************************\n")

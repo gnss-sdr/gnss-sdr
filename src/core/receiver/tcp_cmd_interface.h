@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <ctime>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -72,6 +73,8 @@ private:
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
     std::shared_ptr<PvtInterface> PVT_sptr_;
     std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr_;
+
+    std::map<std::string, std::string> map_signal_pretty_name_;
 
     float rx_latitude_;
     float rx_longitude_;

@@ -44,6 +44,17 @@ TcpCmdInterface::TcpCmdInterface()
     rx_longitude_ = 0.0;
     rx_altitude_ = 0.0;
     receiver_utc_time_ = 0;
+
+    map_signal_pretty_name_["1C"] = "L1 C/A";
+    map_signal_pretty_name_["1B"] = "E1";
+    map_signal_pretty_name_["1G"] = "L1 C/A";
+    map_signal_pretty_name_["2S"] = "L2C";
+    map_signal_pretty_name_["2G"] = "L2 C/A";
+    map_signal_pretty_name_["5X"] = "E5a";
+    map_signal_pretty_name_["7X"] = "E5b";
+    map_signal_pretty_name_["L5"] = "L5";
+    map_signal_pretty_name_["B1"] = "B1I";
+    map_signal_pretty_name_["B3"] = "B3I";
 }
 
 
@@ -131,10 +142,10 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
 {
     std::stringstream str_stream;
 
-    str_stream << "----------------------------------------------------------------------------\n";
-    str_stream << "| Ch  | System  |  Signal   | PRN | Mode | Tlm | Eph |  Doppler  |   CN0   |\n";
-    str_stream << "|     |         |           |     |      |     |     |   [Hz]    | [dB-Hz] |\n";
-    str_stream << "----------------------------------------------------------------------------\n";
+    str_stream << "-------------------------------------------------------------------------\n";
+    str_stream << "| Ch  | System  | Signal | PRN | Mode | Tlm | Eph |  Doppler  |   CN0   |\n";
+    str_stream << "|     |         |        |     |      |     |     |   [Hz]    | [dB-Hz] |\n";
+    str_stream << "-------------------------------------------------------------------------\n";
 
     int n_ch = static_cast<int>(channels_sptr_->size());
     for (int n = 0; n < n_ch; n++)
@@ -142,17 +153,21 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             std::shared_ptr<Channel>
                 ch_sptr = std::dynamic_pointer_cast<Channel>(channels_sptr_->at(n));
 
+            std::string sys = ch_sptr->get_signal().get_satellite().get_system();
+            std::string sig = map_signal_pretty_name_.at(ch_sptr->get_signal().get_signal_str());
+            uint32_t prn = ch_sptr->get_signal().get_satellite().get_PRN();
+
             str_stream << std::fixed << std::setprecision(1)
                        << "| "
                        << std::right << std::setw(3) << n
                        << " | "
-                       << std::left << std::setw(7) << ch_sptr->get_signal().get_satellite().get_system()
+                       << std::left << std::setw(7) << sys
                        << " | "
-                       << std::left << std::setw(9) << ch_sptr->get_signal().get_signal_str()
+                       << std::left << std::setw(6) << sig
                        << " | "
-                       << std::right << std::setw(3) << ch_sptr->get_signal().get_satellite().get_PRN()
+                       << std::right << std::setw(3) << prn
                        << " | "
-                       << std::left << std::setw(4) << "---"
+                       << std::left << std::setw(4) << "----"
                        << " | "
                        << std::left << std::setw(3) << "---"
                        << " | "
@@ -164,7 +179,7 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
                        << " |"
                        << "\n";
         }
-    str_stream << "----------------------------------------------------------------------------\n";
+    str_stream << "-------------------------------------------------------------------------\n";
 
     double longitude_deg;
     double latitude_deg;

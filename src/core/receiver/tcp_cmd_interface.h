@@ -33,6 +33,7 @@
 #include <vector>
 
 class PvtInterface;
+class ChannelInterface;
 
 class TcpCmdInterface
 {
@@ -53,6 +54,7 @@ public:
     std::array<float, 3> get_LLH() const;
 
     void set_pvt(std::shared_ptr<PvtInterface> PVT_sptr);
+    void set_channels(std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr);
 
 private:
     std::unordered_map<std::string, std::function<std::string(const std::vector<std::string> &)>>
@@ -69,6 +71,7 @@ private:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
     std::shared_ptr<PvtInterface> PVT_sptr_;
+    std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr_;
 
     float rx_latitude_;
     float rx_longitude_;

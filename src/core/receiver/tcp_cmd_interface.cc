@@ -19,6 +19,7 @@
  */
 
 #include "tcp_cmd_interface.h"
+#include "channel.h"
 #include "command_event.h"
 #include "pvt_interface.h"
 #include <boost/asio.hpp>
@@ -74,6 +75,12 @@ void TcpCmdInterface::set_pvt(std::shared_ptr<PvtInterface> PVT_sptr)
 }
 
 
+void TcpCmdInterface::set_channels(std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr)
+{
+    channels_sptr_ = std::move(channels_sptr);
+}
+
+
 time_t TcpCmdInterface::get_utc_time() const
 {
     return receiver_utc_time_;
@@ -123,18 +130,41 @@ std::string TcpCmdInterface::standby(const std::vector<std::string> &commandLine
 std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine __attribute__((unused)))
 {
     std::stringstream str_stream;
-    // todo: implement the receiver status report
 
-    //    str_stream << "-------------------------------------------------------\n";
-    //    str_stream << "ch | sys | sig | mode | Tlm | Eph | Doppler | CN0 |\n";
-    //    str_stream << "   |     |     |      |     |     |  [Hz]   | [dB - Hz] |\n";
-    //    str_stream << "-------------------------------------------------------\n";
-    //    int n_ch = 10;
-    //    for (int n = 0; n < n_ch; n++)
-    //        {
-    //            str_stream << n << "GPS | L1CA | TRK | YES | YES | 23412.4 | 44.3 |\n";
-    //        }
-    //    str_stream << "--------------------------------------------------------\n";
+    str_stream << "----------------------------------------------------------------------------\n";
+    str_stream << "| Ch  | System  |  Signal   | PRN | Mode | Tlm | Eph |  Doppler  |   CN0   |\n";
+    str_stream << "|     |         |           |     |      |     |     |   [Hz]    | [dB-Hz] |\n";
+    str_stream << "----------------------------------------------------------------------------\n";
+
+    int n_ch = static_cast<int>(channels_sptr_->size());
+    for (int n = 0; n < n_ch; n++)
+        {
+            std::shared_ptr<Channel>
+                ch_sptr = std::dynamic_pointer_cast<Channel>(channels_sptr_->at(n));
+
+            str_stream << std::fixed << std::setprecision(1)
+                       << "| "
+                       << std::right << std::setw(3) << n
+                       << " | "
+                       << std::left << std::setw(7) << ch_sptr->get_signal().get_satellite().get_system()
+                       << " | "
+                       << std::left << std::setw(9) << ch_sptr->get_signal().get_signal_str()
+                       << " | "
+                       << std::right << std::setw(3) << ch_sptr->get_signal().get_satellite().get_PRN()
+                       << " | "
+                       << std::left << std::setw(4) << "---"
+                       << " | "
+                       << std::left << std::setw(3) << "---"
+                       << " | "
+                       << std::left << std::setw(3) << "---"
+                       << " | "
+                       << std::right << std::setw(9) << 23412.46
+                       << " | "
+                       << std::right << std::setw(7) << 44.32
+                       << " |"
+                       << "\n";
+        }
+    str_stream << "----------------------------------------------------------------------------\n";
 
     double longitude_deg;
     double latitude_deg;

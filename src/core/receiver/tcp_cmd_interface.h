@@ -75,6 +75,7 @@ private:
     std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr_;
 
     std::map<std::string, std::string> map_signal_pretty_name_;
+    std::map<uint32_t, std::string> map_state_name_;
 
     float rx_latitude_;
     float rx_longitude_;

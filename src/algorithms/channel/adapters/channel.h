@@ -86,6 +86,8 @@ public:
     inline std::shared_ptr<TrackingInterface> tracking() const { return trk_; }
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() const { return nav_; }
 
+    inline uint32_t fsm_state() { return channel_fsm_->state(); }
+
 private:
     std::shared_ptr<ChannelFsm> channel_fsm_;
     std::shared_ptr<AcquisitionInterface> acq_;

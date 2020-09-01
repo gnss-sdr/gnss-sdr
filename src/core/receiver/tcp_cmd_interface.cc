@@ -55,6 +55,10 @@ TcpCmdInterface::TcpCmdInterface()
     map_signal_pretty_name_["L5"] = "L5";
     map_signal_pretty_name_["B1"] = "B1I";
     map_signal_pretty_name_["B3"] = "B3I";
+
+    map_state_name_[0] = "STBY";
+    map_state_name_[1] = "ACQ";
+    map_state_name_[2] = "TRK";
 }
 
 
@@ -153,21 +157,22 @@ std::string TcpCmdInterface::status(const std::vector<std::string> &commandLine 
             std::shared_ptr<Channel>
                 ch_sptr = std::dynamic_pointer_cast<Channel>(channels_sptr_->at(n));
 
-            std::string sys = ch_sptr->get_signal().get_satellite().get_system();
-            std::string sig = map_signal_pretty_name_.at(ch_sptr->get_signal().get_signal_str());
+            std::string system = ch_sptr->get_signal().get_satellite().get_system();
+            std::string signal = map_signal_pretty_name_.at(ch_sptr->get_signal().get_signal_str());
             uint32_t prn = ch_sptr->get_signal().get_satellite().get_PRN();
+            std::string state = map_state_name_.at(ch_sptr->fsm_state());
 
             str_stream << std::fixed << std::setprecision(1)
                        << "| "
                        << std::right << std::setw(3) << n
                        << " | "
-                       << std::left << std::setw(7) << sys
+                       << std::left << std::setw(7) << system
                        << " | "
-                       << std::left << std::setw(6) << sig
+                       << std::left << std::setw(6) << signal
                        << " | "
                        << std::right << std::setw(3) << prn
                        << " | "
-                       << std::left << std::setw(4) << "----"
+                       << std::left << std::setw(4) << state
                        << " | "
                        << std::left << std::setw(3) << "---"
                        << " | "

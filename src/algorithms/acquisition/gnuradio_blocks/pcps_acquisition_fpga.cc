@@ -180,7 +180,7 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
         &d_doppler_index,
         &total_block_exp);
 
-    const auto doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
+    const int32_t doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
 
     if (total_block_exp > d_total_block_exp)
         {

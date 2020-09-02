@@ -74,8 +74,23 @@ private:
     std::shared_ptr<PvtInterface> PVT_sptr_;
     std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr_;
 
-    std::map<std::string, std::string> map_signal_pretty_name_;
-    std::map<uint32_t, std::string> map_state_name_;
+    const std::map<std::string, std::string> map_signal_pretty_name_{
+        {"1C", "L1 C/A"},
+        {"1B", "E1"},
+        {"1G", "L1 C/A"},
+        {"2S", "L2C"},
+        {"2G", "L2 C/A"},
+        {"5X", "E5a"},
+        {"7X", "E5b"},
+        {"L5", "L5"},
+        {"B1", "B1I"},
+        {"B3", "B3I"}};
+
+    const std::map<uint32_t, std::string> map_state_name_{
+        {0, "STBY"},
+        {1, "ACQ"},
+        {2, "TRK"},
+        {3, "DROP"}};
 
     float rx_latitude_;
     float rx_longitude_;

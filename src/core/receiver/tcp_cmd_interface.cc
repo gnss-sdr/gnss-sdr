@@ -35,6 +35,7 @@ using b_io_context = boost::asio::io_context;
 using b_io_context = boost::asio::io_service;
 #endif
 
+
 TcpCmdInterface::TcpCmdInterface()
 {
     register_functions();
@@ -44,21 +45,6 @@ TcpCmdInterface::TcpCmdInterface()
     rx_longitude_ = 0.0;
     rx_altitude_ = 0.0;
     receiver_utc_time_ = 0;
-
-    map_signal_pretty_name_["1C"] = "L1 C/A";
-    map_signal_pretty_name_["1B"] = "E1";
-    map_signal_pretty_name_["1G"] = "L1 C/A";
-    map_signal_pretty_name_["2S"] = "L2C";
-    map_signal_pretty_name_["2G"] = "L2 C/A";
-    map_signal_pretty_name_["5X"] = "E5a";
-    map_signal_pretty_name_["7X"] = "E5b";
-    map_signal_pretty_name_["L5"] = "L5";
-    map_signal_pretty_name_["B1"] = "B1I";
-    map_signal_pretty_name_["B3"] = "B3I";
-
-    map_state_name_[0] = "STBY";
-    map_state_name_[1] = "ACQ";
-    map_state_name_[2] = "TRK";
 }
 
 

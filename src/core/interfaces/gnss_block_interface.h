@@ -68,6 +68,11 @@ public:
             };           // avoid unused param warning
         return nullptr;  // added to support raw array access (non pure virtual to allow left unimplemented)= 0;
     }
+
+    /*!
+     * \brief Start the flow of samples if needed.
+     */
+    virtual void start(){};
 };
 
 #endif  // GNSS_SDR_GNSS_BLOCK_INTERFACE_H

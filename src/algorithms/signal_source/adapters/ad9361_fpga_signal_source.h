@@ -43,6 +43,8 @@ public:
 
     ~Ad9361FpgaSignalSource();
 
+    void start();
+
     inline std::string role() override
     {
         return role_;

@@ -110,6 +110,10 @@ void GNSSFlowgraph::start()
             return;
         }
 
+#ifdef ENABLE_FPGA
+    sig_source_.at(0)->start();
+#endif
+
     running_ = true;
 }
 

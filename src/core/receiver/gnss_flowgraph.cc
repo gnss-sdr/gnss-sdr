@@ -111,7 +111,11 @@ void GNSSFlowgraph::start()
         }
 
 #ifdef ENABLE_FPGA
-    sig_source_.at(0)->start();
+    // start the DMA if the receiver is in post-processing mode
+    if (configuration_->property(sig_source_.at(0)->role() + ".switch_position", 0) == 0)
+        {
+            sig_source_.at(0)->start();
+        }
 #endif
 
     running_ = true;

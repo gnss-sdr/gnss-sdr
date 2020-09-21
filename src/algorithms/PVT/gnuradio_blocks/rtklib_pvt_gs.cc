@@ -52,6 +52,7 @@
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
 #include "rtklib_solver.h"
+#include "trackingcmd.h"
 #include <boost/any.hpp>                   // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
 #include <boost/archive/xml_oarchive.hpp>  // for xml_oarchive
@@ -126,6 +127,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
+    // Experimental: VLT commands from PVT to tracking channels
+    this->message_port_register_out(pmt::mp("pvt_to_trk"));
     // Send PVT status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
 
@@ -2143,6 +2146,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                     if (flag_pvt_valid == true)
                         {
+                            //experimental VTL tests
+                            // send tracking command
+                            const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
+                            trk_cmd_test->carrier_freq_hz = 12345.4;
+                            trk_cmd_test->sample_counter = d_gnss_observables_map.begin()->second.Tracking_sample_counter;
+                            this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
+
                             // initialize (if needed) the accumulated phase offset and apply it to the active channels
                             // required to report accumulated phase cycles comparable to pseudoranges
                             initialize_and_apply_carrier_phase_offset();

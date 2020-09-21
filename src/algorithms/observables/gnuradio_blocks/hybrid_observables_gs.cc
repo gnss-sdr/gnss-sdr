@@ -142,8 +142,8 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
     d_T_rx_TOW_set = false;
     d_T_status_report_timer_ms = 0;
     // rework
-    d_Rx_clock_buffer.set_capacity(10);  // 10*20 ms = 200 ms of data in buffer
-    d_Rx_clock_buffer.clear();           // Clear all the elements in the buffer
+    d_Rx_clock_buffer.set_capacity(5);  // 10*20 ms = 200 ms of data in buffer
+    d_Rx_clock_buffer.clear();          // Clear all the elements in the buffer
 
     d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);
     d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);

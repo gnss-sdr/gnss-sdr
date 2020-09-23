@@ -62,8 +62,8 @@ private:
     static const uint32_t shift_out_bit_max = Num_bits_ADC - Num_bits_FPGA;       // maximum possible value for the bit selection
     // received signal power thresholds for the bit selection
     // the received signal power is estimated as the averaged squared absolute value of the received signal samples
-    static const uint32_t Power_Threshold_High = 15000;
-    static const uint32_t Power_Threshold_Low = 6000;
+    static const uint32_t Power_Threshold_High = 9000;
+    static const uint32_t Power_Threshold_Low = 3000;
 
     void close_devices(void);
 

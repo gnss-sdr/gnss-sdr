@@ -326,7 +326,7 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.900.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "3.0.0")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.17")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.18")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.13.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.1")
@@ -2091,7 +2091,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     PREFIX ${CMAKE_BINARY_DIR}/matio
                     GIT_REPOSITORY https://github.com/tbeu/matio
-                    GIT_TAG 596cb3ce71038958812bd6cf9b141f12ce155ac6 # Workaround until Matio 1.5.18 v${GNSSSDR_MATIO_LOCAL_VERSION}
+                    GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
                     SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>

@@ -118,6 +118,11 @@ Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
             d_wire_sample_type = 2;
             d_bytes_per_sample = d_n_baseband_channels;
         }
+    else if (wire_sample_type == "cfloat")
+        {
+            d_wire_sample_type = 3;
+            d_bytes_per_sample = d_n_baseband_channels * 8;
+        }
     else
         {
             std::cout << "Unknown wire sample type\n";
@@ -319,9 +324,6 @@ void Gr_Complex_Ip_Packet_Source::my_pcap_loop_thread(pcap_t *pcap_handle)
 
 void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &output_items, int num_samples_readed)
 {
-    int8_t real;
-    int8_t imag;
-    uint8_t tmp_char2;
     for (int n = 0; n < num_samples_readed; n++)
         {
             switch (d_wire_sample_type)
@@ -329,6 +331,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                 case 1:  // interleaved byte samples
                     for (auto &output_item : output_items)
                         {
+                            int8_t real, imag;
                             real = fifo_buff[fifo_read_ptr++];
                             imag = fifo_buff[fifo_read_ptr++];
                             if (d_IQ_swap)
@@ -344,6 +347,8 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                 case 2:  // 4-bit samples
                     for (auto &output_item : output_items)
                         {
+                            int8_t real, imag;
+                            uint8_t tmp_char2;
                             tmp_char2 = fifo_buff[fifo_read_ptr] & 0x0F;
                             if (tmp_char2 >= 8)
                                 {
@@ -370,6 +375,24 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                             else
                                 {
                                     static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);
+                                }
+                        }
+                    break;
+                case 3:  // interleaved float samples
+                    for (auto &output_item : output_items)
+                        {
+                            float real, imag;
+                            memcpy(&real, &fifo_buff[fifo_read_ptr], sizeof(real));
+                            fifo_read_ptr += 4; // Four bytes in float
+                            memcpy(&imag, &fifo_buff[fifo_read_ptr], sizeof(imag));
+                            fifo_read_ptr += 4; // Four bytes in float
+                            if (d_IQ_swap)
+                                {
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);
+                                }
+                            else
+                                {
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(imag, real);
                                 }
                         }
                     break;
@@ -407,6 +430,7 @@ int Gr_Complex_Ip_Packet_Source::work(int noutput_items,
         {
         case 1:  // complex byte samples
         case 2:  // complex 4 bits samples
+        case 3:  // complex float samples
             bytes_requested = noutput_items * d_bytes_per_sample;
             if (bytes_requested < fifo_items)
                 {

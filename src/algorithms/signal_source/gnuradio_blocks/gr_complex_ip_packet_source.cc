@@ -331,7 +331,8 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                 case 1:  // interleaved byte samples
                     for (auto &output_item : output_items)
                         {
-                            int8_t real, imag;
+                            int8_t real;
+                            int8_t imag;
                             real = fifo_buff[fifo_read_ptr++];
                             imag = fifo_buff[fifo_read_ptr++];
                             if (d_IQ_swap)
@@ -347,7 +348,8 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                 case 2:  // 4-bit samples
                     for (auto &output_item : output_items)
                         {
-                            int8_t real, imag;
+                            int8_t real;
+                            int8_t imag;
                             uint8_t tmp_char2;
                             tmp_char2 = fifo_buff[fifo_read_ptr] & 0x0F;
                             if (tmp_char2 >= 8)
@@ -381,7 +383,8 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                 case 3:  // interleaved float samples
                     for (auto &output_item : output_items)
                         {
-                            float real, imag;
+                            float real;
+                            float imag;
                             memcpy(&real, &fifo_buff[fifo_read_ptr], sizeof(real));
                             fifo_read_ptr += 4;  // Four bytes in float
                             memcpy(&imag, &fifo_buff[fifo_read_ptr], sizeof(imag));

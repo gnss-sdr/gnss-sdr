@@ -383,9 +383,9 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                         {
                             float real, imag;
                             memcpy(&real, &fifo_buff[fifo_read_ptr], sizeof(real));
-                            fifo_read_ptr += 4; // Four bytes in float
+                            fifo_read_ptr += 4;  // Four bytes in float
                             memcpy(&imag, &fifo_buff[fifo_read_ptr], sizeof(imag));
-                            fifo_read_ptr += 4; // Four bytes in float
+                            fifo_read_ptr += 4;  // Four bytes in float
                             if (d_IQ_swap)
                                 {
                                     static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);

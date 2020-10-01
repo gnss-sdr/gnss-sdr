@@ -48,6 +48,9 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   and `SignalSource.throttle_frequency_sps`, thus allowing the emulation of
   real-time operation.
 - Improved General Block diagram, both in content and in image resolution.
+- The `Custom_UDP_Signal_Source` implementation now accepts
+  `Signal_source.sample_type=cfloat`, in addition to the existing 4 and 8-bit
+  length sample types.
 
 &nbsp;
 

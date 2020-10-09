@@ -69,7 +69,9 @@ public:
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_left_block_trk() override;  //!< Gets the GNU Radio tracking block input pointer
+    gr::basic_block_sptr get_right_block_trk() override;  //!< Gets the GNU Radio tracking block output pointer
     gr::basic_block_sptr get_left_block_acq() override;  //!< Gets the GNU Radio acquisition block input pointer
+    gr::basic_block_sptr get_right_block_acq() override;  //!< Gets the GNU Radio acquisition block output pointer
     gr::basic_block_sptr get_right_block() override;     //!< Gets the GNU Radio channel block output pointer
 
     inline std::string role() override { return role_; }

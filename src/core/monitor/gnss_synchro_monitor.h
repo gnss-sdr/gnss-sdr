@@ -24,8 +24,8 @@
 #define GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 
 #include "gnss_synchro_udp_sink.h"
-#include <gnuradio/runtime_types.h>  // for gr_vector_void_star
 #include <gnuradio/block.h>
+#include <gnuradio/runtime_types.h>  // for gr_vector_void_star
 #include <memory>
 #include <string>
 #include <vector>

@@ -1706,7 +1706,6 @@ void GNSSFlowgraph::init()
                 configuration_->property("TrackingMonitor.udp_port", 1236),
                 udp_addr_vec, enable_protobuf);
         }
-
 }
 
 

@@ -59,9 +59,9 @@
 #include <complex>
 #include <cstdint>
 #include <memory>
+#include <queue>
 #include <string>
 #include <utility>
-#include <queue>
 
 #if HAS_STD_SPAN
 #include <span>

@@ -40,7 +40,8 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename)
+    const std::string& dump_filename,
+    bool enable_monitor_output)
 {
     return pcps_quicksync_acquisition_cc_sptr(
         new pcps_quicksync_acquisition_cc(
@@ -49,7 +50,8 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
             fs_in, samples_per_ms,
             samples_per_code,
             bit_transition_flag,
-            dump, dump_filename));
+            dump, dump_filename,
+            enable_monitor_output));
 }
 
 
@@ -60,9 +62,10 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     int32_t samples_per_ms, int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename) : gr::block("pcps_quicksync_acquisition_cc",
-                                            gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                            gr::io_signature::make(0, 0, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)))
+    const std::string& dump_filename,
+    bool enable_monitor_output) : gr::block("pcps_quicksync_acquisition_cc",
+                                  gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+                                  gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -103,6 +106,8 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
+
+    d_enable_monitor_output = enable_monitor_output;
 
     d_code_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
     d_signal_folded.reserve(d_fft_size);
@@ -228,7 +233,7 @@ void pcps_quicksync_acquisition_cc::set_state(int32_t state)
 
 int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
     gr_vector_int& ninput_items, gr_vector_const_void_star& input_items,
-    gr_vector_void_star& output_items __attribute__((unused)))
+    gr_vector_void_star& output_items)
 {
     /*
      * By J.Arribas, L.Esteve and M.Molina
@@ -507,6 +512,17 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
                 // DLOG(INFO) << "END CASE 2";
+
+                // Copy and push current Gnss_Synchro to monitor queue
+                if (d_enable_monitor_output)
+                    {
+                        auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+                        Gnss_Synchro current_synchro_data = Gnss_Synchro();
+                        current_synchro_data = *d_gnss_synchro;
+                        *out[0] = current_synchro_data;
+                        noutput_items = 1;  // Number of Gnss_Synchro objects produced
+                    }
+
                 break;
             }
 

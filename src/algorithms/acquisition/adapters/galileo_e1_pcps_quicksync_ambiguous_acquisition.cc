@@ -111,6 +111,8 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     dump_filename_ = configuration_->property(role + ".dump_filename",
         default_dump_filename);
 
+    bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
+
     code_ = std::vector<std::complex<float>>(code_length_);
     LOG(INFO) << "Vector Length: " << vector_length_
               << ", Samples per ms: " << samples_per_ms
@@ -123,7 +125,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
                 sampled_ms_, max_dwells_, doppler_max_, fs_in_,
                 samples_per_ms, code_length_, bit_transition_flag_,
-                dump_, dump_filename_);
+                dump_, dump_filename_, enable_monitor_output);
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,
                 vector_length_);
             DLOG(INFO) << "stream_to_vector_quicksync("

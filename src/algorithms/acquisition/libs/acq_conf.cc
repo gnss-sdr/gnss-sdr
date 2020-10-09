@@ -56,6 +56,7 @@ Acq_Conf::Acq_Conf()
     resampler_ratio = 1.0;
     resampled_fs = 0LL;
     resampler_latency_samples = 0U;
+    enable_monitor_output = false;
 }
 
 
@@ -120,6 +121,8 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
             // if pfa is not set, we use the first_vs_second_peak_statistic metric
             use_CFAR_algorithm_flag = false;
         }
+
+    enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
 
     SetDerivedParams();
 }

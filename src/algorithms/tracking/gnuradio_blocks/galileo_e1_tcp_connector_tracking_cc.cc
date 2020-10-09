@@ -283,6 +283,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
     // process vars
     float carr_error_filt_hz = 0.0;
     float code_error_filt_chips = 0.0;
+    bool loss_of_lock = false;
 
     Tcp_Packet_Data tcp_data;
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
@@ -420,6 +421,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
 
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false;  // TODO: check if disabling tracking is consistent with the channel state machine
+                            loss_of_lock = true;
                         }
                 }
 
@@ -433,7 +435,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             current_synchro_data.Carrier_phase_rads = static_cast<double>(d_acc_carrier_phase_rad);
             current_synchro_data.Carrier_Doppler_hz = static_cast<double>(d_carrier_doppler_hz);
             current_synchro_data.CN0_dB_hz = static_cast<double>(d_CN0_SNV_dB_Hz);
-            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.correlation_length_ms = 4;
         }
     else
@@ -524,7 +526,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
     consume_each(d_current_prn_length_samples);        // this is needed in gr::block derivates
     d_sample_counter += d_current_prn_length_samples;  // count for the processed samples
 
-    if (d_enable_tracking)
+    if (d_enable_tracking || loss_of_lock)
         {
             return 1;
         }

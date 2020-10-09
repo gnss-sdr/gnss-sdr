@@ -25,7 +25,7 @@
 
 #include "gnss_synchro_udp_sink.h"
 #include <gnuradio/runtime_types.h>  // for gr_vector_void_star
-#include <gnuradio/sync_block.h>
+#include <gnuradio/block.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -54,13 +54,13 @@ gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
  * a data stream with the receiver internal parameters (Gnss_Synchro objects)
  * to local or remote clients over UDP.
  */
-class gnss_synchro_monitor : public gr::sync_block
+class gnss_synchro_monitor : public gr::block
 {
 public:
     ~gnss_synchro_monitor() = default;  //!< Default destructor
-
-    int work(int noutput_items, gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
+    void forecast(int noutput_items, gr_vector_int& ninput_items_required);
+    int general_work(int noutput_items, gr_vector_int& ninput_items,
+        gr_vector_const_void_star& input_items, gr_vector_void_star& output_items);
 
 private:
     friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
@@ -78,7 +78,6 @@ private:
     int d_nchannels;
     int d_decimation_factor;
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
-    int count;
 };
 
 #endif

@@ -592,6 +592,11 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
             lock.unlock();
         }
 
+    if (close(tx_fd) < 0)
+        {
+            std::cerr << "Error closing loop device " << '\n';
+        }
+
     try
         {
             infile1.close();

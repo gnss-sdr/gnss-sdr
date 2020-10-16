@@ -94,6 +94,8 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
     codeQ_ = std::vector<std::complex<float>>(vector_length_);
     both_signal_components = false;
 
+    bool enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
+
     std::string sig_ = configuration_->property("Channel.signal", std::string("5X"));
     if (sig_.at(0) == '5' && sig_.at(1) == 'X')
         {
@@ -104,7 +106,7 @@ GalileoE5aNoncoherentIQAcquisitionCaf::GalileoE5aNoncoherentIQAcquisitionCaf(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(sampled_ms_, max_dwells_,
                 doppler_max_, fs_in_, code_length_, code_length_, bit_transition_flag_,
-                dump_, dump_filename_, both_signal_components, CAF_window_hz_, Zero_padding);
+                dump_, dump_filename_, both_signal_components, CAF_window_hz_, Zero_padding, enable_monitor_output);
         }
     else
         {

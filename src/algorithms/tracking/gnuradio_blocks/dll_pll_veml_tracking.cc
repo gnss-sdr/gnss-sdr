@@ -1664,6 +1664,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
+    bool loss_of_lock = false;
 
     if (d_pull_in_transitory == true)
         {
@@ -1745,6 +1746,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     {
                         clear_tracking_vars();
                         d_state = 0;  // loss-of-lock detected
+                        loss_of_lock = true;  // Set the flag so that the negative indication can be generated
+                        current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                     }
                 else
                     {
@@ -1904,6 +1907,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     {
                         clear_tracking_vars();
                         d_state = 0;  // loss-of-lock detected
+                        loss_of_lock = true;  // Set the flag so that the negative indication can be generated
+                        current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                     }
                 else
                     {
@@ -1951,10 +1956,11 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         }
     consume_each(d_current_prn_length_samples);
     d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);
-    if (current_synchro_data.Flag_valid_symbol_output)
+    if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock)
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
+            current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             *out[0] = current_synchro_data;
             return 1;
         }

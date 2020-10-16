@@ -715,6 +715,44 @@ void GNSSFlowgraph::connect()
                     return;
                 }
         }
+
+    // GNSS SYNCHRO ACQUISITION MONITOR
+    if (enable_acquisition_monitor_)
+        {
+            try
+                {
+                    for (int i = 0; i < channels_count_; i++)
+                        {
+                            top_block_->connect(channels_.at(i)->get_right_block_acq(), 0, GnssSynchroAcquisitionMonitor_, i);
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect acquisition intermediate outputs to Monitor block";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
+        }
+
+    // GNSS SYNCHRO TRACKING MONITOR
+    if (enable_tracking_monitor_)
+        {
+            try
+                {
+                    for (int i = 0; i < channels_count_; i++)
+                        {
+                            top_block_->connect(channels_.at(i)->get_right_block_trk(), 0, GnssSynchroTrackingMonitor_, i);
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(WARNING) << "Can't connect tracking outputs to Monitor block";
+                    LOG(ERROR) << e.what();
+                    top_block_->disconnect_all();
+                    return;
+                }
+        }
 #ifndef ENABLE_FPGA
     // Activate acquisition in enabled channels
     for (int i = 0; i < channels_count_; i++)
@@ -956,6 +994,14 @@ void GNSSFlowgraph::disconnect()
                     if (enable_monitor_)
                         {
                             top_block_->disconnect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
+                        }
+                    if (enable_acquisition_monitor_)
+                        {
+                            top_block_->disconnect(channels_.at(i)->get_right_block_acq(), 0, GnssSynchroAcquisitionMonitor_, i);
+                        }
+                    if (enable_tracking_monitor_)
+                        {
+                            top_block_->disconnect(channels_.at(i)->get_right_block_trk(), 0, GnssSynchroTrackingMonitor_, i);
                         }
                     top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
                 }
@@ -1595,21 +1641,69 @@ void GNSSFlowgraph::init()
      * Instantiate the receiver monitor block, if required
      */
     enable_monitor_ = configuration_->property("Monitor.enable_monitor", false);
-    bool enable_protobuf = configuration_->property("Monitor.enable_protobuf", true);
-    if (configuration_->property("PVT.enable_protobuf", false) == true)
-        {
-            enable_protobuf = true;
-        }
-    std::string address_string = configuration_->property("Monitor.client_addresses", std::string("127.0.0.1"));
-    std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
-    std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
-    udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
-
     if (enable_monitor_)
         {
+            // Retrieve monitor properties
+            bool enable_protobuf = configuration_->property("Monitor.enable_protobuf", true);
+            if (configuration_->property("PVT.enable_protobuf", false) == true)
+                {
+                    enable_protobuf = true;
+                }
+            std::string address_string = configuration_->property("Monitor.client_addresses", std::string("127.0.0.1"));
+            std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+            std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+            udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
+
+            // Instantiate monitor object
             GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
                 configuration_->property("Monitor.udp_port", 1234),
+                udp_addr_vec, enable_protobuf);
+        }
+
+    /*
+     * Instantiate the receiver acquisition monitor block, if required
+     */
+    enable_acquisition_monitor_ = configuration_->property("AcquisitionMonitor.enable_monitor", false);
+    if (enable_acquisition_monitor_)
+        {
+            // Retrieve monitor properties
+            bool enable_protobuf = configuration_->property("AcquisitionMonitor.enable_protobuf", true);
+            if (configuration_->property("PVT.enable_protobuf", false) == true)
+                {
+                    enable_protobuf = true;
+                }
+            std::string address_string = configuration_->property("AcquisitionMonitor.client_addresses", std::string("127.0.0.1"));
+            std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+            std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+            udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
+
+            GnssSynchroAcquisitionMonitor_ = gnss_synchro_make_monitor(channels_count_,
+                configuration_->property("AcquisitionMonitor.decimation_factor", 1),
+                configuration_->property("AcquisitionMonitor.udp_port", 1235),
+                udp_addr_vec, enable_protobuf);
+        }
+
+    /*
+     * Instantiate the receiver tracking monitor block, if required
+     */
+    enable_tracking_monitor_ = configuration_->property("TrackingMonitor.enable_monitor", false);
+    if (enable_tracking_monitor_)
+        {
+            // Retrieve monitor properties
+            bool enable_protobuf = configuration_->property("TrackingMonitor.enable_protobuf", true);
+            if (configuration_->property("PVT.enable_protobuf", false) == true)
+                {
+                    enable_protobuf = true;
+                }
+            std::string address_string = configuration_->property("TrackingMonitor.client_addresses", std::string("127.0.0.1"));
+            std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+            std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+            udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
+
+            GnssSynchroTrackingMonitor_ = gnss_synchro_make_monitor(channels_count_,
+                configuration_->property("TrackingMonitor.decimation_factor", 1),
+                configuration_->property("TrackingMonitor.udp_port", 1236),
                 udp_addr_vec, enable_protobuf);
         }
 }

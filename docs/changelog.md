@@ -146,6 +146,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   processed (e.g., `GNSS-SDR.Galileo_banned_prns=14,18` since Galileo E14 and
   E18 satellites are not usable for PVT). Satellites on those lists will never
   be assigned to a processing channel.
+- Added acquisition and tracking monitors, with configuration examples.
 - Added a Matlab script to quantize the input signal with a given number of bits
   per sample.
 - Fixed the building option `-DENABLE_LOG=OFF`, which strips internal logging

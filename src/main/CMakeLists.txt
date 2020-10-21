@@ -39,16 +39,22 @@ target_link_libraries(gnss-sdr
 target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
 if(ENABLE_CUDA)
-    if(NOT CMAKE_VERSION VERSION_GREATER 3.11)
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        target_include_directories(gnss-sdr
+            PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        )
+    else()
         target_link_libraries(gnss-sdr
-            PRIVATE
-                ${CUDA_LIBRARIES}
+            PUBLIC ${CUDA_LIBRARIES}
         )
         target_include_directories(gnss-sdr
-            PRIVATE
-                ${CUDA_INCLUDE_DIRS}
+            PUBLIC ${CUDA_INCLUDE_DIRS}
         )
     endif()
+    set_target_properties(gnss-sdr PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON
+    )
     target_compile_definitions(gnss-sdr PRIVATE -DCUDA_GPU_ACCEL=1)
 endif()
 

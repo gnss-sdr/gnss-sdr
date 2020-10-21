@@ -34,8 +34,10 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
     enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
+
+    const int64_t sampling_frequency_deprecated = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(16368000));
+    const int64_t throttle_frequency_sps = configuration->property(role + ".throttle_frequency_sps", static_cast<int64_t>(sampling_frequency_deprecated));
 
     const int channel_selector = configuration->property(role + ".selected_channel", 1);
 
@@ -63,7 +65,7 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
 
     if (enable_throttle_control_)
         {
-            throttle_ = gr::blocks::throttle::make(item_size_, sampling_frequency_);
+            throttle_ = gr::blocks::throttle::make(item_size_, throttle_frequency_sps);
         }
 
     if (in_stream_ > 0)

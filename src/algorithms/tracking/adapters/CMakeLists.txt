@@ -109,14 +109,22 @@ target_include_directories(tracking_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
-if(ENABLE_CUDA AND NOT CMAKE_VERSION VERSION_GREATER 3.11)
-    target_link_libraries(tracking_adapters
-        PUBLIC
-            ${CUDA_LIBRARIES}
-    )
-    target_include_directories(tracking_adapters
-        PUBLIC
-            ${CUDA_INCLUDE_DIRS}
+if(ENABLE_CUDA)
+    if(CMAKE_VERSION VERSION_GREATER 3.11)
+        target_include_directories(tracking_adapters
+            PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+        )
+    else()
+        target_link_libraries(tracking_adapters
+            PUBLIC ${CUDA_LIBRARIES}
+        )
+        target_include_directories(tracking_adapters
+            PUBLIC ${CUDA_INCLUDE_DIRS}
+        )
+    endif()
+    set_target_properties(tracking_adapters PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON
     )
 endif()
 

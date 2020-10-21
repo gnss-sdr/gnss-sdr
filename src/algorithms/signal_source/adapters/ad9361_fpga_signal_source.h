@@ -43,6 +43,8 @@ public:
 
     ~Ad9361FpgaSignalSource();
 
+    void start();
+
     inline std::string role() override
     {
         return role_;
@@ -74,7 +76,7 @@ private:
         const std::string &Filename1,
         const std::string &Filename2);
 
-    void run_dynamic_bit_selection_process(void);
+    void run_dynamic_bit_selection_process();
 
     std::thread thread_file_to_dma;
     std::thread thread_dynamic_bit_selection;
@@ -94,6 +96,9 @@ private:
     std::string filename_rx1;
     std::string filename_rx2;
     std::string freq_band;
+
+    std::mutex dma_mutex;
+    std::mutex dynamic_bit_selection_mutex;
 
     double rf_gain_rx1_;
     double rf_gain_rx2_;
@@ -125,9 +130,6 @@ private:
     bool enable_DMA_;
     bool enable_dynamic_bit_selection_;
     bool rf_shutdown_;
-
-    std::mutex dma_mutex;
-    std::mutex dynamic_bit_selection_mutex;
 };
 
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H

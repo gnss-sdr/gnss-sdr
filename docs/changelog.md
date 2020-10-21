@@ -31,6 +31,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Replaced `git://` by `https://` as the used protocol when downloading Gflags,
   so it can work through firewalls requiring authentication.
 - Fixed static linking of the matio library when downloaded and built by CMake.
+- Fix building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
 
 ### Improvements in Usability:
 
@@ -42,7 +43,14 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   v0.0.13. This change recovers the old behavior.
 - Fixed the termination of the receiver with `q` + `[Enter]` keys when using the
   `Osmosdr_Signal_Source` implementation of the `SignalSource` block.
+- The `Labsat_Signal_Source` implementation of the `SignalSource` block now can
+  be throttled with the new parameters `SignalSource.enable_throttle_control`
+  and `SignalSource.throttle_frequency_sps`, thus allowing the emulation of
+  real-time operation.
 - Improved General Block diagram, both in content and in image resolution.
+- The `Custom_UDP_Signal_Source` implementation now accepts
+  `SignalSource.sample_type=cfloat`, in addition to the existing 4 and 8-bit
+  length sample types.
 
 &nbsp;
 

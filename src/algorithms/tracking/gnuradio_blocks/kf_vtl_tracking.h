@@ -78,11 +78,14 @@ private:
     explicit kf_vtl_tracking(const Kf_Conf &conf_);
 
     void init_kf(double acq_code_phase_chips, double acq_doppler_hz);
+    void update_kf_narrow_intgration_time();
+    void update_kf_cn0(double current_cn0_dbhz);
+    void run_Kf();
 
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     void msg_handler_pvt_to_trk(const pmt::pmt_t &msg);
     void do_correlation_step(const gr_complex *input_samples);
-    void run_Kf();
+
     void check_carrier_phase_coherent_initialization();
     void update_tracking_vars();
     void clear_tracking_vars();
@@ -109,8 +112,8 @@ private:
     volk_gnsssdr::vector<gr_complex> d_Prompt_Data;
     volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
 
-    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
-    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
+    //boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
+
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
 
     const size_t int_type_hash_code = typeid(int).hash_code();

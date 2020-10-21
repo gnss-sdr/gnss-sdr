@@ -571,6 +571,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
     double code_error_filt_secs_Ti = 0.0;
     double CURRENT_INTEGRATION_TIME_S = 0.0;
     double CORRECTED_INTEGRATION_TIME_S = 0.0;
+    bool loss_of_lock = false;
 
     if (d_enable_tracking == true)
         {
@@ -779,6 +780,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                                     this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
                                     d_carrier_lock_fail_counter = 0;
                                     d_enable_tracking = false;  // TODO: check if disabling tracking is consistent with the channel state machine
+                                    loss_of_lock = true;
                                 }
                             check_carrier_phase_coherent_initialization();
                         }
@@ -790,7 +792,7 @@ int glonass_l2_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     current_synchro_data.Carrier_phase_rads = TWO_PI * d_acc_carrier_phase_cycles;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-                    current_synchro_data.Flag_valid_symbol_output = true;
+                    current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
                     if (d_preamble_synchronized == true)
                         {
                             current_synchro_data.correlation_length_ms = d_extend_correlation_ms;

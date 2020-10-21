@@ -77,6 +77,8 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     dump_filename_ = configuration_->property(role + ".dump_filename",
         default_dump_filename);
 
+    bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
+
     // -- Find number of samples per spreading code (4 ms)  -----------------
 
     code_length_ = static_cast<unsigned int>(round(
@@ -93,7 +95,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_,
                 fs_in_, samples_per_ms, code_length_, tong_init_val_,
-                tong_max_val_, tong_max_dwells_, dump_, dump_filename_);
+                tong_max_val_, tong_max_dwells_, dump_, dump_filename_, enable_monitor_output);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
             DLOG(INFO) << "stream_to_vector("

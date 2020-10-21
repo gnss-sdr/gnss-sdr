@@ -100,6 +100,8 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
 
     dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
+    bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
+
     int samples_per_ms = round(code_length_);
     code_ = std::vector<std::complex<float>>(code_length_);
     /* Object relevant information for debugging */
@@ -116,7 +118,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
                 sampled_ms_, max_dwells_, doppler_max_, fs_in_,
                 samples_per_ms, code_length_, bit_transition_flag_,
-                dump_, dump_filename_);
+                dump_, dump_filename_, enable_monitor_output);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_,
                 code_length_ * folding_factor_);

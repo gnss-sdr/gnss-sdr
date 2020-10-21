@@ -75,7 +75,8 @@ pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     int samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename);
+    const std::string& dump_filename,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -210,14 +211,16 @@ private:
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     pcps_opencl_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
         uint32_t doppler_max, int64_t fs_in,
         int samples_per_ms, int samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
         int doppler_offset);
@@ -290,6 +293,7 @@ private:
     bool d_active;
     bool d_core_working;
     bool d_dump;
+    bool d_enable_monitor_output;
 };
 
 #endif

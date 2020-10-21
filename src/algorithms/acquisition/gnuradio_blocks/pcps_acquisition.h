@@ -59,6 +59,7 @@
 #include <complex>
 #include <cstdint>
 #include <memory>
+#include <queue>
 #include <string>
 #include <utility>
 
@@ -284,6 +285,8 @@ private:
     bool d_step_two;
     bool d_use_CFAR_algorithm_flag;
     bool d_dump;
+
+    std::queue<Gnss_Synchro> d_monitor_queue;
 };
 
 #endif  // GNSS_SDR_PCPS_ACQUISITION_H

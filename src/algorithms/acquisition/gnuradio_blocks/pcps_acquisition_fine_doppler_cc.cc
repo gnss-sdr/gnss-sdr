@@ -63,7 +63,7 @@ pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(cons
 pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Conf &conf_)
     : gr::block("pcps_acquisition_fine_doppler_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
-          gr::io_signature::make(0, 0, sizeof(gr_complex)))
+          gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     acq_parameters = conf_;
@@ -482,7 +482,7 @@ void pcps_acquisition_fine_doppler_cc::set_state(int state)
 
 int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items __attribute__((unused)), gr_vector_const_void_star &input_items,
-    gr_vector_void_star &output_items __attribute__((unused)))
+    gr_vector_void_star &output_items)
 {
     /*!
      * TODO:     High sensitivity acquisition algorithm:
@@ -498,6 +498,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
      *             S5. Negative_Acq: Send message and stop acq -> S0
      */
 
+    int return_value = 0;  // Number of Gnss_Syncro objects produced
     int samples_remaining;
     switch (d_state)
         {
@@ -585,6 +586,15 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                     d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
                 }
+            // Copy and push current Gnss_Synchro to monitor queue
+            if (acq_parameters.enable_monitor_output)
+                {
+                    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+                    Gnss_Synchro current_synchro_data = Gnss_Synchro();
+                    current_synchro_data = *d_gnss_synchro;
+                    *out[0] = current_synchro_data;
+                    return_value = 1;  // Number of Gnss_Synchro objects produced
+                }
             break;
         case 5:  // Negative_Acq
             DLOG(INFO) << "negative acquisition";
@@ -619,7 +629,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 }
             break;
         }
-    return 0;
+    return return_value;
 }
 
 void pcps_acquisition_fine_doppler_cc::dump_results(int effective_fft_size)

@@ -58,11 +58,13 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
     uint32_t tong_init_val,
     uint32_t tong_max_val,
     uint32_t tong_max_dwells,
-    bool dump, const std::string &dump_filename)
+    bool dump,
+    const std::string &dump_filename,
+    bool enable_monitor_output)
 {
     return pcps_tong_acquisition_cc_sptr(
         new pcps_tong_acquisition_cc(sampled_ms, doppler_max, fs_in, samples_per_ms, samples_per_code,
-            tong_init_val, tong_max_val, tong_max_dwells, dump, dump_filename));
+            tong_init_val, tong_max_val, tong_max_dwells, dump, dump_filename, enable_monitor_output));
 }
 
 
@@ -76,9 +78,10 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     uint32_t tong_max_val,
     uint32_t tong_max_dwells,
     bool dump,
-    const std::string &dump_filename) : gr::block("pcps_tong_acquisition_cc",
-                                            gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                            gr::io_signature::make(0, 0, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)))
+    const std::string &dump_filename,
+    bool enable_monitor_output) : gr::block("pcps_tong_acquisition_cc",
+                                  gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+                                  gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -111,6 +114,8 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
+
+    d_enable_monitor_output = enable_monitor_output;
 
     d_doppler_resolution = 0;
     d_threshold = 0;
@@ -224,7 +229,7 @@ void pcps_tong_acquisition_cc::set_state(int32_t state)
 
 int pcps_tong_acquisition_cc::general_work(int noutput_items,
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
-    gr_vector_void_star &output_items __attribute__((unused)))
+    gr_vector_void_star &output_items)
 {
     int32_t acquisition_message = -1;  // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
 
@@ -400,6 +405,16 @@ int pcps_tong_acquisition_cc::general_work(int noutput_items,
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
+
+                // Copy and push current Gnss_Synchro to monitor queue
+                if (d_enable_monitor_output)
+                    {
+                        auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+                        Gnss_Synchro current_synchro_data = Gnss_Synchro();
+                        current_synchro_data = *d_gnss_synchro;
+                        *out[0] = current_synchro_data;
+                        noutput_items = 1;  // Number of Gnss_Synchro objects produced
+                    }
 
                 break;
             }

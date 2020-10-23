@@ -9,19 +9,16 @@ if(POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif()
 
-project(CpuFeatures VERSION 0.1.0 LANGUAGES C)
+project(CpuFeatures VERSION 0.6.0 LANGUAGES C)
 
-if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
-    set(CMAKE_C_STANDARD 99)
-else()
-    add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,C>:-std=gnu99>")
-endif()
+set(CMAKE_C_STANDARD 99)
+
 # Default Build Type to be Release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING
       "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
-endif()
+endif(NOT CMAKE_BUILD_TYPE)
 
 # BUILD_TESTING is a standard CMake variable, but we declare it here to make it
 # prominent in the GUI.
@@ -120,9 +117,7 @@ setup_include_and_definitions(utils)
 if(UNIX)
   add_library(unix_based_hardware_detection OBJECT
     ${PROJECT_SOURCE_DIR}/include/internal/hwcaps.h
-    ${PROJECT_SOURCE_DIR}/include/internal/unix_features_aggregator.h
     ${PROJECT_SOURCE_DIR}/src/hwcaps.c
-    ${PROJECT_SOURCE_DIR}/src/unix_features_aggregator.c
   )
   setup_include_and_definitions(unix_based_hardware_detection)
   check_include_file(dlfcn.h HAVE_DLFCN_H)
@@ -139,8 +134,8 @@ endif()
 #
 # library : cpu_features
 #
-set(CPU_FEATURES_HDRS)
-set(CPU_FEATURES_SRCS)
+set (CPU_FEATURES_HDRS)
+set (CPU_FEATURES_SRCS)
 add_cpu_features_headers_and_sources(CPU_FEATURES_HDRS CPU_FEATURES_SRCS)
 list(APPEND CPU_FEATURES_SRCS $<TARGET_OBJECTS:utils>)
 if(NOT PROCESSOR_IS_X86 AND UNIX)
@@ -154,6 +149,11 @@ set_property(TARGET cpu_features PROPERTY POSITION_INDEPENDENT_CODE ${BUILD_PIC}
 target_include_directories(cpu_features
   PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cpu_features>
 )
+if(PROCESSOR_IS_X86)
+  if(APPLE)
+    target_compile_definitions(cpu_features PRIVATE HAVE_SYSCTLBYNAME)
+  endif()
+endif()
 add_library(CpuFeature::cpu_features ALIAS cpu_features)
 
 #
@@ -218,9 +218,8 @@ if(BUILD_TESTING)
     # Add googletest directly to our build. This defines the gtest and
     # gtest_main targets.
     add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
-      ${CMAKE_BINARY_DIR}/googletest-build
-      EXCLUDE_FROM_ALL
-    )
+                     ${CMAKE_BINARY_DIR}/googletest-build
+                     EXCLUDE_FROM_ALL)
   endif()
 
   add_subdirectory(test)

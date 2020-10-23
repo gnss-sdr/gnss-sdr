@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017 Google Inc.
+# SPDX-FileCopyrightText: 2017 Google LLC
 # SPDX-License-Identifier: Apache-2.0
 
 #
@@ -15,7 +15,6 @@ add_library(filesystem_for_testing filesystem_for_testing.cc)
 target_compile_definitions(filesystem_for_testing PUBLIC CPU_FEATURES_MOCK_FILESYSTEM)
 ##------------------------------------------------------------------------------
 add_library(hwcaps_for_testing hwcaps_for_testing.cc)
-target_compile_definitions(hwcaps_for_testing PUBLIC CPU_FEATURES_MOCK_GET_ELF_HWCAP_FROM_GETAUXVAL)
 target_link_libraries(hwcaps_for_testing filesystem_for_testing)
 ##------------------------------------------------------------------------------
 add_library(stack_line_reader ../src/stack_line_reader.c)
@@ -26,7 +25,7 @@ add_library(stack_line_reader_for_test ../src/stack_line_reader.c)
 target_compile_definitions(stack_line_reader_for_test PUBLIC STACK_LINE_READER_BUFFER_SIZE=16)
 target_link_libraries(stack_line_reader_for_test string_view filesystem_for_testing)
 ##------------------------------------------------------------------------------
-add_library(all_libraries ../src/stack_line_reader.c ../src/unix_features_aggregator.c)
+add_library(all_libraries ../src/hwcaps.c  ../src/stack_line_reader.c)
 target_link_libraries(all_libraries hwcaps_for_testing stack_line_reader string_view)
 
 #
@@ -49,15 +48,13 @@ add_executable(stack_line_reader_test stack_line_reader_test.cc)
 target_link_libraries(stack_line_reader_test stack_line_reader_for_test)
 add_test(NAME stack_line_reader_test COMMAND stack_line_reader_test)
 ##------------------------------------------------------------------------------
-## unix_features_aggregator_test
-add_executable(unix_features_aggregator_test unix_features_aggregator_test.cc)
-target_link_libraries(unix_features_aggregator_test all_libraries)
-add_test(NAME unix_features_aggregator_test COMMAND unix_features_aggregator_test)
-##------------------------------------------------------------------------------
 ## cpuinfo_x86_test
 if(PROCESSOR_IS_X86)
   add_executable(cpuinfo_x86_test cpuinfo_x86_test.cc ../src/cpuinfo_x86.c)
   target_compile_definitions(cpuinfo_x86_test PUBLIC CPU_FEATURES_MOCK_CPUID_X86)
+  if(APPLE)
+    target_compile_definitions(cpuinfo_x86_test PRIVATE HAVE_SYSCTLBYNAME)
+  endif()
   target_link_libraries(cpuinfo_x86_test all_libraries)
   add_test(NAME cpuinfo_x86_test COMMAND cpuinfo_x86_test)
 endif()

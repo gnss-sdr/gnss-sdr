@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 #include "cpuinfo_ppc.h"
@@ -38,12 +38,10 @@ TEST(CpustringsPPCTest, Blade)
 cpu             : POWER7 (architected), altivec supported
 clock           : 3000.000000MHz
 revision        : 2.1 (pvr 003f 0201)
-
 processor       : 15
 cpu             : POWER7 (architected), altivec supported
 clock           : 3000.000000MHz
 revision        : 2.1 (pvr 003f 0201)
-
 timebase        : 512000000
 platform        : pSeries
 model           : IBM,8406-70Y
@@ -67,12 +65,10 @@ TEST(CpustringsPPCTest, Firestone)
 cpu             : POWER8 (raw), altivec supported
 clock           : 2061.000000MHz
 revision        : 2.0 (pvr 004d 0200)
-
 processor       : 127
 cpu             : POWER8 (raw), altivec supported
 clock           : 2061.000000MHz
 revision        : 2.0 (pvr 004d 0200)
-
 timebase        : 512000000
 platform        : PowerNV
 model           : 8335-GTA
@@ -94,7 +90,6 @@ TEST(CpustringsPPCTest, w8)
 cpu             : POWER9, altivec supported
 clock           : 2300.000000MHz
 revision        : 2.2 (pvr 004e 1202)
-
 timebase        : 512000000
 platform        : PowerNV
 model           : 0000000000000000

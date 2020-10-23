@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 
@@ -67,6 +67,10 @@
 
 #if (defined(_WIN64) || defined(_WIN32))
 #define CPU_FEATURES_OS_WINDOWS
+#endif
+
+#if (defined(__apple__) || defined(__APPLE__) || defined(__MACH__))
+#define CPU_FEATURES_OS_DARWIN
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

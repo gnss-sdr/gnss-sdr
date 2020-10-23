@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 #include "cpuinfo_arm.h"
@@ -104,7 +104,6 @@ CPU architecture: 7
 CPU variant     : 0x0
 CPU part        : 0xb76
 CPU revision    : 7
-
 Hardware        : BCM2835
 Revision        : 9000c1
 Serial          : 000000006cd946f3)");
@@ -157,7 +156,6 @@ CPU architecture: 7
 CPU variant     : 0x4
 CPU part        : 0xc09
 CPU revision    : 1
-
 processor       : 1
 model name      : ARMv7 Processor rev 1 (v7l)
 BogoMIPS        : 50.00
@@ -167,7 +165,6 @@ CPU architecture: 7
 CPU variant     : 0x4
 CPU part        : 0xc09
 CPU revision    : 1
-
 Hardware        : Marvell Armada 380/385 (Device Tree)
 Revision        : 0000
 Serial          : 0000000000000000)");
@@ -222,7 +219,6 @@ CPU architecture: 7
 CPU variant     : 0x0
 CPU part        : 0xb76
 CPU revision    : 6
-
 Hardware        : SPICA
 Revision        : 0020
 Serial          : 33323613546d00ec )");
@@ -267,17 +263,14 @@ TEST(CpuinfoArmTest, InvalidNeon)
         R"(Processor: ARMv7 Processory rev 0 (v71)
 processor: 0
 BogoMIPS: 13.50
-
 Processor: 1
 BogoMIPS: 13.50
-
 Features: swp half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt
 CPU implementer : 0x51
 CPU architecture: 7
 CPU variant: 0x1
 CPU part: 0x04d
 CPU revision: 0
-
 Hardware: SAMSUNG M2
 Revision: 0010
 Serial: 00001e030000354e)");
@@ -340,7 +333,6 @@ CPU architecture: 7
 CPU variant	: 0x0
 CPU part	: 0xc08
 CPU revision	: 0
-
 Hardware	: Goldfish
 Revision	: 0000
 Serial		: 0000000000000000)");

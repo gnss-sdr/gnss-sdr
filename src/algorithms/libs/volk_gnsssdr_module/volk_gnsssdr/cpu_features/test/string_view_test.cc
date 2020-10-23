@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 #include "gtest/gtest.h"
@@ -30,6 +30,8 @@ TEST(StringViewTest, CpuFeatures_StringView_IndexOfChar)
 {
     // Found.
     EXPECT_EQ(CpuFeatures_StringView_IndexOfChar(str("test"), 'e'), 1);
+    EXPECT_EQ(CpuFeatures_StringView_IndexOfChar(str("test"), 't'), 0);
+    EXPECT_EQ(CpuFeatures_StringView_IndexOfChar(str("beef"), 'e'), 1);
     // Not found.
     EXPECT_EQ(CpuFeatures_StringView_IndexOfChar(str("test"), 'z'), -1);
     // Empty.
@@ -40,6 +42,8 @@ TEST(StringViewTest, CpuFeatures_StringView_IndexOf)
 {
     // Found.
     EXPECT_EQ(CpuFeatures_StringView_IndexOf(str("test"), str("es")), 1);
+    EXPECT_EQ(CpuFeatures_StringView_IndexOf(str("test"), str("test")), 0);
+    EXPECT_EQ(CpuFeatures_StringView_IndexOf(str("tesstest"), str("test")), 4);
     // Not found.
     EXPECT_EQ(CpuFeatures_StringView_IndexOf(str("test"), str("aa")), -1);
     // Empty.
@@ -50,6 +54,9 @@ TEST(StringViewTest, CpuFeatures_StringView_IndexOf)
 TEST(StringViewTest, CpuFeatures_StringView_StartsWith)
 {
     EXPECT_TRUE(CpuFeatures_StringView_StartsWith(str("test"), str("te")));
+    EXPECT_TRUE(CpuFeatures_StringView_StartsWith(str("test"), str("test")));
+    EXPECT_FALSE(CpuFeatures_StringView_StartsWith(str("test"), str("st")));
+    EXPECT_FALSE(CpuFeatures_StringView_StartsWith(str("test"), str("est")));
     EXPECT_FALSE(CpuFeatures_StringView_StartsWith(str("test"), str("")));
     EXPECT_FALSE(
         CpuFeatures_StringView_StartsWith(str("test"), kEmptyStringView));
@@ -63,8 +70,11 @@ TEST(StringViewTest, CpuFeatures_StringView_IsEquals)
         CpuFeatures_StringView_IsEquals(kEmptyStringView, kEmptyStringView));
     EXPECT_TRUE(CpuFeatures_StringView_IsEquals(kEmptyStringView, str("")));
     EXPECT_TRUE(CpuFeatures_StringView_IsEquals(str(""), kEmptyStringView));
+    EXPECT_TRUE(CpuFeatures_StringView_IsEquals(str("test"), str("test")));
     EXPECT_TRUE(CpuFeatures_StringView_IsEquals(str("a"), str("a")));
     EXPECT_FALSE(CpuFeatures_StringView_IsEquals(str("a"), str("b")));
+    EXPECT_FALSE(CpuFeatures_StringView_IsEquals(str("aa"), str("a")));
+    EXPECT_FALSE(CpuFeatures_StringView_IsEquals(str("a"), str("aa")));
     EXPECT_FALSE(CpuFeatures_StringView_IsEquals(str("a"), kEmptyStringView));
     EXPECT_FALSE(CpuFeatures_StringView_IsEquals(kEmptyStringView, str("a")));
 }
@@ -77,12 +87,55 @@ TEST(StringViewTest, CpuFeatures_StringView_PopFront)
     EXPECT_EQ(CpuFeatures_StringView_PopFront(str("test"), 100), str(""));
 }
 
+TEST(StringViewTest, CpuFeatures_StringView_PopBack)
+{
+    EXPECT_EQ(CpuFeatures_StringView_PopBack(str("test"), 2), str("te"));
+    EXPECT_EQ(CpuFeatures_StringView_PopBack(str("test"), 0), str("test"));
+    EXPECT_EQ(CpuFeatures_StringView_PopBack(str("test"), 4), str(""));
+    EXPECT_EQ(CpuFeatures_StringView_PopBack(str("test"), 100), str(""));
+}
+
+TEST(StringViewTest, CpuFeatures_StringView_KeepFront)
+{
+    EXPECT_EQ(CpuFeatures_StringView_KeepFront(str("test"), 2), str("te"));
+    EXPECT_EQ(CpuFeatures_StringView_KeepFront(str("test"), 0), str(""));
+    EXPECT_EQ(CpuFeatures_StringView_KeepFront(str("test"), 4), str("test"));
+    EXPECT_EQ(CpuFeatures_StringView_KeepFront(str("test"), 6), str("test"));
+}
+
+TEST(StringViewTest, CpuFeatures_StringView_Front)
+{
+    EXPECT_EQ(CpuFeatures_StringView_Front(str("apple")), 'a');
+    EXPECT_EQ(CpuFeatures_StringView_Front(str("a")), 'a');
+}
+
+TEST(StringViewTest, CpuFeatures_StringView_Back)
+{
+    EXPECT_EQ(CpuFeatures_StringView_Back(str("apple")), 'e');
+    EXPECT_EQ(CpuFeatures_StringView_Back(str("a")), 'a');
+}
+
+TEST(StringViewTest, CpuFeatures_StringView_TrimWhitespace)
+{
+    EXPECT_EQ(CpuFeatures_StringView_TrimWhitespace(str("  first middle last  ")),
+        str("first middle last"));
+    EXPECT_EQ(CpuFeatures_StringView_TrimWhitespace(str("first middle last  ")),
+        str("first middle last"));
+    EXPECT_EQ(CpuFeatures_StringView_TrimWhitespace(str("  first middle last")),
+        str("first middle last"));
+    EXPECT_EQ(CpuFeatures_StringView_TrimWhitespace(str("first middle last")),
+        str("first middle last"));
+}
+
 TEST(StringViewTest, CpuFeatures_StringView_ParsePositiveNumber)
 {
     EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("42")), 42);
     EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("0x2a")), 42);
     EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("0x2A")), 42);
+    EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("0x2A2a")), 10794);
+    EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("0x2a2A")), 10794);
 
+    EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("-10")), -1);
     EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("-0x2A")), -1);
     EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("abc")), -1);
     EXPECT_EQ(CpuFeatures_StringView_ParsePositiveNumber(str("")), -1);

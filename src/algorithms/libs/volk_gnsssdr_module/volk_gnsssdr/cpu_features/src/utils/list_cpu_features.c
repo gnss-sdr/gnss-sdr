@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 // This program dumps current host data to the standard output.
@@ -32,7 +32,7 @@
 // the data accordingly.
 
 // We use a bump allocator to allocate strings and nodes of the tree,
-// Memory is not intented to be reclaimed.
+// Memory is not intended to be reclaimed.
 typedef struct
 {
     char* ptr;

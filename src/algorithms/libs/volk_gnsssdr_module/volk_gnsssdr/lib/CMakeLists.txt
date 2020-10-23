@@ -42,6 +42,13 @@ if(MSVC) # its not set otherwise
     set(COMPILER_NAME MSVC)
 endif()
 
+# Assume "AppleClang == Clang".
+string(TOLOWER ${COMPILER_NAME} COMPILER_NAME_LOWER)
+string(REGEX MATCH "clang" COMPILER_NAME_LOWER ${COMPILER_NAME_LOWER})
+if(${COMPILER_NAME_LOWER} MATCHES "clang")
+    set(COMPILER_NAME "Clang")
+endif()
+
 message(STATUS "Compiler name: ${COMPILER_NAME}")
 
 if(NOT DEFINED COMPILER_NAME)
@@ -143,33 +150,8 @@ endmacro()
 # the xgetbv instruction, or {if not cross-compiling and the xgetbv
 # executable does not function correctly}.
 ########################################################################
-set(HAVE_XGETBV 0)
 set(HAVE_AVX_CVTPI32_PS 0)
 if(CPU_IS_x86)
-    # check to see if the compiler/linker works with xgetb instruction
-    if(NOT MSVC)
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c "#include <volk_gnsssdr/volk_gnsssdr_common.h>\n unsigned long long _xgetbv(unsigned int index) { unsigned int eax, edx; __VOLK_ASM __VOLK_VOLATILE(\"xgetbv\" : \"=a\"(eax), \"=d\"(edx) : \"c\"(index)); return ((unsigned long long)edx << 32) | eax; } int main (void) { (void) _xgetbv(0); return (0); }")
-        set(_AUX_INCLUDE_FLAG -I${PROJECT_SOURCE_DIR}/include)
-    else()
-        # MSVC defines an intrinsic
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c "#include <stdio.h> \n #include <intrin.h> \n int main() { int avxSupported = 0; \n#if (_MSC_FULL_VER >= 160040219) \nint cpuInfo[4]; __cpuid(cpuInfo, 1);\nif ((cpuInfo[2] & (1 << 27) || 0) && (cpuInfo[2] & (1 << 28) || 0)) \n{\nunsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);\n   avxSupported = (xcrFeatureMask & 0x6) == 6;}\n#endif \n return 1- avxSupported; }")
-    endif()
-    execute_process(COMMAND ${CMAKE_C_COMPILER} ${_AUX_INCLUDE_FLAG} -o
-        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
-        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c
-        OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE avx_compile_result
-    )
-    if(NOT ${avx_compile_result} EQUAL 0)
-        overrule_arch(avx "Compiler or linker missing xgetbv instruction")
-    else()
-        # compiler/linker seems to work; assume working
-        set(HAVE_XGETBV 1)
-    endif()
-    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
-        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c
-    )
-
     #########################################################################
     # eliminate AVX if cvtpi32_ps intrinsic fails like some versions of clang
     #########################################################################
@@ -213,10 +195,6 @@ if(CPU_IS_x86)
             overrule_arch(sse4_a "Clang >= 3.2 required for SSE4a")
         endif()
     endif()
-endif()
-
-if(${HAVE_XGETBV})
-    add_definitions(-DHAVE_XGETBV)
 endif()
 
 if(${HAVE_AVX_CVTPI32_PS})
@@ -569,6 +547,7 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/kernels>
+        PRIVATE $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )

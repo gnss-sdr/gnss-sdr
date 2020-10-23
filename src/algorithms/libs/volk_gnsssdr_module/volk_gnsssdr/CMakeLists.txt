@@ -229,8 +229,10 @@ endif()
 
 # cpu_features
 if(CMAKE_VERSION VERSION_GREATER 3.0)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    set(BUILD_PIC ON)
+    set(BUILD_PIC ON CACHE BOOL
+        "Build cpu_features with Position Independent Code (PIC)."
+        FORCE
+    )
     set(USE_CPU_FEATURES ON)
     add_subdirectory(cpu_features)
 endif()

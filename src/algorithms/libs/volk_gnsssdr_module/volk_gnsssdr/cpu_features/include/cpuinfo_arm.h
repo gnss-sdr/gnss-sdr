@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 
@@ -16,11 +16,13 @@ typedef struct
     int swp : 1;       // SWP instruction (atomic read-modify-write)
     int half : 1;      // Half-word loads and stores
     int thumb : 1;     // Thumb (16-bit instruction set)
-    int _26bit : 1;    // "26 Bit" Model (Processor status register folded into program counter)
+    int _26bit : 1;    // "26 Bit" Model (Processor status register folded into
+                       // program counter)
     int fastmult : 1;  // 32x32->64-bit multiplication
     int fpa : 1;       // Floating point accelerator
     int vfp : 1;       // Vector Floating Point.
-    int edsp : 1;      // DSP extensions (the 'e' variant of the ARM9 CPUs, and all others above)
+    int edsp : 1;      // DSP extensions (the 'e' variant of the ARM9 CPUs, and all
+                       // others above)
     int java : 1;      // Jazelle (Java bytecode accelerator)
     int iwmmxt : 1;    // Intel Wireless MMX Technology.
     int crunch : 1;    // MaverickCrunch coprocessor
@@ -33,7 +35,8 @@ typedef struct
     int idiva : 1;     // SDIV and UDIV hardware division in ARM mode.
     int idivt : 1;     // SDIV and UDIV hardware division in Thumb mode.
     int vfpd32 : 1;    // VFP with 32 D-registers
-    int lpae : 1;      // Large Physical Address Extension (>4GB physical memory on 32-bit architecture)
+    int lpae : 1;      // Large Physical Address Extension (>4GB physical memory on
+                       // 32-bit architecture)
     int evtstrm : 1;   // kernel event stream using generic architected timer
     int aes : 1;       // Hardware-accelerated Advanced Encryption Standard.
     int pmull : 1;     // Polynomial multiply long.

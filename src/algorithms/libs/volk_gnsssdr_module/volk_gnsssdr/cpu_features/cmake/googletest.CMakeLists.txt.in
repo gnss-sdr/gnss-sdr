@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2017 Google Inc.
+# SPDX-FileCopyrightText: 2017 Google LLC
 # SPDX-License-Identifier: Apache-2.0
 
 cmake_minimum_required(VERSION 2.8.2)

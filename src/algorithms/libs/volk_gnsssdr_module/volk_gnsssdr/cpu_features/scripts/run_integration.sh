@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: 2017 Google Inc.
+# SPDX-FileCopyrightText: 2017 Google LLC
 # SPDX-License-Identifier: Apache-2.0
 
 readonly SCRIPT_FOLDER=$(cd -P -- "$(dirname -- "$0")" && pwd -P)

@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2017 Google Inc.
+SPDX-FileCopyrightText: 2017 Google LLC
 )
 <!-- prettier-ignore-end -->
 

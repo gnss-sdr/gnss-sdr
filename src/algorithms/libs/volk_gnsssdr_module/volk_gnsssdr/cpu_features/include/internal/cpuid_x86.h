@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 
@@ -16,7 +16,8 @@ typedef struct
     uint32_t eax, ebx, ecx, edx;
 } Leaf;
 
-Leaf CpuIdEx(uint32_t leaf_id, int ecx);
+// Returns the result of a call to the cpuid instruction.
+Leaf GetCpuidLeaf(uint32_t leaf_id, int ecx);
 
 // Returns the eax value of the XCR0 register.
 uint32_t GetXCR0Eax(void);

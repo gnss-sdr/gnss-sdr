@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2017 Google Inc.
+SPDX-FileCopyrightText: 2017 Google LLC
 )
 <!-- prettier-ignore-end -->
 
@@ -42,6 +42,11 @@ instructions) at runtime.
 
 <a name="codesample"></a>
 
+## Code samples
+
+**Note:** For C++ code, the library functions are defined in the `CpuFeatures`
+namespace.
+
 ### Checking features at runtime
 
 Here's a simple example that executes a codepath if the CPU supports both the
@@ -50,6 +55,7 @@ AES and the SSE4.2 instruction sets:
 ```c
 #include "cpuinfo_x86.h"
 
+// For C++, add `using namespace CpuFeatures;`
 static const X86Features features = GetX86Info().features;
 
 void Compute(void) {
@@ -71,6 +77,7 @@ features and then check whether AES and NEON are supported.
 #include <stdbool.h>
 #include "cpuinfo_arm.h"
 
+// For C++, add `using namespace CpuFeatures;`
 static const ArmFeatures features = GetArmInfo().features;
 static const bool has_aes_and_neon = features.aes && features.neon;
 
@@ -90,6 +97,7 @@ instruction set (e.g., `g++ -mavx`) and sets `has_avx` accordingly.
 #include <stdbool.h>
 #include "cpuinfo_x86.h"
 
+// For C++, add `using namespace CpuFeatures;`
 static const X86Features features = GetX86Info().features;
 static const bool has_avx = CPU_FEATURES_COMPILED_X86_AVX || features.avx;
 
@@ -112,6 +120,7 @@ set&mdash;but only if it's not Sandy Bridge.
 #include <stdbool.h>
 #include "cpuinfo_x86.h"
 
+// For C++, add `using namespace CpuFeatures;`
 static const X86Info info = GetX86Info();
 static const X86Microarchitecture uarch = GetX86Microarchitecture(&info);
 static const bool has_fast_avx = info.features.avx && uarch != INTEL_SNB;
@@ -125,7 +134,8 @@ This feature is currently available only for x86 microarchitectures.
 
 ### Running sample code
 
-Building `cpu_features` brings a small executable to test the library.
+Building `cpu_features` (check [quickstart](#quickstart) below) brings a small
+executable to test the library.
 
 ```shell
  % ./build/list_cpu_features
@@ -190,3 +200,23 @@ The cpu_features library is licensed under the terms of the Apache license. See
 ## Build with CMake
 
 Please check the [CMake build instructions](cmake/README.md).
+
+<a name="quickstart"></a>
+
+### Quickstart with `Ninja`
+
+- build `list_cpu_features`
+
+```
+    cmake -B/tmp/cpu_features -H. -GNinja -DCMAKE_BUILD_TYPE=Release
+    ninja -C/tmp/cpu_features
+    /tmp/cpu_features/list_cpu_features --json
+```
+
+- run tests
+
+```
+    cmake -B/tmp/cpu_features -H. -GNinja -DBUILD_TESTING=ON
+    ninja -C/tmp/cpu_features
+    ninja -C/tmp/cpu_features test
+```

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google Inc.
+// SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 
@@ -8,6 +8,7 @@
 #define CPU_FEATURES_INCLUDE_INTERNAL_HWCAPS_H_
 
 #include "cpu_features_macros.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 CPU_FEATURES_START_CPP_NAMESPACE
@@ -48,6 +49,25 @@ CPU_FEATURES_START_CPP_NAMESPACE
 #define AARCH64_HWCAP_SB (1UL << 29)
 #define AARCH64_HWCAP_PACA (1UL << 30)
 #define AARCH64_HWCAP_PACG (1UL << 31)
+
+#define AARCH64_HWCAP2_DCPODP (1UL << 0)
+#define AARCH64_HWCAP2_SVE2 (1UL << 1)
+#define AARCH64_HWCAP2_SVEAES (1UL << 2)
+#define AARCH64_HWCAP2_SVEPMULL (1UL << 3)
+#define AARCH64_HWCAP2_SVEBITPERM (1UL << 4)
+#define AARCH64_HWCAP2_SVESHA3 (1UL << 5)
+#define AARCH64_HWCAP2_SVESM4 (1UL << 6)
+#define AARCH64_HWCAP2_FLAGM2 (1UL << 7)
+#define AARCH64_HWCAP2_FRINT (1UL << 8)
+#define AARCH64_HWCAP2_SVEI8MM (1UL << 9)
+#define AARCH64_HWCAP2_SVEF32MM (1UL << 10)
+#define AARCH64_HWCAP2_SVEF64MM (1UL << 11)
+#define AARCH64_HWCAP2_SVEBF16 (1UL << 12)
+#define AARCH64_HWCAP2_I8MM (1UL << 13)
+#define AARCH64_HWCAP2_BF16 (1UL << 14)
+#define AARCH64_HWCAP2_DGH (1UL << 15)
+#define AARCH64_HWCAP2_RNG (1UL << 16)
+#define AARCH64_HWCAP2_BTI (1UL << 17)
 
 // http://elixir.free-electrons.com/linux/latest/source/arch/arm/include/uapi/asm/hwcap.h
 #define ARM_HWCAP_SWP (1UL << 0)
@@ -141,6 +161,8 @@ typedef struct
 } HardwareCapabilities;
 
 HardwareCapabilities CpuFeatures_GetHardwareCapabilities(void);
+bool CpuFeatures_IsHwCapsSet(const HardwareCapabilities hwcaps_mask,
+    const HardwareCapabilities hwcaps);
 
 typedef struct
 {

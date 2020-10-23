@@ -5,8 +5,8 @@
 # library : NDK compat
 #
 find_package(Threads REQUIRED)
-set (NDK_COMPAT_HDRS cpu-features.h)
-set (NDK_COMPAT_SRCS
+set(NDK_COMPAT_HDRS cpu-features.h)
+set(NDK_COMPAT_SRCS
   cpu-features.c
   $<TARGET_OBJECTS:utils>
   $<TARGET_OBJECTS:unix_based_hardware_detection>

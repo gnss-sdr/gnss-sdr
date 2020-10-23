@@ -18,7 +18,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING
       "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
+endif()
 
 # BUILD_TESTING is a standard CMake variable, but we declare it here to make it
 # prominent in the GUI.
@@ -134,8 +134,8 @@ endif()
 #
 # library : cpu_features
 #
-set (CPU_FEATURES_HDRS)
-set (CPU_FEATURES_SRCS)
+set(CPU_FEATURES_HDRS)
+set(CPU_FEATURES_SRCS)
 add_cpu_features_headers_and_sources(CPU_FEATURES_HDRS CPU_FEATURES_SRCS)
 list(APPEND CPU_FEATURES_SRCS $<TARGET_OBJECTS:utils>)
 if(NOT PROCESSOR_IS_X86 AND UNIX)
@@ -218,8 +218,8 @@ if(BUILD_TESTING)
     # Add googletest directly to our build. This defines the gtest and
     # gtest_main targets.
     add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
-                     ${CMAKE_BINARY_DIR}/googletest-build
-                     EXCLUDE_FROM_ALL)
+        ${CMAKE_BINARY_DIR}/googletest-build
+        EXCLUDE_FROM_ALL)
   endif()
 
   add_subdirectory(test)

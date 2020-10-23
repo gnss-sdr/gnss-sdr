@@ -67,7 +67,9 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
     int32_t doppler_min,
     int64_t fs_in,
     int32_t samples_per_ms,
-    bool dump, const std::string& dump_filename);
+    bool dump,
+    const std::string& dump_filename,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -183,12 +185,12 @@ private:
     pcps_make_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
         int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
         int32_t samples_per_ms, bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename, bool enable_monitor_output);
 
     pcps_assisted_acquisition_cc(int32_t max_dwells, uint32_t sampled_ms,
         int32_t doppler_max, int32_t doppler_min, int64_t fs_in,
         int32_t samples_per_ms, bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename, bool enable_monitor_output);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);
@@ -242,6 +244,7 @@ private:
     bool d_active;
     bool d_disable_assist;
     bool d_dump;
+    bool d_enable_monitor_output;
 };
 
 #endif  // GNSS_SDR_PCPS_ASSISTED_ACQUISITION_CC_H

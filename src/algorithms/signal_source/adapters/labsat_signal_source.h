@@ -24,6 +24,7 @@
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>
 #include <memory>
@@ -69,13 +70,19 @@ public:
 private:
     gr::block_sptr labsat23_source_;
     gr::blocks::file_sink::sptr file_sink_;
+    gr::blocks::throttle::sptr throttle_;
+
     std::string role_;
     std::string item_type_;
     std::string filename_;
     std::string dump_filename_;
+
+    size_t item_size_;
+
     unsigned int in_stream_;
     unsigned int out_stream_;
-    size_t item_size_;
+
+    bool enable_throttle_control_;
     bool dump_;
 };
 

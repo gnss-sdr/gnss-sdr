@@ -52,7 +52,8 @@ galileo_pcps_8ms_make_acquisition_cc(uint32_t sampled_ms,
     int32_t samples_per_ms,
     int32_t samples_per_code,
     bool dump,
-    const std::string& dump_filename);
+    const std::string& dump_filename,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition for
@@ -174,7 +175,8 @@ private:
         int32_t samples_per_ms,
         int32_t samples_per_code,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     galileo_pcps_8ms_acquisition_cc(
         uint32_t sampled_ms,
@@ -184,7 +186,8 @@ private:
         int32_t samples_per_ms,
         int32_t samples_per_code,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     void calculate_magnitudes(
         gr_complex* fft_begin,
@@ -230,6 +233,7 @@ private:
 
     bool d_active;
     bool d_dump;
+    bool d_enable_monitor_output;
 };
 
 #endif  // GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H

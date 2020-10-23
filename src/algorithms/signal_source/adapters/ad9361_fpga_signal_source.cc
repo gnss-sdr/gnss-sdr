@@ -148,8 +148,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                 {
                     freq_band = "L1L2";
                 }
-
-            thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2); });
         }
     if (switch_position == 2)  // Real-time via AD9361
         {
@@ -366,6 +364,11 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
                     thread_dynamic_bit_selection.join();
                 }
         }
+}
+
+void Ad9361FpgaSignalSource::start()
+{
+    thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2); });
 }
 
 
@@ -589,6 +592,11 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
             lock.unlock();
         }
 
+    if (close(tx_fd) < 0)
+        {
+            std::cerr << "Error closing loop device " << '\n';
+        }
+
     try
         {
             infile1.close();
@@ -604,7 +612,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
 }
 
 
-void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process(void)
+void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process()
 {
     bool dynamic_bit_selection_active = true;
 

@@ -180,7 +180,7 @@ void pcps_acquisition_fpga::acquisition_core(uint32_t num_doppler_bins, uint32_t
         &d_doppler_index,
         &total_block_exp);
 
-    const auto doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
+    const int32_t doppler = static_cast<int32_t>(doppler_min) + doppler_step * (d_doppler_index - 1);
 
     if (total_block_exp > d_total_block_exp)
         {
@@ -268,7 +268,7 @@ void pcps_acquisition_fpga::set_active(bool active)
 
                     while (num_second_acq < d_max_num_acqs)
                         {
-                            acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2 + d_doppler_center);
+                            acquisition_core(d_num_doppler_bins_step2, d_doppler_step2, d_doppler_center_step_two - static_cast<float>(floor(d_num_doppler_bins_step2 / 2.0)) * d_doppler_step2);
                             if (d_test_statistics > d_threshold)
                                 {
                                     d_active = false;

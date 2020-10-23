@@ -41,6 +41,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   extra dependency is needed. This change is transparent to the user, since
   everything is managed by the CMake scripts.
 
+- Fix building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
+
 ### Improvements in Usability:
 
 - Fixed a bug when enabling pseudorange carrier smoothing in other bands than
@@ -51,7 +53,14 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   v0.0.13. This change recovers the old behavior.
 - Fixed the termination of the receiver with `q` + `[Enter]` keys when using the
   `Osmosdr_Signal_Source` implementation of the `SignalSource` block.
+- The `Labsat_Signal_Source` implementation of the `SignalSource` block now can
+  be throttled with the new parameters `SignalSource.enable_throttle_control`
+  and `SignalSource.throttle_frequency_sps`, thus allowing the emulation of
+  real-time operation.
 - Improved General Block diagram, both in content and in image resolution.
+- The `Custom_UDP_Signal_Source` implementation now accepts
+  `SignalSource.sample_type=cfloat`, in addition to the existing 4 and 8-bit
+  length sample types.
 
 &nbsp;
 
@@ -147,6 +156,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   processed (e.g., `GNSS-SDR.Galileo_banned_prns=14,18` since Galileo E14 and
   E18 satellites are not usable for PVT). Satellites on those lists will never
   be assigned to a processing channel.
+- Added acquisition and tracking monitors, with configuration examples.
 - Added a Matlab script to quantize the input signal with a given number of bits
   per sample.
 - Fixed the building option `-DENABLE_LOG=OFF`, which strips internal logging

@@ -177,7 +177,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_code_phase_step_chips = static_cast<double>(d_code_freq_chips) / static_cast<double>(d_fs_in);
     const double T_chip_mod_seconds = 1 / d_code_freq_chips;
     const double T_prn_mod_seconds = T_chip_mod_seconds * GPS_L1_CA_CODE_LENGTH_CHIPS;
-    T_prn_mod_samples T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
+    const double T_prn_mod_samples = T_prn_mod_seconds * static_cast<double>(d_fs_in);
 
     d_correlation_length_samples = round(T_prn_mod_samples);
 
@@ -328,6 +328,8 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
     double CORRECTED_INTEGRATION_TIME_S = 0.001;
     double dll_code_error_secs_Ti = 0.0;
     double carr_phase_error_secs_Ti = 0.0;
+    bool loss_of_lock = false;
+
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -446,6 +448,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock
                             d_carrier_lock_fail_counter = 0;
                             d_enable_tracking = false;  // TODO: check if disabling tracking is consistent with the channel state machine
+                            loss_of_lock = true;
                         }
                     check_carrier_phase_coherent_initialization();
                 }
@@ -458,7 +461,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             current_synchro_data.Carrier_phase_rads = TWO_PI * d_acc_carrier_phase_cycles;
             current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
             current_synchro_data.CN0_dB_hz = d_CN0_SNV_dB_Hz;
-            current_synchro_data.Flag_valid_symbol_output = true;
+            current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.correlation_length_ms = 1;
         }
     else
@@ -545,7 +548,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
     consume_each(d_correlation_length_samples);        // this is necessary in gr::block derivates
     d_sample_counter += d_correlation_length_samples;  // count for the processed samples
 
-    if (d_enable_tracking)
+    if (d_enable_tracking || loss_of_lock)
         {
             return 1;
         }

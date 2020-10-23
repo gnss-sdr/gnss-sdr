@@ -46,7 +46,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     int decimation_factor,
     int udp_port,
     const std::vector<std::string>& udp_addresses,
-    bool enable_protobuf) : gr::sync_block("gnss_synchro_monitor",
+    bool enable_protobuf) : gr::block("gnss_synchro_monitor",
                                 gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
                                 gr::io_signature::make(0, 0, 0))
 {
@@ -54,28 +54,46 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     d_nchannels = n_channels;
 
     udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_port, enable_protobuf);
-
-    count = 0;
 }
 
-
-int gnss_synchro_monitor::work(int noutput_items, gr_vector_const_void_star& input_items,
-    gr_vector_void_star& output_items __attribute__((unused)))
+void gnss_synchro_monitor::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
 {
-    const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
-    for (int epoch = 0; epoch < noutput_items; epoch++)
+    for (int32_t channel_index = 0; channel_index < d_nchannels; channel_index++)
         {
-            count++;
-            if (count >= d_decimation_factor)
-                {
-                    for (int i = 0; i < d_nchannels; i++)
-                        {
-                            std::vector<Gnss_Synchro> stocks;
-                            stocks.push_back(in[i][epoch]);
-                            udp_sink_ptr->write_gnss_synchro(stocks);
-                        }
-                    count = 0;
-                }
+            // Set the required number of inputs to 0 so that a lone input on any channel can be pushed to UDP
+            ninput_items_required[channel_index] = 0;
         }
-    return noutput_items;
+}
+
+int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused)), gr_vector_int& ninput_items,
+    gr_vector_const_void_star& input_items, gr_vector_void_star& output_items __attribute__((unused)))
+{
+    // Get the input buffer pointer
+    const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);
+
+    // Loop through each input stream channel
+    for (int channel_index = 0; channel_index < d_nchannels; channel_index++)
+        {
+            // Loop through each item in each input stream channel
+            int count = 0;
+            for (int item_index = 0; item_index < ninput_items[channel_index]; item_index++)
+                {
+                    // Use the count variable to limit how many items are sent per channel
+                    count++;
+                    if (count >= d_decimation_factor)
+                        {
+                            // Convert to a vector and write to the UDP sink
+                            std::vector<Gnss_Synchro> stocks;
+                            stocks.push_back(in[channel_index][item_index]);
+                            udp_sink_ptr->write_gnss_synchro(stocks);
+                            // Reset count variable
+                            count = 0;
+                        }
+                }
+            // Consume the number of items for the input stream channel
+            consume(channel_index, ninput_items[channel_index]);
+        }
+
+    // Not producing any outputs
+    return 0;
 }

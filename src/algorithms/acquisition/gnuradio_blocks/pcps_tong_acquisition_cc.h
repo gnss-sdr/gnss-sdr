@@ -73,7 +73,8 @@ pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(
     uint32_t tong_max_val,
     uint32_t tong_max_dwells,
     bool dump,
-    const std::string& dump_filename);
+    const std::string& dump_filename,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -191,13 +192,13 @@ private:
         int64_t fs_in, int32_t samples_per_ms,
         int32_t samples_per_code, uint32_t tong_init_val,
         uint32_t tong_max_val, uint32_t tong_max_dwells,
-        bool dump, const std::string& dump_filename);
+        bool dump, const std::string& dump_filename, bool enable_monitor_output);
 
     pcps_tong_acquisition_cc(uint32_t sampled_ms, uint32_t doppler_max,
         int64_t fs_in, int32_t samples_per_ms,
         int32_t samples_per_code, uint32_t tong_init_val,
         uint32_t tong_max_val, uint32_t tong_max_dwells,
-        bool dump, const std::string& dump_filename);
+        bool dump, const std::string& dump_filename, bool enable_monitor_output);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);
@@ -246,6 +247,7 @@ private:
 
     bool d_active;
     bool d_dump;
+    bool d_enable_monitor_output;
 };
 
 #endif  // GNSS_SDR_PCPS_TONG_ACQUISITION_CC_H

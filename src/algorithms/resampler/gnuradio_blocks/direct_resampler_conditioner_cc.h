@@ -5,11 +5,11 @@
  *        gr_complex input and gr_complex output
  * \author Luis Esteve, 2011. luis(at)epsilon-formacion.com
  *
- * This block takes in a signal stream and performs direct
- * resampling.
- * The theory behind this block can be found in Chapter 7.5 of
- * the following book.
- *
+ * This block takes in a signal stream and performs direct resampling.
+ * The theory behind this block can be found in Chapter 7.5 of the following
+ * book:
+ * R. Lyons, Undestanding Digital Signal Processing, 3rd ed., Pearson Education,
+ * 2010.
  *
  * -----------------------------------------------------------------------------
  *

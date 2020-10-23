@@ -49,7 +49,7 @@ endmacro()
 # or finds the interpreter via the built-in cmake module.
 ########################################################################
 
-if(CMAKE_VERSION VERSION_LESS 3.12)
+if(CMAKE_VERSION VERSION_LESS 3.12 OR CMAKE_CROSSCOMPILING)
     if(PYTHON_EXECUTABLE)
         message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
         string(FIND "${PYTHON_EXECUTABLE}" "python3" IS_PYTHON3)

@@ -326,7 +326,7 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.900.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "3.0.0")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.17")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.18")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.13.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.1")
@@ -2097,7 +2097,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     PREFIX ${CMAKE_BINARY_DIR}/matio
                     GIT_REPOSITORY https://github.com/tbeu/matio
-                    GIT_TAG 596cb3ce71038958812bd6cf9b141f12ce155ac6 # Workaround until Matio 1.5.18 v${GNSSSDR_MATIO_LOCAL_VERSION}
+                    GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
                     SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
                     UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
                     CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
@@ -2678,16 +2678,14 @@ if(DEFINED ENV{CUDA_GPU_ACCEL})
 endif()
 
 if(ENABLE_CUDA)
+    set(CMAKE_CUDA_STANDARD 14)
+    set(CMAKE_CUDA_EXTENSIONS ON)
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         include(CheckLanguage)
         check_language(CUDA)
         if(CMAKE_CUDA_COMPILER)
             enable_language(CUDA)
             set(CUDA_FOUND TRUE)
-            if(NOT DEFINED CMAKE_CUDA_STANDARD)
-                set(CMAKE_CUDA_STANDARD 11)
-                set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-            endif()
         else()
             set(ENABLE_CUDA OFF)
         endif()
@@ -2695,11 +2693,19 @@ if(ENABLE_CUDA)
         find_package(CUDA REQUIRED)
         set_package_properties(CUDA PROPERTIES
             URL "https://developer.nvidia.com/cuda-downloads"
-            DESCRIPTION "Library for parallel programming in Nvidia GPUs"
             PURPOSE "Used in some processing block implementations."
             TYPE REQUIRED
         )
-        if(NOT CUDA_FOUND)
+        if(CUDA_FOUND)
+            set_package_properties(CUDA PROPERTIES
+                DESCRIPTION "Library for parallel programming in Nvidia GPUs (found: v${CUDA_VERSION_STRING})"
+            )
+            set(CMAKE_CUDA_COMPILER_ID "NVIDIA")  # only for reporting purposes
+            set(CMAKE_CUDA_COMPILER_VERSION ${CUDA_VERSION_STRING})  # only for reporting purposes
+        else()
+            set_package_properties(CUDA PROPERTIES
+                DESCRIPTION "Library for parallel programming in Nvidia GPUs"
+            )
             set(ENABLE_CUDA OFF)
         endif()
     endif()
@@ -2709,7 +2715,6 @@ if(ENABLE_CUDA)
     message(STATUS " You can disable it with 'cmake -DENABLE_CUDA=OFF ..'")
 else()
     message(STATUS "NVIDIA CUDA GPU Acceleration will be not enabled.")
-    message(STATUS " Enable it with 'cmake -DENABLE_CUDA=ON ..' to add support for GPU-based acceleration using CUDA.")
 endif()
 
 
@@ -2997,7 +3002,9 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         add_compile_options(-Wno-missing-field-initializers)
     endif()
     if(CMAKE_CROSSCOMPILING OR NOT ENABLE_PACKAGING)
-        add_compile_options(-Wno-psabi)
+        if(NOT ENABLE_CUDA)
+            add_compile_options(-Wno-psabi)
+        endif()
     endif()
     if(IS_ARM)
         if((CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "7.1.0") AND (CMAKE_VERSION VERSION_GREATER "3.1"))
@@ -3031,7 +3038,9 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
                 add_compile_options(-mtune=native)
             endif()
         else()
-            add_compile_options(-march=native)
+            if(NOT ENABLE_CUDA)
+                add_compile_options(-march=native)
+            endif()
         endif()
     endif()
 endif()
@@ -3157,6 +3166,9 @@ endif()
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "The CXX compiler identification is ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}. Standard: C++${CMAKE_CXX_STANDARD}.")
 message(STATUS "The C compiler identification is ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}. Standard: C${CMAKE_C_STANDARD}.")
+if(CUDA_FOUND)
+    message(STATUS "The CUDA compiler identification is ${CMAKE_CUDA_COMPILER_ID} ${CMAKE_CUDA_COMPILER_VERSION}. Standard: C++${CMAKE_CUDA_STANDARD}.")
+endif()
 message(STATUS "")
 file(REMOVE ${CMAKE_BINARY_DIR}/features.log)
 file(WRITE ${CMAKE_BINARY_DIR}/features.log "**********************************\n")

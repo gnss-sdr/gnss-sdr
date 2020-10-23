@@ -362,6 +362,8 @@ static Node* GetCacheTypeString(CacheType cache_type)
             return CreateConstantString("stlb");
         case CPU_FEATURE_CACHE_PREFETCH:
             return CreateConstantString("prefetch");
+        default:
+            return CreateConstantString("null");
         }
 }
 

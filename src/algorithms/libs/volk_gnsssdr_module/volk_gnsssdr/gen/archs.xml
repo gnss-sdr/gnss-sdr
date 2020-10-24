@@ -46,7 +46,7 @@
 
 <arch name="64">
   <!-- <check name="check_extended_cpuid"> -->
-    <!-- <param>0x80000001</param>
+      <!-- <param>0x80000001</param>
   </check> -->
   <!--<check name="cpuid_x86_bit">   checks to see if a bit is set -->
   <!--    <param>3</param>           eax, ebx, ecx, [edx] -->
@@ -58,22 +58,14 @@
 </arch>
 
 <arch name="popcount">
-  <check name="popcnt">
-      <param>2</param>
-      <param>0x00000001</param>
-      <param>23</param>
-  </check>
+  <check name="popcnt"></check>
   <flag compiler="gnu">-mpopcnt</flag>
   <flag compiler="clang">-mpopcnt</flag>
   <flag compiler="msvc">/arch:AVX</flag>
 </arch>
 
 <arch name="mmx">
-  <check name="mmx">
-      <param>3</param>
-      <param>0x00000001</param>
-      <param>23</param>
-  </check>
+  <check name="mmx"></check>
   <flag compiler="gnu">-mmmx</flag>
   <flag compiler="clang">-mmmx</flag>
   <flag compiler="msvc">/arch:SSE</flag>
@@ -81,11 +73,7 @@
 </arch>
 
 <arch name="fma">
-    <check name="fma3">
-        <param>2</param>
-        <param>0x00000001</param>
-        <param>12</param>
-    </check>
+    <check name="fma3"></check>
     <flag compiler="gnu">-mfma</flag>
     <flag compiler="clang">-mfma</flag>
     <flag compiler="msvc">/arch:AVX2</flag>
@@ -93,11 +81,7 @@
 </arch>
 
 <arch name="sse">
-  <check name="sse">
-      <param>3</param>
-      <param>0x00000001</param>
-      <param>25</param>
-  </check>
+  <check name="sse"></check>
   <flag compiler="gnu">-msse</flag>
   <flag compiler="clang">-msse</flag>
   <flag compiler="msvc">/arch:SSE</flag>
@@ -107,11 +91,7 @@
 </arch>
 
 <arch name="sse2">
-  <check name="sse2">
-      <param>3</param>
-      <param>0x00000001</param>
-      <param>26</param>
-  </check>
+  <check name="sse2"></check>
   <flag compiler="gnu">-msse2</flag>
   <flag compiler="clang">-msse2</flag>
   <flag compiler="msvc">/arch:SSE2</flag>
@@ -126,11 +106,7 @@
 </arch>
 
 <arch name="sse3">
-  <check name="sse3">
-      <param>2</param>
-      <param>0x00000001</param>
-      <param>0</param>
-  </check>
+  <check name="sse3"></check>
   <flag compiler="gnu">-msse3</flag>
   <flag compiler="clang">-msse3</flag>
   <flag compiler="msvc">/arch:AVX</flag>
@@ -140,11 +116,7 @@
 </arch>
 
 <arch name="ssse3">
-  <check name="ssse3">
-      <param>2</param>
-      <param>0x00000001</param>
-      <param>9</param>
-  </check>
+  <check name="ssse3"></check>
   <flag compiler="gnu">-mssse3</flag>
   <flag compiler="clang">-mssse3</flag>
   <flag compiler="msvc">/arch:AVX</flag>
@@ -152,22 +124,14 @@
 </arch>
 
 <arch name="sse4_a">
-  <check name="sse4a">
-      <param>2</param>
-      <param>0x80000001</param>
-      <param>6</param>
-  </check>
+  <check name="sse4a"></check>
   <flag compiler="gnu">-msse4a</flag>
   <flag compiler="clang">-msse4a</flag>
   <alignment>16</alignment>
 </arch>
 
 <arch name="sse4_1">
-  <check name="sse4_1">
-      <param>2</param>
-      <param>0x00000001</param>
-      <param>19</param>
-  </check>
+  <check name="sse4_1"></check>
   <flag compiler="gnu">-msse4.1</flag>
   <flag compiler="clang">-msse4.1</flag>
   <flag compiler="msvc">/arch:AVX</flag>
@@ -175,11 +139,7 @@
 </arch>
 
 <arch name="sse4_2">
-  <check name="sse4_2">
-      <param>2</param>
-      <param>0x00000001</param>
-      <param>20</param>
-  </check>
+  <check name="sse4_2"></check>
   <flag compiler="gnu">-msse4.2</flag>
   <flag compiler="clang">-msse4.2</flag>
   <flag compiler="msvc">/arch:AVX</flag>
@@ -187,11 +147,7 @@
 </arch>
 
 <arch name="avx">
-  <check name="avx">
-      <param>2</param>
-      <param>0x00000001</param>
-      <param>28</param>
-  </check>
+  <check name="avx"></check>
   <flag compiler="gnu">-mavx</flag>
   <flag compiler="clang">-mavx</flag>
   <flag compiler="msvc">/arch:AVX</flag>
@@ -199,12 +155,7 @@
 </arch>
 
 <arch name="avx2">
-    <check name="avx2">
-        <param>7</param>
-        <param>0</param>
-        <param>1</param>
-        <param>5</param>
-    </check>
+    <check name="avx2"></check>
     <flag compiler="gnu">-mavx2</flag>
     <flag compiler="clang">-mavx2</flag>
     <flag compiler="msvc">/arch:AVX2</flag>
@@ -212,13 +163,7 @@
 </arch>
 
 <arch name="avx512f">
-    <!-- check for AVX512F -->
-    <check name="avx512f">
-        <param>7</param>
-        <param>0</param>
-        <param>1</param>
-        <param>16</param>
-    </check>
+    <check name="avx512f"></check>
     <flag compiler="gnu">-mavx512f</flag>
     <flag compiler="clang">-mavx512f</flag>
     <flag compiler="msvc">/arch:AVX512F</flag>
@@ -226,13 +171,7 @@
 </arch>
 
 <arch name="avx512cd">
-    <!-- check for AVX512CD -->
-    <check name="avx512cd">
-        <param>7</param>
-        <param>0</param>
-        <param>1</param>
-        <param>28</param>
-    </check>
+    <check name="avx512cd"></check>
     <flag compiler="gnu">-mavx512cd</flag>
     <flag compiler="clang">-mavx512cd</flag>
     <flag compiler="msvc">/arch:AVX512CD</flag>

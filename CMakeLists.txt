@@ -329,7 +329,7 @@ set(GNSSSDR_GPSTK_LOCAL_VERSION "3.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.18")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.13.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.1")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.2")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
@@ -1117,6 +1117,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             )
         endif()
     endif()
+    include(GNUInstallDirs)
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(volk_gnsssdr_module
             PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
@@ -1143,6 +1144,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
             BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+                ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
             INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
         )
     endif()
@@ -1168,6 +1170,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
         )
+        if(CMAKE_VERSION VERSION_GREATER 3.0)
+            set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
+                INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+            )
+        endif()
     endif()
 
     if(CMAKE_VERSION VERSION_LESS 3.2)

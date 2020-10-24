@@ -27,15 +27,9 @@ const double STRP_PI = 3.1415926535898;  // Pi as defined in IS-GPS-200K
 
 arma::mat Skew_symmetric(const arma::vec &a)
 {
-    arma::mat A = arma::zeros(3, 3);
-
-    A << 0.0 << -a(2) << a(1) << arma::endr
-      << a(2) << 0.0 << -a(0) << arma::endr
-      << -a(1) << a(0) << 0 << arma::endr;
-
-    //    {{0,    -a(2),  a(1)},
-    //     {a(2),     0, -a(0)},
-    //     {-a(1), a(0),     0}};
+    arma::mat A = {{0.0, -a(2), a(1)},
+        {a(2), 0.0, -a(0)},
+        {-a(1), a(0), 0.0}};
     return A;
 }
 
@@ -383,14 +377,11 @@ void ECEF_to_Geo(const arma::vec &r_eb_e, const arma::vec &v_eb_e, const arma::m
     double sin_lat = sin(LLH(0));
     double cos_long = cos(LLH(1));
     double sin_long = sin(LLH(1));
-    // C++11 and arma >= 5.2
-    //    arma::mat C_e_n = {{-sin_lat * cos_long, -sin_lat * sin_long,  cos_lat},
-    //                      {-sin_long, cos_long, 0},
-    //                      {-cos_lat * cos_long, -cos_lat * sin_long, -sin_lat}}; //ECEF to Geo
-    arma::mat C_e_n = arma::zeros(3, 3);
-    C_e_n << -sin_lat * cos_long << -sin_lat * sin_long << cos_lat << arma::endr
-          << -sin_long << cos_long << 0 << arma::endr
-          << -cos_lat * cos_long << -cos_lat * sin_long << -sin_lat << arma::endr;  // ECEF to Geo
+
+    arma::mat C_e_n = {{-sin_lat * cos_long, -sin_lat * sin_long, cos_lat},
+        {-sin_long, cos_long, 0},
+        {-cos_lat * cos_long, -cos_lat * sin_long, -sin_lat}};  // ECEF to Geo
+
     // Transform velocity using (2.73)
     v_eb_n = C_e_n * v_eb_e;
 
@@ -417,14 +408,9 @@ void Geo_to_ECEF(const arma::vec &LLH, const arma::vec &v_eb_n, const arma::mat 
         ((1 - e * e) * R_E + LLH(2)) * sin_lat};
 
     // Calculate ECEF to Geo coordinate transformation matrix using (2.150)
-    // C++11 and arma>=5.2
-    //    arma::mat C_e_n = {{-sin_lat * cos_long, -sin_lat * sin_long,  cos_lat},
-    //                       {-sin_long,            cos_long,        0},
-    //                       {-cos_lat * cos_long, -cos_lat * sin_long, -sin_lat}};
-    arma::mat C_e_n = arma::zeros(3, 3);
-    C_e_n << -sin_lat * cos_long << -sin_lat * sin_long << cos_lat << arma::endr
-          << -sin_long << cos_long << 0 << arma::endr
-          << -cos_lat * cos_long << -cos_lat * sin_long << -sin_lat << arma::endr;
+    arma::mat C_e_n = {{-sin_lat * cos_long, -sin_lat * sin_long, cos_lat},
+        {-sin_long, cos_long, 0},
+        {-cos_lat * cos_long, -cos_lat * sin_long, -sin_lat}};
 
     // Transform velocity using (2.73)
     v_eb_e = C_e_n.t() * v_eb_n;
@@ -453,10 +439,9 @@ void pv_Geo_to_ECEF(double L_b, double lambda_b, double h_b, const arma::vec &v_
         ((1 - pow(e, 2)) * R_E + h_b) * sin_lat};
 
     // Calculate ECEF to Geo coordinate transformation matrix using (2.150)
-    arma::mat C_e_n = arma::zeros(3, 3);
-    C_e_n << -sin_lat * cos_long << -sin_lat * sin_long << cos_lat << arma::endr
-          << -sin_long << cos_long << 0 << arma::endr
-          << -cos_lat * cos_long << -cos_lat * sin_long << -sin_lat << arma::endr;
+    arma::mat C_e_n = {{-sin_lat * cos_long, -sin_lat * sin_long, cos_lat},
+        {-sin_long, cos_long, 0.0},
+        {-cos_lat * cos_long, -cos_lat * sin_long, -sin_lat}};
 
     // Transform velocity using (2.73)
     v_eb_e = C_e_n.t() * v_eb_n;

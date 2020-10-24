@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2017 Google LLC
+# SPDX-License-Identifier: Apache-2.0
+
+# CpuFeaturesNdkCompat CMake configuration file
+
+include("${CMAKE_CURRENT_LIST_DIR}/CpuFeaturesNdkCompatTargets.cmake")

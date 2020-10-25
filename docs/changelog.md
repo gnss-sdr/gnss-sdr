@@ -60,6 +60,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - The `Custom_UDP_Signal_Source` implementation now accepts
   `SignalSource.sample_type=cfloat`, in addition to the existing 4 and 8-bit
   length sample types.
+- Fixed the `obsdiff` and `rinex2assist` utilities when installed if they were
+  built with a locally downloaded version of GPSTk.
 
 &nbsp;
 

@@ -228,7 +228,7 @@ endif()
 ########################################################################
 
 # cpu_features
-if(CMAKE_VERSION VERSION_GREATER 3.0)
+if(CMAKE_VERSION VERSION_GREATER 3.0 AND NOT (CMAKE_SYSTEM_PROCESSOR STREQUAL "s390x"))
     set(BUILD_PIC ON CACHE BOOL
         "Build cpu_features with Position Independent Code (PIC)."
         FORCE

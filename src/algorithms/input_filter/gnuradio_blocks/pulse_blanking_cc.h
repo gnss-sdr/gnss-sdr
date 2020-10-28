@@ -48,8 +48,6 @@ class pulse_blanking_cc : public gr::block
 public:
     ~pulse_blanking_cc() = default;
 
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-
     int general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 

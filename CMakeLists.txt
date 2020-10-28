@@ -1118,6 +1118,18 @@ if(NOT VOLKGNSSSDR_FOUND)
         endif()
     endif()
     include(GNUInstallDirs)
+    set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(^i.86$)")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    endif()
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(volk_gnsssdr_module
             PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
@@ -1132,7 +1144,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
         )
     else()
-        if(CMAKE_SYSTEM_PROCESSOR STREQUAL "s390x")
+        if(SUPPORTED_CPU_FEATURES_ARCH)
             ExternalProject_Add(volk_gnsssdr_module
                 PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
                 SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -1145,6 +1157,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                 BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
                 BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
                 INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
             )
         else()
@@ -1160,7 +1173,6 @@ if(NOT VOLKGNSSSDR_FOUND)
                 BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
                 BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
                 INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
             )
         endif()
@@ -1187,7 +1199,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
         )
-        if(CMAKE_VERSION VERSION_GREATER 3.0 AND NOT (CMAKE_SYSTEM_PROCESSOR STREQUAL "s390x"))
+        if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
             set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
                 INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
             )

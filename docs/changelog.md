@@ -15,6 +15,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Fixed bug in acquisition detection when the configuration parameter
   `Acquisition_XX.threshold` was set but `Acquisition_XX.pfa` was not, causing
   false locks.
+- Fixed anti-jamming filters: `Pulse_Blanking_Filter`, `Notch_Filter` and 
+  `Notch_Filter_Lite`.  
 
 ### Improvements in Efficiency:
 

@@ -65,15 +65,6 @@ Notch::Notch(float pfa,
 }
 
 
-void Notch::forecast(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items_required)
-{
-    for (int &aux : ninput_items_required)
-        {
-            aux = length_;
-        }
-}
-
-
 int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {

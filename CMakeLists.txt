@@ -2565,6 +2565,14 @@ set_package_properties(LATEX PROPERTIES
     PURPOSE "Used to generate a PDF manual by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual'"
     TYPE OPTIONAL
 )
+find_package(MATHJAX2)
+set_package_properties(MATHJAX2 PROPERTIES
+    URL "https://www.mathjax.org"
+    DESCRIPTION "Beautiful and accessible math in all browsers"
+    PURPOSE "Used to generate equations in HTML docs."
+    TYPE OPTIONAL
+)
+
 if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
     message(STATUS " You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
@@ -2605,10 +2613,13 @@ if(DOXYGEN_FOUND)
     endif()
     if(PDFLATEX_COMPILER)
         set(GENERATE_PDF_DOCUMENTATION "YES")
-        set(GNSSSDR_USE_MATHJAX "NO")
     else()
         set(GENERATE_PDF_DOCUMENTATION "NO")
+    endif()
+    if(MATHJAX2_FOUND)
         set(GNSSSDR_USE_MATHJAX "YES")
+    else()
+        set(GNSSSDR_USE_MATHJAX "NO")
     endif()
     configure_file(${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.in
         ${CMAKE_BINARY_DIR}/docs/doxygen/Doxyfile

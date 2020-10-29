@@ -41,7 +41,7 @@ using notch_sptr = boost::shared_ptr<Notch>;
 notch_sptr make_notch_filter(
     float pfa,
     float p_c_factor,
-    int32_t length_,
+    int32_t length,
     int32_t n_segments_est,
     int32_t n_segments_reset);
 
@@ -58,23 +58,23 @@ public:
         gr_vector_void_star &output_items);
 
 private:
-    friend notch_sptr make_notch_filter(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
-    Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
-    std::unique_ptr<gr::fft::fft_complex> d_fft;
-    volk_gnsssdr::vector<gr_complex> c_samples;
+    friend notch_sptr make_notch_filter(float pfa, float p_c_factor, int32_t length, int32_t n_segments_est, int32_t n_segments_reset);
+    Notch(float pfa, float p_c_factor, int32_t length, int32_t n_segments_est, int32_t n_segments_reset);
+    std::unique_ptr<gr::fft::fft_complex> d_fft_;
+    volk_gnsssdr::vector<gr_complex> c_samples_;
     volk_gnsssdr::vector<float> angle_;
-    volk_gnsssdr::vector<float> power_spect;
-    gr_complex last_out;
-    gr_complex z_0;
-    gr_complex p_c_factor;
-    float pfa;
-    float noise_pow_est;
+    volk_gnsssdr::vector<float> power_spect_;
+    gr_complex last_out_;
+    gr_complex z_0_;
+    gr_complex p_c_factor_;
+    float pfa_;
+    float noise_pow_est_;
     float thres_;
     int32_t length_;
-    int32_t n_deg_fred;
-    uint32_t n_segments;
-    uint32_t n_segments_est;
-    uint32_t n_segments_reset;
+    int32_t n_deg_fred_;
+    uint32_t n_segments_;
+    uint32_t n_segments_est_;
+    uint32_t n_segments_reset_;
     bool filter_state_;
 };
 

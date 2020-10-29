@@ -39,7 +39,7 @@ using pulse_blanking_cc_sptr = boost::shared_ptr<pulse_blanking_cc>;
 
 pulse_blanking_cc_sptr make_pulse_blanking_cc(
     float pfa,
-    int32_t length_,
+    int32_t length,
     int32_t n_segments_est,
     int32_t n_segments_reset);
 
@@ -52,18 +52,18 @@ public:
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
 private:
-    friend pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
-    pulse_blanking_cc(float pfa, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
+    friend pulse_blanking_cc_sptr make_pulse_blanking_cc(float pfa, int32_t length, int32_t n_segments_est, int32_t n_segments_reset);
+    pulse_blanking_cc(float pfa, int32_t length, int32_t n_segments_est, int32_t n_segments_reset);
     volk_gnsssdr::vector<gr_complex> zeros_;
-    float noise_power_estimation;
+    float noise_power_estimation_;
     float thres_;
-    float pfa;
+    float pfa_;
     int32_t length_;
-    int32_t n_segments;
-    int32_t n_segments_est;
-    int32_t n_segments_reset;
-    int32_t n_deg_fred;
-    bool last_filtered;
+    int32_t n_segments_;
+    int32_t n_segments_est_;
+    int32_t n_segments_reset_;
+    int32_t n_deg_fred_;
+    bool last_filtered_;
 };
 
 #endif  // GNSS_SDR_PULSE_BLANKING_H

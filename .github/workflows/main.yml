@@ -42,7 +42,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: install dependencies
-      run: brew install llvm && ln -s /usr/local/opt/llvm/bin/clang-format /usr/local/bin
+      run: brew install clang-format && brew link clang-format
     - name: run clang-format
       run: find . -iname \*.h -o -iname \*.c -o -iname \*.cpp | xargs clang-format -style=file -i
     - name: check

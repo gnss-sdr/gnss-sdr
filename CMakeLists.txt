@@ -2586,7 +2586,7 @@ set_package_properties(MATHJAX2 PROPERTIES
 if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
     message(STATUS " You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
-    message(STATUS " When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
+    message(STATUS " When done, point your browser to ${CMAKE_BINARY_DIR}/docs/html/index.html")
     if(CMAKE_VERSION VERSION_LESS 3.9.6)
         if(DOXYGEN_DOT_FOUND)
             set(HAVE_DOT "YES")

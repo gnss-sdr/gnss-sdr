@@ -53,8 +53,8 @@ else()
     )
 
     get_filename_component(MATHJAX2_PATH ${MATHJAX2_JS_PATH} DIRECTORY)
-
-    find_package_handle_standard_args(MATHJAX2 DEFAULT_MSG MATHJAX2_JS_PATH)
 endif()
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(MATHJAX2 DEFAULT_MSG MATHJAX2_JS_PATH)
 
 mark_as_advanced(MATHJAX2_JS_PATH)

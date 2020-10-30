@@ -117,6 +117,8 @@ if(CMAKE_VERSION VERSION_LESS 3.5.1)
     set(ENABLE_BENCHMARKS OFF)
 endif()
 
+option(ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs" ON)
+
 
 ################################################################################
 # GNSS-SDR version information
@@ -330,6 +332,7 @@ set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.18")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.13.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.2")
+set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
@@ -2533,7 +2536,7 @@ endif()
 
 
 ################################################################################
-# Doxygen - http://www.doxygen.nl (OPTIONAL, used if found)
+# Doxygen - https://www.doxygen.nl (OPTIONAL, used if found)
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.6.9)
     find_package(Doxygen)
@@ -2541,7 +2544,7 @@ else()
     find_package(Doxygen OPTIONAL_COMPONENTS dot)
 endif()
 set_package_properties(Doxygen PROPERTIES
-    URL "http://www.doxygen.nl"
+    URL "https://www.doxygen.nl"
     PURPOSE "Used to generate code documentation by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'"
     TYPE OPTIONAL
 )
@@ -2562,14 +2565,21 @@ endif()
 set_package_properties(LATEX PROPERTIES
     URL "https://www.latex-project.org"
     DESCRIPTION "High-quality typesetting system"
-    PURPOSE "Used to generate a PDF manual by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual'"
+    PURPOSE "Used to generate a PDF manual by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual'."
     TYPE OPTIONAL
 )
+if(DEFINED MATHJAX2_ROOT)
+    set(ENABLE_EXTERNAL_MATHJAX OFF)
+endif()
+if(ENABLE_EXTERNAL_MATHJAX AND NOT DEFINED MATHJAX2_USE_ROOT)
+    set(MATHJAX2_USE_ROOT "https://cdnjs.cloudflare.com/ajax/libs/mathjax/${GNSSSDR_MATHJAX_EXTERNAL_VERSION}")
+endif()
+unset(MATHJAX2_FOUND CACHE)
 find_package(MATHJAX2)
 set_package_properties(MATHJAX2 PROPERTIES
     URL "https://www.mathjax.org"
     DESCRIPTION "Beautiful and accessible math in all browsers"
-    PURPOSE "Used to generate equations in HTML docs."
+    PURPOSE "Used to generate equations in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'."
     TYPE OPTIONAL
 )
 
@@ -2660,7 +2670,7 @@ if(DOXYGEN_FOUND)
 else()
     message(STATUS " Doxygen has not been found in your system.")
     message(STATUS " You can get nice code documentation by using it!")
-    message(STATUS " Get it from http://www.doxygen.nl/download.html")
+    message(STATUS " Get it from https://www.doxygen.nl/download.html")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " or simply by doing 'sudo yum install doxygen-latex'.")
@@ -2672,6 +2682,7 @@ else()
         message(STATUS " or simply by doing 'sudo port install doxygen +docs', if you are using Macports,")
         message(STATUS " or 'brew cask install mactex', then restart Terminal and do 'brew install graphviz doxygen', if you use Homebrew.")
     endif()
+    set(ENABLE_EXTERNAL_MATHJAX OFF)
 endif()
 
 
@@ -3188,6 +3199,7 @@ add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and b
 add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
+add_feature_info(ENABLE_EXTERNAL_MATHJAX ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
 
 message(STATUS "")
 message(STATUS "***************************************")

@@ -28,15 +28,6 @@
 #  - MATHJAX2_PATH      - Path to the MathJax root directory
 
 
-if(CMAKE_VERSION VERSION_LESS 3.11)
-    if(__INCLUDED_MATHJAX2)
-        return()
-    endif()
-    set(__INCLUDED_MATHJAX2 TRUE)
-else()
-    include_guard()
-endif()
-
 if(DEFINED MATHJAX2_USE_ROOT)
     set(MATHJAX2_FOUND TRUE)
     set(MATHJAX2_PATH "${MATHJAX2_USE_ROOT}/")

@@ -32,10 +32,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-/** \addtogroup GPS_L2
+/** \addtogroup Telemetry_Decoder
  * \{ */
-/** \addtogroup gps_cnav_decoder
+/** \addtogroup Telemetry_Decoder_libswiftcnav
  * \{ */
+
 
 /** Size of the Viterbi decoder history. */
 #define GPS_L2_V27_HISTORY_LENGTH_BITS 64
@@ -108,5 +109,4 @@ bool cnav_msg_decoder_add_symbol(cnav_msg_decoder_t *dec,
 
 /** \} */
 /** \} */
-
 #endif /* GNSS_SDR_CNAV_MSG_H_ */

@@ -32,6 +32,13 @@
 #include <string>
 #include <thread>
 
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 class Ad9361FpgaSignalSource : public GNSSBlockInterface
@@ -132,4 +139,7 @@ private:
     bool rf_shutdown_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H

@@ -25,6 +25,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
+
+
 /*!
  * \brief Class that interprets the contents of a string
  * and converts it into different types.
@@ -46,4 +52,7 @@ public:
     double convert(const std::string& value, double default_value);
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_STRING_CONVERTER_H

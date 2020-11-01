@@ -27,6 +27,14 @@
 #include <memory>
 #include <string>
 
+/** \addtogroup Signal_Conditioner Signal Conditioner
+ * Signal Conditioner wrapper block
+ * \{ */
+/** \addtogroup Signal_Conditioner_adapters conditioner_adapters
+ * Wrap a Signal Conditioner with a GNSSBlockInterface
+ * \{ */
+
+
 /*!
  * \brief This class wraps blocks to change data_type_adapter, input_filter and resampler
  * to be applied to the input flow of sampled signal.
@@ -66,4 +74,7 @@ private:
     bool connected_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_SIGNAL_CONDITIONER_H

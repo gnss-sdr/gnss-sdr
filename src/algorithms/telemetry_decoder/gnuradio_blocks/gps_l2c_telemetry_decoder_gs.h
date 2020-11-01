@@ -38,6 +38,10 @@ extern "C"
 #include "cnav_msg.h"
 }
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
 
 class gps_l2c_telemetry_decoder_gs;
 
@@ -103,4 +107,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H

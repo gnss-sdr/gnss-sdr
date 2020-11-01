@@ -24,6 +24,12 @@
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class is a storage for the GALILEO IONOSPHERIC data as described in Galileo ICD paragraph 5.1.6
  *
@@ -78,4 +84,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GALILEO_IONO_H

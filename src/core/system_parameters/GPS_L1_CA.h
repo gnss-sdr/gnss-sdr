@@ -27,6 +27,11 @@
 #include <utility>  // std::pair
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 // carrier and code frequencies
 constexpr double GPS_L1_FREQ_HZ = FREQ1;                //!< L1 [Hz]
@@ -223,4 +228,7 @@ const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV22({{247, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV23({{253, 6}});
 const std::vector<std::pair<int32_t, int32_t>> HEALTH_SV24({{259, 6}});
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_H

@@ -35,6 +35,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
+
+
 class Gnss_Sdr_Valve;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -109,4 +115,7 @@ private:
     bool d_open_valve;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_SDR_VALVE_H

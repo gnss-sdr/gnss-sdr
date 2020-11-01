@@ -58,6 +58,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
+
 class pcps_quicksync_acquisition_cc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -267,4 +273,7 @@ private:
     bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H

@@ -30,6 +30,12 @@
 #include <gnuradio/gr_complex.h>
 #include <cmath>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*! brief FLL four quadrant arctan discriminator
  *
  * FLL four quadrant arctan discriminator:
@@ -192,4 +198,7 @@ double CosBocCorrelationFunction(double offset_in_chips)
         }
 }
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_TRACKING_DISCRIMINATORS_H

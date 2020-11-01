@@ -37,6 +37,12 @@
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup RTKLIB_Library
+ * \{ */
+
+
 /* constants/macros ----------------------------------------------------------*/
 const double VAR_POS = std::pow(30.0, 2.0);   /* initial variance of receiver pos (m^2) */
 const double VAR_VEL = std::pow(10.0, 2.0);   /* initial variance of receiver vel ((m/s)^2) */
@@ -171,4 +177,6 @@ void rtkfree(rtk_t *rtk);
 int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav);
 
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RTKLIB_RKTPOS_H

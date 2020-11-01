@@ -76,6 +76,14 @@ namespace own = gsl;
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Acquisition
+ * Classes for GNSS signal acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks acquisition_gr_blocks
+ * GNU Radio processing blocks for GNSS signal acquisition
+ * \{ */
+
+
 class Gnss_Synchro;
 class pcps_acquisition;
 
@@ -289,4 +297,7 @@ private:
     std::queue<Gnss_Synchro> d_monitor_queue;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_ACQUISITION_H

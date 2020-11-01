@@ -26,6 +26,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -75,4 +81,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEAMFORMER_FILTER_H

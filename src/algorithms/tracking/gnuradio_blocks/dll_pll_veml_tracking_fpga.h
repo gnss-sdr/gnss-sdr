@@ -43,6 +43,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
+
+
 class Fpga_Multicorrelator_8sc;
 class Gnss_Synchro;
 class dll_pll_veml_tracking_fpga;
@@ -246,4 +252,7 @@ private:
     bool d_sc_demodulate_enabled;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

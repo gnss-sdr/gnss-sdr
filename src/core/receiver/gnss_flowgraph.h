@@ -46,6 +46,12 @@
 #include "gnss_sdr_fpga_sample_counter.h"
 #endif
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver
+ * \{ */
+
+
 class ChannelInterface;
 class ConfigurationInterface;
 class GNSSBlockInterface;
@@ -246,4 +252,7 @@ private:
     bool enable_tracking_monitor_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_FLOWGRAPH_H

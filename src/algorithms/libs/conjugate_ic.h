@@ -29,6 +29,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 class conjugate_ic;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -55,4 +61,7 @@ private:
     conjugate_ic();
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_CONJUGATE_IC_H

@@ -27,6 +27,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Data_Type
+ * \{ */
+/** \addtogroup data_type_gnuradio_blocks data_type_gr_blocks
+ * GNU Radio Blocks for data type conversion
+ * \{ */
+
+
 class interleaved_byte_to_complex_byte;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -53,4 +60,7 @@ private:
     interleaved_byte_to_complex_byte();
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H

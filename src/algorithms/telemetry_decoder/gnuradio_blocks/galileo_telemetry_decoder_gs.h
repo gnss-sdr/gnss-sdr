@@ -41,6 +41,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
+
 class galileo_telemetry_decoder_gs;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -142,4 +148,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H

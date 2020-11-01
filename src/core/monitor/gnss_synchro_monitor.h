@@ -35,6 +35,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Gnss_Synchro_Monitor core_monitor
+ * Classes for the Gnss_Synchro monitor.
+ * \{ */
+
+
 class gnss_synchro_monitor;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -80,4 +87,7 @@ private:
     std::unique_ptr<Gnss_Synchro_Udp_Sink> udp_sink_ptr;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_SYNCHRO_MONITOR_H

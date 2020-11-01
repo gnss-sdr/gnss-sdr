@@ -41,6 +41,12 @@
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*! \brief Bayesian_estimator is an estimator of noise characteristics (i.e. mean, covariance)
  *
  * Bayesian_estimator is an estimator which performs estimation of noise characteristics from
@@ -79,4 +85,7 @@ private:
     int nu_prior;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BAYESIAN_ESTIMATION_H

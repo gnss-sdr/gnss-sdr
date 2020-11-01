@@ -22,6 +22,12 @@
 #ifndef GNSS_SDR_GNSS_FREQUENCIES_H
 #define GNSS_SDR_GNSS_FREQUENCIES_H
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 constexpr double FREQ1 = 1.57542e9;       //!<  L1/E1  frequency (Hz)
 constexpr double FREQ2 = 1.22760e9;       //!<  L2     frequency (Hz)
 constexpr double FREQ5 = 1.17645e9;       //!<  L5/E5a frequency (Hz)
@@ -38,4 +44,7 @@ constexpr double FREQ1_BDS = 1.561098e9;  //!<  BeiDou B1 frequency (Hz)
 constexpr double FREQ2_BDS = 1.20714e9;   //!<  BeiDou B2 frequency (Hz)
 constexpr double FREQ3_BDS = 1.26852e9;   //!<  BeiDou B3 frequency (Hz)
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_FREQUENCIES_H

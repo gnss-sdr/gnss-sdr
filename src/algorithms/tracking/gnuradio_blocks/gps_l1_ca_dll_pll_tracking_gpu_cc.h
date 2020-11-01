@@ -40,6 +40,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
+
+
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -174,4 +180,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H

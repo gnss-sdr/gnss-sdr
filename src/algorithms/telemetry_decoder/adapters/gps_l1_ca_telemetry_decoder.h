@@ -30,6 +30,15 @@
 #include <cstddef>                   // for size_t
 #include <string>
 
+/** \addtogroup Telemetry_Decoder Telemetry Decoder
+ * Classes for the decoding of GNSS Navigation messages.
+ * \{ */
+/** \addtogroup Telemetry_Decoder_adapters telemetry_decoder_adapters
+ * Wrap GNU Radio blocs for the decoding of GNSS Navigation messages with a
+ * TelemetryDecoderInterface
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -87,4 +96,7 @@ private:
     bool dump_;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_H

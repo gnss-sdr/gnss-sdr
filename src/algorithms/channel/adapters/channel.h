@@ -38,6 +38,16 @@
 #include <mutex>
 #include <string>
 
+/** \addtogroup Channel
+ * Classes containing a GNSS channel.
+ * \{ */
+/** \addtogroup Channel_adapters channel_adapters
+ * Classes that wrap an AcquisitionInterface,
+ * a TrackingInterface and a TelemetryDecoderInterface, and handles
+ * their interaction.
+ * \{ */
+
+
 class ConfigurationInterface;
 class AcquisitionInterface;
 class TrackingInterface;
@@ -46,7 +56,7 @@ class TelemetryDecoderInterface;
 
 /*!
  * \brief This class represents a GNSS channel. It wraps an AcquisitionInterface,
- * a Tracking Interface and a TelemetryDecoderInterface, and handles
+ * a TrackingInterface and a TelemetryDecoderInterface, and handles
  * their interaction through a Finite State Machine
  *
  */
@@ -104,4 +114,7 @@ private:
     bool flag_enable_fpga_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CHANNEL_H

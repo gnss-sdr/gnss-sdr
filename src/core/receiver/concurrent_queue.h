@@ -26,6 +26,12 @@
 #include <queue>
 #include <thread>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver
+ * \{ */
+
+
 template <typename Data>
 
 /*!
@@ -97,4 +103,7 @@ private:
     std::condition_variable the_condition_variable;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CONCURRENT_QUEUE_H

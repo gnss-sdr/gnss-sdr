@@ -36,6 +36,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
+
 class galileo_pcps_8ms_acquisition_cc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -236,4 +242,7 @@ private:
     bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H

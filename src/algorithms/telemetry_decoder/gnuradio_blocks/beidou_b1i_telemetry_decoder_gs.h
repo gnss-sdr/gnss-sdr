@@ -39,6 +39,12 @@
 #endif
 
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
+
 class beidou_b1i_telemetry_decoder_gs;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -124,4 +130,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEIDOU_B1I_TELEMETRY_DECODER_GS_H

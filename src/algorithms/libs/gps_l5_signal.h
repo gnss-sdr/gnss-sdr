@@ -31,6 +31,12 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 //! Generates complex GPS L5I code for the desired SV ID
 void gps_l5i_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn);
 
@@ -50,4 +56,6 @@ void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint
 void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L5_SIGNAL_H

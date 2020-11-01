@@ -22,6 +22,12 @@
 
 #include <memory>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
+
+
 class Command_Event;
 
 using command_event_sptr = std::shared_ptr<Command_Event>;
@@ -39,4 +45,7 @@ private:
     Command_Event(int command_id_, int event_type_);
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_COMMAND_EVENT_H

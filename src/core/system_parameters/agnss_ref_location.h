@@ -23,6 +23,11 @@
 
 #include <boost/serialization/nvp.hpp>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * Classes containing info about system parameters for the different GNSS.
+ * \{ */
 
 /*!
  * \brief  Interface of an Assisted GNSS REFERENCE LOCATION storage
@@ -59,4 +64,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_AGNSS_REF_LOCATION_H

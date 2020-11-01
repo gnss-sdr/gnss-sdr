@@ -38,6 +38,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
+
 class Viterbi_Decoder;
 
 class sbas_l1_telemetry_decoder_gs;
@@ -166,4 +172,7 @@ private:
     } d_crc_verifier;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_SBAS_L1_TELEMETRY_DECODER_GS_H

@@ -22,6 +22,12 @@
 
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 #ifndef NO_DISPLAY_COLORS
 #define DISPLAY_COLORS 1
 #endif
@@ -69,4 +75,7 @@ const std::string TEXT_BOLD_WHITE = "";
 
 #endif  // DISPLAY_COLORS
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_DISPLAY_H

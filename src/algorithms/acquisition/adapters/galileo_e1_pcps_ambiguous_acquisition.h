@@ -31,6 +31,11 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_adapters
+ * \{ */
+
 
 class ConfigurationInterface;
 
@@ -179,4 +184,7 @@ private:
     bool acquire_pilot_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E1_PCPS_AMBIGUOUS_ACQUISITION_H

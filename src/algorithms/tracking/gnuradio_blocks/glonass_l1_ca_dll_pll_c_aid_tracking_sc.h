@@ -46,6 +46,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
+
+
 class glonass_l1_ca_dll_pll_c_aid_tracking_sc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -204,4 +211,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_SC_H

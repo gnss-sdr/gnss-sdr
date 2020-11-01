@@ -62,6 +62,12 @@
 #include <map>
 #include <string>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs pvt_libs
+ * Library for the computation of PVT solutions.
+ * \{ */
+
 
 /*!
  * \brief This class implements a PVT solution based on RTKLIB
@@ -121,4 +127,7 @@ private:
     bool d_flag_dump_mat_enabled;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTKLIB_SOLVER_H

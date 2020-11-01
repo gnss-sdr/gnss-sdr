@@ -29,6 +29,12 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -168,4 +174,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E1_PCPS_TONG_AMBIGUOUS_ACQUISITION_H

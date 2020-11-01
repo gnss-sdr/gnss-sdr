@@ -33,6 +33,12 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 /*!
  * \brief This function generates a complex exponential in _dest.
  *
@@ -66,4 +72,7 @@ void resampler(const own::span<float> _from, own::span<float> _dest,
 void resampler(own::span<const std::complex<float>> _from, own::span<std::complex<float>> _dest,
     float _fs_in, float _fs_out);
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_SIGNAL_PROCESSING_H

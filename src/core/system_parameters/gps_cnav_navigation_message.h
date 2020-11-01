@@ -33,6 +33,11 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class decodes a GPS CNAV Data message as described in IS-GPS-200K
@@ -98,4 +103,7 @@ private:
     bool b_flag_utc_valid{};   //!< If set, it indicates that the utc parameters are filled and are not yet read by the get_utc_model
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPS_CNAV_NAVIGATION_MESSAGE_H

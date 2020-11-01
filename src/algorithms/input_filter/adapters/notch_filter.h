@@ -27,6 +27,12 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 class NotchFilter : public GNSSBlockInterface
@@ -71,4 +77,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_NOTCH_FILTER_H

@@ -29,6 +29,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
+
+
 /*!
  * \brief Class that controls the switch in the FPGA, which connects the FPGA acquisition and multicorrelator modules to
  * either the DMA or the Analog Front-End.
@@ -77,4 +83,7 @@ private:
     int d_device_descriptor2;        // driver descriptor corresponding to frequency band 2
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_FPGA_DYNAMIC_BIT_SELECTION_H

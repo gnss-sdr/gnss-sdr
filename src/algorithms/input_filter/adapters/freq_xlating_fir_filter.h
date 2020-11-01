@@ -38,6 +38,12 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -108,4 +114,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_FREQ_XLATING_FIR_FILTER_H

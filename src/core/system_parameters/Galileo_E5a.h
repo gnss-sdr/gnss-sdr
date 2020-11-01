@@ -25,6 +25,11 @@
 #include <cstddef>  // for size_t
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 // Carrier and code frequencies
 constexpr double GALILEO_E5A_FREQ_HZ = FREQ5;                 //!< Galileo E5a carrier frequency [Hz]
@@ -231,4 +236,6 @@ constexpr char GALILEO_E5A_Q_SECONDARY_CODE[GALILEO_E5A_NUMBER_OF_CODES][101] = 
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E5A_H

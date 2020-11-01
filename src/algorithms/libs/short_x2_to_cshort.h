@@ -29,6 +29,12 @@
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 class short_x2_to_cshort;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -54,4 +60,7 @@ private:
     short_x2_to_cshort();
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_SHORT_X2_TO_CSHORT_H

@@ -32,6 +32,12 @@
 #include <map>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
+
+
 /*!
  * \brief Read an INI file into easy-to-access name/value pairs. (Note that I've gone
  * for simplicity here rather than speed, but it should be pretty decent.)
@@ -61,4 +67,7 @@ private:
     int _error;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_INIREADER_H

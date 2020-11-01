@@ -25,6 +25,11 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 // DNAV SCALE FACTORS
 // EPH
@@ -280,4 +285,7 @@ const std::vector<std::pair<int32_t, int32_t> > D2_OMEGA({{269, 32}});
 // D2 NAV, SUBFRAME 1, PAGE 10
 const std::vector<std::pair<int32_t, int32_t> > D2_IDOT({{52, 1}, {61, 13}});
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEIDOU_DNAV_H

@@ -31,6 +31,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * Utilities for the core GNSS receiver.
+ * \{ */
+
+
 class gnss_sdr_sample_counter;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -78,4 +85,7 @@ private:
     bool flag_enable_send_msg;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_SDR_SAMPLE_COUNTER_H

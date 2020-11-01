@@ -33,6 +33,12 @@
 #include "gps_ephemeris.h"
 #include <map>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
+
 /*!
  * \brief This class represents an interface to a PVT block.
  *
@@ -60,4 +66,7 @@ public:
         time_t* UTC_time) = 0;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PVT_INTERFACE_H

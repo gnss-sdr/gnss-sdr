@@ -32,6 +32,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
+
+
 class channel_status_msg_receiver;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -68,4 +74,7 @@ private:
     std::map<int, std::shared_ptr<Gnss_Synchro>> d_channel_status_map;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H

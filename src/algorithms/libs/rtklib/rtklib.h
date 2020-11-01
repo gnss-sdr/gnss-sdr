@@ -45,6 +45,12 @@
 #include <pthread.h>
 #include <string>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup RTKLIB_Library algorithms_libs_rtklib
+ * Our version of the RTKLIB core library (see http://www.rtklib.com/)
+ * \{ */
+
 
 /* macros --------------------------------------------------------------------*/
 
@@ -1308,5 +1314,6 @@ const int STRFMT_NMEA = 19;   /* stream format: NMEA 0183 */
 
 const int MAXSTRRTK = 8; /* max number of stream in RTK server */
 
-
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTKLIB_H

@@ -31,6 +31,13 @@
 #include "gnss_synchro.h"
 #include <memory>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces GNSS block interfaces
+ * GNSS block interfaces.
+ * \{ */
+
+
 template <typename Data>
 class Concurrent_Queue;
 
@@ -65,4 +72,7 @@ public:
     virtual void set_resampler_latency(uint32_t latency_samples) = 0;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_ACQUISITION_INTERFACE */

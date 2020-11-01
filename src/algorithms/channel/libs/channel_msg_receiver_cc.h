@@ -29,6 +29,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Channel
+ * \{ */
+/** \addtogroup Channel_libs
+ * \{ */
+
+
 class channel_msg_receiver_cc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -55,4 +61,7 @@ private:
     bool d_repeat;  // todo: change FSM to include repeat value
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CHANNEL_MSG_RECEIVER_CC_H

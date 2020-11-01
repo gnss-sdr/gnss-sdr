@@ -30,6 +30,12 @@
 #include "tracking_interface.h"
 #include <string>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -93,4 +99,7 @@ private:
     unsigned int out_streams_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEIDOU_B1I_DLL_PLL_TRACKING_H

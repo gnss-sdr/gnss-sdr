@@ -31,6 +31,14 @@
 #include "tracking_interface.h"
 #include <string>
 
+/** \addtogroup Tracking
+ * Classes for GNSS signal tracking.
+ * \{ */
+/** \addtogroup Tracking_adapters tracking_adapters
+ * Wrap GNU Radio blocks for GNSS signal tracking with a TrackingInterface
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -95,4 +103,7 @@ private:
     unsigned int out_streams_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_H

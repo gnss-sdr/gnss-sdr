@@ -25,6 +25,12 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 #if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;
 #else
@@ -54,4 +60,7 @@ private:
     boost::asio::ip::tcp::socket tcp_socket_;
 };
 
+
+/** \} */
+/** \} */
 #endif

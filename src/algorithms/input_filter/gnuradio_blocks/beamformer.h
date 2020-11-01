@@ -28,6 +28,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_gnuradio_blocks
+ * \{ */
+
+
 class beamformer;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -56,4 +62,7 @@ private:
     std::vector<gr_complex> weight_vector = std::vector<gr_complex>(GNSS_SDR_BEAMFORMER_CHANNELS, gr_complex(1.0, 0.0));
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEAMFORMER_H

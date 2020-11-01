@@ -25,6 +25,13 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup acquisition_libs acquisition_libs
+ * Library with utilities for GNSS signal acquisition
+ * \{ */
+
+
 class Acq_Conf
 {
 public:
@@ -75,4 +82,7 @@ private:
     void ConfigureAutomaticResampler(double opt_freq);
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_ACQ_CONF_H

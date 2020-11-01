@@ -33,6 +33,11 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class handles the Galileo I/NAV Data message, as described in the
@@ -351,4 +356,7 @@ private:
     bool flag_GGTO_4{};
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_INAV_MESSAGE_H

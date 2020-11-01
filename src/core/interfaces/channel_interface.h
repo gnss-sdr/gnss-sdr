@@ -29,6 +29,12 @@
 #include "gnss_block_interface.h"
 #include "gnss_signal.h"
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
+
 /*!
  * \brief This abstract class represents an interface to a channel GNSS block.
  *
@@ -53,4 +59,7 @@ public:
     virtual void set_signal(const Gnss_Signal&) = 0;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CHANNEL_INTERFACE_H

@@ -24,6 +24,11 @@
 
 #include <boost/serialization/nvp.hpp>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class is a storage for the BeiDou D1 almanac
@@ -73,4 +78,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BEIDOU_DNAV_ALMANAC_H

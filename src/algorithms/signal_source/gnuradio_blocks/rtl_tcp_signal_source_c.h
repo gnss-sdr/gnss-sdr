@@ -43,6 +43,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_gnuradio_blocks
+ * \{ */
+
+
 class rtl_tcp_signal_source_c;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -124,4 +131,7 @@ private:
     bool flip_iq_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H

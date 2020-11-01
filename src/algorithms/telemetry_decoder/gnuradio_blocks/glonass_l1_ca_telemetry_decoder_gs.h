@@ -39,6 +39,11 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
 
 class glonass_l1_ca_telemetry_decoder_gs;
 
@@ -123,4 +128,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GLONASS_L1_CA_TELEMETRY_DECODER_GS_H

@@ -60,6 +60,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
+
 class pcps_acquisition_fine_doppler_cc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -246,4 +252,7 @@ private:
     bool d_dump;
 };
 
-#endif /* pcps_acquisition_fine_doppler_cc*/
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_PCPS_ACQUISITION_FINE_DOPPLER_CC_H

@@ -42,6 +42,11 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
+
 
 class Galileo_E1_Tcp_Connector_Tracking_cc;
 
@@ -182,4 +187,7 @@ private:
     std::string sys;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H

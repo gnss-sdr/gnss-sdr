@@ -26,6 +26,13 @@
 
 #include "swift_common.h"
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_libswiftcnav telemetry_decoder_libswiftcnav
+ * Utilities for CNAV message decoding by Swift Navigation Inc.
+ * \{ */
+
+
 uint8_t parity(uint32_t x);
 uint32_t getbitu(const uint8_t *buff, uint32_t pos, uint8_t len);
 int32_t getbits(const uint8_t *buff, uint32_t pos, uint8_t len);
@@ -39,4 +46,7 @@ uint8_t count_bits_u32(uint32_t v, uint8_t bv);
 uint8_t count_bits_u16(uint16_t v, uint8_t bv);
 uint8_t count_bits_u8(uint8_t v, uint8_t bv);
 
+
+/** \} */
+/** \} */
 #endif /* GNSS_SDR_BITS_H_ */

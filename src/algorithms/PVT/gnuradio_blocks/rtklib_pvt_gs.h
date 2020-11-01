@@ -41,6 +41,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_gnuradio_blocks pvt_gr_blocks
+ * GNU Radio blocks for the computation of PVT solutions.
+ * \{ */
+
+
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
@@ -270,4 +277,7 @@ private:
     bool d_rtcm_enabled;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTKLIB_PVT_GS_H

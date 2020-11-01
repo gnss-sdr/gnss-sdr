@@ -30,6 +30,13 @@
 #include <cstddef>                   // for size_t
 #include <string>
 
+
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -87,4 +94,7 @@ private:
     bool dump_;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_H

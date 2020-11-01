@@ -28,6 +28,12 @@
 
 #include <armadillo>
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 arma::mat Skew_symmetric(const arma::vec &a);  //!< Calculates skew-symmetric matrix
 
 double WGS84_g0(double Lat_rad);
@@ -175,4 +181,7 @@ double clsin(const arma::colvec &ar, int degree, double argument);
  */
 void clksin(const arma::colvec &ar, int degree, double arg_real, double arg_imag, double *re, double *im);
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GEOFUNCTIONS_H

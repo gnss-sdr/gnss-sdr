@@ -27,6 +27,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_gnuradio_blocks
+ * \{ */
+
+
 class unpack_intspir_1bit_samples;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -54,4 +61,7 @@ private:
     friend unpack_intspir_1bit_samples_sptr make_unpack_intspir_1bit_samples_sptr();
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_UNPACK_INTSPIR_1BIT_SAMPLES_H

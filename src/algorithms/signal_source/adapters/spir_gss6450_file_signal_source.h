@@ -43,6 +43,12 @@
 #endif
 
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -133,4 +139,7 @@ private:
     bool endian_swap_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H

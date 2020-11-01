@@ -18,12 +18,19 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FLAGS_H
-#define GNSS_SDR_FLAGS_H
+#ifndef GNSS_SDR_GNSS_SDR_FLAGS_H
+#define GNSS_SDR_GNSS_SDR_FLAGS_H
 
 
 #include <gflags/gflags.h>
 #include <cstdint>
+
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Gflags gnss_sdr_flags
+ * Library for command-line handling.
+ * \{ */
+
 
 DECLARE_string(c);            //!< Path to the configuration file.
 DECLARE_string(config_file);  //!< Path to the configuration file.
@@ -56,4 +63,7 @@ const int32_t DEFAULT_CARRIER_SMOOTHING_FACTOR = 200;
 DECLARE_string(RINEX_version);  //!< If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.
 DECLARE_string(RINEX_name);     //!< If defined, specifies the RINEX files base name
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_SDR_FLAGS_H

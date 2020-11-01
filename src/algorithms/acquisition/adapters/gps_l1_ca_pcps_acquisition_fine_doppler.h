@@ -36,6 +36,12 @@ using pcps_acquisition_fine_doppler_cc_sptr = std::shared_ptr<pcps_acquisition_f
 using pcps_acquisition_fine_doppler_cc_sptr = boost::shared_ptr<pcps_acquisition_fine_doppler_cc>;
 #endif
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -172,4 +178,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H

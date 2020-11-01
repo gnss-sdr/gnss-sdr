@@ -26,6 +26,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs signal_source_libs
+ * Library with utilities for signal sources.
+ * \{ */
+
 #define FIR_BUF_SIZE 8192
 
 /* RX is input, TX is output */
@@ -135,4 +141,7 @@ bool disable_ad9361_rx_local();
 
 bool disable_ad9361_rx_remote(const std::string &remote_host);
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_AD9361_MANAGER_H

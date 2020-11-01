@@ -26,6 +26,12 @@
 #include <fstream>
 #include <string>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 class Pvt_Solution;
 
 /*!
@@ -50,4 +56,7 @@ private:
     bool positions_printed;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPX_PRINTER_H

@@ -39,6 +39,12 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class handles the Galileo F/NAV Data message, as described in the
  * Galileo Open Service Signal in Space Interface Control Document (OS SIS ICD), Issue 1.2 (Nov 2015).
@@ -278,4 +284,7 @@ private:
     bool flag_almanac_2{};    // Flag indicating that almanac 2/2 (word 6) have been received
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_FNAV_MESSAGE_H

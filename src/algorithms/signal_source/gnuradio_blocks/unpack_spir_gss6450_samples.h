@@ -28,6 +28,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_gnuradio_blocks
+ * \{ */
+
+
 class unpack_spir_gss6450_samples;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -54,4 +60,7 @@ private:
     int samples_per_int;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_UNPACK_SPIR_GSS6450_SAMPLES_H

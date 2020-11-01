@@ -41,6 +41,11 @@ extern "C"
 }
 
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
 class gps_l5_telemetry_decoder_gs;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -99,4 +104,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H

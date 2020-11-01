@@ -22,6 +22,12 @@
 
 #include "rtklib.h"
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup RTKLIB_Library
+ * \{ */
+
+
 class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
@@ -49,4 +55,7 @@ geph_t eph_to_rtklib(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glona
 
 obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro, int week, int band, bool pre_2009_file = false);
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTKLIB_CONVERSIONS_H

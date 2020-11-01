@@ -29,6 +29,12 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
+
 /*!
  * \brief This abstract class represents an interface to a navigation GNSS block.
  *
@@ -45,4 +51,7 @@ public:
     virtual void set_channel(int channel) = 0;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_TELEMETRY_DECODER_INTERFACE_H

@@ -31,6 +31,12 @@
 #include <type_traits>
 #include <utility>
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 namespace std
 {
 template <class T>
@@ -73,4 +79,7 @@ make_unique(Args&&...) = delete;
 
 #endif  // __cplusplus == 201103L
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_SDR_MAKE_UNIQUE_H

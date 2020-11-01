@@ -17,8 +17,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_PULSE_BLANKING_H
-#define GNSS_SDR_PULSE_BLANKING_H
+#ifndef GNSS_SDR_PULSE_BLANKING_CC_H
+#define GNSS_SDR_PULSE_BLANKING_CC_H
 
 #if GNURADIO_USES_STD_POINTERS
 #include <memory>
@@ -28,6 +28,13 @@
 #include <gnuradio/block.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
+
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_gnuradio_blocks input_filter_gr_blocks
+ * GNU Radio blocks implementing input filters,
+ * \{ */
+
 
 class pulse_blanking_cc;
 
@@ -66,4 +73,7 @@ private:
     bool last_filtered_;
 };
 
-#endif  // GNSS_SDR_PULSE_BLANKING_H
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_PULSE_BLANKING_CC_H

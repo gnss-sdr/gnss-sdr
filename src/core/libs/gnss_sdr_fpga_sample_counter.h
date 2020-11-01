@@ -32,6 +32,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
+
+
 class gnss_sdr_fpga_sample_counter;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -90,4 +96,7 @@ private:
     bool is_open;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_SDR_FPGA_SAMPLE_COUNTER_H

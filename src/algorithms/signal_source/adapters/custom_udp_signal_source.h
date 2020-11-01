@@ -36,6 +36,11 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
+
 
 class ConfigurationInterface;
 
@@ -101,4 +106,7 @@ private:
     bool IQ_swap_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H

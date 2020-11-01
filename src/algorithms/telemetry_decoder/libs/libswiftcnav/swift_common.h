@@ -27,9 +27,11 @@
 #ifndef GNSS_SDR_SWIFT_COMMON_H
 #define GNSS_SDR_SWIFT_COMMON_H
 
-/** \defgroup common Common definitions
- * Common definitions used throughout the library.
+/** \addtogroup Telemetry_Decoder
  * \{ */
+/** \addtogroup Telemetry_Decoder_libswiftcnav
+ * \{ */
+
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
@@ -40,6 +42,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/** \} */
 
-#endif /* GNSS_SDR_SWIFT_COMMON_H_ */
+/** \} */
+/** \} */
+#endif /* GNSS_SDR_SWIFT_COMMON_H */

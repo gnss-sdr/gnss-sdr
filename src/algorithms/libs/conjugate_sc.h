@@ -29,6 +29,12 @@
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 class conjugate_sc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -55,4 +61,7 @@ private:
     conjugate_sc();
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_CONJUGATE_SC_H

@@ -48,6 +48,12 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 #if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;
 #else
@@ -1466,4 +1472,7 @@ private:
     int32_t set_DF420(const Gnss_Synchro& gnss_synchro);
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RTCM_H

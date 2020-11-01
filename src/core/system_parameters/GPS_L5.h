@@ -25,6 +25,11 @@
 #include "gnss_frequencies.h"
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 // carrier and code frequencies
 constexpr double GPS_L5_FREQ_HZ = FREQ5;              //!< L5 [Hz]
@@ -169,4 +174,7 @@ constexpr int32_t GPS_L5Q_NH_CODE[20] = {0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 
 constexpr char GPS_L5I_NH_CODE_STR[11] = "0000110101";
 constexpr char GPS_L5Q_NH_CODE_STR[21] = "00000100110101001110";
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L5_H

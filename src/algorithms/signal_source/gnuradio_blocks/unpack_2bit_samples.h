@@ -66,6 +66,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_gnuradio_blocks
+ * \{ */
+
+
 class unpack_2bit_samples;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -115,4 +121,7 @@ private:
     bool reverse_interleaving_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_UNPACK_2BIT_SAMPLES_H

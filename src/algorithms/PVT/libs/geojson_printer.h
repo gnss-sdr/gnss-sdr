@@ -26,6 +26,12 @@
 #include <fstream>
 #include <string>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 class Pvt_Solution;
 
 /*!
@@ -49,4 +55,7 @@ private:
     bool first_pos;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GEOJSON_PRINTER_H

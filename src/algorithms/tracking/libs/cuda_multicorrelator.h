@@ -37,6 +37,12 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 // GPU new internal data types for complex numbers
 
 struct GPU_Complex
@@ -158,4 +164,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CUDA_MULTICORRELATOR_H

@@ -25,6 +25,11 @@
 #include <array>
 #include <deque>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
 
 /*!
  * \brief Base class for a PVT solution
@@ -120,4 +125,7 @@ private:
     bool d_flag_averaging;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_PVT_SOLUTION_H

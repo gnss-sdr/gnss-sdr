@@ -17,8 +17,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NOTCH_H
-#define GNSS_SDR_NOTCH_H
+#ifndef GNSS_SDR_NOTCH_CC_H
+#define GNSS_SDR_NOTCH_CC_H
 
 #if GNURADIO_USES_STD_POINTERS
 #else
@@ -29,6 +29,12 @@
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
 #include <memory>
+
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_gnuradio_blocks
+ * \{ */
+
 
 class Notch;
 
@@ -78,4 +84,7 @@ private:
     bool filter_state_;
 };
 
-#endif  // GNSS_SDR_NOTCH_H
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_NOTCH_CC_H

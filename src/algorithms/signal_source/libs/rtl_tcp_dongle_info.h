@@ -24,6 +24,13 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
+
+
 /*!
  * \brief This class represents the dongle information
  * which is sent by rtl_tcp.
@@ -69,4 +76,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTL_TCP_DONGLE_INFO_H

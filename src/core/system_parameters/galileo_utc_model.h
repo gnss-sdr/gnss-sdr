@@ -25,6 +25,12 @@
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class is a storage for the GALILEO UTC MODEL data as described in Galileo ICD
  * https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf
@@ -83,4 +89,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GALILEO_UTC_MODEL_H

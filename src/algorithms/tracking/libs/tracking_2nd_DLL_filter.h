@@ -26,6 +26,12 @@
 #ifndef GNSS_SDR_TRACKING_2ND_DLL_FILTER_H
 #define GNSS_SDR_TRACKING_2ND_DLL_FILTER_H
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*!
  * \brief This class implements a 2nd order DLL filter for code tracking loop.
  *
@@ -59,4 +65,7 @@ private:
     float d_old_code_nco = 0.0;
 };
 
+
+/** \} */
+/** \} */
 #endif

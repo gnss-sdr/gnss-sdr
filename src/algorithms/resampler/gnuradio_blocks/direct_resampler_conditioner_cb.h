@@ -30,6 +30,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Resampler
+ * \{ */
+/** \addtogroup Resampler_gnuradio_blocks
+ * GNU Radio blocks for input signal resampling
+ * \{ */
+
+
 class direct_resampler_conditioner_cb;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -84,4 +91,7 @@ private:
     uint32_t d_phase_step;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CB_H

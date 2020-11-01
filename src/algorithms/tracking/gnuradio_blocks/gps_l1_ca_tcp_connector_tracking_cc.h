@@ -40,6 +40,11 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
+
 
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc;
 
@@ -158,4 +163,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_CC_H

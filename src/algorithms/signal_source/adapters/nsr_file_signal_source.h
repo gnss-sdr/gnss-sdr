@@ -39,6 +39,11 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
+
 class ConfigurationInterface;
 
 /*!
@@ -126,4 +131,7 @@ private:
     bool enable_throttle_control_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H

@@ -34,6 +34,12 @@
 
 #include "rtklib.h"
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup RTKLIB_Library
+ * \{ */
+
+
 #define COMMENTH "%"                   /* comment line indicator for solution */
 #define MSG_DISCONN "$_DISCONNECT\r\n" /* disconnect message */
 
@@ -157,4 +163,6 @@ void outsolex(FILE *fp, const sol_t *sol, const ssat_t *ssat,
     const solopt_t *opt);
 
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RTKLIB_SOLUTION_H

@@ -39,6 +39,14 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source Signal Source
+ * Classes for Signal Source management.
+ * \{ */
+/** \addtogroup Signal_Source_adapters signal_source_adapters
+ * Classes that wrap GNU Radio signal sources with a GNSSBlockInterface
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -129,4 +137,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_FILE_SIGNAL_SOURCE_H

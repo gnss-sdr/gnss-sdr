@@ -37,6 +37,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_gnuradio_blocks signal_source_gr_blocks
+ * GNU Radio blocks for signal sources.
+ * \{ */
+
+
 class Gr_Complex_Ip_Packet_Source : virtual public gr::sync_block
 {
 public:
@@ -108,4 +115,7 @@ private:
     bool d_fifo_full;
 };
 
+
+/** \} */
+/** \} */
 #endif  //  GNSS_SDR_GR_COMPLEX_IP_PACKET_SOURCE_H

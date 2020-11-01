@@ -26,6 +26,11 @@
 #include <utility>  // std::pair
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 // CNAV GPS NAVIGATION MESSAGE STRUCTURE
 // NAVIGATION MESSAGE FIELDS POSITIONS (from IS-GPS-200K Appendix III)
@@ -161,4 +166,6 @@ constexpr int32_t CNAV_DELTA_TLSF_LSB = 1;
 // TODO: Add more frames (Almanac, etc...)
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_CNAV_H

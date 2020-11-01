@@ -30,6 +30,11 @@
 #include <cassert>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
 
 /*!
  * \brief This abstract class represents an interface to GNSS blocks.
@@ -75,4 +80,7 @@ public:
     virtual void start(){};
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_BLOCK_INTERFACE_H

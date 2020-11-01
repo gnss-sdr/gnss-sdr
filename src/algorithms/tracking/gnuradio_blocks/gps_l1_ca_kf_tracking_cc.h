@@ -50,6 +50,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
+
+
 class Gps_L1_Ca_Kf_Tracking_cc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -221,4 +227,7 @@ private:
     int32_t save_matfile();
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H

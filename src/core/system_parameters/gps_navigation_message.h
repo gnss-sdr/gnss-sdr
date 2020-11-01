@@ -34,6 +34,11 @@
 #include <utility>  // for pair
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class decodes a GPS NAV Data message as described in IS-GPS-200K
@@ -254,4 +259,7 @@ private:
     bool b_antispoofing_flag{};  // If true, the AntiSpoofing mode is ON in that SV
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPS_NAVIGATION_MESSAGE_H

@@ -32,6 +32,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_gnuradio_blocks
+ * \{ */
+
+
 class labsat23_source;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -84,4 +90,7 @@ private:
     bool d_header_parsed;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_LABSAT23_SOURCE_H

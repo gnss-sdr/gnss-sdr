@@ -30,6 +30,11 @@
 #include "tracking_interface.h"
 #include <string>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_adapters
+ * \{ */
+
 
 class ConfigurationInterface;
 
@@ -137,4 +142,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E1_DLL_PLL_VEML_TRACKING_FPGA_H

@@ -41,6 +41,11 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
 
 class pcps_cccwsr_acquisition_cc;
 
@@ -235,4 +240,7 @@ private:
     bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H

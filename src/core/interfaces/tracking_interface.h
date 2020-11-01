@@ -29,6 +29,12 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
+
 template <typename Data>
 class Concurrent_Queue;
 
@@ -50,4 +56,7 @@ public:
     virtual void set_channel(unsigned int channel) = 0;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_TRACKING_INTERFACE_H

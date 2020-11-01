@@ -40,6 +40,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Observables
+ * \{ */
+/** \addtogroup Observables_gnuradio_blocks obs_gr_blocks
+ * GNU Radio blocks for the computation of GNSS observables
+ * \{ */
+
 class Gnss_Synchro;
 class hybrid_observables_gs;
 
@@ -124,4 +130,6 @@ private:
     bool d_dump_mat;
 };
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_HYBRID_OBSERVABLES_GS_H

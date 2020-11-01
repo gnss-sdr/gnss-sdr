@@ -46,6 +46,12 @@ extern "C"
 #include <map>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
+
+
 /*!
  * \brief class that implements a C++ interface to external Secure User Location Protocol (SUPL) client library..
  */
@@ -264,4 +270,7 @@ private:
     int ci;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_SUPL_CLIENT_H

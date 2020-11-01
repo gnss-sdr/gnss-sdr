@@ -25,6 +25,12 @@
 #include <ostream>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class represents a GNSS signal.
  *
@@ -48,4 +54,7 @@ private:
     std::string signal{};
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_SIGNAL_H

@@ -37,6 +37,12 @@
 #include <memory>   // for shared_ptr
 #include <string>   // for string
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
+
 class Gnss_Synchro;
 
 typedef struct
@@ -230,4 +236,7 @@ private:
     bool d_make_2_steps;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_ACQUISITION_FPGA_H

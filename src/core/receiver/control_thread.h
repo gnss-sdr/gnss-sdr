@@ -45,6 +45,13 @@
 #include <boost/thread.hpp>  // for boost::thread
 #endif
 
+/** \addtogroup Core Core GNSS Receiver
+ * Core GNSS Receiver.
+ * \{ */
+/** \addtogroup Core_Receiver
+ * Classes for the core GNSS receiver.
+ * \{ */
+
 
 class ConfigurationInterface;
 class GNSSFlowgraph;
@@ -206,4 +213,7 @@ private:
     bool pre_2009_file_;  // to override the system time to postprocess old gnss records and avoid wrong week rollover
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CONTROL_THREAD_H

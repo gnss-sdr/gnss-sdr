@@ -37,6 +37,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks telemetry_decoder_gr_blocks
+ * GNU Radio blocks for the demodulation of GNSS navigation messages.
+ * \{ */
+
+
 class gps_l1_ca_telemetry_decoder_gs;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -113,4 +120,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_TELEMETRY_DECODER_GS_H

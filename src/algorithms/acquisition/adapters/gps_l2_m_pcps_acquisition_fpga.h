@@ -31,6 +31,12 @@
 #include <string>                    // for string
 #include <vector>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_adapters
+ * \{ */
+
+
 class Gnss_Synchro;
 class ConfigurationInterface;
 
@@ -168,4 +174,7 @@ private:
     unsigned int out_streams_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_FPGA_H

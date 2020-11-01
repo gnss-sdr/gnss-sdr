@@ -44,6 +44,13 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks tracking_gr_blocks
+ * GNU Radio blocks for GNSS signal tracking.
+ * \{ */
+
+
 class Gnss_Synchro;
 class dll_pll_veml_tracking;
 
@@ -205,4 +212,7 @@ private:
     bool d_enable_extended_integration;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H

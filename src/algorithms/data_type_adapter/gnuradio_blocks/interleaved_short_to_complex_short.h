@@ -27,6 +27,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Data_Type
+ * \{ */
+/** \addtogroup data_type_gnuradio_blocks
+ * \{ */
+
+
 class interleaved_short_to_complex_short;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -53,4 +59,7 @@ private:
     interleaved_short_to_complex_short();
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_INTERLEAVED_SHORT_TO_COMPLEX_SHORT_H

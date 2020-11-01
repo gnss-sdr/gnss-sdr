@@ -32,6 +32,11 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_adapters
+ * \{ */
+
 
 class ConfigurationInterface;
 
@@ -178,4 +183,7 @@ private:
     unsigned int num_codes_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L2_M_PCPS_ACQUISITION_H

@@ -29,6 +29,11 @@
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
 
 class complex_float_to_complex_byte;
 
@@ -55,4 +60,7 @@ private:
     complex_float_to_complex_byte();
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_COMPLEX_FLOAT_TO_COMPLEX_BYTE_H

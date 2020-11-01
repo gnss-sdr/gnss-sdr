@@ -28,6 +28,12 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 #if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;
 #else
@@ -50,4 +56,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_MONITOR_PVT_UDP_SINK_H

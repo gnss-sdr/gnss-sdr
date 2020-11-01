@@ -42,6 +42,12 @@
 #include <boost/shared_ptr.hpp>
 #endif
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
+
 class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 
 #if GNURADIO_USES_STD_POINTERS
@@ -266,4 +272,7 @@ private:
     bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H

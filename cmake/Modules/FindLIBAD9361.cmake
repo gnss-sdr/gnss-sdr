@@ -15,6 +15,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT PKG_CONFIG_FOUND)
+    include(FindPkgConfig)
+endif()
+
 pkg_check_modules(PC_LIBAD9361 libad9361)
 
 if(NOT LIBAD9361_ROOT)

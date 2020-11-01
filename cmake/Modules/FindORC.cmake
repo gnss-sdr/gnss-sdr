@@ -10,6 +10,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT PKG_CONFIG_FOUND)
+    include(FindPkgConfig)
+endif()
+
 pkg_check_modules(PC_ORC "orc-0.4 > 0.4.22")
 
 if(NOT ORC_ROOT)

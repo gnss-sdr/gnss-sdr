@@ -43,6 +43,7 @@
 #define CL_SILENCE_DEPRECATION
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
+#include "gnss_block_interface.h"
 #include "opencl/fft_internal.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>

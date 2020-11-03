@@ -88,7 +88,7 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_opencl_acquisition_cc(sampled_ms_, max_dwells_,
                 doppler_max_, fs_in_, code_length_, code_length_,
-                bit_transition_flag_, dump_, dump_filename_);
+                bit_transition_flag_, dump_, dump_filename_, false);
 
             stream_to_vector_ = gr::blocks::stream_to_vector::make(item_size_, vector_length_);
 

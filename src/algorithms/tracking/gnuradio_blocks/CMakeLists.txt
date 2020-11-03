@@ -103,6 +103,11 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+target_include_directories(tracking_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(ENABLE_CUDA)
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         target_include_directories(tracking_gr_blocks

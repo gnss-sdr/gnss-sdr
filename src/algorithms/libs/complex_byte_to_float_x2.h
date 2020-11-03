@@ -21,12 +21,7 @@
 #ifndef GNSS_SDR_COMPLEX_BYTE_TO_FLOAT_X2_H
 #define GNSS_SDR_COMPLEX_BYTE_TO_FLOAT_X2_H
 
-
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
@@ -38,11 +33,7 @@
 
 class complex_byte_to_float_x2;
 
-#if GNURADIO_USES_STD_POINTERS
-using complex_byte_to_float_x2_sptr = std::shared_ptr<complex_byte_to_float_x2>;
-#else
-using complex_byte_to_float_x2_sptr = boost::shared_ptr<complex_byte_to_float_x2>;
-#endif
+using complex_byte_to_float_x2_sptr = gnss_shared_ptr<complex_byte_to_float_x2>;
 
 complex_byte_to_float_x2_sptr make_complex_byte_to_float_x2();
 

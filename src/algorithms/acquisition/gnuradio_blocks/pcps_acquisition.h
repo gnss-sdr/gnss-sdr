@@ -71,11 +71,6 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
-
 /** \addtogroup Acquisition
  * Classes for GNSS signal acquisition
  * \{ */
@@ -87,11 +82,7 @@ namespace own = gsl;
 class Gnss_Synchro;
 class pcps_acquisition;
 
-#if GNURADIO_USES_STD_POINTERS
-using pcps_acquisition_sptr = std::shared_ptr<pcps_acquisition>;
-#else
-using pcps_acquisition_sptr = boost::shared_ptr<pcps_acquisition>;
-#endif
+using pcps_acquisition_sptr = gnss_shared_ptr<pcps_acquisition>;
 
 pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 

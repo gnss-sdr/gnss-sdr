@@ -68,6 +68,11 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+target_include_directories(telemetry_decoder_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(has_rotl)
     target_compile_definitions(telemetry_decoder_gr_blocks
         PRIVATE -DCOMPILER_HAS_ROTL=1

@@ -26,6 +26,7 @@
 #define GNSS_SDR_GPS_L1_CA_DLL_PLL_TRACKING_GPU_CC_H
 
 #include "cuda_multicorrelator.h"
+#include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
@@ -34,11 +35,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Tracking
  * \{ */
@@ -48,13 +44,7 @@
 
 class Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-typedef std::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
-    gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
-#else
-typedef boost::shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>
-    gps_l1_ca_dll_pll_tracking_gpu_cc_sptr;
-#endif
+using gps_l1_ca_dll_pll_tracking_gpu_cc_sptr = gnss_shared_ptr<Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc>;
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
 gps_l1_ca_dll_pll_make_tracking_gpu_cc(

@@ -69,11 +69,7 @@ namespace fs = boost::filesystem;
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL2MPcpsAcquisitionTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using GpsL2MPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx>;
-#else
-using GpsL2MPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx>;
-#endif
+using GpsL2MPcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GpsL2MPcpsAcquisitionTest_msg_rx>;
 
 GpsL2MPcpsAcquisitionTest_msg_rx_sptr GpsL2MPcpsAcquisitionTest_msg_rx_make();
 

@@ -56,11 +56,6 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 #define DMA_TRACK_TRANSFER_SIZE 2046  // DMA transfer size for tracking
 #define MIN_SAMPLES_REMAINING 20000   // number of remaining samples in the DMA that causes the CPU to stop the flowgraph (it has to be a bit alrger than 2x max packet size)
@@ -159,11 +154,7 @@ void sending_thread(const gr::top_block_sptr &top_block, const char *file_name)
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTestFpga_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using GpsL1CADllPllTrackingTestFpga_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx>;
-#else
-using GpsL1CADllPllTrackingTestFpga_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx>;
-#endif
+using GpsL1CADllPllTrackingTestFpga_msg_rx_sptr = gnss_shared_ptr<GpsL1CADllPllTrackingTestFpga_msg_rx>;
 
 GpsL1CADllPllTrackingTestFpga_msg_rx_sptr GpsL1CADllPllTrackingTestFpga_msg_rx_make();
 

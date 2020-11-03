@@ -26,6 +26,7 @@
 
 #include "galileo_fnav_message.h"
 #include "galileo_inav_message.h"
+#include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
@@ -35,11 +36,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>  // for std::shared_ptr
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Telemetry_Decoder
  * \{ */
@@ -49,11 +45,7 @@
 
 class galileo_telemetry_decoder_gs;
 
-#if GNURADIO_USES_STD_POINTERS
-using galileo_telemetry_decoder_gs_sptr = std::shared_ptr<galileo_telemetry_decoder_gs>;
-#else
-using galileo_telemetry_decoder_gs_sptr = boost::shared_ptr<galileo_telemetry_decoder_gs>;
-#endif
+using galileo_telemetry_decoder_gs_sptr = gnss_shared_ptr<galileo_telemetry_decoder_gs>;
 
 galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

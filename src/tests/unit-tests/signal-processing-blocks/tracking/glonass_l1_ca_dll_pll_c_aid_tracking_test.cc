@@ -42,11 +42,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaDllPllCAidTrackingTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using GlonassL1CaDllPllCAidTrackingTest_msg_rx_sptr = std::shared_ptr<GlonassL1CaDllPllCAidTrackingTest_msg_rx>;
-#else
-using GlonassL1CaDllPllCAidTrackingTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaDllPllCAidTrackingTest_msg_rx>;
-#endif
+using GlonassL1CaDllPllCAidTrackingTest_msg_rx_sptr = gnss_shared_ptr<GlonassL1CaDllPllCAidTrackingTest_msg_rx>;
 
 GlonassL1CaDllPllCAidTrackingTest_msg_rx_sptr GlonassL1CaDllPllCAidTrackingTest_msg_rx_make();
 

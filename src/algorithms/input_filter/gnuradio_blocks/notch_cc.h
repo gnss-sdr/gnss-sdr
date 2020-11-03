@@ -20,10 +20,7 @@
 #ifndef GNSS_SDR_NOTCH_CC_H
 #define GNSS_SDR_NOTCH_CC_H
 
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+#include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
@@ -38,11 +35,7 @@
 
 class Notch;
 
-#if GNURADIO_USES_STD_POINTERS
-using notch_sptr = std::shared_ptr<Notch>;
-#else
-using notch_sptr = boost::shared_ptr<Notch>;
-#endif
+using notch_sptr = gnss_shared_ptr<Notch>;
 
 notch_sptr make_notch_filter(
     float pfa,

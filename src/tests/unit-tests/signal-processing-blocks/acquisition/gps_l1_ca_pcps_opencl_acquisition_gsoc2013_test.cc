@@ -51,11 +51,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-typedef std::shared_ptr<GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx> GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_sptr;
-#else
-typedef boost::shared_ptr<GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx> GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_sptr;
-#endif
+using GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_sptr = gnss_shared_ptr<GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx>;
 
 GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_sptr GpsL1CaPcpsOpenClAcquisitionGSoC2013Test_msg_rx_make(Concurrent_Queue<int>& queue);
 

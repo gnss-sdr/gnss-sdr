@@ -31,6 +31,7 @@
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_pcps_acquisition_fpga.h"
 #include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
 #include "gnuplot_i.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "gps_l5i_pcps_acquisition_fpga.h"
@@ -81,21 +82,11 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 #endif
 
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
-
 
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx_Fpga;
 
-#if GNURADIO_USES_STD_POINTERS
-using TrackingPullInTest_msg_rx_Fpga_sptr = std::shared_ptr<TrackingPullInTest_msg_rx_Fpga>;
-#else
-using TrackingPullInTest_msg_rx_Fpga_sptr = boost::shared_ptr<TrackingPullInTest_msg_rx_Fpga>;
-#endif
+using TrackingPullInTest_msg_rx_Fpga_sptr = gnss_shared_ptr<TrackingPullInTest_msg_rx_Fpga>;
 
 TrackingPullInTest_msg_rx_Fpga_sptr TrackingPullInTest_msg_rx_Fpga_make();
 

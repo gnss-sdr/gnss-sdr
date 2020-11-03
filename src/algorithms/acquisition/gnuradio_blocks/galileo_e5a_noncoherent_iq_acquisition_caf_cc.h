@@ -37,10 +37,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Acquisition
  * \{ */
@@ -50,11 +46,7 @@
 
 class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = std::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
-#else
-using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
-#endif
+using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = gnss_shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,

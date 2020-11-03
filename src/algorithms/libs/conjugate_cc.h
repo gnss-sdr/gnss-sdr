@@ -21,11 +21,7 @@
 #ifndef GNSS_SDR_CONJUGATE_CC_H
 #define GNSS_SDR_CONJUGATE_CC_H
 
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
@@ -37,11 +33,7 @@
 
 class conjugate_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using conjugate_cc_sptr = std::shared_ptr<conjugate_cc>;
-#else
-using conjugate_cc_sptr = boost::shared_ptr<conjugate_cc>;
-#endif
+using conjugate_cc_sptr = gnss_shared_ptr<conjugate_cc>;
 
 conjugate_cc_sptr make_conjugate_cc();
 

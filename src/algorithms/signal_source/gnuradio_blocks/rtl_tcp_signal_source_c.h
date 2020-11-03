@@ -27,6 +27,7 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_C_H
 
+#include "gnss_block_interface.h"
 #include "rtl_tcp_dongle_info.h"
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
@@ -37,11 +38,6 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 
 /** \addtogroup Signal_Source
@@ -52,11 +48,7 @@
 
 class rtl_tcp_signal_source_c;
 
-#if GNURADIO_USES_STD_POINTERS
-using rtl_tcp_signal_source_c_sptr = std::shared_ptr<rtl_tcp_signal_source_c>;
-#else
-using rtl_tcp_signal_source_c_sptr = boost::shared_ptr<rtl_tcp_signal_source_c>;
-#endif
+using rtl_tcp_signal_source_c_sptr = gnss_shared_ptr<rtl_tcp_signal_source_c>;
 
 #if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;

@@ -30,6 +30,7 @@
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "galileo_e5a_pcps_acquisition.h"
 #include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnuplot_i.h"
 #include "gps_l1_ca_pcps_acquisition.h"
@@ -82,21 +83,11 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 #endif
 
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
-
 
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using TrackingPullInTest_msg_rx_sptr = std::shared_ptr<TrackingPullInTest_msg_rx>;
-#else
-using TrackingPullInTest_msg_rx_sptr = boost::shared_ptr<TrackingPullInTest_msg_rx>;
-#endif
+using TrackingPullInTest_msg_rx_sptr = gnss_shared_ptr<TrackingPullInTest_msg_rx>;
 
 TrackingPullInTest_msg_rx_sptr TrackingPullInTest_msg_rx_make();
 
@@ -592,11 +583,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             top_block_acq->connect(gr_interleaved_char_to_complex, 0, acquisition->get_left_block(), 0);
             // top_block_acq->connect(head_samples, 0, acquisition->get_left_block(), 0);
         }
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<Acquisition_msg_rx> msg_rx;
-#else
-    boost::shared_ptr<Acquisition_msg_rx> msg_rx;
-#endif
+    gnss_shared_ptr<Acquisition_msg_rx> msg_rx;
     try
         {
             msg_rx = Acquisition_msg_rx_make();

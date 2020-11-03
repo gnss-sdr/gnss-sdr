@@ -27,6 +27,7 @@
 #define GNSS_SDR_GPS_L1_CA_TCP_CONNECTOR_TRACKING_CC_H
 
 #include "cpu_multicorrelator.h"
+#include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tcp_communication.h"
 #include <gnuradio/block.h>
@@ -34,11 +35,6 @@
 #include <fstream>
 #include <map>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Tracking
  * \{ */
@@ -48,11 +44,7 @@
 
 class Gps_L1_Ca_Tcp_Connector_Tracking_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using gps_l1_ca_tcp_connector_tracking_cc_sptr = std::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc>;
-#else
-using gps_l1_ca_tcp_connector_tracking_cc_sptr = boost::shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc>;
-#endif
+using gps_l1_ca_tcp_connector_tracking_cc_sptr = gnss_shared_ptr<Gps_L1_Ca_Tcp_Connector_Tracking_cc>;
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr
 gps_l1_ca_tcp_connector_make_tracking_cc(

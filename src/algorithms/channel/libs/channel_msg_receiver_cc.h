@@ -24,10 +24,6 @@
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
 #include <memory>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Channel
  * \{ */
@@ -37,11 +33,7 @@
 
 class channel_msg_receiver_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using channel_msg_receiver_cc_sptr = std::shared_ptr<channel_msg_receiver_cc>;
-#else
-using channel_msg_receiver_cc_sptr = boost::shared_ptr<channel_msg_receiver_cc>;
-#endif
+using channel_msg_receiver_cc_sptr = gnss_shared_ptr<channel_msg_receiver_cc>;
 
 channel_msg_receiver_cc_sptr channel_msg_receiver_make_cc(std::shared_ptr<ChannelFsm> channel_fsm, bool repeat);
 

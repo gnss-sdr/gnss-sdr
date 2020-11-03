@@ -53,10 +53,6 @@
 #include <memory>  // for weak_ptr
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Acquisition
  * \{ */
@@ -66,11 +62,7 @@
 
 class pcps_opencl_acquisition_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-typedef std::shared_ptr<pcps_opencl_acquisition_cc> pcps_opencl_acquisition_cc_sptr;
-#else
-typedef boost::shared_ptr<pcps_opencl_acquisition_cc> pcps_opencl_acquisition_cc_sptr;
-#endif
+using pcps_opencl_acquisition_cc_sptr = gnss_shared_ptr<pcps_opencl_acquisition_cc>;
 
 pcps_opencl_acquisition_cc_sptr pcps_make_opencl_acquisition_cc(
     uint32_t sampled_ms,

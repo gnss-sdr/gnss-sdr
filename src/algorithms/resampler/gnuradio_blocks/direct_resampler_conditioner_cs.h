@@ -22,13 +22,9 @@
 #ifndef GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
 #define GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_CS_H
 
+#include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <cstdint>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Resampler
  * \{ */
@@ -37,11 +33,8 @@
 
 
 class direct_resampler_conditioner_cs;
-#if GNURADIO_USES_STD_POINTERS
-using direct_resampler_conditioner_cs_sptr = std::shared_ptr<direct_resampler_conditioner_cs>;
-#else
-using direct_resampler_conditioner_cs_sptr = boost::shared_ptr<direct_resampler_conditioner_cs>;
-#endif
+
+using direct_resampler_conditioner_cs_sptr = gnss_shared_ptr<direct_resampler_conditioner_cs>;
 
 direct_resampler_conditioner_cs_sptr direct_resampler_make_conditioner_cs(
     double sample_freq_in,

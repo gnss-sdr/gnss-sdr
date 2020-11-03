@@ -32,12 +32,8 @@
 #include "concurrent_queue.h"
 #include <pmt/pmt.h>
 #include <cstdint>
-#include <memory>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -83,11 +79,7 @@ public:
 private:
     gr::iio::pluto_source::sptr plutosdr_source_;
 
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<gr::block> valve_;
-#else
-    boost::shared_ptr<gr::block> valve_;
-#endif
+    gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
 
     std::string role_;

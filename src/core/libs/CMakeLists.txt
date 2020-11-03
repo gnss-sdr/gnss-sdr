@@ -87,6 +87,11 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+target_include_directories(core_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)

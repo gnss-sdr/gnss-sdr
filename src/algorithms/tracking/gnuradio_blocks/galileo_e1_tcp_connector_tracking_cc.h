@@ -29,6 +29,7 @@
 #define GNSS_SDR_GALILEO_E1_TCP_CONNECTOR_TRACKING_CC_H
 
 #include "cpu_multicorrelator.h"
+#include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tcp_communication.h"
 #include <gnuradio/block.h>
@@ -36,11 +37,6 @@
 #include <fstream>
 #include <map>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Tracking
  * \{ */
@@ -50,11 +46,7 @@
 
 class Galileo_E1_Tcp_Connector_Tracking_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using galileo_e1_tcp_connector_tracking_cc_sptr = std::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc>;
-#else
-using galileo_e1_tcp_connector_tracking_cc_sptr = boost::shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc>;
-#endif
+using galileo_e1_tcp_connector_tracking_cc_sptr = gnss_shared_ptr<Galileo_E1_Tcp_Connector_Tracking_cc>;
 
 galileo_e1_tcp_connector_tracking_cc_sptr
 galileo_e1_tcp_connector_make_tracking_cc(

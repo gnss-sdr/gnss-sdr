@@ -21,16 +21,12 @@
 #define GNSS_SDR_LABSAT23_SOURCE_H
 
 #include "concurrent_queue.h"
+#include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <fstream>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -40,11 +36,7 @@
 
 class labsat23_source;
 
-#if GNURADIO_USES_STD_POINTERS
-using labsat23_source_sptr = std::shared_ptr<labsat23_source>;
-#else
-using labsat23_source_sptr = boost::shared_ptr<labsat23_source>;
-#endif
+using labsat23_source_sptr = gnss_shared_ptr<labsat23_source>;
 
 labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,

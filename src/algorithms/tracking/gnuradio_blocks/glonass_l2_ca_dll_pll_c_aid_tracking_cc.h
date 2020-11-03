@@ -27,6 +27,7 @@
 #define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_CC_H
 
 #include "cpu_multicorrelator.h"
+#include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"
 #include "tracking_FLL_PLL_filter.h"
@@ -37,11 +38,6 @@
 #include <fstream>
 #include <map>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Tracking
  * \{ */
@@ -51,11 +47,7 @@
 
 class glonass_l2_ca_dll_pll_c_aid_tracking_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr = std::shared_ptr<glonass_l2_ca_dll_pll_c_aid_tracking_cc>;
-#else
-using glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr = boost::shared_ptr<glonass_l2_ca_dll_pll_c_aid_tracking_cc>;
-#endif
+using glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr = gnss_shared_ptr<glonass_l2_ca_dll_pll_c_aid_tracking_cc>;
 
 glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l2_ca_dll_pll_c_aid_make_tracking_cc(

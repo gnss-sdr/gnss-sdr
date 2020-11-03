@@ -53,6 +53,11 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+target_include_directories(resampler_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(resampler_gr_blocks

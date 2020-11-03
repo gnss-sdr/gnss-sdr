@@ -23,17 +23,13 @@
 #ifndef GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 #define GNSS_SDR_GNSS_SYNCHRO_MONITOR_H
 
+#include "gnss_block_interface.h"
 #include "gnss_synchro_udp_sink.h"
 #include <gnuradio/block.h>
 #include <gnuradio/runtime_types.h>  // for gr_vector_void_star
 #include <memory>
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Core
  * \{ */
@@ -44,11 +40,7 @@
 
 class gnss_synchro_monitor;
 
-#if GNURADIO_USES_STD_POINTERS
-using gnss_synchro_monitor_sptr = std::shared_ptr<gnss_synchro_monitor>;
-#else
-using gnss_synchro_monitor_sptr = boost::shared_ptr<gnss_synchro_monitor>;
-#endif
+using gnss_synchro_monitor_sptr = gnss_shared_ptr<gnss_synchro_monitor>;
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
     int decimation_factor,

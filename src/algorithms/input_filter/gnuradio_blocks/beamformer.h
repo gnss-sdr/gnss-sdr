@@ -20,13 +20,9 @@
 #ifndef GNSS_SDR_BEAMFORMER_H
 #define GNSS_SDR_BEAMFORMER_H
 
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Input_Filter
  * \{ */
@@ -36,11 +32,7 @@
 
 class beamformer;
 
-#if GNURADIO_USES_STD_POINTERS
-using beamformer_sptr = std::shared_ptr<beamformer>;
-#else
-using beamformer_sptr = boost::shared_ptr<beamformer>;
-#endif
+using beamformer_sptr = gnss_shared_ptr<beamformer>;
 
 beamformer_sptr make_beamformer_sptr();
 

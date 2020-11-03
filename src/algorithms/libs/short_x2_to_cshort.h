@@ -21,11 +21,7 @@
 #define GNSS_SDR_SHORT_X2_TO_CSHORT_H
 
 
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 
@@ -37,11 +33,7 @@
 
 class short_x2_to_cshort;
 
-#if GNURADIO_USES_STD_POINTERS
-using short_x2_to_cshort_sptr = std::shared_ptr<short_x2_to_cshort>;
-#else
-using short_x2_to_cshort_sptr = boost::shared_ptr<short_x2_to_cshort>;
-#endif
+using short_x2_to_cshort_sptr = gnss_shared_ptr<short_x2_to_cshort>;
 
 short_x2_to_cshort_sptr make_short_x2_to_cshort();
 

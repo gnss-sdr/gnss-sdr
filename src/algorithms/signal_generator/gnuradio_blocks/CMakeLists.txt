@@ -38,6 +38,11 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+target_include_directories(signal_generator_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 # Workaround for CentOS 7
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND
     (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0"))

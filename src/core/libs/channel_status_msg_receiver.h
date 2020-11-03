@@ -21,16 +21,13 @@
 #ifndef GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H
 #define GNSS_SDR_CHANNEL_STATUS_MSG_RECEIVER_CC_H
 
+#include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "monitor_pvt.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
 #include <map>
 #include <memory>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Core
  * \{ */
@@ -40,11 +37,7 @@
 
 class channel_status_msg_receiver;
 
-#if GNURADIO_USES_STD_POINTERS
-using channel_status_msg_receiver_sptr = std::shared_ptr<channel_status_msg_receiver>;
-#else
-using channel_status_msg_receiver_sptr = boost::shared_ptr<channel_status_msg_receiver>;
-#endif
+using channel_status_msg_receiver_sptr = gnss_shared_ptr<channel_status_msg_receiver>;
 
 channel_status_msg_receiver_sptr channel_status_msg_receiver_make();
 

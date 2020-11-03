@@ -24,12 +24,8 @@
 #ifndef GNSS_SDR_UNPACK_BYTE_2BIT_CPX_SAMPLES_H
 #define GNSS_SDR_UNPACK_BYTE_2BIT_CPX_SAMPLES_H
 
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_interpolator.h>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -39,11 +35,7 @@
 
 class unpack_byte_2bit_cpx_samples;
 
-#if GNURADIO_USES_STD_POINTERS
-using unpack_byte_2bit_cpx_samples_sptr = std::shared_ptr<unpack_byte_2bit_cpx_samples>;
-#else
-using unpack_byte_2bit_cpx_samples_sptr = boost::shared_ptr<unpack_byte_2bit_cpx_samples>;
-#endif
+using unpack_byte_2bit_cpx_samples_sptr = gnss_shared_ptr<unpack_byte_2bit_cpx_samples>;
 
 unpack_byte_2bit_cpx_samples_sptr make_unpack_byte_2bit_cpx_samples();
 

@@ -48,19 +48,12 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr = std::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx>;
-#else
-using GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx>;
-#endif
+using GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx>;
 
 GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_sptr GalileoE1PcpsCccwsrAmbiguousAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
 

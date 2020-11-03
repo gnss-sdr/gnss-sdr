@@ -32,12 +32,7 @@
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>
-#include <memory>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -109,11 +104,7 @@ public:
 private:
     gr::blocks::file_source::sptr file_source_;
     unpack_byte_2bit_samples_sptr unpack_byte_;
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<gr::block> valve_;
-#else
-    boost::shared_ptr<gr::block> valve_;
-#endif
+    gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
     uint64_t samples_;

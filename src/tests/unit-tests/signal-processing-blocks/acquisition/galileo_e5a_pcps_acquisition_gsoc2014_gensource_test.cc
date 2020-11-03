@@ -49,11 +49,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr = std::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx>;
-#else
-using GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr = boost::shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx>;
-#endif
+using GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr = gnss_shared_ptr<GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx>;
 
 GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_sptr GalileoE5aPcpsAcquisitionGSoC2014GensourceTest_msg_rx_make(Concurrent_Queue<int>& queue);
 

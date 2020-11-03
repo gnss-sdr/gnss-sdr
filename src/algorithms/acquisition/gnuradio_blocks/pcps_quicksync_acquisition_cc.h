@@ -53,10 +53,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 /** \addtogroup Acquisition
  * \{ */
@@ -66,11 +62,7 @@
 
 class pcps_quicksync_acquisition_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using pcps_quicksync_acquisition_cc_sptr = std::shared_ptr<pcps_quicksync_acquisition_cc>;
-#else
-using pcps_quicksync_acquisition_cc_sptr = boost::shared_ptr<pcps_quicksync_acquisition_cc>;
-#endif
+using pcps_quicksync_acquisition_cc_sptr = gnss_shared_ptr<pcps_quicksync_acquisition_cc>;
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     uint32_t folding_factor,

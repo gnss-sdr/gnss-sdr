@@ -21,6 +21,7 @@
 #define GNSS_SDR_BEIDOU_B3I_TELEMETRY_DECODER_GS_H
 
 #include "beidou_dnav_navigation_message.h"
+#include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
@@ -29,11 +30,6 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 
 /** \addtogroup Telemetry_Decoder
@@ -44,13 +40,8 @@
 
 class beidou_b3i_telemetry_decoder_gs;
 
-#if GNURADIO_USES_STD_POINTERS
 using beidou_b3i_telemetry_decoder_gs_sptr =
-    std::shared_ptr<beidou_b3i_telemetry_decoder_gs>;
-#else
-using beidou_b3i_telemetry_decoder_gs_sptr =
-    boost::shared_ptr<beidou_b3i_telemetry_decoder_gs>;
-#endif
+    gnss_shared_ptr<beidou_b3i_telemetry_decoder_gs>;
 
 beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,

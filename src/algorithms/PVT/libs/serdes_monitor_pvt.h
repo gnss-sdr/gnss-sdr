@@ -27,6 +27,12 @@
 #include <string>
 #include <utility>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 /*!
  * \brief This class implements serialization and deserialization of
  * Monitor_Pvt objects using Protocol Buffers.
@@ -152,4 +158,7 @@ private:
     gnss_sdr::MonitorPvt monitor_{};
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_SERDES_MONITOR_PVT_H

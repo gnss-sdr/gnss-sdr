@@ -20,6 +20,7 @@
 #define GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H
 
 
+#include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gps_cnav_navigation_message.h"
 #include <gnuradio/block.h>
@@ -27,25 +28,21 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>  // for std::shared_ptr
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 extern "C"
 {
 #include "cnav_msg.h"
 }
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
 
 class gps_l2c_telemetry_decoder_gs;
 
-#if GNURADIO_USES_STD_POINTERS
-using gps_l2c_telemetry_decoder_gs_sptr = std::shared_ptr<gps_l2c_telemetry_decoder_gs>;
-#else
-using gps_l2c_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l2c_telemetry_decoder_gs>;
-#endif
+using gps_l2c_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l2c_telemetry_decoder_gs>;
 
 gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
@@ -103,4 +100,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L2C_TELEMETRY_DECODER_GS_H

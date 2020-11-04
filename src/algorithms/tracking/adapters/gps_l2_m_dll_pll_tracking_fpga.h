@@ -32,6 +32,12 @@
 #include <cstddef>
 #include <string>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_adapters
+ * \{ */
+
+
 class Gnss_Synchro;
 class ConfigurationInterface;
 
@@ -98,4 +104,7 @@ private:
     int* d_ca_codes;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L2_M_DLL_PLL_TRACKING_FPGA_H

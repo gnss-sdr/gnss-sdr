@@ -28,6 +28,11 @@
 #include <utility>  // std::pair
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 // carrier and code frequencies
 constexpr double GPS_L2_FREQ_HZ = FREQ2;                //!< L2 [Hz]
@@ -80,4 +85,6 @@ constexpr int32_t GPS_L2C_M_INIT_REG[115] =
         0132720621, 0434015513, 0566721727, 0140633660};
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L2C_H

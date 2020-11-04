@@ -25,6 +25,12 @@
 
 #include <vector>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*! \brief
  * Class that implements a first-order exponential smoother.
  *
@@ -62,4 +68,7 @@ private:
     bool initializing_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_EXPONENTIAL_SMOOTHER_H

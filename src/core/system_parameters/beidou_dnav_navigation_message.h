@@ -37,6 +37,11 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class decodes a BeiDou D1 NAV Data message
@@ -326,4 +331,7 @@ private:
     bool flag_sf1_p10{};  // D2 NAV Message, Subframe 1, Page 10 decoded indicator
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BEIDOU_DNAV_NAVIGATION_MESSAGE_H

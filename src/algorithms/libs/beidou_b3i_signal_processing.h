@@ -31,6 +31,11 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
 
 //! Generates int BeiDou B3I code for the desired SV ID and code shift
 void beidou_b3i_code_gen_int(own::span<int> _dest, int32_t _prn, uint32_t _chip_shift);
@@ -47,4 +52,7 @@ void beidou_b3i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, u
 //! Generates complex BeiDou B3I code for the desired SV ID and code shift
 void beidou_b3i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int _fs, uint32_t _chip_shift);
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H

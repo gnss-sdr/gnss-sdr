@@ -30,6 +30,11 @@
 #include <memory>
 #include <string>
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
+
 
 class ConfigurationInterface;
 
@@ -81,4 +86,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GN3S_SIGNAL_SOURCE_H

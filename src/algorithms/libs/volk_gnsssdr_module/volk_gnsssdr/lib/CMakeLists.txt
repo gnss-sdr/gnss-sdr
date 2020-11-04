@@ -42,6 +42,13 @@ if(MSVC) # its not set otherwise
     set(COMPILER_NAME MSVC)
 endif()
 
+# Assume "AppleClang == Clang".
+string(TOLOWER ${COMPILER_NAME} COMPILER_NAME_LOWER)
+string(REGEX MATCH "clang" COMPILER_NAME_LOWER ${COMPILER_NAME_LOWER})
+if(${COMPILER_NAME_LOWER} MATCHES "clang")
+    set(COMPILER_NAME "Clang")
+endif()
+
 message(STATUS "Compiler name: ${COMPILER_NAME}")
 
 if(NOT DEFINED COMPILER_NAME)
@@ -82,6 +89,16 @@ endif()
 if(NOT PYTHON_DASH_B)
     set(PYTHON_DASH_B "")
 endif()
+if(USE_CPU_FEATURES)
+    set(VOLK_GNSSSSDR_ARCHS_XML_FILE "archs.xml")
+else()
+    set(VOLK_GNSSSSDR_ARCHS_XML_FILE "archs_old.xml")
+endif()
+configure_file(${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py.in
+    ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py
+    @ONLY
+)
+
 execute_process(
     COMMAND ${PYTHON_EXECUTABLE} ${PYTHON_DASH_B}
     ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_compile_utils.py
@@ -133,33 +150,8 @@ endmacro()
 # the xgetbv instruction, or {if not cross-compiling and the xgetbv
 # executable does not function correctly}.
 ########################################################################
-set(HAVE_XGETBV 0)
 set(HAVE_AVX_CVTPI32_PS 0)
 if(CPU_IS_x86)
-    # check to see if the compiler/linker works with xgetb instruction
-    if(NOT MSVC)
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c "#include <volk_gnsssdr/volk_gnsssdr_common.h>\n unsigned long long _xgetbv(unsigned int index) { unsigned int eax, edx; __VOLK_ASM __VOLK_VOLATILE(\"xgetbv\" : \"=a\"(eax), \"=d\"(edx) : \"c\"(index)); return ((unsigned long long)edx << 32) | eax; } int main (void) { (void) _xgetbv(0); return (0); }")
-        set(_AUX_INCLUDE_FLAG -I${PROJECT_SOURCE_DIR}/include)
-    else()
-        # MSVC defines an intrinsic
-        file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c "#include <stdio.h> \n #include <intrin.h> \n int main() { int avxSupported = 0; \n#if (_MSC_FULL_VER >= 160040219) \nint cpuInfo[4]; __cpuid(cpuInfo, 1);\nif ((cpuInfo[2] & (1 << 27) || 0) && (cpuInfo[2] & (1 << 28) || 0)) \n{\nunsigned long long xcrFeatureMask = _xgetbv(_XCR_XFEATURE_ENABLED_MASK);\n   avxSupported = (xcrFeatureMask & 0x6) == 6;}\n#endif \n return 1- avxSupported; }")
-    endif()
-    execute_process(COMMAND ${CMAKE_C_COMPILER} ${_AUX_INCLUDE_FLAG} -o
-        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
-        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c
-        OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE avx_compile_result
-    )
-    if(NOT ${avx_compile_result} EQUAL 0)
-        overrule_arch(avx "Compiler or linker missing xgetbv instruction")
-    else()
-        # compiler/linker seems to work; assume working
-        set(HAVE_XGETBV 1)
-    endif()
-    file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv
-        ${CMAKE_CURRENT_BINARY_DIR}/test_xgetbv.c
-    )
-
     #########################################################################
     # eliminate AVX if cvtpi32_ps intrinsic fails like some versions of clang
     #########################################################################
@@ -189,24 +181,10 @@ if(CPU_IS_x86)
     # Disable SSE4a if Clang is less than version 3.2
     if(CMAKE_C_COMPILER_ID MATCHES "Clang")
         # Figure out the version of Clang
-        if(CMAKE_VERSION VERSION_LESS "2.8.10")
-            # Extract the Clang version from the --version string.
-            # In cmake 2.8.10, we can just use CMAKE_C_COMPILER_VERSION
-            # without having to go through these string manipulations
-            execute_process(COMMAND ${CMAKE_C_COMPILER} --version
-                OUTPUT_VARIABLE clang_version
-            )
-            string(REGEX MATCH "[0-9].[0-9]" CMAKE_C_COMPILER_VERSION ${clang_version})
-        endif()
-
         if(CMAKE_C_COMPILER_VERSION VERSION_LESS "3.2")
             overrule_arch(sse4_a "Clang >= 3.2 required for SSE4a")
         endif()
     endif()
-endif()
-
-if(${HAVE_XGETBV})
-    add_definitions(-DHAVE_XGETBV)
 endif()
 
 if(${HAVE_AVX_CVTPI32_PS})
@@ -338,6 +316,11 @@ message(STATUS "Available machines: ${available_machines}")
 
 # dependencies are all python, xml, and header implementation files
 file(GLOB xml_files ${PROJECT_SOURCE_DIR}/gen/*.xml)
+if(USE_CPU_FEATURES)
+    list(REMOVE_ITEM xml_files ${PROJECT_SOURCE_DIR}/gen/archs_old.xml)
+else()
+    list(REMOVE_ITEM xml_files ${PROJECT_SOURCE_DIR}/gen/archs.xml)
+endif()
 list(SORT xml_files)
 file(GLOB py_files ${PROJECT_SOURCE_DIR}/gen/*.py)
 list(SORT py_files)
@@ -361,7 +344,11 @@ gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.tmpl.h              ${PROJE
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.tmpl.c              ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr.c)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_typedefs.tmpl.h     ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_typedefs.h)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.h          ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_cpu.h)
-gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.c          ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_cpu.c)
+if(USE_CPU_FEATURES)
+    gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.c      ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_cpu.c)
+else()
+    gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_cpu.tmpl.old.c  ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_cpu.c)
+endif()
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_config_fixed.tmpl.h ${PROJECT_BINARY_DIR}/include/volk_gnsssdr/volk_gnsssdr_config_fixed.h)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_machines.tmpl.h     ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_machines.h)
 gen_template(${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr_machines.tmpl.c     ${PROJECT_BINARY_DIR}/lib/volk_gnsssdr_machines.c)
@@ -430,43 +417,33 @@ string(REPLACE "\n" " \\n" COMPILER_INFO ${COMPILER_INFO})
 # Handle ASM support
 #  on by default, but let users turn it off
 ########################################################################
-if(${CMAKE_VERSION} VERSION_GREATER "2.8.9")
-    set(ASM_ARCHS_AVAILABLE "neonv7" "neonv8")
+set(ASM_ARCHS_AVAILABLE "neonv7" "neonv8")
 
-    set(FULL_C_FLAGS "${CMAKE_C_FLAGS}" "${CMAKE_CXX_COMPILER_ARG1}")
+set(FULL_C_FLAGS "${CMAKE_C_FLAGS}" "${CMAKE_CXX_COMPILER_ARG1}")
 
-    # sort through a list of all architectures we have ASM for
-    # if we find one that matches our current system architecture
-    # set up the assembler flags and include the source files
-    foreach(ARCH ${ASM_ARCHS_AVAILABLE})
-        string(REGEX MATCH "${ARCH}" ASM_ARCH "${available_archs}")
-        if(ASM_ARCH STREQUAL "neonv7")
-            message(STATUS "---- Adding ASM files") # we always use ATT syntax
-            message(STATUS "-- Detected neon architecture; enabling ASM")
-            # architecture specific assembler flags are now set in the cmake toolchain file
-            # then add the files
-            include_directories(${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon)
-            file(GLOB asm_files ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon/*.s)
-            list(SORT asm_files)
-            foreach(asm_file ${asm_files})
-                list(APPEND volk_gnsssdr_sources ${asm_file})
-                message(STATUS "Adding source file: ${asm_file}")
-            endforeach()
-        endif()
-        enable_language(ASM)
-        message(STATUS "c flags: ${FULL_C_FLAGS}")
-        message(STATUS "asm flags: ${CMAKE_ASM_FLAGS}")
-    endforeach()
+# sort through a list of all architectures we have ASM for
+# if we find one that matches our current system architecture
+# set up the assembler flags and include the source files
+foreach(ARCH ${ASM_ARCHS_AVAILABLE})
+    string(REGEX MATCH "${ARCH}" ASM_ARCH "${available_archs}")
+    if(ASM_ARCH STREQUAL "neonv7")
+        message(STATUS "---- Adding ASM files") # we always use ATT syntax
+        message(STATUS "-- Detected neon architecture; enabling ASM")
+        # architecture specific assembler flags are now set in the cmake toolchain file
+        # then add the files
+        include_directories(${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon)
+        file(GLOB asm_files ${PROJECT_SOURCE_DIR}/kernels/volk_gnsssdr/asm/neon/*.s)
+        list(SORT asm_files)
+        foreach(asm_file ${asm_files})
+            list(APPEND volk_gnsssdr_sources ${asm_file})
+            message(STATUS "Adding source file: ${asm_file}")
+        endforeach()
+    endif()
+    enable_language(ASM)
+    message(STATUS "c flags: ${FULL_C_FLAGS}")
+    message(STATUS "asm flags: ${CMAKE_ASM_FLAGS}")
+endforeach()
 
-else()
-    message(STATUS "Not enabling ASM support. CMake >= 2.8.10 required.")
-    foreach(machine_name ${available_machines})
-        string(REGEX MATCH "neon" NEON_MACHINE ${machine_name})
-        if(NEON_MACHINE STREQUAL "neon")
-            message(FATAL_ERROR "CMake >= 2.8.10 is required for ARM NEON support")
-        endif()
-    endforeach()
-endif()
 
 ########################################################################
 # Handle orc support
@@ -553,6 +530,12 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
+    if(USE_CPU_FEATURES)
+        target_include_directories(volk_gnsssdr_obj
+            PRIVATE
+                $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+    endif()
     # Configure object target properties
     if(NOT MSVC)
         set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
@@ -565,7 +548,14 @@ if(CMAKE_GENERATOR STREQUAL Xcode)
 else()
     add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
 endif()
-target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
+if(USE_CPU_FEATURES)
+    target_link_libraries(volk_gnsssdr
+        PUBLIC ${volk_gnsssdr_libraries}
+        PRIVATE cpu_features
+    )
+else()
+    target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
+endif()
 target_include_directories(volk_gnsssdr
     PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
     PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -574,7 +564,12 @@ target_include_directories(volk_gnsssdr
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     PUBLIC $<INSTALL_INTERFACE:include>
 )
-
+if(USE_CPU_FEATURES)
+    target_include_directories(volk_gnsssdr
+        PRIVATE
+            $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()
 # Configure target properties
 if(NOT MSVC)
     target_link_libraries(volk_gnsssdr PUBLIC m)
@@ -596,6 +591,11 @@ if(ENABLE_STATIC_LIBS)
         add_library(volk_gnsssdr_static STATIC ${volk_gnsssdr_sources})
     else()
         add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
+    endif()
+    if(USE_CPU_FEATURES)
+        target_link_libraries(volk_gnsssdr_static
+            PRIVATE cpu_features
+        )
     endif()
     target_link_libraries(volk_gnsssdr_static PUBLIC ${volk_gnsssdr_libraries} pthread)
     if(NOT MSVC)

@@ -48,6 +48,11 @@ target_link_libraries(obs_gr_blocks
         Matio::matio
 )
 
+target_include_directories(obs_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(obs_gr_blocks
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1

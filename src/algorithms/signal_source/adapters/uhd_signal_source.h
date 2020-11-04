@@ -27,14 +27,14 @@
 #include <gnuradio/uhd/usrp_source.h>
 #include <pmt/pmt.h>
 #include <cstdint>
-#include <memory>
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
 
 class ConfigurationInterface;
 
@@ -76,11 +76,8 @@ public:
 
 private:
     gr::uhd::usrp_source::sptr uhd_source_;
-#if GNURADIO_USES_STD_POINTERS
-    std::vector<std::shared_ptr<gr::block>> valve_;
-#else
-    std::vector<boost::shared_ptr<gr::block>> valve_;
-#endif
+
+    std::vector<gnss_shared_ptr<gr::block>> valve_;
     std::vector<gr::blocks::file_sink::sptr> file_sink_;
     std::vector<double> freq_;
     std::vector<double> gain_;
@@ -104,4 +101,7 @@ private:
     unsigned int out_stream_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_UHD_SIGNAL_SOURCE_H

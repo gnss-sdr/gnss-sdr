@@ -8,3 +8,4 @@ build/
 .project
 .cproject
 /.DS_Store
+/gen/volk_gnsssdr_arch_defs.py

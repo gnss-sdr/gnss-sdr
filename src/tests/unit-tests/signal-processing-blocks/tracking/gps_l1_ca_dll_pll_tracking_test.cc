@@ -21,6 +21,7 @@
 
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
+#include "gnss_block_interface.h"
 #include "gnuplot_i.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
@@ -67,20 +68,11 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 #endif
 
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using GpsL1CADllPllTrackingTest_msg_rx_sptr = std::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx>;
-#else
-using GpsL1CADllPllTrackingTest_msg_rx_sptr = boost::shared_ptr<GpsL1CADllPllTrackingTest_msg_rx>;
-#endif
+using GpsL1CADllPllTrackingTest_msg_rx_sptr = gnss_shared_ptr<GpsL1CADllPllTrackingTest_msg_rx>;
 
 GpsL1CADllPllTrackingTest_msg_rx_sptr GpsL1CADllPllTrackingTest_msg_rx_make();
 

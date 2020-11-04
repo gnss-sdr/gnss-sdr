@@ -22,6 +22,12 @@
 
 #include <memory>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library core_libs
+ * \{ */
+
+
 class Channel_Event;
 
 using channel_event_sptr = std::shared_ptr<Channel_Event>;
@@ -39,4 +45,7 @@ private:
     Channel_Event(int channel_id_, int event_type_);
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CHANNEL_EVENT_H

@@ -49,6 +49,13 @@
 #include <sstream>  // for stringstream
 #include <string>   // for string
 
+
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 class Beidou_Dnav_Ephemeris;
 class Beidou_Dnav_Iono;
 class Beidou_Dnav_Utc_Model;
@@ -906,4 +913,6 @@ inline std::string Rinex_Printer::asString(const X x) const
 }
 
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RINEX_PRINTER_H

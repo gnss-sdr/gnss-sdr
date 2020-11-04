@@ -24,6 +24,12 @@
 
 #include <gnuradio/sync_interpolator.h>
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_gnuradio_blocks
+ * \{ */
+
+
 class unpack_byte_4bit_samples;
 
 using unpack_byte_4bit_samples_sptr = std::shared_ptr<unpack_byte_4bit_samples>;
@@ -47,4 +53,7 @@ private:
     friend unpack_byte_4bit_samples_sptr make_unpack_byte_4bit_samples_sptr();
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H

@@ -33,6 +33,7 @@
 #include "tracking_FLL_PLL_filter.h"
 // #include "tracking_loop_filter.h"
 #include "cpu_multicorrelator.h"
+#include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
@@ -40,20 +41,16 @@
 #include <fstream>
 #include <map>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
 
 
 class glonass_l1_ca_dll_pll_c_aid_tracking_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = std::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
-#else
-using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = boost::shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
-#endif
+using glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr = gnss_shared_ptr<glonass_l1_ca_dll_pll_c_aid_tracking_cc>;
 
 glonass_l1_ca_dll_pll_c_aid_tracking_cc_sptr
 glonass_l1_ca_dll_pll_c_aid_make_tracking_cc(
@@ -205,4 +202,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_CC_H

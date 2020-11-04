@@ -81,19 +81,11 @@
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
 #endif
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
 
 class HybridObservablesTest_msg_rx_Fpga;
 
-#if GNURADIO_USES_STD_POINTERS
-using HybridObservablesTest_msg_rx_Fpga_sptr = std::shared_ptr<HybridObservablesTest_msg_rx_Fpga>;
-#else
-using HybridObservablesTest_msg_rx_Fpga_sptr = boost::shared_ptr<HybridObservablesTest_msg_rx_Fpga>;
-#endif
+using HybridObservablesTest_msg_rx_Fpga_sptr = gnss_shared_ptr<HybridObservablesTest_msg_rx_Fpga>;
 
 HybridObservablesTest_msg_rx_Fpga_sptr HybridObservablesTest_msg_rx_Fpga_make();
 

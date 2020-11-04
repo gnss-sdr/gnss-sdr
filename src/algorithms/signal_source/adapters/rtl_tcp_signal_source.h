@@ -28,13 +28,14 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
 #include <pmt/pmt.h>
-#include <memory>
 #include <stdexcept>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
 
 
 class ConfigurationInterface;
@@ -83,11 +84,7 @@ private:
 
     rtl_tcp_signal_source_c_sptr signal_source_;
 
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<gr::block> valve_;
-#else
-    boost::shared_ptr<gr::block> valve_;
-#endif
+    gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
 
     std::string role_;
@@ -111,4 +108,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H

@@ -39,6 +39,12 @@
 #include <armadillo>
 #include <gnuradio/gr_complex.h>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 // Abstract model function
 class ModelFunction
 {
@@ -106,4 +112,7 @@ private:
     arma::mat P_x_est;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_NONLINEAR_TRACKING_H

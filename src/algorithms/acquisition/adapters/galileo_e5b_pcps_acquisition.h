@@ -30,6 +30,12 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 class GalileoE5bPcpsAcquisition : public AcquisitionInterface
@@ -206,4 +212,7 @@ private:
     bool acq_iq_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E5B_PCPS_ACQUISITION_H

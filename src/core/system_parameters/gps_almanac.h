@@ -24,6 +24,12 @@
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class is a storage for the GPS SV ALMANAC data as described in IS-GPS-200K
  *
@@ -76,4 +82,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPS_ALMANAC_H

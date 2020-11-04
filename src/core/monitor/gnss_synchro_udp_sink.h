@@ -29,6 +29,12 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Gnss_Synchro_Monitor
+ * \{ */
+
+
 #if USE_BOOST_ASIO_IO_CONTEXT
 using b_io_context = boost::asio::io_context;
 #else
@@ -55,4 +61,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GNSS_SYNCHRO_UDP_SINK_H

@@ -32,6 +32,13 @@
 #include <map>                       // for map
 #include <string>                    // for string
 
+/** \addtogroup PVT
+ * Computation of Position, Velocity and Time from GNSS observables.
+ * \{ */
+/** \addtogroup PVT_adapters pvt_adapters
+ * Wrap GNU Radio PVT solvers with a PvtInterface
+ * \{ */
+
 class ConfigurationInterface;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
@@ -99,4 +106,6 @@ private:
     unsigned int out_streams_;
 };
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RTKLIB_PVT_H

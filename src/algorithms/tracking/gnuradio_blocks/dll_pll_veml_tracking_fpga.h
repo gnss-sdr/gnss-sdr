@@ -23,6 +23,7 @@
 
 #include "dll_pll_conf_fpga.h"
 #include "exponential_smoother.h"
+#include "gnss_block_interface.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
@@ -38,20 +39,18 @@
 #include <string>                             // for string
 #include <typeinfo>                           // for typeid
 #include <utility>                            // for pair
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_gnuradio_blocks
+ * \{ */
+
 
 class Fpga_Multicorrelator_8sc;
 class Gnss_Synchro;
 class dll_pll_veml_tracking_fpga;
 
-#if GNURADIO_USES_STD_POINTERS
-using dll_pll_veml_tracking_fpga_sptr = std::shared_ptr<dll_pll_veml_tracking_fpga>;
-#else
-using dll_pll_veml_tracking_fpga_sptr = boost::shared_ptr<dll_pll_veml_tracking_fpga>;
-#endif
+using dll_pll_veml_tracking_fpga_sptr = gnss_shared_ptr<dll_pll_veml_tracking_fpga>;
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_);
 
@@ -246,4 +245,7 @@ private:
     bool d_sc_demodulate_enabled;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_FPGA_H

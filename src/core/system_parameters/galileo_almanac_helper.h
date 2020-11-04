@@ -23,6 +23,12 @@
 #include "galileo_almanac.h"
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class is a storage for the GALILEO ALMANAC data as described in GALILEO ICD
  *
@@ -91,4 +97,7 @@ public:
     int32_t E5a_HS_10{};
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GALILEO_ALMANAC_HELPER_H

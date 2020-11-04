@@ -36,19 +36,16 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
 
 
 class pcps_cccwsr_acquisition_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using pcps_cccwsr_acquisition_cc_sptr = std::shared_ptr<pcps_cccwsr_acquisition_cc>;
-#else
-using pcps_cccwsr_acquisition_cc_sptr = boost::shared_ptr<pcps_cccwsr_acquisition_cc>;
-#endif
+using pcps_cccwsr_acquisition_cc_sptr = gnss_shared_ptr<pcps_cccwsr_acquisition_cc>;
 
 pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
     uint32_t sampled_ms,
@@ -58,7 +55,8 @@ pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(
     int32_t samples_per_ms,
     int32_t samples_per_code,
     bool dump,
-    const std::string& dump_filename);
+    const std::string& dump_filename,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -176,12 +174,12 @@ private:
     pcps_cccwsr_make_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
         uint32_t doppler_max, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
-        bool dump, const std::string& dump_filename);
+        bool dump, const std::string& dump_filename, bool enable_monitor_output);
 
     pcps_cccwsr_acquisition_cc(uint32_t sampled_ms, uint32_t max_dwells,
         uint32_t doppler_max, int64_t fs_in,
         int32_t samples_per_ms, int32_t samples_per_code,
-        bool dump, const std::string& dump_filename);
+        bool dump, const std::string& dump_filename, bool enable_monitor_output);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);
@@ -231,6 +229,10 @@ private:
 
     bool d_active;
     bool d_dump;
+    bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_CCCWSR_ACQUISITION_CC_H

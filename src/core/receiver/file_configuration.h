@@ -33,6 +33,12 @@
 #include <memory>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver
+ * \{ */
+
+
 /*!
  * \brief This class is an implementation of the interface ConfigurationInterface
  *
@@ -70,4 +76,7 @@ private:
     int error_{};
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_FILE_CONFIGURATION_H

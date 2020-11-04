@@ -24,6 +24,12 @@
 #include "gnss_frequencies.h"
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 // carrier and code frequencies
 constexpr double BEIDOU_B1I_FREQ_HZ = FREQ1_BDS;         //!< B1I [Hz]
 constexpr double BEIDOU_B1I_CODE_RATE_CPS = 2.046e6;     //!< Beidou B1I code rate [chips/s]
@@ -46,4 +52,6 @@ constexpr char BEIDOU_B1I_GEO_PREAMBLE_SYMBOLS_STR[23] = "1111110000001100001100
 constexpr char BEIDOU_B1I_D2_SECONDARY_CODE_STR[3] = "00";
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BEIDOU_B1I_H

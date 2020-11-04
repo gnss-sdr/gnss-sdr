@@ -20,6 +20,12 @@
 #ifndef GNSS_SDR_TRACKING_FLL_PLL_FILTER_H
 #define GNSS_SDR_TRACKING_FLL_PLL_FILTER_H
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*!
  * \brief This class implements a hybrid FLL and PLL filter for tracking carrier loop
  */
@@ -47,4 +53,7 @@ private:
     int d_order;
 };
 
+
+/** \} */
+/** \} */
 #endif

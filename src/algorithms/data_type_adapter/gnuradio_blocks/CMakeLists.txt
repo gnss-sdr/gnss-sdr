@@ -47,6 +47,11 @@ target_link_libraries(data_type_gr_blocks
         Volk::volk
 )
 
+target_include_directories(data_type_gr_blocks
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(data_type_gr_blocks
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1

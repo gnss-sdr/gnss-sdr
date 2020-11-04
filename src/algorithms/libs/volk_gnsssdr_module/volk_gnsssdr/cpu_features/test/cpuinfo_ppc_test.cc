@@ -1,0 +1,107 @@
+// SPDX-FileCopyrightText: 2017 Google LLC
+// SPDX-License-Identifier: Apache-2.0
+
+#include "cpuinfo_ppc.h"
+#include "filesystem_for_testing.h"
+#include "gtest/gtest.h"
+#include "hwcaps_for_testing.h"
+#include "internal/string_view.h"
+
+namespace cpu_features
+{
+namespace
+{
+void DisableHardwareCapabilities() { SetHardwareCapabilities(0, 0); }
+
+TEST(CpustringsPPCTest, FromHardwareCap)
+{
+    SetHardwareCapabilities(PPC_FEATURE_HAS_FPU | PPC_FEATURE_HAS_VSX,
+        PPC_FEATURE2_ARCH_3_00);
+    GetEmptyFilesystem();  // disabling /proc/cpuinfo
+    const auto info = GetPPCInfo();
+    EXPECT_TRUE(info.features.fpu);
+    EXPECT_FALSE(info.features.mmu);
+    EXPECT_TRUE(info.features.vsx);
+    EXPECT_TRUE(info.features.arch300);
+    EXPECT_FALSE(info.features.power4);
+    EXPECT_FALSE(info.features.altivec);
+    EXPECT_FALSE(info.features.vcrypto);
+    EXPECT_FALSE(info.features.htm);
+}
+
+TEST(CpustringsPPCTest, Blade)
+{
+    DisableHardwareCapabilities();
+    auto& fs = GetEmptyFilesystem();
+    fs.CreateFile("/proc/cpuinfo",
+        R"(processor       : 14
+cpu             : POWER7 (architected), altivec supported
+clock           : 3000.000000MHz
+revision        : 2.1 (pvr 003f 0201)
+processor       : 15
+cpu             : POWER7 (architected), altivec supported
+clock           : 3000.000000MHz
+revision        : 2.1 (pvr 003f 0201)
+timebase        : 512000000
+platform        : pSeries
+model           : IBM,8406-70Y
+machine         : CHRP IBM,8406-70Y)");
+    SetPlatformTypes("power7", "power8");
+    const auto strings = GetPPCPlatformStrings();
+    ASSERT_STREQ(strings.platform, "pSeries");
+    ASSERT_STREQ(strings.model, "IBM,8406-70Y");
+    ASSERT_STREQ(strings.machine, "CHRP IBM,8406-70Y");
+    ASSERT_STREQ(strings.cpu, "POWER7 (architected), altivec supported");
+    ASSERT_STREQ(strings.type.platform, "power7");
+    ASSERT_STREQ(strings.type.base_platform, "power8");
+}
+
+TEST(CpustringsPPCTest, Firestone)
+{
+    DisableHardwareCapabilities();
+    auto& fs = GetEmptyFilesystem();
+    fs.CreateFile("/proc/cpuinfo",
+        R"(processor       : 126
+cpu             : POWER8 (raw), altivec supported
+clock           : 2061.000000MHz
+revision        : 2.0 (pvr 004d 0200)
+processor       : 127
+cpu             : POWER8 (raw), altivec supported
+clock           : 2061.000000MHz
+revision        : 2.0 (pvr 004d 0200)
+timebase        : 512000000
+platform        : PowerNV
+model           : 8335-GTA
+machine         : PowerNV 8335-GTA
+firmware        : OPAL v3)");
+    const auto strings = GetPPCPlatformStrings();
+    ASSERT_STREQ(strings.platform, "PowerNV");
+    ASSERT_STREQ(strings.model, "8335-GTA");
+    ASSERT_STREQ(strings.machine, "PowerNV 8335-GTA");
+    ASSERT_STREQ(strings.cpu, "POWER8 (raw), altivec supported");
+}
+
+TEST(CpustringsPPCTest, w8)
+{
+    DisableHardwareCapabilities();
+    auto& fs = GetEmptyFilesystem();
+    fs.CreateFile("/proc/cpuinfo",
+        R"(processor       : 143
+cpu             : POWER9, altivec supported
+clock           : 2300.000000MHz
+revision        : 2.2 (pvr 004e 1202)
+timebase        : 512000000
+platform        : PowerNV
+model           : 0000000000000000
+machine         : PowerNV 0000000000000000
+firmware        : OPAL
+MMU             : Radix)");
+    const auto strings = GetPPCPlatformStrings();
+    ASSERT_STREQ(strings.platform, "PowerNV");
+    ASSERT_STREQ(strings.model, "0000000000000000");
+    ASSERT_STREQ(strings.machine, "PowerNV 0000000000000000");
+    ASSERT_STREQ(strings.cpu, "POWER9, altivec supported");
+}
+
+}  // namespace
+}  // namespace cpu_features

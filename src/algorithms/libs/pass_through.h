@@ -31,6 +31,11 @@
 #include <cstddef>
 #include <string>
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
 
 class ConfigurationInterface;
 
@@ -52,7 +57,7 @@ public:
         return role_;
     }
 
-    //! returns "Pass_Through"
+    //! Returns "Pass_Through"
     inline std::string implementation() override
     {
         return "Pass_Through";
@@ -86,4 +91,7 @@ private:
     bool inverted_spectrum;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PASS_THROUGH_H

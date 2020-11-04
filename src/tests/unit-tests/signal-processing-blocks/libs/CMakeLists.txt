@@ -49,6 +49,8 @@ target_link_libraries(signal_processing_testing_lib
 )
 
 target_include_directories(signal_processing_testing_lib
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
     INTERFACE
         ${CMAKE_SOURCE_DIR}/src/tests/common-files
 )
@@ -74,6 +76,13 @@ if(USE_BOOST_BIND_PLACEHOLDERS)
             -DUSE_BOOST_BIND_PLACEHOLDERS=1
     )
 endif()
+
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(signal_processing_testing_lib
+        PUBLIC -DGNURADIO_USES_STD_POINTERS=1
+    )
+endif()
+
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

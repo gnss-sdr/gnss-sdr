@@ -29,6 +29,13 @@
 #include <memory>
 #include <string>
 
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
+
+
 /*!
  * \brief This class wraps blocks that generates synthesized GNSS signal and
  * filters the signal.
@@ -62,4 +69,7 @@ private:
     bool connected_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GEN_SIGNAL_SOURCE_H

@@ -26,6 +26,12 @@
 #ifndef GNSS_SDR_TRACKING_2ND_PLL_FILTER_H
 #define GNSS_SDR_TRACKING_2ND_PLL_FILTER_H
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*!
  * \brief This class implements a 2nd order PLL filter for carrier tracking loop.
  *
@@ -57,4 +63,7 @@ private:
     float d_old_carr_nco = 0.0;
 };
 
+
+/** \} */
+/** \} */
 #endif

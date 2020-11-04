@@ -24,6 +24,11 @@
 
 #include <boost/serialization/nvp.hpp>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class is a storage for the GPS IONOSPHERIC data as described in IS-GPS-200K
@@ -68,4 +73,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPS_CNAV_IONO_H

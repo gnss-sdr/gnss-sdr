@@ -24,6 +24,12 @@
 
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 constexpr uint32_t CODE_NONE = 0;  //!<   obs code: none or unknown
 constexpr uint32_t CODE_L1C = 1;   //!<   obs code: L1C/A,G1C/A,E1C (GPS,GLO,GAL,QZS,SBS)
 constexpr uint32_t CODE_L1P = 2;   //!<   obs code: L1P,G1P    (GPS,GLO)
@@ -83,4 +89,6 @@ constexpr uint32_t CODE_L9X = 55;  //!<   obs code: SB+C       (IRN)
 constexpr int32_t MAXCODE = 55;    //!<   max number of obs code
 
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_OBS_CODES_H

@@ -23,6 +23,12 @@
 
 #include <cstdint>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class is a storage for the GPS GSM RRLL acquisition assistance data as described in
  * Digital cellular telecommunications system (Phase 2+);
@@ -52,4 +58,7 @@ public:
     double Elevation{};           //!< Satellite Elevation [deg]
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GPS_ACQ_ASSIST_H

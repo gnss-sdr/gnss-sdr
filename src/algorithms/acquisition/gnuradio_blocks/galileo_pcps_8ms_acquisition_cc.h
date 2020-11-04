@@ -31,18 +31,16 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
 
 class galileo_pcps_8ms_acquisition_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using galileo_pcps_8ms_acquisition_cc_sptr = std::shared_ptr<galileo_pcps_8ms_acquisition_cc>;
-#else
-using galileo_pcps_8ms_acquisition_cc_sptr = boost::shared_ptr<galileo_pcps_8ms_acquisition_cc>;
-#endif
+using galileo_pcps_8ms_acquisition_cc_sptr = gnss_shared_ptr<galileo_pcps_8ms_acquisition_cc>;
 
 galileo_pcps_8ms_acquisition_cc_sptr
 galileo_pcps_8ms_make_acquisition_cc(uint32_t sampled_ms,
@@ -52,7 +50,8 @@ galileo_pcps_8ms_make_acquisition_cc(uint32_t sampled_ms,
     int32_t samples_per_ms,
     int32_t samples_per_code,
     bool dump,
-    const std::string& dump_filename);
+    const std::string& dump_filename,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition for
@@ -174,7 +173,8 @@ private:
         int32_t samples_per_ms,
         int32_t samples_per_code,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     galileo_pcps_8ms_acquisition_cc(
         uint32_t sampled_ms,
@@ -184,7 +184,8 @@ private:
         int32_t samples_per_ms,
         int32_t samples_per_code,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     void calculate_magnitudes(
         gr_complex* fft_begin,
@@ -230,6 +231,10 @@ private:
 
     bool d_active;
     bool d_dump;
+    bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H

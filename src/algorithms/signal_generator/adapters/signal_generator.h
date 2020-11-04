@@ -72,11 +72,7 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<gr::block> gen_source_;
-#else
-    boost::shared_ptr<gr::block> gen_source_;
-#endif
+    gnss_shared_ptr<gr::block> gen_source_;
     gr::blocks::vector_to_stream::sptr vector_to_stream_;
     gr::blocks::file_sink::sptr file_sink_;
     std::string role_;

@@ -13,6 +13,11 @@
 if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
+
+if(NOT PKG_CONFIG_FOUND)
+    include(FindPkgConfig)
+endif()
+
 include(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list

@@ -31,6 +31,11 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -259,4 +264,7 @@ private:
     bool d_secondary_code_enabled;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_FPGA_MULTICORRELATOR_H

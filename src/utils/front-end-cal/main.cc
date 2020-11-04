@@ -106,11 +106,7 @@ Gnss_Synchro gnss_synchro{};
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using FrontEndCal_msg_rx_sptr = std::shared_ptr<FrontEndCal_msg_rx>;
-#else
-using FrontEndCal_msg_rx_sptr = boost::shared_ptr<FrontEndCal_msg_rx>;
-#endif
+using FrontEndCal_msg_rx_sptr = gnss_shared_ptr<FrontEndCal_msg_rx>;
 
 FrontEndCal_msg_rx_sptr FrontEndCal_msg_rx_make();
 

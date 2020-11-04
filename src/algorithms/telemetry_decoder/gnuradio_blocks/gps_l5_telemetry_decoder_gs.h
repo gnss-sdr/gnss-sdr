@@ -20,7 +20,8 @@
 #define GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H
 
 
-#include "GPS_L5.h"                       // for GPS_L5I_NH_CODE_LENGTH
+#include "GPS_L5.h"  // for GPS_L5I_NH_CODE_LENGTH
+#include "gnss_block_interface.h"
 #include "gnss_satellite.h"               // for Gnss_Satellite
 #include "gps_cnav_navigation_message.h"  // for Gps_CNAV_Navigation_Message
 #include <boost/circular_buffer.hpp>
@@ -29,25 +30,21 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>  // for std::shared_ptr
-#else
-#include <boost/shared_ptr.hpp>
-#endif
 
 extern "C"
 {
 #include "cnav_msg.h"
 }
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
 
 class gps_l5_telemetry_decoder_gs;
 
-#if GNURADIO_USES_STD_POINTERS
-using gps_l5_telemetry_decoder_gs_sptr = std::shared_ptr<gps_l5_telemetry_decoder_gs>;
-#else
-using gps_l5_telemetry_decoder_gs_sptr = boost::shared_ptr<gps_l5_telemetry_decoder_gs>;
-#endif
+using gps_l5_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l5_telemetry_decoder_gs>;
 
 gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
@@ -99,4 +96,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L5_TELEMETRY_DECODER_GS_H

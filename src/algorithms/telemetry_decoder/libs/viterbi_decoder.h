@@ -25,6 +25,12 @@
 #include <deque>
 #include <vector>
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_libs telemetry_decoder_libs
+ * \{ */
+
+
 /*!
  * \brief Class that implements a Viterbi decoder
  */
@@ -114,4 +120,7 @@ private:
     bool d_trellis_state_is_initialised;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_VITERBI_DECODER_H

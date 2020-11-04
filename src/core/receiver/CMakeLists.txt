@@ -69,6 +69,10 @@ if(ENABLE_FPGA)
     target_compile_definitions(core_receiver PUBLIC -DENABLE_FPGA=1)
 endif()
 
+if(GNURADIO_USES_STD_POINTERS)
+    target_compile_definitions(core_receiver PUBLIC -DGNURADIO_USES_STD_POINTERS=1)
+endif()
+
 if(ENABLE_RAW_UDP)
     target_compile_definitions(core_receiver PRIVATE -DRAW_UDP=1)
 endif()

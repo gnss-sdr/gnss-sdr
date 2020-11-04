@@ -20,6 +20,7 @@
 #ifndef GNSS_SDR_RTKLIB_PVT_GS_H
 #define GNSS_SDR_RTKLIB_PVT_GS_H
 
+#include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
@@ -36,10 +37,13 @@
 #include <string>                 // for string
 #include <sys/types.h>            // for key_t
 #include <vector>                 // for vector
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_gnuradio_blocks pvt_gr_blocks
+ * GNU Radio blocks for the computation of PVT solutions.
+ * \{ */
+
 
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
@@ -58,11 +62,7 @@ class Rtcm_Printer;
 class Rtklib_Solver;
 class rtklib_pvt_gs;
 
-#if GNURADIO_USES_STD_POINTERS
-using rtklib_pvt_gs_sptr = std::shared_ptr<rtklib_pvt_gs>;
-#else
-using rtklib_pvt_gs_sptr = boost::shared_ptr<rtklib_pvt_gs>;
-#endif
+using rtklib_pvt_gs_sptr = gnss_shared_ptr<rtklib_pvt_gs>;
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
@@ -270,4 +270,7 @@ private:
     bool d_rtcm_enabled;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTKLIB_PVT_GS_H

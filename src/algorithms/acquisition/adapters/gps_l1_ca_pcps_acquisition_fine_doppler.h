@@ -29,12 +29,14 @@
 #include <memory>
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-using pcps_acquisition_fine_doppler_cc_sptr = std::shared_ptr<pcps_acquisition_fine_doppler_cc>;
-#else
-#include <boost/shared_ptr.hpp>
-using pcps_acquisition_fine_doppler_cc_sptr = boost::shared_ptr<pcps_acquisition_fine_doppler_cc>;
-#endif
+
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_adapters
+ * \{ */
+
+
+using pcps_acquisition_fine_doppler_cc_sptr = gnss_shared_ptr<pcps_acquisition_fine_doppler_cc>;
 
 class ConfigurationInterface;
 
@@ -70,17 +72,11 @@ public:
         return item_size_;
     }
 
-#if GNURADIO_USES_STD_POINTERS
-    void connect(std::shared_ptr<gr::top_block> top_block) override;
-    void disconnect(std::shared_ptr<gr::top_block> top_block) override;
-    std::shared_ptr<gr::basic_block> get_left_block() override;
-    std::shared_ptr<gr::basic_block> get_right_block() override;
-#else
-    void connect(boost::shared_ptr<gr::top_block> top_block) override;
-    void disconnect(boost::shared_ptr<gr::top_block> top_block) override;
-    boost::shared_ptr<gr::basic_block> get_left_block() override;
-    boost::shared_ptr<gr::basic_block> get_right_block() override;
-#endif
+    void connect(gnss_shared_ptr<gr::top_block> top_block) override;
+    void disconnect(gnss_shared_ptr<gr::top_block> top_block) override;
+    gnss_shared_ptr<gr::basic_block> get_left_block() override;
+    gnss_shared_ptr<gr::basic_block> get_right_block() override;
+
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
      * to efficiently exchange synchronization data between acquisition and
@@ -172,4 +168,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_PCPS_ACQUISITION_FINE_DOPPLER_H

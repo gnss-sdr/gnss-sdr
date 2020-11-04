@@ -28,6 +28,12 @@
 
 #include <complex>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
@@ -58,4 +64,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CPU_MULTICORRELATOR_REAL_CODES_H

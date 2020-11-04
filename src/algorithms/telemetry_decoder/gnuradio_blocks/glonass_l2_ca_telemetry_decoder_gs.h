@@ -23,6 +23,7 @@
 
 #include "GLONASS_L1_L2_CA.h"
 #include "glonass_gnav_navigation_message.h"
+#include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include <boost/circular_buffer.hpp>
@@ -32,19 +33,16 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>  // for std::shared_ptr
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_gnuradio_blocks
+ * \{ */
+
 
 class glonass_l2_ca_telemetry_decoder_gs;
 
-#if GNURADIO_USES_STD_POINTERS
-using glonass_l2_ca_telemetry_decoder_gs_sptr = std::shared_ptr<glonass_l2_ca_telemetry_decoder_gs>;
-#else
-using glonass_l2_ca_telemetry_decoder_gs_sptr = boost::shared_ptr<glonass_l2_ca_telemetry_decoder_gs>;
-#endif
+using glonass_l2_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<glonass_l2_ca_telemetry_decoder_gs>;
 
 glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
@@ -116,4 +114,7 @@ private:
     bool d_dump;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GLONASS_L2_CA_TELEMETRY_DECODER_GS_H

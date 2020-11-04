@@ -31,6 +31,13 @@
 #include <cstddef>
 #include <string>
 
+/** \addtogroup Observables
+ * Classes for the computation of GNSS observables
+ * \{ */
+/** \addtogroup Observables_adapters obs_adapters
+ * Wrap GNU Radio observables blocks with an ObservablesInterface
+ * \{ */
+
 class ConfigurationInterface;
 
 /*!
@@ -83,4 +90,6 @@ private:
     bool dump_mat_;
 };
 
+/** \} */
+/** \} */
 #endif

@@ -23,6 +23,15 @@
 
 #include <string>
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 bool gnss_sdr_create_directory(const std::string& foldername);
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_SDR_CREATE_DIRECTORY_H

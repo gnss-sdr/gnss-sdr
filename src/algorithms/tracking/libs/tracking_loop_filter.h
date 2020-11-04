@@ -25,6 +25,11 @@
 
 #include <vector>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
 
 /*!
  * \brief This class implements a generic 1st, 2nd or 3rd order loop filter
@@ -86,4 +91,7 @@ private:
     bool d_include_last_integrator;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_TRACKING_LOOP_FILTER_H

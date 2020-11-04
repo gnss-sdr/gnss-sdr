@@ -29,6 +29,12 @@
 #include "gnss_block_interface.h"
 #include "gnss_signal.h"
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
+
 /*!
  * \brief This abstract class represents an interface to a channel GNSS block.
  *
@@ -41,7 +47,9 @@ class ChannelInterface : public GNSSBlockInterface
 {
 public:
     virtual gr::basic_block_sptr get_left_block_trk() = 0;
+    virtual gr::basic_block_sptr get_right_block_trk() = 0;
     virtual gr::basic_block_sptr get_left_block_acq() = 0;
+    virtual gr::basic_block_sptr get_right_block_acq() = 0;
     virtual gr::basic_block_sptr get_left_block() = 0;
     virtual gr::basic_block_sptr get_right_block() = 0;
     virtual Gnss_Signal get_signal() const = 0;
@@ -51,4 +59,7 @@ public:
     virtual void set_signal(const Gnss_Signal&) = 0;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CHANNEL_INTERFACE_H

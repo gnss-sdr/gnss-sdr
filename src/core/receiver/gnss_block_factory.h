@@ -33,6 +33,11 @@
 #include <string>  // for string
 #include <vector>  // for vector
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver
+ * \{ */
+
 
 class ConfigurationInterface;
 class GNSSBlockInterface;
@@ -96,4 +101,7 @@ private:
         unsigned int out_streams);
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_BLOCK_FACTORY_H

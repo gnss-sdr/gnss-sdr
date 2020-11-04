@@ -27,6 +27,11 @@
 #include <set>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class represents a GNSS satellite.
@@ -70,4 +75,8 @@ private:
     uint32_t PRN{};
     int32_t rf_link{};
 };
-#endif
+
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_SATELLITE_H

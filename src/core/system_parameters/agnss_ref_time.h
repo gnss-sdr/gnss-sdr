@@ -23,6 +23,11 @@
 
 #include <boost/serialization/nvp.hpp>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief  Interface of an Assisted GNSS REFERENCE TIME storage
@@ -61,4 +66,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_AGNSS_REF_TIME_H

@@ -23,6 +23,12 @@
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 /*!
  * \brief This class contains parameters and outputs of the PVT block
  */
@@ -131,4 +137,7 @@ public:
     }
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_MONITOR_PVT_H

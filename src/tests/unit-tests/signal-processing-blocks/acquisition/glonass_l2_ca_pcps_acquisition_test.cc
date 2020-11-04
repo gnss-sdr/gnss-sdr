@@ -53,11 +53,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL2CaPcpsAcquisitionTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-typedef std::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr;
-#else
-typedef boost::shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx> GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr;
-#endif
+using GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GlonassL2CaPcpsAcquisitionTest_msg_rx>;
 
 GlonassL2CaPcpsAcquisitionTest_msg_rx_sptr GlonassL2CaPcpsAcquisitionTest_msg_rx_make(concurrent_queue<int>& queue);
 

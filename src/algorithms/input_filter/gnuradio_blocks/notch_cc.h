@@ -17,31 +17,30 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_NOTCH_H
-#define GNSS_SDR_NOTCH_H
+#ifndef GNSS_SDR_NOTCH_CC_H
+#define GNSS_SDR_NOTCH_CC_H
 
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+#include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <gnuradio/fft/fft.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
 #include <memory>
 
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_gnuradio_blocks
+ * \{ */
+
+
 class Notch;
 
-#if GNURADIO_USES_STD_POINTERS
-using notch_sptr = std::shared_ptr<Notch>;
-#else
-using notch_sptr = boost::shared_ptr<Notch>;
-#endif
+using notch_sptr = gnss_shared_ptr<Notch>;
 
 notch_sptr make_notch_filter(
     float pfa,
     float p_c_factor,
-    int32_t length_,
+    int32_t length,
     int32_t n_segments_est,
     int32_t n_segments_reset);
 
@@ -53,31 +52,32 @@ class Notch : public gr::block
 public:
     ~Notch() = default;
 
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
-
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
         gr_vector_void_star &output_items);
 
 private:
-    friend notch_sptr make_notch_filter(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
-    Notch(float pfa, float p_c_factor, int32_t length_, int32_t n_segments_est, int32_t n_segments_reset);
-    std::unique_ptr<gr::fft::fft_complex> d_fft;
-    volk_gnsssdr::vector<gr_complex> c_samples;
+    friend notch_sptr make_notch_filter(float pfa, float p_c_factor, int32_t length, int32_t n_segments_est, int32_t n_segments_reset);
+    Notch(float pfa, float p_c_factor, int32_t length, int32_t n_segments_est, int32_t n_segments_reset);
+    std::unique_ptr<gr::fft::fft_complex> d_fft_;
+    volk_gnsssdr::vector<gr_complex> c_samples_;
     volk_gnsssdr::vector<float> angle_;
-    volk_gnsssdr::vector<float> power_spect;
-    gr_complex last_out;
-    gr_complex z_0;
-    gr_complex p_c_factor;
-    float pfa;
-    float noise_pow_est;
+    volk_gnsssdr::vector<float> power_spect_;
+    gr_complex last_out_;
+    gr_complex z_0_;
+    gr_complex p_c_factor_;
+    float pfa_;
+    float noise_pow_est_;
     float thres_;
     int32_t length_;
-    int32_t n_deg_fred;
-    uint32_t n_segments;
-    uint32_t n_segments_est;
-    uint32_t n_segments_reset;
+    int32_t n_deg_fred_;
+    uint32_t n_segments_;
+    uint32_t n_segments_est_;
+    uint32_t n_segments_reset_;
     bool filter_state_;
 };
 
-#endif  // GNSS_SDR_NOTCH_H
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_NOTCH_CC_H

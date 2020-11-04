@@ -26,6 +26,11 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 // Galileo INAV message structure
 constexpr int32_t GALILEO_INAV_PREAMBLE_LENGTH_BITS = 10;
@@ -249,4 +254,7 @@ const std::vector<std::pair<int32_t, int32_t>> TIME_0_BIT({{7, 2}});
 const std::vector<std::pair<int32_t, int32_t>> WN_0_BIT({{97, 12}});
 const std::vector<std::pair<int32_t, int32_t>> TOW_0_BIT({{109, 20}});
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_INAV_H

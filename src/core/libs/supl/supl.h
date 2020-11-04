@@ -18,8 +18,8 @@
  */
 
 
-#ifndef SUPL_H
-#define SUPL_H
+#ifndef GNSS_SDR_SUPL_H
+#define GNSS_SDR_SUPL_H
 
 #ifdef USE_EXPORT
 #define EXPORT __attribute__((visibility("default")))
@@ -43,6 +43,13 @@
 // clang-format on
 #include <PDU.h>
 #include <ULP-PDU.h>
+
+
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup SUPL_Library core_libs_supl
+ * \{ */
+
 
 #define SUPL_PORT "7275"
 
@@ -286,4 +293,7 @@ void supl_close(supl_ctx_t *ctx);
 int supl_ulp_send(supl_ctx_t *ctx, supl_ulp_t *pdu);
 int supl_ulp_recv(supl_ctx_t *ctx, supl_ulp_t *pdu);
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_SUPL_H

@@ -26,6 +26,14 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Data_Type Data Type Adapters
+ * Classes for data type conversion
+ * \{ */
+/** \addtogroup Data_type_adapters data_type_adapters
+ * Wrap GNU Radio data tyope adapter blocks with a GNSSBlockInterface
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -74,4 +82,7 @@ private:
     bool dump_;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BYTE_TO_SHORT_H

@@ -292,9 +292,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-9.880.1.tar.xz
-$ tar xvfz armadillo-9.880.1.tar.xz
-$ cd armadillo-9.880.1
+$ wget http://sourceforge.net/projects/arma/files/armadillo-10.1.0.tar.xz
+$ tar xvfz armadillo-10.1.0.tar.xz
+$ cd armadillo-10.1.0
 $ cmake .
 $ make
 $ sudo make install

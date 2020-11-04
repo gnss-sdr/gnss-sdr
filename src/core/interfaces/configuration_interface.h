@@ -27,6 +27,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup GNSS_Block_Interfaces
+ * \{ */
+
+
 /*!
  * \brief This abstract class represents an interface to configuration parameters.
  *
@@ -55,4 +61,7 @@ public:
     virtual void set_property(std::string property_name, std::string value) = 0;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CONFIGURATION_INTERFACE_H

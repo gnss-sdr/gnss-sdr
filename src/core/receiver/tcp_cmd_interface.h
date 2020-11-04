@@ -32,6 +32,12 @@
 #include <unordered_map>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver
+ * \{ */
+
+
 class PvtInterface;
 
 class TcpCmdInterface
@@ -79,4 +85,7 @@ private:
     bool keep_running_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_TCP_CMD_INTERFACE_H

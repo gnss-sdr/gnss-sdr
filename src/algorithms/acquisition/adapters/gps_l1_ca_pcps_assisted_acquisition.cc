@@ -55,6 +55,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     max_dwells_ = configuration->property(role + ".max_dwells", 1);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+    bool enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
 
     // --- Find number of samples per spreading code -------------------------
     vector_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
@@ -66,7 +67,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
             item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_assisted_acquisition_cc(max_dwells_, sampled_ms_,
                 doppler_max_, doppler_min_, fs_in_, vector_length_,
-                dump_, dump_filename_);
+                dump_, dump_filename_, enable_monitor_output);
         }
     else
         {

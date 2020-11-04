@@ -28,6 +28,11 @@
 #include <memory>
 #include <string>
 
+/** \addtogroup Signal_Conditioner
+ * \{ */
+/** \addtogroup Signal_Conditioner_adapters
+ * \{ */
+
 
 class ConfigurationInterface;
 
@@ -70,4 +75,7 @@ private:
     bool connected_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_SIGNAL_CONDITIONER_H

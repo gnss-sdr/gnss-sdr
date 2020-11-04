@@ -53,18 +53,16 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
 
 class pcps_quicksync_acquisition_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using pcps_quicksync_acquisition_cc_sptr = std::shared_ptr<pcps_quicksync_acquisition_cc>;
-#else
-using pcps_quicksync_acquisition_cc_sptr = boost::shared_ptr<pcps_quicksync_acquisition_cc>;
-#endif
+using pcps_quicksync_acquisition_cc_sptr = gnss_shared_ptr<pcps_quicksync_acquisition_cc>;
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     uint32_t folding_factor,
@@ -76,7 +74,8 @@ pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(
     int32_t samples_per_code,
     bool bit_transition_flag,
     bool dump,
-    const std::string& dump_filename);
+    const std::string& dump_filename,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition with
@@ -199,7 +198,8 @@ private:
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     pcps_quicksync_acquisition_cc(uint32_t folding_factor,
         uint32_t sampled_ms, uint32_t max_dwells,
@@ -207,7 +207,8 @@ private:
         int32_t samples_per_ms, int32_t samples_per_code,
         bool bit_transition_flag,
         bool dump,
-        const std::string& dump_filename);
+        const std::string& dump_filename,
+        bool enable_monitor_output);
 
     void calculate_magnitudes(gr_complex* fft_begin, int32_t doppler_shift,
         int32_t doppler_offset);
@@ -261,6 +262,10 @@ private:
     bool d_bit_transition_flag;
     bool d_active;
     bool d_dump;
+    bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_QUICKSYNC_ACQUISITION_CC_H

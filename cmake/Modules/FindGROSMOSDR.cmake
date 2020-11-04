@@ -33,6 +33,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT PKG_CONFIG_FOUND)
+    include(FindPkgConfig)
+endif()
+
 pkg_check_modules(GROSMOSDR_PKG gnuradio-osmosdr)
 
 if(NOT GROSMOSDR_ROOT)

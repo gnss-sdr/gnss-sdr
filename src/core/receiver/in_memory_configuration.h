@@ -31,6 +31,11 @@
 #include <memory>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver
+ * \{ */
+
 
 /*!
  * \brief  This class is an implementation of the interface ConfigurationInterface.
@@ -62,4 +67,7 @@ private:
     std::unique_ptr<StringConverter> converter_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_IN_MEMORY_CONFIGURATION_H

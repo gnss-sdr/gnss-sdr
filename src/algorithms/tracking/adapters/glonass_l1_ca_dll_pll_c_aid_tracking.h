@@ -34,6 +34,12 @@
 #include "tracking_interface.h"
 #include <string>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -99,4 +105,7 @@ private:
     unsigned int out_streams_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GLONASS_L1_CA_DLL_PLL_C_AID_TRACKING_H

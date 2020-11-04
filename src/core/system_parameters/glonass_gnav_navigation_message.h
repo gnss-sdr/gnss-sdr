@@ -35,6 +35,12 @@
 #include <utility>  // for pair
 #include <vector>   // for vector
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class decodes a GLONASS GNAV Data message as described in GLONASS ICD (Edition 5.1)
  * \note Code added as part of GSoC 2017 program
@@ -213,4 +219,7 @@ private:
     bool flag_TOW_new{};  // Flag indicating when a new TOW has been computed
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GLONASS_GNAV_NAVIGATION_MESSAGE_H

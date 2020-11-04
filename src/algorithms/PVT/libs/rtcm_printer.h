@@ -29,6 +29,12 @@
 #include <memory>   // std::shared_ptr
 #include <string>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 class Galileo_Ephemeris;
 class Glonass_Gnav_Ephemeris;
 class Glonass_Gnav_Utc_Model;
@@ -161,4 +167,7 @@ private:
     bool d_rtcm_file_dump;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_RTCM_PRINTER_H

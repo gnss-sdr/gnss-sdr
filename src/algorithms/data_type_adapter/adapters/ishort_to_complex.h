@@ -27,6 +27,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Data_Type
+ * \{ */
+/** \addtogroup Data_type_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -77,4 +83,7 @@ private:
     bool dump_;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_ISHORT_TO_COMPLEX_H

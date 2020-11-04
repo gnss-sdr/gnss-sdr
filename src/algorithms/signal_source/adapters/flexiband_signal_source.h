@@ -36,6 +36,12 @@
 #include <vector>
 
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -102,4 +108,7 @@ private:
     bool flag_read_file;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H

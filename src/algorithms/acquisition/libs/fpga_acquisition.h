@@ -28,6 +28,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup acquisition_libs
+ * \{ */
+
+
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
  */
@@ -169,4 +175,7 @@ private:
     uint32_t d_PRN;             // PRN
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_FPGA_ACQUISITION_H

@@ -20,20 +20,19 @@
 #ifndef GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H
 #define GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H
 
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_decimator.h>
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Data_Type
+ * \{ */
+/** \addtogroup data_type_gnuradio_blocks data_type_gr_blocks
+ * GNU Radio Blocks for data type conversion
+ * \{ */
+
 
 class interleaved_byte_to_complex_byte;
 
-#if GNURADIO_USES_STD_POINTERS
-using interleaved_byte_to_complex_byte_sptr = std::shared_ptr<interleaved_byte_to_complex_byte>;
-#else
-using interleaved_byte_to_complex_byte_sptr = boost::shared_ptr<interleaved_byte_to_complex_byte>;
-#endif
+using interleaved_byte_to_complex_byte_sptr = gnss_shared_ptr<interleaved_byte_to_complex_byte>;
 
 interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte();
 
@@ -53,4 +52,7 @@ private:
     interleaved_byte_to_complex_byte();
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_INTERLEAVED_BYTE_TO_COMPLEX_BYTE_H

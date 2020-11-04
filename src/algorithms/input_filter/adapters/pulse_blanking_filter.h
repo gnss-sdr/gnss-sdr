@@ -31,6 +31,12 @@
 #endif
 #include <string>
 
+/** \addtogroup Input_Filter
+ * \{ */
+/** \addtogroup Input_filter_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 class PulseBlankingFilter : public GNSSBlockInterface
@@ -78,4 +84,7 @@ private:
     bool xlat_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PULSE_BLANKING_FILTER_H

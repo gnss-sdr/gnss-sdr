@@ -37,18 +37,16 @@
 #include <string>
 #include <utility>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks
+ * \{ */
+
 
 class galileo_e5a_noncoherentIQ_acquisition_caf_cc;
 
-#if GNURADIO_USES_STD_POINTERS
-using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = std::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
-#else
-using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = boost::shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
-#endif
+using galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr = gnss_shared_ptr<galileo_e5a_noncoherentIQ_acquisition_caf_cc>;
 
 galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make_acquisition_caf_cc(
     unsigned int sampled_ms,
@@ -60,7 +58,8 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc_sptr galileo_e5a_noncoherentIQ_make
     const std::string& dump_filename,
     bool both_signal_components_,
     int CAF_window_hz_,
-    int Zero_padding_);
+    int Zero_padding_,
+    bool enable_monitor_output);
 
 /*!
  * \brief This class implements a Parallel Code Phase Search Acquisition.
@@ -186,7 +185,8 @@ private:
         const std::string& dump_filename,
         bool both_signal_components_,
         int CAF_window_hz_,
-        int Zero_padding_);
+        int Zero_padding_,
+        bool enable_monitor_output);
 
     galileo_e5a_noncoherentIQ_acquisition_caf_cc(
         unsigned int sampled_ms,
@@ -198,7 +198,8 @@ private:
         const std::string& dump_filename,
         bool both_signal_components_,
         int CAF_window_hz_,
-        int Zero_padding_);
+        int Zero_padding_,
+        bool enable_monitor_output);
 
     void calculate_magnitudes(gr_complex* fft_begin, int doppler_shift,
         int doppler_offset);
@@ -260,6 +261,10 @@ private:
     bool d_active;
     bool d_dump;
     bool d_both_signal_components;
+    bool d_enable_monitor_output;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E5A_NONCOHERENT_IQ_ACQUISITION_CAF_CC_H

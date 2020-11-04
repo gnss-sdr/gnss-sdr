@@ -117,6 +117,8 @@ if(CMAKE_VERSION VERSION_LESS 3.5.1)
     set(ENABLE_BENCHMARKS OFF)
 endif()
 
+option(ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs" ON)
+
 
 ################################################################################
 # GNSS-SDR version information
@@ -322,14 +324,15 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "9.900.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.1.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "3.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.18")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.13.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.1")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.2")
+set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
@@ -1117,6 +1120,19 @@ if(NOT VOLKGNSSSDR_FOUND)
             )
         endif()
     endif()
+    include(GNUInstallDirs)
+    set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(^i.86$)")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
+      set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+    endif()
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(volk_gnsssdr_module
             PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
@@ -1131,20 +1147,38 @@ if(NOT VOLKGNSSSDR_FOUND)
             INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
         )
     else()
-        ExternalProject_Add(volk_gnsssdr_module
-            PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
-            SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
-            BINARY_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build
-            CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
-            DOWNLOAD_COMMAND ""
-            UPDATE_COMMAND ""
-            PATCH_COMMAND ""
-            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
-            BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
-                ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-            INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
-        )
+        if(SUPPORTED_CPU_FEATURES_ARCH)
+            ExternalProject_Add(volk_gnsssdr_module
+                PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
+                SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+                BINARY_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build
+                CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                    -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
+                DOWNLOAD_COMMAND ""
+                UPDATE_COMMAND ""
+                PATCH_COMMAND ""
+                BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+                INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
+            )
+        else()
+            ExternalProject_Add(volk_gnsssdr_module
+                PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
+                SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+                BINARY_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build
+                CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                    -DCMAKE_BUILD_TYPE=$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:ASAN>
+                DOWNLOAD_COMMAND ""
+                UPDATE_COMMAND ""
+                PATCH_COMMAND ""
+                BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+                INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
+            )
+        endif()
     endif()
 
     if(NOT ORC_FOUND)
@@ -1168,6 +1202,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             INTERFACE_INCLUDE_DIRECTORIES "${VOLK_GNSSSDR_INCLUDE_DIRS}"
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
         )
+        if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
+            set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
+                INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+            )
+        endif()
     endif()
 
     if(CMAKE_VERSION VERSION_LESS 3.2)
@@ -2497,7 +2536,7 @@ endif()
 
 
 ################################################################################
-# Doxygen - http://www.doxygen.nl (OPTIONAL, used if found)
+# Doxygen - https://www.doxygen.nl (OPTIONAL, used if found)
 ################################################################################
 if(CMAKE_VERSION VERSION_LESS 3.6.9)
     find_package(Doxygen)
@@ -2505,7 +2544,7 @@ else()
     find_package(Doxygen OPTIONAL_COMPONENTS dot)
 endif()
 set_package_properties(Doxygen PROPERTIES
-    URL "http://www.doxygen.nl"
+    URL "https://www.doxygen.nl"
     PURPOSE "Used to generate code documentation by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'"
     TYPE OPTIONAL
 )
@@ -2526,13 +2565,28 @@ endif()
 set_package_properties(LATEX PROPERTIES
     URL "https://www.latex-project.org"
     DESCRIPTION "High-quality typesetting system"
-    PURPOSE "Used to generate a PDF manual by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual'"
+    PURPOSE "Used to generate a PDF manual by doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} pdfmanual'."
     TYPE OPTIONAL
 )
+if(DEFINED MATHJAX2_ROOT)
+    set(ENABLE_EXTERNAL_MATHJAX OFF)
+endif()
+if(ENABLE_EXTERNAL_MATHJAX AND NOT DEFINED MATHJAX2_USE_ROOT)
+    set(MATHJAX2_USE_ROOT "https://cdnjs.cloudflare.com/ajax/libs/mathjax/${GNSSSDR_MATHJAX_EXTERNAL_VERSION}")
+endif()
+unset(MATHJAX2_FOUND CACHE)
+find_package(MATHJAX2)
+set_package_properties(MATHJAX2 PROPERTIES
+    URL "https://www.mathjax.org"
+    DESCRIPTION "Beautiful and accessible math in all browsers"
+    PURPOSE "Used to generate equations in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'."
+    TYPE OPTIONAL
+)
+
 if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found.")
     message(STATUS " You can build the documentation with '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
-    message(STATUS " When done, point your browser to ${CMAKE_BINARY_DIR}/html/index.html")
+    message(STATUS " When done, point your browser to ${CMAKE_BINARY_DIR}/docs/html/index.html")
     if(CMAKE_VERSION VERSION_LESS 3.9.6)
         if(DOXYGEN_DOT_FOUND)
             set(HAVE_DOT "YES")
@@ -2569,10 +2623,13 @@ if(DOXYGEN_FOUND)
     endif()
     if(PDFLATEX_COMPILER)
         set(GENERATE_PDF_DOCUMENTATION "YES")
-        set(GNSSSDR_USE_MATHJAX "NO")
     else()
         set(GENERATE_PDF_DOCUMENTATION "NO")
+    endif()
+    if(MATHJAX2_FOUND)
         set(GNSSSDR_USE_MATHJAX "YES")
+    else()
+        set(GNSSSDR_USE_MATHJAX "NO")
     endif()
     configure_file(${CMAKE_SOURCE_DIR}/docs/doxygen/Doxyfile.in
         ${CMAKE_BINARY_DIR}/docs/doxygen/Doxyfile
@@ -2613,7 +2670,7 @@ if(DOXYGEN_FOUND)
 else()
     message(STATUS " Doxygen has not been found in your system.")
     message(STATUS " You can get nice code documentation by using it!")
-    message(STATUS " Get it from http://www.doxygen.nl/download.html")
+    message(STATUS " Get it from https://www.doxygen.nl/download.html")
     if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
         if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
             message(STATUS " or simply by doing 'sudo yum install doxygen-latex'.")
@@ -2625,6 +2682,7 @@ else()
         message(STATUS " or simply by doing 'sudo port install doxygen +docs', if you are using Macports,")
         message(STATUS " or 'brew cask install mactex', then restart Terminal and do 'brew install graphviz doxygen', if you use Homebrew.")
     endif()
+    set(ENABLE_EXTERNAL_MATHJAX OFF)
 endif()
 
 
@@ -3141,6 +3199,7 @@ add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and b
 add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
+add_feature_info(ENABLE_EXTERNAL_MATHJAX ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
 
 message(STATUS "")
 message(STATUS "***************************************")

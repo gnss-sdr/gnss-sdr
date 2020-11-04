@@ -23,6 +23,7 @@
 #include <chrono>
 #include <complex>
 #include <cstdint>
+#include <thread>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -54,6 +55,14 @@ protected:
     }
     ~NotchFilterTest() override = default;
 
+    bool stop = false;
+    std::thread ch_thread;
+    void start_queue();
+    void wait_message();
+    void process_message();
+    void stop_queue();
+    pmt::pmt_t message;
+
     void init();
     void configure_gr_complex_gr_complex();
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
@@ -62,6 +71,36 @@ protected:
     size_t item_size;
     int nsamples;
 };
+
+
+void NotchFilterTest::start_queue()
+{
+    stop = false;
+    ch_thread = std::thread(&NotchFilterTest::wait_message, this);
+}
+
+
+void NotchFilterTest::wait_message()
+{
+    while (!stop)
+        {
+            queue->wait_and_pop(message);
+            process_message();
+        }
+}
+
+
+void NotchFilterTest::process_message()
+{
+    stop_queue();
+    top_block->stop();
+}
+
+
+void NotchFilterTest::stop_queue()
+{
+    stop = true;
+}
 
 
 void NotchFilterTest::init()
@@ -116,13 +155,14 @@ TEST_F(NotchFilterTest, ConnectAndRun)
         top_block->connect(valve, 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
     }) << "Failure connecting the top_block.";
-
+    start_queue();
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
         top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
+    ch_thread.join();
     std::cout << "Filtered " << nsamples << " samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }
 
@@ -158,12 +198,13 @@ TEST_F(NotchFilterTest, ConnectAndRunGrcomplex)
         top_block->connect(source->get_right_block(), 0, filter->get_left_block(), 0);
         top_block->connect(filter->get_right_block(), 0, null_sink, 0);
     }) << "Failure connecting the top_block.";
-
+    start_queue();
     EXPECT_NO_THROW({
         start = std::chrono::system_clock::now();
         top_block->run();  // Start threads and wait
         end = std::chrono::system_clock::now();
         elapsed_seconds = end - start;
     }) << "Failure running the top_block.";
+    ch_thread.join();
     std::cout << "Filtered " << nsamples << " gr_complex samples in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

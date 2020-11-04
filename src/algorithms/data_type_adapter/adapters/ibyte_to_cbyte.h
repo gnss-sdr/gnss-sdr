@@ -28,6 +28,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Data_Type
+ * \{ */
+/** \addtogroup Data_type_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -78,4 +84,7 @@ private:
     bool dump_;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_IBYTE_TO_CBYTE_H

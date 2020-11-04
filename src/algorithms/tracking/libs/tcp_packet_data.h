@@ -21,6 +21,12 @@
 #ifndef GNSS_SDR_TCP_PACKET_DATA_H
 #define GNSS_SDR_TCP_PACKET_DATA_H
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 /*!
  * \brief Class that implements a TCP data packet
  */
@@ -34,4 +40,7 @@ public:
     float proc_pack_carrier_doppler_hz;
 };
 
+
+/** \} */
+/** \} */
 #endif

@@ -26,6 +26,12 @@
 #include <utility>
 #include <vector>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 const std::vector<std::pair<int32_t, int32_t>> FNAV_PAGE_TYPE_BIT({{1, 6}});
 
 /* WORD 1 iono corrections. FNAV (Galileo E5a message)*/
@@ -174,4 +180,7 @@ const std::vector<std::pair<int32_t, int32_t>> FNAV_AF0_3_6_BIT({{181, 16}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_AF1_3_6_BIT({{197, 13}});
 const std::vector<std::pair<int32_t, int32_t>> FNAV_E5AHS_3_6_BIT({{210, 2}});
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_FNAV_H

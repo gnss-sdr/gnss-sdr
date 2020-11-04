@@ -24,6 +24,11 @@
 #include <mutex>
 #include <utility>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver core_receiver
+ * \{ */
+
 
 template <typename Data>
 
@@ -88,4 +93,7 @@ private:
     mutable std::mutex the_mutex;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CONCURRENT_MAP_H

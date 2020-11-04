@@ -24,6 +24,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Observables
+ * \{ */
+/** \addtogroup Observables_libs observables_libs
+ * Utilities for GNSS observables configuration.
+ * \{ */
+
 class Obs_Conf
 {
 public:
@@ -38,4 +44,6 @@ public:
     bool dump_mat;
 };
 
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_OBS_CONF_H

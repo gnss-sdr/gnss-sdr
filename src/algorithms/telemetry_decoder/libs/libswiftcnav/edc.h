@@ -27,7 +27,16 @@
 
 #include "swift_common.h"
 
+/** \addtogroup Telemetry_Decoder
+ * \{ */
+/** \addtogroup Telemetry_Decoder_libswiftcnav
+ * \{ */
+
+
 uint32_t crc24q(const uint8_t *buf, uint32_t len, uint32_t crc);
 uint32_t crc24q_bits(uint32_t crc, const uint8_t *buf, uint32_t n_bits, bool invert);
 
-#endif /* GNSS_SDR_EDC_H_ */
+
+/** \} */
+/** \} */
+#endif /* GNSS_SDR_EDC_H */

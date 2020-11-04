@@ -15,6 +15,10 @@
 # Gnuradio::gn3s
 #
 
+if(NOT PKG_CONFIG_FOUND)
+    include(FindPkgConfig)
+endif()
+
 pkg_check_modules(PC_GR_GN3S gr-gn3s)
 
 if(NOT GRGN3S_ROOT)

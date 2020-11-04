@@ -39,6 +39,11 @@
 
 #include <gnuradio/gr_complex.h>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
 
 /*! \brief cn0_svn_estimator is a Carrier-to-Noise (CN0) estimator
  * based on the Signal-to-Noise Variance (SNV) estimator
@@ -105,4 +110,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
  */
 float carrier_lock_detector(gr_complex* Prompt_buffer, int length);
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_LOCK_DETECTORS_H

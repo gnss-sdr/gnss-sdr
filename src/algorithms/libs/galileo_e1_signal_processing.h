@@ -32,6 +32,11 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
 
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C sinboc).
@@ -71,4 +76,7 @@ void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, c
 void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
     bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H

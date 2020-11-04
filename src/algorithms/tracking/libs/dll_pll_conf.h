@@ -26,6 +26,12 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
+
 class Dll_Pll_Conf
 {
 public:
@@ -79,4 +85,7 @@ public:
     bool dump_mat;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_DLL_PLL_CONF_H

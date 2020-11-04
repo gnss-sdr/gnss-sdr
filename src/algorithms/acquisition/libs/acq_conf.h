@@ -25,6 +25,13 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Acquisition
+ * \{ */
+/** \addtogroup acquisition_libs acquisition_libs
+ * Library with utilities for GNSS signal acquisition
+ * \{ */
+
+
 class Acq_Conf
 {
 public:
@@ -67,6 +74,7 @@ public:
     bool blocking_on_standby;  // enable it only for unit testing to avoid sample consume on idle status
     bool make_2_steps;
     bool use_automatic_resampler;
+    bool enable_monitor_output;
 
 private:
     void SetDerivedParams();
@@ -74,4 +82,7 @@ private:
     void ConfigureAutomaticResampler(double opt_freq);
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_ACQ_CONF_H

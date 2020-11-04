@@ -23,6 +23,12 @@
 
 #include <ostream>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
+
 /*!
  * \brief This class stores SBAS SV ephemeris data
  *
@@ -47,4 +53,6 @@ public:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_SBAS_EPHEMERIS_H

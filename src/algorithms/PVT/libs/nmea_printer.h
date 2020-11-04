@@ -30,6 +30,12 @@
 #include <memory>                                // for shared_ptr
 #include <string>                                // for string
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 class Rtklib_Solver;
 
 /*!
@@ -82,4 +88,7 @@ private:
     bool d_flag_nmea_output_file;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_NMEA_PRINTER_H

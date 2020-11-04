@@ -50,11 +50,7 @@
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GlonassL1CaPcpsAcquisitionTest_msg_rx;
 
-#if GNURADIO_USES_STD_POINTERS
-using GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr = std::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx>;
-#else
-using GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr = boost::shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx>;
-#endif
+using GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GlonassL1CaPcpsAcquisitionTest_msg_rx>;
 
 GlonassL1CaPcpsAcquisitionTest_msg_rx_sptr GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 
@@ -178,11 +174,7 @@ void GlonassL1CaPcpsAcquisitionTest::init()
 TEST_F(GlonassL1CaPcpsAcquisitionTest, Instantiate)
 {
     init();
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
-#else
-    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
-#endif
+    auto acquisition = gnss_make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
 }
 
 
@@ -196,11 +188,7 @@ TEST_F(GlonassL1CaPcpsAcquisitionTest, ConnectAndRun)
 
     top_block = gr::make_top_block("Acquisition test");
     init();
-#if GNURADIO_USES_STD_POINTERS
-    std::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = std::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
-#else
-    boost::shared_ptr<GlonassL1CaPcpsAcquisition> acquisition = boost::make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
-#endif
+    auto acquisition = gnss_make_shared<GlonassL1CaPcpsAcquisition>(config.get(), "Acquisition_1G", 1, 0);
 
     auto msg_rx = GlonassL1CaPcpsAcquisitionTest_msg_rx_make();
 

@@ -26,6 +26,12 @@
 #include <gnuradio/hier_block2.h>
 #include <string>
 
+/** \addtogroup Resampler
+ * \{ */
+/** \addtogroup Resampler_adapters
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -76,4 +82,7 @@ private:
     bool dump_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_DIRECT_RESAMPLER_CONDITIONER_H

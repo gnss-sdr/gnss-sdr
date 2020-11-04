@@ -41,6 +41,14 @@
 #include <string>
 #include <vector>
 
+/** \addtogroup Input_Filter Input Filter
+ * Classes for input signal filtering
+ * \{ */
+/** \addtogroup Input_filter_adapters input_filter_adapters
+ * Classes that wrap GNU Radio input filters with a GNSSBlockInterface
+ * \{ */
+
+
 class ConfigurationInterface;
 
 /*!
@@ -113,4 +121,7 @@ private:
     bool dump_;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_FIR_FILTER_H

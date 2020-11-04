@@ -157,7 +157,7 @@ You can create the documentation by doing:
 $ make doc
 \endverbatim
 
-from the <tt>gnss-sdr/build</tt> folder. In both cases, <a href="http://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
+from the <tt>gnss-sdr/build</tt> folder. In both cases, <a href="https://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
 There are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:

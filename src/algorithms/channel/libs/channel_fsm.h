@@ -31,6 +31,12 @@
 #include <memory>
 #include <mutex>
 
+/** \addtogroup Channel
+ * \{ */
+/** \addtogroup Channel_libs channel_libs
+ * Library with utilities for a GNSS Channel.
+ * \{ */
+
 
 /*!
  * \brief This class implements a State Machine for channel
@@ -77,4 +83,7 @@ private:
     uint32_t state_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CHANNEL_FSM_H

@@ -67,6 +67,7 @@ target_link_libraries(signal_source_libs
 target_include_directories(signal_source_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(GNURADIO_USES_STD_POINTERS)

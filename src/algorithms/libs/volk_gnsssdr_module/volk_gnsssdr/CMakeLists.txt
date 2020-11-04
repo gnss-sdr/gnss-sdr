@@ -227,6 +227,29 @@ endif()
 # Dependencies setup
 ########################################################################
 
+# cpu_features
+set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
+  set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+  set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64")
+  set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(^i.86$)")
+  set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
+  set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
+endif()
+
+if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
+    set(BUILD_PIC ON CACHE BOOL
+        "Build cpu_features with Position Independent Code (PIC)."
+        FORCE
+    )
+    set(USE_CPU_FEATURES ON)
+    add_subdirectory(cpu_features)
+endif()
+
 # Python
 include(VolkPython) # sets PYTHON_EXECUTABLE
 volk_python_check_module("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)

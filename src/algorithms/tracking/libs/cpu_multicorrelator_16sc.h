@@ -26,6 +26,11 @@
 
 #include <volk_gnsssdr/volk_gnsssdr.h>
 
+/** \addtogroup Tracking
+ * \{ */
+/** \addtogroup Tracking_libs
+ * \{ */
+
 
 /*!
  * \brief Class that implements carrier wipe-off and correlators.
@@ -54,4 +59,6 @@ private:
 };
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CPU_MULTICORRELATOR_H

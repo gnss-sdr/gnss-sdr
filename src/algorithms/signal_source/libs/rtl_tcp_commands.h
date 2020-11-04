@@ -24,6 +24,12 @@
 #include <boost/asio/ip/tcp.hpp>        // for tcp, tcp::socket
 #include <boost/system/error_code.hpp>  // for error_code
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
+
+
 /// Command IDs for configuration rtl_tcp
 enum RTL_TCP_COMMAND
 {
@@ -42,4 +48,7 @@ enum RTL_TCP_COMMAND
 boost::system::error_code rtl_tcp_command(RTL_TCP_COMMAND id, unsigned param,
     boost::asio::ip::tcp::socket &socket);
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_RTL_TCP_COMMANDS_H

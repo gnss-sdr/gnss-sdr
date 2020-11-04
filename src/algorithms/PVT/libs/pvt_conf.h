@@ -24,6 +24,12 @@
 #include <map>
 #include <string>
 
+/** \addtogroup PVT
+ * \{ */
+/** \addtogroup PVT_libs
+ * \{ */
+
+
 class Pvt_Conf
 {
 public:
@@ -81,4 +87,7 @@ public:
     bool dump_mat;
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_PVT_CONF_H

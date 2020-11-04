@@ -27,10 +27,6 @@
 
 static const uint8_t BITN[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
-/** \defgroup bits Bit Utils
- * Bit field packing, unpacking and utility functions.
- * \{ */
-
 /** Computes the parity of a 32-bit word.
  *
  * References:
@@ -301,5 +297,3 @@ uint8_t count_bits_u8(uint8_t v, uint8_t bv)
         }
     return bv == 1 ? r : 8 - r;
 }
-
-/** \} */

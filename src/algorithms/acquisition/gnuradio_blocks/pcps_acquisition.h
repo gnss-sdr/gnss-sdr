@@ -59,6 +59,7 @@
 #include <complex>
 #include <cstdint>
 #include <memory>
+#include <queue>
 #include <string>
 #include <utility>
 
@@ -70,19 +71,18 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+/** \addtogroup Acquisition
+ * Classes for GNSS signal acquisition
+ * \{ */
+/** \addtogroup Acq_gnuradio_blocks acquisition_gr_blocks
+ * GNU Radio processing blocks for GNSS signal acquisition
+ * \{ */
+
 
 class Gnss_Synchro;
 class pcps_acquisition;
 
-#if GNURADIO_USES_STD_POINTERS
-using pcps_acquisition_sptr = std::shared_ptr<pcps_acquisition>;
-#else
-using pcps_acquisition_sptr = boost::shared_ptr<pcps_acquisition>;
-#endif
+using pcps_acquisition_sptr = gnss_shared_ptr<pcps_acquisition>;
 
 pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 
@@ -284,6 +284,11 @@ private:
     bool d_step_two;
     bool d_use_CFAR_algorithm_flag;
     bool d_dump;
+
+    std::queue<Gnss_Synchro> d_monitor_queue;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_PCPS_ACQUISITION_H

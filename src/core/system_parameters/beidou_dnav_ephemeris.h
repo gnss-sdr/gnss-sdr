@@ -25,6 +25,11 @@
 #include <map>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in
@@ -194,4 +199,7 @@ private:
     double check_t(double time);
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BEIDOU_DNAV_EPHEMERIS_H

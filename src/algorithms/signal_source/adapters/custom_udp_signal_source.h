@@ -27,14 +27,14 @@
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <pmt/pmt.h>
-#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#if GNURADIO_USES_STD_POINTERS
-#else
-#include <boost/shared_ptr.hpp>
-#endif
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
 
 
 class ConfigurationInterface;
@@ -78,13 +78,8 @@ public:
 
 private:
     Gr_Complex_Ip_Packet_Source::sptr udp_gnss_rx_source_;
-#if GNURADIO_USES_STD_POINTERS
-    std::vector<std::shared_ptr<gr::block>> null_sinks_;
-    std::vector<std::shared_ptr<gr::block>> file_sink_;
-#else
-    std::vector<boost::shared_ptr<gr::block>> null_sinks_;
-    std::vector<boost::shared_ptr<gr::block>> file_sink_;
-#endif
+    std::vector<gnss_shared_ptr<gr::block>> null_sinks_;
+    std::vector<gnss_shared_ptr<gr::block>> file_sink_;
 
     std::string role_;
     std::string item_type_;
@@ -101,4 +96,7 @@ private:
     bool IQ_swap_;
 };
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H

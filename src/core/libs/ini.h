@@ -36,8 +36,13 @@
 #ifndef GNSS_SDR_INI_H
 #define GNSS_SDR_INI_H
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
 
-/* Parse given INI-style file. May have [section]s, name=value pains
+
+/*! \brief Parse given INI-style file. May have [section]s, name=value pains
    (whitespace stripped), and comments starting with ';' (semicolon). Section
    is "" if name=value pain parsed before any section heading.
 
@@ -61,4 +66,6 @@ int ini_parse(const char* filename,
 #endif
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_INI_H

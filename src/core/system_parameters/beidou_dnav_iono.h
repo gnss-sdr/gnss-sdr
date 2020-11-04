@@ -23,6 +23,11 @@
 
 #include <boost/serialization/nvp.hpp>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters
+ * \{ */
+
 
 /*!
  * \brief This class is a storage for the BEIDOU IONOSPHERIC data as described in ICD v2.1
@@ -67,4 +72,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_BEIDOU_DNAV_IONO_H

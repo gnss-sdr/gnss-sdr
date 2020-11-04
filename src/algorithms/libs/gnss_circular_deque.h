@@ -24,6 +24,12 @@
 #include <boost/circular_buffer.hpp>
 #include <vector>
 
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
+
+
 template <class T>
 class Gnss_circular_deque
 {
@@ -136,4 +142,7 @@ void Gnss_circular_deque<T>::push_back(unsigned int ch, const T& new_data)
     d_data[ch].push_back(new_data);
 }
 
+
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_CIRCULAR_DEQUE_H

@@ -26,6 +26,13 @@
 #include <cstdint>
 #include <utility>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup System_Parameters core_system_parameters
+ * GNSS parameters
+ * \{ */
+
+
 /*!
  * \brief This is the class that contains the information that is shared
  * by the processing blocks.
@@ -204,4 +211,7 @@ public:
     }
 };
 
-#endif
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_GNSS_SYNCHRO_H

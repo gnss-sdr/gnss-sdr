@@ -64,8 +64,8 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     bool dump,
     const std::string& dump_filename,
     bool enable_monitor_output) : gr::block("pcps_quicksync_acquisition_cc",
-                                  gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                  gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+                                      gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -98,10 +98,17 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     original form to perform later correlation in time domain*/
     d_code = std::vector<gr_complex>(d_samples_per_code, lv_cmake(0.0F, 0.0F));
 
+#if GNURADIO_FFT_USES_TEMPLATES
+    // Direct FFT
+    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
+    // Inverse FFT
+    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
+#else
     // Direct FFT
     d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
     // Inverse FFT
     d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
+#endif
 
     // For dumping samples into a file
     d_dump = dump;
@@ -516,7 +523,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 // Copy and push current Gnss_Synchro to monitor queue
                 if (d_enable_monitor_output)
                     {
-                        auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+                        auto** out = reinterpret_cast<Gnss_Synchro**>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();
                         current_synchro_data = *d_gnss_synchro;
                         *out[0] = current_synchro_data;

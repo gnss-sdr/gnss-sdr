@@ -60,7 +60,11 @@ public:
 private:
     friend notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
     NotchLite(float p_c_factor, float pfa, int32_t length, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
+#if GNURADIO_FFT_USES_TEMPLATES
+    std::unique_ptr<gr::fft::fft_complex_fwd> d_fft_;
+#else
     std::unique_ptr<gr::fft::fft_complex> d_fft_;
+#endif
     volk_gnsssdr::vector<float> power_spect_;
     gr_complex last_out_;
     gr_complex z_0_;

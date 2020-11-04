@@ -63,6 +63,13 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(GNURADIO_FFT_USES_TEMPLATES)
+    target_compile_definitions(input_filter_gr_blocks
+        PUBLIC -DGNURADIO_FFT_USES_TEMPLATES=1
+    )
+endif()
+
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(input_filter_gr_blocks

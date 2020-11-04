@@ -130,11 +130,17 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_fft_codes = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
     d_input_signal = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
 
+#if GNURADIO_FFT_USES_TEMPLATES
+    // Direct FFT
+    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
+    // Inverse FFT
+    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
+#else
     // Direct FFT
     d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-
     // Inverse FFT
     d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
+#endif
 
     d_gnss_synchro = nullptr;
     d_worker_active = false;
@@ -1022,15 +1028,16 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     // Send outputs to the monitor
     if (d_acq_parameters.enable_monitor_output)
         {
-            auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
+            auto** out = reinterpret_cast<Gnss_Synchro**>(&output_items[0]);
             if (!d_monitor_queue.empty())
                 {
                     int num_gnss_synchro_objects = d_monitor_queue.size();
-                    for (int i = 0; i < num_gnss_synchro_objects; ++i) {
-                        Gnss_Synchro current_synchro_data = d_monitor_queue.front();
-                        d_monitor_queue.pop();
-                        *out[i] = current_synchro_data;
-                    }
+                    for (int i = 0; i < num_gnss_synchro_objects; ++i)
+                        {
+                            Gnss_Synchro current_synchro_data = d_monitor_queue.front();
+                            d_monitor_queue.pop();
+                            *out[i] = current_synchro_data;
+                        }
                     return num_gnss_synchro_objects;
                 }
         }

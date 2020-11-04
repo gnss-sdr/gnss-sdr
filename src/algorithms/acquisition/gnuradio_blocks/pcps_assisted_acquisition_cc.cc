@@ -52,8 +52,8 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
     int64_t fs_in, int32_t samples_per_ms, bool dump, const std::string &dump_filename,
     bool enable_monitor_output) : gr::block("pcps_assisted_acquisition_cc",
-                                  gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                  gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+                                      gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -72,16 +72,22 @@ pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     d_disable_assist = false;
     d_fft_codes.reserve(d_fft_size);
 
+#if GNURADIO_FFT_USES_TEMPLATES
+    // Direct FFT
+    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
+    // Inverse FFT
+    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
+#else
     // Direct FFT
     d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-
     // Inverse FFT
     d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
+#endif
 
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
-    
+
     d_enable_monitor_output = enable_monitor_output;
 
     d_doppler_resolution = 0;

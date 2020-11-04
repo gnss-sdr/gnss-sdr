@@ -69,8 +69,8 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     int CAF_window_hz_,
     int Zero_padding_,
     bool enable_monitor_output) : gr::block("galileo_e5a_noncoherentIQ_acquisition_caf_cc",
-                                  gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                  gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+                                      gr::io_signature::make(1, 1, sizeof(gr_complex)),
+                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -122,12 +122,17 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
                 }
         }
 
+#if GNURADIO_FFT_USES_TEMPLATES
+    // Direct FFT
+    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
+    // Inverse FFT
+    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
+#else
     // Direct FFT
     d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-
     // Inverse FFT
     d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
-
+#endif
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;
@@ -303,7 +308,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
      */
 
     int acquisition_message = -1;  // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
-    int return_value = 0;  // 0=Produces no Gnss_Synchro objects
+    int return_value = 0;          // 0=Produces no Gnss_Synchro objects
     /* States: 0 Stop Channel
      *         1 Load the buffer until it reaches fft_size
      *         2 Acquisition algorithm

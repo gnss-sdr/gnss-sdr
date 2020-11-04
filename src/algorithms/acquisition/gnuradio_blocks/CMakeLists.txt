@@ -96,6 +96,12 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(GNURADIO_FFT_USES_TEMPLATES)
+    target_compile_definitions(acquisition_gr_blocks
+        PUBLIC -DGNURADIO_FFT_USES_TEMPLATES=1
+    )
+endif()
+
 if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(acquisition_gr_blocks
         PUBLIC -DARMA_NO_BOUND_CHECKING=1

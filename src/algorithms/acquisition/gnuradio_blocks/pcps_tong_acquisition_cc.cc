@@ -80,8 +80,8 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     bool dump,
     const std::string &dump_filename,
     bool enable_monitor_output) : gr::block("pcps_tong_acquisition_cc",
-                                  gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                  gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+                                      gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER
@@ -105,12 +105,17 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_fft_codes.reserve(d_fft_size);
     d_magnitude.reserve(d_fft_size);
 
+#if GNURADIO_FFT_USES_TEMPLATES
+    // Direct FFT
+    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
+    // Inverse FFT
+    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
+#else
     // Direct FFT
     d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-
     // Inverse FFT
     d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
-
+#endif
     // For dumping samples into a file
     d_dump = dump;
     d_dump_filename = dump_filename;

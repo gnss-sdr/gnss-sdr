@@ -28,6 +28,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Added a common shared pointer definition `gnss_shared_ptr`, which allows to
   handle the `boost::shared_ptr` to `std::shared_ptr` transition in GNU Radio
   3.9 API more nicely.
+- Support new FFT blocks' templated API in GNU Radio 3.9.
 
 ### Improvements in Portability:
 

@@ -80,11 +80,17 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_fft_codes.reserve(d_fft_size);
     d_magnitude.reserve(d_fft_size);
     d_10_ms_buffer.reserve(50 * d_samples_per_ms);
+#if GNURADIO_FFT_USES_TEMPLATES
+    // Direct FFT
+    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
+    // Inverse FFT
+    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
+#else
     // Direct FFT
     d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-
     // Inverse FFT
     d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
+#endif
 
     // For dumping samples into a file
     d_dump = conf_.dump;
@@ -380,7 +386,11 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
     int signal_samples = prn_replicas * d_fft_size;
     // int fft_size_extended = nextPowerOf2(signal_samples * zero_padding_factor);
     int fft_size_extended = signal_samples * zero_padding_factor;
+#if GNURADIO_FFT_USES_TEMPLATES
+    auto fft_operator = std::make_unique<gr::fft::fft_complex_fwd>(fft_size_extended);
+#else
     auto fft_operator = std::make_unique<gr::fft::fft_complex>(fft_size_extended, true);
+#endif
     // zero padding the entire vector
     std::fill_n(fft_operator->get_inbuf(), fft_size_extended, gr_complex(0.0, 0.0));
 

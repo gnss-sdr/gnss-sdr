@@ -60,7 +60,11 @@ Notch::Notch(float pfa,
     angle_ = volk_gnsssdr::vector<float>(length_);
     power_spect_ = volk_gnsssdr::vector<float>(length_);
     last_out_ = gr_complex(0.0, 0.0);
+#if GNURADIO_FFT_USES_TEMPLATES
+    d_fft_ = std::make_unique<gr::fft::fft_complex_fwd>(length_);
+#else
     d_fft_ = std::make_unique<gr::fft::fft_complex>(length_, true);
+#endif
 }
 
 

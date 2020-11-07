@@ -23,8 +23,10 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
+#include "Galileo_E6.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
+#include "galileo_e6_signal_processing.h"
 #include "glonass_l1_signal_processing.h"
 #include "gps_sdr_signal_processing.h"
 #include <gnuradio/io_signature.h>
@@ -142,6 +144,13 @@ void signal_generator_c::init()
 
                             data_bit_duration_ms_.push_back(1e3 / GALILEO_E5B_SYMBOL_RATE_BPS);
                         }
+                    else if (signal_[sat].at(1) == '6')
+                        {
+                            samples_per_code_.push_back(round(static_cast<float>(fs_in_) / (GALILEO_E6_B_CODE_CHIP_RATE_CPS / GALILEO_E6_B_CODE_LENGTH_CHIPS)));
+
+                            num_of_codes_per_vector_.push_back(static_cast<int>(GALILEO_E6_C_SECONDARY_CODE_LENGTH_CHIPS));
+                            data_bit_duration_ms_.push_back(1);
+                        }
                     else
                         {
                             samples_per_code_.push_back(round(static_cast<float>(fs_in_) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
@@ -236,6 +245,37 @@ void signal_generator_c::generate_codes()
                                     for (unsigned int i = 0; i < vector_length_; i++)
                                         {
                                             sampled_code_data_[sat][i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
+                                        }
+                                }
+                        }
+                    else if (signal_[sat].at(1) == '6')
+                        {
+                            // Generate one code-period of E&B signal
+                            galileo_e6_b_code_gen_complex_sampled(code, PRN_[sat], fs_in_,
+                                static_cast<int>(GALILEO_E6_B_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
+                            // Obtain the desired CN0 assuming that Pn = 1.
+                            if (noise_flag_)
+                                {
+                                    for (unsigned int i = 0; i < samples_per_code_[sat]; i++)
+                                        {
+                                            code[i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
+                                        }
+                                }
+                            // Concatenate "num_of_codes_per_vector_" codes
+                            for (unsigned int i = 0; i < num_of_codes_per_vector_[sat]; i++)
+                                {
+                                    memcpy(&(sampled_code_data_[sat][i * samples_per_code_[sat]]),
+                                        code.data(), sizeof(gr_complex) * samples_per_code_[sat]);
+                                }
+                            // Generate E6C signal (100 code-periods, with secondary code)
+                            galileo_e6_c_code_gen_complex_sampled(sampled_code_pilot_[sat], PRN_[sat], fs_in_,
+                                static_cast<int>(GALILEO_E6_C_CODE_LENGTH_CHIPS) - delay_chips_[sat]);
+                            // Obtain the desired CN0 assuming that Pn = 1.
+                            if (noise_flag_)
+                                {
+                                    for (unsigned int i = 0; i < vector_length_; i++)
+                                        {
+                                            sampled_code_pilot_[sat][i] *= sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
                                         }
                                 }
                         }
@@ -440,6 +480,33 @@ int signal_generator_c::general_work(int noutput_items __attribute__((unused)),
                                                         sampled_code_data_[sat][out_idx].imag() * pilot_modulation_[sat])) *
                                                     complex_phase_[out_idx];
                                     out_idx++;
+                                }
+                        }
+                    else if (signal_[sat].at(1) == '6')
+                        {
+                            // EACH WORK outputs 1 modulated primary code
+                            int codelen = static_cast<int>(GALILEO_E6_C_CODE_LENGTH_CHIPS);
+                            unsigned int delay_samples = (delay_chips_[sat] % codelen) * samples_per_code_[sat] / codelen;
+                            for (i = 0; i < num_of_codes_per_vector_[sat]; i++)
+                                {
+                                    for (k = 0; k < delay_samples; k++)
+                                        {
+                                            out[out_idx] += (sampled_code_data_[sat][out_idx] * current_data_bits_[sat] - sampled_code_pilot_[sat][out_idx]) * complex_phase_[out_idx];
+                                            out_idx++;
+                                        }
+
+                                    if (ms_counter_[sat] == 0 && data_flag_)
+                                        {
+                                            // New random data bit
+                                            current_data_bits_[sat] = gr_complex((uniform_dist(e1) % 2) == 0 ? 1 : -1, 0);
+                                        }
+
+                                    for (k = delay_samples; k < samples_per_code_[sat]; k++)
+                                        {
+                                            out[out_idx] += (sampled_code_data_[sat][out_idx] * current_data_bits_[sat] - sampled_code_pilot_[sat][out_idx]) * complex_phase_[out_idx];
+                                            out_idx++;
+                                        }
+                                    ms_counter_[sat] = (ms_counter_[sat] + 1) % data_bit_duration_ms_[sat];
                                 }
                         }
                     else

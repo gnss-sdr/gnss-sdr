@@ -24,6 +24,7 @@
 #include "Galileo_E1.h"   // for GALILEO_E1_CODE_PERIOD_MS
 #include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIO...
 #include "Galileo_E5b.h"  // for GALILEO_E5B_CODE_PERIOD_MS
+#include "Galileo_E6.h"   // for GALILEO_E6_CODE_PERIOD_MS
 #include "convolutional.h"
 #include "display.h"
 #include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
@@ -108,6 +109,20 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
                 break;
             }
+        case 3:  // CNAV
+            {
+                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E6_CODE_PERIOD_MS);
+                d_bits_per_preamble = 16;                                                     // Not available
+                d_samples_per_preamble = 16;                                                  // Not available
+                d_preamble_period_symbols = 1000;                                             // Not available
+                d_required_symbols = 1000 + d_samples_per_preamble;                           // Not available
+                d_preamble_samples.reserve(d_samples_per_preamble);                           // Not available
+                d_frame_length_symbols = d_preamble_period_symbols - d_samples_per_preamble;  // Not available
+                d_codelength = d_preamble_period_symbols - d_samples_per_preamble;            // Not available
+                d_datalength = (d_codelength / d_nn) - d_mm;                                  // Not available
+                d_max_symbols_without_valid_frame = d_preamble_period_symbols * 10;           // Not available
+                break;
+            }
         default:
             d_bits_per_preamble = 0;
             d_samples_per_preamble = 0;
@@ -148,6 +163,12 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                             {
                                 d_preamble_samples[i] = -1;
                             }
+                        break;
+                    }
+                case 3:  // CNAV for E6
+                    {
+                        // TODO
+                        d_preamble_samples[i] = 1;
                         break;
                     }
                 }
@@ -421,6 +442,12 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 }
 
 
+void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols __attribute__((unused)), int32_t frame_length __attribute__((unused)))
+{
+    // TODO
+}
+
+
 void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite)
 {
     gr::thread::scoped_lock lock(d_setlock);
@@ -491,6 +518,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         case 2:  // FNAV
             {
                 d_symbol_history.push_back(current_symbol.Prompt_Q);
+                break;
+            }
+        case 3:  // CNAV
+            {
+                d_symbol_history.push_back(current_symbol.Prompt_I);
                 break;
             }
         default:
@@ -600,45 +632,32 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                     {
                         // call the decoder
+                        // NEW Galileo page part is received
+                        // 0. fetch the symbols into an array
+                        if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
+                            {
+                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
+                                    {
+                                        d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
+                                    }
+                            }
+                        else  // 180 deg. inverted carrier phase PLL lock
+                            {
+                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
+                                    {
+                                        d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
+                                    }
+                            }
                         switch (d_frame_type)
                             {
                             case 1:  // INAV
-                                     // NEW Galileo page part is received
-                                // 0. fetch the symbols into an array
-                                if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
-                                else  // 180 deg. inverted carrier phase PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
                                 decode_INAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             case 2:  // FNAV
-                                     // NEW Galileo page part is received
-                                // 0. fetch the symbols into an array
-                                if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
-                                else  // 180 deg. inverted carrier phase PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
                                 decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
+                                break;
+                            case 3:  // CNAV
+                                decode_CNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             default:
                                 return -1;
@@ -749,6 +768,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 break;
                             }
                     }
+                case 3:  // CNAV
+                    {
+                        // TODO
+                    }
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
@@ -769,6 +792,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             {
                                 d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
                             }
+                        break;
+                    }
+                case 3:  // CNAV
+                    {
+                        // TODO
                         break;
                     }
                 }
@@ -796,6 +824,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     {
                         current_symbol.Flag_valid_word = true;
                     }
+                break;
+            }
+        case 3:  // CNAV
+            {
+                // TODO
                 break;
             }
         }

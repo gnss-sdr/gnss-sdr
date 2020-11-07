@@ -134,6 +134,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_mapStringValues["L5"] = evGPS_L5;
     d_mapStringValues["1B"] = evGAL_1B;
     d_mapStringValues["5X"] = evGAL_5X;
+    d_mapStringValues["E6"] = evGAL_E6;
     d_mapStringValues["7X"] = evGAL_7X;
     d_mapStringValues["1G"] = evGLO_1G;
     d_mapStringValues["2G"] = evGLO_2G;
@@ -1140,6 +1141,9 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                         case 33:  // L1+E1+E5a
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
                                             break;
+                                        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
+                                            break;
                                         case 1000:  // L1+L2+L5
                                             d_rp->log_rinex_nav(d_rp->navFile, new_eph);
                                             break;
@@ -1319,8 +1323,20 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                         case 30:  // Galileo E1B + GLONASS L2 C/A
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_gal_eph, new_glo_eph);
                                             break;
-                                        case 32:    // L1+E1+L5+E5a
-                                        case 33:    // L1+E1+E5a
+                                        case 32:  // L1+E1+L5+E5a
+                                        case 33:  // L1+E1+E5a
+                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
+                                            break;
+                                        case 101:  // E1B + E6B
+                                        case 102:  // Galileo E5a + Galileo E6B
+                                        case 103:  // Galileo E5b + Galileo E6B
+                                        case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+                                        case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
+                                            d_rp->log_rinex_nav(d_rp->navGalFile, new_gal_eph);
+                                            break;
+                                        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+                                            d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
+                                            break;
                                         case 1001:  // L1+E1+L2+L5+E5a
                                             d_rp->log_rinex_nav(d_rp->navMixFile, new_eph, new_gal_eph);
                                             break;
@@ -1803,6 +1819,9 @@ void rtklib_pvt_gs::apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observabl
                 case evGAL_5X:
                     observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ5 * TWO_PI;
                     break;
+                case evGAL_E6:
+                    observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ6 * TWO_PI;
+                    break;
                 case evGAL_7X:
                     observables_iter->second.Carrier_phase_rads -= rx_clock_offset_s * FREQ7 * TWO_PI;
                     break;
@@ -1901,6 +1920,9 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
                         case evGPS_L5:
                         case evGAL_5X:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
+                            break;
+                        case evGAL_E6:
+                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ6;
                             break;
                         case evGAL_7X:
                             wavelength_m = SPEED_OF_LIGHT_M_S / FREQ7;
@@ -2301,7 +2323,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                      *    30   |  Galileo E1B + GLONASS L2 C/A
                                      *    31   |  GPS L2C + GLONASS L2 C/A
                                      *    32   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a
-                                     *    500   |  BeiDou B1I
+                                     *    33   |  GPS L1 C/A + Galileo E1B + Galileo E5a
+                                     =    100   |  Galileo E6B
+                                     =    101   |  Galileo E1B + Galileo E6B
+                                     *    102   |  Galileo E5a + Galileo E6B
+                                     *    103   |  Galileo E5b + Galileo E6B
+                                     *    104   |  Galileo E1B + Galileo E5a + Galileo E6B
+                                     *    105   |  Galileo E1B + Galileo E5b + Galileo E6B
+                                     *    106   |  GPS L1 C/A + Galileo E1B + Galileo E6B
                                      *    501   |  BeiDou B1I + GPS L1 C/A
                                      *    502   |  BeiDou B1I + Galileo E1B
                                      *    503   |  BeiDou B1I + GLONASS L1 C/A
@@ -2609,6 +2638,65 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()))
                                                                 {
                                                                     const std::string gal_signal("1B 5X");
+                                                                    d_rp->rinex_obs_header(d_rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    d_rp->rinex_nav_header(d_rp->navMixFile, d_user_pvt_solver->gps_iono, d_user_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                    d_rp->log_rinex_nav(d_rp->navMixFile, d_user_pvt_solver->gps_ephemeris_map, d_user_pvt_solver->galileo_ephemeris_map);
+                                                                    d_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                            break;
+                                                        case 101:  // Galileo E1B + Galileo E6B
+                                                            if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                {
+                                                                    d_rp->rinex_obs_header(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time);
+                                                                    d_rp->rinex_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                    d_rp->log_rinex_nav(d_rp->navGalFile, d_user_pvt_solver->galileo_ephemeris_map);
+                                                                    d_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                            break;
+                                                        case 102:  // Galileo E5a + Galileo E6B
+                                                            if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                {
+                                                                    const std::string signal("5X");
+                                                                    d_rp->rinex_obs_header(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
+                                                                    d_rp->rinex_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                    d_rp->log_rinex_nav(d_rp->navGalFile, d_user_pvt_solver->galileo_ephemeris_map);
+                                                                    d_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                            break;
+                                                        case 103:  // Galileo E5b + Galileo E6B
+                                                            if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                {
+                                                                    const std::string signal("7X");
+                                                                    d_rp->rinex_obs_header(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, signal);
+                                                                    d_rp->rinex_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                    d_rp->log_rinex_nav(d_rp->navGalFile, d_user_pvt_solver->galileo_ephemeris_map);
+                                                                    d_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                            break;
+                                                        case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+                                                            if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()))
+                                                                {
+                                                                    const std::string gal_signal("1B 5X");
+                                                                    d_rp->rinex_obs_header(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    d_rp->rinex_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                    d_rp->log_rinex_nav(d_rp->navGalFile, d_user_pvt_solver->galileo_ephemeris_map);
+                                                                    d_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                            break;
+                                                        case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
+                                                            if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()))
+                                                                {
+                                                                    const std::string gal_signal("1B 7X");
+                                                                    d_rp->rinex_obs_header(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
+                                                                    d_rp->rinex_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                    d_rp->log_rinex_nav(d_rp->navGalFile, d_user_pvt_solver->galileo_ephemeris_map);
+                                                                    d_rinex_header_written = true;  // do not write header anymore
+                                                                }
+                                                            break;
+                                                        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+                                                            if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_user_pvt_solver->gps_ephemeris_map.cend()))
+                                                                {
+                                                                    const std::string gal_signal("1B");
                                                                     d_rp->rinex_obs_header(d_rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, gal_signal);
                                                                     d_rp->rinex_nav_header(d_rp->navMixFile, d_user_pvt_solver->gps_iono, d_user_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
                                                                     d_rp->log_rinex_nav(d_rp->navMixFile, d_user_pvt_solver->gps_ephemeris_map, d_user_pvt_solver->galileo_ephemeris_map);
@@ -3002,6 +3090,78 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                                 }
                                                                         }
                                                                     break;
+                                                                case 101:  // Galileo E1B + Galileo E6B
+                                                                    if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rp->log_rinex_obs(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, d_gnss_observables_map, "1B");
+                                                                        }
+                                                                    if (!d_rinex_header_updated and (d_user_pvt_solver->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            d_rp->update_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rp->update_obs_header(d_rp->obsFile, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rinex_header_updated = true;
+                                                                        }
+                                                                    break;
+                                                                case 102:  // Galileo E5a + Galileo E6B
+                                                                    if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rp->log_rinex_obs(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, d_gnss_observables_map, "5X");
+                                                                        }
+                                                                    if (!d_rinex_header_updated and (d_user_pvt_solver->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            d_rp->update_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rp->update_obs_header(d_rp->obsFile, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rinex_header_updated = true;
+                                                                        }
+                                                                    break;
+                                                                case 103:  // Galileo E5b + Galileo E6B
+                                                                    if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rp->log_rinex_obs(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, d_gnss_observables_map, "5X");
+                                                                        }
+                                                                    if (!d_rinex_header_updated and (d_user_pvt_solver->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            d_rp->update_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rp->update_obs_header(d_rp->obsFile, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rinex_header_updated = true;
+                                                                        }
+                                                                    break;
+                                                                case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+                                                                    if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rp->log_rinex_obs(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, d_gnss_observables_map, "1B 5X");
+                                                                        }
+                                                                    if (!d_rinex_header_updated and (d_user_pvt_solver->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            d_rp->update_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rp->update_obs_header(d_rp->obsFile, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rinex_header_updated = true;
+                                                                        }
+                                                                    break;
+                                                                case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
+                                                                    if (galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rp->log_rinex_obs(d_rp->obsFile, galileo_ephemeris_iter->second, d_rx_time, d_gnss_observables_map, "1B 7X");
+                                                                        }
+                                                                    if (!d_rinex_header_updated and (d_user_pvt_solver->galileo_utc_model.A0_6 != 0))
+                                                                        {
+                                                                            d_rp->update_nav_header(d_rp->navGalFile, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rp->update_obs_header(d_rp->obsFile, d_user_pvt_solver->galileo_utc_model);
+                                                                            d_rinex_header_updated = true;
+                                                                        }
+                                                                    break;
+                                                                case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+                                                                    if ((galileo_ephemeris_iter != d_user_pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != d_user_pvt_solver->gps_ephemeris_map.cend()))
+                                                                        {
+                                                                            d_rp->log_rinex_obs(d_rp->obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, d_rx_time, d_gnss_observables_map);
+                                                                            if (!d_rinex_header_updated and (d_user_pvt_solver->gps_utc_model.d_A0 != 0))
+                                                                                {
+                                                                                    d_rp->update_obs_header(d_rp->obsFile, d_user_pvt_solver->gps_utc_model);
+                                                                                    d_rp->update_nav_header(d_rp->navMixFile, d_user_pvt_solver->gps_iono, d_user_pvt_solver->gps_utc_model, gps_ephemeris_iter->second, d_user_pvt_solver->galileo_iono, d_user_pvt_solver->galileo_utc_model);
+                                                                                    d_rinex_header_updated = true;
+                                                                                }
+                                                                        }
+                                                                    break;
                                                                 case 500:  // BDS B1I only
                                                                     if (beidou_dnav_ephemeris_iter != d_user_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                                                         {
@@ -3084,9 +3244,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
                                                             break;
-                                                        case 4:
-                                                        case 5:
-                                                        case 6:
+                                                        case 4:  // Galileo E1B
+                                                        case 5:  // Galileo E5a
+                                                        case 6:  // Galileo E5b
                                                             if (flag_write_RTCM_1045_output == true)
                                                                 {
                                                                     for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
@@ -3250,8 +3410,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
                                                             break;
-                                                        case 14:
-                                                        case 15:
+                                                        case 14:  // Galileo E1B + Galileo E5a
+                                                        case 15:  // Galileo E1B + Galileo E5b
                                                             if (flag_write_RTCM_1045_output == true)
                                                                 {
                                                                     for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
@@ -3268,9 +3428,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
                                                             break;
-                                                        case 23:
-                                                        case 24:
-                                                        case 25:
+                                                        case 23:  // GLONASS L1 C/A
+                                                        case 24:  // GLONASS L2 C/A
+                                                        case 25:  // GLONASS L1 C/A + GLONASS L2 C/A
                                                             if (flag_write_RTCM_1020_output == true)
                                                                 {
                                                                     for (const auto& glonass_gnav_ephemeris_iter : d_user_pvt_solver->glonass_gnav_ephemeris_map)
@@ -3579,6 +3739,85 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
                                                             break;
+                                                        case 101:  // Galileo E1B + Galileo E6B
+                                                        case 102:  // Galileo E5a + Galileo E6B
+                                                        case 103:  // Galileo E5b + Galileo E6B
+                                                        case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+                                                        case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
+                                                            if (flag_write_RTCM_1045_output == true)
+                                                                {
+                                                                    for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MT1045(gal_eph_iter.second);
+                                                                        }
+                                                                }
+                                                            if (flag_write_RTCM_MSM_output == true)
+                                                                {
+                                                                    const auto gal_eph_iter = d_user_pvt_solver->galileo_ephemeris_map.cbegin();
+                                                                    if (gal_eph_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, d_rx_time, d_gnss_observables_map, d_enable_rx_clock_correction, 0, 0, false, false);
+                                                                        }
+                                                                }
+                                                            break;
+                                                        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+                                                            if (flag_write_RTCM_1019_output == true)
+                                                                {
+                                                                    for (const auto& gps_eph_iter : d_user_pvt_solver->gps_ephemeris_map)
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MT1019(gps_eph_iter.second);
+                                                                        }
+                                                                }
+                                                            if (flag_write_RTCM_1045_output == true)
+                                                                {
+                                                                    for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MT1045(gal_eph_iter.second);
+                                                                        }
+                                                                }
+                                                            if (flag_write_RTCM_MSM_output == true)
+                                                                {
+                                                                    auto gps_eph_iter = d_user_pvt_solver->gps_ephemeris_map.cbegin();
+                                                                    auto gal_eph_iter = d_user_pvt_solver->galileo_ephemeris_map.cbegin();
+                                                                    int gps_channel = 0;
+                                                                    int gal_channel = 0;
+                                                                    for (const auto& gnss_observables_iter : d_gnss_observables_map)
+                                                                        {
+                                                                            const std::string system(gnss_observables_iter.second.System, 1);
+                                                                            if (gps_channel == 0)
+                                                                                {
+                                                                                    if (system == "G")
+                                                                                        {
+                                                                                            // This is a channel with valid GPS signal
+                                                                                            gps_eph_iter = d_user_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter.second.PRN);
+                                                                                            if (gps_eph_iter != d_user_pvt_solver->gps_ephemeris_map.cend())
+                                                                                                {
+                                                                                                    gps_channel = 1;
+                                                                                                }
+                                                                                        }
+                                                                                }
+                                                                            if (gal_channel == 0)
+                                                                                {
+                                                                                    if (system == "E")
+                                                                                        {
+                                                                                            gal_eph_iter = d_user_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter.second.PRN);
+                                                                                            if (gal_eph_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                                                {
+                                                                                                    gal_channel = 1;
+                                                                                                }
+                                                                                        }
+                                                                                }
+                                                                        }
+                                                                    if (gps_eph_iter != d_user_pvt_solver->gps_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MSM(7, gps_eph_iter->second, {}, {}, {}, d_rx_time, d_gnss_observables_map, d_enable_rx_clock_correction, 0, 0, false, false);
+                                                                        }
+                                                                    if (gal_eph_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, d_rx_time, d_gnss_observables_map, d_enable_rx_clock_correction, 0, 0, false, false);
+                                                                        }
+                                                                }
+                                                            break;
                                                         default:
                                                             break;
                                                         }
@@ -3606,9 +3845,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             d_rtcm_writing_started = true;
                                                             break;
-                                                        case 4:
-                                                        case 5:
-                                                        case 6:
+                                                        case 4:                              // Galileo E1B
+                                                        case 5:                              // Galileo E5a
+                                                        case 6:                              // Galileo E5b
                                                             if (d_rtcm_MT1045_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                                                 {
                                                                     for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
@@ -3759,8 +3998,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             d_rtcm_writing_started = true;
                                                             break;
-                                                        case 14:
-                                                        case 15:
+                                                        case 14:                             // Galileo E1B + Galileo E5a
+                                                        case 15:                             // Galileo E1B + Galileo E5b
                                                             if (d_rtcm_MT1045_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                                                 {
                                                                     for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
@@ -3778,9 +4017,9 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                 }
                                                             d_rtcm_writing_started = true;
                                                             break;
-                                                        case 23:
-                                                        case 24:
-                                                        case 25:
+                                                        case 23:                             // GLONASS L1 C/A
+                                                        case 24:                             // GLONASS L2 C/A
+                                                        case 25:                             // GLONASS L1 C/A + GLONASS L2 C/A
                                                             if (d_rtcm_MT1020_rate_ms != 0)  // allows deactivating messages by setting rate = 0
                                                                 {
                                                                     for (const auto& glonass_gnav_eph_iter : d_user_pvt_solver->glonass_gnav_ephemeris_map)
@@ -4044,6 +4283,104 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                                         }
                                                                 }
                                                             if (d_rtcm_MT1045_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                                                {
+                                                                    for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MT1045(gal_eph_iter.second);
+                                                                        }
+                                                                }
+                                                            if (d_rtcm_MSM_rate_ms != 0)
+                                                                {
+                                                                    auto gal_eph_iter = d_user_pvt_solver->galileo_ephemeris_map.cbegin();
+                                                                    auto gps_eph_iter = d_user_pvt_solver->gps_ephemeris_map.cbegin();
+                                                                    int gps_channel = 0;
+                                                                    int gal_channel = 0;
+                                                                    for (const auto& gnss_observables_iter : d_gnss_observables_map)
+                                                                        {
+                                                                            const std::string system(gnss_observables_iter.second.System, 1);
+                                                                            if (gps_channel == 0)
+                                                                                {
+                                                                                    if (system == "G")
+                                                                                        {
+                                                                                            // This is a channel with valid GPS signal
+                                                                                            gps_eph_iter = d_user_pvt_solver->gps_ephemeris_map.find(gnss_observables_iter.second.PRN);
+                                                                                            if (gps_eph_iter != d_user_pvt_solver->gps_ephemeris_map.cend())
+                                                                                                {
+                                                                                                    gps_channel = 1;
+                                                                                                }
+                                                                                        }
+                                                                                }
+                                                                            if (gal_channel == 0)
+                                                                                {
+                                                                                    if (system == "E")
+                                                                                        {
+                                                                                            gal_eph_iter = d_user_pvt_solver->galileo_ephemeris_map.find(gnss_observables_iter.second.PRN);
+                                                                                            if (gal_eph_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                                                {
+                                                                                                    gal_channel = 1;
+                                                                                                }
+                                                                                        }
+                                                                                }
+                                                                        }
+                                                                    if (gps_eph_iter != d_user_pvt_solver->gps_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MSM(7, gps_eph_iter->second, {}, {}, {}, d_rx_time, d_gnss_observables_map, d_enable_rx_clock_correction, 0, 0, false, false);
+                                                                        }
+                                                                    if (gal_eph_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, d_rx_time, d_gnss_observables_map, d_enable_rx_clock_correction, 0, 0, false, false);
+                                                                        }
+                                                                }
+                                                            d_rtcm_writing_started = true;
+                                                            break;
+                                                        case 101:                            // Galileo E1B + Galileo E6B
+                                                        case 102:                            // Galileo E5a + Galileo E6B
+                                                        case 103:                            // Galileo E5b + Galileo E6B
+                                                            if (d_rtcm_MT1045_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                                                {
+                                                                    for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MT1045(gal_eph_iter.second);
+                                                                        }
+                                                                }
+                                                            if (d_rtcm_MSM_rate_ms != 0)
+                                                                {
+                                                                    const auto gal_eph_iter = d_user_pvt_solver->galileo_ephemeris_map.cbegin();
+                                                                    if (gal_eph_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, d_rx_time, d_gnss_observables_map, d_enable_rx_clock_correction, 0, 0, false, false);
+                                                                        }
+                                                                }
+                                                            d_rtcm_writing_started = true;
+                                                            break;
+                                                        case 104:                            // Galileo E1B + Galileo E5a + Galileo E6B
+                                                        case 105:                            // Galileo E1B + Galileo E5b + Galileo E6B
+                                                            if (d_rtcm_MT1045_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                                                {
+                                                                    for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MT1045(gal_eph_iter.second);
+                                                                        }
+                                                                }
+                                                            if (d_rtcm_MSM_rate_ms != 0)
+                                                                {
+                                                                    const auto gal_eph_iter = d_user_pvt_solver->galileo_ephemeris_map.cbegin();
+                                                                    if (gal_eph_iter != d_user_pvt_solver->galileo_ephemeris_map.cend())
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MSM(7, {}, {}, gal_eph_iter->second, {}, d_rx_time, d_gnss_observables_map, d_enable_rx_clock_correction, 0, 0, false, false);
+                                                                        }
+                                                                }
+                                                            d_rtcm_writing_started = true;
+                                                            break;
+                                                        case 106:                            // GPS L1 C/A + Galileo E1B + Galileo E6B
+                                                            if (d_rtcm_MT1019_rate_ms != 0)  // allows deactivating messages by setting rate = 0
+                                                                {
+                                                                    for (const auto& gps_eph_iter : d_user_pvt_solver->gps_ephemeris_map)
+                                                                        {
+                                                                            d_rtcm_printer->Print_Rtcm_MT1019(gps_eph_iter.second);
+                                                                        }
+                                                                }
+                                                            if (d_rtcm_MT1045_rate_ms != 0)
                                                                 {
                                                                     for (const auto& gal_eph_iter : d_user_pvt_solver->galileo_ephemeris_map)
                                                                         {

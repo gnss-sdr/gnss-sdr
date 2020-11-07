@@ -25,6 +25,7 @@
 
 #include <complex>
 #include <cstdint>
+#include <string>
 #if HAS_STD_SPAN
 #include <span>
 namespace own = std;
@@ -57,6 +58,13 @@ void complex_exp_gen_conj(own::span<std::complex<float>> _dest, double _f, doubl
  *
  */
 void hex_to_binary_converter(own::span<int32_t> _dest, char _from);
+
+/*!
+ * \brief This function makes a conversion from hex (the input is a char)
+ *  to binary (the output is a string of 4 char with 0 or 1 values).
+ *
+ */
+std::string hex_to_binary_string(char _from);
 
 /*!
  * \brief This function resamples a sequence of float values.

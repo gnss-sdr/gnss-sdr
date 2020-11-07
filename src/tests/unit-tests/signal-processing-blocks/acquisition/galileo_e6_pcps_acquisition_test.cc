@@ -1,9 +1,8 @@
 /*!
- * \file galileo_e5b_pcps_acquisition_test.cc
+ * \file galileo_e6_pcps_acquisition_test.cc
  * \brief  This class implements an acquisition test for
- * GalileoE5bPcpsAcquisition class based on some input parameters.
- * \author Piyush Gupta, 2020. piyush04111999@gmail.com
- * \note Code added as GSoC 2020 Program.
+ * GalileoE6PcpsAcquisition class based on some input parameters.
+ * \author Carles Fernandez-Prades, 2020 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
@@ -20,9 +19,10 @@
  */
 
 
+#include "Galileo_E6.h"
 #include "concurrent_queue.h"
 #include "fir_filter.h"
-#include "galileo_e5b_pcps_acquisition.h"
+#include "galileo_e6_pcps_acquisition.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
@@ -53,33 +53,33 @@
 #endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
-class GalileoE5bPcpsAcquisitionTest_msg_rx;
+class GalileoE6PcpsAcquisitionTest_msg_rx;
 
-using GalileoE5bPcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GalileoE5bPcpsAcquisitionTest_msg_rx>;
+using GalileoE6PcpsAcquisitionTest_msg_rx_sptr = gnss_shared_ptr<GalileoE6PcpsAcquisitionTest_msg_rx>;
 
-GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
+GalileoE6PcpsAcquisitionTest_msg_rx_sptr GalileoE6PcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
 
-class GalileoE5bPcpsAcquisitionTest_msg_rx : public gr::block
+class GalileoE6PcpsAcquisitionTest_msg_rx : public gr::block
 {
 private:
-    friend GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
+    friend GalileoE6PcpsAcquisitionTest_msg_rx_sptr GalileoE6PcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue);
     void msg_handler_channel_events(const pmt::pmt_t msg);
-    explicit GalileoE5bPcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue);
+    explicit GalileoE6PcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue);
     Concurrent_Queue<int>& channel_internal_queue;
 
 public:
     int rx_message;
-    ~GalileoE5bPcpsAcquisitionTest_msg_rx();  //!< Default destructor
+    ~GalileoE6PcpsAcquisitionTest_msg_rx();  //!< Default destructor
 };
 
 
-GalileoE5bPcpsAcquisitionTest_msg_rx_sptr GalileoE5bPcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue)
+GalileoE6PcpsAcquisitionTest_msg_rx_sptr GalileoE6PcpsAcquisitionTest_msg_rx_make(Concurrent_Queue<int>& queue)
 {
-    return GalileoE5bPcpsAcquisitionTest_msg_rx_sptr(new GalileoE5bPcpsAcquisitionTest_msg_rx(queue));
+    return GalileoE6PcpsAcquisitionTest_msg_rx_sptr(new GalileoE6PcpsAcquisitionTest_msg_rx(queue));
 }
 
 
-void GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
+void GalileoE6PcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
 {
     try
         {
@@ -95,7 +95,7 @@ void GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt:
 }
 
 
-GalileoE5bPcpsAcquisitionTest_msg_rx::GalileoE5bPcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE5bPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
+GalileoE6PcpsAcquisitionTest_msg_rx::GalileoE6PcpsAcquisitionTest_msg_rx(Concurrent_Queue<int>& queue) : gr::block("GalileoE6PcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)), channel_internal_queue(queue)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -103,24 +103,24 @@ GalileoE5bPcpsAcquisitionTest_msg_rx::GalileoE5bPcpsAcquisitionTest_msg_rx(Concu
         [this](pmt::pmt_t&& PH1) { msg_handler_channel_events(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
+        boost::bind(&GalileoE6PcpsAcquisitionTest_msg_rx::msg_handler_channel_events, this, boost::placeholders::_1));
 #else
-        boost::bind(&GalileoE5bPcpsAcquisitionTest_msg_rx::msg_handler_channel_events, this, _1));
+        boost::bind(&GalileoE6PcpsAcquisitionTest_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
     rx_message = 0;
 }
 
 
-GalileoE5bPcpsAcquisitionTest_msg_rx::~GalileoE5bPcpsAcquisitionTest_msg_rx() = default;
+GalileoE6PcpsAcquisitionTest_msg_rx::~GalileoE6PcpsAcquisitionTest_msg_rx() = default;
 
 
 // ###########################################################
 
-class GalileoE5bPcpsAcquisitionTest : public ::testing::Test
+class GalileoE6PcpsAcquisitionTest : public ::testing::Test
 {
 protected:
-    GalileoE5bPcpsAcquisitionTest()
+    GalileoE6PcpsAcquisitionTest()
     {
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
@@ -129,7 +129,7 @@ protected:
         message = 0;
     }
 
-    ~GalileoE5bPcpsAcquisitionTest() = default;
+    ~GalileoE6PcpsAcquisitionTest() = default;
 
     void init();
     void start_queue();
@@ -139,7 +139,7 @@ protected:
 
     Concurrent_Queue<int> channel_internal_queue;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
-    gnss_shared_ptr<GalileoE5bPcpsAcquisition> acquisition;
+    gnss_shared_ptr<GalileoE6PcpsAcquisition> acquisition;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     std::thread ch_thread;
@@ -175,11 +175,11 @@ protected:
 };
 
 
-void GalileoE5bPcpsAcquisitionTest::init()
+void GalileoE6PcpsAcquisitionTest::init()
 {
     gnss_synchro.Channel_ID = 0;
     gnss_synchro.System = 'E';
-    std::string signal = "7X";
+    std::string signal = "E6";
     signal.copy(gnss_synchro.Signal, 2, 0);
     gnss_synchro.PRN = 1;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
@@ -187,7 +187,7 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("SignalSource.item_type", "gr_complex");
     config->set_property("SignalSource.num_satellites", "1");
     config->set_property("SignalSource.system_0", "E");
-    config->set_property("SignalSource.signal_0", "7X");
+    config->set_property("SignalSource.signal_0", "E6");
     config->set_property("SignalSource.PRN_0", "11");
     config->set_property("SignalSource.CN0_dB_0", "50");
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
@@ -216,25 +216,25 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("InputFilter.band2_error", "1.0");
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", "16");
-    config->set_property("Acquisition_7X.implementation", "Galileo_E5b_PCPS_Acquisition");
-    config->set_property("Acquisition_7X.item_type", "gr_complex");
-    config->set_property("Acquisition_7X.coherent_integration_time_ms", std::to_string(integration_time_ms));
-    config->set_property("Acquisition_7X.dump", "true");
-    config->set_property("Acquisition_7X.dump_filename", "./acquisition");
-    config->set_property("Acquisition_7X.threshold", "0.001");
-    config->set_property("Acquisition_7X.doppler_max", "10000");
-    config->set_property("Acquisition_7X.doppler_step", "250");
-    config->set_property("Acquisition_7X.repeat_satellite", "false");
+    config->set_property("Acquisition_E6.implementation", "Galileo_E6_PCPS_Acquisition");
+    config->set_property("Acquisition_E6.item_type", "gr_complex");
+    config->set_property("Acquisition_E6.coherent_integration_time_ms", std::to_string(integration_time_ms));
+    config->set_property("Acquisition_E6.dump", "true");
+    config->set_property("Acquisition_E6.dump_filename", "./acquisition");
+    config->set_property("Acquisition_E6.pfa", "0.01");
+    config->set_property("Acquisition_E6.doppler_max", "10000");
+    config->set_property("Acquisition_E6.doppler_step", "250");
+    config->set_property("Acquisition_E6.repeat_satellite", "false");
 }
 
-void GalileoE5bPcpsAcquisitionTest::start_queue()
+void GalileoE6PcpsAcquisitionTest::start_queue()
 {
     stop = false;
-    ch_thread = std::thread(&GalileoE5bPcpsAcquisitionTest::wait_message, this);
+    ch_thread = std::thread(&GalileoE6PcpsAcquisitionTest::wait_message, this);
 }
 
 
-void GalileoE5bPcpsAcquisitionTest::wait_message()
+void GalileoE6PcpsAcquisitionTest::wait_message()
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
@@ -257,18 +257,17 @@ void GalileoE5bPcpsAcquisitionTest::wait_message()
 }
 
 
-void GalileoE5bPcpsAcquisitionTest::process_message()
+void GalileoE6PcpsAcquisitionTest::process_message()
 {
     if (message == 1)
         {
-            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * 10230.0 / (static_cast<double>(fs_in) * 1e-3));
+            double delay_error_chips = std::abs(static_cast<double>(expected_delay_chips) - static_cast<double>(gnss_synchro.Acq_delay_samples - 5) * GALILEO_E6_B_CODE_LENGTH_CHIPS / (static_cast<double>(fs_in) * 1e-3));
             double doppler_error_hz = std::abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
             // The term -5 is here to correct the additional delay introduced by the FIR filter
             /*
             double delay_error_chips = abs((double)expected_delay_chips - (double)(gnss_synchro.Acq_delay_samples-5)*10230.0/((double)fs_in*1e-3));
             double doppler_error_hz = abs(expected_doppler_hz - gnss_synchro.Acq_doppler_hz);
              */
-
             detection_counter++;
 
             mse_delay += std::pow(delay_error_chips, 2);
@@ -302,20 +301,20 @@ void GalileoE5bPcpsAcquisitionTest::process_message()
 }
 
 
-void GalileoE5bPcpsAcquisitionTest::stop_queue()
+void GalileoE6PcpsAcquisitionTest::stop_queue()
 {
     stop = true;
 }
 
 
-TEST_F(GalileoE5bPcpsAcquisitionTest, Instantiate)
+TEST_F(GalileoE6PcpsAcquisitionTest, Instantiate)
 {
     init();
-    acquisition = gnss_make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+    acquisition = gnss_make_shared<GalileoE6PcpsAcquisition>(config.get(), "Acquisition_E6", 1, 0);
 }
 
 
-TEST_F(GalileoE5bPcpsAcquisitionTest, ConnectAndRun)
+TEST_F(GalileoE6PcpsAcquisitionTest, ConnectAndRun)
 {
     int nsamples = 21000 * 3;
     std::chrono::time_point<std::chrono::system_clock> begin, end;
@@ -326,9 +325,9 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ConnectAndRun)
 
     init();
 
-    acquisition = gnss_make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+    acquisition = gnss_make_shared<GalileoE6PcpsAcquisition>(config.get(), "Acquisition_E6", 1, 0);
 
-    auto msg_rx = GalileoE5bPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
+    auto msg_rx = GalileoE6PcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
 
     ASSERT_NO_THROW({
         acquisition->connect(top_block);
@@ -350,16 +349,16 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ConnectAndRun)
 }
 
 
-TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
+TEST_F(GalileoE6PcpsAcquisitionTest, ValidationOfResults)
 {
     top_block = gr::make_top_block("Acquisition test");
 
     init();
 
-    acquisition = gnss_make_shared<GalileoE5bPcpsAcquisition>(config.get(), "Acquisition_7X", 1, 0);
+    acquisition = gnss_make_shared<GalileoE6PcpsAcquisition>(config.get(), "Acquisition_E6", 1, 0);
 
     std::shared_ptr<FirFilter> input_filter = std::make_shared<FirFilter>(config.get(), "InputFilter", 1, 1);
-    auto msg_rx = GalileoE5bPcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
+    auto msg_rx = GalileoE6PcpsAcquisitionTest_msg_rx_make(channel_internal_queue);
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
 
     ASSERT_NO_THROW({
@@ -369,10 +368,6 @@ TEST_F(GalileoE5bPcpsAcquisitionTest, ValidationOfResults)
     ASSERT_NO_THROW({
         acquisition->set_gnss_synchro(&gnss_synchro);
     }) << "Failure setting gnss_synchro.";
-
-    ASSERT_NO_THROW({
-        acquisition->set_threshold(0.0001);
-    }) << "Failure setting threshold.";
 
     ASSERT_NO_THROW({
         acquisition->set_doppler_max(5000);

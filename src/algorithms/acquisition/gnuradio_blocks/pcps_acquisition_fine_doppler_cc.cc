@@ -23,7 +23,7 @@
 #include "GPS_L1_CA.h"  // for GPS_L1_CA_CHIP_PERIOD_S
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_make_unique.h"
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
 #include <experimental/filesystem>

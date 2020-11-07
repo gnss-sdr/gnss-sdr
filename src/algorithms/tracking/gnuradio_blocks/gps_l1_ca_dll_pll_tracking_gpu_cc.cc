@@ -21,7 +21,7 @@
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_flags.h"
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
 #include <boost/lexical_cast.hpp>

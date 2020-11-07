@@ -31,7 +31,7 @@
 #include "dll_pll_conf_fpga.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_synchro.h"
-#include "gps_l2c_signal.h"
+#include "gps_l2c_signal_replica.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <array>

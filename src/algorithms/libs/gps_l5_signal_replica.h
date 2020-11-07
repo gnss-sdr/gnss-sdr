@@ -1,6 +1,6 @@
 /*!
- * \file gps_l5_signal.h
- * \brief This class implements signal generators for the GPS L5 signals
+ * \file gps_l5_signal_replica.h
+ * \brief This file implements signal generators for GPS L5 signals
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  *
@@ -18,8 +18,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L5_SIGNAL_H
-#define GNSS_SDR_GPS_L5_SIGNAL_H
+#ifndef GNSS_SDR_GPS_L5_SIGNAL_REPLICA_H
+#define GNSS_SDR_GPS_L5_SIGNAL_REPLICA_H
 
 #include <complex>
 #include <cstdint>
@@ -58,4 +58,4 @@ void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GPS_L5_SIGNAL_H
+#endif  // GNSS_SDR_GPS_L5_SIGNAL_REPLICA_H

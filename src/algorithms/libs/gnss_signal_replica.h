@@ -1,8 +1,7 @@
 /*!
- * \file gnss_signal_processing.h
- * \brief This library gathers a few functions used by the algorithms of gnss-sdr,
- *  regardless of system used
- *
+ * \file gnss_signal_replica.h
+ * \brief This library gathers a few functions used for GNSS signal replica
+ * generation regardless of system used
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -20,8 +19,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
-#define GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_GNSS_SIGNAL_REPLICA_H
+#define GNSS_SDR_GNSS_SIGNAL_REPLICA_H
 
 #include <complex>
 #include <cstdint>
@@ -83,4 +82,4 @@ void resampler(own::span<const std::complex<float>> _from, own::span<std::comple
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_GNSS_SIGNAL_REPLICA_H

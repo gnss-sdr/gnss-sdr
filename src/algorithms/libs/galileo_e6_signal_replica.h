@@ -1,7 +1,7 @@
 /*!
- * \file galileo_e6_signal_processing.h
- * \brief This library implements various functions for Galileo E6 signals such
- * as replica code generation
+ * \file galileo_e6_signal_replica.h
+ * \brief This library implements various functions for Galileo E6 signal
+ * replica generation
  * \author Carles Fernandez-Prades, 2020. cfernandez(at)cttc.es
  *
  *
@@ -19,8 +19,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E6_SIGNAL_PROCESSING_H
-#define GNSS_SDR_GALILEO_E6_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_GALILEO_E6_SIGNAL_REPLICA_H
+#define GNSS_SDR_GALILEO_E6_SIGNAL_REPLICA_H
 
 #include <array>
 #include <complex>
@@ -108,4 +108,4 @@ std::string galileo_e6_c_secondary_code(int32_t _prn);
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GALILEO_E6_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_GALILEO_E6_SIGNAL_REPLICA_H

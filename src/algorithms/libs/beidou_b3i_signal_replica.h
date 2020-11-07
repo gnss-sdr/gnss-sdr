@@ -1,6 +1,7 @@
 /*!
- * \file beidou_b3i_signal_processing.h
- * \brief This class implements various functions for BeiDou B3I signals
+ * \file beidou_b3i_signal_replica.h
+ * \brief This file implements various functions for BeiDou B3I signal replica
+ * generation
  * \author Damian Miralles, 2019. dmiralles2009@gmail.com
  *
  *
@@ -18,8 +19,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H
-#define GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_BEIDOU_B3I_SIGNAL_REPLICA_H
+#define GNSS_SDR_BEIDOU_B3I_SIGNAL_REPLICA_H
 
 #include <complex>
 #include <cstdint>
@@ -55,4 +56,4 @@ void beidou_b3i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, u
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_BEIDOU_B3I_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_BEIDOU_B3I_SIGNAL_REPLICA_H

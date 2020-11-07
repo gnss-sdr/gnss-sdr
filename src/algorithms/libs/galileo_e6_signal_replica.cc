@@ -1,7 +1,7 @@
 /*!
- * \file galileo_e6_signal_processing.cc
- * \brief This library implements various functions for Galileo E6 signals such
- * as replica code generation
+ * \file galileo_e6_signal_replica.cc
+ * \brief This library implements various functions for Galileo E6 signal
+ * replica generation
  * \author Carles Fernandez-Prades, 2020. cfernandez(at)cttc.es
  *
  *
@@ -20,9 +20,9 @@
  */
 
 
-#include "galileo_e6_signal_processing.h"
+#include "galileo_e6_signal_replica.h"
 #include "Galileo_E6.h"
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 #include <iostream>
 #include <vector>
 

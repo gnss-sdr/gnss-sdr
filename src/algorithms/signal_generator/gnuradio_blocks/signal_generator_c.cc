@@ -24,11 +24,11 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
-#include "galileo_e1_signal_processing.h"
-#include "galileo_e5_signal_processing.h"
-#include "galileo_e6_signal_processing.h"
-#include "glonass_l1_signal_processing.h"
-#include "gps_sdr_signal_processing.h"
+#include "galileo_e1_signal_replica.h"
+#include "galileo_e5_signal_replica.h"
+#include "galileo_e6_signal_replica.h"
+#include "glonass_l1_signal_replica.h"
+#include "gps_sdr_signal_replica.h"
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>

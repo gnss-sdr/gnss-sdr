@@ -1,6 +1,7 @@
 /*!
- * \file gps_sdr_signal_processing.cc
- * \brief This class implements various functions for GPS L1 CA signals
+ * \file gps_sdr_signal_replica.cc
+ * \brief This file implements functions for GPS L1 C/A signal replica
+ * generation
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  *
@@ -18,7 +19,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #include <array>
 #include <bitset>
 

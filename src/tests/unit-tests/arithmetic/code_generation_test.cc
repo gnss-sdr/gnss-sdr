@@ -19,9 +19,9 @@
  */
 
 #include "Galileo_E6.h"
-#include "galileo_e6_signal_processing.h"
-#include "gnss_signal_processing.h"
-#include "gps_sdr_signal_processing.h"
+#include "galileo_e6_signal_replica.h"
+#include "gnss_signal_replica.h"
+#include "gps_sdr_signal_replica.h"
 #include <array>
 #include <chrono>
 #include <complex>

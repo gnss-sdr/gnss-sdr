@@ -1,7 +1,7 @@
 /*!
- * \file galileo_e5_signal_processing.h
- * \brief This library implements various functions for Galileo E5 signals such
- * as replica code generation
+ * \file galileo_e5_signal_replica.h
+ * \brief This library implements various functions for Galileo E5 signal
+ * replica generation
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \author Piyush Gupta, 2020. piyush04111999@gmail.com
  * \note Code added as part of GSoC 2020 Program.
@@ -21,8 +21,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H
-#define GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_GALILEO_E5_SIGNAL_REPLICA_H
+#define GNSS_SDR_GALILEO_E5_SIGNAL_REPLICA_H
 
 #include <array>
 #include <complex>
@@ -81,4 +81,4 @@ void galileo_e5_b_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GALILEO_E5_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_GALILEO_E5_SIGNAL_REPLICA_H

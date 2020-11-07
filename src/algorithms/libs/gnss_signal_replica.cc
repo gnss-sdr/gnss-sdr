@@ -1,7 +1,7 @@
 /*!
- * \file gnss_signal_processing.cc
- * \brief This library gathers a few functions used by the algorithms of gnss-sdr,
- *  regardless of system used
+ * \file gnss_signal_replica.cc
+ * \brief This library gathers a few functions used for GNSS signal replica
+ * generation regardless of system used
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -19,7 +19,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 #include "MATH_CONSTANTS.h"
 #include <gnuradio/fxpt_nco.h>
 #include <cstddef>  // for size_t

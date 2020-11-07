@@ -1,7 +1,7 @@
 /*!
- * \file galileo_e5_signal_processing.cc
- * \brief This library implements various functions for Galileo E5 signals such
- * as replica code generation
+ * \file galileo_e5_signal_replica.cc
+ * \brief This library implements various functions for Galileo E5 signal
+ * replica generation
  * \author Marc Sales, 2014. marcsales92(at)gmail.com
  * \author Piyush Gupta, 2020. piyush04111999@gmail.com
  * \note Code added as part of GSoc 2020 Program.
@@ -21,10 +21,10 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "galileo_e5_signal_processing.h"
+#include "galileo_e5_signal_replica.h"
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 #include <gnuradio/gr_complex.h>
 #include <memory>
 #include <utility>

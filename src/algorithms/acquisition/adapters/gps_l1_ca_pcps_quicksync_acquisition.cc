@@ -23,7 +23,7 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>
 #include <algorithm>

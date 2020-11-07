@@ -21,7 +21,7 @@
 #include "beidou_b3i_pcps_acquisition.h"
 #include "Beidou_B3I.h"
 #include "acq_conf.h"
-#include "beidou_b3i_signal_processing.h"
+#include "beidou_b3i_signal_replica.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>

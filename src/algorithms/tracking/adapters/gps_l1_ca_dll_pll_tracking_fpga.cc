@@ -29,7 +29,7 @@
 #include "display.h"
 #include "dll_pll_conf_fpga.h"
 #include "gnss_sdr_flags.h"
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>

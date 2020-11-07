@@ -22,7 +22,7 @@
 #include "Galileo_E1.h"
 #include "acq_conf.h"
 #include "configuration_interface.h"
-#include "galileo_e1_signal_processing.h"
+#include "galileo_e1_signal_replica.h"
 #include "gnss_sdr_flags.h"
 #include <boost/math/distributions/exponential.hpp>
 #include <glog/logging.h>

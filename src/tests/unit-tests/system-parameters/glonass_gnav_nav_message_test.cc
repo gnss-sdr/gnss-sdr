@@ -21,7 +21,7 @@
  */
 
 #include "glonass_gnav_navigation_message.h"
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 
 /*!
  * \brief Testing CRC computation for GLONASS GNAV data bits of a string

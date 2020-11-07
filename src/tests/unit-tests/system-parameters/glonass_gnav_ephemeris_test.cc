@@ -21,7 +21,7 @@
 
 
 #include "glonass_gnav_ephemeris.h"
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 
 
 TEST(GlonassGnavEphemerisTest, ComputeGlonassTime)

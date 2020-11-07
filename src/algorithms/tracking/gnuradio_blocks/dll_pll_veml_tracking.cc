@@ -32,11 +32,13 @@
 #include "Galileo_E1.h"
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
+#include "Galileo_E6.h"
 #include "MATH_CONSTANTS.h"
 #include "beidou_b1i_signal_processing.h"
 #include "beidou_b3i_signal_processing.h"
 #include "galileo_e1_signal_processing.h"
 #include "galileo_e5_signal_processing.h"
+#include "galileo_e6_signal_processing.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
@@ -132,6 +134,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     map_signal_pretty_name["L5"] = "L5";
     map_signal_pretty_name["B1"] = "B1I";
     map_signal_pretty_name["B3"] = "B3I";
+    map_signal_pretty_name["E6"] = "E6";
 
     d_signal_pretty_name = map_signal_pretty_name[d_signal_type];
 
@@ -314,6 +317,30 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                             d_secondary_code_string = GALILEO_E5B_I_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
                             d_interchange_iq = true;
+                        }
+                }
+            else if (d_signal_type == "E6")
+                {
+                    d_signal_carrier_freq = GALILEO_E6_FREQ_HZ;
+                    d_code_period = GALILEO_E6_CODE_PERIOD_S;
+                    d_code_chip_rate = GALILEO_E6_B_CODE_CHIP_RATE_CPS;
+                    d_symbols_per_bit = 1;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_code_length_chips = static_cast<int32_t>(GALILEO_E6_B_CODE_LENGTH_CHIPS);
+                    d_trk_parameters.slope = 1.0;
+                    d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
+                    d_trk_parameters.y_intercept = 1.0;
+                    if (d_trk_parameters.track_pilot)
+                        {
+                            d_secondary = true;
+                            d_signal_pretty_name = d_signal_pretty_name + "C";
+                            d_secondary_code_length = static_cast<uint32_t>(GALILEO_E6_C_SECONDARY_CODE_LENGTH_CHIPS);
+                        }
+                    else
+                        {
+                            d_secondary = false;
+                            d_signal_pretty_name = d_signal_pretty_name + "B";
                         }
                 }
             else
@@ -712,6 +739,21 @@ void dll_pll_veml_tracking::start_tracking()
                         {
                             d_tracking_code[i] = aux_code[i].real();
                         }
+                }
+        }
+    else if (d_systemName == "Galileo" and d_signal_type == "E6")
+        {
+            if (d_trk_parameters.track_pilot)
+                {
+                    d_secondary_code_string = galileo_e6_c_secondary_code(d_acquisition_gnss_synchro->PRN - 1);
+                    galileo_e6_b_code_gen_float_primary(d_data_code, d_acquisition_gnss_synchro->PRN);
+                    galileo_e6_c_code_gen_float_primary(d_tracking_code, d_acquisition_gnss_synchro->PRN);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    d_correlator_data_cpu.set_local_code_and_taps(d_code_samples_per_chip * d_code_length_chips, d_data_code.data(), d_prompt_data_shift);
+                }
+            else
+                {
+                    galileo_e6_b_code_gen_float_primary(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                 }
         }
     else if (d_systemName == "Beidou" and d_signal_type == "B1")
@@ -1745,8 +1787,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 if (!cn0_and_tracking_lock_status(d_code_period))
                     {
                         clear_tracking_vars();
-                        d_state = 0;  // loss-of-lock detected
-                        loss_of_lock = true;  // Set the flag so that the negative indication can be generated
+                        d_state = 0;                                         // loss-of-lock detected
+                        loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
                         current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                     }
                 else
@@ -1906,8 +1948,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(d_trk_parameters.extend_correlation_symbols)))
                     {
                         clear_tracking_vars();
-                        d_state = 0;  // loss-of-lock detected
-                        loss_of_lock = true;  // Set the flag so that the negative indication can be generated
+                        d_state = 0;                                         // loss-of-lock detected
+                        loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
                         current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                     }
                 else

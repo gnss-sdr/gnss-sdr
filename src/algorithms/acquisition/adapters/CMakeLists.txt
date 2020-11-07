@@ -24,6 +24,7 @@ set(ACQ_ADAPTER_SOURCES
     galileo_e5a_noncoherent_iq_acquisition_caf.cc
     galileo_e5a_pcps_acquisition.cc
     galileo_e5b_pcps_acquisition.cc
+    galileo_e6_pcps_acquisition.cc
     glonass_l1_ca_pcps_acquisition.cc
     glonass_l2_ca_pcps_acquisition.cc
     beidou_b1i_pcps_acquisition.cc
@@ -46,6 +47,7 @@ set(ACQ_ADAPTER_HEADERS
     galileo_e5a_noncoherent_iq_acquisition_caf.h
     galileo_e5a_pcps_acquisition.h
     galileo_e5b_pcps_acquisition.h
+    galileo_e6_pcps_acquisition.h
     glonass_l1_ca_pcps_acquisition.h
     glonass_l2_ca_pcps_acquisition.h
     beidou_b1i_pcps_acquisition.h

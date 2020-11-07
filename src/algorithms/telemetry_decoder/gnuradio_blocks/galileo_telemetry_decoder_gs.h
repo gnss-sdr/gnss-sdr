@@ -86,6 +86,7 @@ private:
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
     void decode_INAV_word(float *page_part_symbols, int32_t frame_length);
     void decode_FNAV_word(float *page_symbols, int32_t frame_length);
+    void decode_CNAV_word(float *page_symbols, int32_t frame_length);
 
     // vars for Viterbi decoder
     std::vector<int32_t> d_preamble_samples;

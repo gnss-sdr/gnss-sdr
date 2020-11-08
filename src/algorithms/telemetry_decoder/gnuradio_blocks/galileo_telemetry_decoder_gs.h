@@ -23,7 +23,7 @@
 #ifndef GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 #define GNSS_SDR_GALILEO_TELEMETRY_DECODER_GS_H
 
-
+#include "galileo_cnav_message.h"
 #include "galileo_fnav_message.h"
 #include "galileo_inav_message.h"
 #include "gnss_block_interface.h"
@@ -104,6 +104,7 @@ private:
     Gnss_Satellite d_satellite;
 
     // navigation message vars
+    Galileo_Cnav_Message d_cnav_nav;
     Galileo_Inav_Message d_inav_nav;
     Galileo_Fnav_Message d_fnav_nav;
 

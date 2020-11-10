@@ -22,7 +22,7 @@
 #include "galileo_e5b_pcps_acquisition_fpga.h"
 #include "Galileo_E5b.h"
 #include "configuration_interface.h"
-#include "galileo_e5_signal_processing.h"
+#include "galileo_e5_signal_replica.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>     // for fft_complex

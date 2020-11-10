@@ -1,6 +1,6 @@
 /*!
- * \file gps_l2c_signal.h
- * \brief This class implements signal generators for the GPS L2C signals
+ * \file gps_l2c_signal_replica.h
+ * \brief This file implements signal generators for GPS L2C signals
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  *
@@ -18,8 +18,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L2C_SIGNAL_H
-#define GNSS_SDR_GPS_L2C_SIGNAL_H
+#ifndef GNSS_SDR_GPS_L2C_SIGNAL_REPLICA_H
+#define GNSS_SDR_GPS_L2C_SIGNAL_REPLICA_H
 
 #include <complex>
 #include <cstdint>
@@ -47,4 +47,4 @@ void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> _dest, ui
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GPS_L2C_SIGNAL_H
+#endif  // GNSS_SDR_GPS_L2C_SIGNAL_REPLICA_H

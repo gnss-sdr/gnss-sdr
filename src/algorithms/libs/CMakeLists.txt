@@ -10,57 +10,59 @@
 add_subdirectory(rtklib)
 
 set(GNSS_SPLIBS_SOURCES
-    gps_l2c_signal.cc
-    gps_l5_signal.cc
-    galileo_e1_signal_processing.cc
-    gnss_signal_processing.cc
-    gps_sdr_signal_processing.cc
-    glonass_l1_signal_processing.cc
-    glonass_l2_signal_processing.cc
-    pass_through.cc
-    galileo_e5_signal_processing.cc
-    beidou_b1i_signal_processing.cc
-    beidou_b3i_signal_processing.cc
-    complex_byte_to_float_x2.cc
+    beidou_b1i_signal_replica.cc
+    beidou_b3i_signal_replica.cc
+    galileo_e1_signal_replica.cc
+    galileo_e5_signal_replica.cc
+    galileo_e6_signal_replica.cc
+    glonass_l1_signal_replica.cc
+    glonass_l2_signal_replica.cc
+    gps_l2c_signal_replica.cc
+    gps_l5_signal_replica.cc
+    gnss_signal_replica.cc
+    gps_sdr_signal_replica.cc
     byte_x2_to_complex_byte.cc
-    cshort_to_float_x2.cc
-    short_x2_to_cshort.cc
+    complex_byte_to_float_x2.cc
     complex_float_to_complex_byte.cc
     conjugate_cc.cc
     conjugate_sc.cc
     conjugate_ic.cc
+    cshort_to_float_x2.cc
     gnss_sdr_create_directory.cc
     geofunctions.cc
     item_type_helpers.cc
     trackingcmd.cc
+    pass_through.cc
+    short_x2_to_cshort.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
-    gps_l2c_signal.h
-    gps_l5_signal.h
-    galileo_e1_signal_processing.h
-    gnss_signal_processing.h
-    gps_sdr_signal_processing.h
-    glonass_l1_signal_processing.h
-    glonass_l2_signal_processing.h
-    pass_through.h
-    galileo_e5_signal_processing.h
-    beidou_b1i_signal_processing.h
-    beidou_b3i_signal_processing.h
-    complex_byte_to_float_x2.h
+    beidou_b1i_signal_replica.h
+    beidou_b3i_signal_replica.h
+    galileo_e1_signal_replica.h
+    galileo_e5_signal_replica.h
+    galileo_e6_signal_replica.h
+    glonass_l1_signal_replica.h
+    glonass_l2_signal_replica.h
+    gps_l2c_signal_replica.h
+    gps_l5_signal_replica.h
+    gnss_signal_replica.h
+    gps_sdr_signal_replica.h
     byte_x2_to_complex_byte.h
-    cshort_to_float_x2.h
-    short_x2_to_cshort.h
+    complex_byte_to_float_x2.h
     complex_float_to_complex_byte.h
     conjugate_cc.h
     conjugate_sc.h
     conjugate_ic.h
+    cshort_to_float_x2.h
     gnss_sdr_create_directory.h
     gnss_sdr_make_unique.h
     gnss_circular_deque.h
     geofunctions.h
     item_type_helpers.h
     trackingcmd.h
+    pass_through.h
+    short_x2_to_cshort.h
 )
 
 if(ENABLE_OPENCL)

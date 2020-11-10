@@ -1,6 +1,7 @@
 /*!
- * \file beidou_b3i_signal_processing.cc
- * \brief This class implements various functions for BeiDou B1I signal
+ * \file beidou_b3i_signal_replica.cc
+ * \brief This file implements various functions for BeiDou B3I signal replica
+ * generation
  * \author Damian Miralles, 2019. dmiralles2009@gmail.com
  *
  *
@@ -18,7 +19,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "beidou_b3i_signal_processing.h"
+#include "beidou_b3i_signal_replica.h"
 #include <array>
 #include <bitset>
 #include <string>

@@ -1,6 +1,7 @@
 /*!
- * \file gps_sdr_signal_processing.h
- * \brief This class implements various functions for GPS L1 CA signals
+ * \file gps_sdr_signal_replica.h
+ * \brief This file implements functions for GPS L1 C/A signal replica
+ * generation
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  *
@@ -18,8 +19,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H
-#define GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_GPS_SDR_SIGNAL_REPLICA_H
+#define GNSS_SDR_GPS_SDR_SIGNAL_REPLICA_H
 
 #include <complex>
 #include <cstdint>
@@ -55,4 +56,4 @@ void gps_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, ui
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GPS_SDR_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_GPS_SDR_SIGNAL_REPLICA_H

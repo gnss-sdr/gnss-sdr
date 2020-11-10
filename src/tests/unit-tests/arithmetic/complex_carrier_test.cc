@@ -19,7 +19,7 @@
  */
 
 #include "GPS_L1_CA.h"
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 #include <armadillo>
 #include <chrono>
 #include <complex>

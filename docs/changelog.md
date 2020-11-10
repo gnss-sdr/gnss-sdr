@@ -23,6 +23,14 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Faster `SignalConditioner` block when its implementation is set to
   `Pass_Through`.
 
+### Improvements in Interoperability:
+
+- Added the Galileo E6 B/C signal structure based on E6-B/C Codes Technical
+  Note, Issue 1, January 2019, including Acquisition and Tracking blocks. The
+  Telemetry Decoder is still empty (only the CRC is checked, based on Galileo
+  High Accuracy Service E6-B Signal-In-Space Message Specification v1.2, April
+  2020).
+
 ### Improvements in Maintainability:
 
 - Added a common shared pointer definition `gnss_shared_ptr`, which allows to

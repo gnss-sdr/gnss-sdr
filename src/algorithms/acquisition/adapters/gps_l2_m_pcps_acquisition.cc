@@ -25,7 +25,7 @@
 #include "acq_conf.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include "gps_l2c_signal.h"
+#include "gps_l2c_signal_replica.h"
 #include <glog/logging.h>
 #include <algorithm>
 

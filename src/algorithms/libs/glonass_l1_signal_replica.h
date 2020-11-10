@@ -1,6 +1,7 @@
 /*!
  * \file glonass_l1_signal_processing.h
- * \brief This class implements various functions for GLONASS L1 CA signals
+ * \brief This file implements various functions for GLONASS L1 CA signal
+ * replica generation
  * \author Gabriel Araujo, 2017. gabriel.araujo(at)ieee.org
  *
  *
@@ -18,8 +19,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GLONASS_SDR_SIGNAL_PROCESSING_H
-#define GNSS_SDR_GLONASS_SDR_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_GLONASS_L1_SIGNAL_REPLICA_H
+#define GNSS_SDR_GLONASS_L1_SIGNAL_REPLICA_H
 
 #include <complex>
 #include <cstdint>
@@ -49,4 +50,4 @@ void glonass_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GLONASS_SDR_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_GLONASS_L1_SIGNAL_REPLICA_H

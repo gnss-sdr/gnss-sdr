@@ -1,6 +1,7 @@
 /*!
- * \file galileo_e1_signal_processing.h
- * \brief This library implements various functions for Galileo E1 signals
+ * \file galileo_e1_signal_replica.h
+ * \brief This library implements various functions for Galileo E1 signal
+ * replica generation
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -18,8 +19,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H
-#define GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_GALILEO_E1_SIGNAL_REPLICA_H
+#define GNSS_SDR_GALILEO_E1_SIGNAL_REPLICA_H
 
 #include <array>
 #include <complex>
@@ -79,4 +80,4 @@ void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, c
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GALILEO_E1_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_GALILEO_E1_SIGNAL_REPLICA_H

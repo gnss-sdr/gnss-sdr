@@ -1,6 +1,6 @@
 /*!
- * \file gps_l2c_signal.cc
- * \brief This class implements signal generators for the GPS L2C signals
+ * \file gps_l2c_signal_replica.cc
+ * \brief This file implements signal generators for GPS L2C signals
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  *
@@ -18,7 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_l2c_signal.h"
+#include "gps_l2c_signal_replica.h"
 #include "GPS_L2C.h"
 #include <array>
 #include <cmath>

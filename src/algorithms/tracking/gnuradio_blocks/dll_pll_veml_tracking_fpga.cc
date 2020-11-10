@@ -33,7 +33,7 @@
 #include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_synchro.h"
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
 #include <glog/logging.h>

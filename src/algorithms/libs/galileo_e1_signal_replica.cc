@@ -1,6 +1,7 @@
 /*!
- * \file galileo_e1_signal_processing.cc
- * \brief This library implements various functions for Galileo E1 signals
+ * \file galileo_e1_signal_replica.cc
+ * \brief This library implements various functions for Galileo E1 signal
+ * replica generation
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -18,9 +19,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "galileo_e1_signal_processing.h"
+#include "galileo_e1_signal_replica.h"
 #include "Galileo_E1.h"
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 #include <cmath>
 #include <cstddef>  // for size_t
 #include <memory>

@@ -1,7 +1,8 @@
 /*!
- * \file glonass_l1_signal_processing.cc
- * \brief This class implements various functions for GLONASS L1 CA signals
- * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ * \file glonass_l2_signal_replica.cc
+ * \brief This file implements various functions for GLONASS L2 CA signal
+ * replica generation
+ * \author Damian Miralles, 2018, dmiralles2009(at)gmail.com
  *
  *
  * -----------------------------------------------------------------------------
@@ -18,13 +19,13 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "glonass_l1_signal_processing.h"
+#include "glonass_l2_signal_replica.h"
 #include <array>
 #include <bitset>
 
 const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void glonass_l1_ca_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _chip_shift)
+void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _chip_shift)
 {
     const uint32_t _code_length = 511;
     std::bitset<_code_length> G1{};
@@ -88,22 +89,22 @@ void glonass_l1_ca_code_gen_complex(own::span<std::complex<float>> _dest, uint32
 
 
 /*
- *  Generates complex GLONASS L1 C/A code for the desired SV ID and sampled to specific sampling frequency
+ *  Generates complex GLONASS L2 C/A code for the desired SV ID and sampled to specific sampling frequency
  */
-void glonass_l1_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, int32_t _fs, uint32_t _chip_shift)
+void glonass_l2_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, int32_t _fs, uint32_t _chip_shift)
 {
     constexpr int32_t _codeFreqBasis = 511000;  // Hz
     constexpr int32_t _codeLength = 511;
     constexpr float _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // C/A chip period in sec
 
-    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
     const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
 
     std::array<std::complex<float>, 511> _code{};
     int32_t _codeValueIndex;
     float aux;
 
-    glonass_l1_ca_code_gen_complex(_code, _chip_shift);  // generate C/A code 1 sample per chip
+    glonass_l2_ca_code_gen_complex(_code, _chip_shift);  // generate C/A code 1 sample per chip
 
     for (int32_t i = 0; i < _samplesPerCode; i++)
         {

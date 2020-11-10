@@ -22,8 +22,9 @@
 
 #include "galileo_telemetry_decoder_gs.h"
 #include "Galileo_E1.h"   // for GALILEO_E1_CODE_PERIOD_MS
-#include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIO...
+#include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIOD_MS
 #include "Galileo_E5b.h"  // for GALILEO_E5B_CODE_PERIOD_MS
+#include "Galileo_E6.h"   // for GALILEO_E6_CODE_PERIOD_MS
 #include "convolutional.h"
 #include "display.h"
 #include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
@@ -108,6 +109,20 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
                 break;
             }
+        case 3:  // CNAV
+            {
+                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E6_CODE_PERIOD_MS);
+                d_bits_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+                d_samples_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+                d_preamble_period_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE;
+                d_required_symbols = static_cast<uint32_t>(GALILEO_CNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
+                d_preamble_samples.reserve(d_samples_per_preamble);
+                d_frame_length_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+                d_codelength = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+                d_datalength = (d_codelength / d_nn) - d_mm;
+                d_max_symbols_without_valid_frame = GALILEO_CNAV_SYMBOLS_PER_PAGE * 60;
+                break;
+            }
         default:
             d_bits_per_preamble = 0;
             d_samples_per_preamble = 0;
@@ -141,6 +156,18 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 case 2:  // FNAV for E5a-I
                     {
                         if (GALILEO_FNAV_PREAMBLE[i] == '1')
+                            {
+                                d_preamble_samples[i] = 1;
+                            }
+                        else
+                            {
+                                d_preamble_samples[i] = -1;
+                            }
+                        break;
+                    }
+                case 3:  // CNAV for E6
+                    {
+                        if (GALILEO_CNAV_PREAMBLE[i] == '1')
                             {
                                 d_preamble_samples[i] = 1;
                             }
@@ -235,14 +262,14 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                     page_part_symbols_deint[i] = -page_part_symbols_deint[i];
                 }
         }
-
-    std::vector<int32_t> page_part_bits(frame_length / 2);
+    const int32_t decoded_length = frame_length / 2;
+    std::vector<int32_t> page_part_bits(decoded_length);
     viterbi_decoder(page_part_symbols_deint.data(), page_part_bits.data());
 
     // 3. Call the Galileo page decoder
     std::string page_String;
-    page_String.reserve(frame_length / 2);
-    for (int32_t i = 0; i < (frame_length / 2); i++)
+    page_String.reserve(decoded_length);
+    for (int32_t i = 0; i < decoded_length; i++)
         {
             if (page_part_bits[i] > 0)
                 {
@@ -370,13 +397,15 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
                     page_symbols_deint[i] = -page_symbols_deint[i];
                 }
         }
-    std::vector<int32_t> page_bits(frame_length / 2);
+
+    const int32_t decoded_length = frame_length / 2;
+    std::vector<int32_t> page_bits(decoded_length);
     viterbi_decoder(page_symbols_deint.data(), page_bits.data());
 
     // 3. Call the Galileo page decoder
     std::string page_String;
-    page_String.reserve(frame_length);
-    for (int32_t i = 0; i < frame_length; i++)
+    page_String.reserve(decoded_length);
+    for (int32_t i = 0; i < decoded_length; i++)
         {
             if (page_bits[i] > 0)
                 {
@@ -418,6 +447,58 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
+}
+
+
+void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t page_length)
+{
+    // 1. De-interleave
+    std::vector<float> page_symbols_deint(page_length);
+    deinterleaver(GALILEO_CNAV_INTERLEAVER_ROWS, GALILEO_CNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint.data());
+
+    // 2. Viterbi decoder
+    // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
+    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180 degrees
+    for (int32_t i = 0; i < page_length; i++)
+        {
+            if ((i + 1) % 2 == 0)
+                {
+                    page_symbols_deint[i] = -page_symbols_deint[i];
+                }
+        }
+    const int32_t decoded_length = page_length / 2;
+    std::vector<int32_t> page_bits(decoded_length);
+    viterbi_decoder(page_symbols_deint.data(), page_bits.data());
+
+    // 3. Call the Galileo page decoder
+    std::string page_String;
+    page_String.reserve(decoded_length);
+    for (int32_t i = 0; i < decoded_length; i++)
+        {
+            if (page_bits[i] > 0)
+                {
+                    page_String.push_back('1');
+                }
+            else
+                {
+                    page_String.push_back('0');
+                }
+        }
+    d_cnav_nav.read_HAS_page(page_String);
+
+    // 4. Check CRC
+    if (d_cnav_nav.get_flag_CRC_test() == true)
+        {
+            DLOG(INFO) << "Galileo E6B CRC correct in channel " << d_channel << " from satellite " << d_satellite;
+        }
+    else
+        {
+            DLOG(INFO) << "Galileo E6B CRC error in channel " << d_channel << " from satellite " << d_satellite;
+        }
+    // TODO
+    // Get full HAS message from different pages
+    // Reed Solomon decoding
+    // Retrieve data from message
 }
 
 
@@ -491,6 +572,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         case 2:  // FNAV
             {
                 d_symbol_history.push_back(current_symbol.Prompt_Q);
+                break;
+            }
+        case 3:  // CNAV
+            {
+                d_symbol_history.push_back(current_symbol.Prompt_I);
                 break;
             }
         default:
@@ -600,45 +686,32 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                     {
                         // call the decoder
+                        // NEW Galileo page part is received
+                        // 0. fetch the symbols into an array
+                        if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
+                            {
+                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
+                                    {
+                                        d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
+                                    }
+                            }
+                        else  // 180 deg. inverted carrier phase PLL lock
+                            {
+                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
+                                    {
+                                        d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
+                                    }
+                            }
                         switch (d_frame_type)
                             {
                             case 1:  // INAV
-                                     // NEW Galileo page part is received
-                                // 0. fetch the symbols into an array
-                                if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
-                                else  // 180 deg. inverted carrier phase PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
                                 decode_INAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             case 2:  // FNAV
-                                     // NEW Galileo page part is received
-                                // 0. fetch the symbols into an array
-                                if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
-                                else  // 180 deg. inverted carrier phase PLL lock
-                                    {
-                                        for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                            {
-                                                d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                            }
-                                    }
                                 decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
+                                break;
+                            case 3:  // CNAV
+                                decode_CNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             default:
                                 return -1;
@@ -660,7 +733,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         else
                             {
                                 d_CRC_error_counter++;
-                                if (d_CRC_error_counter > CRC_ERROR_LIMIT)
+                                if ((d_CRC_error_counter > CRC_ERROR_LIMIT) and (d_frame_type != 3))
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                         d_flag_frame_sync = false;
@@ -749,6 +822,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 break;
                             }
                     }
+                case 3:  // CNAV
+                    {
+                        // TODO
+                    }
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
@@ -769,6 +846,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             {
                                 d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
                             }
+                        break;
+                    }
+                case 3:  // CNAV
+                    {
+                        // TODO
                         break;
                     }
                 }
@@ -796,6 +878,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     {
                         current_symbol.Flag_valid_word = true;
                     }
+                break;
+            }
+        case 3:  // CNAV
+            {
+                // TODO
                 break;
             }
         }

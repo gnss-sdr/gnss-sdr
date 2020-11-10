@@ -1,6 +1,6 @@
 /*!
- * \file gps_l5_signal.cc
- * \brief This class implements signal generators for the GPS L5 signals
+ * \file gps_l5_signal_replica.cc
+ * \brief This file implements signal generators for GPS L5 signals
  * \author Javier Arribas, 2017. jarribas(at)cttc.es
  *
  *
@@ -18,7 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_l5_signal.h"
+#include "gps_l5_signal_replica.h"
 #include "GPS_L5.h"
 #include <array>
 #include <cmath>

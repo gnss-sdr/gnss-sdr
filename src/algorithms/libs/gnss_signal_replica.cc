@@ -1,7 +1,7 @@
 /*!
- * \file gnss_signal_processing.cc
- * \brief This library gathers a few functions used by the algorithms of gnss-sdr,
- *  regardless of system used
+ * \file gnss_signal_replica.cc
+ * \brief This library gathers a few functions used for GNSS signal replica
+ * generation regardless of system used
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -19,7 +19,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnss_signal_processing.h"
+#include "gnss_signal_replica.h"
 #include "MATH_CONSTANTS.h"
 #include <gnuradio/fxpt_nco.h>
 #include <cstddef>  // for size_t
@@ -146,6 +146,114 @@ void hex_to_binary_converter(own::span<int32_t> _dest, char _from)
         default:
             break;
         }
+}
+
+
+std::string hex_to_binary_string(char _from)
+{
+    std::string _dest("0000");
+    switch (_from)
+        {
+        case '0':
+            _dest[0] = '0';
+            _dest[1] = '0';
+            _dest[2] = '0';
+            _dest[3] = '0';
+            break;
+        case '1':
+            _dest[0] = '0';
+            _dest[1] = '0';
+            _dest[2] = '0';
+            _dest[3] = '1';
+            break;
+        case '2':
+            _dest[0] = '0';
+            _dest[1] = '0';
+            _dest[2] = '1';
+            _dest[3] = '0';
+            break;
+        case '3':
+            _dest[0] = '0';
+            _dest[1] = '0';
+            _dest[2] = '1';
+            _dest[3] = '1';
+            break;
+        case '4':
+            _dest[0] = '0';
+            _dest[1] = '1';
+            _dest[2] = '0';
+            _dest[3] = '0';
+            break;
+        case '5':
+            _dest[0] = '0';
+            _dest[1] = '1';
+            _dest[2] = '0';
+            _dest[3] = '1';
+            break;
+        case '6':
+            _dest[0] = '0';
+            _dest[1] = '1';
+            _dest[2] = '1';
+            _dest[3] = '0';
+            break;
+        case '7':
+            _dest[0] = '0';
+            _dest[1] = '1';
+            _dest[2] = '1';
+            _dest[3] = '1';
+            break;
+        case '8':
+            _dest[0] = '1';
+            _dest[1] = '0';
+            _dest[2] = '0';
+            _dest[3] = '0';
+            break;
+        case '9':
+            _dest[0] = '1';
+            _dest[1] = '0';
+            _dest[2] = '0';
+            _dest[3] = '1';
+            break;
+        case 'A':
+            _dest[0] = '1';
+            _dest[1] = '0';
+            _dest[2] = '1';
+            _dest[3] = '0';
+            break;
+        case 'B':
+            _dest[0] = '1';
+            _dest[1] = '0';
+            _dest[2] = '1';
+            _dest[3] = '1';
+            break;
+        case 'C':
+            _dest[0] = '1';
+            _dest[1] = '1';
+            _dest[2] = '0';
+            _dest[3] = '0';
+            break;
+        case 'D':
+            _dest[0] = '1';
+            _dest[1] = '1';
+            _dest[2] = '0';
+            _dest[3] = '1';
+            break;
+        case 'E':
+            _dest[0] = '1';
+            _dest[1] = '1';
+            _dest[2] = '1';
+            _dest[3] = '0';
+            break;
+        case 'F':
+            _dest[0] = '1';
+            _dest[1] = '1';
+            _dest[2] = '1';
+            _dest[3] = '1';
+            break;
+        default:
+            break;
+        }
+    return _dest;
 }
 
 

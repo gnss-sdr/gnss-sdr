@@ -20,7 +20,7 @@
 
 #include "GPS_L1_CA.h"
 #include "cpu_multicorrelator.h"
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #include <gflags/gflags.h>
 #include <gnuradio/gr_complex.h>
 #include <gtest/gtest.h>

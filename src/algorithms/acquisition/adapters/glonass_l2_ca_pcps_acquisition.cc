@@ -23,7 +23,7 @@
 #include "GLONASS_L1_L2_CA.h"
 #include "acq_conf.h"
 #include "configuration_interface.h"
-#include "glonass_l2_signal_processing.h"
+#include "glonass_l2_signal_replica.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 #include <algorithm>

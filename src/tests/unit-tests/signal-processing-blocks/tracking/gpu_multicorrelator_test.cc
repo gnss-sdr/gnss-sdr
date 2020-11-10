@@ -20,7 +20,7 @@
 
 #include "GPS_L1_CA.h"
 #include "cuda_multicorrelator.h"
-#include "gps_sdr_signal_processing.h"
+#include "gps_sdr_signal_replica.h"
 #include <chrono>
 #include <complex>
 #include <cuda.h>

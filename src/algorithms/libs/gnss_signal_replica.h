@@ -1,8 +1,7 @@
 /*!
- * \file gnss_signal_processing.h
- * \brief This library gathers a few functions used by the algorithms of gnss-sdr,
- *  regardless of system used
- *
+ * \file gnss_signal_replica.h
+ * \brief This library gathers a few functions used for GNSS signal replica
+ * generation regardless of system used
  * \author Luis Esteve, 2012. luis(at)epsilon-formacion.com
  *
  *
@@ -20,11 +19,12 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
-#define GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
+#ifndef GNSS_SDR_GNSS_SIGNAL_REPLICA_H
+#define GNSS_SDR_GNSS_SIGNAL_REPLICA_H
 
 #include <complex>
 #include <cstdint>
+#include <string>
 #if HAS_STD_SPAN
 #include <span>
 namespace own = std;
@@ -59,6 +59,13 @@ void complex_exp_gen_conj(own::span<std::complex<float>> _dest, double _f, doubl
 void hex_to_binary_converter(own::span<int32_t> _dest, char _from);
 
 /*!
+ * \brief This function makes a conversion from hex (the input is a char)
+ *  to binary (the output is a string of 4 char with 0 or 1 values).
+ *
+ */
+std::string hex_to_binary_string(char _from);
+
+/*!
  * \brief This function resamples a sequence of float values.
  *
  */
@@ -75,4 +82,4 @@ void resampler(own::span<const std::complex<float>> _from, own::span<std::comple
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GNSS_SIGNAL_PROCESSING_H
+#endif  // GNSS_SDR_GNSS_SIGNAL_REPLICA_H

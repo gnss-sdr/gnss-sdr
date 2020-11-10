@@ -27,7 +27,7 @@
 #define GNSS_SDR_GLONASS_L2_CA_DLL_PLL_C_AID_TRACKING_SC_H
 
 #include "cpu_multicorrelator_16sc.h"
-#include "glonass_l2_signal_processing.h"
+#include "glonass_l2_signal_replica.h"
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "tracking_2nd_DLL_filter.h"

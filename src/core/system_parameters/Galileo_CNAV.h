@@ -24,6 +24,7 @@
 #define GNSS_SDR_GALILEO_CNAV_H
 
 #include <cstdint>
+#include <utility>
 
 /** \addtogroup Core
  * \{ */
@@ -42,10 +43,31 @@ constexpr int32_t GALILEO_CNAV_HAS_PAGE_DATA_BITS = 448;
 constexpr int32_t GALILEO_CNAV_PAGE_RESERVED_BITS = 14;
 constexpr int32_t GALILEO_CNAV_BITS_FOR_CRC = GALILEO_CNAV_HAS_PAGE_DATA_BITS + GALILEO_CNAV_PAGE_RESERVED_BITS;  // 462
 constexpr int32_t GALILEO_CNAV_BYTES_FOR_CRC = 60;
+constexpr int32_t GALILEO_CNAV_CRC_LENGTH = 24;
 constexpr int32_t GALILEO_CNAV_MESSAGE_BITS_PER_PAGE = 424;
 constexpr int32_t GALILEO_CNAV_PAGE_HEADER_BITS = 24;
 constexpr int32_t GALILEO_CNAV_PREAMBLE_LENGTH_BITS = 16;
+constexpr int32_t GALILEO_CNAV_MAX_NUMBER_ENCODED_BLOCKS = 255;
+constexpr int32_t GALILEO_CNAV_MT1_HEADER_BITS = 32;
+
 constexpr char GALILEO_CNAV_PREAMBLE[17] = "1011011101110000";
+
+const std::pair<int32_t, int32_t> GALILEO_HAS_STATUS({1, 2});
+const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_TYPE({5, 2});
+const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_ID({7, 5});
+const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_SIZE({12, 5});
+const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_PAGE_ID({17, 8});
+
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_TOH({1, 12});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_MASK_FLAG({13, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_ORBIT_CORRECTION_FLAG({14, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_CLOCK_FULLSET_FLAG({15, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_CLOCK_SUBSET_FLAG({16, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_CODE_BIAS_FLAG({17, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_PHASE_BIAS_FLAG({18, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_URA_FLAG({19, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_MASK_ID({23, 5});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_IOD_ID({28, 5});
 
 
 /** \} */

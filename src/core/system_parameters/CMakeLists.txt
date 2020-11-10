@@ -50,6 +50,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_iono.h
     galileo_cnav_message.h
     galileo_fnav_message.h
+    galileo_has_data.h
     galileo_inav_message.h
     sbas_ephemeris.h
     gps_cnav_ephemeris.h

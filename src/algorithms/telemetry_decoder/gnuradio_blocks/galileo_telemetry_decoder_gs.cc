@@ -486,19 +486,20 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
         }
     d_cnav_nav.read_HAS_page(page_String);
 
-    // 4. Check CRC
-    if (d_cnav_nav.get_flag_CRC_test() == true)
+    // 4. If we have a new full message, read it
+    if (d_cnav_nav.have_new_HAS_message() == true)
         {
-            DLOG(INFO) << "Galileo E6B CRC correct in channel " << d_channel << " from satellite " << d_satellite;
+            // TODO: Retrieve data from message and send it somewhere
+            // Galileo_HAS_data has_data = d_cnav_nav.get_HAS_data();
+            if (d_cnav_nav.is_HAS_message_dummy())
+                {
+                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                }
+            else
+                {
+                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS dummy message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                }
         }
-    else
-        {
-            DLOG(INFO) << "Galileo E6B CRC error in channel " << d_channel << " from satellite " << d_satellite;
-        }
-    // TODO
-    // Get full HAS message from different pages
-    // Reed Solomon decoding
-    // Retrieve data from message
 }
 
 

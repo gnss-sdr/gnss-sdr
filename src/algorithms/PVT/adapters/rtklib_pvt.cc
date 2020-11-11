@@ -468,7 +468,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             num_bands = 2;
         }
-    if ((gal_1B_count > 0) && (gal_E6_count > 0) && (gal_E5a_count > 0) || (gal_E5b_count > 0))
+    if ((gal_1B_count > 0) && (gal_E6_count > 0) && ((gal_E5a_count > 0) || (gal_E5b_count > 0)))
         {
             num_bands = 3;
         }

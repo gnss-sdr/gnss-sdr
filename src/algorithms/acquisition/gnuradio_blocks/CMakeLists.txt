@@ -75,6 +75,7 @@ target_link_libraries(acquisition_gr_blocks
         Armadillo::armadillo
         Gnuradio::runtime
         Gnuradio::fft
+        Threads::Threads
         Volk::volk
         Volkgnsssdr::volkgnsssdr
     PRIVATE

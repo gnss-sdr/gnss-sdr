@@ -930,6 +930,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
      * 6. Declare positive or negative acquisition using a message port
      */
     gr::thread::scoped_lock lk(d_setlock);
+    if (!d_active and d_worker_active and !d_acq_parameters.blocking)
+        {
+            pthread_cancel(d_id_worker);
+            return 0;
+        }
     if (!d_active or d_worker_active)
         {
             if (!d_acq_parameters.blocking_on_standby)
@@ -1016,7 +1021,9 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     }
                 else
                     {
-                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
+                        d_worker = std::thread([&] { pcps_acquisition::acquisition_core(d_sample_counter); });
+                        d_id_worker = d_worker.native_handle();
+                        d_worker.detach();
                         d_worker_active = true;
                     }
                 consume_each(0);

@@ -59,10 +59,11 @@
 #include <complex>
 #include <cstdint>
 #include <memory>
+#include <pthread.h>
 #include <queue>
 #include <string>
+#include <thread>
 #include <utility>
-
 #if HAS_STD_SPAN
 #include <span>
 namespace own = std;
@@ -259,6 +260,8 @@ private:
     arma::fmat d_narrow_grid;
 
     std::string d_dump_filename;
+    std::thread d_worker;
+    pthread_t d_id_worker;
 
     int64_t d_dump_number;
     uint64_t d_sample_counter;

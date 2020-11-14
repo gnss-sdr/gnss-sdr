@@ -1081,7 +1081,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                << "inserted with Toe=" << gps_eph->d_Toe << " and GPS Week="
                                << gps_eph->i_GPS_week;
                     // update/insert new ephemeris record to the global ephemeris map
-                    if (d_rp->d_rinex_header_written)  // The header is already written, we can now log the navigation message data
+                    if (d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
                             bool new_annotation = false;
                             if (d_internal_pvt_solver->gps_ephemeris_map.find(gps_eph->i_satellite_PRN) == d_internal_pvt_solver->gps_ephemeris_map.cend())
@@ -1136,7 +1136,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     // ### GPS CNAV message ###
                     const auto gps_cnav_ephemeris = boost::any_cast<std::shared_ptr<Gps_CNAV_Ephemeris>>(pmt::any_ref(msg));
                     // update/insert new ephemeris record to the global ephemeris map
-                    if (d_rp->d_rinex_header_written)  // The header is already written, we can now log the navigation message data
+                    if (d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
                             bool new_annotation = false;
                             if (d_internal_pvt_solver->gps_cnav_ephemeris_map.find(gps_cnav_ephemeris->i_satellite_PRN) == d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
@@ -1209,7 +1209,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                << ", GALILEO Week Number =" << galileo_eph->WN_5
                                << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
                     // update/insert new ephemeris record to the global ephemeris map
-                    if (d_rp->d_rinex_header_written)  // The header is already written, we can now log the navigation message data
+                    if (d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
                             bool new_annotation = false;
                             if (d_internal_pvt_solver->galileo_ephemeris_map.find(galileo_eph->i_satellite_PRN) == d_internal_pvt_solver->galileo_ephemeris_map.cend())
@@ -1317,7 +1317,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                << " and Ephemeris IOD in UTC = " << glonass_gnav_eph->compute_GLONASS_time(glonass_gnav_eph->d_t_b)
                                << " from SV = " << glonass_gnav_eph->i_satellite_slot_number;
                     // update/insert new ephemeris record to the global ephemeris map
-                    if (d_rp->d_rinex_header_written)  // The header is already written, we can now log the navigation message data
+                    if (d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
                             bool new_annotation = false;
                             if (d_internal_pvt_solver->glonass_gnav_ephemeris_map.find(glonass_gnav_eph->i_satellite_PRN) == d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
@@ -1380,7 +1380,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                << "inserted with Toe=" << bds_dnav_eph->d_Toe << " and BDS Week="
                                << bds_dnav_eph->i_BEIDOU_week;
                     // update/insert new ephemeris record to the global ephemeris map
-                    if (d_rp->d_rinex_header_written)  // The header is already written, we can now log the navigation message data
+                    if (d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
                             bool new_annotation = false;
                             if (d_internal_pvt_solver->beidou_dnav_ephemeris_map.find(bds_dnav_eph->i_satellite_PRN) == d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())

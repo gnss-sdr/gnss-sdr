@@ -18,18 +18,33 @@
  */
 
 #include "rinex_printer.h"
+#include <memory>
 #include <string>
 
 
-TEST(RinexPrinterTest, GalileoObsHeader)
+class RinexPrinterTest : public testing::Test
+{
+};
+
+
+TEST_F(RinexPrinterTest, GalileoObsHeader)
 {
     std::string line_aux;
     std::string line_str;
     bool no_more_finds = false;
+
+    // Trick for accessing protected methods
+    // Note that RinexPrinterTest_GalileoObsHeader_Test is implementation dependant
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_GalileoObsHeader_Test;
+    };
+    std::shared_ptr<TestClass> rp1 = std::static_pointer_cast<TestClass>(rpaux);
+    rp1 = std::make_shared<TestClass>();
+
     const Galileo_Ephemeris eph = Galileo_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp1;
-    rp1 = std::make_shared<Rinex_Printer>();
     rp1->rinex_obs_header(rp1->obsFile, eph, 0.0);
     rp1->obsFile.seekp(0);
 
@@ -53,8 +68,9 @@ TEST(RinexPrinterTest, GalileoObsHeader)
         }
     line_aux.clear();
 
-    std::shared_ptr<Rinex_Printer> rp2;
-    rp2 = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<TestClass> rp2 = std::static_pointer_cast<TestClass>(rpaux);
+    rp2 = std::make_shared<TestClass>();
+
     std::string bands("1B 5X 7X");
     rp2->rinex_obs_header(rp2->obsFile, eph, 0.0, bands);
     rp2->obsFile.seekp(0);
@@ -81,15 +97,22 @@ TEST(RinexPrinterTest, GalileoObsHeader)
 }
 
 
-TEST(RinexPrinterTest, GlonassObsHeader)
+TEST_F(RinexPrinterTest, GlonassObsHeader)
 {
     std::string line_aux;
     std::string line_str;
     bool no_more_finds = false;
     const Glonass_Gnav_Ephemeris eph = Glonass_Gnav_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp1;
-    rp1 = std::make_shared<Rinex_Printer>(3);
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_GlonassObsHeader_Test;
+    };
+    std::shared_ptr<TestClass> rp1 = std::static_pointer_cast<TestClass>(rpaux);
+    rp1 = std::make_shared<TestClass>();
+    rp1->set_version(3);
+
     const std::string bands = "1G";
     rp1->rinex_obs_header(rp1->obsFile, eph, 0.0, bands);
     rp1->obsFile.seekp(0);
@@ -116,7 +139,7 @@ TEST(RinexPrinterTest, GlonassObsHeader)
 }
 
 
-TEST(RinexPrinterTest, MixedObsHeader)
+TEST_F(RinexPrinterTest, MixedObsHeader)
 {
     std::string line_aux;
     std::string line_aux2;
@@ -125,8 +148,14 @@ TEST(RinexPrinterTest, MixedObsHeader)
     const Galileo_Ephemeris eph_gal = Galileo_Ephemeris();
     const Gps_Ephemeris eph_gps = Gps_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp1;
-    rp1 = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_MixedObsHeader_Test;
+    };
+    std::shared_ptr<TestClass> rp1 = std::static_pointer_cast<TestClass>(rpaux);
+    rp1 = std::make_shared<TestClass>();
+
     rp1->rinex_obs_header(rp1->obsFile, eph_gps, eph_gal, 0.0, "1B 5X");
     rp1->obsFile.seekp(0);
     int systems_found = 0;
@@ -163,7 +192,7 @@ TEST(RinexPrinterTest, MixedObsHeader)
 }
 
 
-TEST(RinexPrinterTest, MixedObsHeaderGpsGlo)
+TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
 {
     std::string line_aux;
     std::string line_aux2;
@@ -172,8 +201,14 @@ TEST(RinexPrinterTest, MixedObsHeaderGpsGlo)
     const Glonass_Gnav_Ephemeris eph_glo = Glonass_Gnav_Ephemeris();
     const Gps_Ephemeris eph_gps = Gps_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp1;
-    rp1 = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_MixedObsHeaderGpsGlo_Test;
+    };
+    std::shared_ptr<TestClass> rp1 = std::static_pointer_cast<TestClass>(rpaux);
+    rp1 = std::make_shared<TestClass>();
+
     rp1->rinex_obs_header(rp1->obsFile, eph_gps, eph_glo, 0.0, "1G");
     rp1->obsFile.seekp(0);
     int systems_found = 0;
@@ -210,15 +245,21 @@ TEST(RinexPrinterTest, MixedObsHeaderGpsGlo)
 }
 
 
-TEST(RinexPrinterTest, GalileoObsLog)
+TEST_F(RinexPrinterTest, GalileoObsLog)
 {
     std::string line_aux;
     std::string line_str;
     bool no_more_finds = false;
     const Galileo_Ephemeris eph = Galileo_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp;
-    rp = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_GalileoObsLog_Test;
+    };
+    std::shared_ptr<TestClass> rp = std::static_pointer_cast<TestClass>(rpaux);
+    rp = std::make_shared<TestClass>();
+
     rp->rinex_obs_header(rp->obsFile, eph, 0.0);
 
     std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
@@ -281,15 +322,21 @@ TEST(RinexPrinterTest, GalileoObsLog)
 }
 
 
-TEST(RinexPrinterTest, GlonassObsLog)
+TEST_F(RinexPrinterTest, GlonassObsLog)
 {
     std::string line_aux;
     std::string line_str;
     bool no_more_finds = false;
     const Glonass_Gnav_Ephemeris eph = Glonass_Gnav_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp;
-    rp = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_GlonassObsLog_Test;
+    };
+    std::shared_ptr<TestClass> rp = std::static_pointer_cast<TestClass>(rpaux);
+    rp = std::make_shared<TestClass>();
+
     rp->rinex_obs_header(rp->obsFile, eph, 0.0);
 
     std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
@@ -352,7 +399,7 @@ TEST(RinexPrinterTest, GlonassObsLog)
 }
 
 
-TEST(RinexPrinterTest, GpsObsLogDualBand)
+TEST_F(RinexPrinterTest, GpsObsLogDualBand)
 {
     std::string line_aux;
     std::string line_str;
@@ -360,8 +407,14 @@ TEST(RinexPrinterTest, GpsObsLogDualBand)
     const Gps_Ephemeris eph_gps = Gps_Ephemeris();
     const Gps_CNAV_Ephemeris eph_cnav = Gps_CNAV_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp;
-    rp = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_GpsObsLogDualBand_Test;
+    };
+    std::shared_ptr<TestClass> rp = std::static_pointer_cast<TestClass>(rpaux);
+    rp = std::make_shared<TestClass>();
+
     rp->rinex_obs_header(rp->obsFile, eph_gps, eph_cnav, 0.0);
 
     std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
@@ -436,15 +489,21 @@ TEST(RinexPrinterTest, GpsObsLogDualBand)
 }
 
 
-TEST(RinexPrinterTest, GalileoObsLogDualBand)
+TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
 {
     std::string line_aux;
     std::string line_str;
     bool no_more_finds = false;
     const Galileo_Ephemeris eph = Galileo_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp;
-    rp = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_GalileoObsLogDualBand_Test;
+    };
+    std::shared_ptr<TestClass> rp = std::static_pointer_cast<TestClass>(rpaux);
+    rp = std::make_shared<TestClass>();
+
     std::string bands("1B 5X");
     rp->rinex_obs_header(rp->obsFile, eph, 0.0, bands);
 
@@ -520,7 +579,7 @@ TEST(RinexPrinterTest, GalileoObsLogDualBand)
 }
 
 
-TEST(RinexPrinterTest, MixedObsLog)
+TEST_F(RinexPrinterTest, MixedObsLog)
 {
     std::string line_aux;
     std::string line_str;
@@ -528,8 +587,14 @@ TEST(RinexPrinterTest, MixedObsLog)
     const Galileo_Ephemeris eph_gal = Galileo_Ephemeris();
     const Gps_Ephemeris eph_gps = Gps_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp;
-    rp = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_MixedObsLog_Test;
+    };
+    std::shared_ptr<TestClass> rp = std::static_pointer_cast<TestClass>(rpaux);
+    rp = std::make_shared<TestClass>();
+
     rp->rinex_obs_header(rp->obsFile, eph_gps, eph_gal, 0.0, "1B 5X");
 
     std::map<int, Gnss_Synchro> gnss_pseudoranges_map;
@@ -633,7 +698,7 @@ TEST(RinexPrinterTest, MixedObsLog)
 }
 
 
-TEST(RinexPrinterTest, MixedObsLogGpsGlo)
+TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
 {
     std::string line_aux;
     std::string line_str;
@@ -641,8 +706,14 @@ TEST(RinexPrinterTest, MixedObsLogGpsGlo)
     const Glonass_Gnav_Ephemeris eph_glo = Glonass_Gnav_Ephemeris();
     const Gps_Ephemeris eph_gps = Gps_Ephemeris();
 
-    std::shared_ptr<Rinex_Printer> rp;
-    rp = std::make_shared<Rinex_Printer>();
+    std::shared_ptr<Rinex_Printer> rpaux;
+    class TestClass : public Rinex_Printer
+    {
+        friend class RinexPrinterTest_MixedObsLogGpsGlo_Test;
+    };
+    std::shared_ptr<TestClass> rp = std::static_pointer_cast<TestClass>(rpaux);
+    rp = std::make_shared<TestClass>();
+
     rp->rinex_obs_header(rp->obsFile, eph_gps, eph_glo, 0.0, "1G");
 
     std::map<int, Gnss_Synchro> gnss_pseudoranges_map;

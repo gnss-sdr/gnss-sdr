@@ -73,6 +73,7 @@ class Gps_Ephemeris;
 class Gps_Iono;
 class Gps_Navigation_Message;
 class Gps_Utc_Model;
+class Rtklib_Solver;
 
 
 /*!
@@ -92,6 +93,218 @@ public:
      */
     ~Rinex_Printer();
 
+    void print_rinex_annotation(const Rtklib_Solver* pvt_solver,
+        const std::map<int, Gnss_Synchro>& gnss_observables_map,
+        double rx_time,
+        int type_of_rx,
+        bool flag_write_RINEX_obs_output);
+
+    void log_rinex_nav_gps_cnav(int type_of_rx, const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph);
+
+    void log_rinex_nav_gps_nav(int type_of_rx, const std::map<int32_t, Gps_Ephemeris>& new_eph);
+
+    void log_rinex_nav_gal_nav(int type_of_rx, const std::map<int32_t, Galileo_Ephemeris>& new_gal_eph);
+
+    void log_rinex_nav_glo_gnav(int type_of_rx, const std::map<int32_t, Glonass_Gnav_Ephemeris>& new_glo_eph);
+
+    void log_rinex_nav_bds_dnav(int type_of_rx, const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph);
+
+    void set_pre_2009_file(bool pre_2009_file);
+
+    /*!
+     *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& eph_map) const;
+
+    /*!
+     *  \brief Writes data from the GPS L2 navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& eph_map);
+
+    /*!
+     *  \brief Writes data from the Galileo navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& eph_map) const;
+
+    /*!
+     *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map);
+
+    /*!
+     *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map);
+
+    /*!
+     *  \brief Writes data from the GLONASS GNAV navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Glonass_Gnav_Ephemeris>& eph_map) const;
+
+    /*!
+     *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map) const;
+
+    /*!
+     *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
+
+    /*!
+     *  \brief Writes data from the Mixed (Galileo/ GLONASS GNAV) navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
+
+    /*!
+     *  \brief Writes data from the Beidou B1I navigation message into the RINEX file
+     */
+    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Beidou_Dnav_Ephemeris>& eph_map) const;
+
+    /*!
+     *  \brief Generates the GPS Observation data header
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, double d_TOW_first_observation);
+
+    /*!
+     *  \brief Generates the GPS L2 Observation data header
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double d_TOW_first_observation, const std::string& gps_bands = "2S");
+
+    /*!
+     *  \brief Generates the dual frequency GPS L1 & L2/L5 Observation data header
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double d_TOW_first_observation, const std::string& gps_bands = "1C 2S");
+
+    /*!
+     *  \brief Generates the Galileo Observation data header. Example: bands("1B"), bands("1B 5X"), bands("5X"), ... Default: "1B".
+     */
+    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands = "1B");
+
+    /*!
+     *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& galileo_bands = "1B");
+
+    /*!
+     *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& gps_bands = "1C 2S", const std::string& galileo_bands = "1B");
+
+    /*!
+     *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& gps_bands = "2S", const std::string& galileo_bands = "1B");
+
+    /*!
+     *  \brief Generates the GLONASS GNAV Observation data header. Example: bands("1C"), bands("1C 2C"), bands("2C"), ... Default: "1C".
+     */
+    void rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands = "1G");
+
+    /*!
+     *  \brief Generates the Mixed (GPS L1 C/A /GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double d_TOW_first_observation, const std::string& glonass_bands = "1C");
+
+    /*!
+     *  \brief Generates the Mixed (Galileo/GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
+     */
+    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double d_TOW_first_observation, const std::string& galileo_bands = "1B", const std::string& glonass_bands = "1C");
+
+    /*!
+     *  \brief Generates the Mixed (GPS L2C/GLONASS) Observation data header. Example: galileo_bands("1G")... Default: "1G".
+     */
+    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double d_TOW_first_observation, const std::string& glonass_bands = "1G");
+
+    /*!
+     *  \brief Generates the a Beidou B1I Observation data header. Example: beidou_bands("B1")
+     */
+    void rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands);
+
+    /*!
+     *  \brief Generates the SBAS raw data header
+     */
+    void rinex_sbs_header(std::fstream& out) const;
+
+    /*!
+     *  \brief Writes GPS L1 observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
+
+    /*!
+     *  \brief Writes GPS L2 observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
+
+    /*!
+     *  \brief Writes dual frequency GPS L1 and L2 observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band = false) const;
+
+    /*!
+     *  \brief Writes Galileo observables into the RINEX file. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
+     */
+    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& galileo_bands = "1B") const;
+
+    /*!
+     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
+
+    /*!
+     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
+
+    /*!
+     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band = false) const;
+
+    /*!
+     *  \brief Writes GLONASS GNAV observables into the RINEX file. Example: glonass_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
+     */
+    void log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& glonass_bands = "1C") const;
+
+    /*!
+     *  \brief Writes Mixed GPS L1 C/A - GLONASS observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
+
+    /*!
+     *  \brief Writes Mixed GPS L2C - GLONASS observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
+
+    /*!
+     *  \brief Writes Mixed Galileo/GLONASS observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double galileo_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
+
+    /*!
+     *  \brief Writes BDS B1I observables into the RINEX file
+     */
+    void log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& bds_bands) const;
+
+    std::fstream obsFile;     //!< Output file stream for RINEX observation file
+    std::fstream navFile;     //!< Output file stream for RINEX navigation data file
+    std::fstream sbsFile;     //!< Output file stream for RINEX SBAS raw data file
+    std::fstream navGalFile;  //!< Output file stream for RINEX Galileo navigation data file
+    std::fstream navGloFile;  //!< Output file stream for RINEX GLONASS navigation data file
+    std::fstream navBdsFile;  //!< Output file stream for RINEX Galileo navigation data file
+    std::fstream navMixFile;  //!< Output file stream for RINEX Mixed navigation data file
+
+    std::string navfilename;
+    std::string obsfilename;
+    std::string sbsfilename;
+    std::string navGalfilename;
+    std::string navGlofilename;
+    std::string navBdsfilename;
+    std::string navMixfilename;
+
+    bool d_rinex_header_written;
+
+private:
     /*!
      *  \brief Generates the GPS L1 C/A Navigation Data header
      */
@@ -162,70 +375,6 @@ public:
      */
     void rinex_nav_header(std::fstream& out, const Galileo_Iono& galileo_iono, const Galileo_Utc_Model& galileo_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model) const;
 
-    /*!
-     *  \brief Generates the GPS Observation data header
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, double d_TOW_first_observation);
-
-    /*!
-     *  \brief Generates the GPS L2 Observation data header
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double d_TOW_first_observation, const std::string& gps_bands = "2S");
-
-    /*!
-     *  \brief Generates the dual frequency GPS L1 & L2/L5 Observation data header
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double d_TOW_first_observation, const std::string& gps_bands = "1C 2S");
-
-    /*!
-     *  \brief Generates the Galileo Observation data header. Example: bands("1B"), bands("1B 5X"), bands("5X"), ... Default: "1B".
-     */
-    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands = "1B");
-
-    /*!
-     *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& galileo_bands = "1B");
-
-    /*!
-     *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& gps_bands = "1C 2S", const std::string& galileo_bands = "1B");
-
-    /*!
-     *  \brief Generates the Mixed (GPS/Galileo) Observation data header. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& gps_bands = "2S", const std::string& galileo_bands = "1B");
-
-    /*!
-     *  \brief Generates the GLONASS GNAV Observation data header. Example: bands("1C"), bands("1C 2C"), bands("2C"), ... Default: "1C".
-     */
-    void rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands = "1G");
-
-    /*!
-     *  \brief Generates the Mixed (GPS L1 C/A /GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double d_TOW_first_observation, const std::string& glonass_bands = "1C");
-
-    /*!
-     *  \brief Generates the Mixed (Galileo/GLONASS) Observation data header. Example: galileo_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
-     */
-    void rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double d_TOW_first_observation, const std::string& galileo_bands = "1B", const std::string& glonass_bands = "1C");
-
-    /*!
-     *  \brief Generates the Mixed (GPS L2C/GLONASS) Observation data header. Example: galileo_bands("1G")... Default: "1G".
-     */
-    void rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double d_TOW_first_observation, const std::string& glonass_bands = "1G");
-
-    /*!
-     *  \brief Generates the a Beidou B1I Observation data header. Example: beidou_bands("B1")
-     */
-    void rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands);
-
-    /*!
-     *  \brief Generates the SBAS raw data header
-     */
-    void rinex_sbs_header(std::fstream& out) const;
 
     /*!
      *  \brief Computes the BDS Time and returns a boost::posix_time::ptime object
@@ -272,116 +421,6 @@ public:
      */
     double get_leap_second(const Glonass_Gnav_Ephemeris& eph, double gps_obs_time) const;
 
-    /*!
-     *  \brief Writes data from the GPS L1 C/A navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& eph_map) const;
-
-    /*!
-     *  \brief Writes data from the GPS L2 navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& eph_map);
-
-    /*!
-     *  \brief Writes data from the Galileo navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& eph_map) const;
-
-    /*!
-     *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map);
-
-    /*!
-     *  \brief Writes data from the Mixed (GPS/Galileo) navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map);
-
-    /*!
-     *  \brief Writes data from the GLONASS GNAV navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Glonass_Gnav_Ephemeris>& eph_map) const;
-
-    /*!
-     *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map) const;
-
-    /*!
-     *  \brief Writes data from the Mixed (GPS/GLONASS GNAV) navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
-
-    /*!
-     *  \brief Writes data from the Mixed (Galileo/ GLONASS GNAV) navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map);
-
-    /*!
-     *  \brief Writes data from the Beidou B1I navigation message into the RINEX file
-     */
-    void log_rinex_nav(std::fstream& out, const std::map<int32_t, Beidou_Dnav_Ephemeris>& eph_map) const;
-
-    /*!
-     *  \brief Writes GPS L1 observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
-
-    /*!
-     *  \brief Writes GPS L2 observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
-
-    /*!
-     *  \brief Writes dual frequency GPS L1 and L2 observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, const Gps_CNAV_Ephemeris& eph_cnav, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band = false) const;
-
-    /*!
-     *  \brief Writes Galileo observables into the RINEX file. Example: galileo_bands("1B"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
-     */
-    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& galileo_bands = "1B") const;
-
-    /*!
-     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
-
-    /*!
-     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
-
-    /*!
-     *  \brief Writes Mixed GPS / Galileo observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& gps_cnav_eph, const Galileo_Ephemeris& galileo_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables, bool triple_band = false) const;
-
-    /*!
-     *  \brief Writes GLONASS GNAV observables into the RINEX file. Example: glonass_bands("1C"), galileo_bands("1B 5X"), galileo_bands("5X"), ... Default: "1B".
-     */
-    void log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& glonass_bands = "1C") const;
-
-    /*!
-     *  \brief Writes Mixed GPS L1 C/A - GLONASS observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
-
-    /*!
-     *  \brief Writes Mixed GPS L2C - GLONASS observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& gps_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double gps_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
-
-    /*!
-     *  \brief Writes Mixed Galileo/GLONASS observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& galileo_eph, const Glonass_Gnav_Ephemeris& glonass_gnav_eph, double galileo_obs_time, const std::map<int32_t, Gnss_Synchro>& observables) const;
-
-    /*!
-     *  \brief Writes BDS B1I observables into the RINEX file
-     */
-    void log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables, const std::string& bds_bands) const;
-
 
     /*!
      * \brief Represents GPS time in the date time format. Leap years are considered, but leap seconds are not.
@@ -423,25 +462,6 @@ public:
 
     void update_obs_header(std::fstream& out, const Beidou_Dnav_Utc_Model& utc_model) const;
 
-    void set_pre_2009_file(bool pre_2009_file);
-
-    std::fstream obsFile;     //!< Output file stream for RINEX observation file
-    std::fstream navFile;     //!< Output file stream for RINEX navigation data file
-    std::fstream sbsFile;     //!< Output file stream for RINEX SBAS raw data file
-    std::fstream navGalFile;  //!< Output file stream for RINEX Galileo navigation data file
-    std::fstream navGloFile;  //!< Output file stream for RINEX GLONASS navigation data file
-    std::fstream navBdsFile;  //!< Output file stream for RINEX Galileo navigation data file
-    std::fstream navMixFile;  //!< Output file stream for RINEX Mixed navigation data file
-
-    std::string navfilename;
-    std::string obsfilename;
-    std::string sbsfilename;
-    std::string navGalfilename;
-    std::string navGlofilename;
-    std::string navBdsfilename;
-    std::string navMixfilename;
-
-private:
     /*
      * Generation of RINEX signal strength indicators
      */
@@ -653,12 +673,14 @@ private:
     std::map<std::string, std::string> satelliteSystem;  // GPS, GLONASS, SBAS payload, Galileo or Beidou
     std::map<std::string, std::string> observationType;  // PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string, std::string> observationCode;  // GNSS observation descriptors
-    std::string stringVersion;                           // RINEX version (2.10/2.11 or 3.01/3.02)
+    std::string d_stringVersion;                         // RINEX version (2.10/2.11 or 3.01/3.02)
 
-    double fake_cnav_iode;
-    int version;                  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
-    int numberTypesObservations;  // Number of available types of observable in the system. Should be public?
-    bool pre_2009_file_;
+    double d_fake_cnav_iode;
+    int d_version;                  // RINEX version (2 for 2.10/2.11 and 3 for 3.01)
+    int d_numberTypesObservations;  // Number of available types of observable in the system. Should be public?
+    bool d_rinex_header_updated;
+
+    bool d_pre_2009_file;
 };
 
 

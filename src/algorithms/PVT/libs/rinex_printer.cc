@@ -342,6 +342,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                         {
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, rx_time);
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -352,6 +353,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("2S");
                             rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->gps_cnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -362,6 +364,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("L5");
                             rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->gps_cnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -371,6 +374,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                         {
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -381,6 +385,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("5X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -391,6 +396,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("7X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -401,6 +407,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("1C 2S");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->gps_cnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -411,6 +418,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("1C L5");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -421,6 +429,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -431,6 +440,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("5X");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -441,6 +451,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("7X");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -452,6 +463,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gps_signal("L5");
                             rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gps_signal, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_cnav_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -462,6 +474,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B 5X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -472,6 +485,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B 7X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -482,6 +496,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("1G");
                             rinex_obs_header(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                            output_navfilename.push_back(navGlofilename);
                             log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -492,6 +507,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("2G");
                             rinex_obs_header(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                            output_navfilename.push_back(navGlofilename);
                             log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -502,6 +518,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("1G 2G");
                             rinex_obs_header(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                            output_navfilename.push_back(navGlofilename);
                             log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -515,11 +532,14 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                                 {
                                     rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
                                     log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
+                                    output_navfilename.push_back(navMixfilename);
                                 }
                             if (d_version == 2)
                                 {
                                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                                     rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                    output_navfilename.push_back(navfilename);
+                                    output_navfilename.push_back(navGlofilename);
                                     log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
                                     log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
                                 }
@@ -533,6 +553,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->galileo_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -543,6 +564,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string glo_signal("1G");
                             rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_cnav_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -555,12 +577,15 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             if (d_version == 3)
                                 {
                                     rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    output_navfilename.push_back(navfilename);
                                     log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
                                 }
                             if (d_version == 2)
                                 {
                                     rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
                                     rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                    output_navfilename.push_back(navfilename);
+                                    output_navfilename.push_back(navGlofilename);
                                     log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
                                     log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
                                 }
@@ -574,6 +599,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->galileo_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -584,6 +610,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string glo_signal("2G");
                             rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_cnav_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -597,6 +624,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gps_signal("1C L5");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gps_signal, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -608,6 +636,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B 5X");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -617,6 +646,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                         {
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -627,6 +657,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("5X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -637,6 +668,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string signal("7X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -647,6 +679,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B 5X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -657,6 +690,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B 7X");
                             rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -667,6 +701,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gal_signal("1B");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -676,6 +711,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                         {
                             rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, "B1");
                             rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->beidou_dnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -720,6 +756,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                         {
                             rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, "B3");
                             rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->beidou_dnav_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -743,6 +780,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gps_signal("1C 2S L5");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, gps_signal);
                             rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
                             log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }
@@ -756,6 +794,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             const std::string gps_signal("1C 2S L5");
                             rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gps_signal, gal_signal);
                             rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
                             log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
                             d_rinex_header_written = true;  // do not write header anymore
                         }

@@ -53,8 +53,10 @@ DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
 // defined for 32 and 64-bit environments
+// clang-format off
 #include <io.h>              // for _access(), _mktemp()
 #define GP_MAX_TMP_FILES 27  // 27 temporary files it's Microsoft restriction
+// clang-format on
 #elif defined(unix) || defined(__unix) || defined(__unix__) || defined(__APPLE__)
 // all UNIX-like OSs (Linux, *BSD, macOS, Solaris, ...)
 #include <unistd.h>  // for access(), mkstemp()

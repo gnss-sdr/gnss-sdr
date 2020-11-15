@@ -132,6 +132,7 @@ asn_dec_rval_t NativeInteger_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
     return rval;
 }
 
+// clang-format off
 /*
  * Encode the NativeInteger using the standard INTEGER type DER encoder.
  */
@@ -172,6 +173,7 @@ asn_enc_rval_t NativeInteger_encode_der(asn_TYPE_descriptor_t *sd, void *ptr,
         }
     return erval;
 }
+// clang-format on
 
 /*
  * Decode the chunk of XML text encoding INTEGER.

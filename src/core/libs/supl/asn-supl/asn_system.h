@@ -61,6 +61,7 @@ typedef unsigned int uint32_t;
 #include <types/vxTypes.h>
 #else /* !defined(__vxworks) */
 
+// clang-format off
 #include <inttypes.h> /* C99 specifies this file */
 /*
  * 1. Earlier FreeBSD version didn't have <stdint.h>,
@@ -127,5 +128,6 @@ typedef unsigned int uint32_t;
 #define MIN(a, b) ((a) < (b) ? (a) : (b)) /* Unsafe variant */
 #endif                                    /* __GNUC__ */
 #endif                                    /* MIN */
+// clang-format on
 
 #endif /* _ASN_SYSTEM_H_ */

@@ -759,6 +759,7 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
 
     gmtoff = GMTOFF(*tm);
 
+    // clang-format off
     if (force_gmt && gmtoff)
         {
             tm_s = *tm;
@@ -771,7 +772,7 @@ GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *opt_gt,
             gmtoff = 0;
 #endif
         }
-
+    // clang-format on
     size = snprintf(buf, buf_size, "%04d%02d%02d%02d%02d%02d",
         tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
         tm->tm_hour, tm->tm_min, tm->tm_sec);

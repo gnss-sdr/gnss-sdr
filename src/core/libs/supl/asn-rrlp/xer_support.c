@@ -44,6 +44,7 @@ static int _charclass[256] = {
 #define ALPHA(c) (_charclass[(unsigned char)(c)] == 3)
 
 /* Aliases for characters, ASCII/UTF-8 */
+// clang-format off
 #define EXCLAM 0x21 /* '!' */
 #define CQUOTE 0x22 /* '"' */
 #define CDASH 0x2d  /* '-' */
@@ -52,6 +53,7 @@ static int _charclass[256] = {
 #define CEQUAL 0x3d /* '=' */
 #define RANGLE 0x3e /* '>' */
 #define CQUEST 0x3f /* '?' */
+// clang-format on
 
 /* Invoke token callback */
 #define TOKEN_CB_CALL(type, _ns, _current_too, _final)            \

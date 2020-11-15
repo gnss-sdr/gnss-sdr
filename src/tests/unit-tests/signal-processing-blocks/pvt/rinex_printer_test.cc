@@ -435,3 +435,598 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
     fs::remove(obsfile);
     fs::remove(navfile);
 }
+
+
+TEST_F(RinexPrinterTest, GalileoObsLog)
+{
+    std::string line_aux;
+    std::string line_str;
+    bool no_more_finds = false;
+    auto eph = Galileo_Ephemeris();
+    eph.i_satellite_PRN = 1;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, 12, "filename", false, false);
+    pvt_solution->galileo_ephemeris_map[1] = eph;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+
+    Gnss_Synchro gs1 = Gnss_Synchro();
+    Gnss_Synchro gs2 = Gnss_Synchro();
+    Gnss_Synchro gs3 = Gnss_Synchro();
+    Gnss_Synchro gs4 = Gnss_Synchro();
+
+    std::string sys = "E";
+    gs1.System = *sys.c_str();
+    gs2.System = *sys.c_str();
+    gs3.System = *sys.c_str();
+    gs4.System = *sys.c_str();
+
+    std::string sig = "1B";
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
+
+    gs1.PRN = 3;
+    gs2.PRN = 8;
+    gs3.PRN = 10;
+    gs4.PRN = 22;
+
+    gs4.Pseudorange_m = 22000000;
+    gs4.Carrier_phase_rads = 23.4;
+    gs4.Carrier_Doppler_hz = 1534;
+    gs4.CN0_dB_hz = 42;
+
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+
+    auto rp = std::make_shared<Rinex_Printer>();
+    rp->print_rinex_annotation(pvt_solution.get(),
+        gnss_observables_map,
+        0.0,
+        4,
+        true);
+
+    std::string obsfile = rp->get_obsfilename();
+    std::string navfile = rp->get_navfilename()[0];
+
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+
+    fstr.seekg(0);
+
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (!no_more_finds)
+                {
+                    if (line_str.find("E22", 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_aux = std::string(line_str);
+                        }
+                }
+        }
+
+    std::string expected_str("E22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
+    EXPECT_EQ(0, expected_str.compare(line_aux));
+    fstr.close();
+    fs::remove(obsfile);
+    fs::remove(navfile);
+}
+
+
+TEST_F(RinexPrinterTest, GlonassObsLog)
+{
+    std::string line_aux;
+    std::string line_str;
+    bool no_more_finds = false;
+    auto eph = Glonass_Gnav_Ephemeris();
+    eph.i_satellite_PRN = 22;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, 12, "filename", false, false);
+    pvt_solution->glonass_gnav_ephemeris_map[1] = eph;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+
+    Gnss_Synchro gs1 = Gnss_Synchro();
+    Gnss_Synchro gs2 = Gnss_Synchro();
+    Gnss_Synchro gs3 = Gnss_Synchro();
+    Gnss_Synchro gs4 = Gnss_Synchro();
+
+    std::string sys = "R";
+    gs1.System = *sys.c_str();
+    gs2.System = *sys.c_str();
+    gs3.System = *sys.c_str();
+    gs4.System = *sys.c_str();
+
+    std::string sig = "1C";
+    std::memcpy(reinterpret_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs4.Signal), sig.c_str(), 3);
+
+    gs1.PRN = 3;
+    gs2.PRN = 8;
+    gs3.PRN = 10;
+    gs4.PRN = 22;
+
+    gs4.Pseudorange_m = 22000000;
+    gs4.Carrier_phase_rads = 23.4;
+    gs4.Carrier_Doppler_hz = 1534;
+    gs4.CN0_dB_hz = 42;
+
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+
+    auto rp = std::make_shared<Rinex_Printer>();
+    rp->print_rinex_annotation(pvt_solution.get(),
+        gnss_observables_map,
+        0.0,
+        23,
+        true);
+
+    std::string obsfile = rp->get_obsfilename();
+    std::string navfile = rp->get_navfilename()[0];
+
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+
+    fstr.seekg(0);
+
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (!no_more_finds)
+                {
+                    if (line_str.find("R22", 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_aux = std::string(line_str);
+                        }
+                }
+        }
+
+    std::string expected_str("R22  22000000.000 7         3.724 7      1534.000 7        42.000               ");
+    EXPECT_EQ(0, expected_str.compare(line_aux));
+    fstr.close();
+    fs::remove(navfile);
+    fs::remove(obsfile);
+}
+
+
+TEST_F(RinexPrinterTest, GpsObsLogDualBand)
+{
+    std::string line_aux;
+    std::string line_str;
+    bool no_more_finds = false;
+    auto eph = Gps_Ephemeris();
+    auto eph_cnav = Gps_CNAV_Ephemeris();
+    eph.i_satellite_PRN = 1;
+    eph_cnav.i_satellite_PRN = 1;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, 12, "filename", false, false);
+    pvt_solution->gps_ephemeris_map[1] = eph;
+    pvt_solution->gps_cnav_ephemeris_map[1] = eph_cnav;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+
+    Gnss_Synchro gs1 = Gnss_Synchro();
+    Gnss_Synchro gs2 = Gnss_Synchro();
+    Gnss_Synchro gs3 = Gnss_Synchro();
+    Gnss_Synchro gs4 = Gnss_Synchro();
+
+    std::string sys = "G";
+    gs1.System = *sys.c_str();
+    gs2.System = *sys.c_str();
+    gs3.System = *sys.c_str();
+    gs4.System = *sys.c_str();
+
+    std::string sig = "1C";
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
+
+    sig = "2S";
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
+
+    gs1.PRN = 3;
+    gs2.PRN = 8;
+    gs3.PRN = 7;
+    gs4.PRN = 8;
+
+    gs2.Pseudorange_m = 22000002.1;
+    gs2.Carrier_phase_rads = 45.4;
+    gs2.Carrier_Doppler_hz = 321;
+    gs2.CN0_dB_hz = 39;
+
+    gs4.Pseudorange_m = 22000000;
+    gs4.Carrier_phase_rads = 23.4;
+    gs4.Carrier_Doppler_hz = 1534;
+    gs4.CN0_dB_hz = 42;
+
+    gs3.Pseudorange_m = 22000007;
+    gs3.Carrier_phase_rads = -23.4;
+    gs3.Carrier_Doppler_hz = -1534;
+    gs3.CN0_dB_hz = 47;
+
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+
+    auto rp = std::make_shared<Rinex_Printer>();
+    rp->print_rinex_annotation(pvt_solution.get(),
+        gnss_observables_map,
+        0.0,
+        7,
+        true);
+
+    std::string obsfile = rp->get_obsfilename();
+    std::string navfile = rp->get_navfilename()[0];
+
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+
+    fstr.seekg(0);
+
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (!no_more_finds)
+                {
+                    if (line_str.find("G08", 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_aux = std::string(line_str);
+                        }
+                }
+        }
+
+    std::string expected_str("G08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
+    EXPECT_EQ(0, expected_str.compare(line_aux));
+    fstr.close();
+    fs::remove(navfile);
+    fs::remove(obsfile);
+}
+
+
+TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
+{
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, 12, "filename", false, false);
+    auto eph = Galileo_Ephemeris();
+    eph.i_satellite_PRN = 1;
+    pvt_solution->galileo_ephemeris_map[1] = eph;
+
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+    Gnss_Synchro gs1 = Gnss_Synchro();
+    Gnss_Synchro gs2 = Gnss_Synchro();
+    Gnss_Synchro gs3 = Gnss_Synchro();
+    Gnss_Synchro gs4 = Gnss_Synchro();
+
+    std::string sys = "E";
+    gs1.System = *sys.c_str();
+    gs2.System = *sys.c_str();
+    gs3.System = *sys.c_str();
+    gs4.System = *sys.c_str();
+
+    std::string sig = "1B";
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
+
+    sig = "5X";
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
+
+    gs1.PRN = 3;
+    gs2.PRN = 8;
+    gs3.PRN = 3;
+    gs4.PRN = 8;
+
+    gs2.Pseudorange_m = 22000002.1;
+    gs2.Carrier_phase_rads = 45.4;
+    gs2.Carrier_Doppler_hz = 321;
+    gs2.CN0_dB_hz = 39;
+
+    gs3.Pseudorange_m = 22000003.3;
+    gs3.Carrier_phase_rads = 43.3;
+    gs3.Carrier_Doppler_hz = -321;
+    gs3.CN0_dB_hz = 40;
+
+    gs4.Pseudorange_m = 22000000;
+    gs4.Carrier_phase_rads = 23.4;
+    gs4.Carrier_Doppler_hz = 1534;
+    gs4.CN0_dB_hz = 42;
+
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+
+    auto rp = std::make_shared<Rinex_Printer>();
+
+    rp->print_rinex_annotation(pvt_solution.get(),
+        gnss_observables_map,
+        0.0,
+        14,
+        true);
+
+    std::string obsfile = rp->get_obsfilename();
+    std::string navfile = rp->get_navfilename()[0];
+
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+
+    fstr.seekg(0);
+    std::string line_aux;
+    std::string line_str;
+    bool no_more_finds = false;
+
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (!no_more_finds)
+                {
+                    if (line_str.find("E08", 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_aux = std::string(line_str);
+                        }
+                }
+        }
+
+    std::string expected_str("E08  22000002.100 6         7.226 6       321.000 6        39.000  22000000.000 7         3.724 7      1534.000 7        42.000");
+    EXPECT_EQ(0, expected_str.compare(line_aux));
+    fstr.close();
+    fs::remove(navfile);
+    fs::remove(obsfile);
+}
+
+
+TEST_F(RinexPrinterTest, MixedObsLog)
+{
+    std::string line_aux;
+    std::string line_str;
+    bool no_more_finds = false;
+    auto eph_gps = Gps_Ephemeris();
+    auto eph_gal = Galileo_Ephemeris();
+    eph_gps.i_satellite_PRN = 1;
+    eph_gal.i_satellite_PRN = 1;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, 12, "filename", false, false);
+    pvt_solution->gps_ephemeris_map[1] = eph_gps;
+    pvt_solution->galileo_ephemeris_map[1] = eph_gal;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+
+    Gnss_Synchro gs1 = Gnss_Synchro();
+    Gnss_Synchro gs2 = Gnss_Synchro();
+    Gnss_Synchro gs3 = Gnss_Synchro();
+    Gnss_Synchro gs4 = Gnss_Synchro();
+    Gnss_Synchro gs5 = Gnss_Synchro();
+    Gnss_Synchro gs6 = Gnss_Synchro();
+    Gnss_Synchro gs7 = Gnss_Synchro();
+    Gnss_Synchro gs8 = Gnss_Synchro();
+
+    std::string sys = "G";
+    gs1.System = *sys.c_str();
+    gs2.System = *sys.c_str();
+    gs3.System = *sys.c_str();
+    gs4.System = *sys.c_str();
+
+    sys = "E";
+    gs5.System = *sys.c_str();
+    gs6.System = *sys.c_str();
+    gs7.System = *sys.c_str();
+    gs8.System = *sys.c_str();
+
+    std::string sig = "1C";
+    std::memcpy(static_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs4.Signal), sig.c_str(), 3);
+
+    sig = "5X";
+    std::memcpy(static_cast<void*>(gs5.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs6.Signal), sig.c_str(), 3);
+
+    sig = "1B";
+    std::memcpy(static_cast<void*>(gs7.Signal), sig.c_str(), 3);
+    std::memcpy(static_cast<void*>(gs8.Signal), sig.c_str(), 3);
+
+    gs1.PRN = 3;
+    gs2.PRN = 8;
+    gs3.PRN = 14;
+    gs4.PRN = 16;
+    gs5.PRN = 3;
+    gs6.PRN = 16;
+    gs7.PRN = 14;
+    gs8.PRN = 16;
+
+    gs2.Pseudorange_m = 22000002.1;
+    gs2.Carrier_phase_rads = 45.4;
+    gs2.Carrier_Doppler_hz = 321;
+    gs2.CN0_dB_hz = 39;
+
+    gs4.Pseudorange_m = 22000000;
+    gs4.Carrier_phase_rads = 23.4;
+    gs4.Carrier_Doppler_hz = -1534;
+    gs4.CN0_dB_hz = 40;
+
+    gs6.Pseudorange_m = 22000000;
+    gs6.Carrier_phase_rads = 52.1;
+    gs6.Carrier_Doppler_hz = 1534;
+    gs6.CN0_dB_hz = 41;
+
+    gs8.Pseudorange_m = 22000000;
+    gs8.Carrier_phase_rads = 0.8;
+    gs8.Carrier_Doppler_hz = -20;
+    gs8.CN0_dB_hz = 42;
+
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(5, gs5));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(6, gs6));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
+
+    auto rp = std::make_shared<Rinex_Printer>();
+
+    rp->print_rinex_annotation(pvt_solution.get(),
+        gnss_observables_map,
+        0.0,
+        9,
+        true);
+
+    std::string obsfile = rp->get_obsfilename();
+    std::string navfile = rp->get_navfilename()[0];
+
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+
+    fstr.seekg(0);
+
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (!no_more_finds)
+                {
+                    if (line_str.find("E16", 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_aux = std::string(line_str);
+                        }
+                }
+        }
+    std::string expected_str("E16  22000000.000 7         0.127 7       -20.000 7        42.000  22000000.000 6         8.292 6      1534.000 6        41.000");
+    EXPECT_EQ(0, expected_str.compare(line_aux));
+    fstr.close();
+    fs::remove(navfile);
+    fs::remove(obsfile);
+}
+
+
+TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
+{
+    std::string line_aux;
+    std::string line_str;
+    bool no_more_finds = false;
+    auto eph_gps = Gps_Ephemeris();
+    auto eph_glo = Glonass_Gnav_Ephemeris();
+    eph_gps.i_satellite_PRN = 1;
+    eph_glo.i_satellite_PRN = 1;
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, 12, "filename", false, false);
+    pvt_solution->gps_ephemeris_map[1] = eph_gps;
+    pvt_solution->glonass_gnav_ephemeris_map[1] = eph_glo;
+    std::map<int, Gnss_Synchro> gnss_observables_map;
+
+    Gnss_Synchro gs1 = Gnss_Synchro();
+    Gnss_Synchro gs2 = Gnss_Synchro();
+    Gnss_Synchro gs3 = Gnss_Synchro();
+    Gnss_Synchro gs4 = Gnss_Synchro();
+    Gnss_Synchro gs5 = Gnss_Synchro();
+    Gnss_Synchro gs6 = Gnss_Synchro();
+    Gnss_Synchro gs7 = Gnss_Synchro();
+    Gnss_Synchro gs8 = Gnss_Synchro();
+
+    std::string sys = "G";
+    gs1.System = *sys.c_str();
+    gs2.System = *sys.c_str();
+    gs3.System = *sys.c_str();
+    gs4.System = *sys.c_str();
+
+    sys = "R";
+    gs5.System = *sys.c_str();
+    gs6.System = *sys.c_str();
+    gs7.System = *sys.c_str();
+    gs8.System = *sys.c_str();
+
+    std::string sig = "1C";
+    std::memcpy(reinterpret_cast<void*>(gs1.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs2.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs3.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs4.Signal), sig.c_str(), 3);
+
+    sig = "1G";
+    std::memcpy(reinterpret_cast<void*>(gs5.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs6.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs7.Signal), sig.c_str(), 3);
+    std::memcpy(reinterpret_cast<void*>(gs8.Signal), sig.c_str(), 3);
+
+    gs1.PRN = 3;
+    gs2.PRN = 8;
+    gs3.PRN = 14;
+    gs4.PRN = 16;
+    gs5.PRN = 3;
+    gs6.PRN = 16;
+    gs7.PRN = 14;
+    gs8.PRN = 16;
+
+    gs2.Pseudorange_m = 22000002.1;
+    gs2.Carrier_phase_rads = 45.4;
+    gs2.Carrier_Doppler_hz = 321;
+    gs2.CN0_dB_hz = 39;
+
+    gs4.Pseudorange_m = 22000000;
+    gs4.Carrier_phase_rads = 23.4;
+    gs4.Carrier_Doppler_hz = -1534;
+    gs4.CN0_dB_hz = 40;
+
+    gs6.Pseudorange_m = 22000000;
+    gs6.Carrier_phase_rads = 52.1;
+    gs6.Carrier_Doppler_hz = 1534;
+    gs6.CN0_dB_hz = 41;
+
+    gs8.Pseudorange_m = 22000000;
+    gs8.Carrier_phase_rads = 0.8;
+    gs8.Carrier_Doppler_hz = -20;
+    gs8.CN0_dB_hz = 42;
+
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(1, gs1));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(2, gs2));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(3, gs3));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(4, gs4));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(5, gs5));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(6, gs6));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(7, gs7));
+    gnss_observables_map.insert(std::pair<int, Gnss_Synchro>(8, gs8));
+
+    auto rp = std::make_shared<Rinex_Printer>();
+
+    rp->print_rinex_annotation(pvt_solution.get(),
+        gnss_observables_map,
+        0.0,
+        26,
+        true);
+
+    std::string obsfile = rp->get_obsfilename();
+    std::string navfile = rp->get_navfilename()[0];
+
+    rp = nullptr;  // close the RINEX files so we can inspect them
+
+    std::fstream fstr(obsfile.c_str(), std::fstream::in);
+
+    fstr.seekg(0);
+
+    while (!fstr.eof())
+        {
+            std::getline(fstr, line_str);
+            if (!no_more_finds)
+                {
+                    if (line_str.find("R16", 0) != std::string::npos)
+                        {
+                            no_more_finds = true;
+                            line_aux = std::string(line_str);
+                        }
+                }
+        }
+
+    std::string expected_str("R16  22000000.000 6         8.292 6      1534.000 6        41.000  22000000.000 7         0.127 7       -20.000 7        42.000");
+    EXPECT_EQ(0, expected_str.compare(line_aux));
+    fstr.close();
+    fs::remove(navfile);
+    fs::remove(obsfile);
+}

@@ -39,6 +39,7 @@
 #include "gps_iono.h"
 #include "gps_navigation_message.h"
 #include "gps_utc_model.h"
+#include "rtklib_solver.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/time_zone_base.hpp>
@@ -77,7 +78,9 @@ namespace errorlib = boost::system;
 
 Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path, const std::string& base_name)
 {
-    pre_2009_file_ = false;
+    d_pre_2009_file = false;
+    d_rinex_header_updated = false;
+    d_rinex_header_written = false;
     std::string base_rinex_path = base_path;
     fs::path full_path(fs::current_path());
     const fs::path p(base_rinex_path);
@@ -218,17 +221,17 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path,
 
     if (conf_version == 2)
         {
-            version = 2;
-            stringVersion = "2.11";
+            d_version = 2;
+            d_stringVersion = "2.11";
         }
     else
         {
-            version = 3;
-            stringVersion = "3.02";
+            d_version = 3;
+            d_stringVersion = "3.02";
         }
 
-    numberTypesObservations = 4;  // Number of available types of observable in the system
-    fake_cnav_iode = 1;
+    d_numberTypesObservations = 4;  // Number of available types of observable in the system
+    d_fake_cnav_iode = 1;
 }
 
 
@@ -314,6 +317,1105 @@ Rinex_Printer::~Rinex_Printer()
                 {
                     LOG(INFO) << "Error deleting temporary file";
                 }
+        }
+}
+
+
+void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, const std::map<int, Gnss_Synchro>& gnss_observables_map, double rx_time, int type_of_rx, bool flag_write_RINEX_obs_output)
+{
+    std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
+    std::map<int, Gps_Ephemeris>::const_iterator gps_ephemeris_iter;
+    std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
+    std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
+    std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_dnav_ephemeris_iter;
+    if (!d_rinex_header_written)  // & we have utc data in nav message!
+        {
+            galileo_ephemeris_iter = pvt_solver->galileo_ephemeris_map.cbegin();
+            gps_ephemeris_iter = pvt_solver->gps_ephemeris_map.cbegin();
+            gps_cnav_ephemeris_iter = pvt_solver->gps_cnav_ephemeris_map.cbegin();
+            glonass_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
+            beidou_dnav_ephemeris_iter = pvt_solver->beidou_dnav_ephemeris_map.cbegin();
+            switch (type_of_rx)
+                {
+                case 1:  // GPS L1 C/A only
+                    if (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend())
+                        {
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, rx_time);
+                            rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 2:  // GPS L2C only
+                    if (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend())
+                        {
+                            const std::string signal("2S");
+                            rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->gps_cnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 3:  // GPS L5 only
+                    if (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend())
+                        {
+                            const std::string signal("L5");
+                            rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->gps_cnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 4:  // Galileo E1B only
+                    if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                        {
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 5:  // Galileo E5a only
+                    if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                        {
+                            const std::string signal("5X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 6:  // Galileo E5b only
+                    if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                        {
+                            const std::string signal("7X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 7:  // GPS L1 C/A + GPS L2C
+                    if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string signal("1C 2S");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->gps_cnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 8:  // GPS L1 + GPS L5
+                    if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string signal("1C L5");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 9:  // GPS L1 C/A + Galileo E1B
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 10:  // GPS L1 C/A + Galileo E5a
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("5X");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 11:  // GPS L1 C/A + Galileo E5b
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("7X");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 13:  // L5+E5a
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("5X");
+                            const std::string gps_signal("L5");
+                            rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gps_signal, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_cnav_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 14:  // Galileo E1B + Galileo E5a
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 5X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 15:  // Galileo E1B + Galileo E5b
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 7X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 23:  // GLONASS L1 C/A only
+                    if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
+                        {
+                            const std::string signal("1G");
+                            rinex_obs_header(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                            output_navfilename.push_back(navGlofilename);
+                            log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 24:  // GLONASS L2 C/A only
+                    if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
+                        {
+                            const std::string signal("2G");
+                            rinex_obs_header(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                            output_navfilename.push_back(navGlofilename);
+                            log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 25:  // GLONASS L1 C/A + GLONASS L2 C/A
+                    if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
+                        {
+                            const std::string signal("1G 2G");
+                            rinex_obs_header(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                            output_navfilename.push_back(navGlofilename);
+                            log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 26:  // GPS L1 C/A + GLONASS L1 C/A
+                    if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                        {
+                            const std::string glo_signal("1G");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal);
+                            if (d_version == 3)
+                                {
+                                    rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
+                                    output_navfilename.push_back(navMixfilename);
+                                }
+                            if (d_version == 2)
+                                {
+                                    rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                                    rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                    output_navfilename.push_back(navfilename);
+                                    output_navfilename.push_back(navGlofilename);
+                                    log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
+                                    log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
+                                }
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 27:  // Galileo E1B + GLONASS L1 C/A
+                    if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string glo_signal("1G");
+                            const std::string gal_signal("1B");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->galileo_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 28:  // GPS L2C + GLONASS L1 C/A
+                    if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string glo_signal("1G");
+                            rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_cnav_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 29:  // GPS L1 C/A + GLONASS L2 C/A
+                    if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                        {
+                            const std::string glo_signal("2G");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal);
+                            if (d_version == 3)
+                                {
+                                    rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    output_navfilename.push_back(navfilename);
+                                    log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
+                                }
+                            if (d_version == 2)
+                                {
+                                    rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                                    rinex_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, glonass_gnav_ephemeris_iter->second);
+                                    output_navfilename.push_back(navfilename);
+                                    output_navfilename.push_back(navGlofilename);
+                                    log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
+                                    log_rinex_nav(navGloFile, pvt_solver->glonass_gnav_ephemeris_map);
+                                }
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 30:  // Galileo E1B + GLONASS L2 C/A
+                    if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string glo_signal("2G");
+                            const std::string gal_signal("1B");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->galileo_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 31:  // GPS L2C + GLONASS L2 C/A
+                    if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string glo_signal("2G");
+                            rinex_obs_header(obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, glo_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_cnav_ephemeris_map, pvt_solver->glonass_gnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 32:  // L1+E1+L5+E5a
+                    if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and
+                        (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()) and
+                        (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 5X");
+                            const std::string gps_signal("1C L5");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gps_signal, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 33:  // L1+E1+E5a
+                    if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and
+                        (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 5X");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 101:  // Galileo E1B + Galileo E6B
+                    if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                        {
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 102:  // Galileo E5a + Galileo E6B
+                    if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                        {
+                            const std::string signal("5X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 103:  // Galileo E5b + Galileo E6B
+                    if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                        {
+                            const std::string signal("7X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 5X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 7X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 500:  // BDS B1I only
+                    if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
+                        {
+                            rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, "B1");
+                            rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->beidou_dnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+
+                    break;
+                case 501:  // BeiDou B1I + GPS L1 C/A
+                    if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend()))
+                        {
+                            const std::string bds_signal("B1");
+                            // rinex_obs_header(obsFile, gps_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, rx_time, bds_signal);
+                            // rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+
+                    break;
+                case 502:  // BeiDou B1I + Galileo E1B
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend()))
+                        {
+                            const std::string bds_signal("B1");
+                            const std::string gal_signal("1B");
+                            // rinex_obs_header(obsFile, galileo_ephemeris_iter->second, beidou_dnav_ephemeris_iter->second, rx_time, gal_signal, bds_signal);
+                            // rinex_nav_header(navMixFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+
+                    break;
+                case 503:  // BeiDou B1I + GLONASS L1 C/A
+                case 504:  // BeiDou B1I + GPS L1 C/A + Galileo E1B
+                case 505:  // BeiDou B1I + GPS L1 C/A + GLONASS L1 C/A + Galileo E1B
+                case 506:  // BeiDou B1I + Beidou B3I
+                    if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
+                        {
+                            // rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, "B1");
+                            // rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            // log_rinex_nav(navFile, pvt_solver->beidou_dnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+
+                    break;
+                case 600:  // BDS B3I only
+                    if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
+                        {
+                            rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, "B3");
+                            rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->beidou_dnav_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+
+                    break;
+                case 601:  // BeiDou B3I + GPS L2C
+                case 602:  // BeiDou B3I + GLONASS L2 C/A
+                case 603:  // BeiDou B3I + GPS L2C + GLONASS L2 C/A
+                    if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
+                        {
+                            rinex_obs_header(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, "B3");
+                            // rinex_nav_header(navFile, pvt_solver->beidou_dnav_iono, pvt_solver->beidou_dnav_utc_model);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+
+                    break;
+                case 1000:  // GPS L1 C/A + GPS L2C + GPS L5
+                    if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and
+                        (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string gps_signal("1C 2S L5");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, gps_signal);
+                            rinex_nav_header(navFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second);
+                            output_navfilename.push_back(navfilename);
+                            log_rinex_nav(navFile, pvt_solver->gps_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                case 1001:  // GPS L1 C/A + Galileo E1B + GPS L2C + GPS L5 + Galileo E5a
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and
+                        (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and
+                        (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 5X");
+                            const std::string gps_signal("1C 2S L5");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gps_signal, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
+                default:
+                    break;
+                }
+        }
+    if (d_rinex_header_written)  // The header is already written, we can now log the navigation message data
+        {
+            galileo_ephemeris_iter = pvt_solver->galileo_ephemeris_map.cbegin();
+            gps_ephemeris_iter = pvt_solver->gps_ephemeris_map.cbegin();
+            gps_cnav_ephemeris_iter = pvt_solver->gps_cnav_ephemeris_map.cbegin();
+            glonass_gnav_ephemeris_iter = pvt_solver->glonass_gnav_ephemeris_map.cbegin();
+            beidou_dnav_ephemeris_iter = pvt_solver->beidou_dnav_ephemeris_map.cbegin();
+
+            // Log observables into the RINEX file
+            if (flag_write_RINEX_obs_output)
+                {
+                    switch (type_of_rx)
+                        {
+                        case 1:  // GPS L1 C/A only
+                            if (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0))
+                                        {
+                                            update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                            update_nav_header(navFile, pvt_solver->gps_utc_model, pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                            d_rinex_header_updated = true;
+                                        }
+                                }
+                            break;
+                        case 2:  // GPS L2C only
+                        case 3:  // GPS L5
+                            if (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, gps_cnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->gps_cnav_utc_model.d_A0 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->gps_cnav_utc_model);
+                                    update_nav_header(navFile, pvt_solver->gps_cnav_utc_model, pvt_solver->gps_cnav_iono);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 4:  // Galileo E1B only
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "1B");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 5:  // Galileo E5a only
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "5X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 6:  // Galileo E5b only
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "7X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 7:  // GPS L1 C/A + GPS L2C
+                            if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0))
+                                        {
+                                            update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                            update_nav_header(navFile, pvt_solver->gps_utc_model, pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                            d_rinex_header_updated = true;
+                                        }
+                                }
+                            break;
+                        case 8:  // L1+L5
+                            if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and ((pvt_solver->gps_cnav_utc_model.d_A0 != 0) or (pvt_solver->gps_utc_model.d_A0 != 0)))
+                                        {
+                                            if (pvt_solver->gps_cnav_utc_model.d_A0 != 0)
+                                                {
+                                                    update_obs_header(obsFile, pvt_solver->gps_cnav_utc_model);
+                                                    update_nav_header(navFile, pvt_solver->gps_cnav_utc_model, pvt_solver->gps_cnav_iono);
+                                                }
+                                            else
+                                                {
+                                                    update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                                    update_nav_header(navFile, pvt_solver->gps_utc_model, pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                                }
+                                            d_rinex_header_updated = true;
+                                        }
+                                }
+                            break;
+                        case 9:  // GPS L1 C/A + Galileo E1B
+                            if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0))
+                                        {
+                                            update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                            update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                            d_rinex_header_updated = true;
+                                        }
+                                }
+                            break;
+                        case 13:  // L5+E5a
+                            if ((gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->gps_cnav_utc_model.d_A0 != 0) and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->gps_cnav_utc_model);
+                                    update_nav_header(navMixFile, pvt_solver->gps_cnav_utc_model, pvt_solver->gps_cnav_iono, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;  // do not write header anymore
+                                }
+                            break;
+                        case 14:  // Galileo E1B + Galileo E5a
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "1B 5X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 15:  // Galileo E1B + Galileo E5b
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "1B 7X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 23:  // GLONASS L1 C/A only
+                            if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map, "1C");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->glonass_gnav_utc_model.d_tau_c != 0))
+                                {
+                                    update_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    update_obs_header(obsFile, pvt_solver->glonass_gnav_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 24:  // GLONASS L2 C/A only
+                            if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map, "2C");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->glonass_gnav_utc_model.d_tau_c != 0))
+                                {
+                                    update_nav_header(navGloFile, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    update_obs_header(obsFile, pvt_solver->glonass_gnav_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 25:  // GLONASS L1 C/A + GLONASS L2 C/A
+                            if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map, "1C 2C");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->glonass_gnav_utc_model.d_tau_c != 0))
+                                {
+                                    update_nav_header(navMixFile, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    update_obs_header(obsFile, pvt_solver->glonass_gnav_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 26:  // GPS L1 C/A + GLONASS L1 C/A
+                            if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0))
+                                        {
+                                            update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                            update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                            d_rinex_header_updated = true;  // do not write header anymore
+                                        }
+                                }
+                            break;
+                        case 27:  // Galileo E1B + GLONASS L1 C/A
+                            if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    update_nav_header(navMixFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    d_rinex_header_updated = true;  // do not write header anymore
+                                }
+                            break;
+                        case 28:  // GPS L2C + GLONASS L1 C/A
+                            if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->gps_cnav_utc_model.d_A0 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->gps_cnav_utc_model);
+                                    update_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    d_rinex_header_updated = true;  // do not write header anymore
+                                }
+                            break;
+                        case 29:  // GPS L1 C/A + GLONASS L2 C/A
+                            if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0))
+                                        {
+                                            update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                            update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                            d_rinex_header_updated = true;  // do not write header anymore
+                                        }
+                                }
+                            break;
+                        case 30:  // Galileo E1B + GLONASS L2 C/A
+                            if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    update_nav_header(navMixFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    d_rinex_header_updated = true;  // do not write header anymore
+                                }
+                            break;
+                        case 31:  // GPS L2C + GLONASS L2 C/A
+                            if ((glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_cnav_ephemeris_iter->second, glonass_gnav_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->gps_cnav_utc_model.d_A0 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->gps_cnav_utc_model);
+                                    update_nav_header(navMixFile, pvt_solver->gps_cnav_iono, pvt_solver->gps_cnav_utc_model, pvt_solver->glonass_gnav_utc_model, pvt_solver->glonass_gnav_almanac);
+                                    d_rinex_header_updated = true;  // do not write header anymore
+                                }
+                            break;
+                        case 32:  // L1+E1+L5+E5a
+                            if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()) and (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and ((pvt_solver->gps_cnav_utc_model.d_A0 != 0) or (pvt_solver->gps_utc_model.d_A0 != 0)) and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                        {
+                                            if (pvt_solver->gps_cnav_utc_model.d_A0 != 0)
+                                                {
+                                                    update_obs_header(obsFile, pvt_solver->gps_cnav_utc_model);
+                                                    update_nav_header(navMixFile, pvt_solver->gps_cnav_utc_model, pvt_solver->gps_cnav_iono, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                                }
+                                            else
+                                                {
+                                                    update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                                    update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                                }
+                                            d_rinex_header_updated = true;  // do not write header anymore
+                                        }
+                                }
+                            break;
+                        case 33:  // L1+E1+E5a
+                            if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0) and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                        {
+                                            update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                            update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                            d_rinex_header_updated = true;  // do not write header anymore
+                                        }
+                                }
+                            break;
+                        case 101:  // Galileo E1B + Galileo E6B
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "1B");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 102:  // Galileo E5a + Galileo E6B
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "5X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 103:  // Galileo E5b + Galileo E6B
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "5X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "1B 5X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "1B 7X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+                            if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                    if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0))
+                                        {
+                                            update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                            update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                            d_rinex_header_updated = true;
+                                        }
+                                }
+                            break;
+                        case 500:  // BDS B1I only
+                            if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, gnss_observables_map, "B1");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->beidou_dnav_utc_model.d_A0_UTC != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->beidou_dnav_utc_model);
+                                    update_nav_header(navFile, pvt_solver->beidou_dnav_utc_model, pvt_solver->beidou_dnav_iono);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 600:  // BDS B3I only
+                            if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, beidou_dnav_ephemeris_iter->second, rx_time, gnss_observables_map, "B3");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->beidou_dnav_utc_model.d_A0_UTC != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->beidou_dnav_utc_model);
+                                    update_nav_header(navFile, pvt_solver->beidou_dnav_utc_model, pvt_solver->beidou_dnav_iono);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 1000:  // GPS L1 C/A + GPS L2C + GPS L5
+                            if ((gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and
+                                (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, gnss_observables_map, true);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                    update_nav_header(navFile, pvt_solver->gps_utc_model, pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        case 1001:  // GPS L1 C/A + Galileo E1B + GPS L2C + GPS L5 + Galileo E5a
+                            if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and
+                                (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and
+                                (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                                {
+                                    log_rinex_obs(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, true);
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->gps_utc_model.d_A0 != 0) and (pvt_solver->galileo_utc_model.A0_6 != 0))
+                                {
+                                    update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                    update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
+                        default:
+                            break;
+                        }
+                }
+        }
+}
+
+
+void Rinex_Printer::log_rinex_nav_gps_cnav(int type_of_rx, const std::map<int32_t, Gps_CNAV_Ephemeris>& new_cnav_eph)
+{
+    std::map<int32_t, Galileo_Ephemeris> new_gal_eph;
+    std::map<int32_t, Glonass_Gnav_Ephemeris> new_glo_eph;
+    switch (type_of_rx)
+        {
+        case 2:  // GPS L2C only
+        case 3:  // GPS L5 only
+        case 7:  // GPS L1 C/A + GPS L2C
+            log_rinex_nav(navFile, new_cnav_eph);
+            break;
+        case 13:  // L5+E5a
+            log_rinex_nav(navMixFile, new_cnav_eph, new_gal_eph);
+            break;
+        case 28:  // GPS L2C + GLONASS L1 C/A
+        case 31:  // GPS L2C + GLONASS L2 C/A
+            log_rinex_nav(navMixFile, new_cnav_eph, new_glo_eph);
+            break;
+        default:
+            break;
+        }
+}
+
+
+void Rinex_Printer::log_rinex_nav_gps_nav(int type_of_rx, const std::map<int32_t, Gps_Ephemeris>& new_eph)
+{
+    std::map<int32_t, Galileo_Ephemeris> new_gal_eph;
+    std::map<int32_t, Glonass_Gnav_Ephemeris> new_glo_eph;
+    switch (type_of_rx)
+        {
+        case 1:  // GPS L1 C/A only
+        case 8:  // L1+L5
+            log_rinex_nav(navFile, new_eph);
+            break;
+        case 9:   // GPS L1 C/A + Galileo E1B
+        case 10:  // GPS L1 C/A + Galileo E5a
+        case 11:  // GPS L1 C/A + Galileo E5b
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        case 26:  // GPS L1 C/A + GLONASS L1 C/A
+            if (d_version == 3)
+                {
+                    log_rinex_nav(navMixFile, new_eph, new_glo_eph);
+                }
+            if (d_version == 2)
+                {
+                    log_rinex_nav(navFile, new_glo_eph);
+                }
+            break;
+        case 29:  // GPS L1 C/A + GLONASS L2 C/A
+            if (d_version == 3)
+                {
+                    log_rinex_nav(navMixFile, new_eph, new_glo_eph);
+                }
+            if (d_version == 2)
+                {
+                    log_rinex_nav(navFile, new_eph);
+                }
+            break;
+        case 32:  // L1+E1+L5+E5a
+        case 33:  // L1+E1+E5a
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        case 1000:  // L1+L2+L5
+            log_rinex_nav(navFile, new_eph);
+            break;
+        case 1001:  // L1+E1+L2+L5+E5a
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        default:
+            break;
+        }
+}
+
+
+void Rinex_Printer::log_rinex_nav_gal_nav(int type_of_rx, const std::map<int32_t, Galileo_Ephemeris>& new_gal_eph)
+{
+    std::map<int32_t, Glonass_Gnav_Ephemeris> new_glo_eph;
+    std::map<int32_t, Gps_CNAV_Ephemeris> new_cnav_eph;
+    std::map<int32_t, Gps_Ephemeris> new_eph;
+    switch (type_of_rx)
+        {
+        case 4:  // Galileo E1B only
+        case 5:  // Galileo E5a only
+        case 6:  // Galileo E5b only
+            log_rinex_nav(navGalFile, new_gal_eph);
+            break;
+        case 9:   // GPS L1 C/A + Galileo E1B
+        case 10:  // GPS L1 C/A + Galileo E5a
+        case 11:  // GPS L1 C/A + Galileo E5b
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        case 13:  // L5+E5a
+            log_rinex_nav(navMixFile, new_cnav_eph, new_gal_eph);
+            break;
+        case 15:  // Galileo E1B + Galileo E5b
+            log_rinex_nav(navGalFile, new_gal_eph);
+            break;
+        case 27:  // Galileo E1B + GLONASS L1 C/A
+        case 30:  // Galileo E1B + GLONASS L2 C/A
+            log_rinex_nav(navMixFile, new_gal_eph, new_glo_eph);
+            break;
+        case 32:  // L1+E1+L5+E5a
+        case 33:  // L1+E1+E5a
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        case 101:  // E1B + E6B
+        case 102:  // Galileo E5a + Galileo E6B
+        case 103:  // Galileo E5b + Galileo E6B
+        case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
+        case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
+            log_rinex_nav(navGalFile, new_gal_eph);
+            break;
+        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        case 1001:  // L1+E1+L2+L5+E5a
+            log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+            break;
+        default:
+            break;
+        }
+}
+
+
+void Rinex_Printer::log_rinex_nav_glo_gnav(int type_of_rx, const std::map<int32_t, Glonass_Gnav_Ephemeris>& new_glo_eph)
+{
+    std::map<int32_t, Galileo_Ephemeris> new_gal_eph;
+    std::map<int32_t, Gps_CNAV_Ephemeris> new_cnav_eph;
+    std::map<int32_t, Gps_Ephemeris> new_eph;
+    switch (type_of_rx)
+        {
+        case 23:  // GLONASS L1 C/A
+        case 24:  // GLONASS L2 C/A
+        case 25:  // GLONASS L1 C/A + GLONASS L2 C/A
+            log_rinex_nav(navGloFile, new_glo_eph);
+            break;
+        case 26:  // GPS L1 C/A + GLONASS L1 C/A
+            if (d_version == 3)
+                {
+                    log_rinex_nav(navMixFile, new_eph, new_glo_eph);
+                }
+            if (d_version == 2)
+                {
+                    log_rinex_nav(navGloFile, new_glo_eph);
+                }
+            break;
+        case 27:  // Galileo E1B + GLONASS L1 C/A
+            log_rinex_nav(navMixFile, new_gal_eph, new_glo_eph);
+            break;
+        case 28:  // GPS L2C + GLONASS L1 C/A
+            log_rinex_nav(navMixFile, new_cnav_eph, new_glo_eph);
+            break;
+        case 29:  // GPS L1 C/A + GLONASS L2 C/A
+            if (d_version == 3)
+                {
+                    log_rinex_nav(navMixFile, new_eph, new_glo_eph);
+                }
+            if (d_version == 2)
+                {
+                    log_rinex_nav(navGloFile, new_glo_eph);
+                }
+            break;
+        case 30:  // Galileo E1B + GLONASS L2 C/A
+            log_rinex_nav(navMixFile, new_gal_eph, new_glo_eph);
+            break;
+        case 31:  // GPS L2C + GLONASS L2 C/A
+            log_rinex_nav(navMixFile, new_cnav_eph, new_glo_eph);
+            break;
+        default:
+            break;
+        }
+}
+
+
+void Rinex_Printer::log_rinex_nav_bds_dnav(int type_of_rx, const std::map<int32_t, Beidou_Dnav_Ephemeris>& new_bds_eph)
+{
+    switch (type_of_rx)
+        {
+        case 500:  // BDS B1I only
+        case 600:  // BDS B3I only
+            log_rinex_nav(navFile, new_bds_eph);
+            break;
+        default:
+            break;
         }
 }
 
@@ -462,7 +1564,7 @@ std::string Rinex_Printer::getLocalTime() const
         }
     strmMin << utc_minute;
 
-    if (version == 2)
+    if (d_version == 2)
         {
             const int32_t day = pt_tm.tm_mday;
             line += Rinex_Printer::rightJustify(std::to_string(day), 2);
@@ -492,7 +1594,7 @@ std::string Rinex_Printer::getLocalTime() const
             line += std::string(5, ' ');
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             line += boost::gregorian::to_iso_string(today);
             line += std::string(1, ' ');
@@ -521,7 +1623,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -563,7 +1665,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
     out << line << '\n';
 
     // -------- Line system time correction
-    if (version == 3)
+    if (d_version == 3)
         {
             line.clear();
             line += std::string("GLUT");
@@ -590,7 +1692,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
         }
-    if (version == 2)
+    if (d_version == 2)
         {
             // Set reference time and its clock corrections
             const boost::posix_time::ptime p_utc_ref_time = glonass_gnav_eph.glot_to_utc(glonass_gnav_eph.d_t_b, 0.0);
@@ -626,12 +1728,12 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
         {
         }  // Avoid compiler warning
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
+    d_stringVersion = "3.02";
+    d_version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -718,7 +1820,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
 
-    if (pre_2009_file_ == false)
+    if (d_pre_2009_file == false)
         {
             if (eph.i_GPS_week < 512)
                 {
@@ -786,12 +1888,12 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps
         {
         }  // Avoid compiler warning
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
+    d_stringVersion = "3.02";
+    d_version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -917,7 +2019,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -1024,7 +2126,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& iono
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -1130,7 +2232,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& ion
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -1246,7 +2348,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& ion
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -1378,16 +2480,16 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
 
-    if (version == 2)
+    if (d_version == 2)
         {
             line += std::string("N: GPS NAV DATA");
             line += std::string(25, ' ');
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             line += std::string("N: GNSS NAV DATA");
             line += std::string(4, ' ');
@@ -1434,7 +2536,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 
     // -------- Line ionospheric info 1
     line.clear();
-    if (version == 2)
+    if (d_version == 2)
         {
             line += std::string(2, ' ');
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_alpha0, 10, 2), 12);
@@ -1444,7 +2546,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += std::string(10, ' ');
             line += Rinex_Printer::leftJustify("ION ALPHA", 20);
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             line += std::string("GPSA");
             line += std::string(1, ' ');
@@ -1460,7 +2562,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 
     // -------- Line ionospheric info 2
     line.clear();
-    if (version == 2)
+    if (d_version == 2)
         {
             line += std::string(2, ' ');
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(iono.d_beta0, 10, 2), 12);
@@ -1471,7 +2573,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += Rinex_Printer::leftJustify("ION BETA", 20);
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             line += std::string("GPSB");
             line += std::string(1, ' ');
@@ -1487,13 +2589,13 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
 
     // -------- Line 5 system time correction
     line.clear();
-    if (version == 2)
+    if (d_version == 2)
         {
             line += std::string(3, ' ');
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 18, 2), 19);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 18, 2), 19);
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 9);
-            if (pre_2009_file_ == false)
+            if (d_pre_2009_file == false)
                 {
                     if (eph.i_GPS_week < 512)
                         {
@@ -1533,13 +2635,13 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
             line += Rinex_Printer::leftJustify("DELTA-UTC: A0,A1,T,W", 20);
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             line += std::string("GPUT");
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
             line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 7);
-            if (pre_2009_file_ == false)
+            if (d_pre_2009_file == false)
                 {
                     if (eph.i_GPS_week < 512)
                         {
@@ -1595,11 +2697,11 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& iono, co
     // For leap second information, see https://endruntechnologies.com/support/leap-seconds
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LS), 6);
-    if (version == 2)
+    if (d_version == 2)
         {
             line += std::string(54, ' ');
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.d_DeltaT_LSF), 6);
             line += Rinex_Printer::rightJustify(std::to_string(utc_model.i_WN_LSF), 6);
@@ -1625,7 +2727,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -1723,7 +2825,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
     line += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
     line += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-    if (pre_2009_file_ == false)
+    if (d_pre_2009_file == false)
         {
             if (eph.i_GPS_week < 512)
                 {
@@ -1791,10 +2893,10 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Beidou_Dnav_Iono& 
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
 
-    if (version == 3)
+    if (d_version == 3)
         {
             line += std::string("N: GNSS NAV DATA");
             line += std::string(4, ' ');
@@ -1902,7 +3004,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -2050,12 +3152,12 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_Iono& gps_iono
 void Rinex_Printer::rinex_nav_header(std::fstream& out, const Gps_CNAV_Iono& gps_cnav_iono, const Gps_CNAV_Utc_Model& gps_cnav_utc_model, const Beidou_Dnav_Iono& bds_dnav_iono, const Beidou_Dnav_Utc_Model& bds_dnav_utc_model)
 {
     std::string line;
-    stringVersion = "3.02";
-    version = 3;
+    d_stringVersion = "3.02";
+    d_version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -2183,7 +3285,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Glonass_Gnav_Utc_M
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -2300,7 +3402,7 @@ void Rinex_Printer::rinex_nav_header(std::fstream& out, const Galileo_Iono& gali
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += std::string("N: GNSS NAV DATA");
     line += std::string(4, ' ');
@@ -2735,7 +3837,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                 {
                     line_aux.clear();
 
-                    if (version == 2)
+                    if (d_version == 2)
                         {
                             if (line_str.find("ION ALPHA", 59) != std::string::npos)
                                 {
@@ -2765,7 +3867,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 18, 2), 19);
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 18, 2), 19);
                                     line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 9);
-                                    if (pre_2009_file_ == false)
+                                    if (d_pre_2009_file == false)
                                         {
                                             if (eph.i_GPS_week < 512)
                                                 {
@@ -2802,7 +3904,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                 }
                         }
 
-                    if (version == 3)
+                    if (d_version == 3)
                         {
                             if (line_str.find("GPSA", 0) != std::string::npos)
                                 {
@@ -2834,7 +3936,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Utc_Model& ut
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A0, 16, 2), 18);
                                     line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(utc_model.d_A1, 15, 2), 16);
                                     line_aux += Rinex_Printer::rightJustify(std::to_string(utc_model.d_t_OT), 7);
-                                    if (pre_2009_file_ == false)
+                                    if (d_pre_2009_file == false)
                                         {
                                             if (eph.i_GPS_week < 512)
                                                 {
@@ -3181,7 +4283,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-                            if (pre_2009_file_ == false)
+                            if (d_pre_2009_file == false)
                                 {
                                     if (eph.i_GPS_week < 512)
                                         {
@@ -3303,7 +4405,7 @@ void Rinex_Printer::update_nav_header(std::fstream& out, const Gps_Iono& gps_ion
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A0, 16, 2), 18);
                             line_aux += Rinex_Printer::rightJustify(Rinex_Printer::doub2for(gps_utc_model.d_A1, 15, 2), 16);
                             line_aux += Rinex_Printer::rightJustify(std::to_string(gps_utc_model.d_t_OT), 7);
-                            if (pre_2009_file_ == false)
+                            if (d_pre_2009_file == false)
                                 {
                                     if (eph.i_GPS_week < 512)
                                         {
@@ -3704,7 +4806,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             const std::string hour(timestring, 9, 2);
             const std::string minutes(timestring, 11, 2);
             const std::string seconds(timestring, 13, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += Rinex_Printer::rightJustify(std::to_string(gps_ephemeris_iter->second.i_satellite_PRN), 2);
                     line += std::string(1, ' ');
@@ -3775,7 +4877,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                     line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_A_f2, 18, 2);
                     line += std::string(1, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += satelliteSystem.find("GPS")->second;
                     if (gps_ephemeris_iter->second.i_satellite_PRN < 10)
@@ -3809,11 +4911,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             // -------- BROADCAST ORBIT - 1
             line.clear();
 
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(4, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(5, ' ');
                 }
@@ -3832,7 +4934,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Delta_n, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_M_0, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -3841,11 +4943,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             // -------- BROADCAST ORBIT - 2
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(4, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(5, ' ');
                 }
@@ -3856,7 +4958,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Cus, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_sqrt_A, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -3865,11 +4967,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             // -------- BROADCAST ORBIT - 3
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(4, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(5, ' ');
                 }
@@ -3880,7 +4982,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_OMEGA0, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Cis, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -3889,11 +4991,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             // -------- BROADCAST ORBIT - 4
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(4, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(5, ' ');
                 }
@@ -3904,7 +5006,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_OMEGA, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_OMEGA_DOT, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -3913,11 +5015,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             // -------- BROADCAST ORBIT - 5
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(4, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(5, ' ');
                 }
@@ -3926,7 +5028,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
             line += std::string(1, ' ');
             double GPS_week_continuous_number;
-            if (pre_2009_file_ == false)
+            if (d_pre_2009_file == false)
                 {
                     if (gps_ephemeris_iter->second.i_GPS_week < 512)
                         {
@@ -3949,7 +5051,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(GPS_week_continuous_number, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(static_cast<double>(gps_ephemeris_iter->second.i_code_on_L2), 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -3958,11 +5060,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             // -------- BROADCAST ORBIT - 6
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(4, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(5, ' ');
                 }
@@ -3973,7 +5075,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_TGD, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_IODC, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -3982,11 +5084,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             // -------- BROADCAST ORBIT - 7
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(4, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(5, ' ');
                 }
@@ -4059,7 +5161,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += std::string(18, ' ');  // spare
             line += std::string(1, ' ');
             line += std::string(18, ' ');  // spare
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -4124,14 +5226,14 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             if (!((gps_ephemeris_iter->second.d_Toe1 == gps_ephemeris_iter->second.d_Toe2) && (gps_ephemeris_iter->second.d_Toe1 == gps_ephemeris_iter->second.d_Toc)))  // Toe1: Toe in message type 10,  Toe2: Toe in message type 11
                 {
                     // Toe1: Toe in message type 10,  Toe2: Toe in message type 11,
-                    fake_cnav_iode = fake_cnav_iode + 1;
-                    if (fake_cnav_iode == 240)
+                    d_fake_cnav_iode = d_fake_cnav_iode + 1;
+                    if (d_fake_cnav_iode == 240)
                         {
-                            fake_cnav_iode = 1;
+                            d_fake_cnav_iode = 1;
                         }
                 }
 
-            line += Rinex_Printer::doub2for(fake_cnav_iode, 18, 2);
+            line += Rinex_Printer::doub2for(d_fake_cnav_iode, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Crs, 18, 2);
             line += std::string(1, ' ');
@@ -4215,7 +5317,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_TGD, 18, 2);
             line += std::string(1, ' ');
             // no IODC in CNAV, so we fake it (see above)
-            line += Rinex_Printer::doub2for(fake_cnav_iode, 18, 2);
+            line += Rinex_Printer::doub2for(d_fake_cnav_iode, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
 
@@ -4463,7 +5565,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
             const std::string hour(timestring, 9, 2);
             const std::string minutes(timestring, 11, 2);
             const std::string seconds(timestring, 13, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += Rinex_Printer::rightJustify(std::to_string(glonass_gnav_ephemeris_iter->second.i_satellite_PRN), 2);
                     line += std::string(1, ' ');
@@ -4534,7 +5636,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
                     line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_t_k, 18, 2);
                     line += std::string(1, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += satelliteSystem.find("GLONASS")->second;
                     if (glonass_gnav_ephemeris_iter->second.i_satellite_PRN < 10)
@@ -4569,11 +5671,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
             // -------- BROADCAST ORBIT - 1
             line.clear();
             // TODO Why is this happening here?. The extra space maybe is intended to help with readability
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(3, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(4, ' ');
                 }
@@ -4585,7 +5687,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
             line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_AXn, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_B_n, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -4594,11 +5696,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
 
             // -------- BROADCAST ORBIT - 2
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(3, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(4, ' ');
                 }
@@ -4610,7 +5712,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
             line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_AYn, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.i_satellite_freq_channel, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -4619,11 +5721,11 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
 
             // -------- BROADCAST ORBIT - 3
             line.clear();
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(3, ' ');
                 }
-            if (version == 3)
+            if (d_version == 3)
                 {
                     line += std::string(4, ' ');
                 }
@@ -4635,7 +5737,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
             line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_AZn, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(glonass_gnav_ephemeris_iter->second.d_E_n, 18, 2);
-            if (version == 2)
+            if (d_version == 2)
                 {
                     line += std::string(1, ' ');
                 }
@@ -4648,8 +5750,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
 
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_Ephemeris>& gps_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map)
 {
-    version = 3;
-    stringVersion = "3.02";
+    d_version = 3;
+    d_stringVersion = "3.02";
     Rinex_Printer::log_rinex_nav(out, gps_eph_map);
     Rinex_Printer::log_rinex_nav(out, galileo_eph_map);
 }
@@ -4657,8 +5759,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps_CNAV_Ephemeris>& gps_cnav_eph_map, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map)
 {
-    version = 3;
-    stringVersion = "3.02";
+    d_version = 3;
+    d_stringVersion = "3.02";
     Rinex_Printer::log_rinex_nav(out, gps_cnav_eph_map);
     Rinex_Printer::log_rinex_nav(out, galileo_eph_map);
 }
@@ -4680,8 +5782,8 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
 void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Galileo_Ephemeris>& galileo_eph_map, const std::map<int32_t, Glonass_Gnav_Ephemeris>& glonass_gnav_eph_map)
 {
-    version = 3;
-    stringVersion = "3.02";
+    d_version = 3;
+    d_stringVersion = "3.02";
     Rinex_Printer::log_rinex_nav(out, galileo_eph_map);
     Rinex_Printer::log_rinex_nav(out, glonass_gnav_eph_map);
 }
@@ -4840,7 +5942,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem.find("GLONASS")->second;
@@ -4851,11 +5953,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
 
     // -------- Line 2
     line.clear();
-    if (version == 2)
+    if (d_version == 2)
         {
             line += Rinex_Printer::leftJustify("BLANK OR G = GPS,  R = GLONASS,  E = GALILEO,  M = MIXED", 60);
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             line += Rinex_Printer::leftJustify("G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED", 60);
         }
@@ -4902,7 +6004,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     out << line << '\n';
 
     // -------- Line MARKER TYPE
-    if (version == 2)
+    if (d_version == 2)
         {
             line.clear();
             line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
@@ -4911,7 +6013,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             line.clear();
             line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
@@ -4992,7 +6094,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     out << line << '\n';
 
     // -------- SYS / OBS TYPES
-    if (version == 3)
+    if (d_version == 3)
         {
             // -------- SYS / OBS TYPES
             // one line per available system
@@ -5000,8 +6102,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
             line += satelliteSystem.find("GLONASS")->second;
             line += std::string(2, ' ');
             std::stringstream strm;
-            numberTypesObservations = 4;
-            strm << numberTypesObservations;
+            d_numberTypesObservations = 4;
+            strm << d_numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 3);
 
             std::string signal_ = "1G";
@@ -5046,12 +6148,12 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
         }
-    if (version == 2)
+    if (d_version == 2)
         {
             // -------- SYS / OBS TYPES
             line.clear();
             std::stringstream strm;
-            strm << numberTypesObservations;
+            strm << d_numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 6);
             // per type of observation
             // GLONASS L1 C/A PSEUDORANGE
@@ -5073,7 +6175,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
         }
 
     // -------- Signal Strength units (Only version 3)
-    if (version == 3)
+    if (d_version == 3)
         {
             // -------- Signal Strength units
             line.clear();
@@ -5107,8 +6209,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     Rinex_Printer::lengthCheck(line);
     out << line << '\n';
 
-    // -------- GLONASS SLOT / FRQ # (On;y version 3)
-    if (version == 3)
+    // -------- GLONASS SLOT / FRQ # (On;y d_version 3)
+    if (d_version == 3)
         {
             // -------- GLONASS SLOT / FRQ #
             // TODO Need to provide system with list of all satellites and update this accordingly
@@ -5172,7 +6274,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem["Mixed"];
@@ -5220,7 +6322,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     out << line << '\n';
 
     // -------- Line MARKER NAME / TYPE
-    if (version == 2)
+    if (d_version == 2)
         {
             line.clear();
             line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
@@ -5229,7 +6331,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             line.clear();
             line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
@@ -5318,15 +6420,15 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     out << line << '\n';
 
     // -------- SYS / OBS TYPES
-    if (version == 3)
+    if (d_version == 3)
         {
             // one line per available system
             line.clear();
             line += satelliteSystem.find("GPS")->second;
             line += std::string(2, ' ');
             std::stringstream strm;
-            numberTypesObservations = 4;
-            strm << numberTypesObservations;
+            d_numberTypesObservations = 4;
+            strm << d_numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 3);
             // per type of observation
             // GPS L1 PSEUDORANGE
@@ -5403,12 +6505,12 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
         }
-    if (version == 2)
+    if (d_version == 2)
         {
             // -------- SYS / OBS TYPES
             line.clear();
             std::stringstream strm;
-            strm << numberTypesObservations;
+            strm << d_numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 6);
             // per type of observation
             // GLONASS L1 C/A PSEUDORANGE
@@ -5430,7 +6532,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         }
 
     // -------- Signal Strength units (only version 3)
-    if (version == 3)
+    if (d_version == 3)
         {
             line.clear();
             line += Rinex_Printer::leftJustify("DBHZ", 20);
@@ -5464,7 +6566,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     out << line << '\n';
 
     // -------- GLONASS SLOT / FRQ # (On;y version 3)
-    if (version == 3)
+    if (d_version == 3)
         {
             // -------- GLONASS SLOT / FRQ #
             // TODO Need to provide system with list of all satellites and update this accordingly
@@ -5528,7 +6630,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem["Mixed"];
@@ -5583,7 +6685,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     out << line << '\n';
 
     // -------- Line MARKER NUMBER / TYPE
-    if (version == 2)
+    if (d_version == 2)
         {
             line.clear();
             line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
@@ -5592,7 +6694,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             line.clear();
             line += Rinex_Printer::leftJustify("GROUND_CRAFT", 20);  // put a flag or a property
@@ -5678,8 +6780,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += satelliteSystem.find("GPS")->second;
     line += std::string(2, ' ');
     std::stringstream strm;
-    numberTypesObservations = 4;
-    strm << numberTypesObservations;
+    d_numberTypesObservations = 4;
+    strm << d_numberTypesObservations;
     line += Rinex_Printer::rightJustify(strm.str(), 3);
     // per type of observation
     // GPS L1 PSEUDORANGE
@@ -5845,7 +6947,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
         {
         }  // avoid warning, not needed
     std::string line;
-    version = 3;
+    d_version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -6165,7 +7267,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem.find("GPS")->second;
@@ -6176,11 +7278,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     // -------- Line 2
     line.clear();
-    if (version == 2)
+    if (d_version == 2)
         {
             line += Rinex_Printer::leftJustify("BLANK OR G = GPS,  R = GLONASS,  E = GALILEO,  M = MIXED", 60);
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             line += Rinex_Printer::leftJustify("G = GPS  R = GLONASS  E = GALILEO  S = GEO  M = MIXED", 60);
         }
@@ -6304,7 +7406,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     Rinex_Printer::lengthCheck(line);
     out << line << '\n';
 
-    if (version == 2)
+    if (d_version == 2)
         {
             // --------- WAVELENGTH FACTOR
             // put here real data!
@@ -6317,7 +7419,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
             out << line << '\n';
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             // -------- SYS / OBS TYPES
             // one line per available system
@@ -6325,8 +7427,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
             line += satelliteSystem.find("GPS")->second;
             line += std::string(2, ' ');
             std::stringstream strm;
-            numberTypesObservations = 4;
-            strm << numberTypesObservations;
+            d_numberTypesObservations = 4;
+            strm << d_numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 3);
             // per type of observation
             // GPS L1 PSEUDORANGE
@@ -6352,12 +7454,12 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
             out << line << '\n';
         }
 
-    if (version == 2)
+    if (d_version == 2)
         {
             // -------- SYS / OBS TYPES
             line.clear();
             std::stringstream strm;
-            strm << numberTypesObservations;
+            strm << d_numberTypesObservations;
             line += Rinex_Printer::rightJustify(strm.str(), 6);
             // per type of observation
             // GPS L1 PSEUDORANGE
@@ -6378,7 +7480,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
             out << line << '\n';
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             // -------- Signal Strength units
             line.clear();
@@ -6429,7 +7531,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem.find("GPS")->second;
@@ -6580,8 +7682,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += satelliteSystem.find("GPS")->second;
     line += std::string(2, ' ');
     std::stringstream strm;
-    numberTypesObservations = number_of_observations_gps;
-    strm << numberTypesObservations;
+    d_numberTypesObservations = number_of_observations_gps;
+    strm << d_numberTypesObservations;
     line += Rinex_Printer::rightJustify(strm.str(), 3);
     // per type of observation
 
@@ -6680,7 +7782,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 
     // -------- Line 1
     line = std::string(5, ' ');
-    line += stringVersion;
+    line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
     line += satelliteSystem.find("GPS")->second;
@@ -6837,8 +7939,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     line += satelliteSystem.find("GPS")->second;
     line += std::string(2, ' ');
     std::stringstream strm;
-    numberTypesObservations = number_of_observations_gps;
-    strm << numberTypesObservations;
+    d_numberTypesObservations = number_of_observations_gps;
+    strm << d_numberTypesObservations;
     line += Rinex_Printer::rightJustify(strm.str(), 3);
     // per type of observation
     if (found_1C != std::string::npos)
@@ -6949,7 +8051,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps_eph, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& gps_bands, const std::string& galileo_bands)
 {
     std::string line;
-    version = 3;
+    d_version = 3;
     if (eph_cnav.d_e_eccentricity == 0)
         {
             // avoid warning
@@ -7118,8 +8220,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += satelliteSystem.find("GPS")->second;
     line += std::string(2, ' ');
     std::stringstream strm;
-    numberTypesObservations = number_of_observations_gps;
-    strm << numberTypesObservations;
+    d_numberTypesObservations = number_of_observations_gps;
+    strm << d_numberTypesObservations;
     line += Rinex_Printer::rightJustify(strm.str(), 3);
     // per type of observation
     if (found_1C != std::string::npos)
@@ -7300,7 +8402,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris& eph_cnav, const Galileo_Ephemeris& galileo_eph, double d_TOW_first_observation, const std::string& gps_bands, const std::string& galileo_bands)
 {
     std::string line;
-    version = 3;
+    d_version = 3;
     if (galileo_eph.e_1 == 0)
         {
             // avoid warning
@@ -7458,8 +8560,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += satelliteSystem.find("GPS")->second;
     line += std::string(2, ' ');
     std::stringstream strm;
-    numberTypesObservations = number_of_observations_gps;
-    strm << numberTypesObservations;
+    d_numberTypesObservations = number_of_observations_gps;
+    strm << d_numberTypesObservations;
     line += Rinex_Printer::rightJustify(strm.str(), 3);
     // per type of observation
     if (found_2S != std::string::npos)
@@ -7621,7 +8723,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands)
 {
     std::string line;
-    version = 3;
+    d_version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -7888,7 +8990,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
         }  // avoid warning, not needed
     std::string line;
-    version = 3;
+    d_version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -8030,8 +9132,8 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += satelliteSystem.find("GPS")->second;
     line += std::string(2, ' ');
     std::stringstream strm;
-    numberTypesObservations = 4;
-    strm << numberTypesObservations;
+    d_numberTypesObservations = 4;
+    strm << d_numberTypesObservations;
     line += Rinex_Printer::rightJustify(strm.str(), 3);
     // per type of observation
     // GPS L1 PSEUDORANGE
@@ -8178,7 +9280,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
 void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Ephemeris& eph, double d_TOW_first_observation, const std::string& bands)
 {
     std::string line;
-    version = 3;
+    d_version = 3;
 
     // -------- Line 1
     line = std::string(5, ' ');
@@ -8435,7 +9537,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_Utc_Model& ut
                 {
                     line_aux.clear();
 
-                    if (version == 2)
+                    if (d_version == 2)
                         {
                             if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos)  // TIME OF FIRST OBS last header annotation might change in the future
                                 {
@@ -8456,7 +9558,7 @@ void Rinex_Printer::update_obs_header(std::fstream& out, const Gps_Utc_Model& ut
                                 }
                         }
 
-                    if (version == 3)
+                    if (d_version == 3)
                         {
                             if (line_str.find("TIME OF FIRST OBS", 59) != std::string::npos)
                                 {
@@ -8697,7 +9799,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
     const std::string minutes(timestring, 11, 2);
     const double utc_sec = modf(obs_time, &int_sec) + p_glonass_time.time_of_day().seconds();
 
-    if (version == 2)
+    if (d_version == 2)
         {
             line.clear();
             const std::string year(timestring, 2, 2);
@@ -8820,7 +9922,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                 }
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             const std::string year(timestring, 0, 4);
             line += std::string(1, '>');
@@ -8951,7 +10053,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     const std::string hour(timestring, 9, 2);
     const std::string minutes(timestring, 11, 2);
 
-    if (version == 2)
+    if (d_version == 2)
         {
             line.clear();
             const std::string year(timestring, 2, 2);
@@ -8992,7 +10094,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             // Epoch flag 0: OK     1: power failure between previous and current epoch   <1: Special event
             line += std::string(1, '0');
         }
-    if (version == 3)
+    if (d_version == 3)
         {
             const std::string year(timestring, 0, 4);
             line += std::string(1, '>');
@@ -9080,7 +10182,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
     const int32_t numGpsSatellitesObserved = observablesG1C.size();
     const int32_t numSatellitesObserved = numGloSatellitesObserved + numGpsSatellitesObserved;
     line += Rinex_Printer::rightJustify(std::to_string(numSatellitesObserved), 3);
-    if (version == 2)
+    if (d_version == 2)
         {
             // Add list of GPS satellites
             for (observables_iter = observablesG1C.cbegin();
@@ -9133,7 +10235,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             lineObs.clear();
 
             s.assign(1, observables_iter->second.System);
-            if (version == 3)
+            if (d_version == 3)
                 {
                     // Specify system only if in version 3
                     if (s == "G")
@@ -9209,7 +10311,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          it++)
         {
             lineObs.clear();
-            if (version == 3)
+            if (d_version == 3)
                 {
                     lineObs += satelliteSystem.find("GLONASS")->second;
                     if (static_cast<int32_t>(*it) < 10)
@@ -9804,7 +10906,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
     const std::string hour(timestring, 9, 2);
     const std::string minutes(timestring, 11, 2);
 
-    if (version == 2)
+    if (d_version == 2)
         {
             line.clear();
             const std::string year(timestring, 2, 2);
@@ -9928,7 +11030,7 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
                 }
         }
 
-    if (version == 3)
+    if (d_version == 3)
         {
             const std::string year(timestring, 0, 4);
             line += std::string(1, '>');
@@ -11885,7 +12987,7 @@ boost::posix_time::ptime Rinex_Printer::compute_UTC_time(const Gps_Navigation_Me
     const double utc_t = nav_msg.utc_time(nav_msg.get_TOW());
     const boost::posix_time::time_duration t = boost::posix_time::milliseconds(static_cast<int64_t>((utc_t + 604800 * static_cast<double>(nav_msg.get_GPS_week())) * 1000));
     // Handle week rollover
-    if (pre_2009_file_ == false)
+    if (d_pre_2009_file == false)
         {
             // Handle week rollover (valid from 2009 to 2029)
             if (nav_msg.get_GPS_week() < 512)
@@ -11932,7 +13034,7 @@ boost::posix_time::ptime Rinex_Printer::compute_GPS_time(const Gps_Ephemeris& ep
         }
 
     // Handle week rollover
-    if (pre_2009_file_ == false)
+    if (d_pre_2009_file == false)
         {
             // Handle week rollover (valid from 2009 to 2029)
             if (eph.i_GPS_week < 512)
@@ -12095,7 +13197,7 @@ double Rinex_Printer::get_leap_second(const Glonass_Gnav_Ephemeris& eph, double 
 
 void Rinex_Printer::set_pre_2009_file(bool pre_2009_file)
 {
-    pre_2009_file_ = pre_2009_file;
+    d_pre_2009_file = pre_2009_file;
 }
 
 

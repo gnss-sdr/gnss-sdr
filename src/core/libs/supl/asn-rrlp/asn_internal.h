@@ -19,6 +19,7 @@ extern "C"
 {
 #endif
 
+// clang-format off
 /* Environment version might be used to avoid running with the old library */
 #define ASN1C_ENVIRONMENT_VERSION 922        /* Compile-time version */
     int get_asn1c_environment_version(void); /* Run-time version */
@@ -60,6 +61,7 @@ extern "C"
     }
 #endif /* EMIT_ASN_DEBUG */
 #endif /* ASN_DEBUG */
+// clang-format on
 
 /*
  * Invoke the application-supplied callback and fail, if something is wrong.

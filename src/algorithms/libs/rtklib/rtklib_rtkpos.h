@@ -63,10 +63,12 @@ const double TTOL_MOVEB = (1.0 + 2 * DTTOL);
 
 
 /* state variable index */
+// clang-format off
 #define II_RTK(s, opt) (NP_RTK(opt) + (s)-1)                               /* ionos (s:satellite no) */
 #define IT_RTK(r, opt) (NP_RTK(opt) + NI_RTK(opt) + NT_RTK(opt) / 2 * (r)) /* tropos (r:0=rov,1:ref) */
 #define IL_RTK(f, opt) (NP_RTK(opt) + NI_RTK(opt) + NT_RTK(opt) + (f))     /* receiver h/w bias */
 #define IB_RTK(s, f, opt) (NR_RTK(opt) + MAXSAT * (f) + (s)-1)             /* phase bias (s:satno,f:freq) */
+// clang-format on
 
 int rtkopenstat(const char *file, int level);
 

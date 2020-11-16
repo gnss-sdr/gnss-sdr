@@ -2,12 +2,21 @@ SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 --- CMakeLists.txt	2020-10-25 10:06:26.000000000 +0100
 +++ CMakeLists.txt	2020-10-25 10:06:11.000000000 +0100
-@@ -74,7 +74,7 @@
+@@ -74,7 +74,16 @@
  
  
  include( BuildSetup.cmake )
 -
 +set(STADYN "STATIC")
++if(POLICY CMP0063)
++    cmake_policy(SET CMP0063 NEW)
++    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
++    set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
++else()
++    if((CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
++        add_definitions(-fvisibility=hidden)
++    endif()
++endif()
  #============================================================
  # Core Library Target Files
  #============================================================

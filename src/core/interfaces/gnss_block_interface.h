@@ -36,7 +36,7 @@
 /** \addtogroup GNSS_Block_Interfaces
  * \{ */
 
-
+// clang-format off
 #if GNURADIO_USES_STD_POINTERS
 #include <memory>
 template <typename T>
@@ -57,6 +57,8 @@ gnss_shared_ptr<C> gnss_make_shared(Args &&... args)
     return boost::make_shared<C>(std::forward<Args>(args)...);
 }
 #endif
+// clang-format on
+
 
 /*!
  * \brief This abstract class represents an interface to GNSS blocks.

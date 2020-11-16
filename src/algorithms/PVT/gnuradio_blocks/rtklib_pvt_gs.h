@@ -255,20 +255,17 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_rinex_output_enabled;
-    bool d_rinex_header_written;
-    bool d_rinex_header_updated;
     bool d_geojson_output_enabled;
     bool d_gpx_output_enabled;
     bool d_kml_output_enabled;
     bool d_nmea_output_file_enabled;
+    bool d_rtcm_enabled;
     bool d_first_fix;
     bool d_xml_storage;
     bool d_flag_monitor_pvt_enabled;
     bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;
-    bool d_rtcm_writing_started;
-    bool d_rtcm_enabled;
 };
 
 

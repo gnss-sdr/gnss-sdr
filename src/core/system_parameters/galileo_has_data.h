@@ -61,7 +61,7 @@ public:
     std::vector<uint64_t> satellite_mask;
     std::vector<uint16_t> signal_mask;
     std::vector<bool> cell_mask_availability_flag;
-    std::vector<std::vector<std::vector<uint8_t>>> cell_mask;
+    std::vector<std::vector<std::vector<bool>>> cell_mask;
     std::vector<uint8_t> nav_message;
 
     // Orbit corrections

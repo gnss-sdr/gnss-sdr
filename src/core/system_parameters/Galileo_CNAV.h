@@ -23,6 +23,7 @@
 #ifndef GNSS_SDR_GALILEO_CNAV_H
 #define GNSS_SDR_GALILEO_CNAV_H
 
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 

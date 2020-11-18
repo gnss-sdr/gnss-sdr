@@ -80,6 +80,10 @@ private:
     uint8_t read_has_message_header_parameter_uint8(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const;
     uint16_t read_has_message_header_parameter_uint16(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const;
     bool read_has_message_header_parameter_bool(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const;
+    uint8_t read_has_message_body_uint8(const std::string& bits) const;
+    uint16_t read_has_message_body_uint16(const std::string& bits) const;
+    uint64_t read_has_message_body_uint64(const std::string& bits) const;
+    int16_t read_has_message_body_int16(const std::string& bits) const;
 
     Galileo_HAS_data d_HAS_data{};
 

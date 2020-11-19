@@ -213,9 +213,9 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
                     std::string msg = message.substr(0, HAS_MSG_SATELLITE_MASK_LENGTH);
                     d_HAS_data.satellite_mask[i] = read_has_message_body_uint64(msg);
                     int ones_in_satellite_mask = 0;
-                    for (size_t i = 0; i < msg.length(); i++)
+                    for (char i : msg)
                         {
-                            if (msg[i] == '1')
+                            if (i == '1')
                                 {
                                     ones_in_satellite_mask++;
                                 }
@@ -226,9 +226,9 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
                     msg = message.substr(0, HAS_MSG_SIGNAL_MASK_LENGTH);
                     d_HAS_data.signal_mask[i] = read_has_message_body_uint16(msg);
                     int ones_in_signal_mask = 0;
-                    for (size_t i = 0; i < msg.length(); i++)
+                    for (char i : msg)
                         {
-                            if (msg[i] == '1')
+                            if (i == '1')
                                 {
                                     ones_in_signal_mask++;
                                 }

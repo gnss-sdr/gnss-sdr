@@ -60,6 +60,7 @@ target_link_libraries(telemetry_decoder_gr_blocks
     PRIVATE
         Gflags::gflags
         Glog::glog
+        Matio::matio
 )
 
 if(GNURADIO_USES_STD_POINTERS)

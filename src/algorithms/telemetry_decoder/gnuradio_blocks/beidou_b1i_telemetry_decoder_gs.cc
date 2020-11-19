@@ -29,12 +29,14 @@
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <matio.h>          // for Mat_VarCreate
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cstdlib>          // for abs
 #include <exception>        // for exception
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
+#include <vector>
 
 #define CRC_ERROR_LIMIT 8
 
@@ -115,6 +117,118 @@ beidou_b1i_telemetry_decoder_gs::~beidou_b1i_telemetry_decoder_gs()
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
                 }
         }
+    if (d_dump)
+        {
+            try
+                {
+                    save_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Error saving the .mat file: " << ex.what();
+                }
+        }
+}
+
+
+int32_t beidou_b1i_telemetry_decoder_gs::save_matfile() const
+{
+    std::ifstream::pos_type size;
+    const int32_t number_of_double_vars = 2;
+    const int32_t number_of_int_vars = 2;
+    const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
+                                     sizeof(int32_t) * number_of_int_vars;
+    std::ifstream dump_file;
+    std::string dump_filename_ = d_dump_filename;
+
+    std::cout << "Generating .mat file for " << dump_filename_ << '\n';
+    dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+        {
+            dump_file.open(dump_filename_.c_str(), std::ios::binary | std::ios::ate);
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem opening dump file:" << e.what() << '\n';
+            return 1;
+        }
+    // count number of epochs and rewind
+    int64_t num_epoch = 0;
+    if (dump_file.is_open())
+        {
+            size = dump_file.tellg();
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
+            if (num_epoch == 0LL)
+                {
+                    // empty file, exit
+                    return 1;
+                }
+            dump_file.seekg(0, std::ios::beg);
+        }
+    else
+        {
+            return 1;
+        }
+    auto TOW_at_current_symbol_ms = std::vector<double>(num_epoch);
+    auto tracking_sample_counter = std::vector<uint64_t>(num_epoch);
+    auto TOW_at_Preamble_ms = std::vector<double>(num_epoch);
+    auto nav_symbol = std::vector<int32_t>(num_epoch);
+    auto prn = std::vector<int32_t>(num_epoch);
+
+    try
+        {
+            if (dump_file.is_open())
+                {
+                    for (int64_t i = 0; i < num_epoch; i++)
+                        {
+                            dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_ms[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&tracking_sample_counter[i]), sizeof(uint64_t));
+                            dump_file.read(reinterpret_cast<char *>(&TOW_at_Preamble_ms[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&nav_symbol[i]), sizeof(int32_t));
+                            dump_file.read(reinterpret_cast<char *>(&prn[i]), sizeof(int32_t));
+                        }
+                }
+            dump_file.close();
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem reading dump file:" << e.what() << '\n';
+            return 1;
+        }
+
+    // WRITE MAT FILE
+    mat_t *matfp;
+    matvar_t *matvar;
+    std::string filename = dump_filename_;
+    filename.erase(filename.length() - 4, 4);
+    filename.append(".mat");
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
+        {
+            std::array<size_t, 2> dims{1, static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), TOW_at_current_symbol_ms.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("tracking_sample_counter", MAT_C_UINT64, MAT_T_UINT64, 2, dims.data(), tracking_sample_counter.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("TOW_at_Preamble_ms", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), TOW_at_Preamble_ms.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("nav_symbol", MAT_C_INT32, MAT_T_INT32, 2, dims.data(), nav_symbol.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("PRN", MAT_C_INT32, MAT_T_INT32, 2, dims.data(), prn.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+        }
+    Mat_Close(matfp);
+
+    return 0;
 }
 
 
@@ -585,12 +699,17 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                         {
                             double tmp_double;
                             uint64_t tmp_ulong_int;
+                            int32_t tmp_int;
                             tmp_double = static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0;
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                             tmp_ulong_int = current_symbol.Tracking_sample_counter;
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_ulong_int), sizeof(uint64_t));
                             tmp_double = static_cast<double>(d_TOW_at_Preamble_ms) / 1000.0;
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                            tmp_int = (current_symbol.Prompt_I > 0.0 ? 1 : -1);
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                            tmp_int = static_cast<int32_t>(current_symbol.PRN);
+                            d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
                         }
                     catch (const std::ifstream::failure &e)
                         {

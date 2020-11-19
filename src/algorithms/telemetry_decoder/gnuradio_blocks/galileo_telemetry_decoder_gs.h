@@ -82,6 +82,8 @@ private:
     const int32_t d_nn = 2;  // Coding rate 1/n
     const int32_t d_KK = 7;  // Constraint Length
 
+    int32_t save_matfile() const;
+
     void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits);
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
     void decode_INAV_word(float *page_part_symbols, int32_t frame_length);

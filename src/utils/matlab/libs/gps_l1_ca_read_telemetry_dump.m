@@ -21,9 +21,11 @@ function [telemetry] = gps_l1_ca_read_telemetry_dump (filename, count)
 %%
 
 m = nargchk (1,2,nargin);
-num_double_vars=4;
+num_double_vars=3;
 double_size_bytes=8;
-skip_bytes_each_read=double_size_bytes*num_double_vars;
+num_int_vars=2;
+int_size_bytes=4;
+skip_bytes_each_read=double_size_bytes*num_double_vars+num_int_vars*int_size_bytes;
 bytes_shift=0;
 if (m)
     usage (m);
@@ -32,34 +34,27 @@ end
 if (nargin < 3)
     count = Inf;
 end
-%loops_counter = fread (f, count, 'uint32',4*12);
 f = fopen (filename, 'rb');
 if (f < 0)
 else
-    telemetry.tow_current_symbol_ms = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
-    bytes_shift=bytes_shift+double_size_bytes;
-    fseek(f,bytes_shift,'bof'); % move to next interleaved
-    telemetry.tracking_sample_counter = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
-    bytes_shift=bytes_shift+double_size_bytes;
-    fseek(f,bytes_shift,'bof'); % move to next interleaved
-    telemetry.tow = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
-    bytes_shift=bytes_shift+double_size_bytes;
-    fseek(f,bytes_shift,'bof'); % move to next interleaved
-    telemetry.required_symbols = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
-    bytes_shift=bytes_shift+double_size_bytes;
-    fseek(f,bytes_shift,'bof'); % move to next interleaved
-    
+    [x, loops_counter] = fread (f,skip_bytes_each_read);
+    fseek(f,0,-1);
+    for i=1:min(count, loops_counter),
+        telemetry(i).tow_current_symbol_ms = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+        bytes_shift=bytes_shift+double_size_bytes;
+        fseek(f,bytes_shift,'bof'); % move to next interleaved
+        telemetry(i).tracking_sample_counter = fread (f, count, 'uint64',skip_bytes_each_read-double_size_bytes);
+        bytes_shift=bytes_shift+double_size_bytes;
+        fseek(f,bytes_shift,'bof'); % move to next interleaved
+        telemetry(i).tow = fread (f, count, 'float64',skip_bytes_each_read-double_size_bytes);
+        bytes_shift=bytes_shift+double_size_bytes;
+        fseek(f,bytes_shift,'bof'); % move to next interleaved
+        telemetry(i).nav_simbols = fread (f, count, 'int32',skip_bytes_each_read-int_size_bytes);
+        bytes_shift=bytes_shift+int_size_bytes;
+        fseek(f,bytes_shift,'bof'); % move to next interleaved
+        telemetry(i).prn = fread (f, count, 'int32',skip_bytes_each_read-int_size_bytes);
+        bytes_shift=bytes_shift+int_size_bytes;
+        fseek(f,bytes_shift,'bof'); % move to next interleaved
+    end
     fclose (f);
-    
-    %%%%%%%% output vars %%%%%%%%
-    %           {
-    %                 double tmp_double;
-    %                 tmp_double = current_synchro_data.Preamble_delay_ms;
-    %                 d_dump_file.write((char*)&tmp_double, sizeof(double));
-    %                 tmp_double = current_synchro_data.Prn_delay_ms;
-    %                 d_dump_file.write((char*)&tmp_double, sizeof(double));
-    %                 tmp_double = current_synchro_data.Preamble_symbol_counter;
-    %                 d_dump_file.write((char*)&tmp_double, sizeof(double));
-    %             }
 end
-

@@ -29,6 +29,8 @@ bool Tlm_Dump_Reader::read_binary_obs()
             d_dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol), sizeof(double));
             d_dump_file.read(reinterpret_cast<char *>(&Tracking_sample_counter), sizeof(uint64_t));
             d_dump_file.read(reinterpret_cast<char *>(&d_TOW_at_Preamble), sizeof(double));
+            d_dump_file.read(reinterpret_cast<char *>(&nav_symbol), sizeof(int32_t));
+            d_dump_file.read(reinterpret_cast<char *>(&prn), sizeof(int32_t));
         }
     catch (const std::ifstream::failure &e)
         {
@@ -53,8 +55,9 @@ bool Tlm_Dump_Reader::restart()
 int64_t Tlm_Dump_Reader::num_epochs()
 {
     std::ifstream::pos_type size;
-    int number_of_vars_in_epoch = 2;
-    int epoch_size_bytes = sizeof(double) * number_of_vars_in_epoch + sizeof(uint64_t);
+    int number_of_double_vars_in_epoch = 2;
+    int number_of_int_vars_in_epoch = 2;
+    int epoch_size_bytes = sizeof(double) * number_of_double_vars_in_epoch + sizeof(uint64_t) + sizeof(int32_t) * number_of_int_vars_in_epoch;
     std::ifstream tmpfile(d_dump_filename.c_str(), std::ios::binary | std::ios::ate);
     if (tmpfile.is_open())
         {

@@ -85,6 +85,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   Make use of MathJax for equation rendering. Added new building option
   `ENABLE_EXTERNAL_MATHJAX`, set to `ON` by default. If set to `OFF`, it allows
   using a local installation of MathJax 2.
+- Improved dumps in Telemetry Decoding blocks. Now they include the raw
+  navigation message bits. If `TelemetryDecoder_XX.dump=true`, the resulting
+  `.dat` binary file is also delivered in `.mat` format, which is readable from
+  Matlab and Python.
 
 &nbsp;
 

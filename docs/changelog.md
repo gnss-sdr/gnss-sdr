@@ -57,6 +57,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   GNSS-SDR, the old method is still used in old development environments. No
   extra dependency is needed. This change is transparent to the user, since
   everything is managed by the CMake scripts.
+- The `volk_gnsssdr` library can be built on Microsoft Windows and can execute
+  SIMD instructions on that OS.
 - Fix building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
 
 ### Improvements in Usability:

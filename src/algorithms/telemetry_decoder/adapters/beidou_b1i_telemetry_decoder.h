@@ -26,8 +26,8 @@
 #include "beidou_b1i_telemetry_decoder_gs.h"
 #include "gnss_satellite.h"  // for Gnss_Satellite
 #include "gnss_synchro.h"
-#include "tlm_conf.h"
 #include "telemetry_decoder_interface.h"
+#include "tlm_conf.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <cstddef>                   // for size_t
 #include <string>

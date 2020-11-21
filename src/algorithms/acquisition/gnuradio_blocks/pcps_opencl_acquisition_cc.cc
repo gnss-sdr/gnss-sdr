@@ -81,8 +81,8 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     bool dump,
     const std::string &dump_filename,
     bool enable_monitor_output) : gr::block("pcps_opencl_acquisition_cc",
-                                  gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                  gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+                                      gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
 {
     this->message_port_register_out(pmt::mp("events"));
     d_sample_counter = 0ULL;  // SAMPLE COUNTER

@@ -49,7 +49,7 @@ using gps_l5_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l5_telemetry_decode
 
 gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    const Tlm_Conf& conf);
+    const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a GPS L5 Telemetry decoder
@@ -68,9 +68,9 @@ public:
 private:
     friend gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        const Tlm_Conf& conf);
+        const Tlm_Conf &conf);
 
-    gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf& conf);
+    gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
     int32_t save_matfile() const;
 

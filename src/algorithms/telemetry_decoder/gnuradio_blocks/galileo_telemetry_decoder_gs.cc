@@ -38,11 +38,30 @@
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cmath>            // for fmod
+#include <cstddef>          // for size_t
 #include <cstdlib>          // for abs
 #include <exception>        // for exception
 #include <iostream>         // for cout
 #include <memory>           // for make_shared
 
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for remove
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 #define CRC_ERROR_LIMIT 6
 
@@ -214,8 +233,10 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
 galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 {
     DLOG(INFO) << "Galileo Telemetry decoder block (channel " << d_channel << ") destructor called.";
+    size_t pos = 0;
     if (d_dump_file.is_open() == true)
         {
+            pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -224,9 +245,16 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
                 }
+            if (pos == 0)
+                {
+                    errorlib::error_code ec;
+                    if (!fs::remove(fs::path(d_dump_filename), ec))
+                        {
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
+                }
         }
-
-    if (d_dump)
+    if (d_dump && (pos != 0))
         {
             try
                 {

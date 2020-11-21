@@ -112,6 +112,10 @@ jobs:
     - name: test
       shell: powershell
       run: cd build; ctest -C Release
+    - name: install
+      run: cmake --install build
+    - name: run profile
+      run: cd 'C:\Program Files (x86)\volk_gnsssdr\bin'; .\volk_gnsssdr_profile.exe
 
 
   volk-gnsssdr-ubuntu:

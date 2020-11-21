@@ -59,16 +59,16 @@ namespace errorlib = boost::system;
 
 
 glonass_l1_ca_telemetry_decoder_gs_sptr
-glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump)
+glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
 {
-    return glonass_l1_ca_telemetry_decoder_gs_sptr(new glonass_l1_ca_telemetry_decoder_gs(satellite, dump));
+    return glonass_l1_ca_telemetry_decoder_gs_sptr(new glonass_l1_ca_telemetry_decoder_gs(satellite, conf));
 }
 
 
 glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump) : gr::block("glonass_l1_ca_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    const Tlm_Conf &conf) : gr::block("glonass_l1_ca_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -77,7 +77,9 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
-    d_dump = dump;
+    d_dump_filename = conf.dump_filename;
+    d_dump = conf.dump;
+    d_dump_mat = conf.dump_mat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L1 CA TELEMETRY DECODING";
 
@@ -378,7 +380,6 @@ void glonass_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
                 {
                     try
                         {
-                            d_dump_filename = "telemetry";
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);

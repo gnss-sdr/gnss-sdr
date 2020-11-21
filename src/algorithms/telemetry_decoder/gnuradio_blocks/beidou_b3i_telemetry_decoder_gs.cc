@@ -61,14 +61,14 @@ namespace errorlib = boost::system;
 
 beidou_b3i_telemetry_decoder_gs_sptr
 beidou_b3i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite,
-    bool dump)
+    const Tlm_Conf &conf)
 {
-    return beidou_b3i_telemetry_decoder_gs_sptr(new beidou_b3i_telemetry_decoder_gs(satellite, dump));
+    return beidou_b3i_telemetry_decoder_gs_sptr(new beidou_b3i_telemetry_decoder_gs(satellite, conf));
 }
 
 
 beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite, bool dump)
+    const Gnss_Satellite &satellite, const Tlm_Conf &conf)
     : gr::block("beidou_b3i_telemetry_decoder_gs",
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
@@ -80,7 +80,9 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     // initialize internal vars
-    d_dump = dump;
+    d_dump_filename = conf.dump_filename;
+    d_dump = conf.dump;
+    d_dump_mat = conf.dump_mat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing BeiDou B3I Telemetry Decoding for satellite " << this->d_satellite;
 
@@ -147,7 +149,7 @@ beidou_b3i_telemetry_decoder_gs::~beidou_b3i_telemetry_decoder_gs()
                         }
                 }
         }
-    if (d_dump && (pos != 0))
+    if (d_dump && (pos != 0) && d_dump_mat)
         {
             try
                 {
@@ -509,7 +511,6 @@ void beidou_b3i_telemetry_decoder_gs::set_channel(int32_t channel)
                 {
                     try
                         {
-                            d_dump_filename = "telemetry";
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);

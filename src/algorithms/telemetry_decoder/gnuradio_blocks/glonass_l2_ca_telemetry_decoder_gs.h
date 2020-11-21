@@ -26,6 +26,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
+#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -46,7 +47,7 @@ using glonass_l2_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<glonass_l2_ca_te
 
 glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump);
+    const Tlm_Conf &conf);
 
 /*!
 * \brief This class implements a block that decodes the GNAV data defined in GLONASS ICD v5.1
@@ -72,9 +73,9 @@ public:
 private:
     friend glonass_l2_ca_telemetry_decoder_gs_sptr glonass_l2_ca_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        bool dump);
+        const Tlm_Conf &conf);
 
-    glonass_l2_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    glonass_l2_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
     const std::array<uint16_t, GLONASS_GNAV_PREAMBLE_LENGTH_BITS> d_preambles_bits{GLONASS_GNAV_PREAMBLE};
 
@@ -114,6 +115,7 @@ private:
     bool d_flag_preamble;    // Flag indicating when preamble was found
     bool flag_TOW_set;       // Indicates when time of week is set
     bool d_dump;
+    bool d_dump_mat;
 };
 
 

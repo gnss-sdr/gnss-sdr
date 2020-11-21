@@ -60,11 +60,11 @@ endif()
 target_link_libraries(telemetry_decoder_adapters
     PUBLIC
         telemetry_decoder_gr_blocks
+        telemetry_decoder_libs
     PRIVATE
         Gflags::gflags
         Glog::glog
         Gnuradio::runtime
-        telemetry_decoder_libs
 )
 
 target_include_directories(telemetry_decoder_adapters

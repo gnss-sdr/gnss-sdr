@@ -28,6 +28,7 @@
 #include "galileo_inav_message.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
+#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -49,8 +50,8 @@ using galileo_telemetry_decoder_gs_sptr = gnss_shared_ptr<galileo_telemetry_deco
 
 galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    int frame_type,
-    bool dump);
+    const Tlm_Conf &conf,
+    int frame_type);
 
 /*!
  * \brief This class implements a block that decodes the INAV and FNAV data defined in Galileo ICD
@@ -74,10 +75,10 @@ public:
 private:
     friend galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        int frame_type,
-        bool dump);
+        const Tlm_Conf &conf,
+        int frame_type);
 
-    galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump);
+    galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type);
 
     const int32_t d_nn = 2;  // Coding rate 1/n
     const int32_t d_KK = 7;  // Constraint Length
@@ -142,6 +143,7 @@ private:
     bool d_flag_parity;
     bool d_flag_preamble;
     bool d_dump;
+    bool d_dump_mat;
 };
 
 

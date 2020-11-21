@@ -67,16 +67,17 @@ namespace errorlib = boost::system;
 
 
 galileo_telemetry_decoder_gs_sptr
-galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, int frame_type, bool dump)
+galileo_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type)
 {
-    return galileo_telemetry_decoder_gs_sptr(new galileo_telemetry_decoder_gs(satellite, frame_type, dump));
+    return galileo_telemetry_decoder_gs_sptr(new galileo_telemetry_decoder_gs(satellite, conf, frame_type));
 }
 
 
 galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
-    const Gnss_Satellite &satellite, int frame_type,
-    bool dump) : gr::block("galileo_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    const Gnss_Satellite &satellite,
+    const Tlm_Conf &conf,
+    int frame_type) : gr::block("galileo_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -89,7 +90,9 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_band = '1';
 
     // initialize internal vars
-    d_dump = dump;
+    d_dump_filename = conf.dump_filename;
+    d_dump = conf.dump;
+    d_dump_mat = conf.dump_mat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_frame_type = frame_type;
     DLOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
@@ -254,7 +257,7 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
                         }
                 }
         }
-    if (d_dump && (pos != 0))
+    if (d_dump && (pos != 0) && d_dump_mat)
         {
             try
                 {
@@ -677,7 +680,6 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
                 {
                     try
                         {
-                            d_dump_filename = "telemetry";
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
                             d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);

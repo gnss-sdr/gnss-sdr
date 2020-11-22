@@ -41,6 +41,7 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -59,6 +60,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+// clang-format on
 
 
 hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf &conf_)

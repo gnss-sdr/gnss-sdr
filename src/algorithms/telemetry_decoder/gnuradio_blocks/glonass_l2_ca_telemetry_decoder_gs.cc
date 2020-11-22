@@ -36,6 +36,7 @@
 #include <memory>           // for shared_ptr, make_shared
 #include <vector>
 
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -54,6 +55,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+// clang-format on
 
 #define CRC_ERROR_LIMIT 6
 

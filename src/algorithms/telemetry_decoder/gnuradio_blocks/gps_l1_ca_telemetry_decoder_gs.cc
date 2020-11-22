@@ -35,6 +35,7 @@
 #include <memory>           // for shared_ptr
 #include <vector>
 
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -53,7 +54,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
-
+// clang-format on
 
 #ifdef COMPILER_HAS_ROTL
 #include <bit>

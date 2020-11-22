@@ -37,6 +37,7 @@
 #include <memory>           // for shared_ptr, make_shared
 #include <vector>
 
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -55,6 +56,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+// clang-format on
 
 gps_l5_telemetry_decoder_gs_sptr
 gps_l5_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)

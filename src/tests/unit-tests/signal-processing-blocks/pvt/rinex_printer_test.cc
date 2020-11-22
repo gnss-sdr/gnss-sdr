@@ -23,6 +23,7 @@
 #include <fstream>
 #include <string>
 
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -41,6 +42,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+// clang-format on
 
 class RinexPrinterTest : public ::testing::Test
 {

@@ -33,12 +33,10 @@ GlonassL1CaTelemetryDecoder::GlonassL1CaTelemetryDecoder(
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    const std::string default_dump_filename("./navigation.dat");
     DLOG(INFO) << "role " << role;
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+    tlm_parameters_.SetFromConfiguration(configuration, role);
     // make telemetry decoder object
-    telemetry_decoder_ = glonass_l1_ca_make_telemetry_decoder_gs(satellite_, dump_);
+    telemetry_decoder_ = glonass_l1_ca_make_telemetry_decoder_gs(satellite_, tlm_parameters_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     channel_ = 0;
     if (in_streams_ > 1)

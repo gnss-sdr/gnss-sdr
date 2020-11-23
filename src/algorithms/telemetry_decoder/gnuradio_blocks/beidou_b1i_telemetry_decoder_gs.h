@@ -26,6 +26,7 @@
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
+#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -46,7 +47,7 @@ using beidou_b1i_telemetry_decoder_gs_sptr = gnss_shared_ptr<beidou_b1i_telemetr
 
 beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump);
+    const Tlm_Conf &conf);
 
 
 /*!
@@ -70,9 +71,11 @@ public:
 private:
     friend beidou_b1i_telemetry_decoder_gs_sptr beidou_b1i_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        bool dump);
+        const Tlm_Conf &conf);
 
-    beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+
+    int32_t save_matfile() const;
 
     void decode_subframe(float *symbols);
     void decode_word(int32_t word_counter, const float *enc_word_symbols, int32_t *dec_word_symbols);
@@ -119,6 +122,7 @@ private:
     bool d_sent_tlm_failed_msg;
     bool Flag_valid_word;
     bool d_dump;
+    bool d_dump_mat;
 };
 
 

@@ -57,6 +57,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   GNSS-SDR, the old method is still used in old development environments. No
   extra dependency is needed. This change is transparent to the user, since
   everything is managed by the CMake scripts.
+- The `volk_gnsssdr` library can be built on Microsoft Windows and can execute
+  SIMD instructions on that OS.
 - Fix building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
 
 ### Improvements in Usability:
@@ -67,6 +69,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   parameters for the `DataTypeAdapter`, `InputFilter` and `Resampler` blocks are
   ignored. This was the default behavior in GNSS-SDR v0.0.12, but it changed in
   v0.0.13. This change recovers the old behavior.
+- Fixed occasional segmentation fault when exiting with `q` + `[Enter]` keys if
+  `Acquisition_XX.blocking=false`.
 - Fixed the termination of the receiver with `q` + `[Enter]` keys when using the
   `Osmosdr_Signal_Source` implementation of the `SignalSource` block.
 - The `Labsat_Signal_Source` implementation of the `SignalSource` block now can
@@ -85,6 +89,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   Make use of MathJax for equation rendering. Added new building option
   `ENABLE_EXTERNAL_MATHJAX`, set to `ON` by default. If set to `OFF`, it allows
   using a local installation of MathJax 2.
+- Improved dumps in Telemetry Decoding blocks. Now they include the raw
+  navigation message bits. If `TelemetryDecoder_XX.dump=true`, the resulting
+  `.dat` binary file is also delivered in `.mat` format, which is readable from
+  Matlab and Python.
 
 &nbsp;
 

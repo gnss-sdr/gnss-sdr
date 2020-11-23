@@ -23,6 +23,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gps_cnav_navigation_message.h"
+#include "tlm_conf.h"
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
@@ -46,7 +47,7 @@ using gps_l2c_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l2c_telemetry_deco
 
 gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump);
+    const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a block that decodes CNAV data defined in IS-GPS-200K
@@ -68,9 +69,11 @@ public:
 private:
     friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        bool dump);
+        const Tlm_Conf &conf);
 
-    gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+
+    int32_t save_matfile() const;
 
     Gnss_Satellite d_satellite;
 
@@ -97,6 +100,7 @@ private:
     bool d_sent_tlm_failed_msg;
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_valid_word;
+    bool d_dump_mat;
 };
 
 

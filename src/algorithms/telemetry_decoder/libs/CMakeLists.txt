@@ -11,10 +11,12 @@
 add_subdirectory(libswiftcnav)
 
 set(TELEMETRY_DECODER_LIB_SOURCES
+    tlm_conf.cc
     viterbi_decoder.cc
 )
 
 set(TELEMETRY_DECODER_LIB_HEADERS
+    tlm_conf.h
     viterbi_decoder.h
     convolutional.h
 )
@@ -44,6 +46,11 @@ target_link_libraries(telemetry_decoder_libs
     PRIVATE
         Gflags::gflags
         Glog::glog
+)
+
+target_include_directories(telemetry_decoder_libs
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
 if(ENABLE_CLANG_TIDY)

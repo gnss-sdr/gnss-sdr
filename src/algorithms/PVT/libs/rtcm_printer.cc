@@ -38,6 +38,8 @@
 #include <iostream>   // for cout, cerr
 #include <termios.h>  // for tcgetattr
 #include <unistd.h>   // for close, write
+
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -56,6 +58,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+// clang-format off
 
 
 Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)

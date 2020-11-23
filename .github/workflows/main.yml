@@ -44,7 +44,7 @@ jobs:
     - name: install dependencies
       run: brew install clang-format
     - name: run clang-format
-      run: find . -iname \*.h -o -iname \*.c -o -iname \*.cpp | xargs clang-format -style=file -i
+      run: find . -iname \*.h -o -iname \*.c -o -iname \*.cc | xargs clang-format -style=file -i
     - name: check
       run: git diff > clang_format.patch && echo -e "if \n [ -s clang_format.patch ] \nthen \n echo "clang-format not applied:"; echo ""; more clang_format.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
 
@@ -112,6 +112,10 @@ jobs:
     - name: test
       shell: powershell
       run: cd build; ctest -C Release
+    - name: install
+      run: cmake --install build
+    - name: run profile
+      run: cd 'C:\Program Files (x86)\volk_gnsssdr\bin'; .\volk_gnsssdr_profile.exe
 
 
   volk-gnsssdr-ubuntu:

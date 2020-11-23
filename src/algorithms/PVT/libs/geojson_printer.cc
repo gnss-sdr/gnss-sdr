@@ -29,6 +29,7 @@
 #include <iostream>   // for cout, cerr
 #include <sstream>    // for stringstream
 
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -47,6 +48,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+// clang-format on
 
 GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
 {

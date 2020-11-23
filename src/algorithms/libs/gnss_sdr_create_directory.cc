@@ -22,6 +22,7 @@
 #include <exception>  // for exception
 #include <fstream>    // for ofstream
 
+// clang-format off
 #if HAS_STD_FILESYSTEM
 #include <system_error>
 namespace errorlib = std;
@@ -40,6 +41,7 @@ namespace fs = std::filesystem;
 namespace fs = boost::filesystem;
 namespace errorlib = boost::system;
 #endif
+// clang-format on
 
 bool gnss_sdr_create_directory(const std::string& foldername)
 {

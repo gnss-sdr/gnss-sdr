@@ -139,6 +139,24 @@ $ volk_gnsssdr_profile
 $ sudo ldconfig
 ```
 
+### Building on Microsoft Windows
+
+With Visual Studio 2019, in a Powershell run by administrator:
+
+```
+$ git clone https://github.com/gnss-sdr/gnss-sdr
+$ cd gnss-sdr
+$ git checkout next
+$ cd build
+$ cmake -G "Visual Studio 16 2019" ..\src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr
+$ cd ..
+$ cmake --build build --config Release
+$ cd build
+$ ctest -C Release
+$ cd ..
+$ cmake --install build
+```
+
 ## References
 
 If you use VOLK_GNSSSDR in your research and/or software, please cite the

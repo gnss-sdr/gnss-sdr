@@ -60,7 +60,18 @@ target_link_libraries(telemetry_decoder_gr_blocks
     PRIVATE
         Gflags::gflags
         Glog::glog
+        Matio::matio
 )
+
+if(FILESYSTEM_FOUND)
+    target_compile_definitions(telemetry_decoder_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
+    if(find_experimental)
+        target_compile_definitions(telemetry_decoder_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(telemetry_decoder_gr_blocks PRIVATE std::filesystem)
+else()
+    target_link_libraries(telemetry_decoder_gr_blocks PRIVATE Boost::filesystem Boost::system)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(telemetry_decoder_gr_blocks

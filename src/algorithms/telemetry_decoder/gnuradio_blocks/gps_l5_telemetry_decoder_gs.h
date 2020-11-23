@@ -24,6 +24,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"               // for Gnss_Satellite
 #include "gps_cnav_navigation_message.h"  // for Gps_CNAV_Navigation_Message
+#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -48,7 +49,7 @@ using gps_l5_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l5_telemetry_decode
 
 gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump);
+    const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a GPS L5 Telemetry decoder
@@ -67,9 +68,11 @@ public:
 private:
     friend gps_l5_telemetry_decoder_gs_sptr gps_l5_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        bool dump);
+        const Tlm_Conf &conf);
 
-    gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+
+    int32_t save_matfile() const;
 
     cnav_msg_decoder_t d_cnav_decoder{};
 
@@ -93,6 +96,7 @@ private:
     bool d_flag_valid_word;
     bool d_sent_tlm_failed_msg;
     bool d_dump;
+    bool d_dump_mat;
 };
 
 

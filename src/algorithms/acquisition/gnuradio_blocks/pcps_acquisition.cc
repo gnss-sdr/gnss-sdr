@@ -659,8 +659,10 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                << ", doppler_step: " << d_doppler_step
                << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
 
-    lk.unlock();
-
+    if (d_acq_parameters.blocking)
+        {
+            lk.unlock();
+        }
     // Doppler frequency grid loop
     if (!d_step_two)
         {
@@ -782,7 +784,11 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 }
         }
 
-    lk.lock();
+    if (d_acq_parameters.blocking)
+        {
+            lk.lock();
+        }
+
     if (!d_acq_parameters.bit_transition_flag)
         {
             if (d_test_statistics > d_threshold)
@@ -872,7 +878,6 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     send_negative_acquisition();
                 }
         }
-    d_worker_active = false;
 
     if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) or (d_positive_acq == 1))
         {
@@ -884,6 +889,8 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             d_num_noncoherent_integrations_counter = 0U;
             d_positive_acq = 0;
         }
+
+    d_worker_active = false;
 }
 
 
@@ -930,6 +937,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
      * 6. Declare positive or negative acquisition using a message port
      */
     gr::thread::scoped_lock lk(d_setlock);
+
     if (!d_active or d_worker_active)
         {
             if (!d_acq_parameters.blocking_on_standby)
@@ -1016,7 +1024,8 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     }
                 else
                     {
-                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
+                        d_worker = std::thread([&] { pcps_acquisition::acquisition_core(d_sample_counter); });
+                        d_worker.detach();
                         d_worker_active = true;
                     }
                 consume_each(0);

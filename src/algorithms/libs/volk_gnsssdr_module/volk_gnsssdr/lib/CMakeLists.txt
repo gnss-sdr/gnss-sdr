@@ -145,6 +145,11 @@ macro(OVERRULE_ARCH arch reason)
     list(REMOVE_ITEM available_archs ${arch})
 endmacro()
 
+macro(FORCE_ARCH arch reason)
+    message(STATUS "${reason}, Forced arch ${arch}")
+    list(APPEND available_archs ${arch})
+endmacro()
+
 ########################################################################
 # eliminate AVX on if not on x86, or if the compiler does not accept
 # the xgetbv instruction, or {if not cross-compiling and the xgetbv
@@ -264,13 +269,13 @@ if(NOT CROSSCOMPILE_MULTILIB AND CPU_IS_x86)
     endif()
 
     # MSVC 64 bit does not have MMX, overrule it
-    if(${SIZEOF_CPU} EQUAL 64 AND MSVC)
-        overrule_arch(mmx "No MMX for Win64")
-        if(MSVC_VERSION GREATER 1700)
-            overrule_arch(sse "No SSE for Win64 Visual Studio 2013")
+    if(MSVC)
+        if(${SIZEOF_CPU} EQUAL 64)
+            overrule_arch(mmx "No MMX for Win64")
         endif()
+        force_arch(sse "Built-in for MSVC > 2013")
+        force_arch(sse2 "Built-in for MSVC > 2013")
     endif()
-
 endif()
 
 ########################################################################

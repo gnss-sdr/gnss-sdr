@@ -68,7 +68,6 @@
   <check name="mmx"></check>
   <flag compiler="gnu">-mmmx</flag>
   <flag compiler="clang">-mmmx</flag>
-  <flag compiler="msvc">/arch:SSE</flag>
   <alignment>8</alignment>
 </arch>
 
@@ -84,7 +83,6 @@
   <check name="sse"></check>
   <flag compiler="gnu">-msse</flag>
   <flag compiler="clang">-msse</flag>
-  <flag compiler="msvc">/arch:SSE</flag>
   <environment>_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);</environment>
   <include>xmmintrin.h</include>
   <alignment>16</alignment>
@@ -94,7 +92,6 @@
   <check name="sse2"></check>
   <flag compiler="gnu">-msse2</flag>
   <flag compiler="clang">-msse2</flag>
-  <flag compiler="msvc">/arch:SSE2</flag>
   <alignment>16</alignment>
 </arch>
 

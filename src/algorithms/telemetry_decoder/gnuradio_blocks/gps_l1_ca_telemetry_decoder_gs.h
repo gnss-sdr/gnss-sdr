@@ -25,6 +25,7 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "gps_navigation_message.h"
+#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -46,7 +47,7 @@ using gps_l1_ca_telemetry_decoder_gs_sptr = gnss_shared_ptr<gps_l1_ca_telemetry_
 
 gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump);
+    const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200K
@@ -68,9 +69,11 @@ public:
 private:
     friend gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        bool dump);
+        const Tlm_Conf &conf);
 
-    gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
+
+    int32_t save_matfile() const;
 
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe();
@@ -110,6 +113,7 @@ private:
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_TOW_set;
     bool d_dump;
+    bool d_dump_mat;
 };
 
 

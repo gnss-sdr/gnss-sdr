@@ -38,6 +38,8 @@ public:
     double TOW_at_current_symbol;
     uint64_t Tracking_sample_counter;
     double d_TOW_at_Preamble;
+    int32_t nav_symbol;
+    int32_t prn;
 
 private:
     std::string d_dump_filename;

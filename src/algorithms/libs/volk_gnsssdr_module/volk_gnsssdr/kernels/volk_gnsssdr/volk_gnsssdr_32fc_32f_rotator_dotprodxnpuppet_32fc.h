@@ -106,8 +106,11 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc_u_avx(lv_3
             in_a[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
             memcpy((float*)in_a[n], (float*)in, sizeof(float) * num_points);
         }
+#ifndef WIN32
     volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(result, local_code, phase_inc[0], phase, (const float**)in_a, num_a_vectors, num_points);
-
+#else
+    volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload(result, local_code, phase_inc[0], phase, (const float**)in_a, num_a_vectors, num_points);
+#endif
     for (n = 0; n < num_a_vectors; n++)
         {
             volk_gnsssdr_free(in_a[n]);
@@ -136,8 +139,11 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc_a_avx(lv_3
             in_a[n] = (float*)volk_gnsssdr_malloc(sizeof(float) * num_points, volk_gnsssdr_get_alignment());
             memcpy((float*)in_a[n], (float*)in, sizeof(float) * num_points);
         }
+#ifndef WIN32
     volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(result, local_code, phase_inc[0], phase, (const float**)in_a, num_a_vectors, num_points);
-
+#else
+    volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_generic_reload(result, local_code, phase_inc[0], phase, (const float**)in_a, num_a_vectors, num_points);
+#endif
     for (n = 0; n < num_a_vectors; n++)
         {
             volk_gnsssdr_free(in_a[n]);

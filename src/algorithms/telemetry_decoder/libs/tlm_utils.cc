@@ -54,7 +54,7 @@ int save_tlm_matfile(const std::string &dumpfile)
     const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
                                      sizeof(int32_t) * number_of_int_vars;
     std::ifstream dump_file;
-    std::string dump_filename_(dumpfile);
+    const std::string &dump_filename_(dumpfile);
 
     std::cout << "Generating .mat file for " << std::string(dump_filename_.begin(), dump_filename_.end() - 4) << '\n';
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);

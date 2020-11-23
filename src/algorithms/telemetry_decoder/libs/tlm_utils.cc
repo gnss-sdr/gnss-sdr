@@ -1,7 +1,6 @@
 /*!
  * \file tlm_utils.cc
- * \brief Class that contains all the configuration parameters for generic
- * telemetry decoder block.
+ * \brief Utilities for the telemetry decoder blocks.
  * \author Carles Fernandez, 2020. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------

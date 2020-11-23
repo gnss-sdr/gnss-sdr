@@ -73,8 +73,6 @@ private:
 
     beidou_b3i_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
-    int32_t save_matfile() const;
-
     void decode_subframe(float *symbols);
     void decode_word(int32_t word_counter, const float *enc_word_symbols,
         int32_t *dec_word_symbols);

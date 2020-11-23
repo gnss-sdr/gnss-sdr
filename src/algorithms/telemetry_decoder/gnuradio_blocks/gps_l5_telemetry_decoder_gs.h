@@ -72,8 +72,6 @@ private:
 
     gps_l5_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
-    int32_t save_matfile() const;
-
     cnav_msg_decoder_t d_cnav_decoder{};
 
     Gnss_Satellite d_satellite;

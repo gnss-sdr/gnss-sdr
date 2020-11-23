@@ -99,6 +99,7 @@ private:
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_valid_word;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

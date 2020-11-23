@@ -120,6 +120,7 @@ private:
     bool Flag_valid_word;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

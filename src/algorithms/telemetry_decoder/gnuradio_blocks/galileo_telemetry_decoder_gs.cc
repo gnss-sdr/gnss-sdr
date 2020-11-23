@@ -75,6 +75,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_dump_filename = conf.dump_filename;
     d_dump = conf.dump;
     d_dump_mat = conf.dump_mat;
+    d_remove_dat = conf.remove_dat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_frame_type = frame_type;
     DLOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
@@ -241,6 +242,13 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
     if (d_dump && (pos != 0) && d_dump_mat)
         {
             save_tlm_matfile(d_dump_filename);
+            if (d_remove_dat)
+                {
+                    if (!tlm_remove_file(d_dump_filename))
+                        {
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
+                }
         }
 }
 

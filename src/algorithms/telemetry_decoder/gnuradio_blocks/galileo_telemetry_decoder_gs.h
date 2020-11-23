@@ -141,6 +141,7 @@ private:
     bool d_flag_preamble;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

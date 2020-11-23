@@ -114,6 +114,7 @@ private:
     bool flag_TOW_set;       // Indicates when time of week is set
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

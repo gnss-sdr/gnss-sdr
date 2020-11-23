@@ -40,6 +40,7 @@ public:
     std::string dump_filename;
     bool dump;
     bool dump_mat;
+    bool remove_dat;
 };
 
 

@@ -112,6 +112,7 @@ private:
     bool d_flag_TOW_set;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

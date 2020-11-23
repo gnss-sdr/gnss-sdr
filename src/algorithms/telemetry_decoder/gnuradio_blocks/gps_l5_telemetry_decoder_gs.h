@@ -95,6 +95,7 @@ private:
     bool d_sent_tlm_failed_msg;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

@@ -187,6 +187,8 @@ public:
 private:
     static const uint32_t NUM_PRNs = 32;
 
+    const std::string default_device_name = "acquisition_S00_AXI";  // UIO device name
+
     // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
     static const uint32_t quant_bits_local_code = 16;

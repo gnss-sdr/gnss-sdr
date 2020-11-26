@@ -109,6 +109,14 @@ target_include_directories(tracking_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
+if(ENABLE_FPGA)
+	target_include_directories(tracking_adapters
+	    PUBLIC
+		${CMAKE_SOURCE_DIR}/src/core/libs
+	)
+endif()
+
+
 if(ENABLE_CUDA)
     if(CMAKE_VERSION VERSION_GREATER 3.11)
         target_include_directories(tracking_adapters

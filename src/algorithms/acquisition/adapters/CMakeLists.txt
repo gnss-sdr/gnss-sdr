@@ -129,6 +129,10 @@ if(ENABLE_FPGA)
             Volk::volk
             Volkgnsssdr::volkgnsssdr
     )
+    target_include_directories(acquisition_adapters
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/core/libs
+	)
 endif()
 
 target_include_directories(acquisition_adapters

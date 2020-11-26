@@ -28,6 +28,7 @@
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "uio_fpga.h"
 #include <glog/logging.h>
 #include <iio.h>
 #include <algorithm>  // for max
@@ -90,9 +91,17 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 
-    // turn switch to A/D position
-    const std::string default_device_name("/dev/uio1");
-    const std::string device_name = configuration->property(role + ".devicename", default_device_name);
+
+    // Switch UIO device file
+    std::string device_io_name;
+    std::string device_name = configuration->property(role + ".devicename", default_device_name);
+    // find the uio device file corresponding to the GNSS reset module
+    if (find_uio_dev_file_name(device_io_name, device_name, 0) < 0)
+        {
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+            throw std::exception();
+        }
+
     switch_position = configuration->property(role + ".switch_position", 0);
     if (switch_position != 0 && switch_position != 2)
         {
@@ -101,7 +110,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             switch_position = 0;
         }
 
-    switch_fpga = std::make_shared<Fpga_Switch>(device_name);
+    switch_fpga = std::make_shared<Fpga_Switch>(device_io_name);
     switch_fpga->set_switch_position(switch_position);
 
     item_size_ = sizeof(gr_complex);

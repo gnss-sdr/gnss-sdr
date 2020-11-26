@@ -76,6 +76,8 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    const std::string default_device_name = "AXIS_Switch_v1_0_0";  // Switch UIO device name
+
     // perform dynamic bit selection every 500 ms by default
     static const uint32_t Gain_control_period_ms = 500;
 

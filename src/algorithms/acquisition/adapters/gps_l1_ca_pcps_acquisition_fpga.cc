@@ -27,6 +27,7 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_sdr_signal_replica.h"
+#include "uio_fpga.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex
@@ -72,9 +73,18 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 0);
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
-    std::string default_device_name = "/dev/uio0";
+
+    // UIO device file
+    std::string device_io_name;
     std::string device_name = configuration->property(role + ".devicename", default_device_name);
-    acq_parameters.device_name = device_name;
+    // find the uio device file corresponding to the GNSS reset module
+    if (find_uio_dev_file_name(device_io_name, device_name, 0) < 0)
+        {
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+            throw std::exception();
+        }
+    acq_parameters.device_name = device_io_name;
+
     acq_parameters.samples_per_code = nsamples_total;
     acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(fs_in)));
 

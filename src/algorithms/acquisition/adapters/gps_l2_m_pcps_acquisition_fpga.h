@@ -151,7 +151,7 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-    const std::string default_device_name = "acquisition_S00_AXI";  // UIO device name
+    const std::string acquisition_device_name = "acquisition_S00_AXI";  // UIO device name
 
     static const uint32_t NUM_PRNs = 32;
     static const uint32_t QUANT_BITS_LOCAL_CODE = 16;

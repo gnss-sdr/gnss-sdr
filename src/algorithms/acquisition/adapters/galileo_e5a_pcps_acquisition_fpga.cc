@@ -84,11 +84,10 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
 
     // UIO device file
     std::string device_io_name;
-    std::string device_name = configuration->property(role + ".devicename", default_device_name);
-    // find the uio device file corresponding to the GNSS reset module
-    if (find_uio_dev_file_name(device_io_name, device_name, 0) < 0)
+    // find the uio device file corresponding to the acquisition
+    if (find_uio_dev_file_name(device_io_name, acquisition_device_name, 0) < 0)
         {
-            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << acquisition_device_name << std::endl;
             throw std::exception();
         }
     acq_parameters.device_name = device_io_name;

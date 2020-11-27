@@ -183,7 +183,7 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-    const std::string default_device_name = "acquisition_S00_AXI";  // UIO device name
+    const std::string acquisition_device_name = "acquisition_S00_AXI";  // UIO device name
 
     // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.

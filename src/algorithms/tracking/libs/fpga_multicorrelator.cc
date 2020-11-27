@@ -50,9 +50,6 @@ const float PHASE_CARR_MAX_DIV_PI = 683565275.5764316;  // 2^(31)/pi
 const float TWO_PI = 6.283185307179586;
 
 Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
-    const std::string &device_name,
-    uint32_t dev_file_num,
-    uint32_t num_prev_assigned_ch,
     int32_t *ca_codes,
     int32_t *data_codes,
     uint32_t code_length_chips,
@@ -60,10 +57,6 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     uint32_t code_samples_per_chip)
 {
     d_n_correlators = n_correlators;
-    d_device_name = device_name;
-    d_dev_file_num = dev_file_num;
-    d_num_prev_assigned_ch = num_prev_assigned_ch;
-
     d_track_pilot = track_pilot;
     d_device_descriptor = 0;
     d_map_base = nullptr;
@@ -91,7 +84,6 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     d_rem_carr_phase_rad_int = 0;
     d_phase_step_rad_int = 0;
     d_initial_sample_counter = 0;
-    d_channel = 0;
     d_correlator_length_samples = 0;
     d_code_phase_step_chips_num = 0;
     d_code_length_chips = code_length_chips;
@@ -203,28 +195,11 @@ bool Fpga_Multicorrelator_8sc::free()
 }
 
 
-void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
+void Fpga_Multicorrelator_8sc::open_channel(std::string device_io_name, uint32_t channel)
 {
-    char device_io_name[max_length_deviceio_name] = "";  // driver io name
-    d_channel = channel;
-
-    // open the device corresponding to the assigned channel
-    std::string mergedname;
-    std::stringstream devicebasetemp;
-    uint32_t numdevice = d_dev_file_num + d_channel - d_num_prev_assigned_ch;
-    devicebasetemp << numdevice;
-    mergedname = d_device_name + devicebasetemp.str();
-
-    if (mergedname.size() > max_length_deviceio_name)
-        {
-            mergedname = mergedname.substr(0, max_length_deviceio_name);
-        }
-
-    mergedname.copy(device_io_name, mergedname.size() + 1);
-    device_io_name[mergedname.size()] = '\0';
     std::cout << "trk device_io_name = " << device_io_name << '\n';
 
-    if ((d_device_descriptor = open(device_io_name, O_RDWR | O_SYNC)) == -1)
+    if ((d_device_descriptor = open(device_io_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
             LOG(WARNING) << "Cannot open deviceio" << device_io_name;
             std::cout << "Cannot open deviceio" << device_io_name << '\n';
@@ -235,7 +210,7 @@ void Fpga_Multicorrelator_8sc::set_channel(uint32_t channel)
     if (d_map_base == reinterpret_cast<void *>(-1))
         {
             LOG(WARNING) << "Cannot map the FPGA tracking module "
-                         << d_channel << "into user memory";
+                         << channel << "into user memory";
             std::cout << "Cannot map deviceio" << device_io_name << '\n';
         }
 

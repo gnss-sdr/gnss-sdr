@@ -30,6 +30,7 @@
 #include "dll_pll_conf_fpga.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
+#include "uio_fpga.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <array>
@@ -68,13 +69,12 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     const std::array<char, 3> sig_{'1', 'C', '\0'};
     std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
 
-    // FPGA configuration parameters
-    // obtain the number of the first uio device corresponding to a HW accelerator in the FPGA
-    // that can be assigned to the tracking of the L1 signal
-    trk_params_fpga.dev_file_num = configuration->property(role + ".dev_file_num", 3);
+    // UIO device file
+    device_name = configuration->property(role + ".devicename", default_device_name);
+
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, l2, L5, E1, E5a
-    trk_params_fpga.num_prev_assigned_ch = 0;
+    num_prev_assigned_ch = 0;
 
     // ################# PRE-COMPUTE ALL THE CODES #################
     d_ca_codes = static_cast<int32_t*>(volk_gnsssdr_malloc(static_cast<int32_t>(GPS_L1_CA_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
@@ -153,7 +153,17 @@ void GpsL1CaDllPllTrackingFpga::stop_tracking()
 void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    tracking_fpga_sc->set_channel(channel);
+
+    // UIO device file
+    std::string device_io_name;
+    // find the uio device file corresponding to the GNSS reset module
+    if (find_uio_dev_file_name(device_io_name, device_name, channel - num_prev_assigned_ch) < 0)
+        {
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+            throw std::exception();
+        }
+
+    tracking_fpga_sc->set_channel(channel, device_io_name);
 }
 
 

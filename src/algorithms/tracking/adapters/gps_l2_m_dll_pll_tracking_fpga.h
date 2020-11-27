@@ -95,6 +95,11 @@ public:
     void stop_tracking() override;
 
 private:
+    const std::string default_device_name = "multicorrelator_resampler_S00_AXI";  // UIO device name
+
+    std::string device_name;
+    uint32_t num_prev_assigned_ch;
+
     static const uint32_t NUM_PRNs = 32;
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     unsigned int channel_;

@@ -83,8 +83,6 @@ private:
 
     const int32_t d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
-    int32_t save_matfile() const;
-
     void decode_string(const double *symbols, int32_t frame_length);
 
     // Help with coherent tracking
@@ -122,6 +120,7 @@ private:
     bool Flag_valid_word;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

@@ -75,8 +75,6 @@ private:
 
     beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
-    int32_t save_matfile() const;
-
     void decode_subframe(float *symbols);
     void decode_word(int32_t word_counter, const float *enc_word_symbols, int32_t *dec_word_symbols);
     void decode_bch15_11_01(const int32_t *bits, std::array<int32_t, 15> &decbits);
@@ -123,6 +121,7 @@ private:
     bool Flag_valid_word;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

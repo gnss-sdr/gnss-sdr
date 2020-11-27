@@ -1,7 +1,6 @@
 /*!
- * \file tlm_conf.h
- * \brief Class that contains all the configuration parameters for generic
- * telemetry decoder block.
+ * \file tlm_utils.h
+ * \brief Utilities for the telemetry decoder blocks.
  * \author Carles Fernandez, 2020. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -18,10 +17,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_TLM_CONF_H
-#define GNSS_SDR_TLM_CONF_H
+#ifndef GNSS_SDR_TLM_UTILS_H
+#define GNSS_SDR_TLM_UTILS_H
 
-#include "configuration_interface.h"
 #include <string>
 
 /** \addtogroup Telemetry_Decoder
@@ -29,21 +27,10 @@
 /** \addtogroup Telemetry_Decoder_libs
  * \{ */
 
+int save_tlm_matfile(const std::string &dumpfile);
 
-class Tlm_Conf
-{
-public:
-    Tlm_Conf();
-
-    void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role);
-
-    std::string dump_filename;
-    bool dump;
-    bool dump_mat;
-    bool remove_dat;
-};
-
+bool tlm_remove_file(const std::string &file_to_remove);
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_TLM_CONF_H
+#endif  // GNSS_SDR_TLM_UTILS_H

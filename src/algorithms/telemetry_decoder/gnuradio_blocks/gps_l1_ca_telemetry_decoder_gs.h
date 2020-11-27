@@ -73,8 +73,6 @@ private:
 
     gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
-    int32_t save_matfile() const;
-
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe();
 
@@ -114,6 +112,7 @@ private:
     bool d_flag_TOW_set;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

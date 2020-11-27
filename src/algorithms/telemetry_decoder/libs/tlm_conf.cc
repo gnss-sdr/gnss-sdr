@@ -34,4 +34,5 @@ void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     dump_filename = configuration->property(role + ".dump_filename", default_dumpname);
     dump = configuration->property(role + ".dump", false);
     dump_mat = configuration->property(role + ".dump_mat", dump);
+    remove_dat = configuration->property(role + ".remove_dat", false);
 }

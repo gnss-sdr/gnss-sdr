@@ -32,7 +32,6 @@
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
-#include <array>
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -82,8 +81,6 @@ private:
 
     const int32_t d_nn = 2;  // Coding rate 1/n
     const int32_t d_KK = 7;  // Constraint Length
-
-    int32_t save_matfile() const;
 
     void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits);
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
@@ -144,6 +141,7 @@ private:
     bool d_flag_preamble;
     bool d_dump;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

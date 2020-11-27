@@ -73,8 +73,6 @@ private:
 
     gps_l2c_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
-    int32_t save_matfile() const;
-
     Gnss_Satellite d_satellite;
 
     cnav_msg_decoder_t d_cnav_decoder{};
@@ -101,6 +99,7 @@ private:
     bool d_flag_PLL_180_deg_phase_locked;
     bool d_flag_valid_word;
     bool d_dump_mat;
+    bool d_remove_dat;
 };
 
 

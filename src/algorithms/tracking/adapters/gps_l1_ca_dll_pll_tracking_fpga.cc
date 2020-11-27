@@ -156,7 +156,7 @@ void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
 
     // UIO device file
     std::string device_io_name;
-    // find the uio device file corresponding to the GNSS reset module
+    // find the uio device file corresponding to the tracking multicorrelator
     if (find_uio_dev_file_name(device_io_name, device_name, channel - num_prev_assigned_ch) < 0)
         {
             std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;

@@ -94,7 +94,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     // Switch UIO device file
     std::string device_io_name;
-    // find the uio device file corresponding to the GNSS reset module
+    // find the uio device file corresponding to the switch.
     if (find_uio_dev_file_name(device_io_name, switch_device_name, 0) < 0)
         {
             std::cout << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << std::endl;
@@ -303,11 +303,14 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
         {
             std::string device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1;
 
+            // find the uio device file corresponding to the dynamic bit selector 0 module.
             if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_0, dyn_bit_sel_device_name, 0) < 0)
                 {
                     std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
                     throw std::exception();
                 }
+
+            // find the uio device file corresponding to the dynamic bit selector 1 module.
             if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_1, dyn_bit_sel_device_name, 1) < 0)
                 {
                     std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;

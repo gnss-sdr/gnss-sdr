@@ -135,7 +135,7 @@ void gnss_sdr_fpga_sample_counter::open_device()
 {
     // UIO device file
     std::string device_io_name;
-    // find the uio device file corresponding to the GNSS reset module
+    // find the uio device file corresponding to the sample counter module
     if (find_uio_dev_file_name(device_io_name, device_name, 0) < 0)
         {
             std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;

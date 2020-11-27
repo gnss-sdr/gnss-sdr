@@ -94,11 +94,10 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     // Switch UIO device file
     std::string device_io_name;
-    std::string device_name = configuration->property(role + ".devicename", default_device_name);
     // find the uio device file corresponding to the GNSS reset module
-    if (find_uio_dev_file_name(device_io_name, device_name, 0) < 0)
+    if (find_uio_dev_file_name(device_io_name, switch_device_name, 0) < 0)
         {
-            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << std::endl;
             throw std::exception();
         }
 
@@ -302,11 +301,19 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     enable_dynamic_bit_selection_ = configuration->property(role + ".enable_dynamic_bit_selection", true);
     if (enable_dynamic_bit_selection_)
         {
-            const std::string dynamic_bit_selection_default_device_name1("/dev/uio48");
-            std::string device_name1 = configuration->property(role + ".dyn_bits_sel_devicename", dynamic_bit_selection_default_device_name1);
-            const std::string dynamic_bit_selection_default_device_name2("/dev/uio49");
-            std::string device_name2 = configuration->property(role + ".dyn_bits_sel_devicename", dynamic_bit_selection_default_device_name2);
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_name1, device_name2);
+            std::string device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1;
+
+            if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_0, dyn_bit_sel_device_name, 0) < 0)
+                {
+                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
+                    throw std::exception();
+                }
+            if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_1, dyn_bit_sel_device_name, 1) < 0)
+                {
+                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
+                    throw std::exception();
+                }
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 

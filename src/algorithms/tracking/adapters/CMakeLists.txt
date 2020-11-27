@@ -110,12 +110,11 @@ target_include_directories(tracking_adapters
 )
 
 if(ENABLE_FPGA)
-    target_include_directories(tracking_adapters
-        PUBLIC
-            ${CMAKE_SOURCE_DIR}/src/core/libs
+    target_link_libraries(tracking_adapters
+        PRIVATE
+            core_libs
     )
 endif()
-
 
 if(ENABLE_CUDA)
     if(CMAKE_VERSION VERSION_GREATER 3.11)

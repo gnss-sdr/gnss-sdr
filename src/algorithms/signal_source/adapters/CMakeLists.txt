@@ -147,10 +147,10 @@ target_include_directories(signal_source_adapters
 )
 
 if(ENABLE_FPGA)
-	target_include_directories(signal_source_adapters
-	    PUBLIC
-		${CMAKE_SOURCE_DIR}/src/core/libs
-	)
+    target_include_directories(signal_source_adapters
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/core/libs
+    )
 endif()
 
 target_link_libraries(signal_source_adapters

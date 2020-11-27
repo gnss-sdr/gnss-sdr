@@ -36,13 +36,13 @@ if(ENABLE_FPGA)
         ${CORE_LIBS_SOURCES}
         gnss_sdr_fpga_sample_counter.cc
         gnss_sdr_time_counter.cc
-	uio_fpga.cc
+        uio_fpga.cc
     )
     set(CORE_LIBS_HEADERS
         ${CORE_LIBS_HEADERS}
         gnss_sdr_fpga_sample_counter.h
         gnss_sdr_time_counter.h
-	uio_fpga.h
+        uio_fpga.h
     )
 endif()
 

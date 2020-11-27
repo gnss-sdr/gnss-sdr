@@ -110,10 +110,10 @@ target_include_directories(tracking_adapters
 )
 
 if(ENABLE_FPGA)
-	target_include_directories(tracking_adapters
-	    PUBLIC
-		${CMAKE_SOURCE_DIR}/src/core/libs
-	)
+    target_include_directories(tracking_adapters
+        PUBLIC
+            ${CMAKE_SOURCE_DIR}/src/core/libs
+    )
 endif()
 
 

@@ -116,6 +116,18 @@ if(USE_BOOST_BIND_PLACEHOLDERS)
     )
 endif()
 
+if(ENABLE_FPGA)
+    if(FILESYSTEM_FOUND)
+        target_compile_definitions(core_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
+        if(find_experimental)
+            target_compile_definitions(core_libs PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+        endif()
+        target_link_libraries(core_libs PRIVATE std::filesystem)
+    else()
+        target_link_libraries(core_libs PRIVATE Boost::filesystem Boost::system)
+    endif()
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(core_libs

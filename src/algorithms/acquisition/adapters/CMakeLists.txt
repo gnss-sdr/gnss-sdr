@@ -125,13 +125,10 @@ if(ENABLE_FPGA)
     target_link_libraries(acquisition_adapters
         PRIVATE
             algorithms_libs
+            core_libs
             Gnuradio::fft
             Volk::volk
             Volkgnsssdr::volkgnsssdr
-    )
-    target_link_libraries(acquisition_adapters
-        PRIVATE
-            core_libs
     )
 endif()
 

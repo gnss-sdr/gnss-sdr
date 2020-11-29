@@ -24,6 +24,11 @@
 #include <cstdint>
 #include <string>
 
+/** \addtogroup Core
+ * \{ */
+/** \addtogroup Core_Receiver_Library
+ * \{ */
+
 const std::string uio_dir("/sys/class/uio/");
 const std::string uio_filename("uio");
 const std::string uio_subdir_name("/name");
@@ -37,4 +42,6 @@ int32_t find_uio_dev_file_name(std::string &device_file_name,
     uint32_t device_num);
 
 
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_UIO_FPGA_H

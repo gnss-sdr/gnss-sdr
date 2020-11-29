@@ -1,7 +1,7 @@
 /*!
  * \file uio_fpga.h
- * \brief This library contains functions to determine the uio device driver file that
- * corresponds to a hardware accelerator device name in the FPGA
+ * \brief This library contains functions to determine the uio device driver
+ * file that corresponds to a hardware accelerator device name in the FPGA.
  * \author Marc Majoral, 2020. mmajoral(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -18,19 +18,23 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SIM_GNSS_UIO_FPGA_H
-#define GNSS_SDR_SIM_GNSS_UIO_FPGA_H
+#ifndef GNSS_SDR_UIO_FPGA_H
+#define GNSS_SDR_UIO_FPGA_H
 
-#include <string>  // string, memset()
+#include <cstdint>
+#include <string>
 
-const std::string uio_dir = "/sys/class/uio/";
-const std::string uio_filename = "uio";
-const std::string uio_subdir_name = "/name";
+const std::string uio_dir("/sys/class/uio/");
+const std::string uio_filename("uio");
+const std::string uio_subdir_name("/name");
 
 /*!
- * \brief This function finds the uio device driver device file name out of the device name and the device number
+ * \brief This function finds the uio device driver device file name out of the
+ * device name and the device number.
  */
-int32_t find_uio_dev_file_name(std::string &device_file_name, const std::string &device_name, uint32_t device_num);
+int32_t find_uio_dev_file_name(std::string &device_file_name,
+    const std::string &device_name,
+    uint32_t device_num);
 
 
-#endif  // GNSS_SDR_GNSS_UIO_FPGA_H
+#endif  // GNSS_SDR_UIO_FPGA_H

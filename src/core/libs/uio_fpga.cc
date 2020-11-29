@@ -1,7 +1,7 @@
 /*!
  * \file uio_fpga.cc
- * \brief This library contains functions to determine the uio device driver file that
- * corresponds to a hardware accelerator device name in the FPGA
+ * \brief This library contains functions to determine the uio device driver
+ * file that corresponds to a hardware accelerator device name in the FPGA.
  * \author Marc Majoral, 2020. mmajoral(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -20,7 +20,7 @@
 
 #include "uio_fpga.h"
 #include <algorithm>  // sort
-#include <cstdint>    // int8_t
+#include <cstdlib>    // atoi, size_t
 #include <fstream>    // ifstream
 #include <iostream>   // cout
 #include <locale>     // isdigit
@@ -67,17 +67,17 @@ void get_uio_name(uint32_t uio_num, std::string &uio_name)
     infile.open(filename.str());
     if (infile.is_open())
         {
-            getline(infile, uio_name);
+            std::getline(infile, uio_name);
             if (infile.bad())
                 {
-                    std::cout << "Could not read the FPGA uio device information file" << std::endl;
+                    std::cout << "Could not read the FPGA uio device information file\n";
                     throw std::exception();
                 }
             infile.close();
         }
     else
         {
-            std::cout << "Could not open the FPGA uio device information file" << std::endl;
+            std::cout << "Could not open the FPGA uio device information file\n";
             throw std::exception();
         }
 }

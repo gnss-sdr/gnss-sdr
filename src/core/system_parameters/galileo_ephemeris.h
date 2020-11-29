@@ -162,6 +162,14 @@ public:
 
         archive& BOOST_SERIALIZATION_NVP(flag_all_ephemeris);
     }
+private:
+    /*
+     * Accounts for the beginning or end of week crossover
+     *
+     * \param[in]  -  time in seconds
+     * \param[out] -  corrected time, in seconds
+     */
+    double check_t(double time);
 };
 
 

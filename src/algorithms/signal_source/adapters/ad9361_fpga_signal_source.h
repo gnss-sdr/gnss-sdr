@@ -50,7 +50,7 @@ public:
 
     ~Ad9361FpgaSignalSource();
 
-    void start();
+    void start() override;
 
     inline std::string role() override
     {

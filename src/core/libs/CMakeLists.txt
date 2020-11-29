@@ -36,12 +36,21 @@ if(ENABLE_FPGA)
         ${CORE_LIBS_SOURCES}
         gnss_sdr_fpga_sample_counter.cc
         gnss_sdr_time_counter.cc
-        uio_fpga.cc
     )
     set(CORE_LIBS_HEADERS
         ${CORE_LIBS_HEADERS}
         gnss_sdr_fpga_sample_counter.h
         gnss_sdr_time_counter.h
+    )
+endif()
+
+if(ENABLE_FPGA OR ENABLE_AD9361)
+    set(CORE_LIBS_SOURCES
+        ${CORE_LIBS_SOURCES}
+        uio_fpga.cc
+    )
+    set(CORE_LIBS_HEADERS
+        ${CORE_LIBS_HEADERS}
         uio_fpga.h
     )
 endif()
@@ -116,7 +125,7 @@ if(USE_BOOST_BIND_PLACEHOLDERS)
     )
 endif()
 
-if(ENABLE_FPGA)
+if(ENABLE_FPGA OR ENABLE_AD9361)
     if(FILESYSTEM_FOUND)
         target_compile_definitions(core_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
         if(find_experimental)

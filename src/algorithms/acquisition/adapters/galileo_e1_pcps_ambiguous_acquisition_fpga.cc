@@ -24,6 +24,7 @@
 #include "galileo_e1_signal_replica.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_make_unique.h"
+#include "uio_fpga.h"
 #include <glog/logging.h>
 #include <gnuradio/fft/fft.h>     // for fft_complex
 #include <gnuradio/gr_complex.h>  // for gr_complex
@@ -77,11 +78,18 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0F));
     uint32_t nsamples_total = pow(2, nbits);
     uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 0);
-
     acq_parameters.select_queue_Fpga = select_queue_Fpga;
-    std::string default_device_name = "/dev/uio0";
-    std::string device_name = configuration->property(role + ".devicename", default_device_name);
-    acq_parameters.device_name = device_name;
+
+    // UIO device file
+    std::string device_io_name;
+    // find the uio device file corresponding to the acquisition
+    if (find_uio_dev_file_name(device_io_name, acquisition_device_name, 0) < 0)
+        {
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << acquisition_device_name << std::endl;
+            throw std::exception();
+        }
+    acq_parameters.device_name = device_io_name;
+
     acq_parameters.samples_per_code = nsamples_total;
     acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / GALILEO_E1_CODE_CHIP_RATE_CPS) * static_cast<float>(fs_in)));
 

@@ -146,6 +146,13 @@ target_include_directories(signal_source_adapters
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
+if(ENABLE_FPGA OR ENABLE_AD9361)
+    target_link_libraries(signal_source_adapters
+        PRIVATE
+            core_libs
+    )
+endif()
+
 target_link_libraries(signal_source_adapters
     PUBLIC
         Boost::headers

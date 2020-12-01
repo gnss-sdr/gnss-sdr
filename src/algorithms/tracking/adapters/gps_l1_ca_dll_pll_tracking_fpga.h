@@ -124,12 +124,16 @@ public:
     void stop_tracking() override;
 
 private:
+    const std::string default_device_name = "multicorrelator_resampler_S00_AXI";  // UIO device name
+
     static const uint32_t NUM_PRNs = 32;  // total number of PRNs
     static const int32_t GPS_CA_BIT_DURATION_MS = 20;
     // the following flag is FPGA-specific and they are using arrange the values of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
     static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;  // flag that enables WE (Write Enable) of the local code FPGA
 
+    std::string device_name;
+    uint32_t num_prev_assigned_ch;
 
     dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
     uint32_t channel_;

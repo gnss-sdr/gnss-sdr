@@ -148,43 +148,66 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
                 }
         }
 
+    const double sek = sin(E);
+    const double cek = cos(E);
+    const double OneMinusecosE = 1.0 - d_e_eccentricity * cek;
+    const double ekdot = n / OneMinusecosE;
+
     // Compute the true anomaly
-    const double tmp_Y = sqrt(1.0 - d_e_eccentricity * d_e_eccentricity) * sin(E);
-    const double tmp_X = cos(E) - d_e_eccentricity;
+    const double sq1e2 = sqrt(1.0 - d_e_eccentricity * d_e_eccentricity);
+    const double tmp_Y = sq1e2 * sek;
+    const double tmp_X = cek - d_e_eccentricity;
     const double nu = atan2(tmp_Y, tmp_X);
 
     // Compute angle phi (argument of Latitude)
     const double phi = nu + d_OMEGA;
+    double pkdot = sq1e2 * ekdot / OneMinusecosE;
 
     // Reduce phi to between 0 and 2*pi rad
-    // phi = fmod((phi), (2*GNSS_PI));
+    // phi = fmod((phi), (2.0 * GNSS_PI));
+    const double s2pk = sin(2.0 * phi);
+    const double c2pk = cos(2.0 * phi);
 
     // Correct argument of latitude
-    const double u = phi + d_Cuc * cos(2 * phi) + d_Cus * sin(2 * phi);
+    const double u = phi + d_Cuc * c2pk + d_Cus * s2pk;
+    const double cuk = cos(u);
+    const double suk = sin(u);
+    const double ukdot = pkdot * (1.0 + 2.0 * (d_Cus * c2pk - d_Cuc * s2pk));
 
     // Correct radius
-    const double r = a * (1 - d_e_eccentricity * cos(E)) + d_Crc * cos(2 * phi) + d_Crs * sin(2 * phi);
+    const double r = a * (1.0 - d_e_eccentricity * cek) + d_Crc * c2pk + d_Crs * s2pk;
+
+    const double rkdot = a * d_e_eccentricity * sek * ekdot + 2.0 * pkdot * (d_Crs * c2pk - d_Crc * s2pk);
 
     // Correct inclination
-    const double i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
+    const double i = d_i_0 + d_IDOT * tk + d_Cic * c2pk + d_Cis * s2pk;
+    const double sik = sin(i);
+    const double cik = cos(i);
+    const double ikdot = d_IDOT + 2.0 * pkdot * (d_Cis * c2pk - d_Cic * s2pk);
 
     // Compute the angle between the ascending node and the Greenwich meridian
     const double d_OMEGA_DOT = OMEGA_DOT_REF * GNSS_PI + d_DELTA_OMEGA_DOT;
     const double Omega = d_OMEGA0 + (d_OMEGA_DOT - GNSS_OMEGA_EARTH_DOT) * tk - GNSS_OMEGA_EARTH_DOT * d_Toe1;
+    const double sok = sin(Omega);
+    const double cok = cos(Omega);
 
-    // Reduce to between 0 and 2*pi rad
-    // Omega = fmod((Omega + 2*GNSS_PI), (2*GNSS_PI));
-
-    // --- Compute satellite coordinates in Earth-fixed coordinates
-    d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
-    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega);
-    d_satpos_Z = sin(u) * r * sin(i);
+    // Compute satellite coordinates in Earth-fixed coordinates
+    const double xprime = r * cuk;
+    const double yprime = r * suk;
+    d_satpos_X = xprime * cok - yprime * cik * sok;
+    d_satpos_Y = xprime * sok + yprime * cik * cok;
+    d_satpos_Z = yprime * sik;
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
     const double Omega_dot = d_OMEGA_DOT - GNSS_OMEGA_EARTH_DOT;
-    d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
-    d_satvel_Z = d_satpos_Y * sin(i);
+
+    const double xpkdot = rkdot * cuk - yprime * ukdot;
+    const double ypkdot = rkdot * suk + xprime * ukdot;
+    const double tmp = ypkdot * cik - d_satpos_Z * ikdot;
+
+    d_satvel_X = -Omega_dot * d_satpos_Y + xpkdot * cok - tmp * sok;
+    d_satvel_Y = Omega_dot * d_satpos_X + xpkdot * sok + tmp * cok;
+    d_satvel_Z = yprime * cik * ikdot + ypkdot * sik;
 
     // Time from ephemeris reference clock
     tk = check_t(transmitTime - d_Toc);
@@ -192,7 +215,7 @@ double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
     double dtr_s = d_A_f0 + d_A_f1 * tk + d_A_f2 * tk * tk;
 
     /* relativity correction */
-    dtr_s -= 2.0 * sqrt(GPS_GM * a) * d_e_eccentricity * sin(E) / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
+    dtr_s -= 2.0 * sqrt(GPS_GM * a) * d_e_eccentricity * sek / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
 
     return dtr_s;
 }

@@ -50,6 +50,8 @@ public:
         gr_vector_void_star &output_items);
 
 private:
+    const std::string device_name = "counter";  // UIO device name
+
     static const uint32_t page_size = 0x10000;             // default page size for the multicorrelator memory map
     static const uint32_t test_reg_sanity_check = 0x55AA;  // value to check the presence of the test register (to detect the hw)
 
@@ -63,8 +65,7 @@ private:
     bool stop();
     void wait_for_interrupt(void);
 
-    volatile uint32_t *map_base;            // driver memory map
-    std::string device_name = "/dev/uio2";  // HW device name
+    volatile uint32_t *map_base;  // driver memory map
 
     double fs;
     uint64_t sample_counter;

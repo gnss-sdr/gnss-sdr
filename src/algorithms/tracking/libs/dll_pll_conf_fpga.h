@@ -68,8 +68,6 @@ public:
     uint32_t bit_synchronization_time_limit_s;
     uint32_t vector_length;
     uint32_t smoother_length;
-    uint32_t dev_file_num;
-    uint32_t num_prev_assigned_ch;
     uint32_t code_length_chips;
     uint32_t code_samples_per_chip;
     uint32_t extend_fpga_integration_periods;

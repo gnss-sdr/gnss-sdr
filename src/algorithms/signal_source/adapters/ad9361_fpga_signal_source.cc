@@ -28,6 +28,7 @@
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "uio_fpga.h"
 #include <glog/logging.h>
 #include <iio.h>
 #include <algorithm>  // for max
@@ -90,9 +91,16 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 
-    // turn switch to A/D position
-    const std::string default_device_name("/dev/uio1");
-    const std::string device_name = configuration->property(role + ".devicename", default_device_name);
+
+    // Switch UIO device file
+    std::string device_io_name;
+    // find the uio device file corresponding to the switch.
+    if (find_uio_dev_file_name(device_io_name, switch_device_name, 0) < 0)
+        {
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << std::endl;
+            throw std::exception();
+        }
+
     switch_position = configuration->property(role + ".switch_position", 0);
     if (switch_position != 0 && switch_position != 2)
         {
@@ -101,7 +109,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             switch_position = 0;
         }
 
-    switch_fpga = std::make_shared<Fpga_Switch>(device_name);
+    switch_fpga = std::make_shared<Fpga_Switch>(device_io_name);
     switch_fpga->set_switch_position(switch_position);
 
     item_size_ = sizeof(gr_complex);
@@ -293,11 +301,22 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     enable_dynamic_bit_selection_ = configuration->property(role + ".enable_dynamic_bit_selection", true);
     if (enable_dynamic_bit_selection_)
         {
-            const std::string dynamic_bit_selection_default_device_name1("/dev/uio48");
-            std::string device_name1 = configuration->property(role + ".dyn_bits_sel_devicename", dynamic_bit_selection_default_device_name1);
-            const std::string dynamic_bit_selection_default_device_name2("/dev/uio49");
-            std::string device_name2 = configuration->property(role + ".dyn_bits_sel_devicename", dynamic_bit_selection_default_device_name2);
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_name1, device_name2);
+            std::string device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1;
+
+            // find the uio device file corresponding to the dynamic bit selector 0 module.
+            if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_0, dyn_bit_sel_device_name, 0) < 0)
+                {
+                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
+                    throw std::exception();
+                }
+
+            // find the uio device file corresponding to the dynamic bit selector 1 module.
+            if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_1, dyn_bit_sel_device_name, 1) < 0)
+                {
+                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
+                    throw std::exception();
+                }
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 

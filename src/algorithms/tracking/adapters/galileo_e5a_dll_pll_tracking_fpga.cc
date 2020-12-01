@@ -25,6 +25,7 @@
 #include "dll_pll_conf_fpga.h"
 #include "galileo_e5_signal_replica.h"
 #include "gnss_sdr_flags.h"
+#include "uio_fpga.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <array>
@@ -60,19 +61,18 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
 
     d_data_codes = nullptr;
 
-    // FPGA configuration parameters
-    // obtain the number of the first uio device corresponding to a HW accelerator in the FPGA
-    // that can be assigned to the tracking of the E5a signal
-    trk_params_fpga.dev_file_num = configuration->property(role + ".dev_file_num", 27);
+    // UIO device file
+    device_name = configuration->property(role + ".devicename", default_device_name);
+
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
     // However E5a can use the same tracking HW accelerators as L5 (but not simultaneously).
     // Therefore for the proper assignment of the FPGA tracking device file numbers to the E5a tracking channels,
     // the number of channels that have already been assigned to L5 must not be substracted to this channel number,
     // so they are not counted here.
-    trk_params_fpga.num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
-                                           configuration->property("Channels_2S.count", 0) +
-                                           configuration->property("Channels_1B.count", 0);
+    num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
+                           configuration->property("Channels_2S.count", 0) +
+                           configuration->property("Channels_1B.count", 0);
 
     // ################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 1;
@@ -207,7 +207,16 @@ void GalileoE5aDllPllTrackingFpga::stop_tracking()
 void GalileoE5aDllPllTrackingFpga::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    tracking_fpga_sc->set_channel(channel);
+
+    // UIO device file
+    std::string device_io_name;
+    // find the uio device file corresponding to the tracking multicorrelator
+    if (find_uio_dev_file_name(device_io_name, device_name, channel - num_prev_assigned_ch) < 0)
+        {
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+            throw std::exception();
+        }
+    tracking_fpga_sc->set_channel(channel, device_io_name);
 }
 
 

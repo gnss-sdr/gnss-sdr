@@ -78,7 +78,7 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime)  // Sa
 
     // Time from ephemeris reference epoch
     // t = WN_5*86400*7 + TOW_5; //WN_5*86400*7 are the second from the origin of the Galileo time
-    const double tk = transmitTime - t0e_1;
+    const double tk = check_t(transmitTime - static_cast<double>(t0e_1));
 
     // Corrected mean motion
     const double n = n0 + delta_n_3;
@@ -87,7 +87,7 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime)  // Sa
     double M = M0_1 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * GNSS_PI), (2 * GNSS_PI));
+    M = fmod((M + 2.0 * GNSS_PI), (2.0 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
     double E = M;
@@ -99,7 +99,7 @@ double Galileo_Ephemeris::sv_clock_relativistic_term(double transmitTime)  // Sa
         {
             E_old = E;
             E = M + e_1 * sin(E);
-            dE = fmod(E - E_old, 2 * GNSS_PI);
+            dE = fmod(E - E_old, 2.0 * GNSS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     // Necessary precision is reached, exit from the loop
@@ -127,7 +127,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     const double n0 = sqrt(GALILEO_GM / (a * a * a));
 
     // Time from ephemeris reference epoch
-    const double tk = transmitTime - t0e_1;
+    const double tk = check_t(transmitTime - static_cast<double>(t0e_1));
 
     // Corrected mean motion
     const double n = n0 + delta_n_3;
@@ -136,7 +136,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
     double M = M0_1 + n * tk;
 
     // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * GNSS_PI), (2 * GNSS_PI));
+    M = fmod((M + 2.0 * GNSS_PI), (2.0 * GNSS_PI));
 
     // Initial guess of eccentric anomaly
     double E = M;
@@ -148,7 +148,7 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
         {
             E_old = E;
             E = M + e_1 * sin(E);
-            dE = fmod(E - E_old, 2 * GNSS_PI);
+            dE = fmod(E - E_old, 2.0 * GNSS_PI);
             if (fabs(dE) < 1e-12)
                 {
                     // Necessary precision is reached, exit from the loop
@@ -156,40 +156,80 @@ void Galileo_Ephemeris::satellitePosition(double transmitTime)
                 }
         }
 
+    const double sek = sin(E);
+    const double cek = cos(E);
+    const double OneMinusecosE = 1.0 - e_1 * cek;
+    const double sq1e2 = sqrt(1.0 - e_1 * e_1);
+    const double ekdot = n / OneMinusecosE;
+
     // Compute the true anomaly
-    const double tmp_Y = sqrt(1.0 - e_1 * e_1) * sin(E);
-    const double tmp_X = cos(E) - e_1;
+    const double tmp_Y = sq1e2 * sek;
+    const double tmp_X = cek - e_1;
     const double nu = atan2(tmp_Y, tmp_X);
 
     // Compute angle phi (argument of Latitude)
     double phi = nu + omega_2;
 
     // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2 * GNSS_PI));
+    phi = fmod((phi), (2.0 * GNSS_PI));
+    const double s2pk = sin(2.0 * phi);
+    const double c2pk = cos(2.0 * phi);
+    const double pkdot = sq1e2 * ekdot / OneMinusecosE;
 
     // Correct argument of latitude
-    const double u = phi + C_uc_3 * cos(2 * phi) + C_us_3 * sin(2 * phi);
+    const double u = phi + C_uc_3 * c2pk + C_us_3 * s2pk;
+    const double suk = sin(u);
+    const double cuk = cos(u);
+    const double ukdot = pkdot * (1.0 + 2.0 * (C_us_3 * c2pk - C_uc_3 * s2pk));
 
     // Correct radius
-    const double r = a * (1 - e_1 * cos(E)) + C_rc_3 * cos(2 * phi) + C_rs_3 * sin(2 * phi);
+    const double r = a * OneMinusecosE + C_rc_3 * c2pk + C_rs_3 * s2pk;
+    const double rkdot = a * e_1 * sek * ekdot + 2.0 * pkdot * (C_rs_3 * c2pk - C_rc_3 * s2pk);
 
     // Correct inclination
-    const double i = i_0_2 + iDot_2 * tk + C_ic_4 * cos(2 * phi) + C_is_4 * sin(2 * phi);
+    const double i = i_0_2 + iDot_2 * tk + C_ic_4 * c2pk + C_is_4 * s2pk;
+    const double sik = sin(i);
+    const double cik = cos(i);
+    const double ikdot = iDot_2 + 2.0 * pkdot * (C_is_4 * c2pk - C_ic_4 * s2pk);
 
     // Compute the angle between the ascending node and the Greenwich meridian
-    double Omega = OMEGA_0_2 + (OMEGA_dot_3 - GNSS_OMEGA_EARTH_DOT) * tk - GNSS_OMEGA_EARTH_DOT * t0e_1;
+    const double Omega_dot = OMEGA_dot_3 - GNSS_OMEGA_EARTH_DOT;
+    double Omega = OMEGA_0_2 + Omega_dot * tk - GNSS_OMEGA_EARTH_DOT * static_cast<double>(t0e_1);
 
     // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2 * GNSS_PI), (2 * GNSS_PI));
+    Omega = fmod((Omega + 2.0 * GNSS_PI), (2.0 * GNSS_PI));
+    const double sok = sin(Omega);
+    const double cok = cos(Omega);
 
     // --- Compute satellite coordinates in Earth-fixed coordinates
-    d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
-    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega);  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
-    d_satpos_Z = sin(u) * r * sin(i);
+    const double xprime = r * cuk;
+    const double yprime = r * suk;
+    d_satpos_X = xprime * cok - yprime * cik * sok;
+    d_satpos_Y = xprime * sok + yprime * cik * cok;  // ********NOTE: in GALILEO ICD this expression is not correct because it has minus (- sin(u) * r * cos(i) * cos(Omega)) instead of plus
+    d_satpos_Z = yprime * sik;
 
     // Satellite's velocity. Can be useful for Vector Tracking loops
-    const double Omega_dot = OMEGA_dot_3 - GNSS_OMEGA_EARTH_DOT;
-    d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
-    d_satvel_Z = d_satpos_Y * sin(i);
+    const double xpkdot = rkdot * cuk - yprime * ukdot;
+    const double ypkdot = rkdot * suk + xprime * ukdot;
+    const double tmp = ypkdot * cik - d_satpos_Z * ikdot;
+
+    d_satvel_X = -Omega_dot * d_satpos_Y + xpkdot * cok - tmp * sok;
+    d_satvel_Y = Omega_dot * d_satpos_X + xpkdot * sok + tmp * cok;
+    d_satvel_Z = yprime * cik * ikdot + ypkdot * sik;
+}
+
+
+double Galileo_Ephemeris::check_t(double time)
+{
+    const double half_week = 302400.0;  // seconds
+    double corrTime = time;
+    if (time > half_week)
+        {
+            corrTime = time - 2.0 * half_week;
+        }
+    else if (time < -half_week)
+        {
+            corrTime = time + 2.0 * half_week;
+        }
+    return corrTime;
 }

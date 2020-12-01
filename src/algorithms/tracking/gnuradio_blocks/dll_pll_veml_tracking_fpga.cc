@@ -466,12 +466,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                 }
         }
     // create multicorrelator class
-    const std::string device_name = d_trk_parameters.device_name;
-    const uint32_t dev_file_num = d_trk_parameters.dev_file_num;
-    const uint32_t num_prev_assigned_ch = d_trk_parameters.num_prev_assigned_ch;
     int32_t *ca_codes = d_trk_parameters.ca_codes;
     int32_t *data_codes = d_trk_parameters.data_codes;
-    d_multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, device_name, dev_file_num, num_prev_assigned_ch, ca_codes, data_codes, d_code_length_chips, d_trk_parameters.track_pilot, d_code_samples_per_chip);
+    d_multicorrelator_fpga = std::make_shared<Fpga_Multicorrelator_8sc>(d_n_correlator_taps, ca_codes, data_codes, d_code_length_chips, d_trk_parameters.track_pilot, d_code_samples_per_chip);
     d_multicorrelator_fpga->set_output_vectors(d_correlator_outs.data(), d_Prompt_Data.data());
     d_sample_counter_next = 0ULL;
 
@@ -1313,12 +1310,12 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile() const
 }
 
 
-void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel)
+void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel, std::string device_io_name)
 {
     gr::thread::scoped_lock l(d_setlock);
 
     d_channel = channel;
-    d_multicorrelator_fpga->set_channel(d_channel);
+    d_multicorrelator_fpga->open_channel(device_io_name, channel);
     LOG(INFO) << "Tracking Channel set to " << d_channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)

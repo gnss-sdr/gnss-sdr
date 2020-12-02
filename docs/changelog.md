@@ -59,7 +59,8 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   everything is managed by the CMake scripts.
 - The `volk_gnsssdr` library can be built on Microsoft Windows and can execute
   SIMD instructions on that OS.
-- Fix building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
+- Fixed building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
+- Fixed linking against the ORC library if it is present in the system.
 
 ### Improvements in Usability:
 

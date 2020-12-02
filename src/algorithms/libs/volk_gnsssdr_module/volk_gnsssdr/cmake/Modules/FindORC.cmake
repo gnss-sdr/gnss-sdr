@@ -56,6 +56,8 @@ find_path(ORC_LIBRARY_DIR
     HINTS ${PC_ORC_LIBDIR}
     PATHS ${ORC_ROOT_USER_PROVIDED}/lib
           ${ORC_ROOT_USER_PROVIDED}/lib64
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
           /usr/lib
           /usr/lib64
           /usr/lib/x86_64-linux-gnu
@@ -80,6 +82,54 @@ find_library(ORC_LIB orc-0.4
     HINTS ${PC_ORC_LIBRARY_DIRS}
     PATHS ${ORC_ROOT_USER_PROVIDED}/lib
           ${ORC_ROOT_USER_PROVIDED}/lib64
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
+          /usr/lib
+          /usr/lib64
+          /usr/lib/x86_64-linux-gnu
+          /usr/lib/i386-linux-gnu
+          /usr/lib/arm-linux-gnueabihf
+          /usr/lib/arm-linux-gnueabi
+          /usr/lib/aarch64-linux-gnu
+          /usr/lib/mipsel-linux-gnu
+          /usr/lib/mips-linux-gnu
+          /usr/lib/mips64el-linux-gnuabi64
+          /usr/lib/powerpc-linux-gnu
+          /usr/lib/powerpc64-linux-gnu
+          /usr/lib/powerpc64le-linux-gnu
+          /usr/lib/hppa-linux-gnu
+          /usr/lib/s390x-linux-gnu
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
+)
+
+find_library(ORC_LIBRARY_STATIC ${CMAKE_STATIC_LIBRARY_PREFIX}orc-0.4${CMAKE_STATIC_LIBRARY_SUFFIX}
+    HINTS ${PC_ORC_LIBRARY_DIRS}
+    PATHS ${ORC_ROOT}/lib
+          ${ORC_ROOT}/lib64
+          ${CMAKE_INSTALL_PREFIX}/lib
+          ${CMAKE_INSTALL_PREFIX}/lib64
+          ${ORC_ROOT_USER_PROVIDED}/lib
+          ${ORC_ROOT_USER_PROVIDED}/lib64
+          /usr/lib
+          /usr/lib64
+          /usr/lib/x86_64-linux-gnu
+          /usr/lib/i386-linux-gnu
+          /usr/lib/arm-linux-gnueabihf
+          /usr/lib/arm-linux-gnueabi
+          /usr/lib/aarch64-linux-gnu
+          /usr/lib/mipsel-linux-gnu
+          /usr/lib/mips-linux-gnu
+          /usr/lib/mips64el-linux-gnuabi64
+          /usr/lib/powerpc-linux-gnu
+          /usr/lib/powerpc64-linux-gnu
+          /usr/lib/powerpc64le-linux-gnu
+          /usr/lib/hppa-linux-gnu
+          /usr/lib/s390x-linux-gnu
+          /usr/local/lib
+          /usr/local/lib64
+          /opt/local/lib
 )
 
 if(PC_ORC_VERSION)
@@ -91,8 +141,12 @@ list(APPEND ORC_LIBRARY ${ORC_LIB})
 set(ORC_INCLUDE_DIRS ${ORC_INCLUDE_DIR})
 set(ORC_LIBRARIES ${ORC_LIBRARY})
 set(ORC_LIBRARY_DIRS ${ORC_LIBRARY_DIR})
+set(ORC_LIBRARIES_STATIC ${ORC_LIBRARY_STATIC})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(ORC "orc files" ORC_LIBRARY ORC_INCLUDE_DIR ORCC_EXECUTABLE)
-
-mark_as_advanced(ORC_INCLUDE_DIR ORC_LIBRARY ORCC_EXECUTABLE)
+if(ENABLE_STATIC_LIBS)
+    find_package_handle_standard_args(ORC "orc files" ORC_LIBRARY ORC_INCLUDE_DIR ORCC_EXECUTABLE ORC_LIBRARY_STATIC)
+else()
+    find_package_handle_standard_args(ORC "orc files" ORC_LIBRARY ORC_INCLUDE_DIR ORCC_EXECUTABLE)
+endif()
+mark_as_advanced(ORC_INCLUDE_DIR ORC_LIBRARY ORCC_EXECUTABLE ORC_LIBRARY_STATIC)

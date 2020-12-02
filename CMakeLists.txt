@@ -327,7 +327,7 @@ set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.1.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
-set(GNSSSDR_GPSTK_LOCAL_VERSION "3.0.0")
+set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.18")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.14.0")
@@ -601,10 +601,16 @@ endif()
 # Detect availability of std::filesystem and set C++ standard accordingly
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)
+if(NOT ENABLE_OWN_GPSTK)
+    find_package(GPSTK)
+    set_package_properties(GPSTK PROPERTIES
+        PURPOSE "Used in some Extra Tests."
+    )
+endif()
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
-        if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))  # Fix for GPTSk
+        if(NOT GPSTK_FOUND OR NOT (GPSTK_FOUND AND GPSTK_OLDER_THAN_8))  # Fix for GPSTk < 8.0.0
             find_package(FILESYSTEM COMPONENTS Final Experimental)
             set_package_properties(FILESYSTEM PROPERTIES
                 URL "https://en.cppreference.com/w/cpp/filesystem"
@@ -613,7 +619,7 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
                 TYPE OPTIONAL
             )
         endif()
-        if(${FILESYSTEM_FOUND})
+        if(FILESYSTEM_FOUND)
             if(CMAKE_VERSION VERSION_LESS 3.13)
                 set(CMAKE_CXX_STANDARD 17)
             else()

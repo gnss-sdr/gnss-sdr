@@ -80,6 +80,10 @@ else()
     )
 endif()
 
+if(GPSTK_FOUND AND NOT EXISTS ${GPSTK_INCLUDE_DIR}/gpstk/SatelliteSystem.hpp)
+    set(GPSTK_OLDER_THAN_8 TRUE)
+endif()
+
 set_package_properties(GPSTK PROPERTIES
     URL "https://github.com/SGL-UT/GPSTk"
 )

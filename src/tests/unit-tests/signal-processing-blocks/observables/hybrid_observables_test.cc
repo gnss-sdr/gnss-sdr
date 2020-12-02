@@ -1577,13 +1577,25 @@ bool HybridObservablesTest::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gnss_S
                             switch (gnss.System)
                                 {
                                 case 'G':
+#if OLD_GPSTK
                                     prn = gpstk::SatID(myprn, gpstk::SatID::systemGPS);
+#else
+                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::GPS);
+#endif
                                     break;
                                 case 'E':
+#if OLD_GPSTK
                                     prn = gpstk::SatID(myprn, gpstk::SatID::systemGalileo);
+#else
+                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::Galileo);
+#endif
                                     break;
                                 default:
+#if OLD_GPSTK
                                     prn = gpstk::SatID(myprn, gpstk::SatID::systemGPS);
+#else
+                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::GPS);
+#endif
                                 }
 
                             gpstk::CommonTime time = r_ref_data.time;
@@ -1741,7 +1753,7 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 {
                     // based on true observables metadata (for custom sdr generator)
                     // open true observables log file written by the simulator or based on provided RINEX obs
-                    std::vector<std::shared_ptr<Tracking_True_Obs_Reader>> true_reader_vec;
+                    std::vector<std::shared_ptr<Tracking_True_Obs_Reader> > true_reader_vec;
                     // read true data from the generator logs
                     true_reader_vec.push_back(std::make_shared<Tracking_True_Obs_Reader>());
                     std::cout << "Loading true observable data for PRN " << n.PRN << '\n';
@@ -1782,8 +1794,8 @@ TEST_F(HybridObservablesTest, ValidationOfResults)
                 }
         }
 
-    std::vector<std::shared_ptr<TrackingInterface>> tracking_ch_vec;
-    std::vector<std::shared_ptr<TelemetryDecoderInterface>> tlm_ch_vec;
+    std::vector<std::shared_ptr<TrackingInterface> > tracking_ch_vec;
+    std::vector<std::shared_ptr<TelemetryDecoderInterface> > tlm_ch_vec;
 
     std::vector<gr::blocks::null_sink::sptr> null_sink_vec;
     for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)

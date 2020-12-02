@@ -1668,13 +1668,25 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
                             switch (gnss.System)
                                 {
                                 case 'G':
+#if OLD_GPSTK
                                     prn = gpstk::SatID(myprn, gpstk::SatID::systemGPS);
+#else
+                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::GPS);
+#endif
                                     break;
                                 case 'E':
+#if OLD_GPSTK
                                     prn = gpstk::SatID(myprn, gpstk::SatID::systemGalileo);
+#else
+                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::Galileo);
+#endif
                                     break;
                                 default:
+#if OLD_GPSTK
                                     prn = gpstk::SatID(myprn, gpstk::SatID::systemGPS);
+#else
+                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::GPS);
+#endif
                                 }
 
                             gpstk::CommonTime time = r_ref_data.time;

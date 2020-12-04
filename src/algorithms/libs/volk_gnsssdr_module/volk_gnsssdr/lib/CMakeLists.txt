@@ -576,6 +576,9 @@ if(USE_CPU_FEATURES)
     )
 endif()
 # Configure target properties
+if(ORC_FOUND)
+    target_link_libraries(volk_gnsssdr PRIVATE ${ORC_LIBRARIES})
+endif()
 if(NOT MSVC)
     target_link_libraries(volk_gnsssdr PUBLIC m)
 endif()
@@ -597,12 +600,16 @@ if(ENABLE_STATIC_LIBS)
     else()
         add_library(volk_gnsssdr_static STATIC $<TARGET_OBJECTS:volk_gnsssdr_obj>)
     endif()
+    target_link_libraries(volk_gnsssdr_static PUBLIC ${volk_gnsssdr_libraries})
     if(USE_CPU_FEATURES)
         target_link_libraries(volk_gnsssdr_static
             PRIVATE cpu_features
         )
     endif()
-    target_link_libraries(volk_gnsssdr_static PUBLIC ${volk_gnsssdr_libraries} pthread)
+    if(ORC_FOUND)
+        target_link_libraries(volk_gnsssdr_static PUBLIC ${ORC_LIBRARIES_STATIC})
+    endif()
+    target_link_libraries(volk_gnsssdr_static PRIVATE pthread)
     if(NOT MSVC)
         target_link_libraries(volk_gnsssdr_static PUBLIC m)
     endif()
@@ -630,12 +637,19 @@ if(ENABLE_TESTING)
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/.unittest)
 
     include(VolkAddTest)
-    volk_gen_test(volk_gnsssdr_test_all
-        SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
-        TARGET_DEPS volk_gnsssdr
-    )
-
+    if(ENABLE_STATIC_LIBS)
+        volk_gen_test(volk_gnsssdr_test_all
+            SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
+            TARGET_DEPS volk_gnsssdr_static
+        )
+    else()
+        volk_gen_test(volk_gnsssdr_test_all
+            SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/testqa.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/qa_utils.cc
+            TARGET_DEPS volk_gnsssdr
+        )
+    endif()
     foreach(kernel ${h_files})
         get_filename_component(kernel ${kernel} NAME)
         string(REPLACE ".h" "" kernel ${kernel})

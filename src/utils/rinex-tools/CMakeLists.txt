@@ -72,6 +72,10 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
             ${GPSTK_INCLUDE_DIR}
     )
 
+    if(GPSTK_OLDER_THAN_8)
+        target_compile_definitions(obsdiff PUBLIC -DOLD_GPSTK=1)
+    endif()
+
     if(ENABLE_STRIP)
         set_target_properties(obsdiff PROPERTIES LINK_FLAGS "-s")
     endif()

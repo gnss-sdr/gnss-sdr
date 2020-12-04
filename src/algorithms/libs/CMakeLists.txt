@@ -114,7 +114,7 @@ target_link_libraries(algorithms_libs
         Gnuradio::blocks
     PRIVATE
         core_system_parameters
-        Volk::volk ${ORC_LIBRARIES}
+        Volk::volk
         Volkgnsssdr::volkgnsssdr
         Gflags::gflags
         Glog::glog

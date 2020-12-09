@@ -24,6 +24,7 @@ Tlm_Conf::Tlm_Conf()
 {
     dump = false;
     dump_mat = false;
+    remove_dat = false;
 }
 
 

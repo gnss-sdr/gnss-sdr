@@ -1802,6 +1802,46 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
                 }
             p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
         }
+    /* BDGSA: beidou */
+    for (sat = 1, nsat = 0; sat <= MAXSAT && nsat < 12; sat++)
+        {
+            if (!ssat[sat - 1].vs || ssat[sat - 1].azel[1] <= 0.0)
+                {
+                    continue;
+                }
+            if (satsys(sat, prn + nsat) != SYS_BDS)
+                {
+                    continue;
+                }
+            for (i = 0; i < 2; i++)
+                {
+                    azel[i + nsat * 2] = ssat[sat - 1].azel[i];
+                }
+            nsat++;
+        }
+    if (nsat > 0)
+        {
+            s = p;
+            p += std::snprintf(p, MAXSOLBUF, "$BDGSA,A,%d", sol->stat <= 0 ? 1 : 3);
+            for (i = 0; i < 12; i++)
+                {
+                    if (i < nsat)
+                        {
+                            p += std::snprintf(p, MAX_LENGTH_INT + 2, ",%02d", prn[i]);
+                        }
+                    else
+                        {
+                            p += std::snprintf(p, COMMA_LENGTH, ",");
+                        }
+                }
+            dops(nsat, azel, 0.0, dop);
+            p += std::snprintf(p, MAXSOLBUF - (p - s), ",%3.1f,%3.1f,%3.1f,3", dop[1], dop[2], dop[3]);
+            for (q = s + 1, sum = 0; *q; q++)
+                {
+                    sum ^= *q; /* check-sum */
+                }
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
+        }
     return p - reinterpret_cast<char *>(buff);
 }
 
@@ -1974,6 +2014,51 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                         }
                 }
             p += std::snprintf(p, MAXSOLBUF - (s - p), ",7"); /* L1BC */
+            for (q = s + 1, sum = 0; *q; q++)
+                {
+                    sum ^= *q; /* check-sum */
+                }
+            p += std::snprintf(p, MSG_TAIL, "*%02X%c%c", sum, 0x0D, 0x0A);
+        }
+    /* BDGSV: beidou */
+    for (sat = 1, n = 0; sat < MAXSAT && n < 12; sat++)
+        {
+            if (satsys(sat, &prn) != SYS_BDS)
+                {
+                    continue;
+                }
+            if (ssat[sat - 1].vs && ssat[sat - 1].azel[1] > 0.0)
+                {
+                    sats[n++] = sat;
+                }
+        }
+    nmsg = n <= 0 ? 0 : (n - 1) / 4 + 1;
+
+    for (i = k = 0; i < nmsg; i++)
+        {
+            s = p;
+            p += std::snprintf(p, MAXSOLBUF, "$BDGSV,%d,%d,%02d", nmsg, i + 1, n);
+
+            for (j = 0; j < 4; j++, k++)
+                {
+                    if (k < n)
+                        {
+                            satsys(sats[k], &prn); /* 1-63 */
+                            az = ssat[sats[k] - 1].azel[0] * R2D;
+                            if (az < 0.0)
+                                {
+                                    az += 360.0;
+                                }
+                            el = ssat[sats[k] - 1].azel[1] * R2D;
+                            snr = ssat[sats[k] - 1].snr[0] * 0.25;
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",%02d,%02.0f,%03.0f,%02.0f", prn, el, az, snr);
+                        }
+                    else
+                        {
+                            p += std::snprintf(p, MAXSOLBUF - (s - p), ",,,,");
+                        }
+                }
+            p += std::snprintf(p, MAXSOLBUF - (s - p), ",1");
             for (q = s + 1, sum = 0; *q; q++)
                 {
                     sum ^= *q; /* check-sum */

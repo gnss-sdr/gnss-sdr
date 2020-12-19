@@ -558,8 +558,7 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                             taps = gr::filter::firdes::low_pass(1.0,
                                 baseband_sampling_freq,
                                 acq_fs / 2.1,
-                                acq_fs / 10,
-                                gr::filter::firdes::win_type::WIN_HAMMING);
+                                acq_fs / 10);
                             std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << '\n';
                             acquisition->set_resampler_latency((taps.size() - 1) / 2);
                             gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);

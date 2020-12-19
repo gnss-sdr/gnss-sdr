@@ -464,8 +464,7 @@ void GNSSFlowgraph::connect()
                                                     std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
                                                         fs,
                                                         acq_fs_decimated / 2.1,
-                                                        acq_fs_decimated / 2,
-                                                        gr::filter::firdes::win_type::WIN_HAMMING);
+                                                        acq_fs_decimated / 2);
 
                                                     gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
 

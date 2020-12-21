@@ -784,7 +784,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                 case 1:  // INAV
                     {
-                        if (d_inav_nav.is_TOW_set() == true)
+                        if (d_inav_nav.get_flag_TOW_set() == true)
                             {
                                 if (d_inav_nav.is_TOW5_set() == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                                     {
@@ -794,7 +794,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_inav_nav.set_TOW5_flag(false);
                                     }
 
-                                else if (d_inav_nav.is_TOW5_set() == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+                                else if (d_inav_nav.is_TOW6_set() == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
                                     {
                                         // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW6() * 1000.0);
@@ -811,7 +811,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 2:  // FNAV
                     {
-                        if (d_fnav_nav.is_TOW_set() == true)
+                        if (d_fnav_nav.get_flag_TOW_set() == true)
                             {
                                 if (d_fnav_nav.is_TOW1_set() == true)
                                     {
@@ -860,7 +860,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                 case 1:  // INAV
                     {
-                        if (d_inav_nav.is_TOW_set() == true)
+                        if (d_inav_nav.get_flag_TOW_set() == true)
                             {
                                 d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
                             }
@@ -868,7 +868,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 2:  // FNAV
                     {
-                        if (d_fnav_nav.is_TOW_set() == true)
+                        if (d_fnav_nav.get_flag_TOW_set() == true)
                             {
                                 d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
                             }
@@ -886,9 +886,9 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         {
         case 1:  // INAV
             {
-                if (d_inav_nav.is_TOW_set())
+                if (d_inav_nav.get_flag_TOW_set() == true)
                     {
-                        if (d_inav_nav.get_flag_GGTO())  // all GGTO parameters arrived
+                        if (d_inav_nav.get_flag_GGTO() == true)  // all GGTO parameters arrived
                             {
                                 d_delta_t = d_inav_nav.get_A0G() + d_inav_nav.get_A1G() * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.get_t0G() + 604800.0 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - d_inav_nav.get_WN0G()), 64.0)));
                             }
@@ -900,7 +900,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
 
         case 2:  // FNAV
             {
-                if (d_fnav_nav.is_TOW_set())
+                if (d_fnav_nav.get_flag_TOW_set() == true)
                     {
                         current_symbol.Flag_valid_word = true;
                     }
@@ -913,7 +913,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         }
 
-    if (d_inav_nav.is_TOW_set() or d_fnav_nav.is_TOW_set())
+    if (d_inav_nav.get_flag_TOW_set() == true or d_fnav_nav.get_flag_TOW_set() == true)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.

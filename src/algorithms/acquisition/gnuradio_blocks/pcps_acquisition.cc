@@ -659,7 +659,10 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                << ", doppler_step: " << d_doppler_step
                << ", use_CFAR_algorithm_flag: " << (d_use_CFAR_algorithm_flag ? "true" : "false");
 
-    lk.unlock();
+    if (d_acq_parameters.blocking)
+        {
+            lk.unlock();
+        }
 
     // Doppler frequency grid loop
     if (!d_step_two)
@@ -782,7 +785,11 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 }
         }
 
-    lk.lock();
+    if (d_acq_parameters.blocking)
+        {
+            lk.lock();
+        }
+
     if (!d_acq_parameters.bit_transition_flag)
         {
             if (d_test_statistics > d_threshold)

@@ -100,11 +100,6 @@ public:
         flag_TOW_set = flag_tow;
     }
 
-    inline bool is_TOW_set() const
-    {
-        return flag_TOW_set;
-    }
-
     inline bool is_TOW1_set() const
     {
         return flag_TOW_1;

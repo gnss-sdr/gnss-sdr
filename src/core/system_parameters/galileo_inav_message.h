@@ -121,11 +121,6 @@ public:
         return WN_0;
     }
 
-    inline bool is_TOW_set() const
-    {
-        return flag_TOW_set;
-    }
-
     inline int32_t get_TOW5() const
     {
         return TOW_5;

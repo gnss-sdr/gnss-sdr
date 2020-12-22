@@ -84,16 +84,16 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
         {
         case 1:  // INAV
             {
-                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E1_CODE_PERIOD_MS);  // for Galileo E5b is also 4 ms
+                d_PRN_code_period_ms = GALILEO_E1_CODE_PERIOD_MS;  // for Galileo E5b is also 4 ms
                 d_bits_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 // set the preamble
                 d_samples_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 d_preamble_period_symbols = GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS;
-                d_required_symbols = static_cast<uint32_t>(GALILEO_INAV_PAGE_SYMBOLS) + d_samples_per_preamble;
+                d_required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_samples_per_preamble;
                 // preamble bits to sampled symbols
                 d_preamble_samples.reserve(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
-                d_codelength = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
+                d_codelength = static_cast<int32_t>(d_frame_length_symbols);
                 d_datalength = (d_codelength / d_nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  // rise alarm 60 seconds without valid tlm
 
@@ -110,21 +110,21 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 // preamble bits to sampled symbols
                 d_preamble_samples.reserve(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
-                d_codelength = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+                d_codelength = static_cast<int32_t>(d_frame_length_symbols);
                 d_datalength = (d_codelength / d_nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
                 break;
             }
         case 3:  // CNAV
             {
-                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E6_CODE_PERIOD_MS);
+                d_PRN_code_period_ms = GALILEO_E6_CODE_PERIOD_MS;
                 d_bits_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
                 d_samples_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
                 d_preamble_period_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE;
                 d_required_symbols = static_cast<uint32_t>(GALILEO_CNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
                 d_preamble_samples.reserve(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
-                d_codelength = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+                d_codelength = static_cast<int32_t>(d_frame_length_symbols);
                 d_datalength = (d_codelength / d_nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_CNAV_SYMBOLS_PER_PAGE * 60;
                 break;
@@ -804,7 +804,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 else
                                     {
                                         // this page has no timing information
-                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(d_PRN_code_period_ms);  // + GALILEO_INAV_PAGE_PART_SYMBOLS*GALILEO_E1_CODE_PERIOD_S;
+                                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
                                     }
                             }
                         break;

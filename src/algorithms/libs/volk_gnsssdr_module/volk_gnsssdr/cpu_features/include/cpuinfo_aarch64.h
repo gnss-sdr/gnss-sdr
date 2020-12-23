@@ -62,6 +62,7 @@ typedef struct
     int dgh : 1;         // Data Gathering Hint instruction.
     int rng : 1;         // True random number generator support.
     int bti : 1;         // Branch target identification.
+    int mte : 1;         // Memory tagging extension.
 
     // Make sure to update Aarch64FeaturesEnum below if you add a field here.
 } Aarch64Features;
@@ -132,6 +133,7 @@ typedef enum
     AARCH64_DGH,
     AARCH64_RNG,
     AARCH64_BTI,
+    AARCH64_MTE,
     AARCH64_LAST_,
 } Aarch64FeaturesEnum;
 

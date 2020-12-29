@@ -83,7 +83,7 @@
 /*
  * Tags are canonically sorted in the tag2element map.
  */
-static int _t2e_cmp(const void *ap, const void *bp)
+static int t2e_cmp(const void *ap, const void *bp)
 {
     const asn_TYPE_tag2member_t *a = (const asn_TYPE_tag2member_t *)ap;
     const asn_TYPE_tag2member_t *b = (const asn_TYPE_tag2member_t *)bp;
@@ -375,7 +375,7 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             key.el_no = edx;
                             t2m = (asn_TYPE_tag2member_t *)bsearch(
                                 &key, specs->tag2el, specs->tag2el_count,
-                                sizeof(specs->tag2el[0]), _t2e_cmp);
+                                sizeof(specs->tag2el[0]), t2e_cmp);
                             if (t2m)
                                 {
                                     asn_TYPE_tag2member_t *best = 0;

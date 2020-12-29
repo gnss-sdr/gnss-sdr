@@ -331,16 +331,16 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 /*
  * Internally visible buffer holding a single encoded element.
  */
-struct _el_buffer
+struct el_buffer
 {
     uint8_t *buf;
     size_t length;
     size_t size;
 };
 /* Append bytes to the above structure */
-static int _el_addbytes(const void *buffer, size_t size, void *el_buf_ptr)
+static int el_addbytes(const void *buffer, size_t size, void *el_buf_ptr)
 {
-    struct _el_buffer *el_buf = (struct _el_buffer *)el_buf_ptr;
+    struct el_buffer *el_buf = (struct el_buffer *)el_buf_ptr;
 
     if (el_buf->length + size > el_buf->size)
         {
@@ -352,10 +352,10 @@ static int _el_addbytes(const void *buffer, size_t size, void *el_buf_ptr)
     el_buf->length += size;
     return 0;
 }
-static int _el_buf_cmp(const void *ap, const void *bp)
+static int el_buf_cmp(const void *ap, const void *bp)
 {
-    const struct _el_buffer *a = (const struct _el_buffer *)ap;
-    const struct _el_buffer *b = (const struct _el_buffer *)bp;
+    const struct el_buffer *a = (const struct el_buffer *)ap;
+    const struct el_buffer *b = (const struct el_buffer *)bp;
     int ret;
     size_t common_len;
 
@@ -397,7 +397,7 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
     asn_anonymous_set_ *list = _A_SET_FROM_VOID(ptr);
     size_t computed_size = 0;
     ssize_t encoding_size = 0;
-    struct _el_buffer *encoded_els;
+    struct el_buffer *encoded_els;
     ssize_t eels_count = 0;
     size_t max_encoded_len = 1;
     asn_enc_rval_t erval;
@@ -456,7 +456,7 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
      * encoded elements.
      */
     encoded_els =
-        (struct _el_buffer *)MALLOC(list->count * sizeof(encoded_els[0]));
+        (struct el_buffer *)MALLOC(list->count * sizeof(encoded_els[0]));
     if (encoded_els == NULL)
         {
             erval.encoded = -1;
@@ -473,7 +473,7 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
     for (edx = 0; edx < list->count; edx++)
         {
             void *memb_ptr = list->array[edx];
-            struct _el_buffer *encoded_el = &encoded_els[eels_count];
+            struct el_buffer *encoded_el = &encoded_els[eels_count];
 
             if (!memb_ptr)
                 {
@@ -505,7 +505,7 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
             /*
              * Encode the member into the prepared space.
              */
-            erval = der_encoder(elm_type, memb_ptr, 0, elm->tag, _el_addbytes,
+            erval = der_encoder(elm_type, memb_ptr, 0, elm->tag, el_addbytes,
                 encoded_el);
             if (erval.encoded == -1)
                 {
@@ -523,7 +523,7 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
     /*
      * Sort the encoded elements according to their encoding.
      */
-    qsort(encoded_els, eels_count, sizeof(encoded_els[0]), _el_buf_cmp);
+    qsort(encoded_els, eels_count, sizeof(encoded_els[0]), el_buf_cmp);
 
     /*
      * Report encoded elements to the application.
@@ -532,7 +532,7 @@ asn_enc_rval_t SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
     ret = 0;
     for (edx = 0; edx < eels_count; edx++)
         {
-            struct _el_buffer *encoded_el = &encoded_els[edx];
+            struct el_buffer *encoded_el = &encoded_els[edx];
             /* Report encoded chunks to the application */
             if (ret == 0 &&
                 cb(encoded_el->buf, encoded_el->length, app_key) < 0)

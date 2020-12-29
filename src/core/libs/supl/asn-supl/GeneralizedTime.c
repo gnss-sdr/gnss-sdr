@@ -2,9 +2,9 @@
  * SPDX-FileCopyrightText: (c) 2003, 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * SPDX-License-Identifier: BSD-1-Clause
  */
-#define _POSIX_PTHREAD_SEMANTICS /* for Sun */
+#define POSIX_PTHREAD_SEMANTICS /* for Sun */
 #ifndef _REENTRANT
-#define _REENTRANT /* for Sun */
+#define REENTRANT /* for Sun */
 #endif
 #include <GeneralizedTime.h>
 #include <asn_internal.h>

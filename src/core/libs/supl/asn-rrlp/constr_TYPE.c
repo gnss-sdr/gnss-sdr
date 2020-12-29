@@ -11,7 +11,7 @@
  */
 int get_asn1c_environment_version() { return ASN1C_ENVIRONMENT_VERSION; }
 
-static asn_app_consume_bytes_f _print2fp;
+static asn_app_consume_bytes_f print2fp;
 
 /*
  * Return the outmost tag of the type.
@@ -49,13 +49,13 @@ int asn_fprint(FILE *stream, asn_TYPE_descriptor_t *td, const void *struct_ptr)
         }
 
     /* Invoke type-specific printer */
-    if (td->print_struct(td, struct_ptr, 1, _print2fp, stream))
+    if (td->print_struct(td, struct_ptr, 1, print2fp, stream))
         {
             return -1;
         }
 
     /* Terminate the output */
-    if (_print2fp("\n", 1, stream))
+    if (print2fp("\n", 1, stream))
         {
             return -1;
         }
@@ -64,7 +64,7 @@ int asn_fprint(FILE *stream, asn_TYPE_descriptor_t *td, const void *struct_ptr)
 }
 
 /* Dump the data into the specified stdio stream */
-static int _print2fp(const void *buffer, size_t size, void *app_key)
+static int print2fp(const void *buffer, size_t size, void *app_key)
 {
     FILE *stream = (FILE *)app_key;
 

@@ -123,7 +123,7 @@ ssize_t uper_encode_to_new_buffer(asn_TYPE_descriptor_t *td,
  */
 
 /* Flush partially filled buffer */
-static int _uper_encode_flush_outp(asn_per_outp_t *po)
+static int uper_encode_flush_outp(asn_per_outp_t *po)
 {
     uint8_t *buf;
 
@@ -177,7 +177,7 @@ static asn_enc_rval_t uper_encode_internal(asn_TYPE_descriptor_t *td,
             /* Set number of bits encoded to a firm value */
             er.encoded = (po.flushed_bytes << 3) + bits_to_flush;
 
-            if (_uper_encode_flush_outp(&po))
+            if (uper_encode_flush_outp(&po))
                 {
                     _ASN_ENCODE_FAILED;
                 }

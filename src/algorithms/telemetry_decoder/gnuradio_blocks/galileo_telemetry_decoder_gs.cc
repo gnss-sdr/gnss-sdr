@@ -607,6 +607,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         default:
             {
+                LOG(WARNING) << "Frame type " << d_frame_type << " is not defined";
                 d_symbol_history.push_back(current_symbol.Prompt_I);
                 break;
             }

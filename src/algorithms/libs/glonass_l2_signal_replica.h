@@ -38,14 +38,11 @@ namespace own = gsl;
  * \{ */
 
 
-//! Generates complex GLONASS L2 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
-void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _chip_shift);
-
-//! Generates N complex GLONASS L2 C/A codes for the desired SV ID and code shift
-void glonass_l2_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, int32_t _fs, uint32_t _chip_shift, uint32_t _ncodes);
-
 //! Generates complex GLONASS L2 C/A code for the desired SV ID and code shift
-void glonass_l2_ca_code_gen_complex_sampled(own::span<std::complex<float>> _dest, int32_t _fs, uint32_t _chip_shift);
+void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> dest, uint32_t chip_shift);
+
+//! Generates complex GLONASS L2 C/A code for the desired SV ID and code shift, and sampled to specific sampling frequency
+void glonass_l2_ca_code_gen_complex_sampled(own::span<std::complex<float>> dest, int32_t sampling_freq, uint32_t chip_shift);
 
 
 /** \} */

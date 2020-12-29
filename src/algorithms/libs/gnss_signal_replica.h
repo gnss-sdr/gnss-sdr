@@ -40,44 +40,44 @@ namespace own = gsl;
 
 
 /*!
- * \brief This function generates a complex exponential in _dest.
+ * \brief This function generates a complex exponential in dest.
  *
  */
-void complex_exp_gen(own::span<std::complex<float>> _dest, double _f, double _fs);
+void complex_exp_gen(own::span<std::complex<float>> dest, double freq, double sampling_freq);
 
 /*!
- * \brief This function generates a conjugate complex exponential in _dest.
+ * \brief This function generates a conjugate complex exponential in dest.
  *
  */
-void complex_exp_gen_conj(own::span<std::complex<float>> _dest, double _f, double _fs);
+void complex_exp_gen_conj(own::span<std::complex<float>> dest, double freq, double sampling_freq);
 
 /*!
  * \brief This function makes a conversion from hex (the input is a char)
  *  to binary (the output are 4 ints with +1 or -1 values).
  *
  */
-void hex_to_binary_converter(own::span<int32_t> _dest, char _from);
+void hex_to_binary_converter(own::span<int32_t> dest, char from);
 
 /*!
  * \brief This function makes a conversion from hex (the input is a char)
  *  to binary (the output is a string of 4 char with 0 or 1 values).
  *
  */
-std::string hex_to_binary_string(char _from);
+std::string hex_to_binary_string(char from);
 
 /*!
  * \brief This function resamples a sequence of float values.
  *
  */
-void resampler(const own::span<float> _from, own::span<float> _dest,
-    float _fs_in, float _fs_out);
+void resampler(const own::span<float> from, own::span<float> dest,
+    float fs_in, float fs_out);
 
 /*!
  * \brief This function resamples a sequence of complex values.
  *
  */
-void resampler(own::span<const std::complex<float>> _from, own::span<std::complex<float>> _dest,
-    float _fs_in, float _fs_out);
+void resampler(own::span<const std::complex<float>> from, own::span<std::complex<float>> dest,
+    float fs_in, float fs_out);
 
 
 /** \} */

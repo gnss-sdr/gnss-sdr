@@ -43,39 +43,39 @@ namespace own = gsl;
  * \brief This function generates Galileo E1 code (can select E1B or E1C sinboc).
  *
  */
-void galileo_e1_code_gen_sinboc11_float(own::span<float> _dest, const std::array<char, 3>& _Signal, uint32_t _prn);
+void galileo_e1_code_gen_sinboc11_float(own::span<float> dest, const std::array<char, 3>& signal_id, uint32_t prn);
 
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
- * and the sample frequency _fs).
+ * and the sample frequency sampling_freq).
  *
  */
-void galileo_e1_code_gen_float_sampled(own::span<float> _dest, const std::array<char, 3>& _Signal,
-    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
-    bool _secondary_flag);
+void galileo_e1_code_gen_float_sampled(own::span<float> dest, const std::array<char, 3>& signal_id,
+    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift,
+    bool secondary_flag);
 
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
- * and the sample frequency _fs).
+ * and the sample frequency sampling_freq).
  *
  */
-void galileo_e1_code_gen_float_sampled(own::span<float> _dest, const std::array<char, 3>& _Signal,
-    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
+void galileo_e1_code_gen_float_sampled(own::span<float> dest, const std::array<char, 3>& signal_id,
+    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
 
 /*!
  * \brief This function generates Galileo E1 code (can select E1B or E1C, cboc or sinboc
- * and the sample frequency _fs).
+ * and the sample frequency sampling_freq).
  *
  */
-void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
-    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift,
-    bool _secondary_flag);
+void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> dest, const std::array<char, 3>& signal_id,
+    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift,
+    bool secondary_flag);
 
 /*!
- * \brief galileo_e1_code_gen_complex_sampled without _secondary_flag for backward compatibility.
+ * \brief galileo_e1_code_gen_complex_sampled without secondary_flag for backward compatibility.
  */
-void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> _dest, const std::array<char, 3>& _Signal,
-    bool _cboc, uint32_t _prn, int32_t _fs, uint32_t _chip_shift);
+void galileo_e1_code_gen_complex_sampled(own::span<std::complex<float>> dest, const std::array<char, 3>& signal_id,
+    bool cboc, uint32_t prn, int32_t sampling_freq, uint32_t chip_shift);
 
 
 /** \} */

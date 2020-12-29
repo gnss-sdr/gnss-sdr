@@ -44,39 +44,39 @@ namespace own = gsl;
 /*!
  * \brief Generates Galileo E5a code at 1 sample/chip
  */
-void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> _dest,
-    int32_t _prn,
-    const std::array<char, 3>& _Signal);
+void galileo_e5_a_code_gen_complex_primary(own::span<std::complex<float>> dest,
+    int32_t prn,
+    const std::array<char, 3>& signal_id);
 
 
 /*!
  * \brief Generates Galileo E5a complex code, shifted to the desired chip and
- * sampled at a frequency fs
+ * sampled at a frequency sampling_freq
  */
-void galileo_e5_a_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
-    uint32_t _prn,
-    const std::array<char, 3>& _Signal,
-    int32_t _fs,
-    uint32_t _chip_shift);
+void galileo_e5_a_code_gen_complex_sampled(own::span<std::complex<float>> dest,
+    uint32_t prn,
+    const std::array<char, 3>& signal_id,
+    int32_t sampling_freq,
+    uint32_t chip_shift);
 
 
 /*!
  * \brief Generates Galileo E5b code at 1 sample/chip
  */
-void galileo_e5_b_code_gen_complex_primary(own::span<std::complex<float>> _dest,
-    int32_t _prn,
-    const std::array<char, 3>& _Signal);
+void galileo_e5_b_code_gen_complex_primary(own::span<std::complex<float>> dest,
+    int32_t prn,
+    const std::array<char, 3>& signal_id);
 
 
 /*!
  * \brief Generates Galileo E5b complex code, shifted to the desired chip and
- * sampled at a frequency fs
+ * sampled at a frequency sampling_freq
  */
-void galileo_e5_b_code_gen_complex_sampled(own::span<std::complex<float>> _dest,
-    uint32_t _prn,
-    const std::array<char, 3>& _Signal,
-    int32_t _fs,
-    uint32_t _chip_shift);
+void galileo_e5_b_code_gen_complex_sampled(own::span<std::complex<float>> dest,
+    uint32_t prn,
+    const std::array<char, 3>& signal_id,
+    int32_t sampling_freq,
+    uint32_t chip_shift);
 
 
 /** \} */

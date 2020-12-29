@@ -26,11 +26,11 @@
 
 const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
-void beidou_b3i_code_gen_int(own::span<int> _dest, int32_t _prn, uint32_t _chip_shift)
+void beidou_b3i_code_gen_int(own::span<int> dest, int32_t prn, uint32_t chip_shift)
 {
-    constexpr uint32_t _code_length = 10230;
-    std::bitset<_code_length> G1{};
-    std::bitset<_code_length> G2{};
+    constexpr uint32_t code_length = 10230;
+    std::bitset<code_length> G1{};
+    std::bitset<code_length> G2{};
     auto G1_register = std::bitset<13>{}.set();  // All true
     auto G2_register = std::bitset<13>{}.set();  // All true
     auto G1_register_reset = std::bitset<13>{}.set();
@@ -43,7 +43,7 @@ void beidou_b3i_code_gen_int(own::span<int> _dest, int32_t _prn, uint32_t _chip_
     uint32_t lcv;
     uint32_t lcv2;
     uint32_t delay;
-    int32_t prn_idx = _prn - 1;
+    int32_t prn_idx = prn - 1;
 
     const std::array<std::bitset<13>, 63> G2_register_shifted =
         {std::bitset<13>(std::string("1010111111111")),
@@ -120,7 +120,7 @@ void beidou_b3i_code_gen_int(own::span<int> _dest, int32_t _prn, uint32_t _chip_
     G2_register = G2_register_shifted[prn_idx];
 
     // Generate G1 and G2 Register
-    for (lcv = 0; lcv < _code_length; lcv++)
+    for (lcv = 0; lcv < code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
             G2[lcv] = G2_register[0];
@@ -145,74 +145,74 @@ void beidou_b3i_code_gen_int(own::span<int> _dest, int32_t _prn, uint32_t _chip_
                 }
         }
 
-    delay = _code_length;
-    delay += _chip_shift;
-    delay %= _code_length;
+    delay = code_length;
+    delay += chip_shift;
+    delay %= code_length;
 
     // Generate PRN from G1 and G2 Registers
-    for (lcv = 0; lcv < _code_length; lcv++)
+    for (lcv = 0; lcv < code_length; lcv++)
         {
-            aux = G1[(lcv + _chip_shift) % _code_length] xor G2[delay];
+            aux = G1[(lcv + chip_shift) % code_length] xor G2[delay];
             if (aux == true)
                 {
-                    _dest[lcv] = 1;
+                    dest[lcv] = 1;
                 }
             else
                 {
-                    _dest[lcv] = -1;
+                    dest[lcv] = -1;
                 }
 
             delay++;
-            delay %= _code_length;
+            delay %= code_length;
         }
 }
 
 
-void beidou_b3i_code_gen_float(own::span<float> _dest, int32_t _prn, uint32_t _chip_shift)
+void beidou_b3i_code_gen_float(own::span<float> dest, int32_t prn, uint32_t chip_shift)
 {
-    constexpr uint32_t _code_length = 10230;
-    std::array<int, _code_length> b3i_code_int{};
+    constexpr uint32_t code_length = 10230;
+    std::array<int, code_length> b3i_code_int{};
 
-    beidou_b3i_code_gen_int(b3i_code_int, _prn, _chip_shift);
+    beidou_b3i_code_gen_int(b3i_code_int, prn, chip_shift);
 
-    for (uint32_t ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < code_length; ++ii)
         {
-            _dest[ii] = static_cast<float>(b3i_code_int[ii]);
+            dest[ii] = static_cast<float>(b3i_code_int[ii]);
         }
 }
 
 
-void beidou_b3i_code_gen_complex(own::span<std::complex<float>> _dest, int32_t _prn, uint32_t _chip_shift)
+void beidou_b3i_code_gen_complex(own::span<std::complex<float>> dest, int32_t prn, uint32_t chip_shift)
 {
-    constexpr uint32_t _code_length = 10230;
-    std::array<int, _code_length> b3i_code_int{};
+    constexpr uint32_t code_length = 10230;
+    std::array<int, code_length> b3i_code_int{};
 
-    beidou_b3i_code_gen_int(b3i_code_int, _prn, _chip_shift);
+    beidou_b3i_code_gen_int(b3i_code_int, prn, chip_shift);
 
-    for (uint32_t ii = 0; ii < _code_length; ++ii)
+    for (uint32_t ii = 0; ii < code_length; ++ii)
         {
-            _dest[ii] = std::complex<float>(static_cast<float>(b3i_code_int[ii]), 0.0F);
+            dest[ii] = std::complex<float>(static_cast<float>(b3i_code_int[ii]), 0.0F);
         }
 }
 
 
-void beidou_b3i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int _fs, uint32_t _chip_shift)
+void beidou_b3i_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int sampling_freq, uint32_t chip_shift)
 {
-    constexpr int32_t _codeFreqBasis = 10230000;  // Hz
-    constexpr int32_t _codeLength = 10230;
-    constexpr float _tc = 1.0 / static_cast<float>(_codeFreqBasis);  // B3I chip period in sec
+    constexpr int32_t codeFreqBasis = 10230000;  // chips per second
+    constexpr int32_t codeLength = 10230;
+    constexpr float tc = 1.0 / static_cast<float>(codeFreqBasis);  // B3I chip period in sec
 
-    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in secs
-    const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(_codeFreqBasis) / static_cast<double>(_codeLength)));
+    const float ts = 1.0F / static_cast<float>(sampling_freq);  // Sampling period in secs
+    const auto samplesPerCode = static_cast<int32_t>(static_cast<double>(sampling_freq) / (static_cast<double>(codeFreqBasis) / static_cast<double>(codeLength)));
 
-    std::array<std::complex<float>, 10230> _code{};
+    std::array<std::complex<float>, 10230> code_aux{};
 
-    int32_t _codeValueIndex;
+    int32_t codeValueIndex;
     float aux;
 
-    beidou_b3i_code_gen_complex(_code, _prn, _chip_shift);  // generate B3I code 1 sample per chip
+    beidou_b3i_code_gen_complex(code_aux, prn, chip_shift);  // generate B3I code 1 sample per chip
 
-    for (int32_t i = 0; i < _samplesPerCode; i++)
+    for (int32_t i = 0; i < samplesPerCode; i++)
         {
             // === Digitizing ==================================================
 
@@ -221,20 +221,20 @@ void beidou_b3i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, u
             // number of samples per millisecond (because one B3I code period is
             // one millisecond).
 
-            aux = (_ts * (static_cast<float>(i) + 1)) / _tc;
-            _codeValueIndex = AUX_CEIL(aux) - 1;
+            aux = (ts * (static_cast<float>(i) + 1)) / tc;
+            codeValueIndex = AUX_CEIL(aux) - 1;
 
             // --- Make the digitized version of the B3I code ------------------
-            // The "upsampled" code is made by selecting values form the B3I code
-            // chip array (caCode) for the time instances of each sample.
-            if (i == _samplesPerCode - 1)
+            // The upsampled code is made by selecting values from the B3I code
+            // chip array for the time instances of each sample.
+            if (i == samplesPerCode - 1)
                 {
-                    // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = _code[_codeLength - 1];
+                    // Correct the last index (due to number rounding issues)
+                    dest[i] = code_aux[codeLength - 1];
                 }
             else
                 {
-                    _dest[i] = _code[_codeValueIndex];  // repeat the chip -> upsample
+                    dest[i] = code_aux[codeValueIndex];  // repeat the chip -> upsample
                 }
         }
 }

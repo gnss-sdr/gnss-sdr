@@ -39,12 +39,12 @@ class DataTypeAdapter : public ::testing::Test
 public:
     DataTypeAdapter();
     ~DataTypeAdapter() override;
-    int run_byte_to_short_block();
-    int run_ibyte_to_cbyte_block();
-    int run_ibyte_to_complex_block();
-    int run_ibyte_to_cshort_block();
-    int run_ishort_to_complex_block();
-    int run_ishort_to_cshort_block();
+    int run_byte_to_short_block() const;
+    int run_ibyte_to_cbyte_block() const;
+    int run_ibyte_to_complex_block() const;
+    int run_ibyte_to_cshort_block() const;
+    int run_ishort_to_complex_block() const;
+    int run_ishort_to_cshort_block() const;
     std::string file_name_input;
     std::string file_name_output;
     std::vector<int8_t> input_data_bytes;
@@ -70,7 +70,7 @@ DataTypeAdapter::DataTypeAdapter()
 DataTypeAdapter::~DataTypeAdapter() = default;
 
 
-int DataTypeAdapter::run_ishort_to_cshort_block()
+int DataTypeAdapter::run_ishort_to_cshort_block() const
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.implementation", "Ishort_To_Cshort");
@@ -98,7 +98,7 @@ int DataTypeAdapter::run_ishort_to_cshort_block()
 }
 
 
-int DataTypeAdapter::run_ishort_to_complex_block()
+int DataTypeAdapter::run_ishort_to_complex_block() const
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.implementation", "Ishort_To_Complex");
@@ -126,7 +126,7 @@ int DataTypeAdapter::run_ishort_to_complex_block()
 }
 
 
-int DataTypeAdapter::run_ibyte_to_cshort_block()
+int DataTypeAdapter::run_ibyte_to_cshort_block() const
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.implementation", "Ibyte_To_Cshort");
@@ -154,7 +154,7 @@ int DataTypeAdapter::run_ibyte_to_cshort_block()
 }
 
 
-int DataTypeAdapter::run_ibyte_to_complex_block()
+int DataTypeAdapter::run_ibyte_to_complex_block() const
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.implementation", "Ibyte_To_Complex");
@@ -182,7 +182,7 @@ int DataTypeAdapter::run_ibyte_to_complex_block()
 }
 
 
-int DataTypeAdapter::run_ibyte_to_cbyte_block()
+int DataTypeAdapter::run_ibyte_to_cbyte_block() const
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.implementation", "Ibyte_To_Cbyte");
@@ -210,7 +210,7 @@ int DataTypeAdapter::run_ibyte_to_cbyte_block()
 }
 
 
-int DataTypeAdapter::run_byte_to_short_block()
+int DataTypeAdapter::run_byte_to_short_block() const
 {
     std::shared_ptr<ConfigurationInterface> config = std::make_shared<InMemoryConfiguration>();
     config->set_property("Test.implementation", "Byte_To_Short");

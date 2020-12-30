@@ -179,7 +179,7 @@ private:
         bool more_messages);
 
     int32_t init_serial(const std::string& serial_device);  // serial port control
-    void close_serial();
+    void close_serial() const;
     bool Print_Message(const std::string& message);
 
     std::unique_ptr<Rtcm> rtcm;

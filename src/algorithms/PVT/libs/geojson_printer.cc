@@ -56,7 +56,7 @@ GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
     if (!fs::exists(p))
         {
             std::string new_folder;
-            for (auto& folder : fs::path(geojson_base_path))
+            for (const auto& folder : fs::path(geojson_base_path))
                 {
                     new_folder += folder.string();
                     errorlib::error_code ec;

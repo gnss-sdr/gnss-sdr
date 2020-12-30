@@ -137,7 +137,7 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
             std::cout << "Reading RINEX OBS file " << rinex_file << " ...\n";
             while (r_base >> r_base_data)
                 {
-                    for (auto& prn_it : PRN_set)
+                    for (const auto& prn_it : PRN_set)
                         {
                             prn.id = prn_it;
                             gpstk::CommonTime time = r_base_data.time;
@@ -1552,7 +1552,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     std::set<int> PRN_set = available_gps_prn;
     double min_range = std::numeric_limits<double>::max();
     int reference_sat_id = 1;
-    for (auto& base_prn_it : PRN_set)
+    for (const auto& base_prn_it : PRN_set)
         {
             if (base_obs.find(base_prn_it) != base_obs.end() and rover_obs.find(base_prn_it) != rover_obs.end())
                 {
@@ -1568,7 +1568,7 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     if (base_obs.find(reference_sat_id) != base_obs.end() and rover_obs.find(reference_sat_id) != rover_obs.end())
         {
             std::cout << "Using reference satellite SV " << reference_sat_id << " with minimum range of " << min_range << " [meters]\n";
-            for (auto& current_sat_id : PRN_set)
+            for (const auto& current_sat_id : PRN_set)
                 {
                     if (current_sat_id != reference_sat_id)
                         {
@@ -1668,7 +1668,7 @@ void RINEX_singlediff()
     // compute single differences
     std::set<int> PRN_set = available_gps_prn;
     std::cout << "Computing Code Pseudorange rate vs. Carrier phase rate difference...\n";
-    for (auto& current_sat_id : PRN_set)
+    for (const auto& current_sat_id : PRN_set)
         {
             if (rover_obs.find(current_sat_id) != rover_obs.end())
                 {

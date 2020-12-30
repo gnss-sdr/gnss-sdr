@@ -982,8 +982,8 @@ int readsoldata(FILE *fp, gtime_t ts, gtime_t te, double tint, int qflag,
 /* compare solution data -----------------------------------------------------*/
 int cmpsol(const void *p1, const void *p2)
 {
-    auto *q1 = static_cast<const sol_t *>(p1);
-    auto *q2 = static_cast<const sol_t *>(p2);
+    const auto *q1 = static_cast<const sol_t *>(p1);
+    const auto *q2 = static_cast<const sol_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }
@@ -1211,8 +1211,8 @@ void freesolstatbuf(solstatbuf_t *solstatbuf)
 /* compare solution status ---------------------------------------------------*/
 int cmpsolstat(const void *p1, const void *p2)
 {
-    auto *q1 = static_cast<const solstat_t *>(p1);
-    auto *q2 = static_cast<const solstat_t *>(p2);
+    const auto *q1 = static_cast<const solstat_t *>(p1);
+    const auto *q2 = static_cast<const solstat_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     return tt < -0.0 ? -1 : (tt > 0.0 ? 1 : 0);
 }

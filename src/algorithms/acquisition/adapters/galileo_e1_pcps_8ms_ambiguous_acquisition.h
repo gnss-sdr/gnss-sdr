@@ -142,7 +142,7 @@ public:
 
 
 private:
-    float calculate_threshold(float pfa);
+    float calculate_threshold(float pfa) const;
 
     const ConfigurationInterface* configuration_;
     galileo_pcps_8ms_acquisition_cc_sptr acquisition_cc_;

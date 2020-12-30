@@ -235,7 +235,7 @@ void GalileoE1Pcps8msAmbiguousAcquisition::reset()
 }
 
 
-float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa)
+float GalileoE1Pcps8msAmbiguousAcquisition::calculate_threshold(float pfa) const
 {
     unsigned int frequency_bins = 0;
     for (int doppler = static_cast<int>(-doppler_max_); doppler <= static_cast<int>(doppler_max_); doppler += static_cast<int>(doppler_step_))

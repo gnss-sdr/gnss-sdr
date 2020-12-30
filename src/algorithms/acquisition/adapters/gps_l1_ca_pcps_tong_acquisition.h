@@ -145,7 +145,7 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-    float calculate_threshold(float pfa);
+    float calculate_threshold(float pfa) const;
 
     const ConfigurationInterface* configuration_;
     pcps_tong_acquisition_cc_sptr acquisition_cc_;

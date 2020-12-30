@@ -91,7 +91,7 @@ private:
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
 
-    void print_results(const arma::mat& R_eb_enu);
+    void print_results(const arma::mat& R_eb_enu) const;
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
     std::string generated_kml_file;
@@ -822,7 +822,7 @@ void PositionSystemTest::check_results()
 }
 
 
-void PositionSystemTest::print_results(const arma::mat& R_eb_enu)
+void PositionSystemTest::print_results(const arma::mat& R_eb_enu) const
 {
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
     if (gnuplot_executable.empty())

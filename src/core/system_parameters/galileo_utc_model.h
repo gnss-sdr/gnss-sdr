@@ -42,7 +42,7 @@ public:
     Galileo_Utc_Model() = default;
 
     // double TOW_6;
-    double GST_to_UTC_time(double t_e, int32_t WN);  //!< GST-UTC Conversion Algorithm and Parameters
+    double GST_to_UTC_time(double t_e, int32_t WN) const;  //!< GST-UTC Conversion Algorithm and Parameters
 
     // Word type 6: GST-UTC conversion parameters
     double A0_6{};

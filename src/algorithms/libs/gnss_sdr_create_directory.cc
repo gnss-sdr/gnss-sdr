@@ -43,7 +43,7 @@ namespace errorlib = boost::system;
 bool gnss_sdr_create_directory(const std::string& foldername)
 {
     std::string new_folder;
-    for (auto& folder : fs::path(foldername))
+    for (const auto& folder : fs::path(foldername))
         {
             new_folder += folder.string();
             errorlib::error_code ec;

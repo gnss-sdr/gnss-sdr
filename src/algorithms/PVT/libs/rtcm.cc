@@ -1590,7 +1590,7 @@ std::string Rtcm::print_MT1019(const Gps_Ephemeris& gps_eph)
 }
 
 
-int32_t Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph)
+int32_t Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph) const
 {
     // Convert message to binary
     const std::string message_bin = Rtcm::binary_data_to_bin(message);
@@ -1821,7 +1821,7 @@ std::string Rtcm::print_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, c
 }
 
 
-int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonass_gnav_eph, Glonass_Gnav_Utc_Model& glonass_gnav_utc_model)
+int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& glonass_gnav_eph, Glonass_Gnav_Utc_Model& glonass_gnav_utc_model) const
 {
     // Convert message to binary
     const std::string message_bin = Rtcm::binary_data_to_bin(message);
@@ -2127,7 +2127,7 @@ std::string Rtcm::print_MT1045(const Galileo_Ephemeris& gal_eph)
 }
 
 
-int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph)
+int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph) const
 {
     // Convert message to binary
     const std::string message_bin = Rtcm::binary_data_to_bin(message);

@@ -87,7 +87,7 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path,
     if (!fs::exists(p))
         {
             std::string new_folder;
-            for (auto& folder : fs::path(base_rinex_path))
+            for (const auto& folder : fs::path(base_rinex_path))
                 {
                     new_folder += folder.string();
                     errorlib::error_code ec;

@@ -64,7 +64,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_fi
             if (!fs::exists(p))
                 {
                     std::string new_folder;
-                    for (auto& folder : fs::path(nmea_base_path))
+                    for (const auto& folder : fs::path(nmea_base_path))
                         {
                             new_folder += folder.string();
                             errorlib::error_code ec;
@@ -198,7 +198,7 @@ int Nmea_Printer::init_serial(const std::string& serial_device)
 }
 
 
-void Nmea_Printer::close_serial()
+void Nmea_Printer::close_serial() const
 {
     if (nmea_dev_descriptor != -1)
         {

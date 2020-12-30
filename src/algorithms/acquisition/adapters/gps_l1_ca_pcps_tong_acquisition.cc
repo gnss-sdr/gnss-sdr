@@ -223,7 +223,7 @@ void GpsL1CaPcpsTongAcquisition::set_state(int state)
 }
 
 
-float GpsL1CaPcpsTongAcquisition::calculate_threshold(float pfa)
+float GpsL1CaPcpsTongAcquisition::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;

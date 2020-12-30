@@ -256,7 +256,7 @@ bool pcps_acquisition::is_fdma()
 }
 
 
-void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector, float freq)
+void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const
 {
     float phase_step_rad;
     if (d_acq_parameters.use_automatic_resampler)

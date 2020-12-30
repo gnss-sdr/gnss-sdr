@@ -61,7 +61,7 @@ public:
 
 private:
     int init_serial(const std::string& serial_device);  // serial port control
-    void close_serial();
+    void close_serial() const;
     std::string get_GPGGA() const;  // fix data
     std::string get_GPGSV() const;  // satellite data
     std::string get_GPGSA() const;  // overall satellite reception data

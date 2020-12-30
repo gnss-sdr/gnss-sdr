@@ -38,7 +38,7 @@ INIReader::INIReader(const std::string& filename)
 }
 
 
-int INIReader::ParseError()
+int INIReader::ParseError() const
 {
     return _error;
 }

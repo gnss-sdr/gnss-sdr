@@ -271,7 +271,7 @@ void GalileoE5aNoncoherentIQAcquisitionCaf::reset()
 }
 
 
-float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa)
+float GalileoE5aNoncoherentIQAcquisitionCaf::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;

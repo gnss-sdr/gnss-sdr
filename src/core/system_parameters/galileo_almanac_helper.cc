@@ -16,7 +16,7 @@
 
 #include "galileo_almanac_helper.h"
 
-Galileo_Almanac Galileo_Almanac_Helper::get_almanac(int i)
+Galileo_Almanac Galileo_Almanac_Helper::get_almanac(int i) const
 {
     Galileo_Almanac galileo_almanac;
     switch (i)

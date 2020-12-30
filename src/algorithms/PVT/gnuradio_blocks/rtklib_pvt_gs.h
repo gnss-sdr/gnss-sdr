@@ -153,7 +153,7 @@ private:
         long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
         double ttff;
     } d_ttff_msgbuf;
-    bool send_sys_v_ttff_msg(d_ttff_msgbuf ttff);
+    bool send_sys_v_ttff_msg(d_ttff_msgbuf ttff) const;
 
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function

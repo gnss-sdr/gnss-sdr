@@ -1463,7 +1463,7 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
 {
     size_t old_size;
     Gnss_Signal gs;
-    for (auto& visible_satellite : visible_satellites)
+    for (const auto& visible_satellite : visible_satellites)
         {
             if (visible_satellite.second.get_system() == "GPS")
                 {

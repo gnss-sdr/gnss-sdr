@@ -103,7 +103,7 @@ public:
     /*!
      * \brief Returns true if new Iono model has arrived. The flag is set to false when the function is executed
      */
-    bool have_new_iono();
+    bool have_new_iono() const;
 
     /*!
      * \brief Returns true if new UTC model has arrived. The flag is set to false when the function is executed

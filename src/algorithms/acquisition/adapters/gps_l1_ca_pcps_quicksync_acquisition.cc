@@ -261,7 +261,7 @@ void GpsL1CaPcpsQuickSyncAcquisition::set_state(int state)
 }
 
 
-float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa)
+float GpsL1CaPcpsQuickSyncAcquisition::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;

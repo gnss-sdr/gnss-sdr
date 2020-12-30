@@ -730,8 +730,8 @@ void readmsgs(const char *file, int sel, gtime_t ts, gtime_t te,
 /* compare sbas messages -----------------------------------------------------*/
 int cmpmsgs(const void *p1, const void *p2)
 {
-    auto *q1 = static_cast<const sbsmsg_t *>(p1);
-    auto *q2 = static_cast<const sbsmsg_t *>(p2);
+    const auto *q1 = static_cast<const sbsmsg_t *>(p1);
+    const auto *q2 = static_cast<const sbsmsg_t *>(p2);
     return q1->week != q2->week ? q1->week - q2->week : (q1->tow < q2->tow ? -1 : (q1->tow > q2->tow ? 1 : q1->prn - q2->prn));
 }
 

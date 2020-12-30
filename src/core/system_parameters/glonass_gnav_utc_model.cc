@@ -18,7 +18,7 @@
 
 #include "glonass_gnav_utc_model.h"
 
-double Glonass_Gnav_Utc_Model::utc_time(double glonass_time_corrected)
+double Glonass_Gnav_Utc_Model::utc_time(double glonass_time_corrected) const
 {
     // GLONASS Time is relative to UTC Moscow, so we simply add its time difference
     double t_utc = glonass_time_corrected + 3.0 * 3600.0 + d_tau_c;

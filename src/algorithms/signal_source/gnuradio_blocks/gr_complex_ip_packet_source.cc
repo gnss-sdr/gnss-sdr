@@ -327,7 +327,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
             switch (d_wire_sample_type)
                 {
                 case 1:  // interleaved byte samples
-                    for (auto &output_item : output_items)
+                    for (const auto &output_item : output_items)
                         {
                             int8_t real;
                             int8_t imag;
@@ -344,7 +344,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                         }
                     break;
                 case 2:  // 4-bit samples
-                    for (auto &output_item : output_items)
+                    for (const auto &output_item : output_items)
                         {
                             int8_t real;
                             int8_t imag;
@@ -379,7 +379,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                         }
                     break;
                 case 3:  // interleaved float samples
-                    for (auto &output_item : output_items)
+                    for (const auto &output_item : output_items)
                         {
                             float real;
                             float imag;

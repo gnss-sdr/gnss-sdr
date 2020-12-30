@@ -55,7 +55,7 @@ public:
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s] (GLONASS ICD (Edition 5.1) Section 3.3.3 GLONASS Time)
      */
-    double utc_time(double glonass_time_corrected);
+    double utc_time(double glonass_time_corrected) const;
 
     template <class Archive>
     /*!

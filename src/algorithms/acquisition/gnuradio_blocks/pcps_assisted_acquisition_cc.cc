@@ -283,7 +283,7 @@ float pcps_assisted_acquisition_cc::search_maximum()
 }
 
 
-float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
+float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items) const
 {
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // Get the input samples pointer
     // 1- Compute the input signal power estimation

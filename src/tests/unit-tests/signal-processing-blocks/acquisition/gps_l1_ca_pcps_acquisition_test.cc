@@ -140,7 +140,7 @@ protected:
     ~GpsL1CaPcpsAcquisitionTest() override = default;
 
     void init();
-    void plot_grid();
+    void plot_grid() const;
 
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
@@ -180,7 +180,7 @@ void GpsL1CaPcpsAcquisitionTest::init()
 }
 
 
-void GpsL1CaPcpsAcquisitionTest::plot_grid()
+void GpsL1CaPcpsAcquisitionTest::plot_grid() const
 {
     // load the measured values
     std::string basename = "./tmp-acq-gps1/acquisition_G_1C";

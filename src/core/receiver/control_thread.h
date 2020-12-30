@@ -137,7 +137,7 @@ private:
     /*
      * Blocking function that reads the GPS assistance queue
      */
-    void gps_acq_assist_data_collector();
+    void gps_acq_assist_data_collector() const;
 
     /*
      * Compute elevations for the specified time and position for all the available satellites in ephemeris and almanac queues

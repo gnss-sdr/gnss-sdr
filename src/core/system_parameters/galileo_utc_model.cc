@@ -18,7 +18,7 @@
 #include <cmath>
 
 
-double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN)
+double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
 {
     double t_Utc;
     double t_Utc_daytime;

@@ -7,17 +7,14 @@
 % of the Google Summer of Code (GSoC) 2014, with the collaboration of Luis Esteve, Javier Arribas
 % and Carles Fernandez, related to the extension of GNSS-SDR to Galileo.
 %
-% Marc Sales marcsales92(at)gmail.com, 
+% Marc Sales marcsales92(at)gmail.com,
 % Luis Esteve, 2014. luis(at)epsilon-formacion.com
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
-% 
+%
+% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
 % SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
@@ -122,4 +119,3 @@ for k=1:num_samples
 end
 
 end
-

@@ -1,10 +1,7 @@
-%
-% \file quantize_signal.m
-% \brief This file opens a binary file using the ibyte format, reads and 
-% quantizes the signal using the most significant nbits, and stores the 
-% quantized signal into an output file. The output file also uses the 
+% This function opens a binary file using the ibyte format, reads and
+% quantizes the signal using the most significant nbits, and stores the
+% quantized signal into an output file. The output file also uses the
 % ibyte format.
-% \author Marc Majoral, 2020. mmajoral(at)cttc.es
 %
 % Usage: quantize_signal (infile, outfile, nbits)
 %
@@ -13,19 +10,18 @@
 %       outfile         - Output file name
 %       nbits           - number of quantization bits
 %
+
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Marc Majoral, 2020. mmajoral(at)cttc.es
 % SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
 %
+
 function quantize_signal (infile, outfile, nbits)
 
 %% usage: quantize_signal (infile, outfile, nbits)
@@ -48,17 +44,17 @@ do = true;
 data_bytes = fread(fileID, BlockSize);
 
 while do
-    
-    % 2's complement 
+
+    % 2's complement
     for k=1:length(data_bytes)
         if (data_bytes(k) > Lim2sCompl)
             data_bytes(k) = -Base2sCompl + data_bytes(k);
         end
-    end         
-    
+    end
+
     % take the nbits most significant bits
     data_bytes = floor(data_bytes/DivVal);
-    
+
     % quantization correction
     data_bytes = data_bytes*2 + 1;
 
@@ -67,11 +63,11 @@ while do
         if (data_bytes(k) < 0)
             data_bytes(k) = Base2sCompl + data_bytes(k);
         end
-    end     
-    
+    end
+
     % write result
     fwrite(fileID2, data_bytes);
-    
+
     if (size(data_bytes) < BlockSize)
         do = false;
     else

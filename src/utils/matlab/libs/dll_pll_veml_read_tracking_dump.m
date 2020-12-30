@@ -1,22 +1,17 @@
 % Usage: dll_pll_veml_read_tracking_dump (filename, [count])
 %
+% Read GNSS-SDR Tracking dump binary file into MATLAB.
 % Opens GNSS-SDR tracking binary log file .dat and returns the contents
 
-% Read GNSS-SDR Tracking dump binary file into MATLAB.
-% Luis Esteve, 2012. luis(at)epsilon-formacion.com
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Luis Esteve, 2012. luis(at)epsilon-formacion.com
 % SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
-%
 
 function [GNSS_tracking] = dll_pll_veml_read_tracking_dump (filename, count)
 

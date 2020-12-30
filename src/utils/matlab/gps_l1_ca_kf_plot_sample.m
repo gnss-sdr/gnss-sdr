@@ -3,13 +3,10 @@
 % Javier Arribas, 2011. jarribas(at)cttc.es
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
-% 
+%
+% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
 % SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
@@ -47,18 +44,18 @@ for N=1:1:channels
     trackResults(N).dllDiscrFilt   = GNSS_tracking(N).code_nco.';
     trackResults(N).pllDiscr       = GNSS_tracking(N).carr_error.';
     trackResults(N).pllDiscrFilt   = GNSS_tracking(N).carr_nco.';
-    
+
     trackResults(N).I_P = GNSS_tracking(N).prompt_I.';
     trackResults(N).Q_P = GNSS_tracking(N).prompt_Q.';
-    
+
     trackResults(N).I_E = GNSS_tracking(N).E.';
     trackResults(N).I_L = GNSS_tracking(N).L.';
     trackResults(N).Q_E = zeros(1,length(GNSS_tracking(N).E));
     trackResults(N).Q_L = zeros(1,length(GNSS_tracking(N).E));
     trackResults(N).PRN = GNSS_tracking(N).PRN.';
     trackResults(N).CNo = GNSS_tracking(N).CN0_SNV_dB_Hz.';
-    
-    
+
+
     kalmanResults(N).PRN = GNSS_tracking(N).PRN.';
     kalmanResults(N).innovation  = GNSS_tracking(N).carr_error.';
     kalmanResults(N).state1      = GNSS_tracking(N).carr_nco.';
@@ -66,17 +63,15 @@ for N=1:1:channels
     kalmanResults(N).state3      = GNSS_tracking(N).carrier_dopplerrate_hz2.';
     kalmanResults(N).r_noise_cov = GNSS_tracking(N).carr_noise_sigma2.';
     kalmanResults(N).CNo         = GNSS_tracking(N).CN0_SNV_dB_Hz.';
-    
+
     % Use original MATLAB tracking plot function
     settings.numberOfChannels = channels;
     settings.msToProcess = length(GNSS_tracking(N).E);
     settings.codePeriod  = code_period;
     settings.timeStartInSeconds = 20;
-    
+
     %plotTracking(N, trackResults, settings)
     plotKalman(N, kalmanResults, settings)
-    
+
     saveas(gcf, [figpath 'epl_tracking_ch_' num2str(N) '_PRN_' num2str(trackResults(N).PRN(end)) '.png'], 'png')
 end
-
-

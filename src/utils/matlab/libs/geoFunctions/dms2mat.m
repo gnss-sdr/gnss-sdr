@@ -17,15 +17,15 @@ function [dout,mout,sout] = dms2mat(dms,n)
 %
 %  See also MAT2DMS
 
-%  Copyright 1996-2002 Systems Planning and Analysis, Inc. and The MathWorks, Inc.
-%  Written by:  E. Byrns, E. Brown
-%  Revision: 1.10    $Date: 2002/03/20 21:25:06
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
+% Written by:  E. Byrns, E. Brown
+% Revision: 1.10    $Date: 2002/03/20 21:25:06
 %
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: 1996-2002 Systems Planning and Analysis, Inc. and The MathWorks, Inc.
 % SPDX-License-Identifier: GPL-3.0-or-later
+
 
 
 if nargin == 0

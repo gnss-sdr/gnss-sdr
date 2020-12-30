@@ -25,12 +25,11 @@ function ddr = tropo(sinel, hsta, p, tkel, hum, hp, htkel, hhum)
 % Francisco, December 12-17
 
 % A Matlab reimplementation of a C code from driver.
-% Copyright (C) Kai Borre 06-28-95
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
 %
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Kai Borre 06-28-95
 % SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 

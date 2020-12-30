@@ -4,6 +4,9 @@
  * \author Fergus Noble <fergus@swift-nav.com>
  *
  * -----------------------------------------------------------------------------
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
  * This file was originally borrowed from libswiftnav
  * <https://github.com/swift-nav/libswiftnav>,
  * a portable C library implementing GNSS related functions and algorithms,
@@ -12,13 +15,8 @@
  * Copyright (C) 2013, 2016 Swift Navigation Inc.
  * Contact: Fergus Noble <fergus@swift-nav.com>
  *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
- * This file is part of GNSS-SDR.
- *
  * SPDX-License-Identifier: LGPL-3.0-only
- *.
+ *
  */
 
 #ifndef GNSS_SDR_BITS_H

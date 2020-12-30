@@ -12,14 +12,10 @@ function [E, N, U] = cart2utm(X, Y, Z, zone)
 %   Outputs:
 %      E, N, U      - UTM coordinates (Easting, Northing, Uping)
 
-% Kai Borre -11-1994
-% Copyright (c) by Kai Borre
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Kai Borre
 % SPDX-License-Identifier: GPL-3.0-or-later
 
 % This implementation is based upon

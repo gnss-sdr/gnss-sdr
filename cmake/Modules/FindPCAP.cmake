@@ -1,13 +1,9 @@
-###################################################################
-#
-#  Copyright (c) 2006 Frederic Heem, <frederic.heem@telsey.it>
-#  All rights reserved.
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
+# SPDX-FileCopyrightText: 2006 Frederic Heem, <frederic.heem@telsey.it>
 # SPDX-License-Identifier: BSD-3-Clause
-#
-###################################################################
+
 # - Find pcap
 # Find the PCAP includes and library
 # http://www.tcpdump.org/

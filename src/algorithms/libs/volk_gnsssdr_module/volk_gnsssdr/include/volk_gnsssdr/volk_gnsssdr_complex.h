@@ -3,13 +3,12 @@
  * \brief Provide typedefs and operators for all complex types in C and C++.
  * \author Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
  *
- * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
  */
 
 #ifndef INCLUDE_VOLK_COMPLEX_H

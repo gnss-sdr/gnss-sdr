@@ -1,8 +1,6 @@
 % plot tracking quality indicators
 
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
 % SPDX-FileCopyrightText: Javier Arribas <jarribas@cttc.es>

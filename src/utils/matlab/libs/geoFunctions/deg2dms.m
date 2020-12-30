@@ -2,14 +2,13 @@ function dmsOutput = deg2dms(deg)
 % DEG2DMS  Conversion of degrees to degrees, minutes, and seconds.
 % The output format (dms format) is: (degrees*100 + minutes + seconds/100)
 
-% Copyright (C) Kai Borre
 % February 7, 2001
 % Updated by Darius Plausinaitis
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
 %
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Kai Borre
 % SPDX-License-Identifier: GPL-3.0-or-later
 
 %%% Save the sign for later processing

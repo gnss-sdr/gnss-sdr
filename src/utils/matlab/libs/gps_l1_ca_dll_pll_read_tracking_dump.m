@@ -1,22 +1,18 @@
-% Usage: gps_l1_ca_dll_pll_read_tracking_dump_64bits (filename, [count])
+% Usage: gps_l1_ca_dll_pll_read_tracking_dump (filename, [count])
 %
+% Read GNSS-SDR Tracking dump binary file into MATLAB.
 % Opens GNSS-SDR tracking binary log file .dat and returns the contents
 
-% Read GNSS-SDR Tracking dump binary file into MATLAB.
-% Javier Arribas, 2011. jarribas(at)cttc.es
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Javier Arribas 2011
 % SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
-%
+
 
 function [GNSS_tracking] = gps_l1_ca_dll_pll_read_tracking_dump (filename, count)
 
@@ -100,9 +96,9 @@ else
     fseek(f,bytes_shift,'bof'); % move to next interleaved double
     v18 = fread (f, count, 'uint32',skip_bytes_each_read-double_size_bytes);
     fclose (f);
-    
+
     %%%%%%%% output vars %%%%%%%%
-    
+
     %                     // EPR
     %                     d_dump_file.write(reinterpret_cast<char*>(&tmp_E), sizeof(float));
     %                     d_dump_file.write(reinterpret_cast<char*>(&tmp_P), sizeof(float));
@@ -158,7 +154,7 @@ else
     var1=v16;
     var2=v17;
     PRN=v18;
-    
+
     GNSS_tracking.E=E;
     GNSS_tracking.P=P;
     GNSS_tracking.L=L;
@@ -178,4 +174,3 @@ else
     GNSS_tracking.var2=var2;
     GNSS_tracking.PRN=PRN;
 end
-

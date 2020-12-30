@@ -3,15 +3,10 @@ function  result = clsin(ar, degree, argument)
 %
 % result = clsin(ar, degree, argument);
 
-% Copyright (C) Kai Borre
-% December 20, 1995
-%
-% See also WGS2UTM or CART2UTM
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Kai Borre
 % SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 

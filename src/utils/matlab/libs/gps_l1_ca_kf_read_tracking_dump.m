@@ -1,22 +1,18 @@
 % Usage: gps_l1_ca_kf_read_tracking_dump (filename, [count])
 %
+% Read GNSS-SDR Tracking dump binary file into MATLAB.
 % Opens GNSS-SDR tracking binary log file .dat and returns the contents
 
-% Read GNSS-SDR Tracking dump binary file into MATLAB.
-% Javier Arribas, 2011. jarribas(at)cttc.es
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Javier Arribas 2011
 % SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
-%
+
 
 function [GNSS_tracking] = gps_l1_ca_kf_read_tracking_dump (filename, count)
 
@@ -121,7 +117,7 @@ else
     fseek(f,bytes_shift,'bof'); % move to next unsigned int
     v22 = fread (f, count, 'uint', skip_bytes_each_read - unsigned_int_size_bytes);
     fclose (f);
-    
+
     GNSS_tracking.VE = v1;
     GNSS_tracking.E = v2;
     GNSS_tracking.P = v3;

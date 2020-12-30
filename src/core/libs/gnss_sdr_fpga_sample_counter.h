@@ -60,7 +60,7 @@ private:
     void open_device(void);
     bool start();
     bool stop();
-    void wait_for_interrupt(void);
+    void wait_for_interrupt(void) const;
 
     volatile uint32_t *map_base;  // driver memory map
 

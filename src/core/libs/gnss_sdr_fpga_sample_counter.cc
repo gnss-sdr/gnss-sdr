@@ -271,7 +271,7 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
 }
 
 
-void gnss_sdr_fpga_sample_counter::wait_for_interrupt()
+void gnss_sdr_fpga_sample_counter::wait_for_interrupt() const
 {
     int32_t irq_count;
     ssize_t nb;

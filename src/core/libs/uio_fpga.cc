@@ -164,7 +164,7 @@ int32_t find_uio_num(const std::string &device_name, uint32_t device_num)
     // search for the requested device driver
     fs::path path(uio_dir);
     std::vector<fs::directory_entry> dirs;
-    for (auto &p : fs::directory_iterator(path))
+    for (const auto &p : fs::directory_iterator(path))
         {
             dirs.push_back(p);
         }

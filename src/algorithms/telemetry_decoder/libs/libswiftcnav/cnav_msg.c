@@ -3,6 +3,9 @@
  * \author Valeri Atamaniouk <valeri@swift-nav.com>
  *
  * -----------------------------------------------------------------------------
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
  * This file was originally borrowed from libswiftnav
  * <https://github.com/swift-nav/libswiftnav>,
  * a portable C library implementing GNSS related functions and algorithms,
@@ -11,13 +14,8 @@
  * Copyright (C) 2016 Swift Navigation Inc.
  * Contact: Valeri Atamaniouk <valeri@swift-nav.com>
  *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
- * This file is part of GNSS-SDR.
- *
  * SPDX-License-Identifier: LGPL-3.0-only
- *.
+ *
  */
 
 
@@ -71,7 +69,7 @@ const uint32_t GPS_CNAV_PREAMBLE2 = 0x74U; /* (0b01110100u) */
  *
  * \private
  */
-static uint32_t _cnav_compute_crc(cnav_v27_part_t *part)
+static uint32_t cnav_compute_crc_(cnav_v27_part_t *part)
 {
     uint32_t crc = crc24q_bits(0, part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
         part->invert);
@@ -90,7 +88,7 @@ static uint32_t _cnav_compute_crc(cnav_v27_part_t *part)
  *
  * \private
  */
-static uint32_t _cnav_extract_crc(const cnav_v27_part_t *part)
+static uint32_t cnav_extract_crc_(const cnav_v27_part_t *part)
 {
     uint32_t crc = getbitu(part->decoded, GPS_CNAV_MSG_DATA_LENGTH,
         GPS_CNAV_MSG_CRC_LENGTH);
@@ -116,7 +114,7 @@ static uint32_t _cnav_extract_crc(const cnav_v27_part_t *part)
  *
  * \private
  */
-static void _cnav_rescan_preamble(cnav_v27_part_t *part)
+static void cnav_rescan_preamble_(cnav_v27_part_t *part)
 {
     part->preamble_seen = false;
 
@@ -161,7 +159,7 @@ static void _cnav_rescan_preamble(cnav_v27_part_t *part)
  *
  * \private
  */
-static void _cnav_add_symbol(cnav_v27_part_t *part, uint8_t ch)
+static void cnav_add_symbol_(cnav_v27_part_t *part, uint8_t ch)
 {
     part->symbols[part->n_symbols++] = ch;
 
@@ -224,14 +222,14 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, uint8_t ch)
             if (!part->preamble_seen)
                 {
                     /* Rescan for preamble if possible. The first bit is ignored. */
-                    _cnav_rescan_preamble(part);
+                    cnav_rescan_preamble_(part);
                 }
             if (part->preamble_seen && GPS_CNAV_MSG_LENGTH <= part->n_decoded)
                 {
                     /* We have collected 300 bits starting from message preamble. Now try
                      * to compute CRC-24Q */
-                    const uint32_t crc = _cnav_compute_crc(part);
-                    const uint32_t crc2 = _cnav_extract_crc(part);
+                    const uint32_t crc = cnav_compute_crc_(part);
+                    const uint32_t crc2 = cnav_extract_crc_(part);
 
                     if (part->message_lock)
                         {
@@ -292,7 +290,7 @@ static void _cnav_add_symbol(cnav_v27_part_t *part, uint8_t ch)
  *
  * \return None
  */
-static void _cnav_msg_invert(cnav_v27_part_t *part)
+static void cnav_msg_invert_(cnav_v27_part_t *part)
 {
     size_t i = 0;
     for (i = 0; i < sizeof(part->decoded); i++)
@@ -322,7 +320,7 @@ static void _cnav_msg_invert(cnav_v27_part_t *part)
  *
  * \private
  */
-static bool _cnav_msg_decode(cnav_v27_part_t *part, cnav_msg_t *msg, uint32_t *delay)
+static bool cnav_msg_decode_(cnav_v27_part_t *part, cnav_msg_t *msg, uint32_t *delay)
 {
     bool res = false;
     if (GPS_CNAV_MSG_LENGTH <= part->n_decoded)
@@ -332,7 +330,7 @@ static bool _cnav_msg_decode(cnav_v27_part_t *part, cnav_msg_t *msg, uint32_t *d
                     /* CRC is OK */
                     if (part->invert)
                         {
-                            _cnav_msg_invert(part);
+                            cnav_msg_invert_(part);
                         }
 
                     msg->prn = getbitu(part->decoded, 8, 6);
@@ -347,7 +345,7 @@ static bool _cnav_msg_decode(cnav_v27_part_t *part, cnav_msg_t *msg, uint32_t *d
 
                     if (part->invert)
                         {
-                            _cnav_msg_invert(part);
+                            cnav_msg_invert_(part);
                         }
                     res = true;
                 }
@@ -388,7 +386,7 @@ void cnav_msg_decoder_init(cnav_msg_decoder_t *dec)
         0);
     dec->part1.init = true;
     dec->part2.init = true;
-    _cnav_add_symbol(&dec->part2, 0x80);
+    cnav_add_symbol_(&dec->part2, 0x80);
 }
 
 /**
@@ -419,22 +417,22 @@ bool cnav_msg_decoder_add_symbol(cnav_msg_decoder_t *dec,
     cnav_msg_t *msg,
     uint32_t *pdelay)
 {
-    _cnav_add_symbol(&dec->part1, symbol);
-    _cnav_add_symbol(&dec->part2, symbol);
+    cnav_add_symbol_(&dec->part1, symbol);
+    cnav_add_symbol_(&dec->part2, symbol);
 
     if (dec->part1.message_lock)
         {
             /* Flush data in decoder. */
             dec->part2.n_decoded = 0;
             dec->part2.n_symbols = 0;
-            return _cnav_msg_decode(&dec->part1, msg, pdelay);
+            return cnav_msg_decode_(&dec->part1, msg, pdelay);
         }
     if (dec->part2.message_lock)
         {
             /* Flush data in decoder. */
             dec->part1.n_decoded = 0;
             dec->part1.n_symbols = 0;
-            return _cnav_msg_decode(&dec->part2, msg, pdelay);
+            return cnav_msg_decode_(&dec->part2, msg, pdelay);
         }
 
     return false;

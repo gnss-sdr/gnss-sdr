@@ -42,7 +42,7 @@ struct errbufDesc
     size_t errlen;
 };
 
-static void _asn_i_ctfailcb(void *key, asn_TYPE_descriptor_t *td,
+static void asn_i_ctfailcb(void *key, asn_TYPE_descriptor_t *td,
     const void *sptr, const char *fmt, ...)
 {
     struct errbufDesc *arg = key;
@@ -98,7 +98,7 @@ int asn_check_constraints(asn_TYPE_descriptor_t *type_descriptor,
     arg.errlen = errlen ? *errlen : 0;
 
     ret = type_descriptor->check_constraints(type_descriptor, struct_ptr,
-        _asn_i_ctfailcb, &arg);
+        asn_i_ctfailcb, &arg);
     if (ret == -1 && errlen)
         {
             *errlen = arg.errlen;

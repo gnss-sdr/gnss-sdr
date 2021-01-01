@@ -7,13 +7,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2012-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -544,8 +541,7 @@ bool HybridObservablesTest::acquire_signal()
                             taps = gr::filter::firdes::low_pass(1.0,
                                 baseband_sampling_freq,
                                 acq_fs / 2.1,
-                                acq_fs / 10,
-                                gr::filter::firdes::win_type::WIN_HAMMING);
+                                acq_fs / 10);
                             std::cout << "Enabled decimation low pass filter with " << taps.size() << " taps and decimation factor of " << decimation << '\n';
                             acquisition->set_resampler_latency((taps.size() - 1) / 2);
                             gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);

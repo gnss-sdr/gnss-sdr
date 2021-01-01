@@ -1,10 +1,8 @@
-# Copyright (C) 2020 (see AUTHORS file for a list of contributors)
-#
-# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
 execute_process(COMMAND uname -v OUTPUT_VARIABLE DARWIN_VERSION)
 string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
@@ -12,7 +10,7 @@ string(REGEX MATCH "[0-9]+" DARWIN_VERSION ${DARWIN_VERSION})
 if(${DARWIN_VERSION} MATCHES "20")
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++17")
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-    set(MACOS_DISTRIBUTION "macOS Big Sur 11.0")
+    set(MACOS_DISTRIBUTION "macOS Big Sur 11")
 endif()
 
 if(${DARWIN_VERSION} MATCHES "19")

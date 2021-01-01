@@ -106,8 +106,10 @@ Checks: '-*,
         readability-identifier-naming,
         readability-inconsistent-declaration-parameter-name,
         readability-isolate-declaration,
+        readability-make-member-function-const,
         readability-named-parameter,
         readability-non-const-parameter,
+        readability-qualified-auto,
         readability-redundant-control-flow,
         readability-redundant-member-init,
         readability-string-compare,
@@ -117,12 +119,28 @@ HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
 CheckOptions:
+  - key:             bugprone-argument-comment.CommentBoolLiterals
+    value:           '0'
+  - key:             bugprone-argument-comment.CommentCharacterLiterals
+    value:           '0'
+  - key:             bugprone-argument-comment.CommentFloatLiterals
+    value:           '0'
+  - key:             bugprone-argument-comment.CommentIntegerLiterals
+    value:           '0'
+  - key:             bugprone-argument-comment.CommentNullPtrs
+    value:           '0'
+  - key:             bugprone-argument-comment.CommentStringLiterals
+    value:           '0'
+  - key:             bugprone-argument-comment.CommentUserDefinedLiterals
+    value:           '0'
+  - key:             bugprone-argument-comment.IgnoreSingleArgument
+    value:           '0'
   - key:             bugprone-argument-comment.StrictMode
     value:           '0'
   - key:             bugprone-assert-side-effect.AssertMacros
     value:           assert
   - key:             bugprone-assert-side-effect.CheckFunctionCalls
-    value:           '0'
+    value:           'false'
   - key:             bugprone-dangling-handle.HandleClasses
     value:           'std::basic_string_view;std::experimental::basic_string_view'
   - key:             bugprone-exception-escape.FunctionsThatShouldNotThrow
@@ -130,21 +148,21 @@ CheckOptions:
   - key:             bugprone-exception-escape.IgnoredExceptions
     value:           ''
   - key:             bugprone-misplaced-widening-cast.CheckImplicitCasts
-    value:           '0'
+    value:           'false'
   - key:             bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant
-    value:           '1'
+    value:           'true'
   - key:             bugprone-sizeof-expression.WarnOnSizeOfConstant
-    value:           '1'
+    value:           'true'
   - key:             bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression
-    value:           '0'
+    value:           'false'
   - key:             bugprone-sizeof-expression.WarnOnSizeOfThis
-    value:           '1'
+    value:           'true'
   - key:             bugprone-string-constructor.LargeLengthThreshold
     value:           '8388608'
   - key:             bugprone-string-constructor.WarnOnLargeLength
-    value:           '1'
+    value:           'true'
   - key:             bugprone-suspicious-enum-usage.StrictMode
-    value:           '0'
+    value:           'false'
   - key:             bugprone-suspicious-missing-comma.MaxConcatenatedTokens
     value:           '5'
   - key:             bugprone-suspicious-missing-comma.RatioThreshold
@@ -154,21 +172,31 @@ CheckOptions:
   - key:             bugprone-suspicious-string-compare.StringCompareLikeFunctions
     value:           ''
   - key:             bugprone-suspicious-string-compare.WarnOnImplicitComparison
-    value:           '1'
+    value:           'true'
   - key:             bugprone-suspicious-string-compare.WarnOnLogicalNotComparison
-    value:           '0'
+    value:           'false'
+  - key:             bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit
+    value:           '16'
   - key:             bugprone-unused-return-value.CheckedFunctions
     value:           '::std::async;::std::launder;::std::remove;::std::remove_if;::std::unique;::std::unique_ptr::release;::std::basic_string::empty;::std::vector::empty'
   - key:             cert-dcl16-c.NewSuffixes
     value:           'L;LL;LU;LLU'
   - key:             cert-msc51-cpp.DisallowedSeedTypes
     value:           'time_t,std::time_t'
+  - key:             cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
+    value:           '0'
+  - key:             cert-str34-c.DiagnoseSignedUnsignedCharComparisons
+    value:           '0'
+  - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
+    value:           '1'
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
   - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
-    value:           '0'
+    value:           'false'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
+    value:           'false'
   - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
-    value:           '0'
+    value:           'false'
   - key:             google-build-namespaces.HeaderFileExtensions
     value:           ',h'
   - key:             google-global-names-in-headers.HeaderFileExtensions
@@ -187,8 +215,20 @@ CheckOptions:
     value:           _t
   - key:             google-runtime-int.UnsignedTypePrefix
     value:           uint
+  - key:             llvm-else-after-return.WarnOnConditionVariables
+    value:           '0'
+  - key:             llvm-else-after-return.WarnOnUnfixable
+    value:           '0'
+  - key:             llvm-qualified-auto.AddConstToQualified
+    value:           '0'
   - key:             misc-throw-by-value-catch-by-reference.CheckThrowTemporaries
-    value:           '1'
+    value:           'true'
+  - key:             misc-throw-by-value-catch-by-reference.MaxSize
+    value:           '-1'
+  - key:             misc-throw-by-value-catch-by-reference.WarnOnLargeObjects
+    value:           'false'
+  - key:             modernize-avoid-bind.PermissiveParameterList
+    value:           'false'
   - key:             modernize-loop-convert.MaxCopySize
     value:           '16'
   - key:             modernize-loop-convert.MinConfidence
@@ -197,20 +237,26 @@ CheckOptions:
     value:           CamelCase
   - key:             modernize-pass-by-value.IncludeStyle
     value:           llvm
+  - key:             modernize-raw-string-literal.DelimiterStem
+    value:           lit
   - key:             modernize-raw-string-literal.ReplaceShorterLiterals
-    value:           '0'
+    value:           'false'
   - key:             modernize-replace-auto-ptr.IncludeStyle
     value:           llvm
   - key:             modernize-use-auto.MinTypeNameLength
     value:           '5'
   - key:             modernize-use-auto.RemoveStars
-    value:           '0'
+    value:           'false'
+  - key:             modernize-use-bool-literals.IgnoreMacros
+    value:           'true'
   - key:             modernize-use-default-member-init.IgnoreMacros
-    value:           '1'
+    value:           'true'
   - key:             modernize-use-default-member-init.UseAssignment
-    value:           '0'
+    value:           'false'
   - key:             modernize-use-emplace.ContainersWithPushBack
     value:           '::std::vector;::std::list;::std::deque'
+  - key:             modernize-use-emplace.IgnoreImplicitConstructors
+    value:           'false'
   - key:             modernize-use-emplace.SmartPointers
     value:           '::std::shared_ptr;::std::unique_ptr;::std::auto_ptr;::std::weak_ptr'
   - key:             modernize-use-emplace.TupleMakeFunctions
@@ -218,27 +264,37 @@ CheckOptions:
   - key:             modernize-use-emplace.TupleTypes
     value:           '::std::pair;::std::tuple'
   - key:             modernize-use-equals-default.IgnoreMacros
-    value:           '1'
+    value:           'true'
   - key:             modernize-use-equals-delete.IgnoreMacros
-    value:           '1'
+    value:           'true'
   - key:             modernize-use-noexcept.ReplacementString
     value:           ''
   - key:             modernize-use-noexcept.UseNoexceptFalse
-    value:           '1'
+    value:           'true'
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL'
+  - key:             modernize-use-override.AllowOverrideAndFinal
+    value:           'false'
+  - key:             modernize-use-override.FinalSpelling
+    value:           final
+  - key:             modernize-use-override.IgnoreDestructors
+    value:           'false'
+  - key:             modernize-use-override.OverrideSpelling
+    value:           override
   - key:             performance-faster-string-find.StringLikeClasses
     value:           'std::basic_string'
   - key:             performance-for-range-copy.AllowedTypes
     value:           ''
   - key:             performance-for-range-copy.WarnOnAllAutoCopies
-    value:           '0'
+    value:           'false'
   - key:             performance-inefficient-string-concatenation.StrictMode
-    value:           '0'
+    value:           'false'
+  - key:             performance-inefficient-vector-operation.EnableProto
+    value:           'false'
   - key:             performance-inefficient-vector-operation.VectorLikeClasses
     value:           '::std::vector'
   - key:             performance-move-const-arg.CheckTriviallyCopyableMove
-    value:           '1'
+    value:           'true'
   - key:             performance-move-constructor-init.IncludeStyle
     value:           llvm
   - key:             performance-type-promotion-in-math-fn.IncludeStyle
@@ -257,6 +313,8 @@ CheckOptions:
     value:           ''
   - key:             readability-identifier-naming.AbstractClassSuffix
     value:           ''
+  - key:             readability-identifier-naming.AggressiveDependentMemberLookup
+    value:           'false'
   - key:             readability-identifier-naming.ClassCase
     value:           Camel_Snake_Case
   - key:             readability-identifier-naming.ClassPrefix
@@ -270,7 +328,9 @@ CheckOptions:
   - key:             readability-identifier-naming.GlobalConstantSuffix
     value:           ''
   - key:             readability-identifier-naming.IgnoreFailedSplit
-    value:           '0'
+    value:           'false'
+  - key:             readability-identifier-naming.IgnoreMainLikeFunctions
+    value:           'false'
   - key:             readability-identifier-naming.StructCase
     value:           aNy_CasE
   - key:             readability-identifier-naming.StructPrefix
@@ -278,11 +338,15 @@ CheckOptions:
   - key:             readability-identifier-naming.StructSuffix
     value:           ''
   - key:             readability-inconsistent-declaration-parameter-name.IgnoreMacros
-    value:           '1'
+    value:           'true'
   - key:             readability-inconsistent-declaration-parameter-name.Strict
-    value:           '0'
+    value:           'false'
+  - key:             readability-qualified-auto.AddConstToQualified
+    value:           'true'
+  - key:             readability-redundant-member-init.IgnoreBaseInCopyConstructors
+    value:           'false'
   - key:             readability-uppercase-literal-suffix.IgnoreMacros
-    value:           '1'
+    value:           'true'
   - key:             readability-uppercase-literal-suffix.NewSuffixes
     value:           ''
 ...

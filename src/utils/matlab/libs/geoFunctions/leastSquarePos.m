@@ -21,15 +21,14 @@ function [pos, el, az, dop] = leastSquarePos(satpos, obs, settings)
 %--------------------------------------------------------------------------
 %                           SoftGNSS v3.0
 %--------------------------------------------------------------------------
-%Based on Kai Borre
-%Copyright (c) by Kai Borre
-%Updated by Darius Plausinaitis, Peter Rinder and Nicolaj Bertelsen
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
+% Based on Kai Borre
 %
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Kai Borre
 % SPDX-License-Identifier: GPL-3.0-or-later
+
 %==========================================================================
 
 %=== Initialization =======================================================

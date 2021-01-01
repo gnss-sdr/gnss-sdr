@@ -10,13 +10,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -464,8 +461,7 @@ void GNSSFlowgraph::connect()
                                                     std::vector<float> taps = gr::filter::firdes::low_pass(1.0,
                                                         fs,
                                                         acq_fs_decimated / 2.1,
-                                                        acq_fs_decimated / 2,
-                                                        gr::filter::firdes::win_type::WIN_HAMMING);
+                                                        acq_fs_decimated / 2);
 
                                                     gr::basic_block_sptr fir_filter_ccf_ = gr::filter::fir_filter_ccf::make(decimation, taps);
 
@@ -1477,7 +1473,7 @@ void GNSSFlowgraph::priorize_satellites(const std::vector<std::pair<int, Gnss_Sa
 {
     size_t old_size;
     Gnss_Signal gs;
-    for (auto& visible_satellite : visible_satellites)
+    for (const auto& visible_satellite : visible_satellites)
         {
             if (visible_satellite.second.get_system() == "GPS")
                 {

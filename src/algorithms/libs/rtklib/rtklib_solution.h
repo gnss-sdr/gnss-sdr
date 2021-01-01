@@ -26,8 +26,8 @@
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
- *
- *-----------------------------------------------------------------------------*/
+ *------------------------------------------------------------------------------
+ */
 
 #ifndef GNSS_SDR_RTKLIB_SOLUTION_H
 #define GNSS_SDR_RTKLIB_SOLUTION_H

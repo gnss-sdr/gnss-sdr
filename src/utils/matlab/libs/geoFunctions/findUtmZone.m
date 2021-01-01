@@ -12,14 +12,12 @@ function utmZone = findUtmZone(latitude, longitude)
 %--------------------------------------------------------------------------
 %                           SoftGNSS v3.0
 %
-% Copyright (C) Darius Plausinaitis
 % Written by Darius Plausinaitis
 %--------------------------------------------------------------------------
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Darius Plausinaitis
 % SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 

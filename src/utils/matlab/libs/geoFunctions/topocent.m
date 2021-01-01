@@ -6,7 +6,7 @@ function [Az, El, D] = topocent(X, dx)
 % [Az, El, D] = topocent(X, dx);
 %
 %   Inputs:
-%       X           - vector origin corrdinates (in ECEF system [X; Y; Z;])
+%       X           - vector origin coordinates (in ECEF system [X; Y; Z;])
 %       dx          - vector ([dX; dY; dZ;]).
 %
 %   Outputs:
@@ -14,15 +14,12 @@ function [Az, El, D] = topocent(X, dx)
 %       Az          - azimuth from north positive clockwise, degrees
 %       El          - elevation angle, degrees
 
-% Kai Borre 11-24-96
-% Copyright (c) by Kai Borre
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Kai Borre 11-24-96
 % SPDX-License-Identifier: GPL-3.0-or-later
+
 %==========================================================================
 
 dtr = pi/180;

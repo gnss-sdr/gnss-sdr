@@ -18,15 +18,13 @@
  *     by M. Burgis (10/03/08)
  *  4. Some fixes and improvements for Linux and macOS
  *     by C. Fernandez (22/10/17)
+ *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2013-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

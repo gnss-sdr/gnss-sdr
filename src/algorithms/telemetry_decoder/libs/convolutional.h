@@ -6,14 +6,11 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2006-2008  Matthew C. Valenti
- * Copyright (C) 2019 C. Fernandez-Prades
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2006-2008  Matthew C. Valenti
+ * Copyright (C) 2019 C. Fernandez-Prades
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * This file is a derived work of the original file, which had this note:

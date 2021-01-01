@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -38,22 +35,22 @@ namespace own = gsl;
 
 
 //! Generates complex GPS L5I code for the desired SV ID
-void gps_l5i_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn);
+void gps_l5i_code_gen_complex(own::span<std::complex<float>> dest, uint32_t prn);
 
 //! Generates real GPS L5I code for the desired SV ID
-void gps_l5i_code_gen_float(own::span<float> _dest, uint32_t _prn);
+void gps_l5i_code_gen_float(own::span<float> dest, uint32_t prn);
 
 //! Generates complex GPS L5Q code for the desired SV ID
-void gps_l5q_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn);
+void gps_l5q_code_gen_complex(own::span<std::complex<float>> dest, uint32_t prn);
 
 //! Generates real GPS L5Q code for the desired SV ID
-void gps_l5q_code_gen_float(own::span<float> _dest, uint32_t _prn);
+void gps_l5q_code_gen_float(own::span<float> dest, uint32_t prn);
 
 //! Generates complex GPS L5I code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
+void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq);
 
 //! Generates complex GPS L5Q code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
+void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq);
 
 
 /** \} */

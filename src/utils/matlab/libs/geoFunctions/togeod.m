@@ -20,15 +20,10 @@ function [dphi, dlambda, h] = togeod(a, finv, X, Y, Z)
 %       dlambda     - longitude
 %       h           - height above reference ellipsoid
 
-%  Copyright (C) 1987 C. Goad, Columbus, Ohio
-%  Reprinted with permission of author, 1996
-%  Fortran code translated into MATLAB
-%  Kai Borre 03-30-96
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: 1987 C. Goad, 1996 Kai Borre
 % SPDX-License-Identifier: GPL-3.0-or-later
 %==========================================================================
 

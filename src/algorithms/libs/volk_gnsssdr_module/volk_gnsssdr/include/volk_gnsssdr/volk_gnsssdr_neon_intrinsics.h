@@ -4,13 +4,12 @@
  * \brief Holds NEON intrinsics of intrinsics.
  * They can be used in VOLK_GNSSSDR kernels to avoid copy-paste
  *
- * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
+ *
  */
 
 #ifndef INCLUDED_VOLK_GNSSSDR_NEON_INTRINSICS_H

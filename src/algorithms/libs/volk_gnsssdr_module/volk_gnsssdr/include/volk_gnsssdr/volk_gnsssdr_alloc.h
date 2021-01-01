@@ -4,12 +4,10 @@
  * \brief C++11 allocator using volk_gnsssdr_malloc and volk_gnsssdr_free.
  * Based on https://github.com/gnuradio/volk/pull/284/ by @hcab14
  *
- * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 

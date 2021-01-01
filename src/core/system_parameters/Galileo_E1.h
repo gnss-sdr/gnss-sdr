@@ -7,13 +7,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -41,7 +38,7 @@ constexpr double GALILEO_E1_SUB_CARRIER_A_RATE_HZ = 1.023e6;  //!< Galileo E1 su
 constexpr double GALILEO_E1_SUB_CARRIER_B_RATE_HZ = 6.138e6;  //!< Galileo E1 sub-carrier 'b' rate [Hz]
 constexpr double GALILEO_E1_B_CODE_LENGTH_CHIPS = 4092.0;     //!< Galileo E1-B code length [chips]
 constexpr double GALILEO_E1_B_SYMBOL_RATE_BPS = 250.0;        //!< Galileo E1-B symbol rate [bits/second]
-constexpr int32_t GALILEO_E1_CODE_PERIOD_MS = 4;              //!< Galileo E1 code period [ms]
+constexpr uint32_t GALILEO_E1_CODE_PERIOD_MS = 4;             //!< Galileo E1 code period [ms]
 constexpr int32_t GALILEO_E1_B_SAMPLES_PER_SYMBOL = 1;        //!< (Galileo_E1_CODE_CHIP_RATE_HZ / Galileo_E1_B_CODE_LENGTH_CHIPS) / Galileo_E1_B_SYMBOL_RATE_BPS
 constexpr int32_t GALILEO_E1_C_SECONDARY_CODE_LENGTH = 25;    //!< Galileo E1-C secondary code length [chips]
 constexpr int32_t GALILEO_E1_NUMBER_OF_CODES = 50;

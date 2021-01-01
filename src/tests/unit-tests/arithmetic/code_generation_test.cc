@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -56,10 +53,10 @@ TEST(CodeGenerationTest, CodeGenGPSL1SampledTest)
     signed int _prn = 1;
     unsigned int _chip_shift = 4;
     double _fs = 8000000.0;
-    const signed int _codeFreqBasis = 1023000;  // Hz
-    const signed int _codeLength = 1023;
-    int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
-    std::vector<std::complex<float>> _dest(_samplesPerCode);
+    const signed int codeFreqBasis = 1023000;  // Hz
+    const signed int codeLength = 1023;
+    int samplesPerCode = round(_fs / static_cast<double>(codeFreqBasis / codeLength));
+    std::vector<std::complex<float>> _dest(samplesPerCode);
 
     int iterations = 1000;
 
@@ -83,10 +80,10 @@ TEST(CodeGenerationTest, ComplexConjugateTest)
 {
     double _fs = 8000000.0;
     double _f = 4000.0;
-    const signed int _codeFreqBasis = 1023000;  // Hz
-    const signed int _codeLength = 1023;
-    int _samplesPerCode = round(_fs / static_cast<double>(_codeFreqBasis / _codeLength));
-    std::vector<std::complex<float>> _dest(_samplesPerCode);
+    const signed int codeFreqBasis = 1023000;  // Hz
+    const signed int codeLength = 1023;
+    int samplesPerCode = round(_fs / static_cast<double>(codeFreqBasis / codeLength));
+    std::vector<std::complex<float>> _dest(samplesPerCode);
 
     int iterations = 1000;
 

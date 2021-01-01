@@ -292,9 +292,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget http://sourceforge.net/projects/arma/files/armadillo-10.1.0.tar.xz
-$ tar xvfz armadillo-10.1.0.tar.xz
-$ cd armadillo-10.1.0
+$ wget http://sourceforge.net/projects/arma/files/armadillo-10.1.2.tar.xz
+$ tar xvfz armadillo-10.1.2.tar.xz
+$ cd armadillo-10.1.2
 $ cmake .
 $ make
 $ sudo make install
@@ -720,10 +720,12 @@ More details can be found in our tutorial about
 ## <a name="macosx">macOS</a>
 
 GNSS-SDR can be built on macOS (or the former Mac OS X), starting from 10.9
-(Mavericks) and including 10.15 (Catalina). If you still have not installed
+(Mavericks) and including 11 (Big Sur). If you still have not installed
 [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App
-Store (it's free). You will also need the Xcode Command Line Tools. Launch the
-Terminal, found in /Applications/Utilities/, and type:
+Store (it's free). You will also need the Xcode Command Line Tools, which do not
+come by default in macOS versions older than Big Sur. If you are using an older
+version, please launch the Terminal, found in /Applications/Utilities/, and
+type:
 
 ```
 $ xcode-select --install

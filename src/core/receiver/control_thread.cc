@@ -9,13 +9,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -940,7 +937,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
               << "UTC, assuming RX position " << LLH[0] << " [deg], " << LLH[1] << " [deg], " << LLH[2] << " [m]\n";
 
     const std::map<int, Gps_Ephemeris> gps_eph_map = pvt_ptr->get_gps_ephemeris();
-    for (auto &it : gps_eph_map)
+    for (const auto &it : gps_eph_map)
         {
             const eph_t rtklib_eph = eph_to_rtklib(it.second, pre_2009_file_);
             std::array<double, 3> r_sat{};
@@ -965,7 +962,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     const std::map<int, Galileo_Ephemeris> gal_eph_map = pvt_ptr->get_galileo_ephemeris();
-    for (auto &it : gal_eph_map)
+    for (const auto &it : gal_eph_map)
         {
             const eph_t rtklib_eph = eph_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
@@ -990,7 +987,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     const std::map<int, Gps_Almanac> gps_alm_map = pvt_ptr->get_gps_almanac();
-    for (auto &it : gps_alm_map)
+    for (const auto &it : gps_alm_map)
         {
             const alm_t rtklib_alm = alm_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
@@ -1020,7 +1017,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
         }
 
     const std::map<int, Galileo_Almanac> gal_alm_map = pvt_ptr->get_galileo_almanac();
-    for (auto &it : gal_alm_map)
+    for (const auto &it : gal_alm_map)
         {
             const alm_t rtklib_alm = alm_to_rtklib(it.second);
             std::array<double, 3> r_sat{};
@@ -1059,7 +1056,7 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
 }
 
 
-void ControlThread::gps_acq_assist_data_collector()
+void ControlThread::gps_acq_assist_data_collector() const
 {
     // ############ 1.bis READ EPHEMERIS/UTC_MODE/IONO QUEUE ####################
     Gps_Acq_Assist gps_acq;

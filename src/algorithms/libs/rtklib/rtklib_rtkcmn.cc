@@ -3309,8 +3309,8 @@ int geterp(const erp_t *erp, gtime_t time, double *erpv)
 /* compare ephemeris ---------------------------------------------------------*/
 int cmpeph(const void *p1, const void *p2)
 {
-    auto *q1 = static_cast<const eph_t *>(p1);
-    auto *q2 = static_cast<const eph_t *>(p2);
+    const auto *q1 = static_cast<const eph_t *>(p1);
+    const auto *q2 = static_cast<const eph_t *>(p2);
     return q1->ttr.time != q2->ttr.time ? static_cast<int>(q1->ttr.time - q2->ttr.time) : (q1->toe.time != q2->toe.time ? static_cast<int>(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -3359,8 +3359,8 @@ void uniqeph(nav_t *nav)
 /* compare glonass ephemeris -------------------------------------------------*/
 int cmpgeph(const void *p1, const void *p2)
 {
-    auto *q1 = static_cast<const geph_t *>(p1);
-    auto *q2 = static_cast<const geph_t *>(p2);
+    const auto *q1 = static_cast<const geph_t *>(p1);
+    const auto *q2 = static_cast<const geph_t *>(p2);
     return q1->tof.time != q2->tof.time ? static_cast<int>(q1->tof.time - q2->tof.time) : (q1->toe.time != q2->toe.time ? static_cast<int>(q1->toe.time - q2->toe.time) : q1->sat - q2->sat);
 }
 
@@ -3410,8 +3410,8 @@ void uniqgeph(nav_t *nav)
 /* compare sbas ephemeris ----------------------------------------------------*/
 int cmpseph(const void *p1, const void *p2)
 {
-    auto *q1 = static_cast<const seph_t *>(p1);
-    auto *q2 = static_cast<const seph_t *>(p2);
+    const auto *q1 = static_cast<const seph_t *>(p1);
+    const auto *q2 = static_cast<const seph_t *>(p2);
     return q1->tof.time != q2->tof.time ? static_cast<int>(q1->tof.time - q2->tof.time) : (q1->t0.time != q2->t0.time ? static_cast<int>(q1->t0.time - q2->t0.time) : q1->sat - q2->sat);
 }
 
@@ -3488,8 +3488,8 @@ void uniqnav(nav_t *nav)
 /* compare observation data -------------------------------------------------*/
 int cmpobs(const void *p1, const void *p2)
 {
-    auto *q1 = static_cast<const obsd_t *>(p1);
-    auto *q2 = static_cast<const obsd_t *>(p2);
+    const auto *q1 = static_cast<const obsd_t *>(p1);
+    const auto *q2 = static_cast<const obsd_t *>(p2);
     double tt = timediff(q1->time, q2->time);
     if (fabs(tt) > DTTOL)
         {

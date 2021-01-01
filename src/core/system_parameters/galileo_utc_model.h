@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -45,7 +42,7 @@ public:
     Galileo_Utc_Model() = default;
 
     // double TOW_6;
-    double GST_to_UTC_time(double t_e, int32_t WN);  //!< GST-UTC Conversion Algorithm and Parameters
+    double GST_to_UTC_time(double t_e, int32_t WN) const;  //!< GST-UTC Conversion Algorithm and Parameters
 
     // Word type 6: GST-UTC conversion parameters
     double A0_6{};

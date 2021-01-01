@@ -26,13 +26,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -61,8 +58,8 @@
 #include <memory>
 #include <queue>
 #include <string>
-#include <thread>
 #include <utility>
+
 #if HAS_STD_SPAN
 #include <span>
 namespace own = std;
@@ -221,7 +218,7 @@ private:
     friend pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
     explicit pcps_acquisition(const Acq_Conf& conf_);
 
-    void update_local_carrier(own::span<gr_complex> carrier_vector, float freq);
+    void update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const;
     void update_grid_doppler_wipeoffs();
     void update_grid_doppler_wipeoffs_step2();
     void acquisition_core(uint64_t samp_count);
@@ -258,8 +255,8 @@ private:
     arma::fmat d_grid;
     arma::fmat d_narrow_grid;
 
+    std::queue<Gnss_Synchro> d_monitor_queue;
     std::string d_dump_filename;
-    std::thread d_worker;
 
     int64_t d_dump_number;
     uint64_t d_sample_counter;
@@ -291,8 +288,6 @@ private:
     bool d_step_two;
     bool d_use_CFAR_algorithm_flag;
     bool d_dump;
-
-    std::queue<Gnss_Synchro> d_monitor_queue;
 };
 
 

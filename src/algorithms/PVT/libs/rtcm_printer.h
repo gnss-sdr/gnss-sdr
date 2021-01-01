@@ -8,13 +8,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -182,7 +179,7 @@ private:
         bool more_messages);
 
     int32_t init_serial(const std::string& serial_device);  // serial port control
-    void close_serial();
+    void close_serial() const;
     bool Print_Message(const std::string& message);
 
     std::unique_ptr<Rtcm> rtcm;

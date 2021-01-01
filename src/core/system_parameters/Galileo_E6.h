@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -38,7 +35,7 @@ constexpr double GALILEO_E6_CODE_PERIOD_S = 0.001;           //!< Galileo E6 cod
 constexpr double GALILEO_E6_B_CODE_LENGTH_CHIPS = 5115.0;           //!< Galileo E6 B code length [chips]
 constexpr double GALILEO_E6_C_CODE_LENGTH_CHIPS = 5115.0;           //!< Galileo E6 C code length [chips]
 constexpr double GALILEO_E6_C_SECONDARY_CODE_LENGTH_CHIPS = 100.0;  //!< Galileo E6 C secondary code length [chips]
-constexpr int32_t GALILEO_E6_CODE_PERIOD_MS = 1;                    //!< Galileo E& B/C code period [ms]
+constexpr uint32_t GALILEO_E6_CODE_PERIOD_MS = 1;                   //!< Galileo E& B/C code period [ms]
 
 constexpr int32_t GALILEO_E6_NUMBER_OF_CODES = 50;
 

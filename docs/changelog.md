@@ -36,7 +36,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 - Added a common shared pointer definition `gnss_shared_ptr`, which allows to
   handle the `boost::shared_ptr` to `std::shared_ptr` transition in GNU Radio
   3.9 API more nicely.
-- Support new FFT blocks' templated API in GNU Radio 3.9.
+- Support new FFT and firdes blocks' API in GNU Radio 3.9.
 
 ### Improvements in Portability:
 
@@ -61,6 +61,10 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   SIMD instructions on that OS.
 - Fixed building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
 - Fixed linking against the ORC library if it is present in the system.
+- Fixed a bug introduced in v0.0.13 that prevented getting Galileo-only PVT
+  fixes in some environments.
+- Fixed duplication of protobuf build tree if it was locally built and then
+  installed with DESTDIR variable set.
 
 ### Improvements in Usability:
 

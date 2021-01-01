@@ -23,15 +23,13 @@
  * Note: A collection of the formats currently used by the IGS can be found
  * here: https://kb.igs.org/hc/en-us/articles/201096516-IGS-Formats
  * \author Carles Fernandez Prades, 2011. cfernandez(at)cttc.es
+ *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

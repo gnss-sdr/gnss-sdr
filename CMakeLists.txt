@@ -1,11 +1,8 @@
-# Copyright (C) 2010-2020 (see AUTHORS file for a list of contributors)
-#
-# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
 ################################################################################
 # Project setup
@@ -113,7 +110,8 @@ if(ENABLE_FPGA)
 endif()
 
 option(ENABLE_BENCHMARKS "Build code snippets benchmarks" OFF)
-if(CMAKE_VERSION VERSION_LESS 3.5.1)
+if(CMAKE_VERSION VERSION_LESS 3.5.1 OR
+    (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "10.99"))
     set(ENABLE_BENCHMARKS OFF)
 endif()
 
@@ -328,8 +326,8 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.1.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.18")
-set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.19")
+set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11.2")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.14.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.2")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
@@ -2392,7 +2390,7 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
                 CONFIGURE_COMMAND "${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION} --host=$ENV{OECORE_TARGET_ARCH} --with-protoc=${PROTOC_EXECUTABLE}"
                 BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
-                INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+                INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} DESTDIR= install
                 BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc
             )
@@ -2479,7 +2477,7 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
                 CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
-                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
+                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
             )
         else()
             if(CMAKE_MAKE_PROGRAM MATCHES "make")
@@ -2498,7 +2496,7 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                 UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
                 CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
                 BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM} ${PROTOBUF_PARALLEL_BUILD}
-                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} install
+                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
                 BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${CMAKE_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc
             )

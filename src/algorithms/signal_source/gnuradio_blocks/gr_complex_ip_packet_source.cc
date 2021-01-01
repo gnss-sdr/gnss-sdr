@@ -4,15 +4,13 @@
  * \brief Receives ip frames containing samples in UDP frame encapsulation
  * using a high performance packet capture library (libpcap)
  * \author Javier Arribas jarribas (at) cttc.es
+ *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -329,7 +327,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
             switch (d_wire_sample_type)
                 {
                 case 1:  // interleaved byte samples
-                    for (auto &output_item : output_items)
+                    for (const auto &output_item : output_items)
                         {
                             int8_t real;
                             int8_t imag;
@@ -346,7 +344,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                         }
                     break;
                 case 2:  // 4-bit samples
-                    for (auto &output_item : output_items)
+                    for (const auto &output_item : output_items)
                         {
                             int8_t real;
                             int8_t imag;
@@ -381,7 +379,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                         }
                     break;
                 case 3:  // interleaved float samples
-                    for (auto &output_item : output_items)
+                    for (const auto &output_item : output_items)
                         {
                             float real;
                             float imag;

@@ -7,13 +7,10 @@
  * \author Damian Miralles, 2018. dmiralles2009@gmail.com
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -947,7 +944,7 @@ bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a
 }
 
 
-bool Beidou_Dnav_Navigation_Message::have_new_iono()
+bool Beidou_Dnav_Navigation_Message::have_new_iono() const
 {
     // the condition on flag_utc_model is added to have a time stamp for iono
     if (flag_iono_valid == true)

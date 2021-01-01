@@ -1,11 +1,8 @@
-# Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
-#
-# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
+# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
@@ -336,17 +333,32 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
         include(GNUInstallDirs)
         find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
+        set(GPSTK_PATCH_COMMAND
+            cd ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION} &&
+            ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gpstk_static.patch
+        )
+        # Patch only once
+        if(EXISTS ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt)
+            set(GPSTK_PATCH_COMMAND "")
+        endif()
         if(CMAKE_VERSION VERSION_LESS 3.2)
             ExternalProject_Add(gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
                 SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                PATCH_COMMAND cd ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION} && ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gpstk_static.patch
-                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=ON -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=11 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
+                PATCH_COMMAND ${GPSTK_PATCH_COMMAND}
+                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
+                    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install
+                    -DBUILD_EXT=ON
+                    -DBUILD_PYTHON=OFF
+                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                    -DCMAKE_CXX_STANDARD=11
+                    -DCMAKE_CXX_EXTENSIONS=ON
+                    -DCMAKE_C_STANDARD=11
+                    -DCMAKE_C_EXTENSIONS=ON
                 BUILD_COMMAND ${GPSTK_BUILD_COMMAND}
                 UPDATE_COMMAND ""
-                PATCH_COMMAND ""
             )
         else()
             if(CMAKE_MAKE_PROGRAM MATCHES "make")
@@ -362,12 +374,19 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
                 SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                PATCH_COMMAND cd ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION} && ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gpstk_static.patch
-                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install -DBUILD_EXT=ON -DBUILD_PYTHON=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_C_STANDARD=11 -DCMAKE_C_EXTENSIONS=ON
+                PATCH_COMMAND ${GPSTK_PATCH_COMMAND}
+                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
+                    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install
+                    -DBUILD_EXT=ON
+                    -DBUILD_PYTHON=OFF
+                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                    -DCMAKE_CXX_STANDARD=14
+                    -DCMAKE_CXX_EXTENSIONS=ON
+                    -DCMAKE_C_STANDARD=11
+                    -DCMAKE_C_EXTENSIONS=ON
                 BUILD_COMMAND ${GPSTK_BUILD_COMMAND} ${GPSTK_PARALLEL_BUILD}
                 BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX}
                 UPDATE_COMMAND ""
-                PATCH_COMMAND ""
             )
         endif()
         set(GPSTK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")

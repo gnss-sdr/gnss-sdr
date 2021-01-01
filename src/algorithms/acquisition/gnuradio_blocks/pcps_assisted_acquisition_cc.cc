@@ -7,13 +7,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -286,7 +283,7 @@ float pcps_assisted_acquisition_cc::search_maximum()
 }
 
 
-float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items)
+float pcps_assisted_acquisition_cc::estimate_input_power(gr_vector_const_void_star &input_items) const
 {
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // Get the input samples pointer
     // 1- Compute the input signal power estimation

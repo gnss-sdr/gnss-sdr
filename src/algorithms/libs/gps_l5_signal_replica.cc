@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -120,7 +117,7 @@ std::deque<bool> make_l5q_xb()
 }
 
 
-void make_l5i(own::span<int32_t> _dest, int32_t prn)
+void make_l5i(own::span<int32_t> dest, int32_t prn)
 {
     const int32_t xb_offset = GPS_L5I_INIT_REG[prn];
 
@@ -135,12 +132,12 @@ void make_l5i(own::span<int32_t> _dest, int32_t prn)
 
     for (int32_t n = 0; n < GPS_L5I_CODE_LENGTH_CHIPS; n++)
         {
-            _dest[n] = xa[n] xor xb_shift[n];
+            dest[n] = xa[n] xor xb_shift[n];
         }
 }
 
 
-void make_l5q(own::span<int32_t> _dest, int32_t prn)
+void make_l5q(own::span<int32_t> dest, int32_t prn)
 {
     const int32_t xb_offset = GPS_L5Q_INIT_REG[prn];
 
@@ -155,37 +152,37 @@ void make_l5q(own::span<int32_t> _dest, int32_t prn)
 
     for (int32_t n = 0; n < GPS_L5Q_CODE_LENGTH_CHIPS; n++)
         {
-            _dest[n] = xa[n] xor xb_shift[n];
+            dest[n] = xa[n] xor xb_shift[n];
         }
 }
 
 
-void gps_l5i_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn)
+void gps_l5i_code_gen_complex(own::span<std::complex<float>> dest, uint32_t prn)
 {
-    std::array<int32_t, GPS_L5I_CODE_LENGTH_CHIPS> _code{};
-    if (_prn > 0 and _prn < 51)
+    std::array<int32_t, GPS_L5I_CODE_LENGTH_CHIPS> code_aux{};
+    if (prn > 0 and prn < 51)
         {
-            make_l5i(_code, _prn - 1);
+            make_l5i(code_aux, prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5I_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(1.0F - 2.0F * static_cast<float>(_code[i]), 0.0);
+            dest[i] = std::complex<float>(1.0F - 2.0F * static_cast<float>(code_aux[i]), 0.0);
         }
 }
 
 
-void gps_l5i_code_gen_float(own::span<float> _dest, uint32_t _prn)
+void gps_l5i_code_gen_float(own::span<float> dest, uint32_t prn)
 {
-    std::array<int32_t, GPS_L5I_CODE_LENGTH_CHIPS> _code{};
-    if (_prn > 0 and _prn < 51)
+    std::array<int32_t, GPS_L5I_CODE_LENGTH_CHIPS> code_aux{};
+    if (prn > 0 and prn < 51)
         {
-            make_l5i(_code, _prn - 1);
+            make_l5i(code_aux, prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5I_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = 1.0F - 2.0F * static_cast<float>(_code[i]);
+            dest[i] = 1.0F - 2.0F * static_cast<float>(code_aux[i]);
         }
 }
 
@@ -193,68 +190,68 @@ void gps_l5i_code_gen_float(own::span<float> _dest, uint32_t _prn)
 /*
  *  Generates complex GPS L5i code for the desired SV ID and sampled to specific sampling frequency
  */
-void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
+void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq)
 {
-    constexpr int32_t _codeLength = GPS_L5I_CODE_LENGTH_CHIPS;
-    constexpr float _tc = 1.0 / static_cast<float>(GPS_L5I_CODE_RATE_CPS);  // L5I primary chip period in sec
+    constexpr int32_t codeLength = GPS_L5I_CODE_LENGTH_CHIPS;
+    constexpr float tc = 1.0 / static_cast<float>(GPS_L5I_CODE_RATE_CPS);  // L5I primary chip period in sec
 
-    const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
-    const float _ts = 1.0F / static_cast<float>(_fs);  // Sampling period in sec
-    int32_t _codeValueIndex;
+    const auto samplesPerCode = static_cast<int32_t>(static_cast<double>(sampling_freq) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(codeLength)));
+    const float ts = 1.0F / static_cast<float>(sampling_freq);  // Sampling period in sec
+    int32_t codeValueIndex;
 
-    std::array<int32_t, GPS_L5I_CODE_LENGTH_CHIPS> _code{};
-    if (_prn > 0 and _prn < 51)
+    std::array<int32_t, GPS_L5I_CODE_LENGTH_CHIPS> code_aux{};
+    if (prn > 0 and prn < 51)
         {
-            make_l5i(_code, _prn - 1);
+            make_l5i(code_aux, prn - 1);
         }
 
-    for (int32_t i = 0; i < _samplesPerCode; i++)
+    for (int32_t i = 0; i < samplesPerCode; i++)
         {
             // === Digitizing ==================================================
 
             // --- Make index array to read L5 code values ---------------------
-            _codeValueIndex = static_cast<int32_t>(std::ceil(_ts * static_cast<float>(i + 1.0F) / _tc)) - 1;
+            codeValueIndex = static_cast<int32_t>(std::ceil(ts * static_cast<float>(i + 1.0F) / tc)) - 1;
 
             // --- Make the digitized version of the L5I code ------------------
-            if (i == _samplesPerCode - 1)
+            if (i == samplesPerCode - 1)
                 {
                     // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(1.0F - 2.0F * _code[_codeLength - 1], 0.0);
+                    dest[i] = std::complex<float>(1.0F - 2.0F * code_aux[codeLength - 1], 0.0);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(1.0F - 2.0F * _code[_codeValueIndex], 0.0);  // repeat the chip -> upsample
+                    dest[i] = std::complex<float>(1.0F - 2.0F * code_aux[codeValueIndex], 0.0);  // repeat the chip -> upsample
                 }
         }
 }
 
 
-void gps_l5q_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn)
+void gps_l5q_code_gen_complex(own::span<std::complex<float>> dest, uint32_t prn)
 {
-    std::array<int32_t, GPS_L5Q_CODE_LENGTH_CHIPS> _code{};
-    if (_prn > 0 and _prn < 51)
+    std::array<int32_t, GPS_L5Q_CODE_LENGTH_CHIPS> code_aux{};
+    if (prn > 0 and prn < 51)
         {
-            make_l5q(_code, _prn - 1);
+            make_l5q(code_aux, prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5Q_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * static_cast<float>(_code[i]));
+            dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * static_cast<float>(code_aux[i]));
         }
 }
 
 
-void gps_l5q_code_gen_float(own::span<float> _dest, uint32_t _prn)
+void gps_l5q_code_gen_float(own::span<float> dest, uint32_t prn)
 {
-    std::array<int32_t, GPS_L5Q_CODE_LENGTH_CHIPS> _code{};
-    if (_prn > 0 and _prn < 51)
+    std::array<int32_t, GPS_L5Q_CODE_LENGTH_CHIPS> code_aux{};
+    if (prn > 0 and prn < 51)
         {
-            make_l5q(_code, _prn - 1);
+            make_l5q(code_aux, prn - 1);
         }
 
     for (int32_t i = 0; i < GPS_L5Q_CODE_LENGTH_CHIPS; i++)
         {
-            _dest[i] = 1.0 - 2.0 * static_cast<float>(_code[i]);
+            dest[i] = 1.0 - 2.0 * static_cast<float>(code_aux[i]);
         }
 }
 
@@ -262,40 +259,40 @@ void gps_l5q_code_gen_float(own::span<float> _dest, uint32_t _prn)
 /*
  *  Generates complex GPS L5Q code for the desired SV ID and sampled to specific sampling frequency
  */
-void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs)
+void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq)
 {
-    std::array<int32_t, GPS_L5Q_CODE_LENGTH_CHIPS> _code{};
-    if (_prn > 0 and _prn < 51)
+    std::array<int32_t, GPS_L5Q_CODE_LENGTH_CHIPS> code_aux{};
+    if (prn > 0 and prn < 51)
         {
-            make_l5q(_code, _prn - 1);
+            make_l5q(code_aux, prn - 1);
         }
 
-    int32_t _codeValueIndex;
-    constexpr int32_t _codeLength = GPS_L5Q_CODE_LENGTH_CHIPS;
+    int32_t codeValueIndex;
+    constexpr int32_t codeLength = GPS_L5Q_CODE_LENGTH_CHIPS;
 
     // --- Find number of samples per spreading code ---------------------------
-    const auto _samplesPerCode = static_cast<int32_t>(static_cast<double>(_fs) / (static_cast<double>(GPS_L5Q_CODE_RATE_CPS) / static_cast<double>(_codeLength)));
+    const auto samplesPerCode = static_cast<int32_t>(static_cast<double>(sampling_freq) / (static_cast<double>(GPS_L5Q_CODE_RATE_CPS) / static_cast<double>(codeLength)));
 
     // --- Find time constants -------------------------------------------------
-    const float _ts = 1.0F / static_cast<float>(_fs);                        // Sampling period in sec
-    constexpr float _tc = 1.0F / static_cast<float>(GPS_L5Q_CODE_RATE_CPS);  // L5Q chip period in sec
+    const float ts = 1.0F / static_cast<float>(sampling_freq);              // Sampling period in sec
+    constexpr float tc = 1.0F / static_cast<float>(GPS_L5Q_CODE_RATE_CPS);  // L5Q chip period in sec
 
-    for (int32_t i = 0; i < _samplesPerCode; i++)
+    for (int32_t i = 0; i < samplesPerCode; i++)
         {
             // === Digitizing ==================================================
 
             // --- Make index array to read L5 code values ---------------------
-            _codeValueIndex = static_cast<int32_t>(std::ceil(_ts * static_cast<float>(i + 1.0F) / _tc)) - 1;
+            codeValueIndex = static_cast<int32_t>(std::ceil(ts * static_cast<float>(i + 1.0F) / tc)) - 1;
 
             // --- Make the digitized version of the L5Q code ------------------
-            if (i == _samplesPerCode - 1)
+            if (i == samplesPerCode - 1)
                 {
                     // --- Correct the last index (due to number rounding issues) -----------
-                    _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * _code[_codeLength - 1]);
+                    dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * code_aux[codeLength - 1]);
                 }
             else
                 {
-                    _dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * _code[_codeValueIndex]);  // repeat the chip -> upsample
+                    dest[i] = std::complex<float>(0.0, 1.0F - 2.0F * code_aux[codeValueIndex]);  // repeat the chip -> upsample
                 }
         }
 }

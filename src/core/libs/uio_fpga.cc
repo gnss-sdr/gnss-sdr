@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -167,7 +164,7 @@ int32_t find_uio_num(const std::string &device_name, uint32_t device_num)
     // search for the requested device driver
     fs::path path(uio_dir);
     std::vector<fs::directory_entry> dirs;
-    for (auto &p : fs::directory_iterator(path))
+    for (const auto &p : fs::directory_iterator(path))
         {
             dirs.push_back(p);
         }

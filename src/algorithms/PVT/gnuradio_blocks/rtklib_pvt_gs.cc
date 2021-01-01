@@ -5,13 +5,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -372,7 +369,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             if (!fs::exists(p))
                 {
                     std::string new_folder;
-                    for (auto& folder : fs::path(d_xml_base_path))
+                    for (const auto& folder : fs::path(d_xml_base_path))
                         {
                             new_folder += folder.string();
                             errorlib::error_code ec;
@@ -1512,7 +1509,7 @@ void rtklib_pvt_gs::clear_ephemeris()
 }
 
 
-bool rtklib_pvt_gs::send_sys_v_ttff_msg(d_ttff_msgbuf ttff)
+bool rtklib_pvt_gs::send_sys_v_ttff_msg(d_ttff_msgbuf ttff) const
 {
     if (d_sysv_msqid != -1)
         {
@@ -2175,7 +2172,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             std::streamsize ss = std::cout.precision();  // save current precision
                             std::cout.setf(std::ios::fixed, std::ios::floatfield);
-                            auto facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
+                            auto* facet = new boost::posix_time::time_facet("%Y-%b-%d %H:%M:%S.%f %z");
                             std::cout.imbue(std::locale(std::cout.getloc(), facet));
                             std::cout
                                 << TEXT_BOLD_GREEN

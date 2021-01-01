@@ -1,8 +1,8 @@
 #
 # ORC implementation: performs the carrier wipe-off mixing and the Early, Prompt, and Late correlation with 16 bits vectors
 # Andres Cecilia, 2014. a.cecilia.luque(at)gmail.com
-# 
-# 
+#
+#
 # ORC code that performs the carrier wipe-off mixing and the
 # Early, Prompt, and Late correlation with 16 bits vectors (8 bits the
 # real part and 8 bits the imaginary part):
@@ -15,20 +15,18 @@
 #   prompt code (multiplication of 16 bits vectors), accumulating the results
 # - Late values are calculated by multiplying the input signal in BB by the
 #   late code (multiplication of 16 bits vectors), accumulating the results
-# 
-# 
-# -------------------------------------------------------------------------
-# 
-# Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
-# 
-# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
 #
+#
+# ------------------------------------------------------------------------------
+#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
+# Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# -------------------------------------------------------------------------
-# 
+# ------------------------------------------------------------------------------
+#
 
 .function volk_gnsssdr_8ic_x5_cw_epl_corr_8ic_x3_first_a_orc_impl
 .source 2 input
@@ -122,5 +120,3 @@ mergebw real2, 0, real
 mergebw imag2, 0, imag
 accw L_out_real, real2
 accw L_out_imag, imag2
-
-

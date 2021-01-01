@@ -70,14 +70,14 @@
 /*
  * See the definitions.
  */
-static int _fetch_present_idx(const void *struct_ptr, int pres_offset,
+static int fetch_present_idx(const void *struct_ptr, int pres_offset,
     int size);
-static void _set_present_idx(void *struct_ptr, int offset, int size, int pres);
+static void set_present_idx(void *struct_ptr, int offset, int size, int pres);
 
 /*
  * Tags are canonically sorted in the tag to member table.
  */
-static int _search4tag(const void *ap, const void *bp)
+static int search4tag(const void *ap, const void *bp)
 {
     const asn_TYPE_tag2member_t *a = (const asn_TYPE_tag2member_t *)ap;
     const asn_TYPE_tag2member_t *b = (const asn_TYPE_tag2member_t *)bp;
@@ -224,7 +224,7 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     key.el_tag = tlv_tag;
                     t2m = (asn_TYPE_tag2member_t *)bsearch(
                         &key, specs->tag2el, specs->tag2el_count,
-                        sizeof(specs->tag2el[0]), _search4tag);
+                        sizeof(specs->tag2el[0]), search4tag);
                     if (t2m)
                         {
                             /*
@@ -308,7 +308,7 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
                     /* Set presence to be able to free it properly at any
                          * time */
-                    _set_present_idx(st, specs->pres_offset,
+                    set_present_idx(st, specs->pres_offset,
                         specs->pres_size, ctx->step + 1);
                     /*
                          * Invoke the member fetch routine according to member's
@@ -448,7 +448,7 @@ asn_enc_rval_t CHOICE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 
     ASN_DEBUG("%s %s as CHOICE", cb ? "Encoding" : "Estimating", td->name);
 
-    present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
+    present = fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
 
     /*
      * If the structure was not initialized, it cannot be encoded:
@@ -550,7 +550,7 @@ ber_tlv_tag_t CHOICE_outmost_tag(asn_TYPE_descriptor_t *td, const void *ptr,
     /*
      * Figure out which CHOICE element is encoded.
      */
-    present = _fetch_present_idx(ptr, specs->pres_offset, specs->pres_size);
+    present = fetch_present_idx(ptr, specs->pres_offset, specs->pres_size);
 
     if (present > 0 || present <= td->elements_count)
         {
@@ -593,7 +593,7 @@ int CHOICE_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     /*
      * Figure out which CHOICE element is encoded.
      */
-    present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
+    present = fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
     if (present > 0 && present <= td->elements_count)
         {
             asn_TYPE_member_t *elm = &td->elements[present - 1];
@@ -758,7 +758,7 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                     assert(_fetch_present_idx(st, specs->pres_offset,
                                specs->pres_size) == 0);
                     /* Record what we've got */
-                    _set_present_idx(st, specs->pres_offset, specs->pres_size,
+                    set_present_idx(st, specs->pres_offset, specs->pres_size,
                         edx + 1);
                     ctx->phase = 3;
                     /* Fall through */
@@ -942,7 +942,7 @@ asn_enc_rval_t CHOICE_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
     /*
      * Figure out which CHOICE element is encoded.
      */
-    present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
+    present = fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
 
     if (present <= 0 || present > td->elements_count)
         {
@@ -1095,7 +1095,7 @@ asn_dec_rval_t CHOICE_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
         }
 
     /* Set presence to be able to free it later */
-    _set_present_idx(st, specs->pres_offset, specs->pres_size, value + 1);
+    set_present_idx(st, specs->pres_offset, specs->pres_size, value + 1);
 
     elm = &td->elements[value];
     if (elm->flags & ATF_POINTER)
@@ -1159,7 +1159,7 @@ asn_enc_rval_t CHOICE_encode_uper(asn_TYPE_descriptor_t *td,
             ct = 0;
         }
 
-    present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
+    present = fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
 
     /*
      * If the structure was not initialized properly, it cannot be encoded:
@@ -1268,7 +1268,7 @@ int CHOICE_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
     /*
      * Figure out which CHOICE element is encoded.
      */
-    present = _fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
+    present = fetch_present_idx(sptr, specs->pres_offset, specs->pres_size);
 
     /*
      * Print that element.
@@ -1327,7 +1327,7 @@ void CHOICE_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only)
     /*
      * Figure out which CHOICE element is encoded.
      */
-    present = _fetch_present_idx(ptr, specs->pres_offset, specs->pres_size);
+    present = fetch_present_idx(ptr, specs->pres_offset, specs->pres_size);
 
     /*
      * Free that element.
@@ -1367,7 +1367,7 @@ void CHOICE_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only)
  * is guaranteed to be aligned properly. ASN.1 compiler itself does not
  * produce packed code.
  */
-static int _fetch_present_idx(const void *struct_ptr, int pres_offset,
+static int fetch_present_idx(const void *struct_ptr, int pres_offset,
     int pres_size)
 {
     const void *present_ptr;
@@ -1395,7 +1395,7 @@ static int _fetch_present_idx(const void *struct_ptr, int pres_offset,
     return present;
 }
 
-static void _set_present_idx(void *struct_ptr, int pres_offset, int pres_size,
+static void set_present_idx(void *struct_ptr, int pres_offset, int pres_size,
     int present)
 {
     void *present_ptr;

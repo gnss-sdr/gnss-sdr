@@ -1,10 +1,8 @@
-# Copyright (C) 2011-2020  (see AUTHORS file for a list of contributors)
-#
-# GNSS-SDR is a software-defined Global Navigation Satellite Systems receiver
-#
+# GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-License-Identifier: BSD-3-Clause
 
 
 ########################################################################
@@ -78,7 +76,14 @@ if(CMAKE_VERSION VERSION_LESS 3.12 OR CMAKE_CROSSCOMPILING)
         endif()
     endif()
 else()
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(_previous ${CMAKE_FIND_FRAMEWORK})
+        set(CMAKE_FIND_FRAMEWORK LAST)
+    endif()
     find_package(Python3 COMPONENTS Interpreter)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(CMAKE_FIND_FRAMEWORK ${_previous})
+    endif()
     if(Python3_FOUND)
         set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
         set(PYTHON_VERSION_MAJOR ${Python3_VERSION_MAJOR})

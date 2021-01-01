@@ -11,16 +11,11 @@ function [phi, lambda, h] = cart2geo(X, Y, Z, i)
 %              4. Geodetic Reference System 1980
 %              5. World Geodetic System 1984
 
-% Kai Borre 10-13-98
-% Copyright (c) by Kai Borre
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Kai Borre
 % SPDX-License-Identifier: GPL-3.0-or-later
-% Revision: 1.0   Date: 1998/10/23
 %==========================================================================
 
 a = [6378388 6378160 6378135 6378137 6378137];

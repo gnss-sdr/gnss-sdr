@@ -10,13 +10,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -259,7 +256,7 @@ bool pcps_acquisition::is_fdma()
 }
 
 
-void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector, float freq)
+void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector, float freq) const
 {
     float phase_step_rad;
     if (d_acq_parameters.use_automatic_resampler)
@@ -663,6 +660,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
         {
             lk.unlock();
         }
+
     // Doppler frequency grid loop
     if (!d_step_two)
         {
@@ -878,6 +876,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     send_negative_acquisition();
                 }
         }
+    d_worker_active = false;
 
     if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) or (d_positive_acq == 1))
         {
@@ -889,8 +888,6 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             d_num_noncoherent_integrations_counter = 0U;
             d_positive_acq = 0;
         }
-
-    d_worker_active = false;
 }
 
 
@@ -937,7 +934,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
      * 6. Declare positive or negative acquisition using a message port
      */
     gr::thread::scoped_lock lk(d_setlock);
-
     if (!d_active or d_worker_active)
         {
             if (!d_acq_parameters.blocking_on_standby)
@@ -1024,8 +1020,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     }
                 else
                     {
-                        d_worker = std::thread([&] { pcps_acquisition::acquisition_core(d_sample_counter); });
-                        d_worker.detach();
+                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
                         d_worker_active = true;
                     }
                 consume_each(0);

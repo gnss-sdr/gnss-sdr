@@ -1,21 +1,15 @@
 % -------------------------------------------------------------------------
 %
-% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-%
-% GNSS-SDR is a software defined Global Navigation
-%           Satellite Systems receiver
-%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 % This file is part of GNSS-SDR.
 %
+% SPDX-FileCopyrightText: Javier Arribas 2011
 % SPDX-License-Identifier: GPL-3.0-or-later
 %
 % -------------------------------------------------------------------------
-%
-% Javier Arribas 2011
 
 function [telemetry] = gps_l1_ca_read_telemetry_dump (filename, count)
 
-%% usage: read_tracking_dat (filename, [count])
 %%
 %% open GNSS-SDR tracking binary log file .dat and return the contents
 %%

@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -38,11 +35,13 @@ namespace own = gsl;
 
 
 //! Generates complex GPS L2C M code for the desired SV ID
-void gps_l2c_m_code_gen_complex(own::span<std::complex<float>> _dest, uint32_t _prn);
-void gps_l2c_m_code_gen_float(own::span<float> _dest, uint32_t _prn);
+void gps_l2c_m_code_gen_complex(own::span<std::complex<float>> dest, uint32_t prn);
+
+//! Generates float GPS L2C M code for the desired SV ID
+void gps_l2c_m_code_gen_float(own::span<float> dest, uint32_t prn);
 
 //! Generates complex GPS L2C M code for the desired SV ID, and sampled to specific sampling frequency
-void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> _dest, uint32_t _prn, int32_t _fs);
+void gps_l2c_m_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint32_t prn, int32_t sampling_freq);
 
 
 /** \} */

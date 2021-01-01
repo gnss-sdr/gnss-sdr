@@ -7,13 +7,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -58,7 +55,7 @@ public:
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s] (GLONASS ICD (Edition 5.1) Section 3.3.3 GLONASS Time)
      */
-    double utc_time(double glonass_time_corrected);
+    double utc_time(double glonass_time_corrected) const;
 
     template <class Archive>
     /*!

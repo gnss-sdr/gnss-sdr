@@ -294,7 +294,6 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_u_avx(lv_32fc_
     z0 = _mm256_complexnormalise_ps(z0);
     _mm256_store_ps((float*)phase_vec, z0);
     _phase = phase_vec[0];
-    _mm256_zeroupper();
 
     number = sixteenthPoints * 16;
     for (; number < num_points; number++)
@@ -462,7 +461,6 @@ static inline void volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn_a_avx(lv_32fc_
     z0 = _mm256_complexnormalise_ps(z0);
     _mm256_store_ps((float*)phase_vec, z0);
     _phase = phase_vec[0];
-    _mm256_zeroupper();
 
     number = sixteenthPoints * 16;
     for (; number < num_points; number++)

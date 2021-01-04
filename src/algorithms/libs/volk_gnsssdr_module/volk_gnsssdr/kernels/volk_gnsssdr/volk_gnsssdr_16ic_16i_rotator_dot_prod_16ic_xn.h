@@ -611,7 +611,6 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_a_avx2(lv_16sc
         }
 
     volk_gnsssdr_free(cacc);
-    _mm256_zeroupper();
 
     _mm256_store_ps((float*)four_phase_acc, four_phase_acc_reg);
     (*phase) = four_phase_acc[0];
@@ -763,7 +762,6 @@ static inline void volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn_u_avx2(lv_16sc
         }
 
     volk_gnsssdr_free(cacc);
-    _mm256_zeroupper();
 
     _mm256_store_ps((float*)four_phase_acc, four_phase_acc_reg);
     (*phase) = four_phase_acc[0];

@@ -129,7 +129,7 @@ static inline void volk_gnsssdr_16ic_convert_32fc_u_axv(lv_32fc_t* outputVector,
             _in += 4;
             _out += 4;
         }
-    _mm256_zeroupper();
+
     for (i = 0; i < (num_points % 4); ++i)
         {
             *_out++ = lv_cmake((float)lv_creal(*_in), (float)lv_cimag(*_in));
@@ -156,7 +156,7 @@ static inline void volk_gnsssdr_16ic_convert_32fc_a_axv(lv_32fc_t* outputVector,
             _in += 4;
             _out += 4;
         }
-    _mm256_zeroupper();
+
     for (i = 0; i < (num_points % 4); ++i)
         {
             *_out++ = lv_cmake((float)lv_creal(*_in), (float)lv_cimag(*_in));

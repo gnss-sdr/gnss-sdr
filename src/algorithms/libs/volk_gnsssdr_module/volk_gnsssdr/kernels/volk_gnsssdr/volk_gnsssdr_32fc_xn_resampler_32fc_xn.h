@@ -414,7 +414,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_avx(lv_32fc_t** resu
                     indexn = _mm256_add_ps(indexn, eights);
                 }
         }
-    _mm256_zeroupper();
+
     for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = avx_iters * 8; n < num_points; n++)
@@ -492,7 +492,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_avx(lv_32fc_t** resu
                     indexn = _mm256_add_ps(indexn, eights);
                 }
         }
-    _mm256_zeroupper();
+
     for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = avx_iters * 8; n < num_points; n++)
@@ -571,7 +571,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_u_avx2(lv_32fc_t** res
                     indexn = _mm256_add_ps(indexn, eights);
                 }
         }
-    _mm256_zeroupper();
+
     for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = avx_iters * 8; n < num_points; n++)
@@ -650,7 +650,7 @@ static inline void volk_gnsssdr_32fc_xn_resampler_32fc_xn_a_avx2(lv_32fc_t** res
                     indexn = _mm256_add_ps(indexn, eights);
                 }
         }
-    _mm256_zeroupper();
+
     for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = avx_iters * 8; n < num_points; n++)

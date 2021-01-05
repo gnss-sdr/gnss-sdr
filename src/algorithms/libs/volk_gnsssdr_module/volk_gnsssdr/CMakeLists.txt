@@ -181,7 +181,9 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
     # are defined. Note the different data type of the first argument). By
     # default 'incompatible-pointer-types' is a warning only and 'pointer-sign'
     # is a warning enabled by '-Wall'. These warnings are only applicable to C.
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=incompatible-pointer-types -Werror=pointer-sign")
+    if(NOT (CMAKE_C_COMPILER_ID MATCHES "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "5.0"))
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=incompatible-pointer-types -Werror=pointer-sign")
+    endif()
 endif()
 
 option(ENABLE_STRIP "Create a stripped volk_gnsssdr_profile binary (without debugging symbols)" OFF)

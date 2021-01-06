@@ -37,6 +37,16 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   handle the `boost::shared_ptr` to `std::shared_ptr` transition in GNU Radio
   3.9 API more nicely.
 - Support new FFT and firdes blocks' API in GNU Radio 3.9.
+- Added detection of inconsistent function prototypes in `volk_gnsssdr` library
+  kernels at compile time.
+- Fixed defects detected by clang-tidy check `bugprone-reserved-identifier`, and
+  added to the checks list. This check corresponds to CERT C Coding Standard
+  rule
+  [DCL37-C](https://wiki.sei.cmu.edu/confluence/display/c/DCL37-C.+Do+not+declare+or+define+a+reserved+identifier)
+  as well as its C++ counterpart,
+  [DCL51-CPP](https://wiki.sei.cmu.edu/confluence/display/cplusplus/DCL51-CPP.+Do+not+declare+or+define+a+reserved+identifier).
+- Applied and added more clang-tidy checks related to readability:
+  `readability-make-member-function-const` and `readability-qualified-auto`.
 
 ### Improvements in Portability:
 
@@ -59,6 +69,9 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
   everything is managed by the CMake scripts.
 - The `volk_gnsssdr` library can be built on Microsoft Windows and can execute
   SIMD instructions on that OS.
+- Removed all instances of `_mm256_zeroupper()` in the `volk_gnsssdr` library,
+  since they are not required and lead to miscompilation with GCC 10.2 and
+  optimization level `-O3`.
 - Fixed building with `-DENABLE_CUDA=ON` for blocks implemented with CUDA.
 - Fixed linking against the ORC library if it is present in the system.
 - Fixed a bug introduced in v0.0.13 that prevented getting Galileo-only PVT

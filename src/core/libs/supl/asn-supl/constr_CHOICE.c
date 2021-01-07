@@ -755,7 +755,7 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                         {
                             RETURN(tmprval.code);
                         }
-                    assert(_fetch_present_idx(st, specs->pres_offset,
+                    assert(fetch_present_idx(st, specs->pres_offset,
                                specs->pres_size) == 0);
                     /* Record what we've got */
                     set_present_idx(st, specs->pres_offset, specs->pres_size,

@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ################################################################################
@@ -121,7 +121,7 @@ option(ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs" O
 ################################################################################
 # GNSS-SDR version information
 ################################################################################
-set(THIS_IS_A_RELEASE OFF)   # only related to version name, no further implications.
+set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications.
 if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES
@@ -157,9 +157,9 @@ endif()
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 13)
+    set(VERSION_INFO_MINOR_VERSION 14)
 else()
-    set(VERSION_INFO_MINOR_VERSION 13.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 14.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})

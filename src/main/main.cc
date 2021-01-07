@@ -18,7 +18,7 @@
  */
 
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.13"
+#define GNSS_SDR_VERSION "0.0.14"
 #endif
 
 #ifndef GOOGLE_STRIP_LOG

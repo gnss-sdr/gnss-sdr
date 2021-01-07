@@ -4,11 +4,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR v0.0.14](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.14)
 
 ### Improvements in Availability:
 

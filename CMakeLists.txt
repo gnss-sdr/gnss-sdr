@@ -121,7 +121,7 @@ option(ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs" O
 ################################################################################
 # GNSS-SDR version information
 ################################################################################
-set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications.
+set(THIS_IS_A_RELEASE OFF)   # only related to version name, no further implications.
 if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES

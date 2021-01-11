@@ -19,6 +19,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   version of `volk_gnsssdr`. When this building option is set to `ON`, it forces
   the building of the local version of the cpu_features library, regardless of
   whether it is already installed or not.
+- Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
 
 &nbsp;
 

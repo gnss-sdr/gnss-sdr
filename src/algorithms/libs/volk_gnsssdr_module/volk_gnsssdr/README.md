@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -56,6 +56,12 @@ not found by CMake on your system at configure time.
 
 However, you can install and use VOLK_GNSSSDR kernels as you use VOLK's,
 independently of GNSS-SDR.
+
+If you want to install the VOLK and VOLK_GNSSSDR libraries in the same machine,
+please install VOLK before building VOLK_GNSSSDR in order to avoid a clash of
+the [cpu_features](https://github.com/google/cpu_features) library, used
+internally by both. The CMake script will detect the presence of cpu_features
+and will make use of it if already installed, thus avoiding to install it twice.
 
 ### Install dependencies
 

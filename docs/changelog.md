@@ -8,6 +8,20 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 )
 <!-- prettier-ignore-end -->
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Portability:
+
+- Avoid collision of the `cpu_features` library when installing the
+  `volk_gnsssdr` library by its own, and VOLK has already installed its version.
+  Added a new building option `ENABLE_OWN_CPUFEATURES`, defaulting to `ON` when
+  building `gnss-sdr` but defaulting to `OFF` when building a stand-alone
+  version of `volk_gnsssdr`. When this building option is set to `ON`, it forces
+  the building of the local version of the cpu_features library, regardless of
+  whether it is already installed or not.
+
+&nbsp;
+
 ## [GNSS-SDR v0.0.14](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.14)
 
 ### Improvements in Availability:

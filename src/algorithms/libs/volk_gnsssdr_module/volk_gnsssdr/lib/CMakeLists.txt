@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 
@@ -532,10 +532,17 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
     if(USE_CPU_FEATURES)
-        target_include_directories(volk_gnsssdr_obj
-            PRIVATE
-                $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
-        )
+        if(CpuFeatures_FOUND)
+            target_include_directories(volk_gnsssdr_obj
+                PRIVATE
+                    $<TARGET_PROPERTY:CpuFeatures::cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+            )
+        else()
+            target_include_directories(volk_gnsssdr_obj
+                PRIVATE
+                    $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+            )
+        endif()
     endif()
     # Configure object target properties
     if(NOT MSVC)
@@ -550,10 +557,17 @@ else()
     add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
 endif()
 if(USE_CPU_FEATURES)
-    target_link_libraries(volk_gnsssdr
-        PUBLIC ${volk_gnsssdr_libraries}
-        PRIVATE cpu_features
-    )
+    if(CpuFeatures_FOUND)
+        target_link_libraries(volk_gnsssdr
+            PUBLIC ${volk_gnsssdr_libraries}
+            PRIVATE CpuFeatures::cpu_features
+        )
+    else()
+        target_link_libraries(volk_gnsssdr
+            PUBLIC ${volk_gnsssdr_libraries}
+            PRIVATE cpu_features
+        )
+    endif()
 else()
     target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
 endif()
@@ -566,10 +580,17 @@ target_include_directories(volk_gnsssdr
     PUBLIC $<INSTALL_INTERFACE:include>
 )
 if(USE_CPU_FEATURES)
-    target_include_directories(volk_gnsssdr
-        PRIVATE
-            $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
-    )
+    if(CpuFeatures_FOUND)
+        target_include_directories(volk_gnsssdr
+            PRIVATE
+                $<TARGET_PROPERTY:CpuFeatures::cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+    else()
+        target_include_directories(volk_gnsssdr
+            PRIVATE
+                $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+    endif()
 endif()
 # Configure target properties
 if(ORC_FOUND)
@@ -598,9 +619,15 @@ if(ENABLE_STATIC_LIBS)
     endif()
     target_link_libraries(volk_gnsssdr_static PUBLIC ${volk_gnsssdr_libraries})
     if(USE_CPU_FEATURES)
-        target_link_libraries(volk_gnsssdr_static
-            PRIVATE cpu_features
-        )
+        if(CpuFeatures_FOUND)
+            target_link_libraries(volk_gnsssdr_static
+                PRIVATE CpuFeatures::cpu_features
+            )
+        else()
+            target_link_libraries(volk_gnsssdr_static
+                PRIVATE cpu_features
+            )
+        endif()
     endif()
     if(ORC_FOUND)
         target_link_libraries(volk_gnsssdr_static PUBLIC ${ORC_LIBRARIES_STATIC})

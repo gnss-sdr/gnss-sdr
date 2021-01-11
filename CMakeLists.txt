@@ -94,6 +94,8 @@ option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra syst
 
 option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
 
+option(ENABLE_OWN_CPUFEATURES "Force the building of the cpu_features library even if it is already installed" ON)
+
 if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))
     set(ENABLE_GNSS_SIM_INSTALL OFF)
 endif()
@@ -1102,6 +1104,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
         -DENABLE_STATIC_LIBS=ON
+        -DENABLE_OWN_CPUFEATURES=${ENABLE_OWN_CPUFEATURES}
         -DENABLE_PROFILING=${ENABLE_PROFILING}
         -DENABLE_ORC=${ORC_ENABLED}
         ${STRIP_VOLK_GNSSSDR_PROFILE}
@@ -1156,6 +1159,33 @@ if(NOT VOLKGNSSSDR_FOUND)
         )
     else()
         if(SUPPORTED_CPU_FEATURES_ARCH)
+            set(VOLK_GNSSSDR_BUILD_BYPRODUCTS
+                ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
+                ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+            )
+            if(NOT ENABLE_OWN_CPUFEATURES)
+                find_package(CpuFeatures QUIET)
+                set_package_properties(CpuFeatures PROPERTIES
+                    URL "https://github.com/google/cpu_features"
+                    PURPOSE "Used by the volk_gnsssdr library."
+                    TYPE REQUIRED
+                )
+            endif()
+            if(CpuFeatures_FOUND)
+                message(STATUS "Found CpuFeatures: (found version ${CpuFeatures_VERSION})")
+                set_package_properties(CpuFeatures PROPERTIES
+                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime (found: v${CpuFeatures_VERSION})"
+                )
+            else()
+                set_package_properties(CpuFeatures PROPERTIES
+                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime"
+                    PURPOSE "CpuFeatures will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+                )
+                set(VOLK_GNSSSDR_BUILD_BYPRODUCTS
+                    ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
+                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+                )
+            endif()
             ExternalProject_Add(volk_gnsssdr_module
                 PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
                 SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -1167,9 +1197,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
                 BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
-                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
-                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+                BUILD_BYPRODUCTS ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
                 INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
             )
         else()
@@ -1200,6 +1228,9 @@ if(NOT VOLKGNSSSDR_FOUND)
     set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(VOLK_GNSSSDR_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/include/;${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr ${ORC_LIBRARIES_STATIC})
+    if(CpuFeatures_FOUND)
+        set(VOLK_GNSSSDR_LIBRARIES ${VOLK_GNSSSDR_LIBRARIES} CpuFeatures::cpu_features)
+    endif()
 
     if(NOT TARGET Volkgnsssdr::volkgnsssdr)
         file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/include)
@@ -1213,9 +1244,11 @@ if(NOT VOLKGNSSSDR_FOUND)
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
         )
         if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
-            set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
-                INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
-            )
+            if(NOT CpuFeatures_FOUND)
+                set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
+                    INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+                )
+            endif()
         endif()
     endif()
 
@@ -1240,6 +1273,8 @@ if(NOT VOLKGNSSSDR_FOUND)
     set_package_properties(VOLKGNSSSDR PROPERTIES
         PURPOSE "volk_gnsssdr will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+else()
+    set(ENABLE_OWN_CPUFEATURES OFF)
 endif()
 
 
@@ -3210,6 +3245,7 @@ add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downlo
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
 add_feature_info(ENABLE_EXTERNAL_MATHJAX ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
+add_feature_info(ENABLE_OWN_CPUFEATURES ENABLE_OWN_CPUFEATURES "Force building own local version of the cpu_features library, even if it is already installed.")
 
 message(STATUS "")
 message(STATUS "***************************************")

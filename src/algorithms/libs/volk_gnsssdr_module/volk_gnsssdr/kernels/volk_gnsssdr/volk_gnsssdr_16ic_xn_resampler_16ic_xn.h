@@ -415,7 +415,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_a_avx(lv_16sc_t** resu
                     indexn = _mm256_add_ps(indexn, eights);
                 }
         }
-    _mm256_zeroupper();
+
     for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = avx_iters * 8; n < num_points; n++)
@@ -493,7 +493,7 @@ static inline void volk_gnsssdr_16ic_xn_resampler_16ic_xn_u_avx(lv_16sc_t** resu
                     indexn = _mm256_add_ps(indexn, eights);
                 }
         }
-    _mm256_zeroupper();
+
     for (current_correlator_tap = 0; current_correlator_tap < num_out_vectors; current_correlator_tap++)
         {
             for (n = avx_iters * 8; n < num_points; n++)

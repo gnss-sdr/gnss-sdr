@@ -23,6 +23,7 @@ Checks: '-*,
         bugprone-move-forwarding-reference,
         bugprone-multiple-statement-macro,
         bugprone-parent-virtual-call,
+        bugprone-reserved-identifier,
         bugprone-sizeof-container,
         bugprone-sizeof-expression,
         bugprone-string-constructor,
@@ -149,6 +150,12 @@ CheckOptions:
     value:           ''
   - key:             bugprone-misplaced-widening-cast.CheckImplicitCasts
     value:           'false'
+  - key:             bugprone-reserved-identifier.AggressiveDependentMemberLookup
+    value:           'false'
+  - key:             bugprone-reserved-identifier.AllowedIdentifiers
+    value:           ''
+  - key:             bugprone-reserved-identifier.Invert
+    value:           'false'
   - key:             bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant
     value:           'true'
   - key:             bugprone-sizeof-expression.WarnOnSizeOfConstant
@@ -178,7 +185,7 @@ CheckOptions:
   - key:             bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit
     value:           '16'
   - key:             bugprone-unused-return-value.CheckedFunctions
-    value:           '::std::async;::std::launder;::std::remove;::std::remove_if;::std::unique;::std::unique_ptr::release;::std::basic_string::empty;::std::vector::empty'
+    value:           'std::async;std::launder;std::remove;std::remove_if;std::unique;std::unique_ptr::release;std::basic_string::empty;std::vector::empty;std::back_inserter;std::distance;std::find;std::find_if;std::inserter;std::lower_bound;std::make_pair;std::map::count;std::map::find;std::map::lower_bound;std::multimap::equal_range;std::multimap::upper_bound;std::set::count;std::set::find;std::setfill;std::setprecision;std::setw;std::upper_bound;std::vector::at;::bsearch;::ferror;::feof;::isalnum;::isalpha;::isblank;::iscntrl;::isdigit;::isgraph;::islower;::isprint;::ispunct;::isspace;::isupper;::iswalnum;::iswprint;::iswspace;::isxdigit;::memchr;::memcmp;::strcmp;::strcoll;::strncmp;::strpbrk;::strrchr;::strspn;::strstr;::wcscmp;::access;::bind;::connect;::difftime;::dlsym;::fnmatch;::getaddrinfo;::getopt;::htonl;::htons;::iconv_open;::inet_addr;::isascii;::isatty;::mmap;::newlocale;::openat;::pathconf;::pthread_equal;::pthread_getspecific;::pthread_mutex_trylock;::readdir;::readlink;::recvmsg;::regexec;::scandir;::semget;::setjmp;::shm_open;::shmget;::sigismember;::strcasecmp;::strsignal;::ttyname'
   - key:             cert-dcl16-c.NewSuffixes
     value:           'L;LL;LU;LLU'
   - key:             cert-msc51-cpp.DisallowedSeedTypes
@@ -198,9 +205,9 @@ CheckOptions:
   - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
     value:           'false'
   - key:             google-build-namespaces.HeaderFileExtensions
-    value:           ',h'
+    value:           ';h;hh;hpp;hxx'
   - key:             google-global-names-in-headers.HeaderFileExtensions
-    value:           ',h,hh,hpp,hxx'
+    value:           ';h;hh;hpp;hxx'
   - key:             google-readability-braces-around-statements.ShortStatementLines
     value:           '1'
   - key:             google-readability-function-size.StatementThreshold
@@ -224,7 +231,7 @@ CheckOptions:
   - key:             misc-throw-by-value-catch-by-reference.CheckThrowTemporaries
     value:           'true'
   - key:             misc-throw-by-value-catch-by-reference.MaxSize
-    value:           '-1'
+    value:           '64'
   - key:             misc-throw-by-value-catch-by-reference.WarnOnLargeObjects
     value:           'false'
   - key:             modernize-avoid-bind.PermissiveParameterList
@@ -254,15 +261,15 @@ CheckOptions:
   - key:             modernize-use-default-member-init.UseAssignment
     value:           'false'
   - key:             modernize-use-emplace.ContainersWithPushBack
-    value:           '::std::vector;::std::list;::std::deque'
+    value:           'std::vector;std::list;std::deque'
   - key:             modernize-use-emplace.IgnoreImplicitConstructors
     value:           'false'
   - key:             modernize-use-emplace.SmartPointers
-    value:           '::std::shared_ptr;::std::unique_ptr;::std::auto_ptr;::std::weak_ptr'
+    value:           'std::shared_ptr;std::unique_ptr;std::auto_ptr;std::weak_ptr'
   - key:             modernize-use-emplace.TupleMakeFunctions
-    value:           '::std::make_pair;::std::make_tuple'
+    value:           'std::make_pair;std::make_tuple'
   - key:             modernize-use-emplace.TupleTypes
-    value:           '::std::pair;::std::tuple'
+    value:           'std::pair;std::tuple'
   - key:             modernize-use-equals-default.IgnoreMacros
     value:           'true'
   - key:             modernize-use-equals-delete.IgnoreMacros
@@ -282,7 +289,7 @@ CheckOptions:
   - key:             modernize-use-override.OverrideSpelling
     value:           override
   - key:             performance-faster-string-find.StringLikeClasses
-    value:           'std::basic_string'
+    value:           'std::basic_string;std::basic_string_view'
   - key:             performance-for-range-copy.AllowedTypes
     value:           ''
   - key:             performance-for-range-copy.WarnOnAllAutoCopies
@@ -292,7 +299,7 @@ CheckOptions:
   - key:             performance-inefficient-vector-operation.EnableProto
     value:           'false'
   - key:             performance-inefficient-vector-operation.VectorLikeClasses
-    value:           '::std::vector'
+    value:           'std::vector'
   - key:             performance-move-const-arg.CheckTriviallyCopyableMove
     value:           'true'
   - key:             performance-move-constructor-init.IncludeStyle
@@ -307,36 +314,12 @@ CheckOptions:
     value:           llvm
   - key:             readability-braces-around-statements.ShortStatementLines
     value:           '0'
-  - key:             readability-identifier-naming.AbstractClassCase
-    value:           CamelCase
-  - key:             readability-identifier-naming.AbstractClassPrefix
-    value:           ''
-  - key:             readability-identifier-naming.AbstractClassSuffix
-    value:           ''
   - key:             readability-identifier-naming.AggressiveDependentMemberLookup
     value:           'false'
-  - key:             readability-identifier-naming.ClassCase
-    value:           Camel_Snake_Case
-  - key:             readability-identifier-naming.ClassPrefix
-    value:           ''
-  - key:             readability-identifier-naming.ClassSuffix
-    value:           ''
-  - key:             readability-identifier-naming.GlobalConstantCase
-    value:           UPPER_CASE
-  - key:             readability-identifier-naming.GlobalConstantPrefix
-    value:           ''
-  - key:             readability-identifier-naming.GlobalConstantSuffix
-    value:           ''
   - key:             readability-identifier-naming.IgnoreFailedSplit
     value:           'false'
   - key:             readability-identifier-naming.IgnoreMainLikeFunctions
     value:           'false'
-  - key:             readability-identifier-naming.StructCase
-    value:           aNy_CasE
-  - key:             readability-identifier-naming.StructPrefix
-    value:           ''
-  - key:             readability-identifier-naming.StructSuffix
-    value:           ''
   - key:             readability-inconsistent-declaration-parameter-name.IgnoreMacros
     value:           'true'
   - key:             readability-inconsistent-declaration-parameter-name.Strict

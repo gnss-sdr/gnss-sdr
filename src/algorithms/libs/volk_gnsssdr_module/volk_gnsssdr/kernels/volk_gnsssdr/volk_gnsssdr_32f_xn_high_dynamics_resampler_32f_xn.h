@@ -491,8 +491,6 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_a_avx(floa
             indexn = _mm256_add_ps(indexn, eights);
         }
 
-    _mm256_zeroupper();
-
     for (n = avx_iters * 8; n < num_points; n++)
         {
             // resample code for first tap
@@ -578,8 +576,6 @@ static inline void volk_gnsssdr_32f_xn_high_dynamics_resampler_32f_xn_u_avx(floa
                 }
             indexn = _mm256_add_ps(indexn, eights);
         }
-
-    _mm256_zeroupper();
 
     for (n = avx_iters * 8; n < num_points; n++)
         {

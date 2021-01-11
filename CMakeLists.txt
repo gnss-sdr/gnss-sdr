@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ################################################################################
@@ -157,9 +157,9 @@ endif()
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 13)
+    set(VERSION_INFO_MINOR_VERSION 14)
 else()
-    set(VERSION_INFO_MINOR_VERSION 13.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 14.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -327,7 +327,7 @@ set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.19")
-set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11.2")
+set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11.4")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.14.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.2")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")

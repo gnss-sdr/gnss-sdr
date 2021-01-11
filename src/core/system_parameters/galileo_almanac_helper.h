@@ -29,7 +29,7 @@
 /*!
  * \brief This class is a storage for the GALILEO ALMANAC data as described in GALILEO ICD
  *
- * See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf paragraph 5.1.10
+ * See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf paragraph 5.1.10
  */
 class Galileo_Almanac_Helper
 {

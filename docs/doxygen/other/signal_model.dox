@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# Copyright (C) 2012-2020  Carles Fernandez-Prades cfernandez(at)cttc.es
+# Copyright (C) 2012-2021  Carles Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 /*! \page the_signal_model Signal model
@@ -158,7 +158,7 @@ nominal constellation configuration. The Galileo satellites are placed in quasi-
 orbits with a nominal semi-major axis of about \f$30,000\f$ km and an approximate revolution
 period of \f$14\f$ hours. The Control segment full infrastructure will be composed of \f$30-40\f$ sensor stations, \f$3\f$ control centers, \f$9\f$ Mission Uplink stations, and \f$5\f$ TT\&C stations.
 
-Galileo's Open Service is defined at <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.3</b></a>, where the following signal structures are specified:
+Galileo's Open Service is defined at <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 2.0</b></a>, where the following signal structures are specified:
 
 
 \li <b>Galileo E1</b>. This band, centered at \f$f_{\text{Gal E1}}=1575.420\f$ MHz and with a reference bandwidth of \f$24.5520\f$ MHz, uses the so-called composite binary offset carrier
@@ -181,7 +181,7 @@ In case of channel \f$C\f$, it is a pilot (dataless) channel with a secondary co
 \nonumber e_{E1C}(t)&= \sum_{m=-\infty}^{+\infty}C_{E1Cs}\Big[|m|_{25}\Big] \oplus \sum_{l=1}^{4092}C_{E1Cp}\Big[ l \Big] \cdot \\ {}& \; \; \cdot p(t-mT_{c,E1Cs}-lT_{c,E1Cp})~,\label{eq:E1C}
 \f}
   with \f$T_{c,E1B}=T_{c,E1Cp}=\frac{1}{1.023}\f$ \f$\mu\f$s and \f$T_{c,E1Cs}=4\f$ ms. The \f$C_{E1B}\f$ and \f$C_{E1Cp}\f$ primary codes are pseudorandom memory code sequences defined at
-  Annex C.7 and C.8 of <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank">OS SIS ICD</a>. The binary
+  Annex C of <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf" target="_blank">OS SIS ICD</a>. The binary
   sequence of the secondary code \f$C_{E1Cs}\f$ is 0011100000001010110110010. This band also contains another component, Galileo E1A, intended for the Public Regulated Service (PRS).
  It uses a BOC(15,2.5) modulation with cosine-shaped subcarrier \f$f_{s,E1A}=15.345\f$ MHz and \f$T_{c, E1A}=\frac{1}{2.5575}\f$ \f$\mu\f$s.
 The PRS spreading codes and the structure of the navigation message have not been made public.
@@ -197,7 +197,7 @@ s_{T}^{\text{(Gal E6)}}(t) = \frac{1}{\sqrt{2}}\left(e_{E6B}(t)-e_{E6C}(t)\right
 \f}
   where \f$D_{\text{C/NAV}}\f$ is the C/NAV navigation data stream, which is modulated with the encrypted ranging code \f$C_{E6B}\f$ with chip period \f$T_{c,E6}=\frac{1}{5.115}\f$ \f$\mu\f$s, thus
   being a BPSK(5) modulation. Codes \f$C_{E6B}\f$ and primary codes \f$C_{E6Cs}\f$ and their respective lengths, \f$L_{E6B}\f$ and \f$L_{E6C}\f$, have not been published. The secondary codes
-  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank">OS SIS ICD</a>.
+  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf" target="_blank">OS SIS ICD</a>.
   The receiver reference bandwidth for this signal is \f$40.920\f$ MHz. This band also contains another component, Galileo E6A, intended for PRS.
 
 \li <b>Galileo E5</b>. Centered at \f$f_{\text{Gal E5}}=1191.795\f$ MHz and with a total bandwidth of \f$51.150\f$ MHz, its signal structure deserves some analysis. The AltBOC modulation can be generically expressed as

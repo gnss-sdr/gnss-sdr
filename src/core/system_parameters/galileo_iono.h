@@ -31,7 +31,7 @@
 /*!
  * \brief This class is a storage for the GALILEO IONOSPHERIC data as described in Galileo ICD paragraph 5.1.6
  *
- * See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf
+ * See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf
  */
 class Galileo_Iono
 {

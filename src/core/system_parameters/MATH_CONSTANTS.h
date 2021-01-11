@@ -32,8 +32,8 @@ constexpr double GPS_GM = 3.986005e14;      //!< Universal gravitational constan
 constexpr double GPS_F = -4.442807633e-10;  //!< Constant, [s/(m)^(1/2)], IS-GPS-200K, pag. 92
 
 // Physical constants for Galileo
-constexpr double GALILEO_GM = 3.986004418e14;   //!< Geocentric gravitational constant[m^3/s^2], OS SIS ICD v1.3, pag. 44
-constexpr double GALILEO_F = -4.442807309e-10;  //!< Constant, [s/(m)^(1/2)]. OS SIS ICD v1.3, pag. 47
+constexpr double GALILEO_GM = 3.986004418e14;   //!< Geocentric gravitational constant[m^3/s^2], OS SIS ICD v2.0, pag. 44
+constexpr double GALILEO_F = -4.442807309e-10;  //!< Constant, [s/(m)^(1/2)]. OS SIS ICD v2.0, pag. 47
 
 // Physical constants for GLONASS
 constexpr double GLONASS_OMEGA_EARTH_DOT = 7.292115e-5;  //!< Earth rotation rate, [rad/s] ICD L1, L2 GLONASS Edition 5.1 2008 pag. 55

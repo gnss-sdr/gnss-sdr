@@ -1,6 +1,6 @@
 /*!
  * \file gps_navigation_message.cc
- * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200K
+ * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200L
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
  * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix II
@@ -135,7 +135,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
     switch (subframe_ID)
         {
         // --- Decode the sub-frame id -----------------------------------------
-        // ICD (IS-GPS-200K Appendix II). https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf
+        // ICD (IS-GPS-200L Appendix II). https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf
         case 1:
             // --- It is subframe 1 -------------------------------------
             // Compute the time of week (TOW) of the first sub-frames in the array ====
@@ -233,7 +233,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
             SV_data_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
             SV_page = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_PAGE));
-            if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200K, page 110)
+            if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
                 {
                     //! \TODO read almanac
                     if (SV_data_ID != 0)
@@ -241,12 +241,12 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                         }
                 }
 
-            if (SV_page == 52)  // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200K, page 110)
+            if (SV_page == 52)  // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
                 {
                     //! \TODO read Estimated Range Deviation (ERD) values
                 }
 
-            if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200K, page 110)
+            if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
                 {
                     // Page 18 - Ionospheric and UTC data
                     d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_0));
@@ -284,7 +284,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                     // Reserved
                 }
 
-            if (SV_page == 63)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200K, page 110)
+            if (SV_page == 63)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
                 {
                     // Page 25 Anti-Spoofing, SV config and almanac health (PRN: 25-32)
                     //! \TODO Read Anti-Spoofing, SV config
@@ -317,7 +317,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                         {
                         }
                 }
-            if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200K, page 110)
+            if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
                 {
                     i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OA));
                     i_Toa = i_Toa * T_OA_LSB;
@@ -411,7 +411,7 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
             /* 20.3.3.5.2.4c
              * Whenever the effectivity time of the leap second event, as indicated by the
              * WNLSF and DN values, is in the "past" (relative to the user's current time),
-             * and the user�s current time does not fall in the time span as given above
+             * and the user's current time does not fall in the time span as given above
              * in 20.3.3.5.2.4b,*/
             Delta_t_UTC = d_DeltaT_LSF + d_A0 + d_A1 * (gpstime_corrected - d_t_OT + 604800 * static_cast<double>((i_GPS_week - i_WN_T)));
             t_utc_daytime = fmod(gpstime_corrected - Delta_t_UTC, 86400);

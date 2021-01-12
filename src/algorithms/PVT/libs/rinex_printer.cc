@@ -5103,7 +5103,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             if (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN) == "IIA")
                 {
-                    // Block II/IIA (Table 20-XI IS-GPS-200K )
+                    // Block II/IIA (Table 20-XI IS-GPS-200L )
                     if ((gps_ephemeris_iter->second.d_IODC > 239) && (gps_ephemeris_iter->second.d_IODC < 248))
                         {
                             curve_fit_interval = 8;
@@ -5135,7 +5135,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                 (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN) == "IIF") ||
                 (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.i_satellite_PRN) == "IIIA"))
                 {
-                    // Block IIR/IIR-M/IIF/IIIA (Table 20-XII IS-GPS-200K )
+                    // Block IIR/IIR-M/IIF/IIIA (Table 20-XII IS-GPS-200L )
                     if ((gps_ephemeris_iter->second.d_IODC > 239) && (gps_ephemeris_iter->second.d_IODC < 248))
                         {
                             curve_fit_interval = 8;
@@ -5222,7 +5222,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += std::string(5, ' ');
             // If there is no IODE in CNAV, so we check if Toe in message Type 10, Toe in Message type 11 and Toc in message types 30-37.
             // Whenever these three terms do not match, a data set cutover has occurred and new data must be collected.
-            // See IS-GPS-200K, p. 155
+            // See IS-GPS-200L, p. 155
             if (!((gps_ephemeris_iter->second.d_Toe1 == gps_ephemeris_iter->second.d_Toe2) && (gps_ephemeris_iter->second.d_Toe1 == gps_ephemeris_iter->second.d_Toc)))  // Toe1: Toe in message type 10,  Toe2: Toe in message type 11
                 {
                     // Toe1: Toe in message type 10,  Toe2: Toe in message type 11,
@@ -5252,7 +5252,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_Cus, 18, 2);
             line += std::string(1, ' ');
-            const double A_REF = 26559710.0;  // See IS-GPS-200K,  pp. 163
+            const double A_REF = 26559710.0;  // See IS-GPS-200L,  pp. 161
             double sqrt_A = sqrt(A_REF + gps_ephemeris_iter->second.d_DELTA_A);
             line += Rinex_Printer::doub2for(sqrt_A, 18, 2);
             Rinex_Printer::lengthCheck(line);
@@ -5280,7 +5280,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(gps_ephemeris_iter->second.d_OMEGA, 18, 2);
             line += std::string(1, ' ');
-            const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200K pp. 164
+            const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200L pp. 160
             double OMEGA_DOT_aux = OMEGA_DOT_REF + gps_ephemeris_iter->second.d_DELTA_OMEGA_DOT;
             line += Rinex_Printer::doub2for(OMEGA_DOT_aux, 18, 2);
             Rinex_Printer::lengthCheck(line);

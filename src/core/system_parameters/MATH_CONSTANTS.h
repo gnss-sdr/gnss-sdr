@@ -28,8 +28,8 @@ constexpr double SPEED_OF_LIGHT_M_S = 299792458.0;        //!< Speed of light in
 constexpr double SPEED_OF_LIGHT_M_MS = 299792.4580;       //!< Speed of light in vacuum [m/ms]
 
 // Physical constants for GPS
-constexpr double GPS_GM = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] IS-GPS-200K, pag 92
-constexpr double GPS_F = -4.442807633e-10;  //!< Constant, [s/(m)^(1/2)], IS-GPS-200K, pag. 92
+constexpr double GPS_GM = 3.986005e14;      //!< Universal gravitational constant times the mass of the Earth, [m^3/s^2] IS-GPS-200L, pag 96
+constexpr double GPS_F = -4.442807633e-10;  //!< Constant, [s/(m)^(1/2)], IS-GPS-200L, pag. 95
 
 // Physical constants for Galileo
 constexpr double GALILEO_GM = 3.986004418e14;   //!< Geocentric gravitational constant[m^3/s^2], OS SIS ICD v2.0, pag. 44

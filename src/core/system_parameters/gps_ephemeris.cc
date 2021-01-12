@@ -2,7 +2,7 @@
  * \file gps_ephemeris.cc
  * \brief  Interface of a GPS EPHEMERIS storage and orbital model functions
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix II
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------

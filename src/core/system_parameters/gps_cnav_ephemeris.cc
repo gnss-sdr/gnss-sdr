@@ -2,7 +2,7 @@
  * \file gps_cnav_ephemeris.cc
  * \brief  Interface of a GPS CNAV EPHEMERIS storage and orbital model functions
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix III
  * \author Javier Arribas, 2015. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ double Gps_CNAV_Ephemeris::sv_clock_drift(double transmitTime)
 // compute the relativistic correction term
 double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 {
-    const double A_REF = 26559710.0;  // See IS-GPS-200K,  pp. 163
+    const double A_REF = 26559710.0;  // See IS-GPS-200L,  pp. 161
     const double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
 
     // Restore semi-major axis
@@ -100,8 +100,8 @@ double Gps_CNAV_Ephemeris::sv_clock_relativistic_term(double transmitTime)
 
 double Gps_CNAV_Ephemeris::satellitePosition(double transmitTime)
 {
-    const double A_REF = 26559710.0;       // See IS-GPS-200K,  pp. 170
-    const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200K pp. 164
+    const double A_REF = 26559710.0;       // See IS-GPS-200L,  pp. 161
+    const double OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200L pp. 160
 
     const double d_sqrt_A = sqrt(A_REF + d_DELTA_A);
 

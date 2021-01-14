@@ -19,6 +19,8 @@
 #ifndef GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H
 #define GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #if GRIIO_INCLUDE_HAS_GNURADIO
@@ -42,7 +44,7 @@ class ConfigurationInterface;
 
 /*!
  */
-class PlutosdrSignalSource : public GNSSBlockInterface
+class PlutosdrSignalSource : public SignalSourceInterface
 {
 public:
     PlutosdrSignalSource(const ConfigurationInterface* configuration,

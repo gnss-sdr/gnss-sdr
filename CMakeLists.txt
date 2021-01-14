@@ -586,14 +586,14 @@ endif()
 ################################################################################
 # Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
-find_package(LOG4CPP)
-set_package_properties(LOG4CPP PROPERTIES
-    PURPOSE "Required by GNU Radio."
-    TYPE REQUIRED
-)
-if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
-endif()
+#find_package(LOG4CPP)
+#set_package_properties(LOG4CPP PROPERTIES
+#    PURPOSE "Required by GNU Radio."
+#    TYPE REQUIRED
+#)
+#if(NOT LOG4CPP_FOUND)
+#    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
+#endif()
 
 
 
@@ -607,7 +607,7 @@ if(NOT ENABLE_OWN_GPSTK)
         PURPOSE "Used in some Extra Tests."
     )
 endif()
-if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
+#if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
         if(NOT GPSTK_FOUND OR NOT (GPSTK_FOUND AND GPSTK_OLDER_THAN_8))  # Fix for GPSTk < 8.0.0
@@ -628,7 +628,12 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
             set(CMAKE_CXX_STANDARD_REQUIRED ON)
         endif()
     endif()
-endif()
+#endif()
+message(ALERT " debugging CMake ..."
+"\n     GNURADIO_VERSION=${GNURADIO_VERSION}"
+#"\n     LOG4CPP_READY_FOR_CXX17=${LOG4CPP_READY_FOR_CXX17}"
+"\n     CMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
+)
 
 
 

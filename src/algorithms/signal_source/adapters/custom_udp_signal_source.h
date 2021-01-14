@@ -18,6 +18,8 @@
 #ifndef GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 #define GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "gr_complex_ip_packet_source.h"
@@ -40,9 +42,10 @@ class ConfigurationInterface;
  * \brief This class reads from UDP packets, which streams interleaved
  * I/Q samples over a network.
  */
-class CustomUDPSignalSource : public GNSSBlockInterface
+class CustomUDPSignalSource : public SignalSourceInterface
 {
 public:
+  void fixme() final {}
     CustomUDPSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);

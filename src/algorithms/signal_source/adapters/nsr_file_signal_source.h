@@ -21,6 +21,8 @@
 #ifndef GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "unpack_byte_2bit_samples.h"
@@ -42,9 +44,10 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class NsrFileSignalSource : public GNSSBlockInterface
+class NsrFileSignalSource : public SignalSourceInterface
 {
 public:
+  void fixme() final {}
     NsrFileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);

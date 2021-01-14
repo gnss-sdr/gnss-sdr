@@ -19,6 +19,8 @@
 #ifndef GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H
 #define GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
@@ -42,7 +44,7 @@ class ConfigurationInterface;
  * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
  * (see https://osmocom.org/projects/rtl-sdr/wiki)
  */
-class OsmosdrSignalSource : public GNSSBlockInterface
+class OsmosdrSignalSource : public SignalSourceInterface
 {
 public:
     OsmosdrSignalSource(const ConfigurationInterface* configuration,

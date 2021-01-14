@@ -18,6 +18,8 @@
 #ifndef GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H
 #define GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
@@ -39,7 +41,7 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
  */
-class RawArraySignalSource : public GNSSBlockInterface
+class RawArraySignalSource : public SignalSourceInterface
 {
 public:
     RawArraySignalSource(const ConfigurationInterface* configuration,

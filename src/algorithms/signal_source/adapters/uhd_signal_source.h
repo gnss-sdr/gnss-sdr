@@ -17,8 +17,9 @@
 #ifndef GNSS_SDR_UHD_SIGNAL_SOURCE_H
 #define GNSS_SDR_UHD_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/uhd/usrp_source.h>
@@ -38,7 +39,7 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples from a UHD device (see http://code.ettus.com/redmine/ettus/projects/uhd/wiki)
  */
-class UhdSignalSource : public GNSSBlockInterface
+class UhdSignalSource : public SignalSourceInterface
 {
 public:
     UhdSignalSource(const ConfigurationInterface* configuration,

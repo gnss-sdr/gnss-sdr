@@ -20,6 +20,8 @@
 #define GNSS_SDR_GEN_SIGNAL_SOURCE_H
 
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <pmt/pmt.h>
@@ -37,15 +39,12 @@
  * \brief This class wraps blocks that generates synthesized GNSS signal and
  * filters the signal.
  */
-class GenSignalSource : public GNSSBlockInterface
+class GenSignalSource : public SignalSourceInterface
 {
 public:
     //! Constructor
     GenSignalSource(std::shared_ptr<GNSSBlockInterface> signal_generator, std::shared_ptr<GNSSBlockInterface> filter,
         std::string role, Concurrent_Queue<pmt::pmt_t> *queue);
-
-    //! Virtual destructor
-    virtual ~GenSignalSource() = default;
 
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;

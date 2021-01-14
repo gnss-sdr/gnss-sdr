@@ -20,6 +20,8 @@
 #ifndef GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H
 #define GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #if GRIIO_INCLUDE_HAS_GNURADIO
@@ -41,7 +43,7 @@
 
 class ConfigurationInterface;
 
-class Fmcomms2SignalSource : public GNSSBlockInterface
+class Fmcomms2SignalSource : public SignalSourceInterface
 {
 public:
     Fmcomms2SignalSource(const ConfigurationInterface* configuration,

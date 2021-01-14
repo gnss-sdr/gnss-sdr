@@ -18,6 +18,8 @@
 #ifndef GNSS_SDR_LABSAT_SIGNAL_SOURCE_H
 #define GNSS_SDR_LABSAT_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
@@ -38,9 +40,10 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples stored by a LabSat 2 or LabSat 3 device
  */
-class LabsatSignalSource : public GNSSBlockInterface
+class LabsatSignalSource : public SignalSourceInterface
 {
 public:
+  void fixme() final {}
     LabsatSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);

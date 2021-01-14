@@ -20,8 +20,9 @@
 #ifndef GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
 #include "unpack_byte_2bit_cpx_samples.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
@@ -44,9 +45,10 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class TwoBitCpxFileSignalSource : public GNSSBlockInterface
+class TwoBitCpxFileSignalSource : public SignalSourceInterface
 {
 public:
+  void fixme() final {}
     TwoBitCpxFileSignalSource(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,

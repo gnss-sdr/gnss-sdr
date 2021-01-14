@@ -21,8 +21,9 @@
 #ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "unpack_spir_gss6450_samples.h"
 #include <gnuradio/blocks/deinterleave.h>
@@ -50,13 +51,13 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class SpirGSS6450FileSignalSource : public GNSSBlockInterface
+class SpirGSS6450FileSignalSource : public SignalSourceInterface
 {
 public:
+  void fixme() final {}
     SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue);
 
-    ~SpirGSS6450FileSignalSource() = default;
     inline std::string role() override
     {
         return role_;

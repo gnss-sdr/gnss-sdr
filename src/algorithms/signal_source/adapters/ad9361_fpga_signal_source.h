@@ -18,6 +18,8 @@
 #ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
@@ -38,7 +40,7 @@
 
 class ConfigurationInterface;
 
-class Ad9361FpgaSignalSource : public GNSSBlockInterface
+class Ad9361FpgaSignalSource : public SignalSourceInterface
 {
 public:
     Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,

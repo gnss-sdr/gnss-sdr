@@ -20,6 +20,8 @@
 #ifndef GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H
 #define GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include <gnuradio/blocks/char_to_float.h>
@@ -45,7 +47,7 @@ class ConfigurationInterface;
  * \brief This class configures and reads samples from Teleorbit Flexiband front-end.
  * This software requires a Flexiband GNU Radio driver installed (not included with GNSS-SDR).
  */
-class FlexibandSignalSource : public GNSSBlockInterface
+class FlexibandSignalSource : public SignalSourceInterface
 {
 public:
     FlexibandSignalSource(const ConfigurationInterface* configuration,

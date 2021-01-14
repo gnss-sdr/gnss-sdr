@@ -18,6 +18,8 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
+#include "signal_source_interface.h"
+
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
 #include "rtl_tcp_signal_source_c.h"
@@ -42,9 +44,10 @@ class ConfigurationInterface;
  * I/Q samples over TCP.
  * (see https://osmocom.org/projects/rtl-sdr/wiki)
  */
-class RtlTcpSignalSource : public GNSSBlockInterface
+class RtlTcpSignalSource : public SignalSourceInterface
 {
 public:
+  void fixme() final {}
     RtlTcpSignalSource(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_stream,

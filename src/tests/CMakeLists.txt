@@ -333,6 +333,9 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
         include(GNUInstallDirs)
         find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
+        if(Patch_EXECUTABLE-NOTFOUND)
+            message(FATAL_ERROR "The patch command is not found. Please check your OS documentation and install it.")
+        endif()
         set(GPSTK_PATCH_COMMAND
             cd ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION} &&
             ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gpstk_static.patch
@@ -621,6 +624,27 @@ if(ENABLE_FPGA)
     else()
         target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE Boost::filesystem Boost::system)
     endif()
+    if(USE_GENERIC_LAMBDAS)
+        set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+        set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga
+            PRIVATE
+                "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+                "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+        )
+    else()
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga
+            PRIVATE
+                -DHAS_GENERIC_LAMBDA=0
+        )
+    endif()
+    if(USE_BOOST_BIND_PLACEHOLDERS)
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga
+            PRIVATE
+                -DUSE_BOOST_BIND_PLACEHOLDERS=1
+        )
+    endif()
+
     target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga
         PRIVATE
             Armadillo::armadillo

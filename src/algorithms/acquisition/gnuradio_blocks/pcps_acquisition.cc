@@ -24,7 +24,6 @@
 #include "MATH_CONSTANTS.h"    // for TWO_PI
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
-#include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
 #if HAS_STD_FILESYSTEM
 #if HAS_STD_FILESYSTEM_EXPERIMENTAL
@@ -126,18 +125,8 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_tmp_buffer = volk_gnsssdr::vector<float>(d_fft_size);
     d_fft_codes = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
     d_input_signal = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
-
-#if GNURADIO_FFT_USES_TEMPLATES
-    // Direct FFT
-    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
-    // Inverse FFT
-    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
-#else
-    // Direct FFT
-    d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-    // Inverse FFT
-    d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
-#endif
+    d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
+    d_ifft = gnss_fft_rev_make_unique(d_fft_size);
 
     d_gnss_synchro = nullptr;
     d_worker_active = false;

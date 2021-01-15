@@ -123,7 +123,6 @@ if(ENABLE_FPGA)
         PRIVATE
             algorithms_libs
             core_libs
-            Gnuradio::fft
             Volk::volk
             Volkgnsssdr::volkgnsssdr
     )

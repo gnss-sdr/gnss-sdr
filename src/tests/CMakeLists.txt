@@ -533,11 +533,6 @@ if(ENABLE_UNIT_TESTING)
             PRIVATE -DGNURADIO_USES_STD_POINTERS=1
         )
     endif()
-    if(GNURADIO_FFT_USES_TEMPLATES)
-        target_compile_definitions(run_tests
-            PUBLIC -DGNURADIO_FFT_USES_TEMPLATES=1
-        )
-    endif()
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PRIVATE Gpstk::gpstk)
         if(GPSTK_OLDER_THAN_8)

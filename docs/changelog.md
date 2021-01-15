@@ -21,6 +21,10 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   whether it is already installed or not.
 - Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
 
+### Improvements in Maintainability:
+
+- Improved handling of change in GNU Radio 3.9 FFT API.
+
 &nbsp;
 
 ## [GNSS-SDR v0.0.14](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.14)

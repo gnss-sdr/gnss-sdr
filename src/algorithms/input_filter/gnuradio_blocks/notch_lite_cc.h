@@ -19,8 +19,8 @@
 #define GNSS_SDR_NOTCH_LITE_CC_H
 
 #include "gnss_block_interface.h"
+#include "gnss_sdr_fft.h"
 #include <gnuradio/block.h>
-#include <gnuradio/fft/fft.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
 #include <memory>
@@ -58,11 +58,8 @@ public:
 private:
     friend notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
     NotchLite(float p_c_factor, float pfa, int32_t length, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff);
-#if GNURADIO_FFT_USES_TEMPLATES
-    std::unique_ptr<gr::fft::fft_complex_fwd> d_fft_;
-#else
-    std::unique_ptr<gr::fft::fft_complex> d_fft_;
-#endif
+
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_;
     volk_gnsssdr::vector<float> power_spect_;
     gr_complex last_out_;
     gr_complex z_0_;

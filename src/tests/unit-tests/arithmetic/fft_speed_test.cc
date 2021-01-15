@@ -16,9 +16,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnss_sdr_make_unique.h"
+#include "gnss_sdr_fft.h"
 #include <armadillo>
-#include <gnuradio/fft/fft.h>
 #include <chrono>
 #include <memory>
 
@@ -36,11 +35,7 @@ TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
         for (unsigned int fft_size
              : fft_sizes) {
             d_fft_size = fft_size;
-#if GNURADIO_FFT_USES_TEMPLATES
-            auto d_gr_fft = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
-#else
-            auto d_gr_fft = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-#endif
+            auto d_gr_fft = gnss_fft_fwd_make_unique(d_fft_size);
             arma::arma_rng::set_seed_random();
             arma::cx_fvec d_arma_fft = arma::cx_fvec(d_fft_size).randn() + gr_complex(0.0, 1.0) * arma::cx_fvec(d_fft_size).randn();
             arma::cx_fvec d_arma_fft_result(d_fft_size);

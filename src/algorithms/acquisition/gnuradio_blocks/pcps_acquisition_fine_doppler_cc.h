@@ -41,10 +41,10 @@
 
 #include "acq_conf.h"
 #include "channel_fsm.h"
+#include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
 #include <armadillo>
 #include <gnuradio/block.h>
-#include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>  // for volk_gnsssdr::vector
 #include <cstdint>
@@ -197,13 +197,8 @@ private:
     bool start();
 
     std::weak_ptr<ChannelFsm> d_channel_fsm;
-#if GNURADIO_FFT_USES_TEMPLATES
-    std::unique_ptr<gr::fft::fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex_rev> d_ifft;
-#else
-    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex> d_ifft;
-#endif
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
 
     volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_grid_doppler_wipeoffs;
     volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_grid_data;

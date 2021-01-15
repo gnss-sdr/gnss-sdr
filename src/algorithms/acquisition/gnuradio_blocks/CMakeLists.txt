@@ -81,8 +81,6 @@ target_link_libraries(acquisition_gr_blocks
 )
 
 target_include_directories(acquisition_gr_blocks
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/core/receiver
 )
@@ -90,12 +88,6 @@ target_include_directories(acquisition_gr_blocks
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(acquisition_gr_blocks
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1
-    )
-endif()
-
-if(GNURADIO_FFT_USES_TEMPLATES)
-    target_compile_definitions(acquisition_gr_blocks
-        PUBLIC -DGNURADIO_FFT_USES_TEMPLATES=1
     )
 endif()
 

@@ -20,10 +20,10 @@
 #include "Galileo_E5b.h"
 #include "configuration_interface.h"
 #include "galileo_e5_signal_replica.h"
+#include "gnss_sdr_fft.h"
 #include "gnss_sdr_flags.h"
 #include "uio_fpga.h"
 #include <glog/logging.h>
-#include <gnuradio/fft/fft.h>     // for fft_complex
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
@@ -93,8 +93,8 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
 
     // compute all the GALILEO E5b PRN Codes (this is done only once in the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
-    auto fft_if = std::unique_ptr<gr::fft::fft_complex>(new gr::fft::fft_complex(nsamples_total, true));  // Direct FFT
-    volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);                                       // Buffer for local code
+    auto fft_if = gnss_fft_fwd_make_unique(nsamples_total);          // Direct FFT
+    volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);  // Buffer for local code
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
     d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * GALILEO_E5B_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
 

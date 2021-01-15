@@ -53,6 +53,7 @@ set(GNSS_SPLIBS_HEADERS
     conjugate_ic.h
     cshort_to_float_x2.h
     gnss_sdr_create_directory.h
+    gnss_sdr_fft.h
     gnss_sdr_make_unique.h
     gnss_circular_deque.h
     geofunctions.h
@@ -108,6 +109,7 @@ target_link_libraries(algorithms_libs
         Boost::headers
         Gnuradio::runtime
         Gnuradio::blocks
+        Gnuradio::fft
     PRIVATE
         core_system_parameters
         Volk::volk
@@ -125,6 +127,12 @@ endif()
 if(has_span)
     target_compile_definitions(algorithms_libs
         PUBLIC -DHAS_STD_SPAN=1
+    )
+endif()
+
+if(GNURADIO_FFT_USES_TEMPLATES)
+    target_compile_definitions(algorithms_libs
+        PUBLIC -DGNURADIO_FFT_USES_TEMPLATES=1
     )
 endif()
 

@@ -16,6 +16,7 @@
  */
 
 #include "uio_fpga.h"
+#include "gnss_sdr_filesystem.h"
 #include <algorithm>  // sort
 #include <cstdlib>    // atoi, size_t
 #include <fstream>    // ifstream
@@ -24,19 +25,6 @@
 #include <sstream>    // std::stringstream
 #include <vector>
 
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-#include <boost/filesystem/path.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 int32_t get_uio_num(std::string uio_name)
 {

@@ -1,7 +1,6 @@
 /*!
- * \file gps_l1_ca_pcps_acquisition_test_fpga.cc
- * \brief  This class implements an acquisition test for
- * GpsL1CaPcpsAcquisitionFpga class based on some input parameters.
+ * \file galileo_e1_pcps_acquisition_test_fpga.cc
+ * \brief  This class implements an acquisition test Galileo FPFA acquisition
  * \authors <ul>
  *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com
@@ -24,6 +23,7 @@
 #include "fpga_switch.h"
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "gnss_block_interface.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
@@ -44,18 +44,6 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 struct DMA_handler_args_galileo_e1_pcps_ambiguous_acq_test
 {

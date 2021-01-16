@@ -19,6 +19,7 @@
 #include "GPS_L1_CA.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnuplot_i.h"
 #include "in_memory_configuration.h"
 #include "signal_generator_flags.h"
@@ -50,19 +51,6 @@
 #include <gnuradio/analog/sig_source.h>
 #else
 #include <gnuradio/analog/sig_source_c.h>
-#endif
-
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 #endif
 
 

@@ -32,6 +32,7 @@
 #include "glonass_gnav_utc_model.h"
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_almanac.h"
 #include "gps_cnav_ephemeris.h"
@@ -77,23 +78,6 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
-#endif
-
-#if HAS_STD_FILESYSTEM
-#include <system_error>
-namespace errorlib = std;
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/path.hpp>
-#include <boost/system/error_code.hpp>  // for error_code
-namespace fs = boost::filesystem;
-namespace errorlib = boost::system;
 #endif
 
 #if USE_OLD_BOOST_MATH_COMMON_FACTOR

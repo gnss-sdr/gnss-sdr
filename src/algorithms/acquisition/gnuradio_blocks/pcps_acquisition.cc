@@ -24,16 +24,8 @@
 #include "MATH_CONSTANTS.h"    // for TWO_PI
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-#else
-#include <filesystem>
-#endif
-#else
-#include <boost/filesystem/path.hpp>
-#endif
 #include <boost/math/special_functions/gamma.hpp>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -47,16 +39,6 @@
 #include <cstring>  // for memcpy
 #include <iostream>
 #include <map>
-
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-namespace fs = std::experimental::filesystem;
-#else
-namespace fs = std::filesystem;
-#endif
-#else
-namespace fs = boost::filesystem;
-#endif
 
 
 pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)

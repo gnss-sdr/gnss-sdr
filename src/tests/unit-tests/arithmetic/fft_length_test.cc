@@ -16,6 +16,7 @@
  */
 
 #include "gnss_sdr_fft.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnuplot_i.h"
 #include "test_flags.h"
 #include <algorithm>
@@ -23,18 +24,6 @@
 #include <functional>
 #include <random>
 
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
 DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest with gnuplot");

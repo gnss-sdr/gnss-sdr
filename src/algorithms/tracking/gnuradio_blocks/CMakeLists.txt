@@ -75,21 +75,12 @@ else()
     )
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(tracking_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(tracking_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(tracking_gr_blocks PRIVATE std::filesystem)
-else()
-    target_link_libraries(tracking_gr_blocks PRIVATE Boost::filesystem)
-endif()
-
 target_link_libraries(tracking_gr_blocks
     PUBLIC
         Gnuradio::blocks
         tracking_libs
     PRIVATE
+        algorithms_libs
         Matio::matio
         gnss_sdr_flags
         Glog::glog

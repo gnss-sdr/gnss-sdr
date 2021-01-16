@@ -27,6 +27,7 @@
 #include "front_end_cal.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"  // for GNSSBlockInte...
+#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_synchro.h"
 #include "gps_acq_assist.h"  // for Gps_Acq_Assist
@@ -70,14 +71,6 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
-#endif
-
-#if HAS_STD_FILESYSTEM
-#include <filesystem>
-namespace fs = std::filesystem;
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 #endif
 
 #if GFLAGS_OLD_NAMESPACE

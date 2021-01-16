@@ -22,6 +22,7 @@
 #include "beidou_b3i_pcps_acquisition.h"
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
@@ -49,18 +50,6 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class BeidouB3iPcpsAcquisitionTest_msg_rx;

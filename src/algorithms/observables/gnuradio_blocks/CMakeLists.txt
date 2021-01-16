@@ -18,16 +18,6 @@ else()
     add_library(obs_gr_blocks hybrid_observables_gs.cc hybrid_observables_gs.h)
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(obs_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(obs_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(obs_gr_blocks PRIVATE std::filesystem)
-else()
-    target_link_libraries(obs_gr_blocks PRIVATE Boost::filesystem)
-endif()
-
 target_include_directories(obs_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/algorithms/libs

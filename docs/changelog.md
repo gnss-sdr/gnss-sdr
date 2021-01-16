@@ -24,6 +24,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 ### Improvements in Maintainability:
 
 - Improved handling of change in GNU Radio 3.9 FFT API.
+- Improved handling of the filesystem library.
 
 &nbsp;
 

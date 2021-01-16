@@ -19,16 +19,8 @@
 #include "pcps_acquisition_fine_doppler_cc.h"
 #include "GPS_L1_CA.h"  // for GPS_L1_CA_CHIP_PERIOD_S
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include "gps_sdr_signal_replica.h"
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-#else
-#include <filesystem>
-#endif
-#else
-#include <boost/filesystem/path.hpp>
-#endif
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
@@ -37,16 +29,6 @@
 #include <array>
 #include <sstream>
 #include <vector>
-
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-namespace fs = std::experimental::filesystem;
-#else
-namespace fs = std::filesystem;
-#endif
-#else
-namespace fs = boost::filesystem;
-#endif
 
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf &conf_)

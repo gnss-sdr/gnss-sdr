@@ -53,16 +53,6 @@ else()
     add_library(acquisition_gr_blocks ${ACQ_GR_BLOCKS_SOURCES} ${ACQ_GR_BLOCKS_HEADERS})
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(acquisition_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(acquisition_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(acquisition_gr_blocks PRIVATE std::filesystem)
-else()
-    target_link_libraries(acquisition_gr_blocks PRIVATE Boost::filesystem)
-endif()
-
 target_link_libraries(acquisition_gr_blocks
     PUBLIC
         algorithms_libs

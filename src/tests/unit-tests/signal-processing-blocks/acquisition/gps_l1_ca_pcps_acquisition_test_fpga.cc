@@ -23,6 +23,7 @@
 #include "concurrent_queue.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
 #include "gps_l1_ca_pcps_acquisition_fpga.h"
 #include "in_memory_configuration.h"
@@ -42,18 +43,6 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 struct DMA_handler_args_gps_l1_acq_test
 {

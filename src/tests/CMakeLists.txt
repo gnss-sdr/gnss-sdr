@@ -333,8 +333,8 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
         include(GNUInstallDirs)
         find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
-        if(Patch_EXECUTABLE-NOTFOUND)
-            message(FATAL_ERROR "The patch command is not found. Please check your OS documentation and install it.")
+        if(NOT Patch_EXECUTABLE)
+            message(FATAL_ERROR "The patch command is not found. It is required to build GPSTk. Please check your OS documentation and install the patch command.")
         endif()
         set(GPSTK_PATCH_COMMAND
             cd ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION} &&

@@ -20,11 +20,14 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   the building of the local version of the cpu_features library, regardless of
   whether it is already installed or not.
 - Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
+- Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
+  Boost >= 1.74.
 
 ### Improvements in Maintainability:
 
 - Improved handling of change in GNU Radio 3.9 FFT API.
 - Improved handling of the filesystem library.
+- Do not apply clang-tidy fixes to protobuf-generated headers.
 
 &nbsp;
 

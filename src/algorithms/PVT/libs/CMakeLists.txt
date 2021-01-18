@@ -67,14 +67,18 @@ target_link_libraries(pvt_libs
         Matio::matio
 )
 
-get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
+get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 
+# for concurrent_queue.h
 target_include_directories(pvt_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/receiver
-        SYSTEM ${PROTO_INCLUDE_HEADERS}
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique.h
+)
+
+# Do not apply clang-tidy fixes to protobuf generated headers
+target_include_directories(pvt_libs
+    SYSTEM PUBLIC
+        ${PROTO_INCLUDE_HEADERS_DIR}
 )
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

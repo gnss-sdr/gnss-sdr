@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# Copyright (C) 2012-2020  Carles Fernandez-Prades cfernandez(at)cttc.es
+# Copyright (C) 2012-2021  Carles Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 /*! \page reference_docs Reference Documents
@@ -12,9 +12,9 @@
 All the current GPS Interface Control Documents can be downloaded from <a href="https://www.gps.gov" target="_blank">GPS.gov</a>, the official U.S. Government webpage for GPS.
 
 
-\li GPS L1 and L2C: Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision K</b></a>. March, 2019.
-\li GPS L1C (available with first Block III launch): Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-800F.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision F</b></a>. March, 2019.
-\li GPS L5 (first Block IIF satellite launched on May, 2010): Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-705F.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision F</b></a>. March, 2019.
+\li GPS L1 and L2C: Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision L</b></a>. May, 2020.
+\li GPS L1C (available with first Block III launch): Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-800G.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision G</b></a>. May, 2020.
+\li GPS L5 (first Block IIF satellite launched on May, 2010): Global Positioning System Directorate, <a href="https://www.gps.gov/technical/icwg/IS-GPS-705G.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision G</b></a>. May, 2020.
 
 
 
@@ -33,7 +33,7 @@ Check the <a href="https://www.gsa.europa.eu/european-gnss/galileo/galileo-europ
 <a href="https://www.esa.int/Our_Activities/Navigation/The_future_-_Galileo/What_is_Galileo" target="_blank">Galileo website of the European Space Agency</a>.
 There is a website with <a href="https://www.gsc-europa.eu/system-service-status/constellation-information" target="_blank">Galileo constellation status information</a> from the GSA.
 
-\li Galileo E5, E6, and E1: European GNSS (Galileo) Open Service.  <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.3</b></a>, European Commission, Dec. 2016.
+\li Galileo E5, E6, and E1: European GNSS (Galileo) Open Service.  <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 2.0</b></a>, European Union, Jan. 2021.
 
 
 The European Commission is granting free access to the technical information on the future Galileo open service signal, i.e. the specifications manufacturers

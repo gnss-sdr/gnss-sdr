@@ -43,20 +43,11 @@ target_link_libraries(telemetry_decoder_libs
     PUBLIC
         Volkgnsssdr::volkgnsssdr
     PRIVATE
+        algorithms_libs
         Gflags::gflags
         Glog::glog
         Matio::matio
 )
-
-if(FILESYSTEM_FOUND)
-    target_compile_definitions(telemetry_decoder_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(find_experimental)
-        target_compile_definitions(telemetry_decoder_libs PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(telemetry_decoder_libs PRIVATE std::filesystem)
-else()
-    target_link_libraries(telemetry_decoder_libs PRIVATE Boost::filesystem Boost::system)
-endif()
 
 target_include_directories(telemetry_decoder_libs
     PUBLIC

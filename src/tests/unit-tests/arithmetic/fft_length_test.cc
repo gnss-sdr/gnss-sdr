@@ -15,27 +15,15 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnss_sdr_make_unique.h"
+#include "gnss_sdr_fft.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnuplot_i.h"
 #include "test_flags.h"
-#include <gnuradio/fft/fft.h>
 #include <algorithm>
 #include <chrono>
 #include <functional>
 #include <random>
 
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
 DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest with gnuplot");
@@ -71,11 +59,7 @@ TEST(FFTLengthTest, MeasureExecutionTime)
     EXPECT_NO_THROW(
         for (it = fft_sizes_v.cbegin(); it != fft_sizes_v.cend(); ++it) {
             d_fft_size = *it;
-#if GNURADIO_FFT_USES_TEMPLATES
-            auto d_fft = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
-#else
-            auto d_fft = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-#endif
+            auto d_fft = gnss_fft_fwd_make_unique(d_fft_size);
             std::generate_n(d_fft->get_inbuf(), d_fft_size, gen);
 
             start = std::chrono::system_clock::now();

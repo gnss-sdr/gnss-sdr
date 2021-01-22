@@ -30,6 +30,7 @@
 #include "fpga_multicorrelator.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
@@ -53,18 +54,6 @@
 #include <boost/bind/bind.hpp>
 #endif
 
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/path.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_)
 {

@@ -20,6 +20,7 @@
 #include "gnss_circular_deque.h"
 #include "gnss_frequencies.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro.h"
 #include <glog/logging.h>
@@ -37,27 +38,6 @@
 #else
 #include <boost/bind/bind.hpp>
 #endif
-
-// clang-format off
-#if HAS_STD_FILESYSTEM
-#include <system_error>
-namespace errorlib = std;
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/operations.hpp>   // for create_directories, exists
-#include <boost/filesystem/path.hpp>         // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <boost/system/error_code.hpp>       // for error_code
-namespace fs = boost::filesystem;
-namespace errorlib = boost::system;
-#endif
-// clang-format on
 
 
 hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf &conf_)

@@ -17,21 +17,9 @@
 
 
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_filesystem.h"
 #include <iostream>
 #include <string>
-
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/operations.hpp>  // for exists
-namespace fs = boost::filesystem;
-#endif
 
 
 DEFINE_string(c, "-", "Path to the configuration file (if set, overrides --config_file).");

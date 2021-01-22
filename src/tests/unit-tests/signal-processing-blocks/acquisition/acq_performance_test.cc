@@ -24,6 +24,7 @@
 #include "glonass_l1_ca_pcps_acquisition.h"
 #include "glonass_l2_ca_pcps_acquisition.h"
 #include "gnss_block_interface.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_valve.h"
 #include "gnuplot_i.h"
 #include "gps_l1_ca_pcps_acquisition.h"
@@ -46,23 +47,6 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
-#endif
-
-#if HAS_STD_FILESYSTEM
-#include <system_error>
-namespace errorlib = std;
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem.hpp>
-#include <boost/system/error_code.hpp>  // for error_code
-namespace fs = boost::filesystem;
-namespace errorlib = boost::system;
 #endif
 
 

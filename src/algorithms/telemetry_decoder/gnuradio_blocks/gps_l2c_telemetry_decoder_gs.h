@@ -48,7 +48,7 @@ gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
     const Tlm_Conf &conf);
 
 /*!
- * \brief This class implements a block that decodes CNAV data defined in IS-GPS-200K
+ * \brief This class implements a block that decodes CNAV data defined in IS-GPS-200L
  */
 class gps_l2c_telemetry_decoder_gs : public gr::block
 {

@@ -17,7 +17,6 @@
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"
-#include "gnss_sdr_make_unique.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
@@ -76,18 +75,8 @@ galileo_pcps_8ms_acquisition_cc::galileo_pcps_8ms_acquisition_cc(
     d_fft_code_A = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
     d_fft_code_B = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
     d_magnitude = std::vector<float>(d_fft_size, 0.0F);
-
-#if GNURADIO_FFT_USES_TEMPLATES
-    // Direct FFT
-    d_fft_if = std::make_unique<gr::fft::fft_complex_fwd>(d_fft_size);
-    // Inverse FFT
-    d_ifft = std::make_unique<gr::fft::fft_complex_rev>(d_fft_size);
-#else
-    // Direct FFT
-    d_fft_if = std::make_unique<gr::fft::fft_complex>(d_fft_size, true);
-    // Inverse FFT
-    d_ifft = std::make_unique<gr::fft::fft_complex>(d_fft_size, false);
-#endif
+    d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
+    d_ifft = gnss_fft_rev_make_unique(d_fft_size);
 
     // For dumping samples into a file
     d_dump = dump;

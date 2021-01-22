@@ -31,9 +31,9 @@
 
 
 /*!
- * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in IS-GPS-200K
+ * \brief This class is a storage and orbital model functions for the GPS SV ephemeris data as described in IS-GPS-200L
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix II
  */
 class Gps_Ephemeris
 {
@@ -45,20 +45,20 @@ public:
 
     /*!
      * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Table 20-IV (IS-GPS-200K)
+     * Implementation of Table 20-IV (IS-GPS-200L)
      * and compute the clock bias term including relativistic effect (return value)
      */
     double satellitePosition(double transmitTime);
 
     /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     *  (IS-GPS-200L,  20.3.3.3.3.1)
      */
     double sv_clock_drift(double transmitTime);
 
     /*!
      * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     *  (IS-GPS-200L,  20.3.3.3.3.1)
      */
     double sv_clock_relativistic_term(double transmitTime);
 
@@ -71,8 +71,8 @@ public:
     double d_e_eccentricity{};   //!< Eccentricity [dimensionless]
     double d_Cus{};              //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_sqrt_A{};           //!< Square Root of the Semi-Major Axis [sqrt(m)]
-    int32_t d_Toe{};             //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
-    int32_t d_Toc{};             //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
+    int32_t d_Toe{};             //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200L) [s]
+    int32_t d_Toc{};             //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200L) [s]
     double d_Cic{};              //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
     double d_OMEGA0{};           //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
     double d_Cis{};              //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
@@ -84,7 +84,7 @@ public:
     int32_t i_code_on_L2{};      //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
     int32_t i_GPS_week{};        //!< GPS week number, aka WN [week]
     bool b_L2_P_data_flag{};     //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
-    int32_t i_SV_accuracy{};     //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200K)
+    int32_t i_SV_accuracy{};     //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200L)
     int32_t i_SV_health{};
     double d_TGD{};        //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
     int32_t d_IODC{};      //!< Issue of Data, Clock
@@ -155,8 +155,8 @@ public:
         archive& make_nvp("d_e_eccentricity", d_e_eccentricity);  //!< Eccentricity [dimensionless]
         archive& make_nvp("d_Cus", d_Cus);                        //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
         archive& make_nvp("d_sqrt_A", d_sqrt_A);                  //!< Square Root of the Semi-Major Axis [sqrt(m)]
-        archive& make_nvp("d_Toe", d_Toe);                        //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
-        archive& make_nvp("d_Toc", d_Toc);                        //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
+        archive& make_nvp("d_Toe", d_Toe);                        //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200L) [s]
+        archive& make_nvp("d_Toc", d_Toc);                        //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200L) [s]
         archive& make_nvp("d_Cic", d_Cic);                        //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
         archive& make_nvp("d_OMEGA0", d_OMEGA0);                  //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
         archive& make_nvp("d_Cis", d_Cis);                        //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
@@ -168,7 +168,7 @@ public:
         archive& make_nvp("i_code_on_L2", i_code_on_L2);          //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
         archive& make_nvp("i_GPS_week", i_GPS_week);              //!< GPS week number, aka WN [week]
         archive& make_nvp("b_L2_P_data_flag", b_L2_P_data_flag);  //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
-        archive& make_nvp("i_SV_accuracy", i_SV_accuracy);        //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200K)
+        archive& make_nvp("i_SV_accuracy", i_SV_accuracy);        //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200L)
         archive& make_nvp("i_SV_health", i_SV_health);
         archive& make_nvp("d_TGD", d_TGD);    //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
         archive& make_nvp("d_IODC", d_IODC);  //!< Issue of Data, Clock
@@ -191,7 +191,7 @@ private:
     /*
      * Accounts for the beginning or end of week crossover
      *
-     * See paragraph 20.3.3.3.3.1 (IS-GPS-200K)
+     * See paragraph 20.3.3.3.3.1 (IS-GPS-200L)
      * \param[in]  -  time in seconds
      * \param[out] -  corrected time, in seconds
      */

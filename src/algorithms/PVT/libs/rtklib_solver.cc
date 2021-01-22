@@ -32,6 +32,7 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
+#include "gnss_sdr_filesystem.h"
 #include "rtklib_conversions.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
@@ -40,27 +41,6 @@
 #include <exception>
 #include <utility>
 #include <vector>
-
-// clang-format off
-#if HAS_STD_FILESYSTEM
-#include <system_error>
-namespace errorlib = std;
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/operations.hpp>   // for create_directories, exists
-#include <boost/filesystem/path.hpp>         // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <boost/system/error_code.hpp>       // for error_code
-namespace fs = boost::filesystem;
-namespace errorlib = boost::system;
-#endif
-// clang-format on
 
 
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk, int nchannels, const std::string &dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat)

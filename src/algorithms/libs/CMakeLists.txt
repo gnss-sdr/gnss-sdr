@@ -54,6 +54,8 @@ set(GNSS_SPLIBS_HEADERS
     conjugate_ic.h
     cshort_to_float_x2.h
     gnss_sdr_create_directory.h
+    gnss_sdr_fft.h
+    gnss_sdr_filesystem.h
     gnss_sdr_make_unique.h
     gnss_circular_deque.h
     geofunctions.h
@@ -87,16 +89,6 @@ else()
     add_library(algorithms_libs ${GNSS_SPLIBS_SOURCES} ${GNSS_SPLIBS_HEADERS})
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(algorithms_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(algorithms_libs PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(algorithms_libs PRIVATE std::filesystem)
-else()
-    target_link_libraries(algorithms_libs PRIVATE Boost::filesystem Boost::system)
-endif()
-
 if(NOT has_span)
     target_include_directories(algorithms_libs
         PUBLIC
@@ -110,6 +102,7 @@ target_link_libraries(algorithms_libs
         Boost::headers
         Gnuradio::runtime
         Gnuradio::blocks
+        Gnuradio::fft
     PRIVATE
         core_system_parameters
         Volk::volk
@@ -124,9 +117,25 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(FILESYSTEM_FOUND)
+    target_compile_definitions(algorithms_libs PUBLIC -DHAS_STD_FILESYSTEM=1)
+    if(find_experimental)
+        target_compile_definitions(algorithms_libs PUBLIC -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(algorithms_libs PUBLIC std::filesystem)
+else()
+    target_link_libraries(algorithms_libs PUBLIC Boost::filesystem Boost::system)
+endif()
+
 if(has_span)
     target_compile_definitions(algorithms_libs
         PUBLIC -DHAS_STD_SPAN=1
+    )
+endif()
+
+if(GNURADIO_FFT_USES_TEMPLATES)
+    target_compile_definitions(algorithms_libs
+        PUBLIC -DGNURADIO_FFT_USES_TEMPLATES=1
     )
 endif()
 
@@ -187,14 +196,14 @@ else()
     add_library(gnss_sdr_flags gnss_sdr_flags.cc gnss_sdr_flags.h)
 endif()
 
-if(${FILESYSTEM_FOUND})
+if(FILESYSTEM_FOUND)
     target_compile_definitions(gnss_sdr_flags PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
+    if(find_experimental)
         target_compile_definitions(gnss_sdr_flags PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
     endif()
     target_link_libraries(gnss_sdr_flags PRIVATE std::filesystem)
 else()
-    target_link_libraries(gnss_sdr_flags PRIVATE Boost::filesystem)
+    target_link_libraries(gnss_sdr_flags PRIVATE Boost::filesystem Boost::system)
 endif()
 
 target_link_libraries(gnss_sdr_flags

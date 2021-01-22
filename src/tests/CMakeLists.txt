@@ -333,6 +333,9 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
         include(GNUInstallDirs)
         find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
+        if(NOT Patch_EXECUTABLE)
+            message(FATAL_ERROR "The patch command is not found. It is required to build GPSTk. Please check your OS documentation and install the patch command.")
+        endif()
         set(GPSTK_PATCH_COMMAND
             cd ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION} &&
             ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gpstk_static.patch
@@ -480,15 +483,6 @@ if(ENABLE_UNIT_TESTING)
     else()
         add_executable(run_tests ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cc)
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(run_tests PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(run_tests PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(run_tests PRIVATE std::filesystem)
-    else()
-        target_link_libraries(run_tests PRIVATE Boost::filesystem Boost::system)
-    endif()
 
     target_link_libraries(run_tests
         PRIVATE
@@ -531,11 +525,6 @@ if(ENABLE_UNIT_TESTING)
     if(GNURADIO_USES_STD_POINTERS)
         target_compile_definitions(run_tests
             PRIVATE -DGNURADIO_USES_STD_POINTERS=1
-        )
-    endif()
-    if(GNURADIO_FFT_USES_TEMPLATES)
-        target_compile_definitions(run_tests
-            PUBLIC -DGNURADIO_FFT_USES_TEMPLATES=1
         )
     endif()
     if(ENABLE_UNIT_TESTING_EXTRA)
@@ -617,15 +606,28 @@ if(ENABLE_FPGA)
     else()
         add_executable(gps_l1_ca_dll_pll_tracking_test_fpga ${GPS_L1_CA_DLL_PLL_TRACKING_TEST_FPGA_SOURCES})
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE std::filesystem)
+
+    if(USE_GENERIC_LAMBDAS)
+        set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
+        set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga
+            PRIVATE
+                "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
+                "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
+        )
     else()
-        target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE Boost::filesystem Boost::system)
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga
+            PRIVATE
+                -DHAS_GENERIC_LAMBDA=0
+        )
     endif()
+    if(USE_BOOST_BIND_PLACEHOLDERS)
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga
+            PRIVATE
+                -DUSE_BOOST_BIND_PLACEHOLDERS=1
+        )
+    endif()
+
     target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga
         PRIVATE
             Armadillo::armadillo
@@ -678,18 +680,8 @@ function(add_system_test executable)
     else()
         add_executable(${executable} ${SYSTEM_TEST_SOURCES})
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(${executable} PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(${executable} PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(${executable} PRIVATE std::filesystem)
-    else()
-        target_link_libraries(${executable} PRIVATE Boost::filesystem Boost::system)
-    endif()
-
     target_include_directories(${executable}
-        PRIVATE ${OPT_INCLUDES_} ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        PRIVATE ${OPT_INCLUDES_}
         INTERFACE ${CMAKE_SOURCE_DIR}/src/tests/common-files
     )
     target_link_libraries(${executable} PRIVATE ${OPT_LIBS_} algorithms_libs)
@@ -805,15 +797,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     else()
         add_executable(flowgraph_test ${FLOWGRAPH_TEST_SOURCES})
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(flowgraph_test PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(flowgraph_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(flowgraph_test PRIVATE std::filesystem)
-    else()
-        target_link_libraries(flowgraph_test PRIVATE Boost::filesystem Boost::system)
-    endif()
+
     target_link_libraries(flowgraph_test
         PRIVATE
             Boost::thread
@@ -860,15 +844,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     else()
         add_executable(gnss_block_test ${GNSS_BLOCK_TEST_SOURCES})
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(gnss_block_test PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(gnss_block_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(gnss_block_test PRIVATE std::filesystem)
-    else()
-        target_link_libraries(gnss_block_test PRIVATE Boost::filesystem Boost::system)
-    endif()
+
     target_link_libraries(gnss_block_test
         PRIVATE
             Boost::thread
@@ -916,15 +892,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     else()
         add_executable(gnuradio_block_test ${GNURADIO_BLOCK_TEST_SOURCES})
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(gnuradio_block_test PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(gnuradio_block_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(gnuradio_block_test PRIVATE std::filesystem)
-    else()
-        target_link_libraries(gnuradio_block_test PRIVATE Boost::filesystem Boost::system)
-    endif()
+
     target_link_libraries(gnuradio_block_test
         PRIVATE
             Boost::thread
@@ -961,18 +929,9 @@ else()
     add_executable(matio_test ${MATIO_TEST_SOURCES})
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(matio_test PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(matio_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(matio_test PRIVATE std::filesystem)
-else()
-    target_link_libraries(matio_test PRIVATE Boost::filesystem Boost::system)
-endif()
-
 target_link_libraries(matio_test
     PRIVATE
+        algorithms_libs
         Gflags::gflags
         Glog::glog
         GTest::GTest
@@ -1003,12 +962,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     else()
         add_executable(acq_test ${ACQ_TEST_SOURCES})
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(acq_test PRIVATE -DHAS_STD_FILESYSTEM=1)
-        target_link_libraries(acq_test PRIVATE std::filesystem)
-    else()
-        target_link_libraries(acq_test PRIVATE Boost::filesystem Boost::system)
-    endif()
+
     target_link_libraries(acq_test
         PRIVATE
             Boost::thread
@@ -1082,15 +1036,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     else()
         add_executable(trk_test ${TRKTEST_SOURCES})
     endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(trk_test PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(trk_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(trk_test PRIVATE std::filesystem)
-    else()
-        target_link_libraries(trk_test PRIVATE Boost::filesystem Boost::system)
-    endif()
 
     target_link_libraries(trk_test
         PRIVATE
@@ -1149,15 +1094,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_sources(control_thread_test PRIVATE ${CONTROL_THREAD_TEST_SOURCES})
     else()
         add_executable(control_thread_test ${CONTROL_THREAD_TEST_SOURCES})
-    endif()
-    if(${FILESYSTEM_FOUND})
-        target_compile_definitions(control_thread_test PRIVATE -DHAS_STD_FILESYSTEM=1)
-        if(${find_experimental})
-            target_compile_definitions(control_thread_test PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-        endif()
-        target_link_libraries(control_thread_test PRIVATE std::filesystem)
-    else()
-        target_link_libraries(control_thread_test PRIVATE Boost::filesystem Boost::system)
     endif()
 
     target_link_libraries(control_thread_test

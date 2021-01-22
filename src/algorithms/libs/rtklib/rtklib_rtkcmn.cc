@@ -1727,7 +1727,7 @@ double timediff(gtime_t t1, gtime_t t2)
  *-----------------------------------------------------------------------------*/
 double timediffweekcrossover(gtime_t t1, gtime_t t2)
 {
-    // as stated in IS-GPS-200K table 20-IV footnote among other parts of the ICD,
+    // as stated in IS-GPS-200L table 20-IV footnote among other parts of the ICD,
     // if tk=(t - toe) > 302400s then tk = tk - s
     // if tk=(t - toe) < -302400s then tk = tk + 604800s
     double tk = difftime(t1.time, t2.time) + t1.sec - t2.sec;

@@ -19,9 +19,9 @@
 #define GNSS_SDR_PCPS_8MS_ACQUISITION_CC_H
 
 #include "channel_fsm.h"
+#include "gnss_sdr_fft.h"
 #include "gnss_synchro.h"
 #include <gnuradio/block.h>
-#include <gnuradio/fft/fft.h>
 #include <gnuradio/gr_complex.h>
 #include <fstream>
 #include <memory>
@@ -190,13 +190,9 @@ private:
         int32_t doppler_offset);
 
     std::weak_ptr<ChannelFsm> d_channel_fsm;
-#if GNURADIO_FFT_USES_TEMPLATES
-    std::unique_ptr<gr::fft::fft_complex_fwd> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex_rev> d_ifft;
-#else
-    std::unique_ptr<gr::fft::fft_complex> d_fft_if;
-    std::unique_ptr<gr::fft::fft_complex> d_ifft;
-#endif
+    std::unique_ptr<gnss_fft_complex_fwd> d_fft_if;
+    std::unique_ptr<gnss_fft_complex_rev> d_ifft;
+
     std::vector<std::vector<gr_complex>> d_grid_doppler_wipeoffs;
     std::vector<gr_complex> d_fft_code_A;
     std::vector<gr_complex> d_fft_code_B;

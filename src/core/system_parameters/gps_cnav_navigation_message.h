@@ -37,9 +37,9 @@
 
 
 /*!
- * \brief This class decodes a GPS CNAV Data message as described in IS-GPS-200K
+ * \brief This class decodes a GPS CNAV Data message as described in IS-GPS-200L
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf Appendix III
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix III
  */
 class Gps_CNAV_Navigation_Message
 {

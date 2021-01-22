@@ -12,17 +12,6 @@ else()
     add_executable(gnss-sdr main.cc)
 endif()
 
-
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(gnss-sdr PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(gnss-sdr PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(gnss-sdr PRIVATE std::filesystem)
-else()
-    target_link_libraries(gnss-sdr PRIVATE Boost::filesystem Boost::system)
-endif()
-
 target_link_libraries(gnss-sdr
     PRIVATE
         algorithms_libs

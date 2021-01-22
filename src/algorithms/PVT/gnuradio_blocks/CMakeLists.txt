@@ -18,16 +18,6 @@ else()
     add_library(pvt_gr_blocks rtklib_pvt_gs.cc rtklib_pvt_gs.h)
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(pvt_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(pvt_gr_blocks PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(pvt_gr_blocks PRIVATE std::filesystem)
-else()
-    target_link_libraries(pvt_gr_blocks PRIVATE Boost::filesystem Boost::system)
-endif()
-
 target_link_libraries(pvt_gr_blocks
     PUBLIC
         algorithms_libs_rtklib

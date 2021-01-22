@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_dll_pll_tracking_test.cc
+ * \file gps_l1_ca_dll_pll_tracking_test_fpga.cc
  * \brief  This class implements a tracking test for Galileo_E5a_DLL_PLL_Tracking
  *  implementation based on some input parameters.
  * \author Marc Majoral, 2017. mmajoral(at)cttc.cat

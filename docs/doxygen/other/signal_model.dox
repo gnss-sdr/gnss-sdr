@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# Copyright (C) 2012-2020  Carles Fernandez-Prades cfernandez(at)cttc.es
+# Copyright (C) 2012-2021  Carles Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 /*! \page the_signal_model Signal model
@@ -62,7 +62,7 @@ and civilian users on a continuous, worldwide basis. Two GPS services are provid
 the Precise Positioning Service (PPS), available primarily to the military of the United
 States and its allies, and the Standard Positioning Service (SPS) open to civilian users.
 
-\li <b>GPS L1</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision K</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
+\li <b>GPS L1</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision L</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
 \f{equation}{
 s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
 \f}
@@ -76,12 +76,12 @@ s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
   \f$L_{\text{P(Y)}}=6.1871 \cdot 10^{12}\f$, and \f$p(t)\f$ is a rectangular pulse of a chip-period duration centered at \f$t=0\f$ and filtered at the transmitter.
   According to the chip rate, the binary phase-shift keying modulations in the equations above are denoted as BPSK(10) and BPSK(1), respectively. The precision P codes (named Y codes whenever
   the anti-spoofing mode is activated, encrypting the code and thus denying non-U.S. military users) are sequences of \f$7\f$ days in length. Regarding the modernization plans for GPS, it
-  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-800F.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision F</b></a>,
+  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-800G.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision G</b></a>,
   to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C will be available with first Block III launch, currently scheduled for 2013. The implementation will
   provide C/A code to ensure backward compatibility.
 
 
-\li <b>GPS L2C</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200K.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision K</b></a>, is only available on
+\li <b>GPS L2C</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision L</b></a>, is only available on
 Block IIR-M and subsequent satellite blocks. Centered at \f$f_{\text{GPS L2}}=1227.60\f$ MHz, the signal structure is the same than in (\ref{eq:GPSL1}), with the precision code in the In-phase
 component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navigation message \f$D_{\text{NAV}}\f$. For the Quadrature-phase component, three options are defined:
      \f{align}{ e_{L2CQ}(t) =&  \sum_{l=-\infty}^{\infty}     D_{\text{CNAV}}  \Big[ [l]_{10230}  \Big]    \oplus      \left(  C_{\text{CL}} \Big[ |l|_{L_{\text{CL}}} \Big]  p_{\text{\tiny{1/2}}}  \left(  t - lT_{c,L2C}   \right)   +  \right.\\ {} &+ \left. C_{\text{CM}}  \Big[ |l|_{L_{\text{CM}}} \Big] p_{\text{\tiny{1/2}}}\left(t - \left(l+\frac{3}{4}\right)T_{c,L2C}\right) \right),\\
@@ -94,7 +94,7 @@ component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navi
        data than the NAV data. It is transmitted at \f$25\f$ bps with forward error correction (FEC) encoding, resulting in \f$50\f$ sps.
 
 
-\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-705F.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision F</b></a>, is only available
+\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-705G.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision G</b></a>, is only available
 in Block IIF (first satellite launched on May, 2010) and subsequent satellite blocks. Centered at \f$f_{\text{GPS L5}}=1176.45\f$ MHz, this signal in space can be written as:
     \f{equation}{
 s^{\text{(GPS L5)}}_{T}(t)=e_{L5I}(t) +j e_{L5Q}(t)~,
@@ -158,7 +158,7 @@ nominal constellation configuration. The Galileo satellites are placed in quasi-
 orbits with a nominal semi-major axis of about \f$30,000\f$ km and an approximate revolution
 period of \f$14\f$ hours. The Control segment full infrastructure will be composed of \f$30-40\f$ sensor stations, \f$3\f$ control centers, \f$9\f$ Mission Uplink stations, and \f$5\f$ TT\&C stations.
 
-Galileo's Open Service is defined at <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 1.3</b></a>, where the following signal structures are specified:
+Galileo's Open Service is defined at <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf" target="_blank"><b>Signal In Space Interface Control Document. Ref: OS SIS ICD, Issue 2.0</b></a>, where the following signal structures are specified:
 
 
 \li <b>Galileo E1</b>. This band, centered at \f$f_{\text{Gal E1}}=1575.420\f$ MHz and with a reference bandwidth of \f$24.5520\f$ MHz, uses the so-called composite binary offset carrier
@@ -181,7 +181,7 @@ In case of channel \f$C\f$, it is a pilot (dataless) channel with a secondary co
 \nonumber e_{E1C}(t)&= \sum_{m=-\infty}^{+\infty}C_{E1Cs}\Big[|m|_{25}\Big] \oplus \sum_{l=1}^{4092}C_{E1Cp}\Big[ l \Big] \cdot \\ {}& \; \; \cdot p(t-mT_{c,E1Cs}-lT_{c,E1Cp})~,\label{eq:E1C}
 \f}
   with \f$T_{c,E1B}=T_{c,E1Cp}=\frac{1}{1.023}\f$ \f$\mu\f$s and \f$T_{c,E1Cs}=4\f$ ms. The \f$C_{E1B}\f$ and \f$C_{E1Cp}\f$ primary codes are pseudorandom memory code sequences defined at
-  Annex C.7 and C.8 of <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank">OS SIS ICD</a>. The binary
+  Annex C of <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf" target="_blank">OS SIS ICD</a>. The binary
   sequence of the secondary code \f$C_{E1Cs}\f$ is 0011100000001010110110010. This band also contains another component, Galileo E1A, intended for the Public Regulated Service (PRS).
  It uses a BOC(15,2.5) modulation with cosine-shaped subcarrier \f$f_{s,E1A}=15.345\f$ MHz and \f$T_{c, E1A}=\frac{1}{2.5575}\f$ \f$\mu\f$s.
 The PRS spreading codes and the structure of the navigation message have not been made public.
@@ -197,7 +197,7 @@ s_{T}^{\text{(Gal E6)}}(t) = \frac{1}{\sqrt{2}}\left(e_{E6B}(t)-e_{E6C}(t)\right
 \f}
   where \f$D_{\text{C/NAV}}\f$ is the C/NAV navigation data stream, which is modulated with the encrypted ranging code \f$C_{E6B}\f$ with chip period \f$T_{c,E6}=\frac{1}{5.115}\f$ \f$\mu\f$s, thus
   being a BPSK(5) modulation. Codes \f$C_{E6B}\f$ and primary codes \f$C_{E6Cs}\f$ and their respective lengths, \f$L_{E6B}\f$ and \f$L_{E6C}\f$, have not been published. The secondary codes
-  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo-OS-SIS-ICD.pdf" target="_blank">OS SIS ICD</a>.
+  for the pilot component, \f$C_{E6Cs}\f$, are available at the <a href="https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OS_SIS_ICD_v2.0.pdf" target="_blank">OS SIS ICD</a>.
   The receiver reference bandwidth for this signal is \f$40.920\f$ MHz. This band also contains another component, Galileo E6A, intended for PRS.
 
 \li <b>Galileo E5</b>. Centered at \f$f_{\text{Gal E5}}=1191.795\f$ MHz and with a total bandwidth of \f$51.150\f$ MHz, its signal structure deserves some analysis. The AltBOC modulation can be generically expressed as

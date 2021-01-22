@@ -38,6 +38,7 @@
 #include "galileo_e6_signal_replica.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_synchro.h"
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
@@ -62,19 +63,6 @@
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
-#endif
-
-#if HAS_STD_FILESYSTEM
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/path.hpp>
-namespace fs = boost::filesystem;
 #endif
 
 

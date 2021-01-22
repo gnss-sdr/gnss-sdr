@@ -17,6 +17,7 @@
  */
 
 #include "kml_printer.h"
+#include "gnss_sdr_filesystem.h"
 #include "pvt_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
@@ -27,27 +28,6 @@
 #include <sstream>
 #include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO
 #include <sys/types.h>  // for mode_t
-
-// clang-format off
-#if HAS_STD_FILESYSTEM
-#include <system_error>
-namespace errorlib = std;
-#if HAS_STD_FILESYSTEM_EXPERIMENTAL
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#include <filesystem>
-namespace fs = std::filesystem;
-#endif
-#else
-#include <boost/filesystem/operations.hpp>   // for create_directories, exists
-#include <boost/filesystem/path.hpp>         // for path, operator<<
-#include <boost/filesystem/path_traits.hpp>  // for filesystem
-#include <boost/system/error_code.hpp>       // for error_code
-namespace fs = boost::filesystem;
-namespace errorlib = boost::system;
-#endif
-// clang-format on
 
 
 Kml_Printer::Kml_Printer(const std::string& base_path)

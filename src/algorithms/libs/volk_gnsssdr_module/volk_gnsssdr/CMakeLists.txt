@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 
@@ -203,7 +203,7 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_MINOR_VERSION 0)
-set(VERSION_INFO_MAINT_VERSION 14)
+set(VERSION_INFO_MAINT_VERSION 14.git)
 include(VolkVersion) # setup version info
 
 
@@ -244,6 +244,8 @@ endif()
 ########################################################################
 
 # cpu_features
+option(ENABLE_OWN_CPUFEATURES "Force the building of the cpu_features library even if it is already installed" OFF)
+
 set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
   set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
@@ -265,7 +267,14 @@ if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
     set(USE_CPU_FEATURES ON)
     set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
     set(BUILD_SHARED_LIBS OFF)
-    add_subdirectory(cpu_features)
+    if(NOT ENABLE_OWN_CPUFEATURES)
+        find_package(CpuFeatures QUIET)
+    endif()
+    if(CpuFeatures_FOUND)
+        message(STATUS "Found CpuFeatures: (found version ${CpuFeatures_VERSION})")
+    else()
+        add_subdirectory(cpu_features)
+    endif()
     set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
 endif()
 

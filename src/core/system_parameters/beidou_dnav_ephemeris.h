@@ -45,20 +45,20 @@ public:
 
     /*!
      * \brief Compute the ECEF SV coordinates and ECEF velocity
-     * Implementation of Table 20-IV (IS-GPS-200K)
+     * Implementation of Table 20-IV (IS-GPS-200L)
      * and compute the clock bias term including relativistic effect (return value)
      */
     double satellitePosition(double transmitTime);
 
     /*!
      * \brief Sets (\a d_satClkDrift)and returns the clock drift in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     *  (IS-GPS-200L,  20.3.3.3.3.1)
      */
     double sv_clock_drift(double transmitTime);
 
     /*!
      * \brief Sets (\a d_dtr) and returns the clock relativistic correction term in seconds according to the User Algorithm for SV Clock Correction
-     *  (IS-GPS-200K,  20.3.3.3.3.1)
+     *  (IS-GPS-200L,  20.3.3.3.3.1)
      */
     double sv_clock_relativistic_term(double transmitTime);
 
@@ -71,8 +71,8 @@ public:
     double d_eccentricity{};         //!< Eccentricity [dimensionless]
     double d_Cus{};                  //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
     double d_sqrt_A{};               //!< Square Root of the Semi-Major Axis [sqrt(m)]
-    double d_Toe{};                  //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
-    double d_Toc{};                  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
+    double d_Toe{};                  //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200L) [s]
+    double d_Toc{};                  //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200L) [s]
     double d_Cic{};                  //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
     double d_OMEGA0{};               //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
     double d_Cis{};                  //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
@@ -82,7 +82,7 @@ public:
     double d_OMEGA_DOT{};            //!< Rate of Right Ascension [semi-circles/s]
     double d_IDOT{};                 //!< Rate of Inclination Angle [semi-circles/s]
     int i_BEIDOU_week{};             //!< BEIDOU week number, aka WN [week]
-    int i_SV_accuracy{};             //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200K)
+    int i_SV_accuracy{};             //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200L)
     int i_SV_health{};
     double d_TGD1{};  //!< Estimated Group Delay Differential on B1I [s]
     double d_TGD2{};  //!< Estimated Group Delay Differential on B2I [s]
@@ -154,8 +154,8 @@ public:
         archive& make_nvp("d_e_eccentricity", d_eccentricity);  //!< Eccentricity [dimensionless]
         archive& make_nvp("d_Cus", d_Cus);                      //!< Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude [rad]
         archive& make_nvp("d_sqrt_A", d_sqrt_A);                //!< Square Root of the Semi-Major Axis [sqrt(m)]
-        archive& make_nvp("d_Toe", d_Toe);                      //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200K) [s]
-        archive& make_nvp("d_Toc", d_Toe);                      //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200K) [s]
+        archive& make_nvp("d_Toe", d_Toe);                      //!< Ephemeris data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200L) [s]
+        archive& make_nvp("d_Toc", d_Toe);                      //!< clock data reference time (Ref. 20.3.3.3.3.1 IS-GPS-200L) [s]
         archive& make_nvp("d_Cic", d_Cic);                      //!< Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination [rad]
         archive& make_nvp("d_OMEGA0", d_OMEGA0);                //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
         archive& make_nvp("d_Cis", d_Cis);                      //!< Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination [rad]
@@ -165,7 +165,7 @@ public:
         archive& make_nvp("d_OMEGA_DOT", d_OMEGA_DOT);          //!< Rate of Right Ascension [semi-circles/s]
         archive& make_nvp("d_IDOT", d_IDOT);                    //!< Rate of Inclination Angle [semi-circles/s]
         archive& make_nvp("i_BEIDOU_week", i_BEIDOU_week);      //!< GPS week number, aka WN [week]
-        archive& make_nvp("i_SV_accuracy", i_SV_accuracy);      //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200K)
+        archive& make_nvp("i_SV_accuracy", i_SV_accuracy);      //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200L)
         archive& make_nvp("i_SV_health", i_SV_health);
         archive& make_nvp("d_AODC", d_AODC);  //!< Issue of Data, Clock
         archive& make_nvp("d_TGD1", d_TGD1);  //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
@@ -189,7 +189,7 @@ private:
     /*
      * Accounts for the beginning or end of week crossover
      *
-     * See paragraph 20.3.3.3.3.1 (IS-GPS-200K)
+     * See paragraph 20.3.3.3.3.1 (IS-GPS-200L)
      * \param[in]  -  time in seconds
      * \param[out] -  corrected time, in seconds
      */

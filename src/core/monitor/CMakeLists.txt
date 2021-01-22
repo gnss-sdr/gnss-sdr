@@ -53,14 +53,19 @@ target_link_libraries(core_monitor
         Gnuradio::pmt
 )
 
-get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
+get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 
 target_include_directories(core_monitor
     PUBLIC
-        SYSTEM ${PROTO_INCLUDE_HEADERS}
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs # for gnss_sdr_make_unique
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique
+)
+
+# Do not apply clang-tidy fixes to protobuf generated headers
+target_include_directories(core_monitor
+    SYSTEM PUBLIC
+        ${PROTO_INCLUDE_HEADERS_DIR}
 )
 
 if(GNURADIO_USES_STD_POINTERS)

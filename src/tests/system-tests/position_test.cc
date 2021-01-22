@@ -25,6 +25,7 @@
 #include "control_thread.h"
 #include "file_configuration.h"
 #include "geofunctions.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_flags.h"
 #include "gnuplot_i.h"
 #include "in_memory_configuration.h"
@@ -45,14 +46,6 @@
 #include <fstream>
 #include <numeric>
 #include <thread>
-
-#if HAS_STD_FILESYSTEM
-#include <filesystem>
-namespace fs = std::filesystem;
-#else
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-#endif
 
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags

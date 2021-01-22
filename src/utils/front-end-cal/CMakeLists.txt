@@ -52,19 +52,10 @@ else()
     add_executable(front-end-cal main.cc)
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(front-end-cal PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(front-end-cal PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(front-end-cal PRIVATE std::filesystem)
-else()
-    target_link_libraries(front-end-cal PRIVATE Boost::filesystem Boost::system)
-endif()
-
 target_link_libraries(front-end-cal
     PRIVATE
         core_receiver
+        algorithms_libs
         front_end_cal_lib
         gnss_sdr_flags
         Boost::headers

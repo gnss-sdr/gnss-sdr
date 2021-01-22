@@ -54,16 +54,6 @@ else()
     add_library(pvt_libs ${PVT_LIB_SOURCES} ${PROTO_SRCS} ${PVT_LIB_HEADERS} ${PROTO_HDRS})
 endif()
 
-if(${FILESYSTEM_FOUND})
-    target_compile_definitions(pvt_libs PRIVATE -DHAS_STD_FILESYSTEM=1)
-    if(${find_experimental})
-        target_compile_definitions(pvt_libs PRIVATE -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(pvt_libs PRIVATE std::filesystem)
-else()
-    target_link_libraries(pvt_libs PRIVATE Boost::filesystem Boost::system)
-endif()
-
 target_link_libraries(pvt_libs
     PUBLIC
         Boost::date_time
@@ -71,19 +61,24 @@ target_link_libraries(pvt_libs
         core_system_parameters
         algorithms_libs_rtklib
     PRIVATE
+        algorithms_libs
         Gflags::gflags
         Glog::glog
         Matio::matio
 )
 
-get_filename_component(PROTO_INCLUDE_HEADERS ${PROTO_HDRS} DIRECTORY)
+get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 
+# for concurrent_queue.h
 target_include_directories(pvt_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/receiver
-        SYSTEM ${PROTO_INCLUDE_HEADERS}
-    PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique.h
+)
+
+# Do not apply clang-tidy fixes to protobuf generated headers
+target_include_directories(pvt_libs
+    SYSTEM PUBLIC
+        ${PROTO_INCLUDE_HEADERS_DIR}
 )
 
 target_compile_definitions(pvt_libs PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

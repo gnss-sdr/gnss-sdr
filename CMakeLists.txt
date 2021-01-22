@@ -28,6 +28,8 @@ option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
 
 option(ENABLE_OSMOSDR "Enable the use of OsmoSDR and other front-ends (RTL-based dongles, HackRF, bladeRF, etc.) as signal source" OFF)
 
+option(ENABLE_LIMESDR "Enable the use of LimeSDR and Custom LimeSDR as signal source" OFF)
+
 option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requires gr-iio" OFF)
 
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
@@ -2891,6 +2893,33 @@ else()
 endif()
 
 
+##########################################
+# gr-limesdr - OPTIONAL
+# https://github.com/myriadrf/gr-limesdr
+##########################################
+find_package(GRLIMESDR)
+set_package_properties(limesdr PROPERTIES
+    PURPOSE "Used for communication with LimeSDR."
+    TYPE OPTIONAL
+)
+if(ENABLE_LIMESDR)
+    if(GRLIMESDR_FOUND)
+        message(STATUS "The driver for LimeSDR will be compiled.")
+        message(STATUS " You can disable it with 'cmake -DENABLE_LIMESDR=OFF ..'")
+    else()
+        if(ENABLE_PACKAGING)
+            message(WARNING "gr-limesdr has not been found. Source blocks depending on it will NOT be built.")
+        else()
+            message(FATAL_ERROR "gr-limesdr required to build gnss-sdr with the optional LIMESDR driver")
+        endif()
+        set(ENABLE_LIMESDR OFF)
+    endif()
+else()
+    message(STATUS "The (optional) driver for LimeSDR is not enabled.")
+    message(STATUS " Enable it with 'cmake -DENABLE_LIMESDR=ON ..' to add support for LimeSDR.")
+endif()
+
+
 ##############################################
 # gr-iio - OPTIONAL
 # IIO blocks for GNU Radio
@@ -3219,6 +3248,7 @@ add_subdirectory(src)
 ################################################################################
 add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
 add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
+add_feature_info(ENABLE_LIMESDR ENABLE_LIMESDR "Enables Limesdr_Signal_Source. Requires gr-limesdr.")
 add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio and libad9361-dev.")
 add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
 add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio and libad9361-dev.")

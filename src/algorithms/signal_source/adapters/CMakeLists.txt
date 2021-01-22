@@ -84,6 +84,14 @@ if(ENABLE_OSMOSDR)
     endif()
 endif()
 
+if(ENABLE_LIMESDR)
+    if(GRLIMESDR_FOUND)
+        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} limesdr_signal_source.cc)
+        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} limesdr_signal_source.h)
+    endif()
+endif()
+
+
 
 if(ENABLE_UHD)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
@@ -191,6 +199,14 @@ if(ENABLE_OSMOSDR AND GROSMOSDR_FOUND)
     )
 endif()
 
+if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::limesdr
+    )
+endif()
+
+
 if(ENABLE_AD9361 AND LIBIIO_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
@@ -255,6 +271,11 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     endif()
 endif()
 
+ if(GRLIMESDR_PPS)
+	target_compile_definitions(signal_source_adapters PUBLIC -DLimeSDR_PPS=1)
+ endif()
+	 
+	 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_adapters
@@ -267,6 +288,8 @@ endif()
 target_compile_definitions(signal_source_adapters
     PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+
 
 set_property(TARGET signal_source_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

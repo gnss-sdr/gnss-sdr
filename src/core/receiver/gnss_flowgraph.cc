@@ -128,7 +128,10 @@ void GNSSFlowgraph::init()
             // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
             // Include GetRFChannels in the interface to avoid read config parameters here
             // read the number of RF channels for each front-end
-            RF_Channels = configuration_->property(sig_source_.at(0)->role() + ".RF_channels", 0);
+            if (sig_source_.at(0) != nullptr)
+                {
+                    RF_Channels = configuration_->property(sig_source_.at(0)->role() + ".RF_channels", 0);
+                }
             if (RF_Channels != 0)
                 {
                     for (int j = 0; j < RF_Channels; j++)
@@ -265,6 +268,7 @@ void GNSSFlowgraph::start()
     catch (const std::exception& e)
         {
             LOG(ERROR) << "Unable to start flowgraph: " << e.what();
+            print_help();
             return;
         }
 
@@ -321,11 +325,15 @@ void GNSSFlowgraph::connect()
 #if ENABLE_FPGA
     if (connect_fpga_flowgraph() != 0)
         {
+            LOG(ERROR) << "Unable to connect flowgraph with FPFA off-loading";
+            print_help();
             return;
         }
 #else
     if (connect_desktop_flowgraph() != 0)
         {
+            LOG(ERROR) << "Unable to connect flowgraph";
+            print_help();
             return;
         }
 #endif
@@ -342,7 +350,7 @@ void GNSSFlowgraph::disconnect()
 
     if (!connected_)
         {
-            LOG(INFO) << "flowgraph was not connected";
+            LOG(INFO) << "Flowgraph was not connected";
             return;
         }
     connected_ = false;
@@ -539,19 +547,28 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
     DLOG(INFO) << "Blocks connected internally to the top_block";
 
     // Connect the counter
-    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
+    if (sig_source_.at(0) != nullptr)
         {
-            if (connect_sample_counter() != 0)
+            if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
                 {
-                    return 1;
+                    if (connect_sample_counter() != 0)
+                        {
+                            return 1;
+                        }
+                }
+            else
+                {
+                    if (connect_fpga_sample_counter() != 0)
+                        {
+                            return 1;
+                        }
                 }
         }
     else
         {
-            if (connect_fpga_sample_counter() != 0)
-                {
-                    return 1;
-                }
+            help_hint_ += " * Check implementation name for SignalSource block\n";
+            help_hint_ += "   Signal Source block implementation for FPGA off-loading should be 'Ad9361_Fpga_Signal_Source'\n";
+            return 1;
         }
 
     if (connect_channels_to_observables() != 0)
@@ -575,6 +592,9 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
         {
             return 1;
         }
+
+    check_desktop_conf_in_fpga_env();
+
     LOG(INFO) << "The GNU Radio flowgraph for the current GNSS-SDR configuration with FPGA off-loading has been successfully connected";
     return 0;
 }
@@ -654,13 +674,23 @@ int GNSSFlowgraph::connect_signal_sources()
 {
     for (int i = 0; i < sources_count_; i++)
         {
-            try
+            if (sig_source_.at(i) != nullptr)
                 {
-                    sig_source_.at(i)->connect(top_block_);
+                    try
+                        {
+                            sig_source_.at(i)->connect(top_block_);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(ERROR) << "Can't connect signal source block " << i << " internally: " << e.what();
+                            top_block_->disconnect_all();
+                            return 1;
+                        }
                 }
-            catch (const std::exception& e)
+            else
                 {
-                    LOG(ERROR) << "Can't connect signal source block " << i << " internally: " << e.what();
+                    help_hint_ += " * Check implementation name for SignalSource" + (i == 0 ? " " : (std::to_string(i) + " ")) + "block\n";
+                    help_hint_ += "   Signal Source blocks documentation at https://gnss-sdr.org/docs/sp-blocks/signal-source/\n";
                     top_block_->disconnect_all();
                     return 1;
                 }
@@ -689,17 +719,95 @@ int GNSSFlowgraph::disconnect_signal_sources()
 }
 
 
+int GNSSFlowgraph::connect_signal_conditioners()
+{
+    for (auto& sig : sig_conditioner_)
+        {
+            try
+                {
+                    sig->connect(top_block_);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(ERROR) << "Can't connect signal conditioner block internally: " << e.what();
+                    top_block_->disconnect_all();
+                    std::string reported_error(e.what());
+                    if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
+                        {
+                            std::string replace_me("copy");
+                            size_t pos = reported_error.find(replace_me);
+                            size_t len = replace_me.length();
+                            reported_error.replace(pos, len, "PassThrough");
+                            help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched item size\n";
+                            help_hint_ += "   Reported error: " + reported_error + '\n';
+                            help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
+                        }
+                    if (std::string::npos != reported_error.find(std::string("DataTypeAdapter")))
+                        {
+                            help_hint_ += " * The DataTypeAdapter implementation set in the configuration file does not exist\n";
+                            help_hint_ += "   Check the DataTypeAdapter documentation at https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/\n";
+                        }
+                    if (std::string::npos != reported_error.find(std::string("InputFilter")))
+                        {
+                            help_hint_ += " * The InputFilter implementation set in the configuration file does not exist\n";
+                            help_hint_ += "   Check the InputFilter documentation at https://gnss-sdr.org/docs/sp-blocks/input-filter/\n";
+                        }
+                    if (std::string::npos != reported_error.find(std::string("Resampler")))
+                        {
+                            help_hint_ += " * The Resampler implementation set in the configuration file does not exist\n";
+                            help_hint_ += "   Check the Resampler documentation at https://gnss-sdr.org/docs/sp-blocks/resampler/\n";
+                        }
+                    return 1;
+                }
+        }
+    DLOG(INFO) << "Signal Conditioner blocks successfully connected to the top_block";
+    return 0;
+}
+
+
+int GNSSFlowgraph::disconnect_signal_conditioners()
+{
+    for (auto& sig : sig_conditioner_)
+        {
+            try
+                {
+                    sig->disconnect(top_block_);
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(INFO) << "Can't disconnect signal conditioner block internally: " << e.what();
+                    top_block_->disconnect_all();
+                    return 1;
+                }
+        }
+    return 0;
+}
+
+
 int GNSSFlowgraph::connect_channels()
 {
     for (int i = 0; i < channels_count_; i++)
         {
-            try
+            if (channels_.at(i) != nullptr)
                 {
-                    channels_.at(i)->connect(top_block_);
+                    try
+                        {
+                            channels_.at(i)->connect(top_block_);
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(ERROR) << "Can't connect channel " << i << " internally: " << e.what();
+                            top_block_->disconnect_all();
+                            return 1;
+                        }
                 }
-            catch (const std::exception& e)
+            else
                 {
-                    LOG(ERROR) << "Can't connect channel " << i << " internally: " << e.what();
+                    LOG(ERROR) << "Can't connect channel " << i << " internally";
+                    help_hint_ += " * Check implementation names for Channel" + std::to_string(i) + " inner blocks.\n";
+                    help_hint_ += "   Acquisition blocks documentation at https://gnss-sdr.org/docs/sp-blocks/acquisition/\n";
+                    help_hint_ += "   Tracking blocks documentation at https://gnss-sdr.org/docs/sp-blocks/tracking/\n";
+                    help_hint_ += "   Telemetry Decoder blocks documentation at https://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/\n";
                     top_block_->disconnect_all();
                     return 1;
                 }
@@ -730,6 +838,13 @@ int GNSSFlowgraph::disconnect_channels()
 
 int GNSSFlowgraph::connect_observables()
 {
+    if (observables_ == nullptr)
+        {
+            help_hint_ += " * Check implementation name for the Observables block\n";
+            help_hint_ += "   Observables block documentation at https://gnss-sdr.org/docs/sp-blocks/observables/\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
     try
         {
             observables_->connect(top_block_);
@@ -763,6 +878,13 @@ int GNSSFlowgraph::disconnect_observables()
 
 int GNSSFlowgraph::connect_pvt()
 {
+    if (pvt_ == nullptr)
+        {
+            help_hint_ += " * Check implementation name for the PVT block\n";
+            help_hint_ += "   PVT block documentation at https://gnss-sdr.org/docs/sp-blocks/pvt/\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
     try
         {
             pvt_->connect(top_block_);
@@ -839,6 +961,7 @@ int GNSSFlowgraph::disconnect_sample_counter()
         }
     return 0;
 }
+
 
 #if ENABLE_FPGA
 int GNSSFlowgraph::connect_fpga_sample_counter()
@@ -918,6 +1041,8 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                     // GNURADIO max_streams=-1 means infinite ports!
                                     DLOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
                                     DLOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
+                                    size_t output_size = sig_source_.at(i)->item_size();
+                                    size_t input_size = sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->sizeof_stream_item(0);
 
                                     if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1 or sig_source_.at(i)->get_right_block()->output_signature()->max_streams() == -1)
                                         {
@@ -943,18 +1068,93 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                                 }
                                         }
                                     signal_conditioner_ID++;
+                                    // Check configuration inconsistencies
+                                    if (output_size != input_size)
+                                        {
+                                            help_hint_ += " * The Signal Source implementation " + sig_source_.at(i)->implementation() + " has an output with an item size of " + std::to_string(output_size) + " bytes, but it is connected to the Signal Conditioner implementation " + sig_conditioner_.at(signal_conditioner_ID)->implementation() + " with input item size of " + std::to_string(input_size) + "bytes.\n";
+                                            help_hint_ += "   Output ports must be connected to input ports with the same item size.\n";
+                                        }
                                 }
                         }
                 }
             catch (const std::exception& e)
                 {
-                    LOG(ERROR) << "Can't connect signal source " << i << " to signal conditioner " << i << ": " << e.what();
+                    LOG(ERROR) << "Can't connect SignalSource" << (i == 0 ? " " : (std::to_string(i) + " ")) << "to SignalConditioner" << (i == 0 ? " " : (std::to_string(i) + " ")) << ": " << e.what();
+                    std::string reported_error(e.what());
+                    if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
+                        {
+                            std::string replace_me("copy");
+                            size_t pos = reported_error.find(replace_me);
+                            size_t len = replace_me.length();
+                            reported_error.replace(pos, len, "PassThrough");
+                            help_hint_ += " * The SignalSource output item size and the SignalConditioner input item size are mismatched\n";
+                            help_hint_ += "   Reported error: " + reported_error + '\n';
+                        }
                     top_block_->disconnect_all();
                     return 1;
                 }
         }
 
     DLOG(INFO) << "Signal source(s) successfully connected to signal conditioner(s)";
+    return 0;
+}
+
+
+int GNSSFlowgraph::disconnect_signal_sources_from_signal_conditioners()
+{
+    int RF_Channels = 0;
+    int signal_conditioner_ID = 0;
+    for (int i = 0; i < sources_count_; i++)
+        {
+            try
+                {
+                    // TODO: Remove this array implementation and create generic multistream connector
+                    // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
+                    if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
+                        {
+                            // Multichannel Array
+                            for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
+                                {
+                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
+                                }
+                        }
+                    else
+                        {
+                            // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
+                            // Include GetRFChannels in the interface to avoid read config parameters here
+                            // read the number of RF channels for each front-end
+                            RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
+
+                            for (int j = 0; j < RF_Channels; j++)
+                                {
+                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1 or sig_source_.at(i)->get_right_block()->output_signature()->max_streams() == -1)
+                                        {
+                                            top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                        }
+                                    else
+                                        {
+                                            if (j == 0)
+                                                {
+                                                    // RF_channel 0 backward compatibility with single channel sources
+                                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
+                                            else
+                                                {
+                                                    // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
+                                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
+                                                }
+                                        }
+                                    signal_conditioner_ID++;
+                                }
+                        }
+                }
+            catch (const std::exception& e)
+                {
+                    LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
+                    top_block_->disconnect_all();
+                    return 1;
+                }
+        }
     return 0;
 }
 
@@ -1096,7 +1296,7 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
                 }
 
             signal_conditioner_connected_.at(selected_signal_conditioner_ID) = true;  // annotate that this signal conditioner is connected
-            DLOG(INFO) << "signal conditioner " << selected_signal_conditioner_ID << " successfully connected to channel " << i;
+            DLOG(INFO) << "Signal conditioner " << selected_signal_conditioner_ID << " successfully connected to channel " << i;
         }
     return 0;
 }
@@ -1349,104 +1549,6 @@ int GNSSFlowgraph::disconnect_monitors()
 }
 
 
-int GNSSFlowgraph::connect_signal_conditioners()
-{
-    for (auto& sig : sig_conditioner_)
-        {
-            try
-                {
-                    sig->connect(top_block_);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(ERROR) << "Can't connect signal conditioner block internally: " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
-    DLOG(INFO) << "Signal Conditioner blocks successfully connected to the top_block";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_signal_conditioners()
-{
-    for (auto& sig : sig_conditioner_)
-        {
-            try
-                {
-                    sig->disconnect(top_block_);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect signal conditioner block internally: " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_signal_sources_from_signal_conditioners()
-{
-    int RF_Channels = 0;
-    int signal_conditioner_ID = 0;
-    for (int i = 0; i < sources_count_; i++)
-        {
-            try
-                {
-                    // TODO: Remove this array implementation and create generic multistream connector
-                    // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-                    if (sig_source_.at(i)->implementation() == "Raw_Array_Signal_Source")
-                        {
-                            // Multichannel Array
-                            for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
-                                {
-                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
-                                }
-                        }
-                    else
-                        {
-                            // TODO: Create a class interface for SignalSources, derived from GNSSBlockInterface.
-                            // Include GetRFChannels in the interface to avoid read config parameters here
-                            // read the number of RF channels for each front-end
-                            RF_Channels = configuration_->property(sig_source_.at(i)->role() + ".RF_channels", 1);
-
-                            for (int j = 0; j < RF_Channels; j++)
-                                {
-                                    if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1 or sig_source_.at(i)->get_right_block()->output_signature()->max_streams() == -1)
-                                        {
-                                            top_block_->disconnect(sig_source_.at(i)->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                        }
-                                    else
-                                        {
-                                            if (j == 0)
-                                                {
-                                                    // RF_channel 0 backward compatibility with single channel sources
-                                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                }
-                                            else
-                                                {
-                                                    // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-                                                    top_block_->disconnect(sig_source_.at(i)->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                }
-                                        }
-                                    signal_conditioner_ID++;
-                                }
-                        }
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
-    return 0;
-}
-
-
 void GNSSFlowgraph::check_signal_conditioners()
 {
     // check for unconnected signal conditioners and connect null_sinks
@@ -1593,6 +1695,35 @@ void GNSSFlowgraph::assign_channels()
 
                     channels_.at(i)->set_signal(signal_value);
                 }
+        }
+}
+
+
+void GNSSFlowgraph::print_help()
+{
+    if (!help_hint_.empty())
+        {
+            std::cerr << "It seems that your configuration file is not well defined.\n";
+            std::cerr << "A hint to fix your configuration file:\n";
+            std::cerr << help_hint_;
+        }
+}
+
+
+void GNSSFlowgraph::check_desktop_conf_in_fpga_env()
+{
+    int number_of_fpga_acq_channels = 0;
+    for (int i = 0; i < channels_count_; i++)
+        {
+            if (channels_.at(i)->get_left_block_acq() == nullptr)
+                {
+                    number_of_fpga_acq_channels++;
+                }
+        }
+    if (number_of_fpga_acq_channels != channels_count_)
+        {
+            help_hint_ += " * The Acquisition block implementation is not suitable for GNSS-SDR flowgraph with FPGA off-loading\n";
+            help_hint_ += "   If you want to use this configuration in an environment without FPGA, please rebuild GNSS-SDR with CMake option '-DENABLE_FPGA=OFF'\n";
         }
 }
 

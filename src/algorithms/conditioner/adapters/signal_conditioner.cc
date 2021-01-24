@@ -17,6 +17,7 @@
 
 #include "signal_conditioner.h"
 #include <glog/logging.h>
+#include <stdexcept>
 #include <utility>
 
 
@@ -39,6 +40,18 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
         {
             LOG(WARNING) << "Signal conditioner already connected internally";
             return;
+        }
+    if (data_type_adapt_ == nullptr)
+        {
+            throw std::invalid_argument("DataTypeAdapter implementation not defined");
+        }
+    if (in_filt_ == nullptr)
+        {
+            throw std::invalid_argument("InputFilter implementation not defined");
+        }
+    if (res_ == nullptr)
+        {
+            throw std::invalid_argument("Resampler implementation not defined");
         }
     data_type_adapt_->connect(top_block);
     in_filt_->connect(top_block);

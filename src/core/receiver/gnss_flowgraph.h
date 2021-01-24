@@ -216,6 +216,8 @@ private:
 
     void push_back_signal(const Gnss_Signal& gs);
     void remove_signal(const Gnss_Signal& gs);
+    void print_help();
+    void check_desktop_conf_in_fpga_env();
 
     double project_doppler(const std::string& searched_signal, double primary_freq_doppler_hz);
     bool is_multiband() const;
@@ -279,6 +281,7 @@ private:
     std::map<std::string, StringValue> mapStringValues_;
 
     std::string config_file_;
+    std::string help_hint_;
 
     std::mutex signal_list_mutex_;
 

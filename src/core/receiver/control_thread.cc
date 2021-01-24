@@ -300,7 +300,6 @@ int ControlThread::run()
         }
     else
         {
-            LOG(ERROR) << "Unable to connect flowgraph";
             return 0;
         }
     // Start the flowgraph
@@ -311,7 +310,6 @@ int ControlThread::run()
         }
     else
         {
-            LOG(ERROR) << "Unable to start flowgraph";
             return 0;
         }
 

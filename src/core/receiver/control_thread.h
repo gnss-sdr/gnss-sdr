@@ -153,6 +153,7 @@ private:
     void telecommand_listener();
     void keyboard_listener();
     void sysv_queue_listener();
+    void print_help_at_exit() const;
 
     // default filename for assistance data
     const std::string eph_default_xml_filename_ = "./gps_ephemeris.xml";
@@ -203,6 +204,12 @@ private:
     unsigned int applied_actions_;
     int msqid_;
 
+    bool well_formatted_configuration_;
+    bool conf_file_has_section_;
+    bool conf_file_has_mandatory_globals_;
+    bool conf_has_signal_sources_;
+    bool conf_has_observables_;
+    bool conf_has_pvt_;
     bool receiver_on_standby_;
     bool stop_;
     bool restart_;

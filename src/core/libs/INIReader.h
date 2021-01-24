@@ -58,6 +58,12 @@ public:
     //! Get an integer (long) value from INI file, returning default_value if not found.
     int64_t GetInteger(const std::string& section, const std::string& name, int64_t default_value);
 
+    //! Return true if the given section exists (section must contain at least one name=value pair).
+    bool HasSection(const std::string& section) const;
+
+    //! Return true if a value exists with the given section and field names.
+    bool HasValue(const std::string& section, const std::string& name) const;
+
 private:
     static std::string MakeKey(const std::string& section, const std::string& name);
     static int ValueHandler(void* user, const char* section, const char* name,

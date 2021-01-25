@@ -57,10 +57,14 @@ bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& 
 
             try
                 {
-                    socket.send(boost::asio::buffer(outbound_data));
+                    if (socket.send(boost::asio::buffer(outbound_data)) == 0)
+                        {
+                            std::cerr << "Gnss_Synchro_Udp_Sink sent 0 bytes\n";
+                        }
                 }
             catch (boost::system::system_error const& e)
                 {
+                    std::cerr << e.what() << '\n';
                     return false;
                 }
         }

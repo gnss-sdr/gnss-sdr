@@ -66,10 +66,16 @@ void Tcp_Communication::send_receive_tcp_packet_galileo_e1(boost::array<float, N
     try
         {
             // Send a TCP packet
-            tcp_socket_.write_some(boost::asio::buffer(buf));
+            if (tcp_socket_.write_some(boost::asio::buffer(buf)) == 0)
+                {
+                    std::cerr << "Tcp_Communication: Error sending TCP packet\n";
+                }
 
             // Read the received TCP packet
-            tcp_socket_.read_some(boost::asio::buffer(readbuf));
+            if (tcp_socket_.read_some(boost::asio::buffer(readbuf)) == 0)
+                {
+                    std::cerr << "Tcp_Communication: Error reading TCP packet\n";
+                }
 
             //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
             if (d_control_id_ != readbuf.data()[0])
@@ -100,10 +106,16 @@ void Tcp_Communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
     try
         {
             // Send a TCP packet
-            tcp_socket_.write_some(boost::asio::buffer(buf));
+            if (tcp_socket_.write_some(boost::asio::buffer(buf)) == 0)
+                {
+                    std::cerr << "Tcp_Communication error sending TCP packet\n";
+                }
 
             // Read the received TCP packet
-            tcp_socket_.read_some(boost::asio::buffer(readbuf));
+            if (tcp_socket_.read_some(boost::asio::buffer(readbuf)) == 0)
+                {
+                    std::cerr << "Tcp_Communication error: reading 0 bytes from TCP packet\n";
+                }
 
             //! Control. The GNSS-SDR program ends if an error in a TCP packet is detected.
             if (d_control_id_ != readbuf.data()[0])
@@ -121,6 +133,10 @@ void Tcp_Communication::send_receive_tcp_packet_gps_l1_ca(boost::array<float, NU
         {
             std::cerr << "Exception: " << e.what() << ". Please press Ctrl+C to end the program.\n";
             std::cin >> controlc;
+        }
+    catch (...)
+        {
+            std::cerr << "Exception reading TCP data\n";
         }
 }
 

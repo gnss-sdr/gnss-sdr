@@ -32,7 +32,10 @@ int32_t get_uio_num(std::string uio_name)
     // search first digit
     for (; i < uio_name.length(); i++)
         {
-            if (isdigit(uio_name[i])) break;
+            if (isdigit(uio_name[i]))
+                {
+                    break;
+                }
         }
 
     // remove the first chars, which aren't digits
@@ -137,7 +140,7 @@ int my_strverscmp(const char *s1, const char *s2)
 }
 
 
-bool sort_directories(fs::directory_entry a, fs::directory_entry b)
+bool sort_directories(const fs::directory_entry &a, const fs::directory_entry &b)
 {
     int cmp = my_strverscmp(a.path().string().c_str(), b.path().string().c_str());
     return (cmp < 0);
@@ -166,7 +169,7 @@ int32_t find_uio_num(const std::string &device_name, uint32_t device_num)
                 {
                     std::string nametemp;
                     get_uio_name(uio_num, nametemp);
-                    if (device_name.compare(nametemp) == 0)
+                    if (device_name == nametemp)
                         {
                             if (uio_count == device_num)
                                 {

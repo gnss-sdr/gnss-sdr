@@ -69,7 +69,7 @@ Fpga_dynamic_bit_selection::~Fpga_dynamic_bit_selection()
 }
 
 
-void Fpga_dynamic_bit_selection::bit_selection(void)
+void Fpga_dynamic_bit_selection::bit_selection()
 {
     // estimated signal power corresponding to frequency band 1
     uint32_t rx_signal_power1 = d_map_base1[1];

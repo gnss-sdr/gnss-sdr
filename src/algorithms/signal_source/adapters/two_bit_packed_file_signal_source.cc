@@ -92,6 +92,8 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
             item_size_ = sizeof(char);
         }
 
+    reverse_interleaving_ = false;
+    is_complex_ = true;
     if (sample_type_ == "real")
         {
             is_complex_ = false;
@@ -99,7 +101,6 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
     else if (sample_type_ == "iq")
         {
             is_complex_ = true;
-            reverse_interleaving_ = false;
         }
     else if (sample_type_ == "qi")
         {

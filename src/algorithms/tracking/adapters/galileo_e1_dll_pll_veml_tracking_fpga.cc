@@ -66,9 +66,15 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
 
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
-    num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
-                           configuration->property("Channels_2S.count", 0) +
-                           configuration->property("Channels_L5.count", 0);
+
+    uint32_t num_prev_assigned_ch_1C = 0;
+    if (configuration->property("Tracking_1C.devicename", std::string("")).compare(device_name) != 0)
+        {
+            num_prev_assigned_ch_1C = configuration->property("Channels_1C.count", 0);
+        }
+    uint32_t num_prev_assigned_ch_2S = configuration->property("Channels_2S.count", 0);
+    uint32_t num_prev_assigned_ch_L5 = configuration->property("Channels_L5.count", 0);
+    num_prev_assigned_ch = num_prev_assigned_ch_1C + num_prev_assigned_ch_2S + num_prev_assigned_ch_L5;
 
     // ################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 2;

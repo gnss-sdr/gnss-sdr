@@ -60,7 +60,7 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
         }
     else
         {
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
             LOG(WARNING) << item_type << " unknown tracking item type.";
         }
 

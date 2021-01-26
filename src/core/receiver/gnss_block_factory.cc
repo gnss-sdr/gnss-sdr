@@ -393,6 +393,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
         {
             return nullptr;
         }
+    if (trk_->item_size() == 0)
+        {
+            LOG(ERROR) << trk_->role() << ".item_type=" << acq_item_type << " is not defined for implementation " << trk_->implementation();
+            return nullptr;
+        }
 
     std::unique_ptr<GNSSBlockInterface> channel_ = std::make_unique<Channel>(configuration, channel,
         std::move(acq_),

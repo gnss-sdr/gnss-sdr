@@ -804,7 +804,7 @@ int GNSSFlowgraph::connect_channels()
             else
                 {
                     LOG(ERROR) << "Can't connect channel " << i << " internally";
-                    help_hint_ += " * Check implementation names for Channel" + std::to_string(i) + " inner blocks.\n";
+                    help_hint_ += " * Check your configuration for Channel" + std::to_string(i) + " inner blocks.\n";
                     help_hint_ += "   Acquisition blocks documentation at https://gnss-sdr.org/docs/sp-blocks/acquisition/\n";
                     help_hint_ += "   Tracking blocks documentation at https://gnss-sdr.org/docs/sp-blocks/tracking/\n";
                     help_hint_ += "   Telemetry Decoder blocks documentation at https://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/\n";

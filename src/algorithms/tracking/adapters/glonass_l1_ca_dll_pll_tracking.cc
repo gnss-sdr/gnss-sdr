@@ -70,7 +70,7 @@ GlonassL1CaDllPllTracking::GlonassL1CaDllPllTracking(
         }
     else
         {
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
             LOG(WARNING) << item_type << " unknown tracking item type.";
         }
     channel_ = 0;

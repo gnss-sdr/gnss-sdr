@@ -82,8 +82,8 @@ int my_strverscmp(const char *s1, const char *s2)
     const int8_t CMP = 2;
     const int8_t LEN = 3;
 
-    const unsigned char *p1 = (const unsigned char *)s1;
-    const unsigned char *p2 = (const unsigned char *)s2;
+    const auto *p1 = reinterpret_cast<const unsigned char *>(s1);
+    const auto *p2 = reinterpret_cast<const unsigned char *>(s2);
     /* Symbol(s)    0       [1-9]   others
      Transition   (10) 0  (01) d  (00) x   */
     static const uint8_t next_state[] =

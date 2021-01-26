@@ -71,8 +71,7 @@ private:
     gr::filter::freq_xlating_fir_filter_ccf::sptr freq_xlating_;
     gr::blocks::file_sink::sptr file_sink_;
     std::string dump_filename_;
-    std::string input_item_type_;
-    std::string output_item_type_;
+    std::string item_type_;
     std::string role_;
     size_t input_size_;
     unsigned int in_streams_;

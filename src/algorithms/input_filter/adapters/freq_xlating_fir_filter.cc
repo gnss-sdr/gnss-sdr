@@ -159,8 +159,8 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
     else
         {
             LOG(ERROR) << " Unknown input filter input/output item type conversion";
-            item_size = sizeof(gr_complex);    // avoids uninitialization
-            input_size_ = sizeof(gr_complex);  // avoids uninitialization
+            item_size = sizeof(gr_complex);  // avoids uninitialization
+            input_size_ = 0;                 // notifies wrong configuration
         }
 
     if (dump_)

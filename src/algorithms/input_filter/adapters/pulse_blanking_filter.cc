@@ -31,14 +31,12 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
 {
     size_t item_size;
     xlat_ = false;
-    const std::string default_input_item_type("gr_complex");
-    const std::string default_output_item_type("gr_complex");
+    const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("../data/input_filter.dat");
 
     DLOG(INFO) << "role " << role_;
 
-    input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
-    output_item_type_ = configuration->property(role_ + ".output_item_type", default_output_item_type);
+    item_type_ = configuration->property(role_ + ".item_type", default_item_type);
     dump_ = configuration->property(role_ + ".dump", false);
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     const float default_pfa_ = 0.04;
@@ -49,7 +47,7 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
     const int n_segments_est = configuration->property(role_ + ".segments_est", default_n_segments_est);
     const int default_n_segments_reset = 5000000;
     const int n_segments_reset = configuration->property(role_ + ".segments_reset", default_n_segments_reset);
-    if (input_item_type_ == "gr_complex")
+    if (item_type_ == "gr_complex")
         {
             item_size = sizeof(gr_complex);    // output
             input_size_ = sizeof(gr_complex);  // input
@@ -57,9 +55,9 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
         }
     else
         {
-            LOG(ERROR) << " Unknown input filter input/output item type conversion";
-            item_size = sizeof(gr_complex);    // avoids uninitialization
-            input_size_ = sizeof(gr_complex);  // avoids uninitialization
+            LOG(ERROR) << "Unknown input filter item_types conversion";
+            item_size = sizeof(gr_complex);  // avoids uninitialization
+            input_size_ = 0;                 // notify wrong configuration
         }
     const double default_if = 0.0;
     const double if_aux = configuration->property(role_ + ".if", default_if);
@@ -95,7 +93,7 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
 
 void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
 {
-    if (input_item_type_ == "gr_complex")
+    if (item_type_ == "gr_complex")
         {
             if (dump_)
                 {
@@ -116,7 +114,7 @@ void PulseBlankingFilter::connect(gr::top_block_sptr top_block)
 
 void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
 {
-    if (input_item_type_ == "gr_complex")
+    if (item_type_ == "gr_complex")
         {
             if (dump_)
                 {
@@ -136,7 +134,7 @@ void PulseBlankingFilter::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr PulseBlankingFilter::get_left_block()
 {
-    if (input_item_type_ == "gr_complex")
+    if (item_type_ == "gr_complex")
         {
             if (xlat_)
                 {
@@ -151,7 +149,7 @@ gr::basic_block_sptr PulseBlankingFilter::get_left_block()
 
 gr::basic_block_sptr PulseBlankingFilter::get_right_block()
 {
-    if (input_item_type_ == "gr_complex")
+    if (item_type_ == "gr_complex")
         {
             return pulse_blanking_cc_;
         }

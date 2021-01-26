@@ -753,12 +753,26 @@ int GNSSFlowgraph::connect_signal_conditioners()
                         }
                     if (std::string::npos != reported_error.find(std::string("InputFilter")))
                         {
-                            help_hint_ += " * The InputFilter implementation set in the configuration file does not exist\n";
+                            if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
+                                {
+                                    help_hint_ += " * The configured InputFilter input/output item types are not well defined.\n";
+                                }
+                            else
+                                {
+                                    help_hint_ += " * The InputFilter implementation set in the configuration file does not exist\n";
+                                }
                             help_hint_ += "   Check the InputFilter documentation at https://gnss-sdr.org/docs/sp-blocks/input-filter/\n";
                         }
                     if (std::string::npos != reported_error.find(std::string("Resampler")))
                         {
-                            help_hint_ += " * The Resampler implementation set in the configuration file does not exist\n";
+                            if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
+                                {
+                                    help_hint_ += " * The configured Resampler item type is not well defined.\n";
+                                }
+                            else
+                                {
+                                    help_hint_ += " * The Resampler implementation set in the configuration file does not exist\n";
+                                }
                             help_hint_ += "   Check the Resampler documentation at https://gnss-sdr.org/docs/sp-blocks/resampler/\n";
                         }
                     return 1;

@@ -1039,10 +1039,19 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                 {
                                     // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
-                                    DLOG(INFO) << "sig_source_.at(i)->get_right_block()->output_signature()->max_streams()=" << sig_source_.at(i)->get_right_block()->output_signature()->max_streams();
-                                    DLOG(INFO) << "sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()=" << sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->max_streams();
                                     size_t output_size = sig_source_.at(i)->item_size();
                                     size_t input_size = sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->sizeof_stream_item(0);
+                                    // Check configuration inconsistencies
+                                    if (output_size != input_size)
+                                        {
+                                            help_hint_ += " * The Signal Source implementation " + sig_source_.at(i)->implementation() + " has an output with a ";
+                                            help_hint_ += sig_source_.at(i)->role() + ".item_size of " + std::to_string(output_size);
+                                            help_hint_ += " bytes, but it is connected to the Signal Conditioner implementation ";
+                                            help_hint_ += sig_conditioner_.at(signal_conditioner_ID)->implementation() + " with input item size of " + std::to_string(input_size) + " bytes.\n";
+                                            help_hint_ += "   Output ports must be connected to input ports with the same item size.\n";
+                                            top_block_->disconnect_all();
+                                            return 1;
+                                        }
 
                                     if (sig_source_.at(i)->get_right_block()->output_signature()->max_streams() > 1 or sig_source_.at(i)->get_right_block()->output_signature()->max_streams() == -1)
                                         {
@@ -1068,12 +1077,6 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                                 }
                                         }
                                     signal_conditioner_ID++;
-                                    // Check configuration inconsistencies
-                                    if (output_size != input_size)
-                                        {
-                                            help_hint_ += " * The Signal Source implementation " + sig_source_.at(i)->implementation() + " has an output with an item size of " + std::to_string(output_size) + " bytes, but it is connected to the Signal Conditioner implementation " + sig_conditioner_.at(signal_conditioner_ID)->implementation() + " with input item size of " + std::to_string(input_size) + "bytes.\n";
-                                            help_hint_ += "   Output ports must be connected to input ports with the same item size.\n";
-                                        }
                                 }
                         }
                 }

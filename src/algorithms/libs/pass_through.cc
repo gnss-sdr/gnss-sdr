@@ -32,16 +32,7 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const st
                                 out_streams_(out_streams)
 {
     const std::string default_item_type("gr_complex");
-    const std::string input_type = configuration->property(role + ".input_item_type", default_item_type);
-    const std::string output_type = configuration->property(role + ".output_item_type", default_item_type);
-    if (input_type != output_type)
-        {
-            LOG(WARNING) << "input_item_type and output_item_type are different in a Pass_Through implementation! Taking "
-                         << input_type
-                         << ", but item_size will supersede it.";
-        }
-
-    item_type_ = configuration->property(role + ".item_type", input_type);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
     inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
     if (item_type_ == "float")
@@ -96,13 +87,11 @@ Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const st
     DLOG(INFO) << "kludge_copy(" << kludge_copy_->unique_id() << ")";
     if (in_streams_ > 1)
         {
-            LOG(ERROR) << "This implementation only supports one input stream";
-            LOG(ERROR) << in_streams_;
+            LOG(ERROR) << "This implementation only supports one input stream but it is set to " << in_streams_;
         }
     if (out_streams_ > 1)
         {
-            LOG(ERROR) << "This implementation only supports one output stream";
-            LOG(ERROR) << out_streams_;
+            LOG(ERROR) << "This implementation only supports one output stream but it is set to " << out_streams_;
         }
 }
 

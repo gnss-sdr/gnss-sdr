@@ -736,9 +736,13 @@ int GNSSFlowgraph::connect_signal_conditioners()
                         {
                             std::string replace_me("copy");
                             size_t pos = reported_error.find(replace_me);
-                            size_t len = replace_me.length();
-                            reported_error.replace(pos, len, "PassThrough");
-                            help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched item size\n";
+                            while (pos != std::string::npos)
+                                {
+                                    size_t len = replace_me.length();
+                                    reported_error.replace(pos, len, "Pass_Through");
+                                    pos = reported_error.find(replace_me, pos + 1);
+                                }
+                            help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched input/ouput item size\n";
                             help_hint_ += "   Reported error: " + reported_error + '\n';
                             help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
                         }
@@ -1088,8 +1092,12 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                         {
                             std::string replace_me("copy");
                             size_t pos = reported_error.find(replace_me);
-                            size_t len = replace_me.length();
-                            reported_error.replace(pos, len, "PassThrough");
+                            while (pos != std::string::npos)
+                                {
+                                    size_t len = replace_me.length();
+                                    reported_error.replace(pos, len, "Pass_Through");
+                                    pos = reported_error.find(replace_me, pos + 1);
+                                }
                             help_hint_ += " * The SignalSource output item size and the SignalConditioner input item size are mismatched\n";
                             help_hint_ += "   Reported error: " + reported_error + '\n';
                         }

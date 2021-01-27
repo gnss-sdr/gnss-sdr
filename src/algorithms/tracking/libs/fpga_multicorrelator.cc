@@ -192,7 +192,7 @@ bool Fpga_Multicorrelator_8sc::free()
 }
 
 
-void Fpga_Multicorrelator_8sc::open_channel(std::string device_io_name, uint32_t channel)
+void Fpga_Multicorrelator_8sc::open_channel(const std::string &device_io_name, uint32_t channel)
 {
     std::cout << "trk device_io_name = " << device_io_name << '\n';
 

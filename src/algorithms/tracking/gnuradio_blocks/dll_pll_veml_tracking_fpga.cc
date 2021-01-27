@@ -1297,7 +1297,7 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile() const
 }
 
 
-void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel, std::string device_io_name)
+void dll_pll_veml_tracking_fpga::set_channel(uint32_t channel, const std::string &device_io_name)
 {
     gr::thread::scoped_lock l(d_setlock);
 

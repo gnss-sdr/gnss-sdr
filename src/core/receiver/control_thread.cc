@@ -83,6 +83,41 @@ ControlThread::ControlThread()
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
+    // Basic configuration checks
+    auto aux = std::dynamic_pointer_cast<FileConfiguration>(configuration_);
+    conf_file_has_section_ = aux->has_section();
+
+    conf_file_has_mandatory_globals_ = (configuration_->property("GNSS-SDR.internal_fs_sps", 0) == 0 ? false : true);
+
+    const std::string empty_implementation;
+    std::string src_impl = configuration_->property("SignalSource.implementation", empty_implementation);
+    int src_count = configuration_->property("Receiver.sources_count", 1);
+    if (src_impl.empty() && (src_count != 1))
+        {
+            int num_src = 0;
+            for (int i = 0; i < src_count; i++)
+                {
+                    std::string src_impl_multiple = configuration_->property("SignalSource" + std::to_string(i) + ".implementation", empty_implementation);
+                    if (!src_impl_multiple.empty())
+                        {
+                            num_src++;
+                        }
+                }
+            if (num_src != src_count)
+                {
+                    src_impl = std::string("");
+                }
+        }
+    conf_has_signal_sources_ = !src_impl.empty();
+
+    std::string pvt_impl = configuration_->property("PVT.implementation", empty_implementation);
+    conf_has_pvt_ = !pvt_impl.empty();
+
+    std::string obs_impl = configuration_->property("Observables.implementation", empty_implementation);
+    conf_has_observables_ = !obs_impl.empty();
+
+    well_formatted_configuration_ = conf_file_has_section_ && conf_file_has_mandatory_globals_ && conf_has_signal_sources_ && conf_has_observables_ && conf_has_pvt_;
+
     restart_ = false;
     init();
 }
@@ -91,6 +126,12 @@ ControlThread::ControlThread()
 ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configuration)
 {
     configuration_ = std::move(configuration);
+    conf_file_has_section_ = true;
+    conf_file_has_mandatory_globals_ = true;
+    conf_has_signal_sources_ = true;
+    conf_has_observables_ = true;
+    conf_has_pvt_ = true;
+    well_formatted_configuration_ = true;
     restart_ = false;
     init();
 }
@@ -104,14 +145,22 @@ void ControlThread::init()
     // Instantiates a control queue, a GNSS flowgraph, and a control message factory
     control_queue_ = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     cmd_interface_.set_msg_queue(control_queue_);  // set also the queue pointer for the telecommand thread
-    try
+    if (well_formatted_configuration_)
         {
-            flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+            try
+                {
+                    flowgraph_ = std::make_shared<GNSSFlowgraph>(configuration_, control_queue_);
+                }
+            catch (const boost::bad_lexical_cast &e)
+                {
+                    std::cout << "Caught bad lexical cast with error " << e.what() << '\n';
+                }
         }
-    catch (const boost::bad_lexical_cast &e)
+    else
         {
-            std::cout << "Caught bad lexical cast with error " << e.what() << '\n';
+            flowgraph_ = nullptr;
         }
+
     stop_ = false;
     processed_control_messages_ = 0;
     applied_actions_ = 0;
@@ -285,6 +334,11 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
 int ControlThread::run()
 {
     // Connect the flowgraph
+    if (!flowgraph_)
+        {
+            print_help_at_exit();
+            return 0;
+        }
     try
         {
             flowgraph_->connect();
@@ -300,7 +354,6 @@ int ControlThread::run()
         }
     else
         {
-            LOG(ERROR) << "Unable to connect flowgraph";
             return 0;
         }
     // Start the flowgraph
@@ -311,7 +364,6 @@ int ControlThread::run()
         }
     else
         {
-            LOG(ERROR) << "Unable to start flowgraph";
             return 0;
         }
 
@@ -1145,5 +1197,39 @@ void ControlThread::keyboard_listener()
                 {
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
+        }
+}
+
+
+void ControlThread::print_help_at_exit() const
+{
+    std::cerr << "Error: the configuration file is not well formatted\n";
+    if (!conf_file_has_section_)
+        {
+            std::cerr << " * The section label has not been found if the configuration file\n"
+                      << "   Please add the [GNSS-SDR] label at the top of your configuration file\n"
+                      << "   A configuration example is available at https://gnss-sdr.org/my-first-fix/\n";
+            return;
+        }
+    if (!conf_file_has_mandatory_globals_)
+        {
+            std::cerr << " * Have you forgotten to set the mandatory global parameter GNSS-SDR.internal_fs_sps in your conf file?\n"
+                      << "   Documentation about this parameter at https://gnss-sdr.org/docs/sp-blocks/global-parameters/\n"
+                      << "   A configuration example is available at https://gnss-sdr.org/my-first-fix/\n";
+        }
+    if (!conf_has_signal_sources_)
+        {
+            std::cerr << " * The configuration file must define at least one SignalSource.implementation\n"
+                      << "   Documentation of SignalSource block implementations at https://gnss-sdr.org/docs/sp-blocks/signal-source/\n";
+        }
+    if (!conf_has_observables_)
+        {
+            std::cerr << " * The configuration file must define an Observables.implementation\n"
+                      << "   Documentation of the Observables block at https://gnss-sdr.org/docs/sp-blocks/observables/\n";
+        }
+    if (!conf_has_pvt_)
+        {
+            std::cerr << " * The configuration file must define a PVT.implementation\n"
+                      << "   Documentation of the PVT block at https://gnss-sdr.org/docs/sp-blocks/pvt/\n";
         }
 }

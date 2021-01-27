@@ -32,7 +32,10 @@ int32_t get_uio_num(std::string uio_name)
     // search first digit
     for (; i < uio_name.length(); i++)
         {
-            if (isdigit(uio_name[i])) break;
+            if (isdigit(uio_name[i]))
+                {
+                    break;
+                }
         }
 
     // remove the first chars, which aren't digits
@@ -79,8 +82,8 @@ int my_strverscmp(const char *s1, const char *s2)
     const int8_t CMP = 2;
     const int8_t LEN = 3;
 
-    const unsigned char *p1 = (const unsigned char *)s1;
-    const unsigned char *p2 = (const unsigned char *)s2;
+    const auto *p1 = reinterpret_cast<const unsigned char *>(s1);
+    const auto *p2 = reinterpret_cast<const unsigned char *>(s2);
     /* Symbol(s)    0       [1-9]   others
      Transition   (10) 0  (01) d  (00) x   */
     static const uint8_t next_state[] =
@@ -137,7 +140,7 @@ int my_strverscmp(const char *s1, const char *s2)
 }
 
 
-bool sort_directories(fs::directory_entry a, fs::directory_entry b)
+bool sort_directories(const fs::directory_entry &a, const fs::directory_entry &b)
 {
     int cmp = my_strverscmp(a.path().string().c_str(), b.path().string().c_str());
     return (cmp < 0);
@@ -166,7 +169,7 @@ int32_t find_uio_num(const std::string &device_name, uint32_t device_num)
                 {
                     std::string nametemp;
                     get_uio_name(uio_num, nametemp);
-                    if (device_name.compare(nametemp) == 0)
+                    if (device_name == nametemp)
                         {
                             if (uio_count == device_num)
                                 {

@@ -375,6 +375,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
     if (acq_item_type != trk_item_type)
         {
             LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
+            return nullptr;
         }
 
     LOG(INFO) << "Instantiating Channel " << channel
@@ -388,6 +389,16 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
     std::unique_ptr<AcquisitionInterface> acq_ = GetAcqBlock(configuration, "Acquisition_" + signal + appendix1, 1, 0);
     std::unique_ptr<TrackingInterface> trk_ = GetTrkBlock(configuration, "Tracking_" + signal + appendix2, 1, 1);
     std::unique_ptr<TelemetryDecoderInterface> tlm_ = GetTlmBlock(configuration, "TelemetryDecoder_" + signal + appendix3, 1, 1);
+
+    if (acq_ == nullptr or trk_ == nullptr or tlm_ == nullptr)
+        {
+            return nullptr;
+        }
+    if (trk_->item_size() == 0)
+        {
+            LOG(ERROR) << trk_->role() << ".item_type=" << acq_item_type << " is not defined for implementation " << trk_->implementation();
+            return nullptr;
+        }
 
     std::unique_ptr<GNSSBlockInterface> channel_ = std::make_unique<Channel>(configuration, channel,
         std::move(acq_),
@@ -1327,8 +1338,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
     else
         {
-            // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
         }
     return block;
 }
@@ -1522,8 +1532,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
 
     else
         {
-            // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
         }
     return block;
 }
@@ -1684,8 +1693,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 #endif
     else
         {
-            // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
         }
     return block;
 }
@@ -1777,8 +1785,7 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
 
     else
         {
-            // Log fatal. This causes execution to stop.
-            LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
+            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
         }
     return block;
 }

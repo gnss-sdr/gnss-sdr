@@ -23,7 +23,8 @@
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <glog/logging.h>
-#include <utility>  // for std::move
+#include <stdexcept>  // for std::invalid_argument
+#include <utility>    // for std::move
 
 
 Channel::Channel(const ConfigurationInterface* configuration,
@@ -113,6 +114,13 @@ void Channel::connect(gr::top_block_sptr top_block)
             acq_->connect(top_block);
         }
     trk_->connect(top_block);
+
+    if (trk_->item_size() == 0)
+        {
+            std::string msg = trk_->role() + ".item_type is not defined for implementation " + trk_->implementation() + '\n';
+            throw std::invalid_argument(msg);
+        }
+
     nav_->connect(top_block);
 
     // Synchronous ports

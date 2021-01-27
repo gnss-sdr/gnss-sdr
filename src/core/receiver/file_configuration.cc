@@ -60,6 +60,12 @@ void FileConfiguration::init()
 }
 
 
+bool FileConfiguration::has_section() const
+{
+    return ini_reader_->HasSection("GNSS-SDR");
+}
+
+
 std::string FileConfiguration::property(std::string property_name, std::string default_value) const
 {
     if (overrided_->is_present(property_name))

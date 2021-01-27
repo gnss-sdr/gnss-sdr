@@ -43,7 +43,7 @@ BeamformerFilter::BeamformerFilter(
         {
             LOG(WARNING) << item_type_
                          << " unrecognized item type for beamformer";
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
         }
     if (dump_)
         {

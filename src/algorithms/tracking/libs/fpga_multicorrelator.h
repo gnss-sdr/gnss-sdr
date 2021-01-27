@@ -91,7 +91,7 @@ public:
     /*!
      * \brief Open the FPGA device driver
      */
-    void open_channel(std::string device_io_name, uint32_t channel);
+    void open_channel(const std::string &device_io_name, uint32_t channel);
 
     /*!
      * \brief Set the initial sample number where the tracking process begins

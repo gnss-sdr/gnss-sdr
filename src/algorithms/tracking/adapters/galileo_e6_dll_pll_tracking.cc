@@ -61,7 +61,7 @@ GalileoE6DllPllTracking::GalileoE6DllPllTracking(
         }
     else
         {
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
             LOG(WARNING) << trk_params.item_type << " unknown tracking item type.";
         }
     channel_ = 0;

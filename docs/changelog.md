@@ -28,6 +28,15 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Improved handling of change in GNU Radio 3.9 FFT API.
 - Improved handling of the filesystem library.
 - Do not apply clang-tidy fixes to protobuf-generated headers.
+- Refactored private implementation of flow graph connection and disconnection
+  for improved source code readability.
+
+### Improvements in Usability:
+
+- Avoid segmentation faults in the flow graph connection and/or starting due to
+  some common inconsistencies in the configuration file.
+- Provide hints to the user in case of failed flow graph connection due to
+  inconsistencies in the configuration file.
 
 &nbsp;
 

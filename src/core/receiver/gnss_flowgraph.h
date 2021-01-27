@@ -153,7 +153,7 @@ public:
      */
     void priorize_satellites(const std::vector<std::pair<int, Gnss_Satellite>>& visible_satellites);
 
-#ifdef ENABLE_FPGA
+#if ENABLE_FPGA
     void start_acquisition_helper();
 
     void perform_hw_reset();
@@ -161,6 +161,49 @@ public:
 
 private:
     void init();  // Populates the SV PRN list available for acquisition and tracking
+    int connect_desktop_flowgraph();
+
+    int connect_signal_sources();
+    int connect_signal_conditioners();
+    int connect_channels();
+    int connect_observables();
+    int connect_pvt();
+    int connect_sample_counter();
+
+    int connect_signal_sources_to_signal_conditioners();
+    int connect_signal_conditioners_to_channels();
+    int connect_channels_to_observables();
+    int connect_observables_to_pvt();
+    int connect_monitors();
+    int connect_gnss_synchro_monitor();
+    int connect_acquisition_monitor();
+    int connect_tracking_monitor();
+
+    int disconnect_desktop_flowgraph();
+
+    int disconnect_signal_sources();
+    int disconnect_signal_conditioners();
+    int disconnect_channels();
+    int disconnect_observables();
+    int disconnect_pvt();
+    int disconnect_sample_counter();
+
+    int disconnect_signal_sources_from_signal_conditioners();
+    int disconnect_signal_conditioners_from_channels();
+    int disconnect_channels_from_observables();
+    int disconnect_observables_from_pvt();
+    int disconnect_monitors();
+
+#if ENABLE_FPGA
+    int connect_fpga_flowgraph();
+    int disconnect_fpga_flowgraph();
+    int connect_fpga_sample_counter();
+    int disconnect_fpga_sample_counter();
+#endif
+
+    void assign_channels();
+    void check_signal_conditioners();
+
     void set_signals_list();
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
@@ -173,11 +216,14 @@ private:
 
     void push_back_signal(const Gnss_Signal& gs);
     void remove_signal(const Gnss_Signal& gs);
+    void print_help();
+    void check_desktop_conf_in_fpga_env();
 
     double project_doppler(const std::string& searched_signal, double primary_freq_doppler_hz);
     bool is_multiband() const;
 
     std::vector<std::string> split_string(const std::string& s, char delim);
+    std::vector<bool> signal_conditioner_connected_;
 
     gr::top_block_sptr top_block_;
 
@@ -235,6 +281,7 @@ private:
     std::map<std::string, StringValue> mapStringValues_;
 
     std::string config_file_;
+    std::string help_hint_;
 
     std::mutex signal_list_mutex_;
 

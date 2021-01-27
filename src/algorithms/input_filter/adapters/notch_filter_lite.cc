@@ -58,7 +58,7 @@ NotchFilterLite::NotchFilterLite(const ConfigurationInterface* configuration, co
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type for notch filter";
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
         }
     if (dump_)
         {

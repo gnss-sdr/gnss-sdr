@@ -17,6 +17,7 @@
 
 #include "signal_conditioner.h"
 #include <glog/logging.h>
+#include <stdexcept>
 #include <utility>
 
 
@@ -40,9 +41,41 @@ void SignalConditioner::connect(gr::top_block_sptr top_block)
             LOG(WARNING) << "Signal conditioner already connected internally";
             return;
         }
+    if (data_type_adapt_ == nullptr)
+        {
+            throw std::invalid_argument("DataTypeAdapter implementation not defined");
+        }
+    if (in_filt_ == nullptr)
+        {
+            throw std::invalid_argument("InputFilter implementation not defined");
+        }
+    if (res_ == nullptr)
+        {
+            throw std::invalid_argument("Resampler implementation not defined");
+        }
     data_type_adapt_->connect(top_block);
     in_filt_->connect(top_block);
     res_->connect(top_block);
+
+    if (in_filt_->item_size() == 0)
+        {
+            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the InputFilter");
+        }
+
+    const size_t data_type_adapter_output_size = data_type_adapt_->get_right_block()->output_signature()->sizeof_stream_item(0);
+    const size_t input_filter_input_size = in_filt_->get_left_block()->input_signature()->sizeof_stream_item(0);
+    const size_t input_filter_output_size = in_filt_->get_right_block()->output_signature()->sizeof_stream_item(0);
+    const size_t resampler_input_size = res_->get_left_block()->input_signature()->sizeof_stream_item(0);
+
+    if (data_type_adapter_output_size != input_filter_input_size)
+        {
+            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the DataTypeAdapter/InputFilter connection");
+        }
+
+    if (input_filter_output_size != resampler_input_size)
+        {
+            throw std::invalid_argument("itemsize mismatch: Invalid input/ouput data type configuration for the Input Filter/Resampler connection");
+        }
 
     top_block->connect(data_type_adapt_->get_right_block(), 0, in_filt_->get_left_block(), 0);
     DLOG(INFO) << "data_type_adapter -> input_filter";

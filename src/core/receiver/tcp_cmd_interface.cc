@@ -326,7 +326,7 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                             acceptor.accept(socket, not_throw);
                             if (not_throw)
                                 {
-                                    std::cout << "TcpCmdInterface: Error when binding the port in the socket\n";
+                                    std::cerr << "TcpCmdInterface: Error when binding the port in the socket\n";
                                     continue;
                                 }
 
@@ -336,7 +336,10 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                 {
                                     std::string response;
                                     boost::asio::streambuf b;
-                                    boost::asio::read_until(socket, b, '\n', error);
+                                    if (boost::asio::read_until(socket, b, '\n', error) == 0)
+                                        {
+                                            std::cerr << "TcpCmdInterface: Error reading messages: " << error.message() << '\n';
+                                        }
                                     std::istream is(&b);
                                     std::string line;
                                     std::getline(is, line);
@@ -352,7 +355,10 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                                         {
                                                             error = boost::asio::error::eof;
                                                             // send cmd response
-                                                            socket.write_some(boost::asio::buffer("OK\n"), not_throw);
+                                                            if (socket.write_some(boost::asio::buffer("OK\n"), not_throw) == 0)
+                                                                {
+                                                                    std::cerr << "Error: 0 bytes sent in cmd response\n";
+                                                                }
                                                         }
                                                     else
                                                         {
@@ -374,10 +380,13 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                                         }
 
                                     // send cmd response
-                                    socket.write_some(boost::asio::buffer(response), not_throw);
+                                    if (socket.write_some(boost::asio::buffer(response), not_throw) == 0)
+                                        {
+                                            std::cerr << "Error: 0 bytes sent in cmd response\n";
+                                        }
                                     if (not_throw)
                                         {
-                                            std::cout << "Error sending(" << not_throw.value() << "): " << not_throw.message() << '\n';
+                                            std::cerr << "Error sending(" << not_throw.value() << "): " << not_throw.message() << '\n';
                                             break;
                                         }
                                 }
@@ -385,11 +394,11 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
 
                             if (error == boost::asio::error::eof)
                                 {
-                                    std::cout << "TcpCmdInterface: EOF detected\n";
+                                    std::cerr << "TcpCmdInterface: EOF detected\n";
                                 }
                             else
                                 {
-                                    std::cout << "TcpCmdInterface unexpected error: " << error << '\n';
+                                    std::cerr << "TcpCmdInterface unexpected error: " << error << '\n';
                                 }
 
                             // Close socket
@@ -397,16 +406,16 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                         }
                     catch (const boost::exception &e)
                         {
-                            std::cout << "TcpCmdInterface: Boost exception\n";
+                            std::cerr << "TcpCmdInterface: Boost exception\n";
                         }
                     catch (const std::exception &ex)
                         {
-                            std::cout << "TcpCmdInterface: Exception " << ex.what() << '\n';
+                            std::cerr << "TcpCmdInterface: Exception " << ex.what() << '\n';
                         }
                 }
         }
     catch (const boost::exception &e)
         {
-            std::cout << "TCP Command Interface exception: address already in use\n";
+            std::cerr << "TCP Command Interface exception: address already in use\n";
         }
 }

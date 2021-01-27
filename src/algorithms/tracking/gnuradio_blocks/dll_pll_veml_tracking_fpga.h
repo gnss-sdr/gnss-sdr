@@ -66,7 +66,7 @@ public:
     /*!
      * \brief Set the channel number and configure some multicorrelator parameters
      */
-    void set_channel(uint32_t channel, std::string device_io_name);
+    void set_channel(uint32_t channel, const std::string &device_io_name);
 
     /*!
      * \brief This function is used with two purposes:

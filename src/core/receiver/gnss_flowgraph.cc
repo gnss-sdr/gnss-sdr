@@ -688,16 +688,6 @@ void GNSSFlowgraph::connect()
                 {
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
-                    //experimental VTL
-                    //TODO: It is currently implemented only in dll_pll_veml_tracking, other configs will fail!
-                    try
-                        {
-                            top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_trk"), channels_.at(i)->get_left_block_trk(), pmt::mp("pvt_to_trk"));
-                        }
-                    catch (std::exception& ex)
-                        {
-                            LOG(WARNING) << "pvt_to_trk message not implemented in " << channels_.at(i)->implementation();
-                        }
                 }
 
             top_block_->msg_connect(observables_->get_right_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));

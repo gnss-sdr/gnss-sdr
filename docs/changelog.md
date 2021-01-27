@@ -25,6 +25,13 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Maintainability:
 
+- The Contributor License Agreement (CLA) signing for new contributors has been
+  replaced by a
+  [Developer's Certificate of Origin (DCO)](https://github.com/gnss-sdr/gnss-sdr/blob/next/.github/DCO.txt),
+  which implies that contributed commits in a pull request need to be signed as
+  a manifestation that contributors have the right to submit their work under
+  the open source license indicated in the contributed file(s) (instead of
+  asking them to sign the CLA document).
 - Improved handling of change in GNU Radio 3.9 FFT API.
 - Improved handling of the filesystem library.
 - Do not apply clang-tidy fixes to protobuf-generated headers.

@@ -1062,7 +1062,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                << "inserted with Toe=" << gps_eph->d_Toe << " and GPS Week="
                                << gps_eph->i_GPS_week;
                     // update/insert new ephemeris record to the global ephemeris map
-                    if (d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
+                    if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
                             bool new_annotation = false;
                             if (d_internal_pvt_solver->gps_ephemeris_map.find(gps_eph->i_satellite_PRN) == d_internal_pvt_solver->gps_ephemeris_map.cend())

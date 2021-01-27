@@ -37,6 +37,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   some common inconsistencies in the configuration file.
 - Provide hints to the user in case of failed flow graph connection due to
   inconsistencies in the configuration file.
+- Fix segmentation fault if the RINEX output was disabled.
 
 &nbsp;
 

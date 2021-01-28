@@ -59,6 +59,7 @@
 #define GNSS_SDR_RTKLIB_RTKCMN_H
 
 #include "rtklib.h"
+#include <cstddef>
 #include <string>
 
 
@@ -96,7 +97,7 @@
         }                                            \
     while (0)
 
-
+char *strncpy_no_trunc(char *out, size_t outsz, const char *in, size_t insz);
 void fatalerr(const char *format, ...);
 int satno(int sys, int prn);
 int satsys(int sat, int *prn);

@@ -31,6 +31,7 @@
 
 #include "rtklib_rtkcmn.h"
 #include <glog/logging.h>
+#include <cassert>
 #include <cstring>
 #include <dirent.h>
 #include <iostream>
@@ -377,7 +378,7 @@ int satsys(int sat, int *prn)
 int satid2no(const char *id)
 {
     int sys;
-    int prn;
+    int prn = 0;
     char code;
 
     if (sscanf(id, "%d", &prn) == 1)
@@ -1416,6 +1417,7 @@ void matfprint(const double A[], int n, int m, int p, int q, FILE *fp)
             fprintf(fp, "\n");
         }
 }
+
 
 void matsprint(const double A[], int n, int m, int p, int q, std::string &buffer)
 {
@@ -2689,6 +2691,20 @@ void addpcv(const pcv_t *pcv, pcvs_t *pcvs)
 }
 
 
+/* strncpy without truncation ------------------------------------------------*/
+char *strncpy_no_trunc(char *out, size_t outsz, const char *in, size_t insz)
+{
+    assert(outsz > 0);
+    while (--outsz > 0 && insz > 0 && *in)
+        {
+            *out++ = *in++;
+            insz--;
+        }
+    *out = 0;
+    return out;
+}
+
+
 /* read ngs antenna parameter file -------------------------------------------*/
 int readngspcv(const char *file, pcvs_t *pcvs)
 {
@@ -2718,7 +2734,7 @@ int readngspcv(const char *file, pcvs_t *pcvs)
             if (++n == 1)
                 {
                     pcv = pcv0;
-                    strncpy(pcv.type, buff, 61);
+                    strncpy_no_trunc(pcv.type, 61, buff, 256);
                     pcv.type[61] = '\0';
                 }
             else if (n == 2)

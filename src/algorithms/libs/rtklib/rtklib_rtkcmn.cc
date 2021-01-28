@@ -274,19 +274,19 @@ int satno(int sys, int prn)
                 }
             return NSATGPS + NSATGLO + NSATGAL + prn - MINPRNQZS + 1;
         case SYS_BDS:
-            if (prn < MINPRNBDS || MAXPRNBDS < prn)
+            if (MAXPRNBDS < prn)
                 {
                     return 0;
                 }
             return NSATGPS + NSATGLO + NSATGAL + NSATQZS + prn - MINPRNBDS + 1;
         case SYS_IRN:
-            if (prn < MINPRNIRN || MAXPRNIRN < prn)
+            if (MAXPRNIRN < prn)
                 {
                     return 0;
                 }
             return NSATGPS + NSATGLO + NSATGAL + NSATQZS + NSATBDS + prn - MINPRNIRN + 1;
         case SYS_LEO:
-            if (prn < MINPRNLEO || MAXPRNLEO < prn)
+            if (MAXPRNLEO < prn)
                 {
                     return 0;
                 }
@@ -378,7 +378,7 @@ int satsys(int sat, int *prn)
 int satid2no(const char *id)
 {
     int sys;
-    int prn = 0;
+    int prn;
     char code;
 
     if (sscanf(id, "%d", &prn) == 1)
@@ -443,6 +443,11 @@ int satid2no(const char *id)
         default:
             return 0;
         }
+    if (prn <= 0 || prn > MAXSAT)
+        {
+            return 0;
+        }
+
     return satno(sys, prn);
 }
 

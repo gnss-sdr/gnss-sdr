@@ -34,7 +34,7 @@ Before submitting your pull request, please make sure the following is done:
 2.  You have read the
     [Developer's Certificate of Origin](https://github.com/gnss-sdr/gnss-sdr/blob/next/.github/DCO.txt)
     and
-    [signed your commits](https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work)
+    [signed your commits](https://gnss-sdr.org/docs/tutorials/using-git/#sign-your-commits)
     as an indication of fulfillment.
 3.  You have read the
     [Contributing Guidelines](https://github.com/gnss-sdr/gnss-sdr/blob/master/CONTRIBUTING.md).

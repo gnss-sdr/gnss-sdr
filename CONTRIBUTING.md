@@ -118,9 +118,9 @@ $ git checkout -b my_feature
 Now you can do changes, add files, do commits (please take a look at
 [how to write good commit messages](https://chris.beams.io/posts/git-commit/),
 and do not forget to
-[sign your commits](https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work)
-with `git commit -s` if you plan to submit your code to the upstream repository
-in a pull-request, see below) and push them to your repository:
+[sign your commits](https://gnss-sdr.org/docs/tutorials/using-git/#sign-your-commits)
+if you plan to submit your code to the upstream repository in a pull-request,
+see below) and push them to your repository:
 
 ```
 $ git push origin my_feature
@@ -150,7 +150,9 @@ To sign the DCO, suffix your git commits with a `Signed-off-by:` line. When
 using the command line, you can use `git commit -s` to automatically add this
 line. If there were multiple authors of the code, or other types of
 stakeholders, make sure that all are listed, each with a separate
-`Signed-off-by:` line.
+`Signed-off-by:` line. See
+[how to sign commits](https://gnss-sdr.org/docs/tutorials/using-git/#sign-your-commits)
+for details on how to tell Git to sign commits by default.
 
 Before submitting your code, please be sure to
 [apply clang-format](https://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting).

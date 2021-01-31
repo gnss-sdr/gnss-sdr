@@ -122,7 +122,10 @@ endif()
 # All of our tests require C++17 or later
 set(OLD_CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD})
 set(CMAKE_CXX_STANDARD 17)
-if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "9.0.0"))
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "8.0.0"))
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.99")
+        set(UNDEFINED_BEHAVIOR_WITHOUT_LINKING TRUE)
+    endif()
     set(CMAKE_REQUIRED_FLAGS "-std=c++17")
 endif()
 if((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.99"))
@@ -207,9 +210,10 @@ if(CXX_FILESYSTEM_HAVE_FS)
     ]] code @ONLY)
 
     # Try to compile a simple filesystem program without any linker flags
-    check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
-
-    set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
+    if(NOT UNDEFINED_BEHAVIOR_WITHOUT_LINKING)
+        check_cxx_source_compiles("${code}" CXX_FILESYSTEM_NO_LINK_NEEDED)
+        set(can_link ${CXX_FILESYSTEM_NO_LINK_NEEDED})
+    endif()
 
     if(NOT CXX_FILESYSTEM_NO_LINK_NEEDED)
         set(prev_libraries ${CMAKE_REQUIRED_LIBRARIES})

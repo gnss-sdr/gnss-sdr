@@ -22,6 +22,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
 - Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
   Boost >= 1.74.
+- Fix linking of the `<filesystem>` library when using GCC 8.x and GNU Radio >=
+  3.8.
 
 ### Improvements in Maintainability:
 

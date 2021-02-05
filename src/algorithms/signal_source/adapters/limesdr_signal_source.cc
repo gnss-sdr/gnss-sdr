@@ -46,8 +46,8 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
     analog_bw_hz_ = configuration->property(role + ".analog_bw", sample_rate_);
     digital_bw_hz_ = configuration->property(role + ".digital_bw", sample_rate_);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    limesdr_serial_ = configuration->property(role + ".limesdr_serial_", std::string());
-    limesdr_file_ = configuration->property(role + ".limesdr_file_", std::string());
+    limesdr_serial_ = configuration->property(role + ".limesdr_serial", std::string());
+    limesdr_file_ = configuration->property(role + ".limesdr_file", std::string());
     antenna_ = configuration->property(role + ".antenna", 255);
 
     PPS_mode_ = configuration->property(role + ".PPS_mode", false);

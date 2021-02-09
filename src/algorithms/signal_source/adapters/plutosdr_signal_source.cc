@@ -24,9 +24,13 @@
 #include <utility>
 
 
+using namespace std::string_literals;
+
+
 PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+  : SignalSourceBase(configuration, role, "Plutosdr_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/signal_source.dat");

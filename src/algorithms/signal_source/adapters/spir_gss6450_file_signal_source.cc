@@ -25,9 +25,12 @@
 #include <iostream>
 #include <utility>
 
+using namespace std::string_literals;
 
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration,
-    const std::string& role, uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const std::string& role, uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue)
+  : SignalSourceBase(configuration, role, "Spir_GSS6450_File_Signal_Source"s)
+  , in_streams_(in_streams), out_streams_(out_streams)
 {
     const std::string default_filename("../data/my_capture.dat");
     const std::string default_dump_filename("../data/my_capture_dump.dat");

@@ -20,7 +20,7 @@
 #ifndef GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_TWO_BIT_CPX_FILE_SIGNAL_SOURCE_H
 
-#include "signal_source_interface.h"
+#include "signal_source_base.h"
 
 #include "concurrent_queue.h"
 #include "unpack_byte_2bit_cpx_samples.h"
@@ -45,10 +45,9 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class TwoBitCpxFileSignalSource : public SignalSourceInterface
+class TwoBitCpxFileSignalSource : public SignalSourceBase
 {
 public:
-  void fixme() final {}
     TwoBitCpxFileSignalSource(const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
@@ -56,18 +55,6 @@ public:
         Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~TwoBitCpxFileSignalSource() = default;
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Two_Bit_Cpx_File_Signal_Source".
-     */
-    inline std::string implementation() override
-    {
-        return "Two_Bit_Cpx_File_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -114,7 +101,6 @@ private:
     std::string filename_;
     std::string item_type_;
     std::string dump_filename_;
-    std::string role_;
     size_t item_size_;
     uint64_t samples_;
     int64_t sampling_frequency_;

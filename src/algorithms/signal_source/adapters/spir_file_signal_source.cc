@@ -28,9 +28,13 @@
 #include <utility>
 
 
+using namespace std::string_literals;
+
 SpirFileSignalSource::SpirFileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+  : SignalSourceBase(configuration, role, "Spir_File_Signal_Source"s)
+  , in_streams_(in_streams), out_streams_(out_streams)
 {
     const std::string default_filename("../data/my_capture.dat");
     const std::string default_item_type("int");

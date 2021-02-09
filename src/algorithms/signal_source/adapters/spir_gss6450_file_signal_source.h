@@ -21,7 +21,7 @@
 #ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
 
-#include "signal_source_interface.h"
+#include "signal_source_base.h"
 
 #include "concurrent_queue.h"
 #include "gnss_sdr_valve.h"
@@ -51,22 +51,11 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class SpirGSS6450FileSignalSource : public SignalSourceInterface
+class SpirGSS6450FileSignalSource : public SignalSourceBase
 {
 public:
-  void fixme() final {}
     SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue);
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    inline std::string implementation() override
-    {
-        return "Spir_GSS6450_File_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -115,7 +104,6 @@ private:
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::string filename_;
     std::string dump_filename_;
-    std::string role_;
     std::string item_type_;
     uint64_t samples_;
     int64_t sampling_frequency_;

@@ -42,18 +42,19 @@
  * implemented by that class or a parent class.
  */
 
+#include <glog/logging.h>
 class SignalSourceInterface : public GNSSBlockInterface
 {
-    virtual std::string role() = 0;
-    virtual std::string implementation() = 0;
-    virtual size_t item_size() = 0;
-    virtual void connect(gr::top_block_sptr top_block) = 0;
-    virtual void disconnect(gr::top_block_sptr top_block) = 0;
-
-    virtual gr::basic_block_sptr get_left_block() = 0;
-    virtual gr::basic_block_sptr get_right_block() = 0;
-
-    virtual void fixme() = 0;
+public:
+    virtual size_t getRfChannels() const = 0;
+ protected:
+    SignalSourceInterface() {
+      VLOG(1) << "SignalSourceInterface: " << this << " ctor";
+    }
+ public: // required for polymorphic destruction
+    ~SignalSourceInterface() {
+      VLOG(1) << "SignalSourceInterface: " << this << " dtor";
+    }
 };
 
 

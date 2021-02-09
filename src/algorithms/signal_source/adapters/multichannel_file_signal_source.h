@@ -21,7 +21,7 @@
 #ifndef GNSS_SDR_MULTICHANNEL_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_MULTICHANNEL_FILE_SIGNAL_SOURCE_H
 
-#include "signal_source_interface.h"
+#include "signal_source_base.h"
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
@@ -47,28 +47,14 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from files at different frequency bands
  * and adapts it to a SignalSourceInterface
  */
-class MultichannelFileSignalSource : public SignalSourceInterface
+class MultichannelFileSignalSource : public SignalSourceBase
 {
 public:
-  void fixme() final {}
     MultichannelFileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~MultichannelFileSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Multichannel_File_Signal_Source".
-     */
-    inline std::string implementation() override
-    {
-        return "Multichannel_File_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -112,7 +98,6 @@ private:
     std::vector<gr::blocks::throttle::sptr> throttle_vec_;
     std::vector<std::string> filename_vec_;
     std::string item_type_;
-    std::string role_;
     uint64_t samples_;
     int64_t sampling_frequency_;
     size_t item_size_;

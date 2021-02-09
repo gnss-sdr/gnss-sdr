@@ -24,6 +24,7 @@
 #include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
+#include "signal_source_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "in_memory_configuration.h"
 #include "observables_interface.h"
@@ -45,7 +46,7 @@ TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
     // Example of a factory as a shared_ptr
     std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
     // Example of a block as a shared_ptr
-    std::shared_ptr<GNSSBlockInterface> signal_source = factory->GetSignalSource(configuration.get(), queue.get());
+    auto signal_source = factory->GetSignalSource(configuration.get(), queue.get());
     EXPECT_STREQ("SignalSource", signal_source->role().c_str());
     EXPECT_STREQ("File_Signal_Source", signal_source->implementation().c_str());
 }
@@ -59,7 +60,7 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongSignalSource)
     // Example of a factory as a unique_ptr
     std::unique_ptr<GNSSBlockFactory> factory = std::make_unique<GNSSBlockFactory>();
     // Example of a block as a unique_ptr
-    std::unique_ptr<GNSSBlockInterface> signal_source = factory->GetSignalSource(configuration.get(), queue.get());
+    auto signal_source = factory->GetSignalSource(configuration.get(), queue.get());
     EXPECT_EQ(nullptr, signal_source);
 }
 

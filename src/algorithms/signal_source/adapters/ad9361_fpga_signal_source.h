@@ -18,7 +18,7 @@
 #ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 
-#include "signal_source_interface.h"
+#include "signal_source_base.h"
 
 #include "concurrent_queue.h"
 #include "fpga_dynamic_bit_selection.h"
@@ -40,7 +40,7 @@
 
 class ConfigurationInterface;
 
-class Ad9361FpgaSignalSource : public SignalSourceInterface
+class Ad9361FpgaSignalSource : public SignalSourceBase
 {
 public:
     Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,
@@ -51,17 +51,12 @@ public:
 
     void start() override;
 
-    inline std::string role() override
-    {
-        return role_;
-    }
-
     /*!
      * \brief Returns "Ad9361_Fpga_Signal_Source"
      */
     inline std::string implementation() override
     {
-        return "Ad9361_Fpga_Signal_Source";
+        return ;
     }
 
     inline size_t item_size() override
@@ -92,8 +87,6 @@ private:
 
     std::shared_ptr<Fpga_Switch> switch_fpga;
     std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
-
-    std::string role_;
 
     // Front-end settings
     std::string gain_mode_rx1_;

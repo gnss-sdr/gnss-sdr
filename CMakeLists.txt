@@ -586,14 +586,14 @@ endif()
 ################################################################################
 # Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
-#find_package(LOG4CPP)
-#set_package_properties(LOG4CPP PROPERTIES
-#    PURPOSE "Required by GNU Radio."
-#    TYPE REQUIRED
-#)
-#if(NOT LOG4CPP_FOUND)
-#    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
-#endif()
+find_package(LOG4CPP)
+set_package_properties(LOG4CPP PROPERTIES
+    PURPOSE "Required by GNU Radio."
+    TYPE REQUIRED
+)
+if(NOT LOG4CPP_FOUND)
+    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
+endif()
 
 
 

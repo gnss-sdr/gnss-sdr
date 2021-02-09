@@ -18,10 +18,9 @@
 #ifndef GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 #define GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 
-#include "signal_source_interface.h"
+#include "signal_source_base.h"
 
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -42,28 +41,14 @@ class ConfigurationInterface;
  * \brief This class reads from UDP packets, which streams interleaved
  * I/Q samples over a network.
  */
-class CustomUDPSignalSource : public SignalSourceInterface
+class CustomUDPSignalSource : public SignalSourceBase
 {
 public:
-  void fixme() final {}
     CustomUDPSignalSource(const ConfigurationInterface* configuration,
         const std::string& role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~CustomUDPSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Custom_UDP_Signal_Source"
-     */
-    inline std::string implementation() override
-    {
-        return "Custom_UDP_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -81,7 +66,6 @@ private:
     std::vector<gnss_shared_ptr<gr::block>> null_sinks_;
     std::vector<gnss_shared_ptr<gr::block>> file_sink_;
 
-    std::string role_;
     std::string item_type_;
     std::string dump_filename_;
 

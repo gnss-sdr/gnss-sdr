@@ -23,12 +23,15 @@
 #include <teleorbit/frontend.h>
 #include <utility>
 
+using namespace std::string_literals;
+
 
 FlexibandSignalSource::FlexibandSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,
-    Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused)))
+  : SignalSourceBase(configuration, role, "Flexiband_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_item_type("byte");
     item_type_ = configuration->property(role + ".item_type", default_item_type);

@@ -27,10 +27,13 @@
 #include <iostream>
 #include <utility>
 
+using namespace std::string_literals;
 
 NsrFileSignalSource::NsrFileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+  : SignalSourceBase(configuration, role, "Nsr_File_Signal_Source"s)
+    , in_streams_(in_streams), out_streams_(out_streams)
 {
     const std::string default_filename("../data/my_capture.dat");
     const std::string default_item_type("byte");
@@ -76,14 +79,14 @@ NsrFileSignalSource::NsrFileSignalSource(const ConfigurationInterface* configura
                 << "The receiver was configured to work with a file signal source\n"
                 << "but the specified file is unreachable by GNSS-SDR.\n"
                 << "Please modify your configuration file\n"
-                << "and point SignalSource.filename to a valid raw data file. Then:\n"
+                << "and point " << role << ".filename to a valid raw data file. Then:\n"
                 << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
                 << "Examples of configuration files available at:\n"
                 << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n";
 
-            LOG(WARNING) << "file_signal_source: Unable to open the samples file "
-                         << filename_.c_str() << ", exiting the program.";
-            throw(e);
+            LOG(WARNING) << "nsr_file_signal_source: Unable to open the samples file "
+                         << filename_ << ", exiting the program.";
+            throw;
         }
 
     DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";

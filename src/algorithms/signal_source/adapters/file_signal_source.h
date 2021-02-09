@@ -21,10 +21,9 @@
 #ifndef GNSS_SDR_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_FILE_SIGNAL_SOURCE_H
 
-#include "signal_source_interface.h"
+#include "signal_source_base.h"
 
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
@@ -47,28 +46,14 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class FileSignalSource : public SignalSourceInterface
+class FileSignalSource : public SignalSourceBase
 {
 public:
-  void fixme() final {}
-    FileSignalSource(const ConfigurationInterface* configuration, const std::string& role,
+    FileSignalSource(ConfigurationInterface const* configuration, std::string const& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~FileSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "File_Signal_Source".
-     */
-    inline std::string implementation() override
-    {
-        return "File_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -111,7 +96,6 @@ private:
     gr::blocks::file_sink::sptr sink_;
     gr::blocks::throttle::sptr throttle_;
 
-    std::string role_;
     std::string item_type_;
     std::string filename_;
     std::string dump_filename_;

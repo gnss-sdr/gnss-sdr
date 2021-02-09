@@ -179,24 +179,24 @@ gr::basic_block_sptr Channel::get_left_block_trk()
     return trk_->get_left_block();
 }
 
+
 gr::basic_block_sptr Channel::get_right_block_trk()
 {
     return trk_->get_right_block();
 }
 
+
 gr::basic_block_sptr Channel::get_left_block_acq()
 {
-    if (flag_enable_fpga_)
-        {
-            LOG(ERROR) << "Enabled FPGA and called get_left_block() in channel interface";
-        }
     return acq_->get_left_block();
 }
+
 
 gr::basic_block_sptr Channel::get_right_block_acq()
 {
     return acq_->get_right_block();
 }
+
 
 gr::basic_block_sptr Channel::get_right_block()
 {

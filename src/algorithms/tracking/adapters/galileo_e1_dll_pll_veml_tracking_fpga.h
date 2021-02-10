@@ -123,7 +123,8 @@ public:
     void stop_tracking() override;
 
 private:
-    const std::string default_device_name = "multicorrelator_resampler_5_1_AXI";  // UIO device name
+    const std::string default_device_name_Galileo_E1 = "multicorrelator_resampler_5_1_AXI";  // UIO device name
+    const std::string default_device_name_GPS_L1 = "multicorrelator_resampler_S00_AXI";      // UIO device name
 
     // the following flags are FPGA-specific and they are using arrange the values of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.

@@ -122,7 +122,7 @@ public:
     void stop_tracking() override;
 
 private:
-    const std::string default_device_name = "multicorrelator_resampler_3_1_AXI";  // UIO device name
+    const std::string default_device_name_GPS_L5 = "multicorrelator_resampler_3_1_AXI";  // UIO device name
 
     static const uint32_t NUM_PRNs = 32;  // total number of PRNs
 

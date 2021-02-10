@@ -62,13 +62,35 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
 
     // UIO device file
-    device_name = configuration->property(role + ".devicename", default_device_name);
+    device_name = configuration->property(role + ".devicename", default_device_name_Galileo_E1);
 
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
-    num_prev_assigned_ch = configuration->property("Channels_1C.count", 0) +
-                           configuration->property("Channels_2S.count", 0) +
-                           configuration->property("Channels_L5.count", 0);
+
+    uint32_t num_prev_assigned_ch_1C = 0;
+    std::string device_io_name;
+
+    if (configuration->property("Tracking_1C.devicename", default_device_name_GPS_L1).compare(default_device_name_GPS_L1) == 0)
+        {
+            for (uint32_t k = 0; k < configuration->property("Channels_1C.count", 0); k++)
+                {
+                    if (find_uio_dev_file_name(device_io_name, default_device_name_GPS_L1, k + 1) == 0)
+                        {
+                            num_prev_assigned_ch_1C = num_prev_assigned_ch_1C + 1;
+                        }
+                }
+        }
+    else
+        {
+            if (configuration->property("Tracking_1C.devicename", std::string("")).compare(device_name) != 0)
+                {
+                    num_prev_assigned_ch_1C = configuration->property("Channels_1C.count", 0);
+                }
+        }
+
+    uint32_t num_prev_assigned_ch_2S = configuration->property("Channels_2S.count", 0);
+    uint32_t num_prev_assigned_ch_L5 = configuration->property("Channels_L5.count", 0);
+    num_prev_assigned_ch = num_prev_assigned_ch_1C + num_prev_assigned_ch_2S + num_prev_assigned_ch_L5;
 
     // ################# PRE-COMPUTE ALL THE CODES #################
     uint32_t code_samples_per_chip = 2;

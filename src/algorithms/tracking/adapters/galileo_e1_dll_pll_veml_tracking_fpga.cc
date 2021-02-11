@@ -72,7 +72,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
 
     if (configuration->property("Tracking_1C.devicename", default_device_name_GPS_L1) == default_device_name_GPS_L1)
         {
-            for (uint32_t k = 0; k < configuration->property("Channels_1C.count", 0); k++)
+            for (uint32_t k = 0; k < configuration->property("Channels_1C.count", 0U); k++)
                 {
                     if (find_uio_dev_file_name(device_io_name, default_device_name_GPS_L1, k + 1) == 0)
                         {

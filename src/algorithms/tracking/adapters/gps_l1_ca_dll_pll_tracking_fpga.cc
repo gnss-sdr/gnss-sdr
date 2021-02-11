@@ -67,7 +67,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
 
     // UIO device file
-    device_name = configuration->property(role + ".devicename", default_device_name);
+    device_name = configuration->property(role + ".devicename", default_device_name_GPS_L1);
 
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, l2, L5, E1, E5a
@@ -153,11 +153,31 @@ void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
 
     // UIO device file
     std::string device_io_name;
+
     // find the uio device file corresponding to the tracking multicorrelator
     if (find_uio_dev_file_name(device_io_name, device_name, channel - num_prev_assigned_ch) < 0)
         {
-            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
-            throw std::exception();
+            bool alt_device_found = false;  // alternative compatible HW accelerator device not found by default
+
+            // If the HW accelerator is the default one in the L1 band then look for an alternative hardware accelerator
+            if (device_name == default_device_name_GPS_L1)
+                {
+                    if (find_uio_dev_file_name(device_io_name, default_device_name_Galileo_E1, channel - num_prev_assigned_ch) < 0)
+                        {
+                            std::cout << "Cannot find the FPGA uio device file corresponding to device names " << device_name << " or " << default_device_name_Galileo_E1 << std::endl;
+                            throw std::exception();
+                        }
+                    else
+                        {
+                            alt_device_found = true;  // alternative compatible HW accelerator device has been found
+                        }
+                }
+
+            if (!alt_device_found)
+                {
+                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+                    throw std::exception();
+                }
         }
 
     tracking_fpga_sc->set_channel(channel, device_io_name);

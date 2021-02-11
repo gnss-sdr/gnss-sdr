@@ -70,7 +70,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     uint32_t num_prev_assigned_ch_1C = 0;
     std::string device_io_name;
 
-    if (configuration->property("Tracking_1C.devicename", default_device_name_GPS_L1).compare(default_device_name_GPS_L1) == 0)
+    if (configuration->property("Tracking_1C.devicename", default_device_name_GPS_L1) == default_device_name_GPS_L1)
         {
             for (uint32_t k = 0; k < configuration->property("Channels_1C.count", 0); k++)
                 {
@@ -82,7 +82,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
         }
     else
         {
-            if (configuration->property("Tracking_1C.devicename", std::string("")).compare(device_name) != 0)
+            if (configuration->property("Tracking_1C.devicename", std::string("")) != device_name)
                 {
                     num_prev_assigned_ch_1C = configuration->property("Channels_1C.count", 0);
                 }

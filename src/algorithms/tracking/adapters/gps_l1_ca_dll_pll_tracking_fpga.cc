@@ -160,7 +160,7 @@ void GpsL1CaDllPllTrackingFpga::set_channel(unsigned int channel)
             bool alt_device_found = false;  // alternative compatible HW accelerator device not found by default
 
             // If the HW accelerator is the default one in the L1 band then look for an alternative hardware accelerator
-            if (device_name.compare(default_device_name_GPS_L1) == 0)
+            if (device_name == default_device_name_GPS_L1)
                 {
                     if (find_uio_dev_file_name(device_io_name, default_device_name_Galileo_E1, channel - num_prev_assigned_ch) < 0)
                         {

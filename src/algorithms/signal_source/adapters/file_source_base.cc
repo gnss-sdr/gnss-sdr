@@ -147,15 +147,6 @@ gr::basic_block_sptr FileSourceBase::get_right_block()
     if (valve_) return valve_;
     if (throttle_) return throttle_;
     return file_source_;
-    // if (samples_ > 0)
-    //     {
-    //         return valve_;
-    //     }
-    // if (enable_throttle_control_ == true)
-    //     {
-    //         return throttle_;
-    //     }
-    // return file_source_;
 }
 
 

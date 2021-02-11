@@ -21,7 +21,7 @@
 #ifndef GNSS_SDR_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_FILE_SIGNAL_SOURCE_H
 
-#include "signal_source_base.h"
+#include "file_source_base.h"
 
 #include "concurrent_queue.h"
 #include <gnuradio/blocks/file_sink.h>
@@ -46,7 +46,7 @@ class ConfigurationInterface;
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class FileSignalSource : public SignalSourceBase
+class FileSignalSource : public FileSourceBase
 {
 public:
     FileSignalSource(ConfigurationInterface const* configuration, std::string const& role,
@@ -55,61 +55,7 @@ public:
 
     ~FileSignalSource() = default;
 
-    inline size_t item_size() override
-    {
-        return item_size_;
-    }
-
-    void connect(gr::top_block_sptr top_block) override;
-    void disconnect(gr::top_block_sptr top_block) override;
-    gr::basic_block_sptr get_left_block() override;
-    gr::basic_block_sptr get_right_block() override;
-
-    inline std::string filename() const
-    {
-        return filename_;
-    }
-
-    inline std::string item_type() const
-    {
-        return item_type_;
-    }
-
-    inline bool repeat() const
-    {
-        return repeat_;
-    }
-
-    inline int64_t sampling_frequency() const
-    {
-        return sampling_frequency_;
-    }
-
-    inline uint64_t samples() const
-    {
-        return samples_;
-    }
-
 private:
-    gr::blocks::file_source::sptr file_source_;
-    gnss_shared_ptr<gr::block> valve_;
-    gr::blocks::file_sink::sptr sink_;
-    gr::blocks::throttle::sptr throttle_;
-
-    std::string item_type_;
-    std::string filename_;
-    std::string dump_filename_;
-
-    uint64_t samples_;
-    int64_t sampling_frequency_;
-    size_t item_size_;
-
-    uint32_t in_streams_;
-    uint32_t out_streams_;
-
-    bool enable_throttle_control_;
-    bool repeat_;
-    bool dump_;
 };
 
 

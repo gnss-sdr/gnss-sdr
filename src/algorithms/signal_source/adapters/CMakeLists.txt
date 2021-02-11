@@ -93,6 +93,7 @@ endif()
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES
     signal_source_base.cc
+    file_source_base.cc
     file_signal_source.cc
     multichannel_file_signal_source.cc
     gen_signal_source.cc
@@ -108,6 +109,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
 
 set(SIGNAL_SOURCE_ADAPTER_HEADERS
     signal_source_base.h
+    file_source_base.h
     file_signal_source.h
     multichannel_file_signal_source.h
     gen_signal_source.h
@@ -168,6 +170,18 @@ if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(signal_source_adapters
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1
     )
+endif()
+
+# This should really be at a higher level and apply universally to the
+# build system
+if(FILESYSTEM_FOUND)
+    target_compile_definitions(signal_source_adapters PUBLIC -DHAS_STD_FILESYSTEM=1)
+    if(find_experimental)
+        target_compile_definitions(signal_source_adapters PUBLIC -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(signal_source_adapters PUBLIC std::filesystem)
+else()
+    target_link_libraries(signal_source_adapters PUBLIC Boost::filesystem Boost::system)
 endif()
 
 if(ENABLE_RAW_UDP AND PCAP_FOUND)

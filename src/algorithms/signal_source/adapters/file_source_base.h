@@ -66,9 +66,6 @@ public:
     //! the item type
     std::string item_type() const;
 
-    // the size of the file data
-    // the size of the post-processed data
-
     //! the configured size of each item
     size_t item_size() override;
     virtual size_t item_size() const;  // what the interface **should** have declared
@@ -89,8 +86,6 @@ protected:
     //! Constructor
     FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
         Concurrent_Queue<pmt::pmt_t>* queue);
-
-    // item type override. Rather than make a bunch of arguments to the ctor, allow sub-classes to restrict the range of acceptable item types
 
     //! compute the item size, from the item_type(). Subclasses may constrain types that don't make
     //  sense. The return of this method is a tuple of item_size and is_complex

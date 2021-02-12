@@ -19,7 +19,6 @@
 #define GNSS_SDR_SPIR_FILE_SIGNAL_SOURCE_H
 
 #include "file_source_base.h"
-
 #include "unpack_intspir_1bit_samples.h"
 
 
@@ -45,12 +44,11 @@ public:
     ~SpirFileSignalSource() = default;
 
 protected:
-std::tuple<size_t, bool> itemTypeToSize() const override;
- gnss_shared_ptr<gr::block> source() const override;
- void create_file_source_hook() override;
- void pre_connect_hook(gr::top_block_sptr top_block) override;
- void post_disconnect_hook(gr::top_block_sptr top_block) override;
-
+    std::tuple<size_t, bool> itemTypeToSize() const override;
+    gnss_shared_ptr<gr::block> source() const override;
+    void create_file_source_hook() override;
+    void pre_connect_hook(gr::top_block_sptr top_block) override;
+    void post_disconnect_hook(gr::top_block_sptr top_block) override;
 
 
 private:

@@ -177,6 +177,7 @@ uint64_t FileSourceBase::samples() const
 void FileSourceBase::init()
 {
     create_file_source();
+
     // At this point, we know that the file exists
     samples_ = computeSamplesInFile();
     auto signal_duration_s = 1.0 * samples_ / sampling_frequency_;
@@ -196,6 +197,7 @@ void FileSourceBase::init()
     DLOG(INFO) << "Item type " << item_type_;
     DLOG(INFO) << "Item size " << item_size_;
     DLOG(INFO) << "Repeat " << repeat_;
+
     DLOG(INFO) << "Dump " << dump_;
     DLOG(INFO) << "Dump filename " << dump_filename_;
 
@@ -206,12 +208,13 @@ void FileSourceBase::init()
 
 
 FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
-    Concurrent_Queue<pmt::pmt_t>* queue)
+			       Concurrent_Queue<pmt::pmt_t>* queue,
+			       std::string default_item_type)
     : SignalSourceBase(configuration, role, impl)
     , filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s))
     , file_source_()
 
-    , item_type_(configuration->property(role + ".item_type"s, "short"s))
+    , item_type_(configuration->property(role + ".item_type"s, default_item_type))
     , item_size_(0)  // invalid
     , is_complex_(false)
 
@@ -283,6 +286,9 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize() const
     return std::make_tuple(item_size, is_complex);
 }
 
+// Default case is one decoded packet per one read sample
+double FileSourceBase::packetsPerSample() const { return 1.0; }
+
 size_t FileSourceBase::samplesToSkip() const
 {
     auto samples_to_skip = size_t(0);
@@ -310,32 +316,38 @@ size_t FileSourceBase::computeSamplesInFile() const
     auto n_samples = size_t(samples());
 
 
-    // this could throw, but the existence of the file has been proven before we get here.
-    auto size = fs::file_size(filename());
-    n_samples = std::floor(1.0 * size / item_size());
-
-    auto to_skip = samplesToSkip();
-
-    /*!
-     * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
-     * A possible solution is to compute the file length in samples using file size, excluding at least
-     * the last 2 milliseconds, and enable always the valve block
-     */
-    auto tail = static_cast<size_t>(std::ceil(0.002 * sampling_frequency()));
-
-    DLOG(INFO) << "Total samples in the file= " << n_samples;
-    std::cout << "Processing file " << filename() << ", which contains " << n_samples << " samples (" << size << " bytes)\n";
-
-    if (n_samples > (to_skip + tail))
+    // if configured with 0 samples (read the whole file), figure out how many samples are in the file, and go from there
+    if (n_samples == 0)
         {
-            // process all the samples available in the file excluding up to the last 2 ms
-            n_samples -= to_skip + tail;
-        }
-    else
-        {
-            // this will terminate the program
-            LOG(FATAL) << "Skipping " << to_skip << " samples from the front and truncating 2ms (" << tail << " samples)\n"
-                       << "is greater than the number of samples in the file (" << n_samples << ")";
+            // this could throw, but the existence of the file has been proven before we get here.
+            auto size = fs::file_size(filename());
+
+	    // if there is some kind of compression/encoding, figure out the uncompressed number of samples
+            n_samples = std::floor(packetsPerSample() * size / item_size());
+
+            auto to_skip = samplesToSkip();
+
+            /*!
+	     * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
+	     * A possible solution is to compute the file length in samples using file size, excluding at least
+	     * the last 2 milliseconds, and enable always the valve block
+	     */
+            auto tail = static_cast<size_t>(std::ceil(0.002 * sampling_frequency()));
+
+            DLOG(INFO) << "Total samples in the file= " << n_samples;
+            std::cout << "Processing file " << filename() << ", which contains " << n_samples << " samples (" << size << " bytes)\n";
+
+            if (n_samples > (to_skip + tail))
+                {
+                    // process all the samples available in the file excluding up to the last 2 ms
+                    n_samples -= to_skip + tail;
+                }
+            else
+                {
+                    // this will terminate the program
+                    LOG(FATAL) << "Skipping " << to_skip << " samples from the front and truncating 2ms (" << tail << " samples)\n"
+                               << "is greater than the number of samples in the file (" << n_samples << ")";
+                }
         }
 
     return n_samples;

@@ -84,12 +84,19 @@ public:
 
 protected:
     //! Constructor
+    // Subclasses may want to assert default item types that are appropriate to the specific file
+    // type supported. Rather than require the item type to be specified in the config file, allow
+    // sub-classes to impose their will
     FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
-        Concurrent_Queue<pmt::pmt_t>* queue);
+		   Concurrent_Queue<pmt::pmt_t>* queue,
+		   std::string default_item_type="short");
 
     //! compute the item size, from the item_type(). Subclasses may constrain types that don't make
     //  sense. The return of this method is a tuple of item_size and is_complex
     virtual std::tuple<size_t, bool> itemTypeToSize() const;
+
+    //! the number of (possibly unpacked) samples in a (raw) file sample (default=1)
+    virtual double packetsPerSample() const;
 
     //! compute the number of samples to skip
     virtual size_t samplesToSkip() const;

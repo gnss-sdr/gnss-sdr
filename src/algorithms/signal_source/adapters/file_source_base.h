@@ -18,17 +18,14 @@
 #ifndef GNSS_SDR_FILE_SOURCE_BASE_H
 #define GNSS_SDR_FILE_SOURCE_BASE_H
 
-#include "signal_source_base.h"
-
 #include "concurrent_queue.h"
-#include <pmt/pmt.h>
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
+#include <pmt/pmt.h>
 
 // for dump
 #include <gnuradio/blocks/file_sink.h>
-
-
 #include <cstddef>
 #include <string>
 
@@ -56,23 +53,25 @@ class ConfigurationInterface;
 class FileSourceBase : public SignalSourceBase
 {
 public:
-
-  //! virtual overrides
+    //! virtual overrides
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
-  
+
     //! the file to read
     std::string filename() const;
 
     //! the item type
     std::string item_type() const;
 
+    // the size of the file data
+    // the size of the post-processed data
+
     //! the configured size of each item
     size_t item_size() override;
-    virtual size_t item_size() const; // what the interface **should** have declared
+    virtual size_t item_size() const;  // what the interface **should** have declared
 
     //! Whether to repeat reading after end-of-file
     bool repeat() const;
@@ -91,25 +90,60 @@ protected:
     FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
+    // item type override. Rather than make a bunch of arguments to the ctor, allow sub-classes to restrict the range of acceptable item types
+
     //! compute the item size, from the item_type(). Subclasses may constrain types that don't make
     //  sense. The return of this method is a tuple of item_size and is_complex
-    virtual std::tuple<size_t,bool> itemTypeToSize() const;
-    
+    virtual std::tuple<size_t, bool> itemTypeToSize() const;
+
     //! compute the number of samples to skip
     virtual size_t samplesToSkip() const;
 
     //! compute the number of samples in the file
     size_t computeSamplesInFile() const;
-    
+
+    //! abstracted front-end source. Sub-classes may override if they create specialized chains to
+    //! decode source files into a usable format
+    virtual gnss_shared_ptr<gr::block> source() const;
+
+    //! for complex source chains, the size of the file item may not be the same as the size of the
+    // "source" (decoded) item. This method allows subclasses to handle these differences
+    virtual size_t source_item_size() const;
+
+    //! generic access to created objects
+    gnss_shared_ptr<gr::block> file_source() const;
+    gnss_shared_ptr<gr::block> valve() const;
+    gnss_shared_ptr<gr::block> throttle() const;
+    gnss_shared_ptr<gr::block> sink() const;
+
+    // The methods create the various blocks, if enabled, and return access to them. The created
+    // object is also held in this class
+    gr::blocks::file_source::sptr create_file_source();
+    gr::blocks::throttle::sptr create_throttle();
+    gnss_shared_ptr<gr::block> create_valve();
+    gr::blocks::file_sink::sptr create_sink();
+
+    // Subclass hooks to augment created objects, as required
+    virtual void create_file_source_hook();
+    virtual void create_throttle_hook();
+    virtual void create_valve_hook();
+    virtual void create_sink_hook();
+
+    // Subclass hooks for connection/disconnection
+    virtual void pre_connect_hook(gr::top_block_sptr top_block);
+    virtual void post_connect_hook(gr::top_block_sptr top_block);
+    virtual void pre_disconnect_hook(gr::top_block_sptr top_block);
+    virtual void post_disconnect_hook(gr::top_block_sptr top_block);
+
 private:
     std::string filename_;
     gr::blocks::file_source::sptr file_source_;
 
     std::string item_type_;
     size_t item_size_;
-    bool is_complex_;		// a misnomer; if I/Q are interleaved as integer values
+    bool is_complex_;  // a misnomer; if I/Q are interleaved as integer values
 
-    size_t header_size_;	// length (in samples) of the header (if any)
+    size_t header_size_;  // length (in samples) of the header (if any)
     double seconds_to_skip_;
     bool repeat_;
 
@@ -130,9 +164,6 @@ private:
     bool dump_;
     std::string dump_filename_;
     gr::blocks::file_sink::sptr sink_;
-
-
-
 };
 
 

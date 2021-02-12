@@ -15,128 +15,117 @@
  */
 
 #include "file_source_base.h"
-
 #include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
 #include "gnss_sdr_filesystem.h"
+#include "gnss_sdr_flags.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
+#include <cmath>  // ceil, floor
 #include <fstream>
-#include <cmath>		// ceil, floor
 
 
 using namespace std::string_literals;
 
 void FileSourceBase::connect(gr::top_block_sptr top_block)
 {
-  init();
+    init();
+    pre_connect_hook(top_block);
 
-    auto source = gr::basic_block_sptr();
+    auto input = gr::basic_block_sptr();
     auto output = gr::basic_block_sptr();
 
     // THROTTLE
-    if (enable_throttle_control_)
+    if (throttle())
         {
             // if we are throttling...
-            throttle_ = gr::blocks::throttle::make(item_size_, sampling_frequency_);
-
-            top_block->connect(file_source_, 0, throttle_, 0);
+            top_block->connect(source(), 0, throttle(), 0);
             DLOG(INFO) << "connected file source to throttle";
 
-            source = throttle_;
+            input = throttle();
         }
     else
         {
             // no throttle; let 'er rip
-            source = file_source_;
+            input = source();
         }
 
     // VALVE
-    if (samples_ > 0)
+    if (valve())
         {
-            // if a number of samples is specified, honor it by creating a valve
-            // In practice, this is always true
-            valve_ = gnss_sdr_make_valve(item_size_, samples_, queue_);
-            DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
-
-            top_block->connect(source, 0, valve_, 0);
+            top_block->connect(input, 0, valve(), 0);
             DLOG(INFO) << "connected source to valve";
 
-            output = valve_;
+            output = valve();
         }
     else
         {
-	  // TODO: dumping a file source is unlikely, but should this be the raw file source or the
-	  // throttle if there is one?  I'm leaning towards "output=source"
-            output = file_source_;
+            // TODO: dumping a file source is unlikely, but should this be the raw file source or the
+            // throttle if there is one?  I'm leaning towards "output=input"
+            output = source();  // output = input;
         }
 
     // DUMP
-    if (dump_)
+    if (sink())
         {
-            sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
-            DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
-
-            top_block->connect(output, 0, sink_, 0);
+            top_block->connect(output, 0, sink(), 0);
             DLOG(INFO) << "connected output to file sink";
         }
+
+    post_connect_hook(top_block);
 }
 
 
 void FileSourceBase::disconnect(gr::top_block_sptr top_block)
 {
-    if (samples_ > 0)
+    auto input = gr::basic_block_sptr();
+    auto output = gr::basic_block_sptr();
+
+    pre_disconnect_hook(top_block);
+
+    // THROTTLE
+    if (throttle())
         {
-            if (enable_throttle_control_ == true)
-                {
-                    top_block->disconnect(file_source_, 0, throttle_, 0);
-                    DLOG(INFO) << "disconnected file source to throttle";
-                    top_block->disconnect(throttle_, 0, valve_, 0);
-                    DLOG(INFO) << "disconnected throttle to valve";
-                    if (dump_)
-                        {
-                            top_block->disconnect(valve_, 0, sink_, 0);
-                            DLOG(INFO) << "disconnected valve to file sink";
-                        }
-                }
-            else
-                {
-                    top_block->disconnect(file_source_, 0, valve_, 0);
-                    DLOG(INFO) << "disconnected file source to valve";
-                    if (dump_)
-                        {
-                            top_block->disconnect(valve_, 0, sink_, 0);
-                            DLOG(INFO) << "disconnected valve to file sink";
-                        }
-                }
+            // if we are throttling...
+            top_block->disconnect(source(), 0, throttle(), 0);
+            DLOG(INFO) << "disconnected file source from throttle";
+
+            input = throttle();
         }
     else
         {
-            if (enable_throttle_control_ == true)
-                {
-                    top_block->disconnect(file_source_, 0, throttle_, 0);
-                    DLOG(INFO) << "disconnected file source to throttle";
-                    if (dump_)
-                        {
-                            top_block->disconnect(file_source_, 0, sink_, 0);
-                            DLOG(INFO) << "disconnected file source to sink";
-                        }
-                }
-            else
-                {
-                    if (dump_)
-                        {
-                            top_block->disconnect(file_source_, 0, sink_, 0);
-                            DLOG(INFO) << "disconnected file source to sink";
-                        }
-                }
+            // no throttle; let 'er rip
+            input = source();
         }
+
+    // VALVE
+    if (valve())
+        {
+            top_block->disconnect(input, 0, valve(), 0);
+            DLOG(INFO) << "disconnected source to valve";
+
+            output = valve();
+        }
+    else
+        {
+            // TODO: dumping a file source is unlikely, but should this be the raw file source or the
+            // throttle if there is one?  I'm leaning towards "output=input"
+            output = source();  // output = input;
+        }
+
+    // DUMP
+    if (sink())
+        {
+            top_block->disconnect(output, 0, sink(), 0);
+            DLOG(INFO) << "disconnected output to file sink";
+        }
+
+    post_disconnect_hook(top_block);
 }
 
 
 gr::basic_block_sptr FileSourceBase::get_left_block()
 {
-  // TODO: is this right? Shouldn't the left block be a nullptr?
+    // TODO: is this right? Shouldn't the left block be a nullptr?
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::blocks::file_source::sptr();
 }
@@ -146,7 +135,7 @@ gr::basic_block_sptr FileSourceBase::get_right_block()
 {
     if (valve_) return valve_;
     if (throttle_) return throttle_;
-    return file_source_;
+    return source();
 }
 
 
@@ -187,47 +176,7 @@ uint64_t FileSourceBase::samples() const
 
 void FileSourceBase::init()
 {
-    auto item_tuple = itemTypeToSize();
-    item_size_ = std::get<0>(item_tuple);
-    is_complex_ = std::get<1>(item_tuple);
-
-    try
-        {
-            // TODO: why are we manually seeking, instead of passing the samples_to_skip to the file_source factory?
-            auto samples_to_skip = samplesToSkip();
-
-            file_source_ = gr::blocks::file_source::make(item_size(), filename().data(), repeat());
-
-            if (samples_to_skip > 0)
-                {
-                    LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
-                    if (not file_source_->seek(samples_to_skip, SEEK_SET))
-                        {
-                            LOG(ERROR) << "Error skipping bytes!";
-                        }
-                }
-        }
-    catch (const std::exception& e)
-        {
-            std::cerr
-                << "The receiver was configured to work with a file-based signal source\n"
-                << "but the specified file is unreachable by GNSS-SDR.\n"
-                << "[" << filename() << "]\n"
-                << "\n"
-                << "Please modify your configuration file\n"
-                << "and point SignalSource.filename to a valid raw data file. Then:\n"
-                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
-                << "Examples of configuration files available at:\n"
-                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n"
-		<< std::endl;
-
-            LOG(ERROR) << "file_signal_source: Unable to open the samples file "
-                       << filename() << ", exiting the program.";
-            throw;
-        }
-
-    DLOG(INFO) << implementation() << "(" << file_source_->unique_id() << ")";
-
+    create_file_source();
     // At this point, we know that the file exists
     samples_ = computeSamplesInFile();
     auto signal_duration_s = 1.0 * samples_ / sampling_frequency_;
@@ -249,17 +198,21 @@ void FileSourceBase::init()
     DLOG(INFO) << "Repeat " << repeat_;
     DLOG(INFO) << "Dump " << dump_;
     DLOG(INFO) << "Dump filename " << dump_filename_;
+
+    create_throttle();
+    create_valve();
+    create_sink();
 }
 
 
 FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
-        Concurrent_Queue<pmt::pmt_t>* queue)
+    Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, impl)
     , filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s))
     , file_source_()
 
     , item_type_(configuration->property(role + ".item_type"s, "short"s))
-    , item_size_(0)		// invalid
+    , item_size_(0)  // invalid
     , is_complex_(false)
 
     , header_size_(configuration->property(role + ".header_size"s, 0UL))
@@ -270,10 +223,10 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
     , sampling_frequency_(configuration->property(role + ".sampling_frequency"s, 0UL))
     , valve_()
     , queue_(queue)
-      
+
     , enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false))
     , throttle_()
-      
+
     , dump_(configuration->property(role + ".dump"s, false))
     , dump_filename_(configuration->property(role + ".dump_filename"s, "../data/my_capture.dat"s))
     , sink_()
@@ -287,7 +240,6 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
         {
             filename_ = FLAGS_s;
         }
-
 }
 
 std::tuple<size_t, bool> FileSourceBase::itemTypeToSize() const
@@ -381,10 +333,129 @@ size_t FileSourceBase::computeSamplesInFile() const
         }
     else
         {
-	    // this will terminate the program
+            // this will terminate the program
             LOG(FATAL) << "Skipping " << to_skip << " samples from the front and truncating 2ms (" << tail << " samples)\n"
-		       << "is greater than the number of samples in the file (" << n_samples << ")";
+                       << "is greater than the number of samples in the file (" << n_samples << ")";
         }
 
     return n_samples;
 }
+
+gnss_shared_ptr<gr::block> FileSourceBase::source() const { return file_source(); }
+size_t FileSourceBase::source_item_size() const
+{
+    // delegate the size of the source to the source() object, so sub-classes have less work to do
+    DLOG(INFO) << "source_item_size is " << source()->output_signature()->sizeof_stream_item(0);
+    return source()->output_signature()->sizeof_stream_item(0);
+}
+
+// Simple accessors
+gnss_shared_ptr<gr::block> FileSourceBase::file_source() const { return file_source_; }
+gnss_shared_ptr<gr::block> FileSourceBase::valve() const { return valve_; }
+gnss_shared_ptr<gr::block> FileSourceBase::throttle() const { return throttle_; }
+gnss_shared_ptr<gr::block> FileSourceBase::sink() const { return sink_; }
+
+gr::blocks::file_source::sptr FileSourceBase::create_file_source()
+{
+    auto item_tuple = itemTypeToSize();
+    item_size_ = std::get<0>(item_tuple);
+    is_complex_ = std::get<1>(item_tuple);
+
+    try
+        {
+            // TODO: why are we manually seeking, instead of passing the samples_to_skip to the file_source factory?
+            auto samples_to_skip = samplesToSkip();
+
+            file_source_ = gr::blocks::file_source::make(item_size(), filename().data(), repeat());
+
+            if (samples_to_skip > 0)
+                {
+                    LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
+                    if (not file_source_->seek(samples_to_skip, SEEK_SET))
+                        {
+                            LOG(ERROR) << "Error skipping bytes!";
+                        }
+                }
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr
+                << "The receiver was configured to work with a file-based signal source\n"
+                << "but the specified file is unreachable by GNSS-SDR.\n"
+                << "[" << filename() << "]\n"
+                << "\n"
+                << "Please modify your configuration file\n"
+                << "and point SignalSource.filename to a valid raw data file. Then:\n"
+                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
+                << "Examples of configuration files available at:\n"
+                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n"
+                << std::endl;
+
+            LOG(ERROR) << "file_signal_source: Unable to open the samples file "
+                       << filename() << ", exiting the program.";
+            throw;
+        }
+
+    DLOG(INFO) << implementation() << "(" << file_source_->unique_id() << ")";
+
+    // enable subclass hooks
+    create_file_source_hook();
+
+
+    return file_source_;
+}
+
+gr::blocks::throttle::sptr FileSourceBase::create_throttle()
+{
+    if (enable_throttle_control_)
+        {
+            // if we are throttling...
+            throttle_ = gr::blocks::throttle::make(source_item_size(), sampling_frequency());
+            DLOG(INFO) << "throttle(" << throttle_->unique_id() << ")";
+
+            // enable subclass hooks
+            create_throttle_hook();
+        }
+    return throttle_;
+}
+
+gnss_shared_ptr<gr::block> FileSourceBase::create_valve()
+{
+    if (samples() > 0)
+        {
+            // if a number of samples is specified, honor it by creating a valve
+            // In practice, this is always true
+            valve_ = gnss_sdr_make_valve(source_item_size(), samples(), queue_);
+            DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
+
+            // enable subclass hooks
+            create_valve_hook();
+        }
+    return valve_;
+}
+
+gr::blocks::file_sink::sptr FileSourceBase::create_sink()
+{
+    if (dump_)
+        {
+            sink_ = gr::blocks::file_sink::make(source_item_size(), dump_filename_.c_str());
+            DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
+
+            // enable subclass hooks
+            create_sink_hook();
+        }
+    return sink_;
+}
+
+// Subclass hooks to augment created objects, as required
+void FileSourceBase::create_file_source_hook() {}
+void FileSourceBase::create_throttle_hook() {}
+void FileSourceBase::create_valve_hook() {}
+void FileSourceBase::create_sink_hook() {}
+
+// Subclass hooks for connection/disconnectino
+void FileSourceBase::pre_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
+void FileSourceBase::post_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
+void FileSourceBase::pre_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
+void FileSourceBase::post_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
+

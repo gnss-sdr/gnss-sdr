@@ -10,21 +10,14 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
 #include "file_signal_source.h"
-#include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
 #include <glog/logging.h>
-#include <exception>
-#include <fstream>
-#include <iomanip>
-#include <iostream>  // for std::cerr
-#include <utility>
 
 using namespace std::string_literals;
 

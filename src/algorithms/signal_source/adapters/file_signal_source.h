@@ -23,15 +23,6 @@
 
 #include "file_source_base.h"
 
-#include "concurrent_queue.h"
-#include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/throttle.h>
-#include <gnuradio/hier_block2.h>
-#include <pmt/pmt.h>
-#include <cstdint>
-#include <string>
-
 /** \addtogroup Signal_Source Signal Source
  * Classes for Signal Source management.
  * \{ */

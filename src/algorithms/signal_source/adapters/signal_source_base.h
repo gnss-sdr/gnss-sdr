@@ -41,7 +41,6 @@ protected:
 private:
     std::string const role_;
     std::string const implementation_;
-    bool connected_;
     size_t rfChannels_;
 };
 

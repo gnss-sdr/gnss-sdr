@@ -110,7 +110,7 @@ void GNSSFlowgraph::init()
             auto& src = sig_source_.back();
             auto RF_Channels = src->getRfChannels();
             std::cout << "RF Channels " << RF_Channels << '\n';
-            for (int j = 0; j < RF_Channels; j++)
+            for (auto j = 0u; j < RF_Channels; ++j)
                 {
                     sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
                     signal_conditioner_ID++;
@@ -691,65 +691,66 @@ int GNSSFlowgraph::disconnect_signal_sources()
 
 int GNSSFlowgraph::connect_signal_conditioners()
 {
-    for (auto& sig : sig_conditioner_)
+    int error = 1;  // this should be bool (true)
+    try
         {
-            try
+            for (auto& sig : sig_conditioner_)
                 {
                     sig->connect(top_block_);
                 }
-            catch (const std::exception& e)
+            DLOG(INFO) << "Signal Conditioner blocks successfully connected to the top_block";
+            error = 0;  // false
+        }
+    catch (const std::exception& e)
+        {
+            LOG(ERROR) << "Can't connect signal conditioner block internally: " << e.what();
+            top_block_->disconnect_all();
+            std::string reported_error(e.what());
+            if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
                 {
-                    LOG(ERROR) << "Can't connect signal conditioner block internally: " << e.what();
-                    top_block_->disconnect_all();
-                    std::string reported_error(e.what());
+                    std::string replace_me("copy");
+                    size_t pos = reported_error.find(replace_me);
+                    while (pos != std::string::npos)
+                        {
+                            size_t len = replace_me.length();
+                            reported_error.replace(pos, len, "Pass_Through");
+                            pos = reported_error.find(replace_me, pos + 1);
+                        }
+                    help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched input/ouput item size\n";
+                    help_hint_ += "   Reported error: " + reported_error + '\n';
+                    help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
+                }
+            if (std::string::npos != reported_error.find(std::string("DataTypeAdapter")))
+                {
+                    help_hint_ += " * The DataTypeAdapter implementation set in the configuration file does not exist\n";
+                    help_hint_ += "   Check the DataTypeAdapter documentation at https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/\n";
+                }
+            if (std::string::npos != reported_error.find(std::string("InputFilter")))
+                {
                     if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
                         {
-                            std::string replace_me("copy");
-                            size_t pos = reported_error.find(replace_me);
-                            while (pos != std::string::npos)
-                                {
-                                    size_t len = replace_me.length();
-                                    reported_error.replace(pos, len, "Pass_Through");
-                                    pos = reported_error.find(replace_me, pos + 1);
-                                }
-                            help_hint_ += " * Blocks within the Signal Conditioner are connected with mismatched input/ouput item size\n";
-                            help_hint_ += "   Reported error: " + reported_error + '\n';
-                            help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
+                            help_hint_ += " * The configured InputFilter input/output item types are not well defined.\n";
                         }
-                    if (std::string::npos != reported_error.find(std::string("DataTypeAdapter")))
+                    else
                         {
-                            help_hint_ += " * The DataTypeAdapter implementation set in the configuration file does not exist\n";
-                            help_hint_ += "   Check the DataTypeAdapter documentation at https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/\n";
+                            help_hint_ += " * The InputFilter implementation set in the configuration file does not exist\n";
                         }
-                    if (std::string::npos != reported_error.find(std::string("InputFilter")))
+                    help_hint_ += "   Check the InputFilter documentation at https://gnss-sdr.org/docs/sp-blocks/input-filter/\n";
+                }
+            if (std::string::npos != reported_error.find(std::string("Resampler")))
+                {
+                    if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
                         {
-                            if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
-                                {
-                                    help_hint_ += " * The configured InputFilter input/output item types are not well defined.\n";
-                                }
-                            else
-                                {
-                                    help_hint_ += " * The InputFilter implementation set in the configuration file does not exist\n";
-                                }
-                            help_hint_ += "   Check the InputFilter documentation at https://gnss-sdr.org/docs/sp-blocks/input-filter/\n";
+                            help_hint_ += " * The configured Resampler item type is not well defined.\n";
                         }
-                    if (std::string::npos != reported_error.find(std::string("Resampler")))
+                    else
                         {
-                            if (std::string::npos != reported_error.find(std::string("itemsize mismatch")))
-                                {
-                                    help_hint_ += " * The configured Resampler item type is not well defined.\n";
-                                }
-                            else
-                                {
-                                    help_hint_ += " * The Resampler implementation set in the configuration file does not exist\n";
-                                }
-                            help_hint_ += "   Check the Resampler documentation at https://gnss-sdr.org/docs/sp-blocks/resampler/\n";
+                            help_hint_ += " * The Resampler implementation set in the configuration file does not exist\n";
                         }
-                    return 1;
+                    help_hint_ += "   Check the Resampler documentation at https://gnss-sdr.org/docs/sp-blocks/resampler/\n";
                 }
         }
-    DLOG(INFO) << "Signal Conditioner blocks successfully connected to the top_block";
-    return 0;
+    return error;
 }
 
 
@@ -1021,7 +1022,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                         {
                             auto RF_Channels = src->getRfChannels();
 
-                            for (int j = 0; j < RF_Channels; j++)
+                            for (auto j = 0u; j < RF_Channels; ++j)
                                 {
                                     // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
@@ -1116,7 +1117,7 @@ int GNSSFlowgraph::disconnect_signal_sources_from_signal_conditioners()
                         {
 			  auto RF_Channels = src->getRfChannels();
 
-                            for (int j = 0; j < RF_Channels; j++)
+                            for (auto j = 0u; j < RF_Channels; ++j)
                                 {
                                     if (src->get_right_block()->output_signature()->max_streams() > 1 or src->get_right_block()->output_signature()->max_streams() == -1)
                                         {

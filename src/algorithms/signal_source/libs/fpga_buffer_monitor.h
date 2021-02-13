@@ -22,7 +22,6 @@
 #ifndef GNSS_SDR_FPGA_BUFFER_MONITOR_H
 #define GNSS_SDR_FPGA_BUFFER_MONITOR_H
 
-#include <cstddef>
 #include <cstdint>
 #include <string>
 

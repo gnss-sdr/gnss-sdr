@@ -46,7 +46,7 @@ public:
     ~NsrFileSignalSource() = default;
 
 protected:
-    std::tuple<size_t, bool> itemTypeToSize() const override;
+    std::tuple<size_t, bool> itemTypeToSize() override;
     double packetsPerSample() const override;
     gnss_shared_ptr<gr::block> source() const override;
     void create_file_source_hook() override;

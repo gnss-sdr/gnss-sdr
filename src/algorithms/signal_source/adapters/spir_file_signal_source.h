@@ -44,7 +44,7 @@ public:
     ~SpirFileSignalSource() = default;
 
 protected:
-    std::tuple<size_t, bool> itemTypeToSize() const override;
+    std::tuple<size_t, bool> itemTypeToSize() override;
     gnss_shared_ptr<gr::block> source() const override;
     void create_file_source_hook() override;
     void pre_connect_hook(gr::top_block_sptr top_block) override;

@@ -39,7 +39,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(
 }
 
 
-std::tuple<size_t, bool> TwoBitCpxFileSignalSource::itemTypeToSize() const
+std::tuple<size_t, bool> TwoBitCpxFileSignalSource::itemTypeToSize()
 {
     auto is_complex = false;
     auto item_size = size_t(sizeof(char));  // default

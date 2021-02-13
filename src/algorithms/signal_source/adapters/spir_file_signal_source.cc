@@ -36,7 +36,7 @@ SpirFileSignalSource::SpirFileSignalSource(const ConfigurationInterface* configu
         }
 }
 
-std::tuple<size_t, bool> SpirFileSignalSource::itemTypeToSize() const
+std::tuple<size_t, bool> SpirFileSignalSource::itemTypeToSize()
 {
     auto is_complex = false;
     auto item_size = size_t(0);

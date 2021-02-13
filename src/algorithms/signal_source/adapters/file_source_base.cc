@@ -174,39 +174,6 @@ uint64_t FileSourceBase::samples() const
 }
 
 
-void FileSourceBase::init()
-{
-    create_file_source();
-
-    // At this point, we know that the file exists
-    samples_ = computeSamplesInFile();
-    auto signal_duration_s = 1.0 * samples_ / sampling_frequency_;
-
-    if (is_complex_)
-        {
-            signal_duration_s /= 2.0;
-        }
-
-    DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
-    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
-
-
-    DLOG(INFO) << "File source filename " << filename_;
-    DLOG(INFO) << "Samples " << samples_;
-    DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
-    DLOG(INFO) << "Item type " << item_type_;
-    DLOG(INFO) << "Item size " << item_size_;
-    DLOG(INFO) << "Repeat " << repeat_;
-
-    DLOG(INFO) << "Dump " << dump_;
-    DLOG(INFO) << "Dump filename " << dump_filename_;
-
-    create_throttle();
-    create_valve();
-    create_sink();
-}
-
-
 FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
 			       Concurrent_Queue<pmt::pmt_t>* queue,
 			       std::string default_item_type)
@@ -245,9 +212,42 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
         }
 }
 
-std::tuple<size_t, bool> FileSourceBase::itemTypeToSize() const
+void FileSourceBase::init()
 {
-    auto is_complex = false;
+    create_file_source();
+
+    // At this point, we know that the file exists
+    samples_ = computeSamplesInFile();
+    auto signal_duration_s = 1.0 * samples_ / sampling_frequency_;
+
+    if (is_complex())
+        {
+            signal_duration_s /= 2.0;
+        }
+
+    DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
+    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
+
+
+    DLOG(INFO) << "File source filename " << filename_;
+    DLOG(INFO) << "Samples " << samples_;
+    DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
+    DLOG(INFO) << "Item type " << item_type_;
+    DLOG(INFO) << "Item size " << item_size_;
+    DLOG(INFO) << "Repeat " << repeat_;
+
+    DLOG(INFO) << "Dump " << dump_;
+    DLOG(INFO) << "Dump filename " << dump_filename_;
+
+    create_throttle();
+    create_valve();
+    create_sink();
+}
+
+
+std::tuple<size_t, bool> FileSourceBase::itemTypeToSize()
+{
+    auto is_complex_t = false;
     auto item_size = size_t(0);
 
     if (item_type_ == "gr_complex")
@@ -265,7 +265,7 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize() const
     else if (item_type_ == "ishort")
         {
             item_size = sizeof(int16_t);
-            is_complex = true;
+            is_complex_t = true;
         }
     else if (item_type_ == "byte")
         {
@@ -274,7 +274,7 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize() const
     else if (item_type_ == "ibyte")
         {
             item_size = sizeof(int8_t);
-            is_complex = true;
+            is_complex_t = true;
         }
     else
         {
@@ -283,7 +283,7 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize() const
             item_size = sizeof(gr_complex);
         }
 
-    return std::make_tuple(item_size, is_complex);
+    return std::make_tuple(item_size, is_complex_t);
 }
 
 // Default case is one decoded packet per one read sample
@@ -295,9 +295,17 @@ size_t FileSourceBase::samplesToSkip() const
 
     if (seconds_to_skip_ > 0)
         {
+	  // sampling_frequency is in terms of actual samples (output packets). If this source is
+	  // compressed, there may be multiple packets per file (read) sample. First compute the
+	  // actual number of samples to skip (function of time and sample rate)
             samples_to_skip = static_cast<size_t>(seconds_to_skip_ * sampling_frequency_);
 
-            if (is_complex_)
+	    // convert from sample to input items, scaling this value to input item space
+	    // (rounding up)
+	    samples_to_skip = std::ceil(samples_to_skip / packetsPerSample());
+    
+	    // complex inputs require two input items for one sample (arguably, packetsPerSample could be scaled by 0.5)
+            if (is_complex())
                 {
                     samples_to_skip *= 2;
                 }
@@ -360,6 +368,7 @@ size_t FileSourceBase::source_item_size() const
     DLOG(INFO) << "source_item_size is " << source()->output_signature()->sizeof_stream_item(0);
     return source()->output_signature()->sizeof_stream_item(0);
 }
+bool FileSourceBase::is_complex() const { return is_complex_; }
 
 // Simple accessors
 gnss_shared_ptr<gr::block> FileSourceBase::file_source() const { return file_source_; }

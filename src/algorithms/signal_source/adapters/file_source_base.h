@@ -79,9 +79,6 @@ public:
     //! the number of samples in the file
     uint64_t samples() const;
 
-    //! perform post-construction initialization
-    void init();
-
 protected:
     //! Constructor
     // Subclasses may want to assert default item types that are appropriate to the specific file
@@ -91,9 +88,12 @@ protected:
 		   Concurrent_Queue<pmt::pmt_t>* queue,
 		   std::string default_item_type="short");
 
+    //! perform post-construction initialization
+    void init();
+
     //! compute the item size, from the item_type(). Subclasses may constrain types that don't make
     //  sense. The return of this method is a tuple of item_size and is_complex
-    virtual std::tuple<size_t, bool> itemTypeToSize() const;
+    virtual std::tuple<size_t, bool> itemTypeToSize();
 
     //! the number of (possibly unpacked) samples in a (raw) file sample (default=1)
     virtual double packetsPerSample() const;
@@ -111,6 +111,7 @@ protected:
     //! for complex source chains, the size of the file item may not be the same as the size of the
     // "source" (decoded) item. This method allows subclasses to handle these differences
     virtual size_t source_item_size() const;
+    bool is_complex() const;
 
     //! generic access to created objects
     gnss_shared_ptr<gr::block> file_source() const;

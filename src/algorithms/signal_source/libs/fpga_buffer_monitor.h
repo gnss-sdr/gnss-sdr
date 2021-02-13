@@ -1,0 +1,94 @@
+/*!
+ * \file fpga_buffer_monitor.h
+ * \brief Check receiver buffer overflow and monitor the status of the receiver buffers.
+ * \authors <ul>
+ *          <li> Marc Majoral, 2021. mmajoral(at)cttc.es
+ *          </ul>
+ *
+ * Class that checks the receiver buffer overflow flags and monitors the status of the receiver buffers.
+ *
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
+
+#ifndef GNSS_SDR_FPGA_BUFFER_MONITOR_H
+#define GNSS_SDR_FPGA_BUFFER_MONITOR_H
+
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
+
+
+/*!
+ * \brief Class that checks the receiver buffer overflow flags and monitors the status of the receiver buffers.
+ */
+class Fpga_buffer_monitor
+{
+public:
+    /*!
+     * \brief Constructor
+     */
+    explicit Fpga_buffer_monitor(const std::string& device_name, uint32_t num_freq_bands);
+
+    /*!
+     * \brief Destructor
+     */
+    ~Fpga_buffer_monitor();
+
+    /*!
+     * \brief This function checks the status of the buffer overflow flags in the FPGA
+     */
+    void check_buffer_overflow(void);
+
+    /*!
+     * \brief This function monitors the FPGA buffer status
+     */
+    void monitor_buffer_status(void);
+
+private:
+    static const size_t FPGA_PAGE_SIZE = 0x10000;
+    static const uint32_t test_register_writeval = 0x55AA;
+    static const uint32_t num_sapmples_per_buffer_element = 2;
+    // write addresses
+    static const uint32_t reset_overflow_flags_and_max_buff_size_reg_addr = 0;
+    // read-write addresses
+    static const uint32_t test_reg_addr = 7;
+    // read addresses
+    static const uint32_t current_buff_occ_freq_band_0_reg_addr = 0;
+    static const uint32_t current_buff_occ_freq_band_1_reg_addr = 1;
+    static const uint32_t max_buff_occ_freq_band_0_reg_addr = 2;
+    static const uint32_t max_buff_occ_freq_band_1_reg_addr = 3;
+    static const uint32_t overflow_flags_reg_addr = 4;
+    // FPGA-related constants
+    static const uint32_t overflow_freq_band_0_bit_pos = 1;
+    static const uint32_t overflow_freq_band_1_bit_pos = 2;
+
+    int32_t buffer_monitor_test_register(void);
+    void close_device(void);
+
+    volatile unsigned* d_map_base;  // driver memory map corresponding to the FPGA buffer monitor
+    int d_device_descriptor;        // driver descriptor corresponding to the FPGA buffer monitor
+
+    uint32_t d_num_freq_bands;
+
+    uint32_t max_buff_occ_freq_band_0;
+    uint32_t max_buff_occ_freq_band_1;
+};
+
+
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_FPGA_BUFFER_MONITOR_H

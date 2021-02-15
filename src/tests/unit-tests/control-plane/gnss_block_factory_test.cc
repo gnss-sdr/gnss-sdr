@@ -24,11 +24,11 @@
 #include "concurrent_queue.h"
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
-#include "signal_source_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "in_memory_configuration.h"
 #include "observables_interface.h"
 #include "pvt_interface.h"
+#include "signal_source_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <gtest/gtest.h>
@@ -351,8 +351,8 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongPvt)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("PVT.implementation", "Pepito");
-    std::unique_ptr<GNSSBlockFactory> factory = std::make_unique<GNSSBlockFactory>();
-    std::shared_ptr<GNSSBlockInterface> pvt_ = factory->GetPVT(configuration.get());
+    auto factory = std::make_unique<GNSSBlockFactory>();
+    auto pvt_ = factory->GetPVT(configuration.get());
     std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_EQ(nullptr, pvt);
 }

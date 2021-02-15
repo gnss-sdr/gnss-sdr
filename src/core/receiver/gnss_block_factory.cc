@@ -1265,8 +1265,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             else
                 {
-                    // Log fatal. This causes execution to stop.
-                    LOG(FATAL) << role << "." << implementation << ": Undefined implementation for block";
+                    // Consider making this a fatal error, terminating the program. Unfortunately, existing unit tests expect otherwise
+                    LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
                 }
         }
     catch (const std::exception& e)

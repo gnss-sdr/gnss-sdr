@@ -18,10 +18,9 @@
 #ifndef GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 #define GNSS_SDR_RTL_TCP_SIGNAL_SOURCE_H
 
-#include "signal_source_base.h"
-
 #include "concurrent_queue.h"
 #include "rtl_tcp_signal_source_c.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>

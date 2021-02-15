@@ -20,10 +20,9 @@
 #define GNSS_SDR_GEN_SIGNAL_SOURCE_H
 
 
-#include "signal_source_interface.h"
-
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
+#include "signal_source_interface.h"
 #include <pmt/pmt.h>
 #include <memory>
 #include <string>
@@ -56,7 +55,7 @@ public:
     inline std::string implementation() override { return "Signal Source"; }
     inline size_t item_size() override { return 0; }
     inline size_t getRfChannels() const final { return 0; }
-    
+
     inline std::shared_ptr<GNSSBlockInterface> signal_generator() const { return signal_generator_; }
 
 private:

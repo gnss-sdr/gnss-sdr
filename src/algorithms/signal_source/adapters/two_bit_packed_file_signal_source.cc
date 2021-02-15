@@ -29,11 +29,10 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
     unsigned int in_streams,
     unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-  : FileSourceBase(configuration, role, "Two_Bit_Packed_File_Signal_Source"s, queue, "byte"s)
-  , sample_type_(configuration->property(role + ".sample_type", "real"s))  // options: "real", "iq", "qi"
-  , big_endian_items_(configuration->property(role + ".big_endian_items", true))
-  , big_endian_bytes_(configuration->property(role + ".big_endian_bytes", false))
-  , reverse_interleaving_(false)
+    : FileSourceBase(configuration, role, "Two_Bit_Packed_File_Signal_Source"s, queue, "byte"s), sample_type_(configuration->property(role + ".sample_type", "real"s)),  // options: "real", "iq", "qi"
+      big_endian_items_(configuration->property(role + ".big_endian_items", true)),
+      big_endian_bytes_(configuration->property(role + ".big_endian_bytes", false)),
+      reverse_interleaving_(false)
 {
     if (in_streams > 0)
         {

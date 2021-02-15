@@ -22,7 +22,6 @@
 #define GNSS_SDR_NSR_FILE_SIGNAL_SOURCE_H
 
 #include "file_source_base.h"
-
 #include "unpack_byte_2bit_samples.h"
 
 /** \addtogroup Signal_Source

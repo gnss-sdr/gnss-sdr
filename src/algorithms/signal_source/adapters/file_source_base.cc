@@ -175,31 +175,35 @@ uint64_t FileSourceBase::samples() const
 
 
 FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
-                               Concurrent_Queue<pmt::pmt_t>* queue,
-                               std::string default_item_type)
-    : SignalSourceBase(configuration, role, impl)
-    , filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s))
-    , file_source_()
+    Concurrent_Queue<pmt::pmt_t>* queue,
+    std::string default_item_type)
+    : SignalSourceBase(configuration, role, impl), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)), file_source_()
 
-    , item_type_(configuration->property(role + ".item_type"s, default_item_type))
-    , item_size_(0)  // invalid
-    , is_complex_(false)
+      ,
+      item_type_(configuration->property(role + ".item_type"s, default_item_type)),
+      item_size_(0)  // invalid
+      ,
+      is_complex_(false)
 
-    , header_size_(configuration->property(role + ".header_size"s, 0UL))
-    , seconds_to_skip_(configuration->property(role + ".seconds_to_skip", 0.0))
-    , repeat_(configuration->property(role + ".repeat"s, false))
+      ,
+      header_size_(configuration->property(role + ".header_size"s, 0UL)),
+      seconds_to_skip_(configuration->property(role + ".seconds_to_skip", 0.0)),
+      repeat_(configuration->property(role + ".repeat"s, false))
 
-    , samples_(configuration->property(role + ".samples"s, 0UL))
-    , sampling_frequency_(configuration->property(role + ".sampling_frequency"s, 0UL))
-    , valve_()
-    , queue_(queue)
+      ,
+      samples_(configuration->property(role + ".samples"s, 0UL)),
+      sampling_frequency_(configuration->property(role + ".sampling_frequency"s, 0UL)),
+      valve_(),
+      queue_(queue)
 
-    , enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false))
-    , throttle_()
+      ,
+      enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false)),
+      throttle_()
 
-    , dump_(configuration->property(role + ".dump"s, false))
-    , dump_filename_(configuration->property(role + ".dump_filename"s, "../data/my_capture.dat"s))
-    , sink_()
+      ,
+      dump_(configuration->property(role + ".dump"s, false)),
+      dump_filename_(configuration->property(role + ".dump_filename"s, "../data/my_capture.dat"s)),
+      sink_()
 {
     // override value with commandline flag, if present
     if (FLAGS_signal_source != "-")

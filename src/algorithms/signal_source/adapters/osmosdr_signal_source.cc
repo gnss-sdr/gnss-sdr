@@ -31,7 +31,7 @@ using namespace std::string_literals;
 OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue)
-  : SignalSourceBase(configuration, role, "Osmosdr_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
+    : SignalSourceBase(configuration, role, "Osmosdr_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     // DUMP PARAMETERS
     const std::string empty;

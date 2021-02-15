@@ -21,10 +21,9 @@
 #ifndef GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_SPIR_GSS6450_FILE_SIGNAL_SOURCE_H
 
-#include "signal_source_base.h"
-
 #include "concurrent_queue.h"
 #include "gnss_sdr_valve.h"
+#include "signal_source_base.h"
 #include "unpack_spir_gss6450_samples.h"
 #include <gnuradio/blocks/deinterleave.h>
 #include <gnuradio/blocks/endian_swap.h>

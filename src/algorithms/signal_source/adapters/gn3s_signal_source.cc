@@ -28,7 +28,7 @@ Gn3sSignalSource::Gn3sSignalSource(const ConfigurationInterface* configuration,
     unsigned int in_stream,
     unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue)
-  : SignalSourceBase(configuration, role, "Gn3s_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
+    : SignalSourceBase(configuration, role, "Gn3s_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_item_type("short");
     const std::string default_dump_file("./data/gn3s_source.dat");

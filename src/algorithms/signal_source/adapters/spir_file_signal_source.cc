@@ -24,7 +24,7 @@ using namespace std::string_literals;
 SpirFileSignalSource::SpirFileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-  : FileSourceBase(configuration, role, "Spir_File_Signal_Source"s, queue, "int"s)
+    : FileSourceBase(configuration, role, "Spir_File_Signal_Source"s, queue, "int"s)
 {
     if (in_streams > 0)
         {

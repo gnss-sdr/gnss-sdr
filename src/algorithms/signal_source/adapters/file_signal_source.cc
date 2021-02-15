@@ -24,7 +24,7 @@ using namespace std::string_literals;
 FileSignalSource::FileSignalSource(ConfigurationInterface const* configuration,
     std::string const& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-  : FileSourceBase(configuration, role, "File_Signal_Source"s, queue, "short"s)
+    : FileSourceBase(configuration, role, "File_Signal_Source"s, queue, "short"s)
 {
     if (in_streams > 0)
         {
@@ -35,5 +35,3 @@ FileSignalSource::FileSignalSource(ConfigurationInterface const* configuration,
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
-
-

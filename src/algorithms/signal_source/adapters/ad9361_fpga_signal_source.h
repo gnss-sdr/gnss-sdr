@@ -18,12 +18,11 @@
 #ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 
-#include "signal_source_base.h"
-
 #include "concurrent_queue.h"
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <memory>

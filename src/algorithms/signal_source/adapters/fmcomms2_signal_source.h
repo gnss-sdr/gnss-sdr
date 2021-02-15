@@ -21,7 +21,6 @@
 #define GNSS_SDR_FMCOMMS2_SIGNAL_SOURCE_H
 
 #include "signal_source_base.h"
-
 #include <gnuradio/blocks/file_sink.h>
 #if GRIIO_INCLUDE_HAS_GNURADIO
 #include <gnuradio/iio/fmcomms2_source.h>

@@ -21,10 +21,9 @@
 #ifndef GNSS_SDR_MULTICHANNEL_FILE_SIGNAL_SOURCE_H
 #define GNSS_SDR_MULTICHANNEL_FILE_SIGNAL_SOURCE_H
 
-#include "signal_source_base.h"
-
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>

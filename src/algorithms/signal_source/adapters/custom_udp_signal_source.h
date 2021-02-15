@@ -18,10 +18,9 @@
 #ifndef GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 #define GNSS_SDR_CUSTOM_UDP_SIGNAL_SOURCE_H
 
-#include "signal_source_base.h"
-
 #include "concurrent_queue.h"
 #include "gr_complex_ip_packet_source.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/null_sink.h>
 #include <pmt/pmt.h>

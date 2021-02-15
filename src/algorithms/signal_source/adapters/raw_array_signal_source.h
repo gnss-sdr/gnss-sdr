@@ -18,9 +18,8 @@
 #ifndef GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H
 #define GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H
 
-#include "signal_source_base.h"
-
 #include "concurrent_queue.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>

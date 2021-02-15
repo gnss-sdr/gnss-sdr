@@ -19,7 +19,6 @@
 #define GNSS_SDR_SIGNAL_SOURCE_BASE_H
 
 #include "signal_source_interface.h"
-
 #include <cstddef>
 #include <string>
 

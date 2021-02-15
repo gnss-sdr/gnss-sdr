@@ -231,7 +231,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
     auto role_resampler = findRole(configuration, "Resampler"s, ID);
 
     DLOG(INFO) << "role: " << role_conditioner << " (ID=" << ID << ")";
-    
+
     const std::string signal_conditioner = configuration->property(role_conditioner + impl_prop, ""s);
 
     const std::string data_type_adapter = configuration->property(role_datatypeadapter + impl_prop, ""s);

@@ -47,17 +47,19 @@ class SignalSourceInterface : public GNSSBlockInterface
 {
 public:
     virtual size_t getRfChannels() const = 0;
- protected:
-    SignalSourceInterface() {
-      VLOG(1) << "SignalSourceInterface: " << this << " ctor";
+
+protected:
+    SignalSourceInterface()
+    {
+        VLOG(1) << "SignalSourceInterface: " << this << " ctor";
     }
- public: // required for polymorphic destruction
-    ~SignalSourceInterface() {
-      VLOG(1) << "SignalSourceInterface: " << this << " dtor";
+
+public:  // required for polymorphic destruction
+    ~SignalSourceInterface()
+    {
+        VLOG(1) << "SignalSourceInterface: " << this << " dtor";
     }
 };
 
 
-
 #endif
-

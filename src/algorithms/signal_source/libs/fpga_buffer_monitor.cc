@@ -165,7 +165,7 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
 
     if (overflow_detected)
         {
-            LOG(INFO) << "Stopping receiver, FPGA buffer overflow detected.";
+            LOG(ERROR) << "Stopping receiver, FPGA buffer overflow detected.";
             d_queue->push(pmt::make_any(command_event_make(200, 0)));
         }
 
@@ -191,13 +191,13 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
             d_dump_file << buffer_time << " ";
 
             std::string buffer_txt;
-            // current buffer occupancy frequency band 0
+            // current buffer occupancy frequency band 0 (number of samples)
             buffer_txt = std::to_string(current_buff_occ_freq_band_0);
             d_dump_file << buffer_txt << " ";
-            // temporary maximum buffer occupancy frequency band 0
+            // temporary maximum buffer occupancy frequency band 0 (number of samples)
             buffer_txt = std::to_string(temp_max_buff_occ_freq_band_0);
             d_dump_file << buffer_txt << " ";
-            // maximum buffer occupancy frequency band 0
+            // maximum buffer occupancy frequency band 0 (number of samples)
             buffer_txt = std::to_string(d_max_buff_occ_freq_band_0);
             d_dump_file << buffer_txt;
 
@@ -211,13 +211,13 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
                             d_max_buff_occ_freq_band_1 = temp_max_buff_occ_freq_band_1;
                         }
 
-                    // current buffer occupancy frequency band 1
+                    // current buffer occupancy frequency band 1 (number of samples)
                     buffer_txt = std::to_string(current_buff_occ_freq_band_1);
                     d_dump_file << buffer_txt << " ";
-                    // temporary maximum buffer occupancy frequency band 1
+                    // temporary maximum buffer occupancy frequency band 1 (number of samples)
                     buffer_txt = std::to_string(temp_max_buff_occ_freq_band_1);
                     d_dump_file << buffer_txt << " ";
-                    // maximum buffer occupancy frequency band 1
+                    // maximum buffer occupancy frequency band 1 (number of samples)
                     buffer_txt = std::to_string(d_max_buff_occ_freq_band_1);
                     d_dump_file << buffer_txt << std::endl;
                 }

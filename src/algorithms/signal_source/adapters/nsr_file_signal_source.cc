@@ -24,7 +24,7 @@ using namespace std::string_literals;
 NsrFileSignalSource::NsrFileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-  : FileSourceBase(configuration, role, "Nsr_File_Signal_Source"s, queue, "byte"s)
+    : FileSourceBase(configuration, role, "Nsr_File_Signal_Source"s, queue, "byte"s)
 {
     if (in_streams > 0)
         {
@@ -39,7 +39,7 @@ NsrFileSignalSource::NsrFileSignalSource(const ConfigurationInterface* configura
 std::tuple<size_t, bool> NsrFileSignalSource::itemTypeToSize()
 {
     auto is_complex = false;
-    auto item_size = size_t(sizeof(char)); // default
+    auto item_size = size_t(sizeof(char));  // default
 
     if (item_type() == "byte")
         {
@@ -47,7 +47,7 @@ std::tuple<size_t, bool> NsrFileSignalSource::itemTypeToSize()
         }
     else
         {
-	  LOG(WARNING) << item_type() << " unrecognized item type. Using byte.";
+            LOG(WARNING) << item_type() << " unrecognized item type. Using byte.";
         }
 
     return std::make_tuple(item_size, is_complex);

@@ -175,8 +175,8 @@ uint64_t FileSourceBase::samples() const
 
 
 FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
-			       Concurrent_Queue<pmt::pmt_t>* queue,
-			       std::string default_item_type)
+                               Concurrent_Queue<pmt::pmt_t>* queue,
+                               std::string default_item_type)
     : SignalSourceBase(configuration, role, impl)
     , filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s))
     , file_source_()
@@ -295,16 +295,16 @@ size_t FileSourceBase::samplesToSkip() const
 
     if (seconds_to_skip_ > 0)
         {
-	  // sampling_frequency is in terms of actual samples (output packets). If this source is
-	  // compressed, there may be multiple packets per file (read) sample. First compute the
-	  // actual number of samples to skip (function of time and sample rate)
+            // sampling_frequency is in terms of actual samples (output packets). If this source is
+            // compressed, there may be multiple packets per file (read) sample. First compute the
+            // actual number of samples to skip (function of time and sample rate)
             samples_to_skip = static_cast<size_t>(seconds_to_skip_ * sampling_frequency_);
 
-	    // convert from sample to input items, scaling this value to input item space
-	    // (rounding up)
-	    samples_to_skip = std::ceil(samples_to_skip / packetsPerSample());
-    
-	    // complex inputs require two input items for one sample (arguably, packetsPerSample could be scaled by 0.5)
+            // convert from sample to input items, scaling this value to input item space
+            // (rounding up)
+            samples_to_skip = std::ceil(samples_to_skip / packetsPerSample());
+
+            // complex inputs require two input items for one sample (arguably, packetsPerSample could be scaled by 0.5)
             if (is_complex())
                 {
                     samples_to_skip *= 2;
@@ -330,7 +330,7 @@ size_t FileSourceBase::computeSamplesInFile() const
             // this could throw, but the existence of the file has been proven before we get here.
             auto size = fs::file_size(filename());
 
-	    // if there is some kind of compression/encoding, figure out the uncompressed number of samples
+            // if there is some kind of compression/encoding, figure out the uncompressed number of samples
             n_samples = std::floor(packetsPerSample() * size / item_size());
 
             auto to_skip = samplesToSkip();
@@ -479,4 +479,3 @@ void FileSourceBase::pre_connect_hook(gr::top_block_sptr top_block [[maybe_unuse
 void FileSourceBase::post_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
 void FileSourceBase::pre_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
 void FileSourceBase::post_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
-

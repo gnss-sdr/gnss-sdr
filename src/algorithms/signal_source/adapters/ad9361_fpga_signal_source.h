@@ -51,14 +51,6 @@ public:
 
     void start() override;
 
-    /*!
-     * \brief Returns "Ad9361_Fpga_Signal_Source"
-     */
-    inline std::string implementation() override
-    {
-        return ;
-    }
-
     inline size_t item_size() override
     {
         return item_size_;

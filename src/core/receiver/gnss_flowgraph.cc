@@ -1101,8 +1101,8 @@ int GNSSFlowgraph::disconnect_signal_sources_from_signal_conditioners()
         {
             try
                 {
-		    auto& src = sig_source_.at(i);
-		    
+                    auto& src = sig_source_.at(i);
+
                     // TODO: Remove this array implementation and create generic multistream connector
                     // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
                     if (src->implementation() == "Raw_Array_Signal_Source")
@@ -1115,7 +1115,7 @@ int GNSSFlowgraph::disconnect_signal_sources_from_signal_conditioners()
                         }
                     else
                         {
-			  auto RF_Channels = src->getRfChannels();
+                            auto RF_Channels = src->getRfChannels();
 
                             for (auto j = 0u; j < RF_Channels; ++j)
                                 {

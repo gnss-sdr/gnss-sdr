@@ -43,6 +43,7 @@
 #include "gps_utc_model.h"
 #include "gpx_printer.h"
 #include "kml_printer.h"
+#include "monitor_ephemeris_udp_sink.h"
 #include "monitor_pvt.h"
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
@@ -394,6 +395,22 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     else
         {
             d_udp_sink_ptr = nullptr;
+        }
+
+    // EPHEMERIS MONITOR
+    d_flag_monitor_ephemeris_enabled = conf_.monitor_ephemeris_enabled;
+    if (d_flag_monitor_ephemeris_enabled)
+        {
+            std::string address_string = conf_.udp_eph_addresses;
+            std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+            std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+            udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
+
+            d_eph_udp_sink_ptr = std::make_unique<Monitor_Ephemeris_Udp_Sink>(udp_addr_vec, conf_.udp_eph_port, conf_.protobuf_enabled);
+        }
+    else
+        {
+            d_eph_udp_sink_ptr = nullptr;
         }
 
     // Create Sys V message queue
@@ -1082,6 +1099,11 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     std::map<int32_t, Gps_Ephemeris> new_eph;
                                     new_eph[gps_eph->i_satellite_PRN] = *gps_eph;
                                     d_rp->log_rinex_nav_gps_nav(d_type_of_rx, new_eph);
+                                    //send the new eph to the eph monitor (if enabled)
+                                    if (d_flag_monitor_ephemeris_enabled)
+                                        {
+                                            d_eph_udp_sink_ptr->write_gps_ephemeris(gps_eph);
+                                        }
                                 }
                         }
                     d_internal_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;

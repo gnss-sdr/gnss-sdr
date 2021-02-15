@@ -52,6 +52,7 @@ class Gps_Ephemeris;
 class Gpx_Printer;
 class Kml_Printer;
 class Monitor_Pvt_Udp_Sink;
+class Monitor_Ephemeris_Udp_Sink;
 class Nmea_Printer;
 class Pvt_Conf;
 class Rinex_Printer;
@@ -168,6 +169,7 @@ private:
     std::unique_ptr<GeoJSON_Printer> d_geojson_printer;
     std::unique_ptr<Rtcm_Printer> d_rtcm_printer;
     std::unique_ptr<Monitor_Pvt_Udp_Sink> d_udp_sink_ptr;
+    std::unique_ptr<Monitor_Ephemeris_Udp_Sink> d_eph_udp_sink_ptr;
 
     std::chrono::time_point<std::chrono::system_clock> d_start;
     std::chrono::time_point<std::chrono::system_clock> d_end;
@@ -260,6 +262,7 @@ private:
     bool d_first_fix;
     bool d_xml_storage;
     bool d_flag_monitor_pvt_enabled;
+    bool d_flag_monitor_ephemeris_enabled;
     bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;

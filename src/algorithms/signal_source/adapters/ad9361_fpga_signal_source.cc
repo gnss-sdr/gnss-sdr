@@ -113,7 +113,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     std::cout << "Sample rate: " << sample_rate_ << " Sps\n";
 
-    enable_ovf_check_buffer_monitor_ = 0;  // check buffer overflow and buffer monitor disabled by default
+    enable_ovf_check_buffer_monitor_active_ = false;  // check buffer overflow and buffer monitor disabled by default
 
     if (switch_position_ == 0)  // Inject file(s) via DMA
         {
@@ -295,11 +295,14 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                         }
                 }
 
-            // when the receiver is working in real-time mode via AD9361 perform buffer overflow checking and buffer monitoring
-            enable_ovf_check_buffer_monitor_ = 1;
-            enable_buffer_monitor_ = configuration->property(role + ".enable_buffer_monitor", false);  // only buffer overflow checking by default
+            // when the receiver is working in real-time mode via AD9361 perform buffer overflow checking,
+            // and if dump is enabled perform buffer monitoring
+            enable_ovf_check_buffer_monitor_active_ = true;
 
             std::string device_io_name_buffer_monitor;
+
+            dump_ = configuration->property(role + ".dump", false);
+            std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
 
             // find the uio device file corresponding to the buffer monitor
             if (find_uio_dev_file_name(device_io_name_buffer_monitor, buffer_monitor_device_name, 0) < 0)
@@ -309,7 +312,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                 }
 
             uint32_t num_freq_bands = (freq_band.compare("L1L2")) ? 1 : 2;
-            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands);
+            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands, dump_, dump_filename);
             thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
         }
 
@@ -385,7 +388,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 
             // disable buffer overflow checking and buffer monitoring
             std::unique_lock<std::mutex> lock(buffer_monitor_mutex);
-            enable_ovf_check_buffer_monitor_ = false;
+            enable_ovf_check_buffer_monitor_active_ = false;
             lock.unlock();
 
             if (thread_buffer_monitor.joinable())
@@ -683,14 +686,10 @@ void Ad9361FpgaSignalSource::run_buffer_monitor_process()
 
     while (enable_ovf_check_buffer_monitor_active)
         {
-            buffer_monitor_fpga->check_buffer_overflow();
-            if (enable_buffer_monitor_)
-                {
-                    buffer_monitor_fpga->monitor_buffer_status();
-                }
+            buffer_monitor_fpga->check_buffer_overflow_and_monitor_buffer_status();
             std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));
             std::unique_lock<std::mutex> lock(buffer_monitor_mutex);
-            if (enable_ovf_check_buffer_monitor_ == false)
+            if (enable_ovf_check_buffer_monitor_active_ == false)
                 {
                     enable_ovf_check_buffer_monitor_active = false;
                 }

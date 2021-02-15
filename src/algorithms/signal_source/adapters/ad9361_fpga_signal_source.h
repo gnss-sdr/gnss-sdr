@@ -77,7 +77,7 @@ private:
     const std::string switch_device_name = "AXIS_Switch_v1_0_0";          // Switch UIO device name
     const std::string dyn_bit_sel_device_name = "dynamic_bits_selector";  // Switch dhnamic bit selector device name
     const std::string buffer_monitor_device_name = "buffer_monitor";      // buffer monitor device name
-
+    const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
     // perform dynamic bit selection every 500 ms by default
     static const uint32_t Gain_control_period_ms = 500;
     // check buffer overflow and perform buffer monitoring every 1s by default
@@ -146,8 +146,9 @@ private:
     bool rx2_enable_;
     bool enable_DMA_;
     bool enable_dynamic_bit_selection_;
-    bool enable_buffer_monitor_;
+    bool enable_ovf_check_buffer_monitor_active_;
     bool enable_ovf_check_buffer_monitor_;
+    bool dump_;
     bool rf_shutdown_;
 };
 

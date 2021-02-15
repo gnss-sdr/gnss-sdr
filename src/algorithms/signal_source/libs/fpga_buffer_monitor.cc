@@ -20,14 +20,20 @@
  */
 
 #include "fpga_buffer_monitor.h"
+#include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include <glog/logging.h>
+#include <ctime>       // for time, localtime
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
+#include <fstream>     // for string, ofstream
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
 
-Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands)
+Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename)
 {
     d_num_freq_bands = num_freq_bands;
+    d_dump = dump;
+    d_dump_filename = dump_filename;
 
     // open device descriptor
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
@@ -59,18 +65,82 @@ Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_
     DLOG(INFO) << "FPGA buffer monitor class created";
 
     // initialize maximum buffer occupancy in case buffer monitoring is enabled
-    max_buff_occ_freq_band_0 = 0;
-    max_buff_occ_freq_band_1 = 0;
+    d_max_buff_occ_freq_band_0 = 0;
+    d_max_buff_occ_freq_band_1 = 0;
+
+    if (d_dump)
+        {
+            std::string dump_path;
+            // Get path
+            if (d_dump_filename.find_last_of('/') != std::string::npos)
+                {
+                    const std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
+                    dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
+                    d_dump_filename = dump_filename_;
+                }
+            else
+                {
+                    dump_path = std::string(".");
+                }
+            if (d_dump_filename.empty())
+                {
+                    d_dump_filename = "FPGA_buffer_monitor";
+                }
+            // remove extension if any
+            if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
+                {
+                    d_dump_filename = d_dump_filename.substr(0, d_dump_filename.find_last_of('.'));
+                }
+            d_dump_filename = dump_path + fs::path::preferred_separator + d_dump_filename;
+            // create directory
+            if (!gnss_sdr_create_directory(dump_path))
+                {
+                    std::cerr << "GNSS-SDR cannot create dump file for the Buffer Monitor block. Wrong permissions?\n";
+                    d_dump = false;
+                }
+
+            std::string dump_filename_ = d_dump_filename;
+            dump_filename_.append(".dat");
+
+            if (!d_dump_file.is_open())
+                {
+                    try
+                        {
+                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.open(dump_filename_.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "FPGA buffer monitor dump enabled. Log file: " << dump_filename_.c_str();
+                        }
+                    catch (const std::ifstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception opening FPGA buffer monitor dump file " << e.what();
+                        }
+                }
+        }
 }
 
 
 Fpga_buffer_monitor::~Fpga_buffer_monitor()
 {
     close_device();
+
+    if (d_dump)
+        {
+            if (d_dump_file.is_open())
+                {
+                    try
+                        {
+                            d_dump_file.close();
+                        }
+                    catch (const std::exception &ex)
+                        {
+                            LOG(WARNING) << "Exception in FPGA buffer monitor destructor: " << ex.what();
+                        }
+                }
+        }
 }
 
 
-void Fpga_buffer_monitor::check_buffer_overflow()
+void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
 {
     // check buffer overflow flags
     uint32_t buffer_overflow_status = d_map_base[overflow_flags_reg_addr];
@@ -89,32 +159,57 @@ void Fpga_buffer_monitor::check_buffer_overflow()
                     throw std::exception();
                 }
         }
-}
 
-
-void Fpga_buffer_monitor::monitor_buffer_status(void)
-{
-    uint32_t current_buff_occ_freq_band_0 = d_map_base[current_buff_occ_freq_band_0_reg_addr] * num_sapmples_per_buffer_element;
-    uint32_t temp_max_buff_occ_freq_band_0 = d_map_base[max_buff_occ_freq_band_0_reg_addr] * num_sapmples_per_buffer_element;
-    if (temp_max_buff_occ_freq_band_0 > max_buff_occ_freq_band_0)
+    if (d_dump == 1)
         {
-            max_buff_occ_freq_band_0 = temp_max_buff_occ_freq_band_0;
-        }
-    std::cout << "current buffer occupancy frequency band 0 = " << current_buff_occ_freq_band_0 << " samples " << std::endl;
-    std::cout << "temporary maximum buffer occupancy frequency band 0 = " << temp_max_buff_occ_freq_band_0 << " samples " << std::endl;
-    std::cout << "maximum buffer occupancy frequency band 0 = " << max_buff_occ_freq_band_0 << " samples " << std::endl;
-
-    if (d_num_freq_bands > 1)
-        {
-            uint32_t current_buff_occ_freq_band_1 = d_map_base[current_buff_occ_freq_band_1_reg_addr] * num_sapmples_per_buffer_element;
-            uint32_t temp_max_buff_occ_freq_band_1 = d_map_base[max_buff_occ_freq_band_1_reg_addr] * num_sapmples_per_buffer_element;
-            if (temp_max_buff_occ_freq_band_1 > max_buff_occ_freq_band_1)
+            uint32_t current_buff_occ_freq_band_0 = d_map_base[current_buff_occ_freq_band_0_reg_addr] * num_sapmples_per_buffer_element;
+            uint32_t temp_max_buff_occ_freq_band_0 = d_map_base[max_buff_occ_freq_band_0_reg_addr] * num_sapmples_per_buffer_element;
+            if (temp_max_buff_occ_freq_band_0 > d_max_buff_occ_freq_band_0)
                 {
-                    max_buff_occ_freq_band_1 = temp_max_buff_occ_freq_band_1;
+                    d_max_buff_occ_freq_band_0 = temp_max_buff_occ_freq_band_0;
                 }
-            std::cout << "current buffer occupancy frequency band 1 = " << current_buff_occ_freq_band_1 << " samples " << std::endl;
-            std::cout << "temporary maximum buffer occupancy frequency band 1 = " << temp_max_buff_occ_freq_band_1 << " samples " << std::endl;
-            std::cout << "maximum buffer occupancy frequency band 1 = " << max_buff_occ_freq_band_1 << " samples " << std::endl;
+
+            time_t rawtime;
+            struct tm *timeinfo;
+            char buff_time_ch[80];
+
+            time(&rawtime);
+            timeinfo = localtime(&rawtime);
+
+            strftime(buff_time_ch, sizeof(buff_time_ch), "%d-%m-%Y %H:%M:%S", timeinfo);
+            std::string buffer_time(buff_time_ch);
+            d_dump_file << buffer_time << std::endl;
+
+            std::string buffer_txt;
+            // current buffer occupancy frequency band 0
+            buffer_txt = std::to_string(current_buff_occ_freq_band_0);
+            d_dump_file << buffer_txt << std::endl;
+            // temporary maximum buffer occupancy frequency band 0
+            buffer_txt = std::to_string(temp_max_buff_occ_freq_band_0);
+            d_dump_file << buffer_txt << std::endl;
+            // maximum buffer occupancy frequency band 0
+            buffer_txt = std::to_string(d_max_buff_occ_freq_band_0);
+            d_dump_file << buffer_txt << std::endl;
+
+            if (d_num_freq_bands > 1)
+                {
+                    uint32_t current_buff_occ_freq_band_1 = d_map_base[current_buff_occ_freq_band_1_reg_addr] * num_sapmples_per_buffer_element;
+                    uint32_t temp_max_buff_occ_freq_band_1 = d_map_base[max_buff_occ_freq_band_1_reg_addr] * num_sapmples_per_buffer_element;
+                    if (temp_max_buff_occ_freq_band_1 > d_max_buff_occ_freq_band_1)
+                        {
+                            d_max_buff_occ_freq_band_1 = temp_max_buff_occ_freq_band_1;
+                        }
+
+                    // current buffer occupancy frequency band 1
+                    buffer_txt = std::to_string(current_buff_occ_freq_band_1);
+                    d_dump_file << buffer_txt << std::endl;
+                    // temporary maximum buffer occupancy frequency band 1
+                    buffer_txt = std::to_string(temp_max_buff_occ_freq_band_1);
+                    d_dump_file << buffer_txt << std::endl;
+                    // maximum buffer occupancy frequency band 1
+                    buffer_txt = std::to_string(d_max_buff_occ_freq_band_1);
+                    d_dump_file << buffer_txt << std::endl;
+                }
         }
 }
 

@@ -92,6 +92,13 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     endif()
 endif()
 
+if(ENABLE_FPGA OR ENABLE_AD9361)
+    target_link_libraries(signal_source_libs
+        PUBLIC
+            algorithms_libs
+        )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_libs

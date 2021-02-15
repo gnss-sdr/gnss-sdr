@@ -13,7 +13,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -22,8 +22,8 @@
 #ifndef GNSS_SDR_FPGA_BUFFER_MONITOR_H
 #define GNSS_SDR_FPGA_BUFFER_MONITOR_H
 
-#include <cstdint>
-#include <string>
+#include <cstdint>  // for int32_t
+#include <fstream>  // for string, ofstream
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -40,7 +40,7 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_buffer_monitor(const std::string& device_name, uint32_t num_freq_bands);
+    explicit Fpga_buffer_monitor(const std::string& device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename);
 
     /*!
      * \brief Destructor
@@ -48,14 +48,9 @@ public:
     ~Fpga_buffer_monitor();
 
     /*!
-     * \brief This function checks the status of the buffer overflow flags in the FPGA
+     * \brief This function checks buffer overflow and monitors the FPGA buffer status
      */
-    void check_buffer_overflow(void);
-
-    /*!
-     * \brief This function monitors the FPGA buffer status
-     */
-    void monitor_buffer_status(void);
+    void check_buffer_overflow_and_monitor_buffer_status(void);
 
 private:
     static const size_t FPGA_PAGE_SIZE = 0x10000;
@@ -83,8 +78,12 @@ private:
 
     uint32_t d_num_freq_bands;
 
-    uint32_t max_buff_occ_freq_band_0;
-    uint32_t max_buff_occ_freq_band_1;
+    uint32_t d_max_buff_occ_freq_band_0;
+    uint32_t d_max_buff_occ_freq_band_1;
+
+    bool d_dump;
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
 };
 
 

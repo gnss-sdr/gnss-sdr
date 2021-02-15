@@ -20,6 +20,7 @@
  */
 
 #include "fpga_buffer_monitor.h"
+#include "command_event.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include <glog/logging.h>
@@ -29,11 +30,12 @@
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
 
-Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename)
+Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename, Concurrent_Queue<pmt::pmt_t> *queue)
 {
     d_num_freq_bands = num_freq_bands;
     d_dump = dump;
     d_dump_filename = dump_filename;
+    d_queue = queue;
 
     // open device descriptor
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
@@ -143,23 +145,31 @@ Fpga_buffer_monitor::~Fpga_buffer_monitor()
 void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
 {
     // check buffer overflow flags
+    bool overflow_detected = false;
     uint32_t buffer_overflow_status = d_map_base[overflow_flags_reg_addr];
 
     if ((buffer_overflow_status & overflow_freq_band_0_bit_pos) != 0)
         {
+            overflow_detected = true;
             std::cout << "Buffer overflow in frequency band 0" << std::endl;
-            throw std::exception();
         }
 
     if (d_num_freq_bands > 1)
         {
             if ((buffer_overflow_status & overflow_freq_band_1_bit_pos) != 0)
                 {
+                    overflow_detected = true;
                     std::cout << "Buffer overflow in frequency band 1" << std::endl;
-                    throw std::exception();
                 }
         }
 
+    if (overflow_detected)
+        {
+            LOG(INFO) << "Stopping receiver, FPGA buffer overflow detected.";
+            d_queue->push(pmt::make_any(command_event_make(200, 0)));
+        }
+
+    // buffer monitor
     if (d_dump == 1)
         {
             uint32_t current_buff_occ_freq_band_0 = d_map_base[current_buff_occ_freq_band_0_reg_addr] * num_sapmples_per_buffer_element;
@@ -178,21 +188,22 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
 
             strftime(buff_time_ch, sizeof(buff_time_ch), "%d-%m-%Y %H:%M:%S", timeinfo);
             std::string buffer_time(buff_time_ch);
-            d_dump_file << buffer_time << std::endl;
+            d_dump_file << buffer_time << " ";
 
             std::string buffer_txt;
             // current buffer occupancy frequency band 0
             buffer_txt = std::to_string(current_buff_occ_freq_band_0);
-            d_dump_file << buffer_txt << std::endl;
+            d_dump_file << buffer_txt << " ";
             // temporary maximum buffer occupancy frequency band 0
             buffer_txt = std::to_string(temp_max_buff_occ_freq_band_0);
-            d_dump_file << buffer_txt << std::endl;
+            d_dump_file << buffer_txt << " ";
             // maximum buffer occupancy frequency band 0
             buffer_txt = std::to_string(d_max_buff_occ_freq_band_0);
-            d_dump_file << buffer_txt << std::endl;
+            d_dump_file << buffer_txt;
 
             if (d_num_freq_bands > 1)
                 {
+                    d_dump_file << " ";
                     uint32_t current_buff_occ_freq_band_1 = d_map_base[current_buff_occ_freq_band_1_reg_addr] * num_sapmples_per_buffer_element;
                     uint32_t temp_max_buff_occ_freq_band_1 = d_map_base[max_buff_occ_freq_band_1_reg_addr] * num_sapmples_per_buffer_element;
                     if (temp_max_buff_occ_freq_band_1 > d_max_buff_occ_freq_band_1)
@@ -202,13 +213,17 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
 
                     // current buffer occupancy frequency band 1
                     buffer_txt = std::to_string(current_buff_occ_freq_band_1);
-                    d_dump_file << buffer_txt << std::endl;
+                    d_dump_file << buffer_txt << " ";
                     // temporary maximum buffer occupancy frequency band 1
                     buffer_txt = std::to_string(temp_max_buff_occ_freq_band_1);
-                    d_dump_file << buffer_txt << std::endl;
+                    d_dump_file << buffer_txt << " ";
                     // maximum buffer occupancy frequency band 1
                     buffer_txt = std::to_string(d_max_buff_occ_freq_band_1);
                     d_dump_file << buffer_txt << std::endl;
+                }
+            else
+                {
+                    d_dump_file << std::endl;
                 }
         }
 }

@@ -312,7 +312,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                 }
 
             uint32_t num_freq_bands = (freq_band.compare("L1L2")) ? 1 : 2;
-            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands, dump_, dump_filename);
+            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands, dump_, dump_filename, queue);
             thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
         }
 

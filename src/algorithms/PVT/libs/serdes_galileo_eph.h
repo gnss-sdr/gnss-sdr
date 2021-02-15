@@ -74,12 +74,13 @@ public:
         return *this;
     }
 
-    inline std::string createProtobuffer(const Galileo_Ephemeris* const monitor)  //!< Serialization into a string
+    inline std::string createProtobuffer(const std::shared_ptr<Galileo_Ephemeris> monitor)  //!< Serialization into a string
     {
         monitor_.Clear();
 
         std::string data;
 
+        monitor_.set_i_satellite_prn(monitor->i_satellite_PRN);
         monitor_.set_iod_ephemeris(monitor->IOD_ephemeris);
         monitor_.set_iod_nav_1(monitor->IOD_nav_1);
         monitor_.set_m0_1(monitor->M0_1);                //!< Mean anomaly at reference time [semi-circles]
@@ -132,6 +133,7 @@ public:
     {
         Galileo_Ephemeris monitor;
 
+        monitor.i_satellite_PRN = mon.i_satellite_prn();
 
         monitor.IOD_ephemeris = mon.iod_ephemeris();
         monitor.IOD_nav_1 = mon.iod_nav_1();

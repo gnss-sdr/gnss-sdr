@@ -38,7 +38,7 @@ Monitor_Ephemeris_Udp_Sink::Monitor_Ephemeris_Udp_Sink(const std::vector<std::st
 }
 
 
-bool Monitor_Ephemeris_Udp_Sink::write_galileo_ephemeris(const Galileo_Ephemeris* const monitor_gal_eph)
+bool Monitor_Ephemeris_Udp_Sink::write_galileo_ephemeris(const std::shared_ptr<Galileo_Ephemeris> monitor_gal_eph)
 {
     std::string outbound_data;
     if (use_protobuf == false)

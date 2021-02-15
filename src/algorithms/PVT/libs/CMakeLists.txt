@@ -61,7 +61,7 @@ if(USE_CMAKE_TARGET_SOURCES)
     )
 else()
     source_group(Headers FILES ${PVT_LIB_HEADERS} ${PROTO_HDRS} ${PROTO_HDRS2} ${PROTO_HDRS3})
-    add_library(pvt_libs ${PVT_LIB_SOURCES} ${PROTO_SRCS} ${PVT_LIB_HEADERS} ${PROTO_HDRS} ${PROTO_HDRS2} ${PROTO_HDRS3})
+    add_library(pvt_libs ${PVT_LIB_SOURCES} ${PROTO_SRCS} ${PROTO_SRCS2} ${PROTO_SRCS3} ${PVT_LIB_HEADERS} ${PROTO_HDRS} ${PROTO_HDRS2} ${PROTO_HDRS3})
 endif()
 
 target_link_libraries(pvt_libs

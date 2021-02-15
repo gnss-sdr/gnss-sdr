@@ -50,4 +50,6 @@ message MonitorGalileoEphemeris {
 
     double BGD_E1E5a_5=34;  //!< E1-E5a Broadcast Group Delay [s]
     double BGD_E1E5b_5=35;  //!< E1-E5b Broadcast Group Delay [s]
+    
+    int32 i_satellite_PRN=36; //!< SV PRN NUMBER
 }

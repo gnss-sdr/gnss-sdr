@@ -1099,11 +1099,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     std::map<int32_t, Gps_Ephemeris> new_eph;
                                     new_eph[gps_eph->i_satellite_PRN] = *gps_eph;
                                     d_rp->log_rinex_nav_gps_nav(d_type_of_rx, new_eph);
-                                    //send the new eph to the eph monitor (if enabled)
-                                    if (d_flag_monitor_ephemeris_enabled)
-                                        {
-                                            d_eph_udp_sink_ptr->write_gps_ephemeris(gps_eph);
-                                        }
+                                }
+                            // todo: Send only new sets of ephemeris (new TOE), not sent to the client
+                            // send the new eph to the eph monitor (if enabled)
+                            if (d_flag_monitor_ephemeris_enabled)
+                                {
+                                    d_eph_udp_sink_ptr->write_gps_ephemeris(gps_eph);
                                 }
                         }
                     d_internal_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
@@ -1232,6 +1233,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     std::map<int32_t, Galileo_Ephemeris> new_gal_eph;
                                     new_gal_eph[galileo_eph->i_satellite_PRN] = *galileo_eph;
                                     d_rp->log_rinex_nav_gal_nav(d_type_of_rx, new_gal_eph);
+                                }
+                            // todo: Send only new sets of ephemeris (new TOE), not sent to the client
+                            // send the new eph to the eph monitor (if enabled)
+                            if (d_flag_monitor_ephemeris_enabled)
+                                {
+                                    d_eph_udp_sink_ptr->write_galileo_ephemeris(galileo_eph);
                                 }
                         }
                     d_internal_pvt_solver->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;

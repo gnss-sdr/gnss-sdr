@@ -44,7 +44,7 @@ class Monitor_Ephemeris_Udp_Sink
 public:
     Monitor_Ephemeris_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool protobuf_enabled);
     bool write_gps_ephemeris(const std::shared_ptr<Gps_Ephemeris> monitor_gps_eph);
-    bool write_galileo_ephemeris(const Galileo_Ephemeris* const monitor_gal_eph);
+    bool write_galileo_ephemeris(const std::shared_ptr<Galileo_Ephemeris> monitor_gal_eph);
 
 
 private:

@@ -98,22 +98,24 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             throw std::exception();
         }
 
-    switch_position = configuration->property(role + ".switch_position", 0);
-    if (switch_position != 0 && switch_position != 2)
+    switch_position_ = configuration->property(role + ".switch_position", 0);
+    if (switch_position_ != 0 && switch_position_ != 2)
         {
             std::cout << "SignalSource.switch_position configuration parameter must be either 0: read from file(s) via DMA, or 2: read from AD9361\n";
             std::cout << "SignalSource.switch_position configuration parameter set to its default value switch_position=0 - read from file(s)\n";
-            switch_position = 0;
+            switch_position_ = 0;
         }
 
     switch_fpga = std::make_shared<Fpga_Switch>(device_io_name);
-    switch_fpga->set_switch_position(switch_position);
+    switch_fpga->set_switch_position(switch_position_);
 
     item_size_ = sizeof(gr_complex);
 
     std::cout << "Sample rate: " << sample_rate_ << " Sps\n";
 
-    if (switch_position == 0)  // Inject file(s) via DMA
+    enable_ovf_check_buffer_monitor_active_ = false;  // check buffer overflow and buffer monitor disabled by default
+
+    if (switch_position_ == 0)  // Inject file(s) via DMA
         {
             enable_DMA_ = true;
             const std::string empty_string;
@@ -154,7 +156,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     freq_band = "L1L2";
                 }
         }
-    if (switch_position == 2)  // Real-time via AD9361
+    if (switch_position_ == 2)  // Real-time via AD9361
         {
             // some basic checks
             if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
@@ -292,6 +294,26 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                             std::cout << "Exception cached when configuring the TX carrier: " << e.what() << '\n';
                         }
                 }
+
+            // when the receiver is working in real-time mode via AD9361 perform buffer overflow checking,
+            // and if dump is enabled perform buffer monitoring
+            enable_ovf_check_buffer_monitor_active_ = true;
+
+            std::string device_io_name_buffer_monitor;
+
+            dump_ = configuration->property(role + ".dump", false);
+            std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
+
+            // find the uio device file corresponding to the buffer monitor
+            if (find_uio_dev_file_name(device_io_name_buffer_monitor, buffer_monitor_device_name, 0) < 0)
+                {
+                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << buffer_monitor_device_name << std::endl;
+                    throw std::exception();
+                }
+
+            uint32_t num_freq_bands = (freq_band.compare("L1L2")) ? 1 : 2;
+            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands, dump_, dump_filename, queue);
+            thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
         }
 
     // dynamic bits selection
@@ -331,7 +353,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 {
     /* cleanup and exit */
-    if (switch_position == 0)  // read samples from a file via DMA
+    if (switch_position_ == 0)  // read samples from a file via DMA
         {
             std::unique_lock<std::mutex> lock(dma_mutex);
             enable_DMA_ = false;  // disable the DMA
@@ -342,7 +364,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
                 }
         }
 
-    if (switch_position == 2)  // Real-time via AD9361
+    if (switch_position_ == 2)  // Real-time via AD9361
         {
             if (rf_shutdown_)
                 {
@@ -362,6 +384,16 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
                                     LOG(WARNING) << "Problem shutting down the AD9361 TX stream: " << e.what();
                                 }
                         }
+                }
+
+            // disable buffer overflow checking and buffer monitoring
+            std::unique_lock<std::mutex> lock(buffer_monitor_mutex);
+            enable_ovf_check_buffer_monitor_active_ = false;
+            lock.unlock();
+
+            if (thread_buffer_monitor.joinable())
+                {
+                    thread_buffer_monitor.join();
                 }
         }
 
@@ -641,6 +673,25 @@ void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process()
             if (enable_dynamic_bit_selection_ == false)
                 {
                     dynamic_bit_selection_active = false;
+                }
+            lock.unlock();
+        }
+}
+
+void Ad9361FpgaSignalSource::run_buffer_monitor_process()
+{
+    bool enable_ovf_check_buffer_monitor_active = true;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitoring_initial_delay_ms));
+
+    while (enable_ovf_check_buffer_monitor_active)
+        {
+            buffer_monitor_fpga->check_buffer_overflow_and_monitor_buffer_status();
+            std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));
+            std::unique_lock<std::mutex> lock(buffer_monitor_mutex);
+            if (enable_ovf_check_buffer_monitor_active_ == false)
+                {
+                    enable_ovf_check_buffer_monitor_active = false;
                 }
             lock.unlock();
         }

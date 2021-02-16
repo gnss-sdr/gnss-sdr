@@ -1,15 +1,15 @@
 /*!
- * \file serdes_monitor_pvt.h
- * \brief Serialization / Deserialization of Monitor_Pvt objects using
+ * \file serdes_gps_eph.h
+ * \brief Serialization / Deserialization of Gps_Ephemeris objects using
  * Protocol Buffers
- * \author Carles Fernandez-Prades, 2019. cfernandez(at)cttc.es
+ * \author Javier Arribas, 2021. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -32,7 +32,7 @@
 
 /*!
  * \brief This class implements serialization and deserialization of
- * Monitor_Pvt objects using Protocol Buffers.
+ * Gps_Ephemeris objects using Protocol Buffers.
  */
 class Serdes_Gps_Eph
 {

@@ -1,22 +1,22 @@
 /*!
- * \file serdes_monitor_pvt.h
- * \brief Serialization / Deserialization of Monitor_Pvt objects using
+ * \file serdes_galileo_eph.h
+ * \brief Serialization / Deserialization of Galileo_Ephemeris objects using
  * Protocol Buffers
- * \author Carles Fernandez-Prades, 2019. cfernandez(at)cttc.es
+ * \author Javier Arribas, 2021. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_SERDESGAL_EPH_H
-#define GNSS_SDR_SERDESGAL_EPH_H
+#ifndef GNSS_SDR_SERDES_GALILEO_EPH_H
+#define GNSS_SDR_SERDES_GALILEO_EPH_H
 
 #include "galileo_ephemeris.h"
 #include "monitor_galileo_ephemeris.pb.h"  // file created by Protocol Buffers at compile time
@@ -32,7 +32,7 @@
 
 /*!
  * \brief This class implements serialization and deserialization of
- * Monitor_Pvt objects using Protocol Buffers.
+ * Galileo_Ephemeris using Protocol Buffers.
  */
 class Serdes_Galileo_Eph
 {
@@ -189,4 +189,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_SERDESGAL_EPH_H
+#endif  // GGNSS_SDR_SERDES_GALILEO_EPH_H

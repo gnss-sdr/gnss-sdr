@@ -200,7 +200,7 @@ auto findRole(ConfigurationInterface const* configuration, std::string const& ba
     if (ID < 1)
         {
             auto stub = configuration->property(role + impl_prop, ""s);
-            if (stub.empty()) { role = base; }  // NOLINT  -- legacy format
+            if (stub.empty()) role = base;  // NOLINT  -- legacy format
         }
     return role;
 };

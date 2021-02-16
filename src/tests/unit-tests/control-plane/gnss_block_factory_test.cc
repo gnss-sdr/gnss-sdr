@@ -352,7 +352,7 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongPvt)
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("PVT.implementation", "Pepito");
     auto factory = std::make_unique<GNSSBlockFactory>();
-    auto pvt_ = factory->GetPVT(configuration.get());
-    std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
+    std::shared_ptr<GNSSBlockInterface> pvt_ = factory->GetPVT(configuration.get());
+    auto pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_EQ(nullptr, pvt);
 }

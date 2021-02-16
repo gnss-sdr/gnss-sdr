@@ -18,6 +18,7 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <cmath>  // ceil, floor

@@ -36,6 +36,9 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   asking them to sign the CLA document).
 - Improved handling of change in GNU Radio 3.9 FFT API.
 - Improved handling of the filesystem library.
+- Added an abstract class `SignalSourceInterface` and a common base class
+  `SignalSourceBase`, which allow to remove a lot of duplicated code in Signal
+  Source blocks, and further abstract file-based interfaces behind them.
 - Do not apply clang-tidy fixes to protobuf-generated headers.
 - Refactored private implementation of flow graph connection and disconnection
   for improved source code readability.

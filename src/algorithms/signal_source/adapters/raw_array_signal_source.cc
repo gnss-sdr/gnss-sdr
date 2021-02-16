@@ -17,6 +17,7 @@
 #include "raw_array_signal_source.h"
 #include "concurrent_queue.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <pmt/pmt.h>

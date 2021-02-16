@@ -22,6 +22,7 @@
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <algorithm>  // for max

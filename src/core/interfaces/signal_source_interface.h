@@ -27,6 +27,7 @@
 #define GNSS_SDR_SIGNAL_SOURCE_INTERFACE_H
 
 #include "gnss_block_interface.h"
+#include <glog/logging.h>
 
 /** \addtogroup Core
  * \{ */
@@ -42,7 +43,6 @@
  * implemented by that class or a parent class.
  */
 
-#include <glog/logging.h>
 class SignalSourceInterface : public GNSSBlockInterface
 {
 public:

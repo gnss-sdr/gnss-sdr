@@ -25,6 +25,7 @@
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_string_literals.h"
 #include "uio_fpga.h"
 #include <glog/logging.h>
 #include <iio.h>

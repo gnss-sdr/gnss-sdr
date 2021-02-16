@@ -18,6 +18,7 @@
 
 #include "flexiband_signal_source.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <teleorbit/frontend.h>

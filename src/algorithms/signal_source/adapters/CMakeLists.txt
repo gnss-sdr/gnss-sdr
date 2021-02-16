@@ -160,6 +160,7 @@ target_link_libraries(signal_source_adapters
         Gnuradio::blocks
         signal_source_gr_blocks
     PRIVATE
+        algorithms_libs
         gnss_sdr_flags
         core_system_parameters
         Glog::glog
@@ -170,18 +171,6 @@ if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(signal_source_adapters
         PUBLIC -DGNURADIO_USES_STD_POINTERS=1
     )
-endif()
-
-# This should really be at a higher level and apply universally to the
-# build system
-if(FILESYSTEM_FOUND)
-    target_compile_definitions(signal_source_adapters PUBLIC -DHAS_STD_FILESYSTEM=1)
-    if(find_experimental)
-        target_compile_definitions(signal_source_adapters PUBLIC -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
-    endif()
-    target_link_libraries(signal_source_adapters PUBLIC std::filesystem)
-else()
-    target_link_libraries(signal_source_adapters PUBLIC Boost::filesystem Boost::system)
 endif()
 
 if(ENABLE_RAW_UDP AND PCAP_FOUND)

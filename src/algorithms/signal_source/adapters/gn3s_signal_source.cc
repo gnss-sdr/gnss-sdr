@@ -16,6 +16,7 @@
 
 #include "gn3s_signal_source.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gn3s/gn3s_source_cc.h>

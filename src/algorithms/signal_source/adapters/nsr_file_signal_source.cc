@@ -17,6 +17,7 @@
  */
 
 #include "nsr_file_signal_source.h"
+#include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 
 using namespace std::string_literals;

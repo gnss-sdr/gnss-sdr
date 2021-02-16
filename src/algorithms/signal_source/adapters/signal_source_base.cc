@@ -20,6 +20,7 @@
 
 #include "signal_source_base.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include <utility>  // move
 
 

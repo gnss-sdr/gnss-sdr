@@ -68,6 +68,7 @@
 #include "glonass_l2_ca_telemetry_decoder.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_make_unique.h"
+#include "gnss_sdr_string_literals.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_kf_tracking.h"
 #include "gps_l1_ca_pcps_acquisition.h"
@@ -204,8 +205,6 @@ auto findRole(ConfigurationInterface const* configuration, std::string const& ba
         }
     return role;
 };
-
-
 }  // namespace
 
 

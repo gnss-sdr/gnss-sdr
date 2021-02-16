@@ -1,11 +1,14 @@
 /*!
  * \file fpga_buffer_monitor.h
- * \brief Check receiver buffer overflow and monitor the status of the receiver buffers.
- * \authors <ul>
- *          <li> Marc Majoral, 2021. mmajoral(at)cttc.es
- *          </ul>
+ * \brief Check receiver buffer overflow and monitor the status of the receiver
+ * buffers.
+ * \authors
+ * <ul>
+ *    <li> Marc Majoral, 2021. mmajoral(at)cttc.es
+ * </ul>
  *
- * Class that checks the receiver buffer overflow flags and monitors the status of the receiver buffers.
+ * Class that checks the receiver buffer overflow flags and monitors the status
+ * of the receiver buffers.
  *
  *
  * -----------------------------------------------------------------------------
@@ -34,7 +37,8 @@
 
 
 /*!
- * \brief Class that checks the receiver buffer overflow flags and monitors the status of the receiver buffers.
+ * \brief Class that checks the receiver buffer overflow flags and monitors the
+ * status of the receiver buffers.
  */
 class Fpga_buffer_monitor
 {
@@ -42,7 +46,11 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_buffer_monitor(const std::string& device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename, Concurrent_Queue<pmt::pmt_t>* queue);
+    explicit Fpga_buffer_monitor(const std::string& device_name,
+        uint32_t num_freq_bands,
+        bool dump,
+        std::string dump_filename,
+        Concurrent_Queue<pmt::pmt_t>* queue);
 
     /*!
      * \brief Destructor

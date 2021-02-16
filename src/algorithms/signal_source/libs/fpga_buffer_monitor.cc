@@ -1,11 +1,14 @@
 /*!
  * \file fpga_buffer_monitor.cc
- * \brief Check receiver buffer overflow and monitor the status of the receiver buffers.
- * \authors <ul>
- *    <li> Marc Majoral, 2020. mmajoral(at)cttc.es
+ * \brief Check receiver buffer overflow and monitor the status of the receiver
+ * buffers.
+ * \authors
+ * <ul>
+ *    <li> Marc Majoral, 2021. mmajoral(at)cttc.es
  * </ul>
  *
- * Class that checks the receiver buffer overflow flags and monitors the status of the receiver buffers.
+ * Class that checks the receiver buffer overflow flags and monitors the status
+ * of the receiver buffers.
  *
  *
  * -----------------------------------------------------------------------------
@@ -13,7 +16,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------

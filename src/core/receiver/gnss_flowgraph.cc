@@ -110,7 +110,7 @@ void GNSSFlowgraph::init()
             auto& src = sig_source_.back();
             auto RF_Channels = src->getRfChannels();
             std::cout << "RF Channels " << RF_Channels << '\n';
-            for (auto j = 0u; j < RF_Channels; ++j)
+            for (auto j = 0U; j < RF_Channels; ++j)
                 {
                     sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
                     signal_conditioner_ID++;
@@ -1022,7 +1022,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                         {
                             auto RF_Channels = src->getRfChannels();
 
-                            for (auto j = 0u; j < RF_Channels; ++j)
+                            for (auto j = 0U; j < RF_Channels; ++j)
                                 {
                                     // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
@@ -1117,7 +1117,7 @@ int GNSSFlowgraph::disconnect_signal_sources_from_signal_conditioners()
                         {
                             auto RF_Channels = src->getRfChannels();
 
-                            for (auto j = 0u; j < RF_Channels; ++j)
+                            for (auto j = 0U; j < RF_Channels; ++j)
                                 {
                                     if (src->get_right_block()->output_signature()->max_streams() > 1 or src->get_right_block()->output_signature()->max_streams() == -1)
                                         {

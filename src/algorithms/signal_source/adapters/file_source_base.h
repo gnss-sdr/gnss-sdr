@@ -84,7 +84,7 @@ protected:
     // Subclasses may want to assert default item types that are appropriate to the specific file
     // type supported. Rather than require the item type to be specified in the config file, allow
     // sub-classes to impose their will
-    FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
+    FileSourceBase(ConfigurationInterface const* configuration, std::string const& role, std::string impl,
         Concurrent_Queue<pmt::pmt_t>* queue,
         std::string default_item_type = "short");
 

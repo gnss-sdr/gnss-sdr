@@ -20,6 +20,8 @@
 
 #include "signal_source_base.h"
 #include "configuration_interface.h"
+#include <utility>  // move
+
 
 using namespace std::string_literals;
 
@@ -39,6 +41,6 @@ size_t SignalSourceBase::getRfChannels() const
 }
 
 SignalSourceBase::SignalSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl)
-    : SignalSourceInterface(), role_(role), implementation_(impl), rfChannels_(configuration->property(role + ".RF_channels"s, 1u))
+    : role_(std::move(role)), implementation_(std::move(impl)), rfChannels_(configuration->property(role + ".RF_channels"s, 1u))
 {
 }

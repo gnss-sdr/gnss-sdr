@@ -191,7 +191,7 @@ std::unique_ptr<To> dynamic_unique_cast(std::unique_ptr<From>&& p)
     return result;
 }
 
-auto findRole(ConfigurationInterface const* configuration, std::string base, int ID) -> std::string
+auto findRole(ConfigurationInterface const* configuration, std::string const& base, int ID) -> std::string
 {
     auto role = base + std::to_string(ID);
 
@@ -200,7 +200,7 @@ auto findRole(ConfigurationInterface const* configuration, std::string base, int
     if (ID < 1)
         {
             auto stub = configuration->property(role + impl_prop, ""s);
-            if (stub.empty()) role = base;  // legacy format
+            if (stub.empty()) { role = base; }  // NOLINT  -- legacy format
         }
     return role;
 };

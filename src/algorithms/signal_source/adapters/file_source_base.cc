@@ -22,6 +22,7 @@
 #include <glog/logging.h>
 #include <cmath>  // ceil, floor
 #include <fstream>
+#include <utility>  // move
 
 
 using namespace std::string_literals;
@@ -133,9 +134,13 @@ gr::basic_block_sptr FileSourceBase::get_left_block()
 
 gr::basic_block_sptr FileSourceBase::get_right_block()
 {
-    if (valve_) return valve_;
-    if (throttle_) return throttle_;
+    // clang-tidy wants braces around the if-conditions. clang-format wants to break the braces into
+    // multiple line blocks. It's much more readable this way
+    // clang-format off
+    if (valve_) { return valve_; }
+    if (throttle_) { return throttle_; }
     return source();
+    // clang-format on
 }
 
 
@@ -174,37 +179,32 @@ uint64_t FileSourceBase::samples() const
 }
 
 
-FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl,
+FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string const& role, std::string impl,
     Concurrent_Queue<pmt::pmt_t>* queue,
     std::string default_item_type)
-    : SignalSourceBase(configuration, role, impl), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)), file_source_()
+    : SignalSourceBase(configuration, role, std::move(impl)), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)), file_source_(),
 
-      ,
-      item_type_(configuration->property(role + ".item_type"s, default_item_type)),
-      item_size_(0)  // invalid
-      ,
-      is_complex_(false)
+      item_type_(configuration->property(role + ".item_type"s, default_item_type)),  // NOLINT
+      item_size_(0),
+      is_complex_(false),
 
       // apparently, MacOS (LLVM) finds 0UL ambiguous with bool, int64_t, uint64_t, int32_t, int16_t, uint16_t,... float, double
-      ,
       header_size_(configuration->property(role + ".header_size"s, uint64_t(0))),
       seconds_to_skip_(configuration->property(role + ".seconds_to_skip", 0.0)),
-      repeat_(configuration->property(role + ".repeat"s, false))
+      repeat_(configuration->property(role + ".repeat"s, false)),
 
-      ,
+
       samples_(configuration->property(role + ".samples"s, uint64_t(0))),
       sampling_frequency_(configuration->property(role + ".sampling_frequency"s, int64_t(0))),
-      valve_(),
-      queue_(queue)
+      valve_(),  // NOLINT
+      queue_(queue),
 
-      ,
       enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false)),
-      throttle_()
+      throttle_(),  // NOLINT
 
-      ,
       dump_(configuration->property(role + ".dump"s, false)),
       dump_filename_(configuration->property(role + ".dump_filename"s, "../data/my_capture.dat"s)),
-      sink_()
+      sink_()  // NOLINT
 {
     // override value with commandline flag, if present
     if (FLAGS_signal_source != "-")

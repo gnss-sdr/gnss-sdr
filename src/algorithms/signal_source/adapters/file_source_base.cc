@@ -182,7 +182,9 @@ uint64_t FileSourceBase::samples() const
 FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string const& role, std::string impl,
     Concurrent_Queue<pmt::pmt_t>* queue,
     std::string default_item_type)
-    : SignalSourceBase(configuration, role, std::move(impl)), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)), file_source_(),
+    : SignalSourceBase(configuration, role, std::move(impl)), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)),
+
+      file_source_(),  // NOLINT
 
       item_type_(configuration->property(role + ".item_type"s, default_item_type)),  // NOLINT
       item_size_(0),

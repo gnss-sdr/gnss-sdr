@@ -47,6 +47,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Provide hints to the user in case of failed flow graph connection due to
   inconsistencies in the configuration file.
 - Fix segmentation fault if the RINEX output was disabled.
+- Added a feature that optionally enables the remote monitoring of GPS and
+  Galileo ephemeris using UDP and protobuffers.
 
 &nbsp;
 

@@ -17,6 +17,8 @@ if(ENABLE_FPGA OR ENABLE_AD9361)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_switch.h)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_dynamic_bit_selection.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_dynamic_bit_selection.h)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_buffer_monitor.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_buffer_monitor.h)
 endif()
 
 set(SIGNAL_SOURCE_LIB_SOURCES
@@ -88,6 +90,13 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
             )
         endif()
     endif()
+endif()
+
+if(ENABLE_FPGA OR ENABLE_AD9361)
+    target_link_libraries(signal_source_libs
+        PUBLIC
+            algorithms_libs
+        )
 endif()
 
 if(ENABLE_CLANG_TIDY)

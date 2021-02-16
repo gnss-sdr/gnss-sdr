@@ -1078,6 +1078,13 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                << gps_eph->satelliteBlock[gps_eph->i_satellite_PRN] << ")"
                                << "inserted with Toe=" << gps_eph->d_Toe << " and GPS Week="
                                << gps_eph->i_GPS_week;
+
+                    // todo: Send only new sets of ephemeris (new TOE), not sent to the client
+                    // send the new eph to the eph monitor (if enabled)
+                    if (d_flag_monitor_ephemeris_enabled)
+                        {
+                            d_eph_udp_sink_ptr->write_gps_ephemeris(gps_eph);
+                        }
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
@@ -1099,12 +1106,6 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     std::map<int32_t, Gps_Ephemeris> new_eph;
                                     new_eph[gps_eph->i_satellite_PRN] = *gps_eph;
                                     d_rp->log_rinex_nav_gps_nav(d_type_of_rx, new_eph);
-                                }
-                            // todo: Send only new sets of ephemeris (new TOE), not sent to the client
-                            // send the new eph to the eph monitor (if enabled)
-                            if (d_flag_monitor_ephemeris_enabled)
-                                {
-                                    d_eph_udp_sink_ptr->write_gps_ephemeris(gps_eph);
                                 }
                         }
                     d_internal_pvt_solver->gps_ephemeris_map[gps_eph->i_satellite_PRN] = *gps_eph;
@@ -1212,6 +1213,12 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     DLOG(INFO) << "Galileo New Ephemeris record inserted in global map with TOW =" << galileo_eph->TOW_5
                                << ", GALILEO Week Number =" << galileo_eph->WN_5
                                << " and Ephemeris IOD = " << galileo_eph->IOD_ephemeris;
+                    // todo: Send only new sets of ephemeris (new TOE), not sent to the client
+                    // send the new eph to the eph monitor (if enabled)
+                    if (d_flag_monitor_ephemeris_enabled)
+                        {
+                            d_eph_udp_sink_ptr->write_galileo_ephemeris(galileo_eph);
+                        }
                     // update/insert new ephemeris record to the global ephemeris map
                     if (d_rinex_output_enabled && d_rp->is_rinex_header_written())  // The header is already written, we can now log the navigation message data
                         {
@@ -1233,12 +1240,6 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     std::map<int32_t, Galileo_Ephemeris> new_gal_eph;
                                     new_gal_eph[galileo_eph->i_satellite_PRN] = *galileo_eph;
                                     d_rp->log_rinex_nav_gal_nav(d_type_of_rx, new_gal_eph);
-                                }
-                            // todo: Send only new sets of ephemeris (new TOE), not sent to the client
-                            // send the new eph to the eph monitor (if enabled)
-                            if (d_flag_monitor_ephemeris_enabled)
-                                {
-                                    d_eph_udp_sink_ptr->write_galileo_ephemeris(galileo_eph);
                                 }
                         }
                     d_internal_pvt_solver->galileo_ephemeris_map[galileo_eph->i_satellite_PRN] = *galileo_eph;

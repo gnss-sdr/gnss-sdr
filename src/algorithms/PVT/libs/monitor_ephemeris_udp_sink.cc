@@ -1,15 +1,15 @@
 /*!
- * \file monitor_pvt_udp_sink.cc
- * \brief Implementation of a class that sends serialized Monitor_Pvt
- * objects over udp to one or multiple endpoints
- * \author Álvaro Cebrián Juan, 2019. acebrianjuan(at)gmail.com
+ * \file monitor_ephemeris_udp_sink.cc
+ * \brief Interface of a class that sends serialized Gps_Ephemeris and
+ * Galileo_Ephemeris objects over udp to one or multiple endpoints.
+ * \author Javier Arribas, 2021. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ Monitor_Ephemeris_Udp_Sink::Monitor_Ephemeris_Udp_Sink(const std::vector<std::st
 }
 
 
-bool Monitor_Ephemeris_Udp_Sink::write_galileo_ephemeris(const std::shared_ptr<Galileo_Ephemeris> monitor_gal_eph)
+bool Monitor_Ephemeris_Udp_Sink::write_galileo_ephemeris(const std::shared_ptr<Galileo_Ephemeris>& monitor_gal_eph)
 {
     std::string outbound_data;
     if (use_protobuf == false)
@@ -74,7 +74,8 @@ bool Monitor_Ephemeris_Udp_Sink::write_galileo_ephemeris(const std::shared_ptr<G
     return true;
 }
 
-bool Monitor_Ephemeris_Udp_Sink::write_gps_ephemeris(const std::shared_ptr<Gps_Ephemeris> monitor_gps_eph)
+
+bool Monitor_Ephemeris_Udp_Sink::write_gps_ephemeris(const std::shared_ptr<Gps_Ephemeris>& monitor_gps_eph)
 {
     std::string outbound_data;
     if (use_protobuf == false)

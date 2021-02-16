@@ -41,6 +41,6 @@ size_t SignalSourceBase::getRfChannels() const
 }
 
 SignalSourceBase::SignalSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl)
-    : role_(std::move(role)), implementation_(std::move(impl)), rfChannels_(configuration->property(role + ".RF_channels"s, 1u))
+    : role_(std::move(role)), implementation_(std::move(impl)), rfChannels_(configuration->property(role + ".RF_channels"s, 1U))
 {
 }

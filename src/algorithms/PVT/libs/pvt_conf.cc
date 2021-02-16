@@ -61,8 +61,10 @@ Pvt_Conf::Pvt_Conf()
 
     enable_rx_clock_correction = true;
     monitor_enabled = false;
+    monitor_ephemeris_enabled = false;
     protobuf_enabled = true;
     udp_port = 0;
+    udp_eph_port = 0;
     pre_2009_file = false;
     show_local_time_zone = false;
 }

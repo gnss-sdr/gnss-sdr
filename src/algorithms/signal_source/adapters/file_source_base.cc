@@ -185,14 +185,15 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
       ,
       is_complex_(false)
 
+      // apparently, MacOS (LLVM) finds 0UL ambiguous with bool, int64_t, uint64_t, int32_t, int16_t, uint16_t,... float, double
       ,
-      header_size_(configuration->property(role + ".header_size"s, 0UL)),
+      header_size_(configuration->property(role + ".header_size"s, size_t(0))),
       seconds_to_skip_(configuration->property(role + ".seconds_to_skip", 0.0)),
       repeat_(configuration->property(role + ".repeat"s, false))
 
       ,
-      samples_(configuration->property(role + ".samples"s, 0UL)),
-      sampling_frequency_(configuration->property(role + ".sampling_frequency"s, 0UL)),
+      samples_(configuration->property(role + ".samples"s, uint64_t(0))),
+      sampling_frequency_(configuration->property(role + ".sampling_frequency"s, int64_t(0))),
       valve_(),
       queue_(queue)
 

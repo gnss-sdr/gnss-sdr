@@ -157,7 +157,7 @@ private:
     // beyond its lifetime. Fortunately, the queue is only used to create the valve, so the
     // likelihood of holding a stale pointer is mitigated
     uint64_t samples_;
-    int64_t sampling_frequency_;
+    int64_t sampling_frequency_;  // why is this signed
     gnss_shared_ptr<gr::block> valve_;
     Concurrent_Queue<pmt::pmt_t>* queue_;
 

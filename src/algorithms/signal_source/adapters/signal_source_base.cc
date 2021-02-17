@@ -6,13 +6,10 @@
  *
  * -----------------------------------------------------------------------------
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
- *
- * GNSS-SDR is a software defined Global Navigation
- *          Satellite Systems receiver
- *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -22,7 +19,6 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_string_literals.h"
 #include <utility>  // move
-
 
 using namespace std::string_literals;
 
@@ -42,6 +38,6 @@ size_t SignalSourceBase::getRfChannels() const
 }
 
 SignalSourceBase::SignalSourceBase(ConfigurationInterface const* configuration, std::string role, std::string impl)
-    : role_(std::move(role)), implementation_(std::move(impl)), rfChannels_(configuration->property(role + ".RF_channels"s, 1U))
+    : role_(std::move(role)), implementation_(std::move(impl)), rfChannels_(configuration->property(role_ + ".RF_channels"s, 1U))
 {
 }

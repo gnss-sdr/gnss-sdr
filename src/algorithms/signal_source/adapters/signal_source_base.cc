@@ -42,5 +42,5 @@ SignalSourceBase::SignalSourceBase(ConfigurationInterface const* configuration, 
 {
     // because clang-tidy insists on using std::move for the string arguments, and to avoid
     // depending on the order of initialization, assign rfChannels_ in the body
-    rfChannels_ = configuration->property(role_ + ".RF_channels"s, 1U);
+    rfChannels_ = configuration->property(role_ + ".RF_channels"s, uint64_t(1U));
 }

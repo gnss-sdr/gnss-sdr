@@ -23,6 +23,7 @@
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <pmt/pmt.h>
+#include <tuple>
 
 // for dump
 #include <gnuradio/blocks/file_sink.h>
@@ -32,88 +33,100 @@
 
 class ConfigurationInterface;
 
-// This class supports the following properties:
-//
-//   .filename - the path to the input file
-//             - may be overridden by the -signal_source or -s command-line arguments
-//   .samples  - number of samples to process (default 0)
-//             - if not specified or 0, read the entire file; otherwise stop after that many samples
-//   .sampling_frequency - the frequency of the sampled data (samples/second)
-//   .item_type - data type of the samples (default "short")
-//   .header_size - the size of a prefixed header to skip in "samples" (default 0)
-//   .seconds_to_skip - number of seconds of lead-in data to skip over (default 0)
-//   .enable_throttle_control - whether to stop reading if the upstream buffer is full (default false)
-//   .repeat   - whether to rewind and continue at end of file (default false)
-//
-// (probably abstracted to the base class)
-//   .dump     - whether to archive input data
-//   .dump_filename - if dumping, path to file for output
+
+//! \brief Base class to file-oriented SignalSourceBase GNSS blocks.
+//!
+//! This class supports the following properties:
+//!
+//!   .filename - the path to the input file
+//!             - may be overridden by the -signal_source or -s command-line arguments
+//!
+//!   .samples  - number of samples to process (default 0)
+//!             - if not specified or 0, read the entire file; otherwise stop after that many samples
+//!
+//!   .sampling_frequency - the frequency of the sampled data (samples/second)
+//!
+//!   .item_type - data type of the samples (default "short")
+//!
+//!   .header_size - the size of a prefixed header to skip in "samples" (default 0)
+//!
+//!   .seconds_to_skip - number of seconds of lead-in data to skip over (default 0)
+//!
+//!   .enable_throttle_control - whether to stop reading if the upstream buffer is full (default false)
+//!
+//!   .repeat   - whether to rewind and continue at end of file (default false)
+//!
+//! (probably abstracted to the base class)
+//!
+//!   .dump     - whether to archive input data
+//!
+//!   .dump_filename - if dumping, path to file for output
 
 
 class FileSourceBase : public SignalSourceBase
 {
 public:
-    //! virtual overrides
+    // Virtual overrides
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
     gr::basic_block_sptr get_right_block() override;
 
-
-    //! the file to read
+    //! The file to read
     std::string filename() const;
 
-    //! the item type
+    //! The item type
     std::string item_type() const;
 
-    //! the configured size of each item
+    //! The configured size of each item
     size_t item_size() override;
     virtual size_t item_size() const;  // what the interface **should** have declared
 
     //! Whether to repeat reading after end-of-file
     bool repeat() const;
 
-    //! the sampling frequency of the source file
+    //! The sampling frequency of the source file
     int64_t sampling_frequency() const;
 
-    //! the number of samples in the file
+    //! The number of samples in the file
     uint64_t samples() const;
 
 protected:
-    //! Constructor
-    // Subclasses may want to assert default item types that are appropriate to the specific file
-    // type supported. Rather than require the item type to be specified in the config file, allow
-    // sub-classes to impose their will
+    //! \brief Constructor
+    //!
+    //! Subclasses may want to assert default item types that are appropriate to the specific file
+    //! type supported. Rather than require the item type to be specified in the config file, allow
+    //! sub-classes to impose their will
     FileSourceBase(ConfigurationInterface const* configuration, std::string const& role, std::string impl,
         Concurrent_Queue<pmt::pmt_t>* queue,
         std::string default_item_type = "short");
 
-    //! perform post-construction initialization
+    //! Perform post-construction initialization
     void init();
 
-    //! compute the item size, from the item_type(). Subclasses may constrain types that don't make
+    //! Compute the item size, from the item_type(). Subclasses may constrain types that don't make
     //  sense. The return of this method is a tuple of item_size and is_complex
     virtual std::tuple<size_t, bool> itemTypeToSize();
 
-    //! the number of (possibly unpacked) samples in a (raw) file sample (default=1)
+    //! The number of (possibly unpacked) samples in a (raw) file sample (default=1)
     virtual double packetsPerSample() const;
 
-    //! compute the number of samples to skip
+    //! Compute the number of samples to skip
     virtual size_t samplesToSkip() const;
 
-    //! compute the number of samples in the file
+    //! Compute the number of samples in the file
     size_t computeSamplesInFile() const;
 
-    //! abstracted front-end source. Sub-classes may override if they create specialized chains to
+    //! Abstracted front-end source. Sub-classes may override if they create specialized chains to
     //! decode source files into a usable format
     virtual gnss_shared_ptr<gr::block> source() const;
 
-    //! for complex source chains, the size of the file item may not be the same as the size of the
+    //! For complex source chains, the size of the file item may not be the same as the size of the
     // "source" (decoded) item. This method allows subclasses to handle these differences
     virtual size_t source_item_size() const;
     bool is_complex() const;
 
-    //! generic access to created objects
+    // Generic access to created objects
     gnss_shared_ptr<gr::block> file_source() const;
     gnss_shared_ptr<gr::block> valve() const;
     gnss_shared_ptr<gr::block> throttle() const;

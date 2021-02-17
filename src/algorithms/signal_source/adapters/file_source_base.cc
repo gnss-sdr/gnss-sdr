@@ -28,9 +28,82 @@
 
 using namespace std::string_literals;
 
+FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string const& role, std::string impl,
+    Concurrent_Queue<pmt::pmt_t>* queue,
+    std::string default_item_type)
+    : SignalSourceBase(configuration, role, std::move(impl)), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)),
+
+      file_source_(),  // NOLINT
+
+      item_type_(configuration->property(role + ".item_type"s, default_item_type)),  // NOLINT
+      item_size_(0),
+      is_complex_(false),
+
+      // apparently, MacOS (LLVM) finds 0UL ambiguous with bool, int64_t, uint64_t, int32_t, int16_t, uint16_t,... float, double
+      header_size_(configuration->property(role + ".header_size"s, uint64_t(0))),
+      seconds_to_skip_(configuration->property(role + ".seconds_to_skip"s, 0.0)),
+      repeat_(configuration->property(role + ".repeat"s, false)),
+
+      samples_(configuration->property(role + ".samples"s, uint64_t(0))),
+      sampling_frequency_(configuration->property(role + ".sampling_frequency"s, int64_t(0))),
+      valve_(),  // NOLINT
+      queue_(queue),
+
+      enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false)),
+      throttle_(),  // NOLINT
+
+      dump_(configuration->property(role + ".dump"s, false)),
+      dump_filename_(configuration->property(role + ".dump_filename"s, "../data/my_capture.dat"s)),
+      sink_()  // NOLINT
+{
+    // override value with commandline flag, if present
+    if (FLAGS_signal_source != "-")
+        {
+            filename_ = FLAGS_signal_source;
+        }
+    if (FLAGS_s != "-")
+        {
+            filename_ = FLAGS_s;
+        }
+
+    init();
+}
+
+
+void FileSourceBase::init()
+{
+    create_file_source();
+
+    // At this point, we know that the file exists
+    samples_ = computeSamplesInFile();
+    auto signal_duration_s = 1.0 * samples_ / sampling_frequency_;
+
+    if (is_complex())
+        {
+            signal_duration_s /= 2.0;
+        }
+
+    DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
+    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
+
+    DLOG(INFO) << "File source filename " << filename_;
+    DLOG(INFO) << "Samples " << samples_;
+    DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
+    DLOG(INFO) << "Item type " << item_type_;
+    DLOG(INFO) << "Item size " << item_size_;
+    DLOG(INFO) << "Repeat " << repeat_;
+
+    DLOG(INFO) << "Dump " << dump_;
+    DLOG(INFO) << "Dump filename " << dump_filename_;
+
+    create_throttle();
+    create_valve();
+    create_sink();
+}
+
+
 void FileSourceBase::connect(gr::top_block_sptr top_block)
 {
-    init();
     pre_connect_hook(top_block);
 
     auto input = gr::basic_block_sptr();
@@ -150,106 +223,40 @@ std::string FileSourceBase::filename() const
     return filename_;
 }
 
+
 std::string FileSourceBase::item_type() const
 {
     return item_type_;
 }
 
+
 size_t FileSourceBase::item_size()
 {
     return item_size_;
 }
+
+
 size_t FileSourceBase::item_size() const
 {
     return item_size_;
 }
+
 
 bool FileSourceBase::repeat() const
 {
     return repeat_;
 }
 
+
 int64_t FileSourceBase::sampling_frequency() const
 {
     return sampling_frequency_;
 }
 
+
 uint64_t FileSourceBase::samples() const
 {
     return samples_;
-}
-
-
-FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string const& role, std::string impl,
-    Concurrent_Queue<pmt::pmt_t>* queue,
-    std::string default_item_type)
-    : SignalSourceBase(configuration, role, std::move(impl)), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)),
-
-      file_source_(),  // NOLINT
-
-      item_type_(configuration->property(role + ".item_type"s, default_item_type)),  // NOLINT
-      item_size_(0),
-      is_complex_(false),
-
-      // apparently, MacOS (LLVM) finds 0UL ambiguous with bool, int64_t, uint64_t, int32_t, int16_t, uint16_t,... float, double
-      header_size_(configuration->property(role + ".header_size"s, uint64_t(0))),
-      seconds_to_skip_(configuration->property(role + ".seconds_to_skip", 0.0)),
-      repeat_(configuration->property(role + ".repeat"s, false)),
-
-
-      samples_(configuration->property(role + ".samples"s, uint64_t(0))),
-      sampling_frequency_(configuration->property(role + ".sampling_frequency"s, int64_t(0))),
-      valve_(),  // NOLINT
-      queue_(queue),
-
-      enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false)),
-      throttle_(),  // NOLINT
-
-      dump_(configuration->property(role + ".dump"s, false)),
-      dump_filename_(configuration->property(role + ".dump_filename"s, "../data/my_capture.dat"s)),
-      sink_()  // NOLINT
-{
-    // override value with commandline flag, if present
-    if (FLAGS_signal_source != "-")
-        {
-            filename_ = FLAGS_signal_source;
-        }
-    if (FLAGS_s != "-")
-        {
-            filename_ = FLAGS_s;
-        }
-}
-
-void FileSourceBase::init()
-{
-    create_file_source();
-
-    // At this point, we know that the file exists
-    samples_ = computeSamplesInFile();
-    auto signal_duration_s = 1.0 * samples_ / sampling_frequency_;
-
-    if (is_complex())
-        {
-            signal_duration_s /= 2.0;
-        }
-
-    DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
-    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
-
-
-    DLOG(INFO) << "File source filename " << filename_;
-    DLOG(INFO) << "Samples " << samples_;
-    DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
-    DLOG(INFO) << "Item type " << item_type_;
-    DLOG(INFO) << "Item size " << item_size_;
-    DLOG(INFO) << "Repeat " << repeat_;
-
-    DLOG(INFO) << "Dump " << dump_;
-    DLOG(INFO) << "Dump filename " << dump_filename_;
-
-    create_throttle();
-    create_valve();
-    create_sink();
 }
 
 
@@ -294,8 +301,10 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize()
     return std::make_tuple(item_size, is_complex_t);
 }
 
+
 // Default case is one decoded packet per one read sample
 double FileSourceBase::packetsPerSample() const { return 1.0; }
+
 
 size_t FileSourceBase::samplesToSkip() const
 {
@@ -327,10 +336,10 @@ size_t FileSourceBase::samplesToSkip() const
     return samples_to_skip;
 }
 
+
 size_t FileSourceBase::computeSamplesInFile() const
 {
     auto n_samples = size_t(samples());
-
 
     // if configured with 0 samples (read the whole file), figure out how many samples are in the file, and go from there
     if (n_samples == 0)
@@ -369,20 +378,25 @@ size_t FileSourceBase::computeSamplesInFile() const
     return n_samples;
 }
 
-gnss_shared_ptr<gr::block> FileSourceBase::source() const { return file_source(); }
+
 size_t FileSourceBase::source_item_size() const
 {
     // delegate the size of the source to the source() object, so sub-classes have less work to do
     DLOG(INFO) << "source_item_size is " << source()->output_signature()->sizeof_stream_item(0);
     return source()->output_signature()->sizeof_stream_item(0);
 }
+
+
 bool FileSourceBase::is_complex() const { return is_complex_; }
 
+
 // Simple accessors
+gnss_shared_ptr<gr::block> FileSourceBase::source() const { return file_source(); }
 gnss_shared_ptr<gr::block> FileSourceBase::file_source() const { return file_source_; }
 gnss_shared_ptr<gr::block> FileSourceBase::valve() const { return valve_; }
 gnss_shared_ptr<gr::block> FileSourceBase::throttle() const { return throttle_; }
 gnss_shared_ptr<gr::block> FileSourceBase::sink() const { return sink_; }
+
 
 gr::blocks::file_source::sptr FileSourceBase::create_file_source()
 {
@@ -430,9 +444,9 @@ gr::blocks::file_source::sptr FileSourceBase::create_file_source()
     // enable subclass hooks
     create_file_source_hook();
 
-
     return file_source_;
 }
+
 
 gr::blocks::throttle::sptr FileSourceBase::create_throttle()
 {
@@ -447,6 +461,7 @@ gr::blocks::throttle::sptr FileSourceBase::create_throttle()
         }
     return throttle_;
 }
+
 
 gnss_shared_ptr<gr::block> FileSourceBase::create_valve()
 {
@@ -463,6 +478,7 @@ gnss_shared_ptr<gr::block> FileSourceBase::create_valve()
     return valve_;
 }
 
+
 gr::blocks::file_sink::sptr FileSourceBase::create_sink()
 {
     if (dump_)
@@ -476,11 +492,13 @@ gr::blocks::file_sink::sptr FileSourceBase::create_sink()
     return sink_;
 }
 
+
 // Subclass hooks to augment created objects, as required
 void FileSourceBase::create_file_source_hook() {}
 void FileSourceBase::create_throttle_hook() {}
 void FileSourceBase::create_valve_hook() {}
 void FileSourceBase::create_sink_hook() {}
+
 
 // Subclass hooks for connection/disconnectino
 void FileSourceBase::pre_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}

@@ -65,8 +65,6 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
         {
             filename_ = FLAGS_s;
         }
-
-    init();
 }
 
 
@@ -104,6 +102,7 @@ void FileSourceBase::init()
 
 void FileSourceBase::connect(gr::top_block_sptr top_block)
 {
+    init();
     pre_connect_hook(top_block);
 
     auto input = gr::basic_block_sptr();

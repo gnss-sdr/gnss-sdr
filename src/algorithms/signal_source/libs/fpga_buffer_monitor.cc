@@ -33,12 +33,11 @@
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
 
-Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename, Concurrent_Queue<pmt::pmt_t> *queue)
+Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename)
 {
     d_num_freq_bands = num_freq_bands;
     d_dump = dump;
     d_dump_filename = dump_filename;
-    d_queue = queue;
 
     // open device descriptor
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
@@ -89,7 +88,7 @@ Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_
                 }
             if (d_dump_filename.empty())
                 {
-                    d_dump_filename = "FPGA_buffer_monitor";
+                    d_dump_filename = "FPGA_buffer_monitor_dump";
                 }
             // remove extension if any
             if (d_dump_filename.substr(1).find_last_of('.') != std::string::npos)
@@ -148,28 +147,29 @@ Fpga_buffer_monitor::~Fpga_buffer_monitor()
 void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
 {
     // check buffer overflow flags
-    bool overflow_detected = false;
     uint32_t buffer_overflow_status = d_map_base[overflow_flags_reg_addr];
 
     if ((buffer_overflow_status & overflow_freq_band_0_bit_pos) != 0)
         {
-            overflow_detected = true;
-            std::cout << "Buffer overflow in frequency band 0" << std::endl;
+            if (d_num_freq_bands > 1)
+                {
+                    std::cout << "FPGA Buffer overflow in frequency band 0" << std::endl;
+                    LOG(ERROR) << "FPGA Buffer overflow in frequency band 0";
+                }
+            else
+                {
+                    std::cout << "FPGA Buffer overflow" << std::endl;
+                    LOG(ERROR) << "FPGA Buffer overflow";
+                }
         }
 
     if (d_num_freq_bands > 1)
         {
             if ((buffer_overflow_status & overflow_freq_band_1_bit_pos) != 0)
                 {
-                    overflow_detected = true;
-                    std::cout << "Buffer overflow in frequency band 1" << std::endl;
+                    std::cout << "FPGA Buffer overflow in frequency band 1" << std::endl;
+                    LOG(ERROR) << "FPGA Buffer overflow in frequency band 1";
                 }
-        }
-
-    if (overflow_detected)
-        {
-            LOG(ERROR) << "Stopping receiver, FPGA buffer overflow detected.";
-            d_queue->push(pmt::make_any(command_event_make(200, 0)));
         }
 
     // buffer monitor

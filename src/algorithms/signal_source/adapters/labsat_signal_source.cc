@@ -16,14 +16,15 @@
 
 #include "labsat_signal_source.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include "labsat23_source.h"
 #include <glog/logging.h>
-#include <cstdint>
-#include <utility>
 
+using namespace std::string_literals;
 
 LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_stream, unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    const std::string& role, unsigned int in_stream, unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "Labsat_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./labsat_output.dat");

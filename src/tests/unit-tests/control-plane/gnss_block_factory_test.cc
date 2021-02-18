@@ -28,6 +28,7 @@
 #include "in_memory_configuration.h"
 #include "observables_interface.h"
 #include "pvt_interface.h"
+#include "signal_source_interface.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
 #include <gtest/gtest.h>
@@ -45,7 +46,7 @@ TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
     // Example of a factory as a shared_ptr
     std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();
     // Example of a block as a shared_ptr
-    std::shared_ptr<GNSSBlockInterface> signal_source = factory->GetSignalSource(configuration.get(), queue.get());
+    auto signal_source = factory->GetSignalSource(configuration.get(), queue.get());
     EXPECT_STREQ("SignalSource", signal_source->role().c_str());
     EXPECT_STREQ("File_Signal_Source", signal_source->implementation().c_str());
 }
@@ -59,7 +60,7 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongSignalSource)
     // Example of a factory as a unique_ptr
     std::unique_ptr<GNSSBlockFactory> factory = std::make_unique<GNSSBlockFactory>();
     // Example of a block as a unique_ptr
-    std::unique_ptr<GNSSBlockInterface> signal_source = factory->GetSignalSource(configuration.get(), queue.get());
+    auto signal_source = factory->GetSignalSource(configuration.get(), queue.get());
     EXPECT_EQ(nullptr, signal_source);
 }
 
@@ -350,8 +351,8 @@ TEST(GNSSBlockFactoryTest, InstantiateWrongPvt)
 {
     std::shared_ptr<InMemoryConfiguration> configuration = std::make_shared<InMemoryConfiguration>();
     configuration->set_property("PVT.implementation", "Pepito");
-    std::unique_ptr<GNSSBlockFactory> factory = std::make_unique<GNSSBlockFactory>();
+    auto factory = std::make_unique<GNSSBlockFactory>();
     std::shared_ptr<GNSSBlockInterface> pvt_ = factory->GetPVT(configuration.get());
-    std::shared_ptr<PvtInterface> pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
+    auto pvt = std::dynamic_pointer_cast<PvtInterface>(pvt_);
     EXPECT_EQ(nullptr, pvt);
 }

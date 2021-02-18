@@ -19,7 +19,7 @@
 #define GNSS_SDR_RAW_ARRAY_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <pmt/pmt.h>
@@ -39,7 +39,7 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
  */
-class RawArraySignalSource : public GNSSBlockInterface
+class RawArraySignalSource : public SignalSourceBase
 {
 public:
     RawArraySignalSource(const ConfigurationInterface* configuration,
@@ -47,19 +47,6 @@ public:
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~RawArraySignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "RawArraySignalSource".
-     */
-    inline std::string implementation() override
-    {
-        return "Raw_Array_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -74,12 +61,11 @@ public:
 private:
     gr::block_sptr raw_array_source_;
     gr::blocks::file_sink::sptr file_sink_;
-    std::string role_;
     std::string item_type_;
     std::string dump_filename_;
     std::string eth_device_;
     size_t item_size_;
-    int64_t samples_;
+    [[maybe_unused]] int64_t samples_;
     unsigned int in_stream_;
     unsigned int out_stream_;
     bool dump_;

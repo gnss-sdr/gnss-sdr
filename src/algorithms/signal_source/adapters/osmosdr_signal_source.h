@@ -20,7 +20,7 @@
 #define GNSS_SDR_OSMOSDR_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <pmt/pmt.h>
 #include <cstdint>
@@ -42,7 +42,7 @@ class ConfigurationInterface;
  * HackRF or Realtek's RTL2832U-based USB dongle DVB-T receivers
  * (see https://osmocom.org/projects/rtl-sdr/wiki)
  */
-class OsmosdrSignalSource : public GNSSBlockInterface
+class OsmosdrSignalSource : public SignalSourceBase
 {
 public:
     OsmosdrSignalSource(const ConfigurationInterface* configuration,
@@ -50,19 +50,6 @@ public:
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~OsmosdrSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Osmosdr_Signal_Source"
-     */
-    inline std::string implementation() override
-    {
-        return "Osmosdr_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -81,7 +68,6 @@ private:
     gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
 
-    std::string role_;
     std::string item_type_;
     std::string dump_filename_;
     std::string osmosdr_args_;

@@ -25,10 +25,8 @@
 #ifndef GNSS_SDR_FPGA_BUFFER_MONITOR_H
 #define GNSS_SDR_FPGA_BUFFER_MONITOR_H
 
-#include "concurrent_queue.h"
-#include <pmt/pmt.h>  // pmt
-#include <cstdint>    // for int32_t
-#include <fstream>    // for string, ofstream
+#include <cstdint>  // for int32_t
+#include <fstream>  // for string, ofstream
 
 /** \addtogroup Signal_Source
  * \{ */

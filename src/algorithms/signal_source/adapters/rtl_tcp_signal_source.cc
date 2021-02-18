@@ -19,20 +19,21 @@
 #include "rtl_tcp_signal_source.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <cstdint>
 #include <iostream>
 #include <utility>
 
+using namespace std::string_literals;
 
 RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_stream,
     unsigned int out_stream,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role),
-                                           in_stream_(in_stream),
-                                           out_stream_(out_stream)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "RtlTcp_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     // DUMP PARAMETERS
     const std::string default_dump_file("./data/signal_source.dat");

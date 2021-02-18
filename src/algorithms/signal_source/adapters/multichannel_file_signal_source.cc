@@ -18,6 +18,7 @@
 #include "multichannel_file_signal_source.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <exception>
@@ -27,18 +28,21 @@
 #include <utility>
 
 
+using namespace std::string_literals;
+
 MultichannelFileSignalSource::MultichannelFileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "Multichannel_File_Signal_Source"s), in_streams_(in_streams), out_streams_(out_streams)
 {
-    const std::string default_filename("./example_capture.dat");
-    const std::string default_item_type("short");
-    const std::string default_dump_filename("./my_capture.dat");
+    const std::string default_filename("./example_capture.dat"s);
+    const std::string default_item_type("short"s);
+    const std::string default_dump_filename("./my_capture.dat"s);
 
     const double default_seconds_to_skip = 0.0;
-    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
-    n_channels_ = configuration->property(role + ".total_channels", 1);
+    samples_ = configuration->property(role + ".samples"s, static_cast<uint64_t>(0));
+    sampling_frequency_ = configuration->property(role + ".sampling_frequency"s, static_cast<int64_t>(0));
+    n_channels_ = configuration->property(role + ".total_channels"s, 1);
 
     for (int32_t n = 0; n < n_channels_; n++)
         {

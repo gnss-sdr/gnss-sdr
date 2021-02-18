@@ -21,7 +21,7 @@
 #define GNSS_SDR_FLEXIBAND_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/char_to_float.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/float_to_complex.h>
@@ -45,7 +45,7 @@ class ConfigurationInterface;
  * \brief This class configures and reads samples from Teleorbit Flexiband front-end.
  * This software requires a Flexiband GNU Radio driver installed (not included with GNSS-SDR).
  */
-class FlexibandSignalSource : public GNSSBlockInterface
+class FlexibandSignalSource : public SignalSourceBase
 {
 public:
     FlexibandSignalSource(const ConfigurationInterface* configuration,
@@ -53,19 +53,6 @@ public:
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~FlexibandSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Flexiband_Signal_Source".
-     */
-    inline std::string implementation() override
-    {
-        return "Flexiband_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -85,7 +72,6 @@ private:
     std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
 
-    std::string role_;
     std::string item_type_;
     std::string firmware_filename_;
     std::string signal_file;

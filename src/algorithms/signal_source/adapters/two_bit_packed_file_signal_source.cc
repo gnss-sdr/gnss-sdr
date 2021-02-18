@@ -10,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -18,291 +18,122 @@
 
 #include "two_bit_packed_file_signal_source.h"
 #include "configuration_interface.h"
-#include "gnss_sdr_flags.h"
-#include "gnss_sdr_valve.h"
+#include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/char_to_float.h>
-#include <exception>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <utility>
 
+using namespace std::string_literals;
 
 TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role),
-                                           in_streams_(in_streams),
-                                           out_streams_(out_streams)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : FileSourceBase(configuration, role, "Two_Bit_Packed_File_Signal_Source"s, queue, "byte"s), sample_type_(configuration->property(role + ".sample_type", "real"s)),  // options: "real", "iq", "qi"
+      big_endian_items_(configuration->property(role + ".big_endian_items", true)),
+      big_endian_bytes_(configuration->property(role + ".big_endian_bytes", false)),
+      reverse_interleaving_(false)
 {
-    const std::string default_filename("../data/my_capture.dat");
-    const std::string default_item_type("byte");
-    const std::string default_dump_filename("../data/my_capture_dump.dat");
-    const std::string default_sample_type("real");
-    const double default_seconds_to_skip = 0.0;
-
-    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
-    sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
-    filename_ = configuration->property(role + ".filename", default_filename);
-
-    // override value with commandline flag, if present
-    if (FLAGS_signal_source != "-")
-        {
-            filename_ = FLAGS_signal_source;
-        }
-    if (FLAGS_s != "-")
-        {
-            filename_ = FLAGS_s;
-        }
-
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
-    big_endian_items_ = configuration->property(role + ".big_endian_items", true);
-    big_endian_bytes_ = configuration->property(role + ".big_endian_bytes", false);
-    sample_type_ = configuration->property(role + ".sample_type", default_sample_type);  // options: "real", "iq", "qi"
-    repeat_ = configuration->property(role + ".repeat", false);
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
-    enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
-    const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
-    int64_t bytes_to_skip = 0;
-
-    if (item_type_ == "byte")
-        {
-            item_size_ = sizeof(char);
-        }
-    else if (item_type_ == "short")
-        {
-            // If we have shorts stored in little endian format, might as
-            // well read them in as bytes.
-            if (big_endian_items_)
-                {
-                    item_size_ = sizeof(int16_t);
-                }
-            else
-                {
-                    item_size_ = sizeof(char);
-                }
-        }
-    else
-        {
-            LOG(WARNING) << item_type_ << " unrecognized item type. Using byte.";
-            item_size_ = sizeof(char);
-        }
-
-    reverse_interleaving_ = false;
-    is_complex_ = true;
-    if (sample_type_ == "real")
-        {
-            is_complex_ = false;
-        }
-    else if (sample_type_ == "iq")
-        {
-            is_complex_ = true;
-        }
-    else if (sample_type_ == "qi")
-        {
-            is_complex_ = true;
-            reverse_interleaving_ = true;
-        }
-    else
-        {
-            LOG(WARNING) << sample_type_ << " unrecognized sample type. Assuming: "
-                         << (is_complex_ ? (reverse_interleaving_ ? "qi" : "iq") : "real");
-        }
-    try
-        {
-            file_source_ = gr::blocks::file_source::make(item_size_, filename_.c_str(), repeat_);
-
-            if (seconds_to_skip > 0)
-                {
-                    bytes_to_skip = static_cast<int64_t>(
-                        seconds_to_skip * sampling_frequency_ / 4);
-                    if (is_complex_)
-                        {
-                            bytes_to_skip <<= 1;
-                        }
-                    file_source_->seek(bytes_to_skip, SEEK_SET);
-                }
-
-            unpack_samples_ = make_unpack_2bit_samples(big_endian_bytes_,
-                item_size_, big_endian_items_, reverse_interleaving_);
-            if (is_complex_)
-                {
-                    char_to_float_ =
-                        gr::blocks::interleaved_char_to_complex::make(false);
-                }
-            else
-                {
-                    char_to_float_ =
-                        gr::blocks::char_to_float::make();
-                }
-        }
-    catch (const std::exception& e)
-        {
-            std::cerr
-                << "The receiver was configured to work with a file signal source\n"
-                << "but the specified file is unreachable by GNSS-SDR.\n"
-                << "Please modify your configuration file\n"
-                << "and point SignalSource.filename to a valid raw data file. Then:\n"
-                << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
-                << "Examples of configuration files available at:\n"
-                << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n";
-
-            LOG(WARNING) << "file_signal_source: Unable to open the samples file "
-                         << filename_.c_str() << ", exiting the program.";
-            throw(e);
-        }
-
-    DLOG(INFO) << "file_source(" << file_source_->unique_id() << ")";
-
-    const size_t output_item_size = (is_complex_ ? sizeof(gr_complex) : sizeof(float));
-
-    if (samples_ == 0)  // read all file
-        {
-            /*!
-             * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
-             * A possible solution is to compute the file length in samples using file size, excluding the last 2 milliseconds, and enable always the
-             * valve block
-             */
-            std::ifstream file(filename_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-            std::ifstream::pos_type size;
-
-            if (file.is_open())
-                {
-                    size = file.tellg();
-                    samples_ = floor(static_cast<double>(size) * (is_complex_ ? 2.0 : 4.0));
-                    LOG(INFO) << "Total samples in the file= " << samples_;  // 4 samples per byte
-                    samples_ -= bytes_to_skip;
-
-                    // Also skip the last two milliseconds:
-                    samples_ -= ceil(0.002 * sampling_frequency_ / (is_complex_ ? 2.0 : 4.0));
-                }
-            else
-                {
-                    std::cout << "file_signal_source: Unable to open the samples file " << filename_.c_str() << '\n';
-                    LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename_.c_str();
-                }
-            std::streamsize ss = std::cout.precision();
-            std::cout << std::setprecision(16);
-            std::cout << "Processing file " << filename_ << ", which contains " << size << " [bytes]\n";
-            std::cout.precision(ss);
-        }
-
-    CHECK(samples_ > 0) << "File does not contain enough samples to process.";
-    double signal_duration_s;
-    signal_duration_s = static_cast<double>(samples_) * (1 / static_cast<double>(sampling_frequency_));
-    LOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
-    std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
-
-    valve_ = gnss_sdr_make_valve(output_item_size, samples_, queue);
-    DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
-
-    if (dump_)
-        {
-            // sink_ = gr_make_file_sink(item_size_, dump_filename_.c_str());
-            sink_ = gr::blocks::file_sink::make(output_item_size, dump_filename_.c_str());
-            DLOG(INFO) << "file_sink(" << sink_->unique_id() << ")";
-        }
-
-    if (enable_throttle_control_)
-        {
-            throttle_ = gr::blocks::throttle::make(output_item_size, sampling_frequency_);
-        }
-    DLOG(INFO) << "File source filename " << filename_;
-    DLOG(INFO) << "Samples " << samples_;
-    DLOG(INFO) << "Sampling frequency " << sampling_frequency_;
-    DLOG(INFO) << "Item type " << item_type_;
-    DLOG(INFO) << "Item size " << item_size_;
-    DLOG(INFO) << "Repeat " << repeat_;
-    DLOG(INFO) << "Dump " << dump_;
-    DLOG(INFO) << "Dump filename " << dump_filename_;
-    if (in_streams_ > 0)
+    if (in_streams > 0)
         {
             LOG(ERROR) << "A signal source does not have an input stream";
         }
-    if (out_streams_ > 1)
+    if (out_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
 
 
-void TwoBitPackedFileSignalSource::connect(gr::top_block_sptr top_block)
+std::tuple<size_t, bool> TwoBitPackedFileSignalSource::itemTypeToSize()
 {
-    gr::basic_block_sptr left_block = file_source_;
-    gr::basic_block_sptr right_block = unpack_samples_;
+    auto is_complex_t = false;
+    auto item_size = size_t(sizeof(char));  // default
 
-    top_block->connect(file_source_, 0, unpack_samples_, 0);
-    left_block = right_block;
+    if (item_type() == "byte")
+        {
+            item_size = sizeof(char);
+        }
+    else if (item_type() == "short")
+        {
+            // If we have shorts stored in little endian format, might as
+            // well read them in as bytes.
+            // TODO: this seems to make assumptions about the endianness of this machine
+            if (big_endian_items_)
+                {
+                    item_size = sizeof(int16_t);
+                }
+            else
+                {
+                    // how can this be right? the number of samples is computed based on this value
+                    item_size = sizeof(char);
+                }
+        }
+    else
+        {
+            LOG(WARNING) << item_type() << " unrecognized item type. Using byte.";
+        }
 
+    // the complex-ness of the input is inferred from the output type
+    if (sample_type_ == "real")
+        {
+            is_complex_t = false;
+        }
+    else if (sample_type_ == "iq")
+        {
+            is_complex_t = true;
+        }
+    else if (sample_type_ == "qi")
+        {
+            is_complex_t = true;
+            reverse_interleaving_ = true;
+        }
+    else
+        {
+            LOG(WARNING) << sample_type_ << " unrecognized sample type. Assuming: "
+                         << (is_complex_t ? (reverse_interleaving_ ? "qi" : "iq") : "real");
+        }
+
+
+    return std::make_tuple(item_size, is_complex_t);
+}
+
+// Each sample is 2 bits; if the item_type() is char, then the size is 8/2 = 4 packets per sample
+// If the item_type() is short, then the size is 16/2 = 8 packets per sample
+double TwoBitPackedFileSignalSource::packetsPerSample() const { return item_size() / 2.0; }
+gnss_shared_ptr<gr::block> TwoBitPackedFileSignalSource::source() const { return char_to_float_; }
+
+void TwoBitPackedFileSignalSource::create_file_source_hook()
+{
+    unpack_samples_ = make_unpack_2bit_samples(big_endian_bytes_, item_size(),
+        big_endian_items_, reverse_interleaving_);
+    DLOG(INFO) << "unpack_byte_2bit_samples(" << unpack_samples_->unique_id() << ")";
+
+    if (is_complex())
+        {
+            char_to_float_ = gr::blocks::interleaved_char_to_complex::make(false);
+            DLOG(INFO) << "interleaved_char_to_complex(" << char_to_float_->unique_id() << ")";
+        }
+    else
+        {
+            char_to_float_ = gr::blocks::char_to_float::make();
+            DLOG(INFO) << "char_to_float(" << char_to_float_->unique_id() << ")";
+        }
+}
+
+void TwoBitPackedFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
+{
+    top_block->connect(file_source(), 0, unpack_samples_, 0);
     DLOG(INFO) << "connected file source to unpack samples";
-    right_block = char_to_float_;
-    top_block->connect(left_block, 0, right_block, 0);
-    left_block = right_block;
+    top_block->connect(unpack_samples_, 0, char_to_float_, 0);
     DLOG(INFO) << "connected unpack samples to char to float";
-
-    if (enable_throttle_control_)
-        {
-            right_block = throttle_;
-            top_block->connect(left_block, 0, right_block, 0);
-            left_block = right_block;
-            DLOG(INFO) << " connected to throttle";
-        }
-
-    top_block->connect(left_block, 0, valve_, 0);
-    DLOG(INFO) << "connected to valve";
-    if (dump_)
-        {
-            top_block->connect(valve_, 0, sink_, 0);
-            DLOG(INFO) << "connected valve to file sink";
-        }
 }
 
-
-void TwoBitPackedFileSignalSource::disconnect(gr::top_block_sptr top_block)
+void TwoBitPackedFileSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
 {
-    gr::basic_block_sptr left_block = file_source_;
-    gr::basic_block_sptr right_block = unpack_samples_;
-
-    top_block->disconnect(file_source_, 0, unpack_samples_, 0);
-    left_block = right_block;
-
+    top_block->disconnect(file_source(), 0, unpack_samples_, 0);
     DLOG(INFO) << "disconnected file source to unpack samples";
-    right_block = char_to_float_;
-    top_block->disconnect(left_block, 0, right_block, 0);
-    left_block = right_block;
+    top_block->disconnect(unpack_samples_, 0, char_to_float_, 0);
     DLOG(INFO) << "disconnected unpack samples to char to float";
-
-    if (enable_throttle_control_)
-        {
-            right_block = throttle_;
-            top_block->disconnect(left_block, 0, right_block, 0);
-            left_block = right_block;
-            DLOG(INFO) << " disconnected to throttle";
-        }
-
-    top_block->disconnect(left_block, 0, valve_, 0);
-    DLOG(INFO) << "disconnected to valve";
-    if (dump_)
-        {
-            top_block->disconnect(valve_, 0, sink_, 0);
-            DLOG(INFO) << "disconnected valve to file sink";
-        }
-}
-
-
-gr::basic_block_sptr TwoBitPackedFileSignalSource::get_left_block()
-{
-    LOG(WARNING) << "Left block of a signal source should not be retrieved";
-    // return gr_block_sptr();
-    return gr::blocks::file_source::sptr();
-}
-
-
-gr::basic_block_sptr TwoBitPackedFileSignalSource::get_right_block()
-{
-    return valve_;
 }

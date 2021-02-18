@@ -16,16 +16,20 @@
 
 #include "gn3s_signal_source.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gn3s/gn3s_source_cc.h>
+
+using namespace std::string_literals;
 
 
 Gn3sSignalSource::Gn3sSignalSource(const ConfigurationInterface* configuration,
     std::string role,
     unsigned int in_stream,
     unsigned int out_stream,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "Gn3s_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_item_type("short");
     const std::string default_dump_file("./data/gn3s_source.dat");

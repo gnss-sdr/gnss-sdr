@@ -25,6 +25,7 @@
 #include "ad9361_manager.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+#include "gnss_sdr_string_literals.h"
 #include "uio_fpga.h"
 #include <glog/logging.h>
 #include <iio.h>
@@ -42,9 +43,12 @@
 #include <vector>
 
 
+using namespace std::string_literals;
+
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
-    Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
+    : SignalSourceBase(configuration, role, "Ad9361_Fpga_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
     const std::string default_gain_mode("slow_attack");
     const double default_tx_attenuation_db = -10.0;

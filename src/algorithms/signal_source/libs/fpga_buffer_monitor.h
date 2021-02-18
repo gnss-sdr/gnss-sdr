@@ -49,8 +49,7 @@ public:
     explicit Fpga_buffer_monitor(const std::string& device_name,
         uint32_t num_freq_bands,
         bool dump,
-        std::string dump_filename,
-        Concurrent_Queue<pmt::pmt_t>* queue);
+        std::string dump_filename);
 
     /*!
      * \brief Destructor
@@ -94,8 +93,6 @@ private:
     bool d_dump;
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-
-    Concurrent_Queue<pmt::pmt_t>* d_queue;
 };
 
 

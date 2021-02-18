@@ -59,7 +59,7 @@ public:
     /*!
      * \brief This function checks buffer overflow and monitors the FPGA buffer status
      */
-    void check_buffer_overflow_and_monitor_buffer_status(void);
+    void check_buffer_overflow_and_monitor_buffer_status();
 
 private:
     static const size_t FPGA_PAGE_SIZE = 0x10000;
@@ -79,8 +79,8 @@ private:
     static const uint32_t overflow_freq_band_0_bit_pos = 1;
     static const uint32_t overflow_freq_band_1_bit_pos = 2;
 
-    int32_t buffer_monitor_test_register(void);
-    void close_device(void);
+    int32_t buffer_monitor_test_register();
+    void close_device();
 
     volatile unsigned* d_map_base;  // driver memory map corresponding to the FPGA buffer monitor
     int d_device_descriptor;        // driver descriptor corresponding to the FPGA buffer monitor

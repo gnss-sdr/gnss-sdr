@@ -32,12 +32,14 @@
 #include <fstream>     // for string, ofstream
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
+#include <utility>     // for move
+
 
 Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename)
 {
     d_num_freq_bands = num_freq_bands;
     d_dump = dump;
-    d_dump_filename = dump_filename;
+    d_dump_filename = std::move(dump_filename);
 
     // open device descriptor
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
@@ -144,7 +146,7 @@ Fpga_buffer_monitor::~Fpga_buffer_monitor()
 }
 
 
-void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
+void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status()
 {
     // check buffer overflow flags
     uint32_t buffer_overflow_status = d_map_base[overflow_flags_reg_addr];
@@ -153,12 +155,10 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
         {
             if (d_num_freq_bands > 1)
                 {
-                    std::cout << "FPGA Buffer overflow in frequency band 0" << std::endl;
                     LOG(ERROR) << "FPGA Buffer overflow in frequency band 0";
                 }
             else
                 {
-                    std::cout << "FPGA Buffer overflow" << std::endl;
                     LOG(ERROR) << "FPGA Buffer overflow";
                 }
         }
@@ -167,7 +167,6 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
         {
             if ((buffer_overflow_status & overflow_freq_band_1_bit_pos) != 0)
                 {
-                    std::cout << "FPGA Buffer overflow in frequency band 1" << std::endl;
                     LOG(ERROR) << "FPGA Buffer overflow in frequency band 1";
                 }
         }
@@ -232,7 +231,7 @@ void Fpga_buffer_monitor::check_buffer_overflow_and_monitor_buffer_status(void)
 }
 
 
-int32_t Fpga_buffer_monitor::buffer_monitor_test_register(void)
+int32_t Fpga_buffer_monitor::buffer_monitor_test_register()
 {
     // write value to test register
     d_map_base[test_reg_addr] = test_register_writeval;

@@ -34,4 +34,9 @@ std::string operator"" s(const char* str, std::size_t len)
 }  // namespace string_literals
 }  // namespace std
 
+#else
+// Avoid "gnss_sdr_string_literals.cc.o has no symbols" warning in MacOS with a
+// dummy symbol so ranlib does not complain
+void avoid_no_symbols_warning() {}
+
 #endif  // __cplusplus == 201103L

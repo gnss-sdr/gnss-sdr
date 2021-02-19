@@ -52,7 +52,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "Ad9361_Fpga_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
-    // initialize variables that are used in real-time mode
+    // initialize the variables that are used in real-time mode
 
     const std::string default_gain_mode("slow_attack");
     const double default_tx_attenuation_db = -10.0;
@@ -97,7 +97,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 
 
-    // initialize variables that are used in post-processing mode
+    // initialize the variables that are used in post-processing mode
 
     enable_DMA_ = false;
 
@@ -724,7 +724,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                             // FLAG AS ERROR !! IT SHOULD NEVER HAPPEN
                             nread_elements = infile1.gcount();
                         }
-                    //nsamples += (nread_elements / 2);
 
                     for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                         {
@@ -808,8 +807,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                         }
                     else
                         {
-                            run_DMA = false;
                             // the input file is completely processed. Stop the receiver.
+                            run_DMA = false;
                         }
                 }
             std::unique_lock<std::mutex> lock(dma_mutex);

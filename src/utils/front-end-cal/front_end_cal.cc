@@ -56,8 +56,8 @@ bool FrontEndCal::read_assistance_from_XML()
                 {
                     std::cout << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first << '\n';
                     LOG(INFO) << "SUPL: Read XML Ephemeris for GPS SV " << gps_eph_iter->first;
-                    LOG(INFO) << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week;
-                    global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
+                    LOG(INFO) << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.toe << " and GPS Week=" << gps_eph_iter->second.WN;
+                    global_gps_ephemeris_map.write(gps_eph_iter->second.PRN, gps_eph_iter->second);
                 }
             return true;
         }
@@ -134,8 +134,8 @@ int FrontEndCal::Get_SUPL_Assist()
                                 {
                                     LOG(INFO) << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first;
                                     std::cout << "SUPL: Received Ephemeris for GPS SV " << gps_eph_iter->first << '\n';
-                                    LOG(INFO) << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.d_Toe << " and GPS Week=" << gps_eph_iter->second.i_GPS_week;
-                                    global_gps_ephemeris_map.write(gps_eph_iter->second.i_satellite_PRN, gps_eph_iter->second);
+                                    LOG(INFO) << "New Ephemeris record inserted with Toe=" << gps_eph_iter->second.toe << " and GPS Week=" << gps_eph_iter->second.WN;
+                                    global_gps_ephemeris_map.write(gps_eph_iter->second.PRN, gps_eph_iter->second);
                                 }
                             // Save ephemeris to XML file
                             std::string eph_xml_filename = configuration_->property("GNSS-SDR.SUPL_gps_ephemeris_xml", eph_default_xml_filename);
@@ -200,7 +200,7 @@ int FrontEndCal::Get_SUPL_Assist()
                                     LOG(INFO) << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first;
                                     std::cout << "SUPL: Received Acquisition assistance for GPS SV " << gps_acq_iter->first << '\n';
                                     LOG(INFO) << "New acq assist record inserted";
-                                    global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
+                                    global_gps_acq_assist_map.write(gps_acq_iter->second.PRN, gps_acq_iter->second);
                                 }
                         }
                     else
@@ -323,9 +323,9 @@ double FrontEndCal::estimate_doppler_from_eph(unsigned int PRN, double tow, doub
             for (int i = 0; i < n_points; i++)
                 {
                     eph_it->second.satellitePosition(obs_time);
-                    SV_pos_ecef(0) = eph_it->second.d_satpos_X;
-                    SV_pos_ecef(1) = eph_it->second.d_satpos_Y;
-                    SV_pos_ecef(2) = eph_it->second.d_satpos_Z;
+                    SV_pos_ecef(0) = eph_it->second.satpos_X;
+                    SV_pos_ecef(1) = eph_it->second.satpos_Y;
+                    SV_pos_ecef(2) = eph_it->second.satpos_Z;
                     // SV distances to observer (true range)
                     ranges(i) = arma::norm(SV_pos_ecef - obs_ecef, 2);
                     obs_time += step_secs;

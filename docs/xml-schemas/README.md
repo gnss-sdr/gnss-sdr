@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -33,6 +33,8 @@ elements in an XML document.
 
 - [cnav_ephemeris_map.xsd](./cnav_ephemeris_map.xsd) - GPS CNAV message
   ephemeris parameters.
+- [cnav_utc_model.xsd](./cnav_utc_model.xsd) - GPS CNAV message UTC model
+  parameters.
 
 ## Galileo
 

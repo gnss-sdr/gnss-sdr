@@ -1,6 +1,6 @@
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2018-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
@@ -16,43 +16,42 @@
                     <xs:element name="second">
                       <xs:complexType>
                         <xs:sequence>
-                          <xs:element type="xs:byte" name="i_satellite_PRN"/>
-                          <xs:element type="xs:float" name="M0_1"/>
-                          <xs:element type="xs:float" name="delta_n_3"/>
-                          <xs:element type="xs:float" name="e_1"/>
-                          <xs:element type="xs:float" name="A_1"/>
-                          <xs:element type="xs:float" name="OMEGA_0_2"/>
-                          <xs:element type="xs:float" name="i_0_2"/>
-                          <xs:element type="xs:float" name="omega_2"/>
-                          <xs:element type="xs:float" name="OMEGA_dot_3"/>
-                          <xs:element type="xs:float" name="iDot_2"/>
-                          <xs:element type="xs:float" name="C_uc_3"/>
-                          <xs:element type="xs:float" name="C_us_3"/>
-                          <xs:element type="xs:float" name="C_rc_3"/>
-                          <xs:element type="xs:float" name="C_rs_3"/>
-                          <xs:element type="xs:float" name="C_ic_4"/>
-                          <xs:element type="xs:float" name="C_is_4"/>
-                          <xs:element type="xs:int" name="t0e_1"/>
-                          <xs:element type="xs:int" name="t0c_4"/>
-                          <xs:element type="xs:float" name="af0_4"/>
-                          <xs:element type="xs:float" name="af1_4"/>
-                          <xs:element type="xs:float" name="af2_4"/>
-                          <xs:element type="xs:short" name="WN_5"/>
-                          <xs:element type="xs:int" name="TOW_5"/>
-                          <xs:element type="xs:float" name="Galileo_satClkDrift"/>
-                          <xs:element type="xs:float" name="Galileo_dtr"/>
-
+                          <xs:element type="xs:byte" name="PRN"/>
+                          <xs:element type="xs:float" name="M_0"/>
+                          <xs:element type="xs:float" name="delta_n"/>
+                          <xs:element type="xs:float" name="ecc"/>
+                          <xs:element type="xs:float" name="sqrtA"/>
+                          <xs:element type="xs:float" name="OMEGA_0"/>
+                          <xs:element type="xs:float" name="i_0"/>
+                          <xs:element type="xs:float" name="omega"/>
+                          <xs:element type="xs:float" name="OMEGAdot"/>
+                          <xs:element type="xs:float" name="idot"/>
+                          <xs:element type="xs:float" name="Cuc"/>
+                          <xs:element type="xs:float" name="Cus"/>
+                          <xs:element type="xs:float" name="Crc"/>
+                          <xs:element type="xs:float" name="Crs"/>
+                          <xs:element type="xs:float" name="Cic"/>
+                          <xs:element type="xs:float" name="Cis"/>
+                          <xs:element type="xs:int" name="toe"/>
+                          <xs:element type="xs:int" name="toc"/>
+                          <xs:element type="xs:float" name="af0"/>
+                          <xs:element type="xs:float" name="af1"/>
+                          <xs:element type="xs:float" name="af2"/>
+                          <xs:element type="xs:short" name="WN"/>
+                          <xs:element type="xs:int" name="tow"/>
+                          <xs:element type="xs:float" name="satClkDrift"/>
+                          <xs:element type="xs:float" name="dtr"/>
                           <xs:element type="xs:byte" name="IOD_ephemeris"/>
-                          <xs:element type="xs:byte" name="IOD_nav_1"/>
-                          <xs:element type="xs:byte" name="SISA_3"/>
+                          <xs:element type="xs:byte" name="IOD_nav"/>
+                          <xs:element type="xs:byte" name="SISA"/>
                           <xs:element type="xs:byte" name="E5a_HS"/>
-                          <xs:element type="xs:byte" name="E5b_HS_5"/>
-                          <xs:element type="xs:byte" name="E1B_HS_5"/>
+                          <xs:element type="xs:byte" name="E5b_HS"/>
+                          <xs:element type="xs:byte" name="E1B_HS"/>
                           <xs:element type="xs:byte" name="E5a_DVS"/>
-                          <xs:element type="xs:byte" name="E5b_DVS_5"/>
-                          <xs:element type="xs:byte" name="E1B_DVS_5"/>
-                          <xs:element type="xs:float" name="BGD_E1E5a_5"/>
-                          <xs:element type="xs:float" name="BGD_E1E5b_5"/>
+                          <xs:element type="xs:byte" name="E5b_DVS"/>
+                          <xs:element type="xs:byte" name="E1B_DVS"/>
+                          <xs:element type="xs:float" name="BGD_E1E5a"/>
+                          <xs:element type="xs:float" name="BGD_E1E5b"/>
                           <xs:element type="xs:byte" name="flag_all_ephemeris"/>
                         </xs:sequence>
                         <xs:attribute type="xs:byte" name="class_id" use="optional"/>

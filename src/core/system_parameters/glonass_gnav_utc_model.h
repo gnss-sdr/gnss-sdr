@@ -59,21 +59,21 @@ public:
 
     template <class Archive>
     /*!
-     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the almanac data on disk file.
+     * \brief Serialize is a boost standard method to be called by the boost XML
+     * serialization. Here is used to save the almanac data on disk file.
      */
     void serialize(Archive& archive, const uint32_t version)
     {
-        using boost::serialization::make_nvp;
         if (version)
             {
             };
-        archive& make_nvp("valid", valid);
-        archive& make_nvp("d_tau_c", d_tau_c);
-        archive& make_nvp("d_tau_gps", d_tau_gps);
-        archive& make_nvp("d_N_4", d_N_4);
-        archive& make_nvp("d_N_A", d_N_A);
-        archive& make_nvp("d_B1", d_B1);
-        archive& make_nvp("d_B2", d_B2);
+        archive& BOOST_SERIALIZATION_NVP(valid);
+        archive& BOOST_SERIALIZATION_NVP(d_tau_c);
+        archive& BOOST_SERIALIZATION_NVP(d_tau_gps);
+        archive& BOOST_SERIALIZATION_NVP(d_N_4);
+        archive& BOOST_SERIALIZATION_NVP(d_N_A);
+        archive& BOOST_SERIALIZATION_NVP(d_B1);
+        archive& BOOST_SERIALIZATION_NVP(d_B2);
     }
 };
 

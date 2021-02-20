@@ -159,6 +159,8 @@ constexpr int32_t CNAV_DN_LSB = 1;
 const std::vector<std::pair<int32_t, int32_t> > CNAV_DELTA_TLSF({{218, 8}});
 constexpr int32_t CNAV_DELTA_TLSF_LSB = 1;
 
+constexpr double CNAV_A_REF = 26559710.0;       // See IS-GPS-200L,  pp. 161
+constexpr double CNAV_OMEGA_DOT_REF = -2.6e-9;  // semicircles / s, see IS-GPS-200L pp. 160
 
 // TODO: Add more frames (Almanac, etc...)
 

@@ -41,37 +41,37 @@ public:
     Gps_Utc_Model() = default;
 
     // UTC parameters
-    double d_A0{};           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s]
-    double d_A1{};           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s/s]
-    double d_A2{};           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s/s]
-    int32_t d_t_OT{};        //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200L) [s]
-    int32_t i_WN_T{};        //!< UTC reference week number [weeks]
-    int32_t d_DeltaT_LS{};   //!< delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
-    int32_t i_WN_LSF{};      //!< Week number at the end of which the leap second becomes effective [weeks]
-    int32_t i_DN{};          //!< Day number (DN) at the end of which the leap second becomes effective [days]
-    int32_t d_DeltaT_LSF{};  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
+    double A0{};           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s]
+    double A1{};           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s/s]
+    double A2{};           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s/s]
+    int32_t tot{};         //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200L) [s]
+    int32_t WN_T{};        //!< UTC reference week number [weeks]
+    int32_t DeltaT_LS{};   //!< Delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
+    int32_t WN_LSF{};      //!< Week number at the end of which the leap second becomes effective [weeks]
+    int32_t DN{};          //!< Day number (DN) at the end of which the leap second becomes effective [days]
+    int32_t DeltaT_LSF{};  //!< Scheduled future or recent past (relative to NAV message upload) value of the delta time due to leap seconds [s]
 
     bool valid{};
 
     template <class Archive>
     /*
-     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
+     * \brief Serialize is a boost standard method to be called by the boost XML
+     * serialization. Here is used to save the ephemeris data on disk file.
      */
     inline void serialize(Archive& archive, const uint32_t version)
     {
-        using boost::serialization::make_nvp;
         if (version)
             {
             };
-        archive& make_nvp("d_A1", d_A1);
-        archive& make_nvp("d_A0", d_A0);
-        archive& make_nvp("d_t_OT", d_t_OT);
-        archive& make_nvp("i_WN_T", i_WN_T);
-        archive& make_nvp("d_DeltaT_LS", d_DeltaT_LS);
-        archive& make_nvp("i_WN_LSF", i_WN_LSF);
-        archive& make_nvp("i_DN", i_DN);
-        archive& make_nvp("d_DeltaT_LSF", d_DeltaT_LSF);
-        archive& make_nvp("valid", valid);
+        archive& BOOST_SERIALIZATION_NVP(A1);
+        archive& BOOST_SERIALIZATION_NVP(A0);
+        archive& BOOST_SERIALIZATION_NVP(tot);
+        archive& BOOST_SERIALIZATION_NVP(WN_T);
+        archive& BOOST_SERIALIZATION_NVP(DeltaT_LS);
+        archive& BOOST_SERIALIZATION_NVP(WN_LSF);
+        archive& BOOST_SERIALIZATION_NVP(DN);
+        archive& BOOST_SERIALIZATION_NVP(DeltaT_LSF);
+        archive& BOOST_SERIALIZATION_NVP(valid);
     }
 };
 

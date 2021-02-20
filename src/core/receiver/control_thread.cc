@@ -496,7 +496,7 @@ bool ControlThread::read_assistance_from_XML()
                          gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                          gps_eph_iter++)
                         {
-                            std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << '\n';
+                            std::cout << "From XML file: Read NAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
@@ -526,7 +526,7 @@ bool ControlThread::read_assistance_from_XML()
                          gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
                          gps_alm_iter++)
                         {
-                            std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << '\n';
+                            std::cout << "From XML file: Read GPS almanac for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
@@ -543,7 +543,7 @@ bool ControlThread::read_assistance_from_XML()
                          gal_eph_iter != supl_client_ephemeris_.gal_ephemeris_map.cend();
                          gal_eph_iter++)
                         {
-                            std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->second.i_satellite_PRN) << '\n';
+                            std::cout << "From XML file: Read ephemeris for satellite " << Gnss_Satellite("Galileo", gal_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(gal_eph_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
@@ -573,7 +573,7 @@ bool ControlThread::read_assistance_from_XML()
                          gal_alm_iter != supl_client_ephemeris_.gal_almanac_map.cend();
                          gal_alm_iter++)
                         {
-                            std::cout << "From XML file: Read Galileo almanac for satellite " << Gnss_Satellite("Galileo", gal_alm_iter->second.i_satellite_PRN) << '\n';
+                            std::cout << "From XML file: Read Galileo almanac for satellite " << Gnss_Satellite("Galileo", gal_alm_iter->second.PRN) << '\n';
                             const std::shared_ptr<Galileo_Almanac> tmp_obj = std::make_shared<Galileo_Almanac>(gal_alm_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
@@ -590,7 +590,7 @@ bool ControlThread::read_assistance_from_XML()
                          gps_cnav_eph_iter != supl_client_ephemeris_.gps_cnav_ephemeris_map.cend();
                          gps_cnav_eph_iter++)
                         {
-                            std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_cnav_eph_iter->second.i_satellite_PRN) << '\n';
+                            std::cout << "From XML file: Read CNAV ephemeris for satellite " << Gnss_Satellite("GPS", gps_cnav_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(gps_cnav_eph_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
@@ -615,7 +615,7 @@ bool ControlThread::read_assistance_from_XML()
                          glo_gnav_eph_iter != supl_client_ephemeris_.glonass_gnav_ephemeris_map.cend();
                          glo_gnav_eph_iter++)
                         {
-                            std::cout << "From XML file: Read GLONASS GNAV ephemeris for satellite " << Gnss_Satellite("GLONASS", glo_gnav_eph_iter->second.i_satellite_PRN) << '\n';
+                            std::cout << "From XML file: Read GLONASS GNAV ephemeris for satellite " << Gnss_Satellite("GLONASS", glo_gnav_eph_iter->second.PRN) << '\n';
                             const std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(glo_gnav_eph_iter->second);
                             flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                         }
@@ -744,7 +744,7 @@ void ControlThread::assist_GNSS()
                                  gps_eph_iter != supl_client_ephemeris_.gps_ephemeris_map.cend();
                                  gps_eph_iter++)
                                 {
-                                    std::cout << "SUPL: Received ephemeris data for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.i_satellite_PRN) << '\n';
+                                    std::cout << "SUPL: Received ephemeris data for satellite " << Gnss_Satellite("GPS", gps_eph_iter->second.PRN) << '\n';
                                     const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(gps_eph_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
@@ -781,7 +781,7 @@ void ControlThread::assist_GNSS()
                                  gps_alm_iter != supl_client_ephemeris_.gps_almanac_map.cend();
                                  gps_alm_iter++)
                                 {
-                                    std::cout << "SUPL: Received almanac data for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.i_satellite_PRN) << '\n';
+                                    std::cout << "SUPL: Received almanac data for satellite " << Gnss_Satellite("GPS", gps_alm_iter->second.PRN) << '\n';
                                     const std::shared_ptr<Gps_Almanac> tmp_obj = std::make_shared<Gps_Almanac>(gps_alm_iter->second);
                                     flowgraph_->send_telemetry_msg(pmt::make_any(tmp_obj));
                                 }
@@ -835,8 +835,8 @@ void ControlThread::assist_GNSS()
                                  gps_acq_iter != supl_client_acquisition_.gps_acq_map.cend();
                                  gps_acq_iter++)
                                 {
-                                    std::cout << "SUPL: Received acquisition assistance data for satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.i_satellite_PRN) << '\n';
-                                    global_gps_acq_assist_map.write(gps_acq_iter->second.i_satellite_PRN, gps_acq_iter->second);
+                                    std::cout << "SUPL: Received acquisition assistance data for satellite " << Gnss_Satellite("GPS", gps_acq_iter->second.PRN) << '\n';
+                                    global_gps_acq_assist_map.write(gps_acq_iter->second.PRN, gps_acq_iter->second);
                                 }
                             if (supl_client_acquisition_.gps_ref_loc.valid == true)
                                 {
@@ -1006,10 +1006,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             // push sat
             if (El > 0)
                 {
-                    std::cout << "Using GPS Ephemeris: Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << '\n';
+                    std::cout << "Using GPS Ephemeris: Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
                     available_satellites.emplace_back(floor(El),
-                        (Gnss_Satellite(std::string("GPS"), it.second.i_satellite_PRN)));
-                    visible_gps.push_back(it.second.i_satellite_PRN);
+                        (Gnss_Satellite(std::string("GPS"), it.second.PRN)));
+                    visible_gps.push_back(it.second.PRN);
                 }
         }
 
@@ -1031,10 +1031,10 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             // push sat
             if (El > 0)
                 {
-                    std::cout << "Using Galileo Ephemeris: Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << '\n';
+                    std::cout << "Using Galileo Ephemeris: Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
                     available_satellites.emplace_back(floor(El),
-                        (Gnss_Satellite(std::string("Galileo"), it.second.i_satellite_PRN)));
-                    visible_gal.push_back(it.second.i_satellite_PRN);
+                        (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
+                    visible_gal.push_back(it.second.PRN);
                 }
         }
 
@@ -1058,12 +1058,12 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             std::vector<unsigned int>::iterator it2;
             if (El > 0)
                 {
-                    it2 = std::find(visible_gps.begin(), visible_gps.end(), it.second.i_satellite_PRN);
+                    it2 = std::find(visible_gps.begin(), visible_gps.end(), it.second.PRN);
                     if (it2 == visible_gps.end())
                         {
-                            std::cout << "Using GPS Almanac:  Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << '\n';
+                            std::cout << "Using GPS Almanac:  Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
                             available_satellites.emplace_back(floor(El),
-                                (Gnss_Satellite(std::string("GPS"), it.second.i_satellite_PRN)));
+                                (Gnss_Satellite(std::string("GPS"), it.second.PRN)));
                         }
                 }
         }
@@ -1088,12 +1088,12 @@ std::vector<std::pair<int, Gnss_Satellite>> ControlThread::get_visible_sats(time
             std::vector<unsigned int>::iterator it2;
             if (El > 0)
                 {
-                    it2 = std::find(visible_gal.begin(), visible_gal.end(), it.second.i_satellite_PRN);
+                    it2 = std::find(visible_gal.begin(), visible_gal.end(), it.second.PRN);
                     if (it2 == visible_gal.end())
                         {
-                            std::cout << "Using Galileo Almanac:  Sat " << it.second.i_satellite_PRN << " Az: " << Az << " El: " << El << '\n';
+                            std::cout << "Using Galileo Almanac:  Sat " << it.second.PRN << " Az: " << Az << " El: " << El << '\n';
                             available_satellites.emplace_back(floor(El),
-                                (Gnss_Satellite(std::string("Galileo"), it.second.i_satellite_PRN)));
+                                (Gnss_Satellite(std::string("Galileo"), it.second.PRN)));
                         }
                 }
         }
@@ -1116,28 +1116,28 @@ void ControlThread::gps_acq_assist_data_collector() const
     while (stop_ == false)
         {
             global_gps_acq_assist_queue.wait_and_pop(gps_acq);
-            if (gps_acq.i_satellite_PRN == 0)
+            if (gps_acq.PRN == 0)
                 {
                     break;
                 }
 
             // DEBUG MESSAGE
             std::cout << "Acquisition assistance record has arrived from SAT ID "
-                      << gps_acq.i_satellite_PRN
+                      << gps_acq.PRN
                       << " with Doppler "
-                      << gps_acq.d_Doppler0
+                      << gps_acq.Doppler0
                       << " [Hz]\n";
             // insert new acq record to the global ephemeris map
-            if (global_gps_acq_assist_map.read(gps_acq.i_satellite_PRN, gps_acq_old))
+            if (global_gps_acq_assist_map.read(gps_acq.PRN, gps_acq_old))
                 {
                     std::cout << "Acquisition assistance record updated\n";
-                    global_gps_acq_assist_map.write(gps_acq.i_satellite_PRN, gps_acq);
+                    global_gps_acq_assist_map.write(gps_acq.PRN, gps_acq);
                 }
             else
                 {
                     // insert new acq record
                     LOG(INFO) << "New acq assist record inserted";
-                    global_gps_acq_assist_map.write(gps_acq.i_satellite_PRN, gps_acq);
+                    global_gps_acq_assist_map.write(gps_acq.PRN, gps_acq);
                 }
         }
 }

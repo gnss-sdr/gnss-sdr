@@ -116,111 +116,6 @@ int64_t Beidou_Dnav_Navigation_Message::read_navigation_signed(
 }
 
 
-double Beidou_Dnav_Navigation_Message::check_t(double time)
-{
-    const double half_week = 302400;  // seconds
-    double corrTime = time;
-    if (time > half_week)
-        {
-            corrTime = time - 2 * half_week;
-        }
-    else if (time < -half_week)
-        {
-            corrTime = time + 2 * half_week;
-        }
-    return corrTime;
-}
-
-
-double Beidou_Dnav_Navigation_Message::sv_clock_correction(double transmitTime)
-{
-    const double dt = check_t(transmitTime - d_Toc);
-    d_satClkCorr = (d_A_f2 * dt + d_A_f1) * dt + d_A_f0 + d_dtr;
-    double correctedTime = transmitTime - d_satClkCorr;
-    return correctedTime;
-}
-
-
-void Beidou_Dnav_Navigation_Message::satellitePosition(double transmitTime)
-{
-    // Find satellite's position -----------------------------------------------
-    // Restore semi-major axis
-    const double a = d_sqrt_A * d_sqrt_A;
-
-    // Time from ephemeris reference epoch
-    const double tk = check_t(transmitTime - d_Toe_sf2);
-
-    // Computed mean motion
-    const double n0 = sqrt(BEIDOU_GM / (a * a * a));
-
-    // Corrected mean motion
-    const double n = n0 + d_Delta_n;
-
-    // Mean anomaly
-    double M = d_M_0 + n * tk;
-
-    // Reduce mean anomaly to between 0 and 2pi
-    M = fmod((M + 2 * GNSS_PI), (2 * GNSS_PI));
-
-    // Initial guess of eccentric anomaly
-    double E = M;
-    double E_old;
-    double dE;
-    // --- Iteratively compute eccentric anomaly -------------------------------
-    for (int32_t ii = 1; ii < 20; ii++)
-        {
-            E_old = E;
-            E = M + d_eccentricity * sin(E);
-            dE = fmod(E - E_old, 2 * GNSS_PI);
-            if (fabs(dE) < 1e-12)
-                {
-                    // Necessary precision is reached, exit from the loop
-                    break;
-                }
-        }
-
-    // Compute relativistic correction term
-    d_dtr = BEIDOU_F * d_eccentricity * d_sqrt_A * sin(E);
-
-    // Compute the true anomaly
-    const double tmp_Y = sqrt(1.0 - d_eccentricity * d_eccentricity) * sin(E);
-    const double tmp_X = cos(E) - d_eccentricity;
-    const double nu = atan2(tmp_Y, tmp_X);
-
-    // Compute angle phi (argument of Latitude)
-    double phi = nu + d_OMEGA;
-
-    // Reduce phi to between 0 and 2*pi rad
-    phi = fmod((phi), (2 * GNSS_PI));
-
-    // Correct argument of latitude
-    const double u = phi + d_Cuc * cos(2 * phi) + d_Cus * sin(2 * phi);
-
-    // Correct radius
-    const double r = a * (1 - d_eccentricity * cos(E)) + d_Crc * cos(2 * phi) + d_Crs * sin(2 * phi);
-
-    // Correct inclination
-    const double i = d_i_0 + d_IDOT * tk + d_Cic * cos(2 * phi) + d_Cis * sin(2 * phi);
-
-    // Compute the angle between the ascending node and the Greenwich meridian
-    double Omega = d_OMEGA0 + (d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT) * tk - BEIDOU_OMEGA_EARTH_DOT * d_Toe_sf2;
-
-    // Reduce to between 0 and 2*pi rad
-    Omega = fmod((Omega + 2 * GNSS_PI), (2 * GNSS_PI));
-
-    // --- Compute satellite coordinates in Earth-fixed coordinates
-    d_satpos_X = cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega);
-    d_satpos_Y = cos(u) * r * sin(Omega) + sin(u) * r * cos(i) * cos(Omega);
-    d_satpos_Z = sin(u) * r * sin(i);
-
-    // Satellite's velocity. Can be useful for Vector Tracking loops
-    const double Omega_dot = d_OMEGA_DOT - BEIDOU_OMEGA_EARTH_DOT;
-    d_satvel_X = -Omega_dot * (cos(u) * r + sin(u) * r * cos(i)) + d_satpos_X * cos(Omega) - d_satpos_Y * cos(i) * sin(Omega);
-    d_satvel_Y = Omega_dot * (cos(u) * r * cos(Omega) - sin(u) * r * cos(i) * sin(Omega)) + d_satpos_X * sin(Omega) + d_satpos_Y * cos(i) * cos(Omega);
-    d_satvel_Z = d_satpos_Y * sin(i);
-}
-
-
 int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& subframe)
 {
     const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits(subframe);
@@ -757,85 +652,85 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
             std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits;
 
             // Order as given by eph_t in rtklib
-            eph.i_satellite_PRN = i_satellite_PRN;
+            eph.PRN = i_satellite_PRN;
             eph.d_AODC = d_AODC;
             eph.d_AODE = d_AODE;
-            eph.i_SV_accuracy = i_SV_accuracy;
-            eph.i_SV_health = i_SV_health;
-            eph.i_BEIDOU_week = i_BEIDOU_week;
+            eph.SV_accuracy = i_SV_accuracy;
+            eph.SV_health = i_SV_health;
+            eph.WN = i_BEIDOU_week;
             eph.i_sig_type = i_signal_type;
             eph.i_nav_type = 2;
 
-            eph.d_TOW = d_SOW;
-            eph.d_Toe = d_Toe;
-            eph.d_Toc = d_Toc;
+            eph.tow = d_SOW;
+            eph.toe = d_Toe;
+            eph.toc = d_Toc;
 
-            eph.d_sqrt_A = d_sqrt_A;
-            eph.d_eccentricity = static_cast<double>((d_eccentricity_msb + d_eccentricity_lsb)) * D1_E_LSB;
+            eph.sqrtA = d_sqrt_A;
+            eph.ecc = static_cast<double>((d_eccentricity_msb + d_eccentricity_lsb)) * D1_E_LSB;
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_i_0_msb_bits + d_i_0_lsb_bits);
-            eph.d_i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_I0)) * D1_I0_LSB;
-            eph.d_OMEGA0 = d_OMEGA0;
+            eph.i_0 = static_cast<double>(read_navigation_signed(subframe_bits, D2_I0)) * D1_I0_LSB;
+            eph.OMEGA_0 = d_OMEGA0;
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_OMEGA_msb_bits + d_OMEGA_lsb_bits);
-            eph.d_OMEGA = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA)) * D1_OMEGA_LSB;
-            eph.d_M_0 = d_M_0;
-            eph.d_Delta_n = d_Delta_n;
+            eph.omega = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA)) * D1_OMEGA_LSB;
+            eph.M_0 = d_M_0;
+            eph.delta_n = d_Delta_n;
 
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_OMEGA_DOT_msb_bits + d_OMEGA_DOT_lsb_bits);
-            eph.d_OMEGA_DOT = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA_DOT)) * D1_OMEGA_DOT_LSB;
-            eph.d_IDOT = d_IDOT;
+            eph.OMEGAdot = static_cast<double>(read_navigation_signed(subframe_bits, D2_OMEGA_DOT)) * D1_OMEGA_DOT_LSB;
+            eph.idot = d_IDOT;
 
-            eph.d_Crc = d_Crc;
-            eph.d_Crs = d_Crs;
+            eph.Crc = d_Crc;
+            eph.Crs = d_Crs;
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_Cuc_msb_bits + d_Cuc_lsb_bits);
-            eph.d_Cuc = static_cast<double>(read_navigation_signed(subframe_bits, D2_CUC)) * D1_CUC_LSB;
-            eph.d_Cus = d_Cus;
+            eph.Cuc = static_cast<double>(read_navigation_signed(subframe_bits, D2_CUC)) * D1_CUC_LSB;
+            eph.Cus = d_Cus;
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_Cic_msb_bits + d_Cic_lsb_bits);
-            eph.d_Cic = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIC)) * D1_CIC_LSB;
-            eph.d_Cis = d_Cis;
+            eph.Cic = static_cast<double>(read_navigation_signed(subframe_bits, D2_CIC)) * D1_CIC_LSB;
+            eph.Cis = d_Cis;
 
-            eph.d_A_f0 = d_A_f0;
+            eph.af0 = d_A_f0;
             subframe_bits = std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>(d_A_f1_msb_bits + d_A_f1_lsb_bits);
-            eph.d_A_f1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1)) * D1_A1_LSB;
-            eph.d_A_f2 = d_A_f2;
+            eph.af1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1)) * D1_A1_LSB;
+            eph.af2 = d_A_f2;
 
             eph.d_TGD1 = d_TGD1;
             eph.d_TGD2 = d_TGD2;
         }
     else
         {
-            eph.i_satellite_PRN = i_satellite_PRN;
+            eph.PRN = i_satellite_PRN;
             eph.d_AODC = d_AODC;
             eph.d_AODE = d_AODE;
-            eph.i_SV_accuracy = i_SV_accuracy;
-            eph.i_SV_health = i_SV_health;
-            eph.i_BEIDOU_week = i_BEIDOU_week;
+            eph.SV_accuracy = i_SV_accuracy;
+            eph.SV_health = i_SV_health;
+            eph.WN = i_BEIDOU_week;
             eph.i_sig_type = i_signal_type;
             eph.i_nav_type = 1;  // MEO/IGSO
 
-            eph.d_TOW = d_SOW;
-            eph.d_Toe = ((d_Toe_sf2 + d_Toe_sf3) * D1_TOE_LSB);
-            eph.d_Toc = d_Toc;
+            eph.tow = d_SOW;
+            eph.toe = ((d_Toe_sf2 + d_Toe_sf3) * D1_TOE_LSB);
+            eph.toc = d_Toc;
 
-            eph.d_sqrt_A = d_sqrt_A;
-            eph.d_eccentricity = d_eccentricity;
-            eph.d_i_0 = d_i_0;
-            eph.d_OMEGA0 = d_OMEGA0;
-            eph.d_OMEGA = d_OMEGA;
-            eph.d_M_0 = d_M_0;
-            eph.d_Delta_n = d_Delta_n;
-            eph.d_OMEGA_DOT = d_OMEGA_DOT;
-            eph.d_IDOT = d_IDOT;
+            eph.sqrtA = d_sqrt_A;
+            eph.ecc = d_eccentricity;
+            eph.i_0 = d_i_0;
+            eph.OMEGA_0 = d_OMEGA0;
+            eph.omega = d_OMEGA;
+            eph.M_0 = d_M_0;
+            eph.delta_n = d_Delta_n;
+            eph.OMEGAdot = d_OMEGA_DOT;
+            eph.idot = d_IDOT;
 
-            eph.d_Crc = d_Crc;
-            eph.d_Crs = d_Crs;
-            eph.d_Cuc = d_Cuc;
-            eph.d_Cus = d_Cus;
-            eph.d_Cic = d_Cic;
-            eph.d_Cis = d_Cis;
+            eph.Crc = d_Crc;
+            eph.Crs = d_Crs;
+            eph.Cuc = d_Cuc;
+            eph.Cus = d_Cus;
+            eph.Cic = d_Cic;
+            eph.Cis = d_Cis;
 
-            eph.d_A_f0 = d_A_f0;
-            eph.d_A_f1 = d_A_f1;
-            eph.d_A_f2 = d_A_f2;
+            eph.af0 = d_A_f0;
+            eph.af1 = d_A_f1;
+            eph.af2 = d_A_f2;
 
             eph.d_TGD1 = d_TGD1;
             eph.d_TGD2 = d_TGD2;
@@ -848,14 +743,14 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
 Beidou_Dnav_Iono Beidou_Dnav_Navigation_Message::get_iono()
 {
     Beidou_Dnav_Iono iono;
-    iono.d_alpha0 = d_alpha0;
-    iono.d_alpha1 = d_alpha1;
-    iono.d_alpha2 = d_alpha2;
-    iono.d_alpha3 = d_alpha3;
-    iono.d_beta0 = d_beta0;
-    iono.d_beta1 = d_beta1;
-    iono.d_beta2 = d_beta2;
-    iono.d_beta3 = d_beta3;
+    iono.alpha0 = d_alpha0;
+    iono.alpha1 = d_alpha1;
+    iono.alpha2 = d_alpha2;
+    iono.alpha3 = d_alpha3;
+    iono.beta0 = d_beta0;
+    iono.beta1 = d_beta1;
+    iono.beta2 = d_beta2;
+    iono.beta3 = d_beta3;
     iono.valid = flag_iono_valid;
     // WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
     flag_iono_valid = false;
@@ -868,19 +763,19 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
     Beidou_Dnav_Utc_Model utc_model;
     utc_model.valid = flag_utc_model_valid;
     // UTC parameters
-    utc_model.d_A1_UTC = d_A1UTC;
-    utc_model.d_A0_UTC = d_A0UTC;
-    utc_model.i_DeltaT_LS = i_DeltaT_LS;
-    utc_model.i_WN_LSF = i_WN_LSF;
-    utc_model.i_DN = i_DN;
-    utc_model.d_DeltaT_LSF = d_DeltaT_LSF;
+    utc_model.A1_UTC = d_A1UTC;
+    utc_model.A0_UTC = d_A0UTC;
+    utc_model.DeltaT_LS = i_DeltaT_LS;
+    utc_model.WN_LSF = i_WN_LSF;
+    utc_model.DN = i_DN;
+    utc_model.DeltaT_LSF = d_DeltaT_LSF;
 
-    utc_model.d_A0_GPS = d_A0GPS;
-    utc_model.d_A1_GPS = d_A1GPS;
-    utc_model.d_A0_GAL = d_A0GAL;
-    utc_model.d_A1_GAL = d_A1GAL;
-    utc_model.d_A0_GLO = d_A0GLO;
-    utc_model.d_A1_GLO = d_A1GLO;
+    utc_model.A0_GPS = d_A0GPS;
+    utc_model.A1_GPS = d_A1GPS;
+    utc_model.A0_GAL = d_A0GAL;
+    utc_model.A1_GAL = d_A1GAL;
+    utc_model.A0_GLO = d_A0GLO;
+    utc_model.A1_GLO = d_A1GLO;
 
     // warning: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
     flag_utc_model_valid = false;

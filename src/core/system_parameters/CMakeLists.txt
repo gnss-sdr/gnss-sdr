@@ -6,6 +6,7 @@
 
 
 set(SYSTEM_PARAMETERS_SOURCES
+    gnss_ephemeris.cc
     gnss_satellite.cc
     gnss_signal.cc
     gps_navigation_message.cc
@@ -19,7 +20,6 @@ set(SYSTEM_PARAMETERS_SOURCES
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
     sbas_ephemeris.cc
-    gps_cnav_ephemeris.cc
     gps_cnav_navigation_message.cc
     glonass_gnav_ephemeris.cc
     glonass_gnav_utc_model.cc
@@ -27,6 +27,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
+    gnss_ephemeris.h
     gnss_satellite.h
     gnss_signal.h
     gps_navigation_message.h

@@ -495,12 +495,12 @@ int main(int argc, char** argv)
                 {
                     std::map<int, Gps_Ephemeris> Eph_map;
                     Eph_map = global_gps_ephemeris_map.get_map_copy();
-                    current_TOW = Eph_map.begin()->second.d_TOW;
+                    current_TOW = Eph_map.begin()->second.tow;
 
-                    time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, static_cast<int64_t>(current_TOW));
+                    time_t t = utc_time(Eph_map.begin()->second.WN, static_cast<int64_t>(current_TOW));
 
                     std::cout << "Reference Time:\n";
-                    std::cout << "  GPS Week: " << Eph_map.begin()->second.i_GPS_week << '\n';
+                    std::cout << "  GPS Week: " << Eph_map.begin()->second.WN << '\n';
                     std::cout << "  GPS TOW:  " << static_cast<int64_t>(current_TOW) << " " << static_cast<int64_t>(current_TOW) * 0.08 << '\n';
                     std::cout << "  ~ UTC:    " << ctime(&t) << '\n';
                     std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << '\n';

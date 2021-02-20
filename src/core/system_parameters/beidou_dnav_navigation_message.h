@@ -77,17 +77,6 @@ public:
     int32_t d2_subframe_decoder(std::string const& subframe);
 
     /*!
-     * \brief Computes the position of the satellite
-     */
-    void satellitePosition(double transmitTime);
-
-    /*!
-     * \brief Sets (\a d_satClkCorr) according to the User Algorithm for SV Clock Correction
-     * and returns the corrected clock
-     */
-    double sv_clock_correction(double transmitTime);
-
-    /*!
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s]
      */
@@ -153,14 +142,6 @@ private:
     int64_t read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     void print_beidou_word_bytes(uint32_t BEIDOU_word) const;
-
-    /*
-     * Accounts for the beginning or end of week crossover
-     *
-     * \param[in]  -  time in seconds
-     * \param[out] -  corrected time, in seconds
-     */
-    double check_t(double time);
 
     // broadcast orbit 1
     double d_SOW{};      // Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
@@ -243,15 +224,6 @@ private:
 
     std::map<int32_t, std::string> satelliteBlock;  // Map that stores to which block the PRN belongs
 
-    // clock terms
-    double d_satClkCorr{};  // GPS clock error
-    double d_dtr{};         // relativistic clock correction term
-
-    // satellite positions
-    double d_satpos_X{};  // Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double d_satpos_Y{};  // Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double d_satpos_Z{};  // Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
-
     // satellite identification info
     int32_t i_signal_type{};  // BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
     uint32_t i_satellite_PRN{};
@@ -292,11 +264,6 @@ private:
     double d_M0_ALMANAC{};
     int32_t almanac_WN{};
     double d_toa2{};
-
-    // Satellite velocity
-    double d_satvel_X{};  // Earth-fixed velocity coordinate x of the satellite [m]
-    double d_satvel_Y{};  // Earth-fixed velocity coordinate y of the satellite [m]
-    double d_satvel_Z{};  // Earth-fixed velocity coordinate z of the satellite [m]
 
     // System flags for data processing
     bool flag_eph_valid{};

@@ -400,34 +400,33 @@ Galileo_Ephemeris Galileo_Fnav_Message::get_ephemeris() const
     Galileo_Ephemeris ephemeris;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
     ephemeris.IOD_ephemeris = IOD_ephemeris;
-    ephemeris.SV_ID_PRN_4 = FNAV_SV_ID_PRN_1;
-    ephemeris.i_satellite_PRN = FNAV_SV_ID_PRN_1;
-    ephemeris.M0_1 = FNAV_M0_2;               // Mean anomaly at reference time [semi-circles]
-    ephemeris.delta_n_3 = FNAV_deltan_3;      // Mean motion difference from computed value  [semi-circles/sec]
-    ephemeris.e_1 = FNAV_e_2;                 // Eccentricity
-    ephemeris.A_1 = FNAV_a12_2;               // Square root of the semi-major axis [meters^1/2]
-    ephemeris.OMEGA_0_2 = FNAV_omega0_2;      // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    ephemeris.i_0_2 = FNAV_i0_3;              // Inclination angle at reference time  [semi-circles]
-    ephemeris.omega_2 = FNAV_w_3;             // Argument of perigee [semi-circles]
-    ephemeris.OMEGA_dot_3 = FNAV_omegadot_2;  // Rate of right ascension [semi-circles/sec]
-    ephemeris.iDot_2 = FNAV_idot_2;           // Rate of inclination angle [semi-circles/sec]
-    ephemeris.C_uc_3 = FNAV_Cuc_3;            // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_us_3 = FNAV_Cus_3;            // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_rc_3 = FNAV_Crc_3;            // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_rs_3 = FNAV_Crs_3;            // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_ic_4 = FNAV_Cic_4;            // Amplitude of the cosine harmonic correction     term to the angle of inclination [radians]
-    ephemeris.C_is_4 = FNAV_Cis_4;            // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-    ephemeris.t0e_1 = FNAV_t0e_3;             // Ephemeris reference time [s]
+    ephemeris.PRN = FNAV_SV_ID_PRN_1;
+    ephemeris.M_0 = FNAV_M0_2;             // Mean anomaly at reference time [semi-circles]
+    ephemeris.delta_n = FNAV_deltan_3;     // Mean motion difference from computed value  [semi-circles/sec]
+    ephemeris.ecc = FNAV_e_2;              // Eccentricity
+    ephemeris.sqrtA = FNAV_a12_2;          // Square root of the semi-major axis [meters^1/2]
+    ephemeris.OMEGA_0 = FNAV_omega0_2;     // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+    ephemeris.i_0 = FNAV_i0_3;             // Inclination angle at reference time  [semi-circles]
+    ephemeris.omega = FNAV_w_3;            // Argument of perigee [semi-circles]
+    ephemeris.OMEGAdot = FNAV_omegadot_2;  // Rate of right ascension [semi-circles/sec]
+    ephemeris.idot = FNAV_idot_2;          // Rate of inclination angle [semi-circles/sec]
+    ephemeris.Cuc = FNAV_Cuc_3;            // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    ephemeris.Cus = FNAV_Cus_3;            // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    ephemeris.Crc = FNAV_Crc_3;            // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    ephemeris.Crs = FNAV_Crs_3;            // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    ephemeris.Cic = FNAV_Cic_4;            // Amplitude of the cosine harmonic correction     term to the angle of inclination [radians]
+    ephemeris.Cis = FNAV_Cis_4;            // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    ephemeris.toe = FNAV_t0e_3;            // Ephemeris reference time [s]
 
     // Clock correction parameters
-    ephemeris.t0c_4 = FNAV_t0c_1;  // Clock correction data reference Time of Week [sec]
-    ephemeris.af0_4 = FNAV_af0_1;  // SV clock bias correction coefficient [s]
-    ephemeris.af1_4 = FNAV_af1_1;  // SV clock drift correction coefficient [s/s]
-    ephemeris.af2_4 = FNAV_af2_1;  // SV clock drift rate correction coefficient [s/s^2]
+    ephemeris.toc = FNAV_t0c_1;  // Clock correction data reference Time of Week [sec]
+    ephemeris.af0 = FNAV_af0_1;  // SV clock bias correction coefficient [s]
+    ephemeris.af1 = FNAV_af1_1;  // SV clock drift correction coefficient [s/s]
+    ephemeris.af2 = FNAV_af2_1;  // SV clock drift rate correction coefficient [s/s^2]
 
     // GST
-    ephemeris.WN_5 = FNAV_WN_3;    // Week number
-    ephemeris.TOW_5 = FNAV_TOW_3;  // Time of Week
+    ephemeris.WN = FNAV_WN_3;    // Week number
+    ephemeris.tow = FNAV_TOW_3;  // Time of Week
 
     // Health status
     ephemeris.E5a_HS = FNAV_E5ahs_1;
@@ -440,20 +439,20 @@ Galileo_Iono Galileo_Fnav_Message::get_iono() const
 {
     Galileo_Iono iono;
     // Ionospheric correction
-    iono.ai0_5 = FNAV_ai0_1;  // Effective Ionisation Level 1st order parameter [sfu]
-    iono.ai1_5 = FNAV_ai1_1;  // Effective Ionisation Level 2st order parameter [sfu/degree]
-    iono.ai2_5 = FNAV_ai2_1;  // Effective Ionisation Level 3st order parameter [sfu/degree]
+    iono.ai0 = FNAV_ai0_1;  // Effective Ionisation Level 1st order parameter [sfu]
+    iono.ai1 = FNAV_ai1_1;  // Effective Ionisation Level 2st order parameter [sfu/degree]
+    iono.ai2 = FNAV_ai2_1;  // Effective Ionisation Level 3st order parameter [sfu/degree]
 
     // Ionospheric disturbance flag
-    iono.Region1_flag_5 = FNAV_region1_1;  // Ionospheric Disturbance Flag for region 1
-    iono.Region2_flag_5 = FNAV_region2_1;  // Ionospheric Disturbance Flag for region 2
-    iono.Region3_flag_5 = FNAV_region3_1;  // Ionospheric Disturbance Flag for region 3
-    iono.Region4_flag_5 = FNAV_region4_1;  // Ionospheric Disturbance Flag for region 4
-    iono.Region5_flag_5 = FNAV_region5_1;  // Ionospheric Disturbance Flag for region 5
+    iono.Region1_flag = FNAV_region1_1;  // Ionospheric Disturbance Flag for region 1
+    iono.Region2_flag = FNAV_region2_1;  // Ionospheric Disturbance Flag for region 2
+    iono.Region3_flag = FNAV_region3_1;  // Ionospheric Disturbance Flag for region 3
+    iono.Region4_flag = FNAV_region4_1;  // Ionospheric Disturbance Flag for region 4
+    iono.Region5_flag = FNAV_region5_1;  // Ionospheric Disturbance Flag for region 5
 
     // GST
-    iono.TOW_5 = FNAV_TOW_1;
-    iono.WN_5 = FNAV_WN_1;
+    iono.tow = FNAV_TOW_1;
+    iono.WN = FNAV_WN_1;
     return iono;
 }
 
@@ -462,18 +461,15 @@ Galileo_Utc_Model Galileo_Fnav_Message::get_utc_model() const
 {
     Galileo_Utc_Model utc_model;
     // Word type 6: GST-UTC conversion parameters
-    utc_model.A0_6 = FNAV_A0_4;
-    utc_model.A1_6 = FNAV_A1_4;
-    utc_model.Delta_tLS_6 = FNAV_deltatls_4;
-    utc_model.t0t_6 = FNAV_t0t_4;
-    utc_model.WNot_6 = FNAV_WNot_4;
-    utc_model.WN_LSF_6 = FNAV_WNlsf_4;
-    utc_model.DN_6 = FNAV_DN_4;
-    utc_model.Delta_tLSF_6 = FNAV_deltatlsf_4;
+    utc_model.A0 = FNAV_A0_4;
+    utc_model.A1 = FNAV_A1_4;
+    utc_model.Delta_tLS = FNAV_deltatls_4;
+    utc_model.tot = FNAV_t0t_4;
+    utc_model.WNot = FNAV_WNot_4;
+    utc_model.WN_LSF = FNAV_WNlsf_4;
+    utc_model.DN = FNAV_DN_4;
+    utc_model.Delta_tLSF = FNAV_deltatlsf_4;
     utc_model.flag_utc_model = flag_utc_model;
-    // GST
-    // utc_model.WN_5 = WN_5; //Week number
-    // utc_model.TOW_5 = WN_5; //Time of Week
     return utc_model;
 }
 

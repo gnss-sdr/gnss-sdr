@@ -162,13 +162,13 @@ void pcps_assisted_acquisition_cc::get_assistance()
             // TODO: use the LO tolerance here
             if (gps_acq_assisistance.dopplerUncertainty >= 1000)
                 {
-                    d_doppler_max = gps_acq_assisistance.d_Doppler0 + gps_acq_assisistance.dopplerUncertainty * 2;
-                    d_doppler_min = gps_acq_assisistance.d_Doppler0 - gps_acq_assisistance.dopplerUncertainty * 2;
+                    d_doppler_max = gps_acq_assisistance.Doppler0 + gps_acq_assisistance.dopplerUncertainty * 2;
+                    d_doppler_min = gps_acq_assisistance.Doppler0 - gps_acq_assisistance.dopplerUncertainty * 2;
                 }
             else
                 {
-                    d_doppler_max = gps_acq_assisistance.d_Doppler0 + 1000;
-                    d_doppler_min = gps_acq_assisistance.d_Doppler0 - 1000;
+                    d_doppler_max = gps_acq_assisistance.Doppler0 + 1000;
+                    d_doppler_min = gps_acq_assisistance.Doppler0 - 1000;
                 }
             this->d_disable_assist = false;
             std::cout << "Acq assist ENABLED for GPS SV " << this->d_gnss_synchro->PRN << " (Doppler max,Doppler min)=("

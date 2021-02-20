@@ -18,6 +18,7 @@
 
 #include "gps_cnav_navigation_message.h"
 #include "gnss_satellite.h"
+#include <cmath>   // for std::sqrt
 #include <limits>  // for std::numeric_limits
 
 
@@ -132,7 +133,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
             ephemeris_record.deltaA *= CNAV_DELTA_A_LSB;
             ephemeris_record.Adot = static_cast<double>(read_navigation_signed(data_bits, CNAV_A_DOT));
             ephemeris_record.Adot *= CNAV_A_DOT_LSB;
-            ephemeris_record.sqrtA = sqrt(CNAV_A_REF + ephemeris_record.deltaA);
+            ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.deltaA);
             ephemeris_record.delta_n = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0));
             ephemeris_record.delta_n *= CNAV_DELTA_N0_LSB;
             ephemeris_record.delta_ndot = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0_DOT));

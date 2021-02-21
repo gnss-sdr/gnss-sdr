@@ -250,14 +250,14 @@ TEST(RtcmTest, MT1019)
     gps_eph.PRN = 3;
     gps_eph.IODC = 4;
     gps_eph.ecc = 2.0 * ECCENTRICITY_LSB;
-    gps_eph.b_fit_interval_flag = true;
+    gps_eph.fit_interval_flag = true;
     std::string tx_msg = rtcm->print_MT1019(gps_eph);
 
     EXPECT_EQ(0, rtcm->read_MT1019(tx_msg, gps_eph_read));
     EXPECT_EQ(static_cast<unsigned int>(3), gps_eph_read.PRN);
     EXPECT_DOUBLE_EQ(4, gps_eph_read.IODC);
     EXPECT_DOUBLE_EQ(2.0 * ECCENTRICITY_LSB, gps_eph_read.ecc);
-    EXPECT_EQ(expected_true, gps_eph_read.b_fit_interval_flag);
+    EXPECT_EQ(expected_true, gps_eph_read.fit_interval_flag);
     EXPECT_EQ(1, rtcm->read_MT1019(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gps_eph_read));
 }
 

@@ -45,7 +45,7 @@ public:
         this->System = 'G';
     }
 
-    double deltaA{};          //!< Semi-major axis difference at reference time
+    double delta_A{};         //!< Semi-major axis difference at reference time
     double Adot{};            //!< Change rate in semi-major axis
     double delta_ndot{};      //!< Rate of mean motion difference from computed value
     double delta_OMEGAdot{};  //!< Rate of Right Ascension  difference [semi-circles/s]
@@ -79,10 +79,10 @@ public:
      *  bound value of the current broadcast URA index, for more than 5.2
      *  seconds, without an accompanying alert, is less than 1E-8 per hour.
      */
-    bool b_integrity_status_flag{};
-    bool b_l2c_phasing_flag{};
-    bool b_alert_flag{};         //!< If true, indicates that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-    bool b_antispoofing_flag{};  //!< If true, the AntiSpoofing mode is ON in that SV
+    bool integrity_status_flag{};
+    bool l2c_phasing_flag{};
+    bool alert_flag{};         //!< If true, indicates that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
+    bool antispoofing_flag{};  //!< If true, the AntiSpoofing mode is ON in that SV
 
     template <class Archive>
 
@@ -130,12 +130,13 @@ public:
         archive& BOOST_SERIALIZATION_NVP(ISCL2);
         archive& BOOST_SERIALIZATION_NVP(ISCL5I);
         archive& BOOST_SERIALIZATION_NVP(ISCL5Q);
-        archive& BOOST_SERIALIZATION_NVP(deltaA);
+        archive& BOOST_SERIALIZATION_NVP(delta_A);
         archive& BOOST_SERIALIZATION_NVP(Adot);
         archive& BOOST_SERIALIZATION_NVP(delta_OMEGAdot);
-        archive& BOOST_SERIALIZATION_NVP(b_integrity_status_flag);
-        archive& BOOST_SERIALIZATION_NVP(b_alert_flag);
-        archive& BOOST_SERIALIZATION_NVP(b_antispoofing_flag);
+        archive& BOOST_SERIALIZATION_NVP(integrity_status_flag);
+        archive& BOOST_SERIALIZATION_NVP(l2c_phasing_flag);
+        archive& BOOST_SERIALIZATION_NVP(alert_flag);
+        archive& BOOST_SERIALIZATION_NVP(antispoofing_flag);
     }
 };
 

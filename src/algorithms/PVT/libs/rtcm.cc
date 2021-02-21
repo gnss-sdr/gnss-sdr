@@ -1713,7 +1713,7 @@ int32_t Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph) co
     gps_eph.L2_P_data_flag = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
     index += 1;
 
-    gps_eph.b_fit_interval_flag = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
+    gps_eph.fit_interval_flag = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));
 
     return 0;
 }
@@ -4789,7 +4789,7 @@ int32_t Rtcm::set_DF136(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 
 int32_t Rtcm::set_DF137(const Gps_Ephemeris& gps_eph)
 {
-    DF137 = std::bitset<1>(gps_eph.b_fit_interval_flag);
+    DF137 = std::bitset<1>(gps_eph.fit_interval_flag);
     return 0;
 }
 

@@ -5813,7 +5813,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             // -------- BROADCAST ORBIT - 1
             line.clear();
             line += std::string(5, ' ');
-            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_AODE, 18, 2);
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.AODE, 18, 2);
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.Crs, 18, 2);
             line += std::string(1, ' ');
@@ -5884,9 +5884,9 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             line += std::string(1, ' ');
             line += Rinex_Printer::doub2for(static_cast<double>(bds_ephemeris_iter->second.SV_health), 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_TGD1, 18, 2);
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.TGD1, 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_TGD2, 18, 2);
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.TGD2, 18, 2);
             Rinex_Printer::lengthCheck(line);
             out << line << '\n';
 
@@ -5895,7 +5895,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             line += std::string(5, ' ');
             line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.tow, 18, 2);
             line += std::string(1, ' ');
-            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.d_AODC, 18, 2);
+            line += Rinex_Printer::doub2for(bds_ephemeris_iter->second.AODC, 18, 2);
             line += std::string(1, ' ');
             line += std::string(18, ' ');  // spare
             line += std::string(1, ' ');

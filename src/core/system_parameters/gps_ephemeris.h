@@ -55,9 +55,9 @@ public:
     int32_t IODE_SF3{};     //!< Issue of Data, Ephemeris (IODE), subframe 3
     int32_t AODO{};         //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
-    bool b_fit_interval_flag{};  //!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
-    double d_spare1{};
-    double d_spare2{};
+    bool fit_interval_flag{};  //!< indicates the curve-fit interval used by the CS (Block II/IIA/IIR/IIR-M/IIF) and SS (Block IIIA) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
+    double spare1{};
+    double spare2{};
 
     // Flags
 
@@ -71,9 +71,9 @@ public:
      *  times the upper bound value of the current broadcast URA index, for more than 5.2 seconds, without an
      *  accompanying alert, is less than 1E-8 per hour.
      */
-    bool b_integrity_status_flag{};
-    bool b_alert_flag{};         //!< If true, indicates that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
-    bool b_antispoofing_flag{};  //!< If true, the AntiSpoofing mode is ON in that SV
+    bool integrity_status_flag{};
+    bool alert_flag{};         //!< If true, indicates that the SV URA may be worse than indicated in d_SV_accuracy, use that SV at our own risk.
+    bool antispoofing_flag{};  //!< If true, the AntiSpoofing mode is ON in that SV
 
     std::map<int, std::string> satelliteBlock;  //!< Map that stores to which block the PRN belongs https://www.navcen.uscg.gov/?Do=constellationStatus
 
@@ -125,12 +125,12 @@ public:
         archive& BOOST_SERIALIZATION_NVP(TGD);
         archive& BOOST_SERIALIZATION_NVP(IODC);
         archive& BOOST_SERIALIZATION_NVP(AODO);
-        archive& BOOST_SERIALIZATION_NVP(b_fit_interval_flag);
-        archive& BOOST_SERIALIZATION_NVP(d_spare1);
-        archive& BOOST_SERIALIZATION_NVP(d_spare2);
-        archive& BOOST_SERIALIZATION_NVP(b_integrity_status_flag);
-        archive& BOOST_SERIALIZATION_NVP(b_alert_flag);
-        archive& BOOST_SERIALIZATION_NVP(b_antispoofing_flag);
+        archive& BOOST_SERIALIZATION_NVP(fit_interval_flag);
+        archive& BOOST_SERIALIZATION_NVP(spare1);
+        archive& BOOST_SERIALIZATION_NVP(spare2);
+        archive& BOOST_SERIALIZATION_NVP(integrity_status_flag);
+        archive& BOOST_SERIALIZATION_NVP(alert_flag);
+        archive& BOOST_SERIALIZATION_NVP(antispoofing_flag);
     }
 };
 

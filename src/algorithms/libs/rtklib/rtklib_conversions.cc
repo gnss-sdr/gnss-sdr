@@ -300,10 +300,10 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.svh = bei_eph.SV_health;
     rtklib_sat.sva = bei_eph.SV_accuracy;
 
-    rtklib_sat.code = bei_eph.i_sig_type;                   /* B1I data */
-    rtklib_sat.flag = bei_eph.i_nav_type;                   /* MEO/IGSO satellite */
-    rtklib_sat.iode = static_cast<int32_t>(bei_eph.d_AODE); /* AODE */
-    rtklib_sat.iodc = static_cast<int32_t>(bei_eph.d_AODC); /* AODC */
+    rtklib_sat.code = bei_eph.sig_type;                   /* B1I data */
+    rtklib_sat.flag = bei_eph.nav_type;                   /* MEO/IGSO satellite */
+    rtklib_sat.iode = static_cast<int32_t>(bei_eph.AODE); /* AODE */
+    rtklib_sat.iodc = static_cast<int32_t>(bei_eph.AODC); /* AODC */
 
     rtklib_sat.week = bei_eph.WN; /* week of tow */
     rtklib_sat.cic = bei_eph.Cic;
@@ -315,8 +315,8 @@ eph_t eph_to_rtklib(const Beidou_Dnav_Ephemeris& bei_eph)
     rtklib_sat.f0 = bei_eph.af0;
     rtklib_sat.f1 = bei_eph.af1;
     rtklib_sat.f2 = bei_eph.af2;
-    rtklib_sat.tgd[0] = bei_eph.d_TGD1;
-    rtklib_sat.tgd[1] = bei_eph.d_TGD2;
+    rtklib_sat.tgd[0] = bei_eph.TGD1;
+    rtklib_sat.tgd[1] = bei_eph.TGD2;
     rtklib_sat.tgd[2] = 0.0;
     rtklib_sat.tgd[3] = 0.0;
     rtklib_sat.toes = bei_eph.toe;

@@ -108,17 +108,17 @@ public:
         monitor_.set_d_iode_sf3(monitor->IODE_SF3);  //!< issue of data, ephemeris(iode), subframe 3
         monitor_.set_i_aodo(monitor->AODO);          //!< age of data offset (aodo) term for the navigation message correction table (nmct) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
-        monitor_.set_b_fit_interval_flag(monitor->b_fit_interval_flag);  //!< indicates the curve-fit interval used by the cs (block ii/iia/iir/iir-m/iif) and ss (block iiia) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
-        monitor_.set_d_spare1(monitor->d_spare1);
-        monitor_.set_d_spare2(monitor->d_spare2);
+        monitor_.set_b_fit_interval_flag(monitor->fit_interval_flag);  //!< indicates the curve-fit interval used by the cs (block ii/iia/iir/iir-m/iif) and ss (block iiia) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
+        monitor_.set_d_spare1(monitor->spare1);
+        monitor_.set_d_spare2(monitor->spare2);
 
         monitor_.set_d_a_f0(monitor->af0);  //!< coefficient 0 of code phase offset model [s]
         monitor_.set_d_a_f1(monitor->af1);  //!< coefficient 1 of code phase offset model [s/s]
         monitor_.set_d_a_f2(monitor->af2);  //!< coefficient 2 of code phase offset model [s/s^2]
 
-        monitor_.set_b_integrity_status_flag(monitor->b_integrity_status_flag);
-        monitor_.set_b_alert_flag(monitor->b_alert_flag);                //!< if true, indicates that the sv ura may be worse than indicated in d_sv_accuracy, use that sv at our own risk.
-        monitor_.set_b_antispoofing_flag(monitor->b_antispoofing_flag);  //!< if true, the antispoofing mode is on in that sv
+        monitor_.set_b_integrity_status_flag(monitor->integrity_status_flag);
+        monitor_.set_b_alert_flag(monitor->alert_flag);                //!< if true, indicates that the sv ura may be worse than indicated in d_sv_accuracy, use that sv at our own risk.
+        monitor_.set_b_antispoofing_flag(monitor->antispoofing_flag);  //!< if true, the antispoofing mode is on in that sv
 
         monitor_.SerializeToString(&data);
         return data;
@@ -158,17 +158,17 @@ public:
         monitor.IODE_SF3 = mon.d_iode_sf3();  //!< issue of data, ephemeris(iode), subframe 3
         monitor.AODO = mon.i_aodo();          //!< age of data offset (aodo) term for the navigation message correction table (nmct) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
-        monitor.b_fit_interval_flag = mon.b_fit_interval_flag();  //!< indicates the curve-fit interval used by the cs (block ii/iia/iir/iir-m/iif) and ss (block iiia) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
-        monitor.d_spare1 = mon.d_spare1();
-        monitor.d_spare2 = mon.d_spare2();
+        monitor.fit_interval_flag = mon.b_fit_interval_flag();  //!< indicates the curve-fit interval used by the cs (block ii/iia/iir/iir-m/iif) and ss (block iiia) in determining the ephemeris parameters, as follows: 0 = 4 hours, 1 = greater than 4 hours.
+        monitor.spare1 = mon.d_spare1();
+        monitor.spare2 = mon.d_spare2();
 
         monitor.af0 = mon.d_a_f0();  //!< coefficient 0 of code phase offset model [s]
         monitor.af1 = mon.d_a_f1();  //!< coefficient 1 of code phase offset model [s/s]
         monitor.af2 = mon.d_a_f2();  //!< coefficient 2 of code phase offset model [s/s^2]
 
-        monitor.b_integrity_status_flag = mon.b_integrity_status_flag();
-        monitor.b_alert_flag = mon.b_alert_flag();                //!< if true, indicates that the sv ura may be worse than indicated in d_sv_accuracy, use that sv at our own risk.
-        monitor.b_antispoofing_flag = mon.b_antispoofing_flag();  //!< if true, the antispoofing mode is on in that sv
+        monitor.integrity_status_flag = mon.b_integrity_status_flag();
+        monitor.alert_flag = mon.b_alert_flag();                //!< if true, indicates that the sv ura may be worse than indicated in d_sv_accuracy, use that sv at our own risk.
+        monitor.antispoofing_flag = mon.b_antispoofing_flag();  //!< if true, the antispoofing mode is on in that sv
 
         return monitor;
     }

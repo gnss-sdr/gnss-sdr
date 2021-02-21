@@ -114,7 +114,7 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
     ephemeris_record.tow = d_TOW;
 
     alert_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_ALERT_FLAG));
-    ephemeris_record.b_alert_flag = alert_flag;
+    ephemeris_record.alert_flag = alert_flag;
 
     page_type = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
 
@@ -129,11 +129,11 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
             ephemeris_record.URA0 = static_cast<double>(read_navigation_signed(data_bits, CNAV_URA));
             ephemeris_record.toe1 = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_TOE1));
             ephemeris_record.toe1 *= CNAV_TOE1_LSB;
-            ephemeris_record.deltaA = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_A));
-            ephemeris_record.deltaA *= CNAV_DELTA_A_LSB;
+            ephemeris_record.delta_A = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_A));
+            ephemeris_record.delta_A *= CNAV_DELTA_A_LSB;
             ephemeris_record.Adot = static_cast<double>(read_navigation_signed(data_bits, CNAV_A_DOT));
             ephemeris_record.Adot *= CNAV_A_DOT_LSB;
-            ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.deltaA);
+            ephemeris_record.sqrtA = std::sqrt(CNAV_A_REF + ephemeris_record.delta_A);
             ephemeris_record.delta_n = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0));
             ephemeris_record.delta_n *= CNAV_DELTA_N0_LSB;
             ephemeris_record.delta_ndot = static_cast<double>(read_navigation_signed(data_bits, CNAV_DELTA_N0_DOT));
@@ -145,8 +145,8 @@ void Gps_CNAV_Navigation_Message::decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BIT
             ephemeris_record.omega = static_cast<double>(read_navigation_signed(data_bits, CNAV_OMEGA));
             ephemeris_record.omega *= CNAV_OMEGA_LSB;
 
-            ephemeris_record.b_integrity_status_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_INTEGRITY_FLAG));
-            ephemeris_record.b_l2c_phasing_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_L2_PHASING_FLAG));
+            ephemeris_record.integrity_status_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_INTEGRITY_FLAG));
+            ephemeris_record.l2c_phasing_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_L2_PHASING_FLAG));
 
             b_flag_ephemeris_1 = true;
             break;

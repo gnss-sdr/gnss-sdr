@@ -253,15 +253,15 @@ int main(int argc, char** argv)
                             eph.TGD = rne.Tgd;
                             eph.IODC = rne.IODC;
                             eph.AODO = 0;  //
-                            eph.b_fit_interval_flag = (rne.fitint > 4) ? true : false;
-                            eph.d_spare1 = 0.0;
-                            eph.d_spare2 = 0.0;
+                            eph.fit_interval_flag = (rne.fitint > 4) ? true : false;
+                            eph.spare1 = 0.0;
+                            eph.spare2 = 0.0;
                             eph.af0 = rne.af0;
                             eph.af1 = rne.af1;
                             eph.af2 = rne.af2;
-                            eph.b_integrity_status_flag = false;  //
-                            eph.b_alert_flag = false;             //
-                            eph.b_antispoofing_flag = false;      //
+                            eph.integrity_status_flag = false;  //
+                            eph.alert_flag = false;             //
+                            eph.antispoofing_flag = false;      //
                             eph_map[i] = eph;
                             i++;
                         }

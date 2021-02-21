@@ -653,13 +653,13 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
 
             // Order as given by eph_t in rtklib
             eph.PRN = i_satellite_PRN;
-            eph.d_AODC = d_AODC;
-            eph.d_AODE = d_AODE;
+            eph.AODC = d_AODC;
+            eph.AODE = d_AODE;
             eph.SV_accuracy = i_SV_accuracy;
             eph.SV_health = i_SV_health;
             eph.WN = i_BEIDOU_week;
-            eph.i_sig_type = i_signal_type;
-            eph.i_nav_type = 2;
+            eph.sig_type = i_signal_type;
+            eph.nav_type = 2;
 
             eph.tow = d_SOW;
             eph.toe = d_Toe;
@@ -693,19 +693,19 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
             eph.af1 = static_cast<double>(read_navigation_signed(subframe_bits, D2_A1)) * D1_A1_LSB;
             eph.af2 = d_A_f2;
 
-            eph.d_TGD1 = d_TGD1;
-            eph.d_TGD2 = d_TGD2;
+            eph.TGD1 = d_TGD1;
+            eph.TGD2 = d_TGD2;
         }
     else
         {
             eph.PRN = i_satellite_PRN;
-            eph.d_AODC = d_AODC;
-            eph.d_AODE = d_AODE;
+            eph.AODC = d_AODC;
+            eph.AODE = d_AODE;
             eph.SV_accuracy = i_SV_accuracy;
             eph.SV_health = i_SV_health;
             eph.WN = i_BEIDOU_week;
-            eph.i_sig_type = i_signal_type;
-            eph.i_nav_type = 1;  // MEO/IGSO
+            eph.sig_type = i_signal_type;
+            eph.nav_type = 1;  // MEO/IGSO
 
             eph.tow = d_SOW;
             eph.toe = ((d_Toe_sf2 + d_Toe_sf3) * D1_TOE_LSB);
@@ -732,8 +732,8 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
             eph.af1 = d_A_f1;
             eph.af2 = d_A_f2;
 
-            eph.d_TGD1 = d_TGD1;
-            eph.d_TGD2 = d_TGD2;
+            eph.TGD1 = d_TGD1;
+            eph.TGD2 = d_TGD2;
         }
 
     return eph;

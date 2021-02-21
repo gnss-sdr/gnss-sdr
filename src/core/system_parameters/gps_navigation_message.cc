@@ -455,15 +455,15 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
     ephemeris.IODE_SF2 = d_IODE_SF2;
     ephemeris.IODE_SF3 = d_IODE_SF3;
     ephemeris.AODO = i_AODO;
-    ephemeris.b_fit_interval_flag = b_fit_interval_flag;
-    ephemeris.d_spare1 = d_spare1;
-    ephemeris.d_spare2 = d_spare2;
+    ephemeris.fit_interval_flag = b_fit_interval_flag;
+    ephemeris.spare1 = d_spare1;
+    ephemeris.spare2 = d_spare2;
     ephemeris.af0 = d_A_f0;
     ephemeris.af1 = d_A_f1;
     ephemeris.af2 = d_A_f2;
-    ephemeris.b_integrity_status_flag = b_integrity_status_flag;
-    ephemeris.b_alert_flag = b_alert_flag;
-    ephemeris.b_antispoofing_flag = b_antispoofing_flag;
+    ephemeris.integrity_status_flag = b_integrity_status_flag;
+    ephemeris.alert_flag = b_alert_flag;
+    ephemeris.antispoofing_flag = b_antispoofing_flag;
 
     // These parameters are empty; can be computed later with
     // ephemeris.sv_clock_drift(double transmitTime);

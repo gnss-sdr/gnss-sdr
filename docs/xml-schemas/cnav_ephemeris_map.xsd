@@ -50,12 +50,12 @@
                           <xs:element type="xs:float" name="TGD"/>
                           <xs:element type="xs:byte" name="IODC"/>
                           <xs:element type="xs:short" name="AODO"/>
-                          <xs:element type="xs:byte" name="b_fit_interval_flag"/>
-                          <xs:element type="xs:float" name="d_spare1"/>
-                          <xs:element type="xs:float" name="d_spare2"/>
-                          <xs:element type="xs:byte" name="b_integrity_status_flag"/>
-                          <xs:element type="xs:byte" name="b_alert_flag"/>
-                          <xs:element type="xs:byte" name="b_antispoofing_flag"/>
+                          <xs:element type="xs:byte" name="fit_interval_flag"/>
+                          <xs:element type="xs:float" name="spare1"/>
+                          <xs:element type="xs:float" name="spare2"/>
+                          <xs:element type="xs:byte" name="integrity_status_flag"/>
+                          <xs:element type="xs:byte" name="alert_flag"/>
+                          <xs:element type="xs:byte" name="antispoofing_flag"/>
                         </xs:sequence>
                         <xs:attribute type="xs:byte" name="class_id" use="optional"/>
                         <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>

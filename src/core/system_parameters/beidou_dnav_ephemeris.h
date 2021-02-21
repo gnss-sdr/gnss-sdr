@@ -48,9 +48,9 @@ public:
     int SV_health{};
     double TGD1{};  //!< Estimated Group Delay Differential on B1I [s]
     double TGD2{};  //!< Estimated Group Delay Differential on B2I [s]
-    double AODC{};    //!< Age of Data, Clock
-    double AODE{};    //!< Age of Data, Ephemeris
-    int AODO{};       //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
+    double AODC{};  //!< Age of Data, Clock
+    double AODE{};  //!< Age of Data, Ephemeris
+    int AODO{};     //!< Age of Data Offset (AODO) term for the navigation message correction table (NMCT) contained in subframe 4 (reference paragraph 20.3.3.5.1.9) [s]
 
     int sig_type{};  //!< BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q) */
     int nav_type{};  //!< BDS: nav type (0:unknown,1:IGSO/MEO,2:GEO) */

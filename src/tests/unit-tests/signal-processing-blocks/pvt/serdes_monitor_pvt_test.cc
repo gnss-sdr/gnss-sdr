@@ -1,7 +1,7 @@
 /*!
  * \file serdes_monitor_pvt_test.cc
  * \brief Implements Unit Test for the serdes_monitor_pvt class.
- * \author Carles Fernandez_prades, 2019. cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2019. cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
@@ -20,7 +20,7 @@
 
 TEST(Serdes_Monitor_Pvt_Test, Simpletest)
 {
-    std::shared_ptr<Monitor_Pvt> monitor = std::make_shared<Monitor_Pvt>(Monitor_Pvt());
+    auto monitor = std::make_shared<Monitor_Pvt>(Monitor_Pvt());
     double true_latitude = 23.4;
     monitor->latitude = true_latitude;
 
@@ -29,13 +29,19 @@ TEST(Serdes_Monitor_Pvt_Test, Simpletest)
 
     gnss_sdr::MonitorPvt mon;
     mon.ParseFromString(serialized_data);
-
-    serdes.readProtobuffer(mon);
-
-    gnss_sdr::GalileoEphemeris ephgal;
-    Serdes_Galileo_Eph gal_serdes = Serdes_Galileo_Eph();
-    gal_serdes.readProtobuffer(ephgal);
-
     double read_latitude = mon.latitude();
     EXPECT_NEAR(true_latitude, read_latitude, 0.000001);
+
+    auto eph = std::make_shared<Galileo_Ephemeris>();
+    int true_tow = 12345;
+    eph->tow = true_tow;
+
+    Serdes_Galileo_Eph gal_serdes = Serdes_Galileo_Eph();
+    serialized_data = gal_serdes.createProtobuffer(eph);
+
+    gnss_sdr::GalileoEphemeris ephgal;
+    ephgal.ParseFromString(serialized_data);
+
+    int read_tow = ephgal.tow();
+    EXPECT_EQ(true_tow, read_tow);
 }

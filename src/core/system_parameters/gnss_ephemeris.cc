@@ -225,7 +225,7 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
         {
             dtr_ = GALILEO_F * this->ecc * this->sqrtA * sek;
         }
-    if (this->System == 'B')
+    else if (this->System == 'B')
         {
             dtr_ = BEIDOU_F * this->ecc * this->sqrtA * sek;
         }

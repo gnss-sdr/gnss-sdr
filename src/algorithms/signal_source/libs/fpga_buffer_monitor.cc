@@ -23,7 +23,6 @@
  */
 
 #include "fpga_buffer_monitor.h"
-#include "command_event.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include <glog/logging.h>

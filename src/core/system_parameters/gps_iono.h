@@ -35,7 +35,8 @@
 class Gps_Iono
 {
 public:
-    bool valid{};  //!< Valid flag
+    Gps_Iono() = default;  //!< Default constructor
+
     // Ionospheric parameters
     double alpha0{};  //!< Coefficient 0 of a cubic equation representing the amplitude of the vertical delay [s]
     double alpha1{};  //!< Coefficient 1 of a cubic equation representing the amplitude of the vertical delay [s/semi-circle]
@@ -46,7 +47,7 @@ public:
     double beta2{};   //!< Coefficient 2 of a cubic equation representing the period of the model [s(semi-circle)^2]
     double beta3{};   //!< Coefficient 3 of a cubic equation representing the period of the model [s(semi-circle)^3]
 
-    Gps_Iono() = default;  //!< Default constructor
+    bool valid{};  //!< Valid flag
 
     template <class Archive>
 

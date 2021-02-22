@@ -4,17 +4,19 @@
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="GNSS-SDR_iono_model">
+        <xs:element name="GNSS-SDR_cnav_utc_model">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:float" name="alpha0"/>
-              <xs:element type="xs:float" name="alpha1"/>
-              <xs:element type="xs:float" name="alpha2"/>
-              <xs:element type="xs:float" name="alpha3"/>
-              <xs:element type="xs:float" name="beta0"/>
-              <xs:element type="xs:float" name="beta1"/>
-              <xs:element type="xs:float" name="beta2"/>
-              <xs:element type="xs:float" name="beta3"/>
+              <xs:element type="xs:float" name="A0"/>
+              <xs:element type="xs:float" name="A1"/>
+              <xs:element type="xs:float" name="A2"/>
+              <xs:element type="xs:int" name="tot"/>
+              <xs:element type="xs:short" name="WN_T"/>
+              <xs:element type="xs:byte" name="DeltaT_LS"/>
+              <xs:element type="xs:short" name="WN_LSF"/>
+              <xs:element type="xs:byte" name="DN"/>
+              <xs:element type="xs:byte" name="DeltaT_LSF"/>
+              <xs:element type="xs:byte" name="valid"/>
             </xs:sequence>
             <xs:attribute type="xs:byte" name="class_id"/>
             <xs:attribute type="xs:byte" name="tracking_level"/>

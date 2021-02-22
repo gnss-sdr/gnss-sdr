@@ -1,6 +1,6 @@
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2018-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
@@ -16,20 +16,20 @@
                     <xs:element name="second">
                       <xs:complexType>
                         <xs:sequence>
-                          <xs:element type="xs:byte" name="i_satellite_PRN"/>
-                          <xs:element type="xs:float" name="d_Delta_i"/>
-                          <xs:element type="xs:byte" name="i_Toa"/>
-                          <xs:element type="xs:byte" name="i_WNa"/>
-                          <xs:element type="xs:float" name="d_M_0"/>
-                          <xs:element type="xs:float" name="d_e_eccentricity"/>
-                          <xs:element type="xs:float" name="d_sqrt_A"/>
-                          <xs:element type="xs:float" name="d_OMEGA0"/>
-                          <xs:element type="xs:float" name="d_OMEGA"/>
-                          <xs:element type="xs:float" name="d_OMEGA_DOT"/>
-                          <xs:element type="xs:byte" name="i_SV_health"/>
-                          <xs:element type="xs:byte" name="i_AS_status"/>
-                          <xs:element type="xs:float" name="d_A_f0"/>
-                          <xs:element type="xs:float" name="d_A_f1"/>
+                          <xs:element type="xs:byte" name="PRN"/>
+                          <xs:element type="xs:float" name="delta_i"/>
+                          <xs:element type="xs:byte" name="toa"/>
+                          <xs:element type="xs:byte" name="WNa"/>
+                          <xs:element type="xs:float" name="M_0"/>
+                          <xs:element type="xs:float" name="ecc"/>
+                          <xs:element type="xs:float" name="sqrtA"/>
+                          <xs:element type="xs:float" name="OMEGA_0"/>
+                          <xs:element type="xs:float" name="omega"/>
+                          <xs:element type="xs:float" name="OMEGAdot"/>
+                          <xs:element type="xs:byte" name="SV_health"/>
+                          <xs:element type="xs:byte" name="AS_status"/>
+                          <xs:element type="xs:float" name="af0"/>
+                          <xs:element type="xs:float" name="af1"/>
                         </xs:sequence>
                         <xs:attribute type="xs:byte" name="class_id" use="optional"/>
                         <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>

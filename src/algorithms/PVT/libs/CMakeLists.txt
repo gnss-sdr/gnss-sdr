@@ -5,8 +5,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/monitor_pvt.proto)
-protobuf_generate_cpp(PROTO_SRCS2 PROTO_HDRS2 ${CMAKE_SOURCE_DIR}/docs/protobuf/monitor_gps_ephemeris.proto)
-protobuf_generate_cpp(PROTO_SRCS3 PROTO_HDRS3 ${CMAKE_SOURCE_DIR}/docs/protobuf/monitor_galileo_ephemeris.proto)
+protobuf_generate_cpp(PROTO_SRCS2 PROTO_HDRS2 ${CMAKE_SOURCE_DIR}/docs/protobuf/gps_ephemeris.proto)
+protobuf_generate_cpp(PROTO_SRCS3 PROTO_HDRS3 ${CMAKE_SOURCE_DIR}/docs/protobuf/galileo_ephemeris.proto)
 
 set(PVT_LIB_SOURCES
     pvt_conf.cc
@@ -61,7 +61,16 @@ if(USE_CMAKE_TARGET_SOURCES)
     )
 else()
     source_group(Headers FILES ${PVT_LIB_HEADERS} ${PROTO_HDRS} ${PROTO_HDRS2} ${PROTO_HDRS3})
-    add_library(pvt_libs ${PVT_LIB_SOURCES} ${PROTO_SRCS} ${PROTO_SRCS2} ${PROTO_SRCS3} ${PVT_LIB_HEADERS} ${PROTO_HDRS} ${PROTO_HDRS2} ${PROTO_HDRS3})
+    add_library(pvt_libs
+        ${PVT_LIB_SOURCES}
+        ${PROTO_SRCS}
+        ${PROTO_SRCS2}
+        ${PROTO_SRCS3}
+        ${PVT_LIB_HEADERS}
+        ${PROTO_HDRS}
+        ${PROTO_HDRS2}
+        ${PROTO_HDRS3}
+    )
 endif()
 
 target_link_libraries(pvt_libs

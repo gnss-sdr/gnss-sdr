@@ -42,6 +42,9 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Do not apply clang-tidy fixes to protobuf-generated headers.
 - Refactored private implementation of flow graph connection and disconnection
   for improved source code readability.
+- Added a base class for GNSS ephemeris, saving some duplicated code and
+  providing a common nomenclature for ephemeris' parameters. New generated XML
+  files make use of the new parameters' name.
 
 ### Improvements in Usability:
 

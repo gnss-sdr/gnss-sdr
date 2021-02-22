@@ -59,37 +59,37 @@ public:
 
     // Satellite Identification Information
     int32_t i_satellite_freq_channel{};  //!< SV Frequency Channel Number
-    uint32_t i_satellite_PRN{};          //!< SV PRN Number, equivalent to slot number for compatibility with GPS
+    uint32_t PRN{};                      //!< SV PRN Number, equivalent to slot number for compatibility with GPS
     uint32_t i_satellite_slot_number{};  //!< SV Slot Number
 
     template <class Archive>
     /*!
-     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the almanac data on disk file.
+     * \brief Serialize is a boost standard method to be called by the boost XML
+     * serialization. Here is used to save the almanac data on disk file.
      */
     void serialize(Archive& archive, const uint32_t version)
     {
-        using boost::serialization::make_nvp;
         if (version)
             {
             };
 
-        archive& make_nvp("i_satellite_freq_channel", i_satellite_freq_channel);
-        archive& make_nvp("i_satellite_PRN", i_satellite_PRN);
-        archive& make_nvp("i_satellite_slot_number", i_satellite_slot_number);
-        archive& make_nvp("d_n_A", d_n_A);
-        archive& make_nvp("d_H_n_A", d_H_n_A);
-        archive& make_nvp("d_lambda_n_A", d_lambda_n_A);
-        archive& make_nvp("d_t_lambda_n_A", d_t_lambda_n_A);
-        archive& make_nvp("d_Delta_i_n_A", d_Delta_i_n_A);
-        archive& make_nvp("d_Delta_T_n_A", d_Delta_T_n_A);
-        archive& make_nvp("d_Delta_T_n_A_dot", d_Delta_T_n_A_dot);
-        archive& make_nvp("d_epsilon_n_A", d_epsilon_n_A);
-        archive& make_nvp("d_omega_n_A", d_omega_n_A);
-        archive& make_nvp("d_M_n_A", d_M_n_A);
-        archive& make_nvp("d_KP", d_KP);
-        archive& make_nvp("d_tau_n_A", d_tau_n_A);
-        archive& make_nvp("d_C_n", d_C_n);
-        archive& make_nvp("d_l_n", d_l_n);
+        archive& BOOST_SERIALIZATION_NVP(i_satellite_freq_channel);
+        archive& BOOST_SERIALIZATION_NVP(PRN);
+        archive& BOOST_SERIALIZATION_NVP(i_satellite_slot_number);
+        archive& BOOST_SERIALIZATION_NVP(d_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_H_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_lambda_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_t_lambda_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_Delta_i_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_Delta_T_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_Delta_T_n_A_dot);
+        archive& BOOST_SERIALIZATION_NVP(d_epsilon_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_omega_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_M_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_KP);
+        archive& BOOST_SERIALIZATION_NVP(d_tau_n_A);
+        archive& BOOST_SERIALIZATION_NVP(d_C_n);
+        archive& BOOST_SERIALIZATION_NVP(d_l_n);
     }
 };
 

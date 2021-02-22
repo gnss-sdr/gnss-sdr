@@ -40,20 +40,20 @@ public:
      */
     Gps_Almanac() = default;
 
-    uint32_t i_satellite_PRN{};  //!< SV PRN NUMBER
-    double d_Delta_i{};          //!< Inclination Angle at Reference Time (relative to i_0 = 0.30 semi-circles)
-    int32_t i_Toa{};             //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200L) [s]
-    int32_t i_WNa{};             //!< Almanac week number
-    double d_M_0{};              //!< Mean Anomaly at Reference Time [semi-circles]
-    double d_e_eccentricity{};   //!< Eccentricity [dimensionless]
-    double d_sqrt_A{};           //!< Square Root of the Semi-Major Axis [sqrt(m)]
-    double d_OMEGA0{};           //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
-    double d_OMEGA{};            //!< Argument of Perigee [semi-cicles]
-    double d_OMEGA_DOT{};        //!< Rate of Right Ascension [semi-circles/s]
-    int32_t i_SV_health{};       //!< SV Health
-    int32_t i_AS_status{};       //!< Anti-Spoofing Flags and SV Configuration
-    double d_A_f0{};             //!< Coefficient 0 of code phase offset model [s]
-    double d_A_f1{};             //!< Coefficient 1 of code phase offset model [s/s]
+    uint32_t PRN{};       //!< SV PRN NUMBER
+    double delta_i{};     //!< Inclination Angle at Reference Time (relative to i_0 = 0.30 semi-circles)
+    int32_t toa{};        //!< Almanac data reference time of week (Ref. 20.3.3.4.3 IS-GPS-200L) [s]
+    int32_t WNa{};        //!< Almanac week number
+    double M_0{};         //!< Mean Anomaly at Reference Time [semi-circles]
+    double ecc{};         //!< Eccentricity [dimensionless]
+    double sqrtA{};       //!< Square Root of the Semi-Major Axis [sqrt(m)]
+    double OMEGA_0{};     //!< Longitude of Ascending Node of Orbit Plane at Weekly Epoch [semi-circles]
+    double omega{};       //!< Argument of Perigee [semi-cicles]
+    double OMEGAdot{};    //!< Rate of Right Ascension [semi-circles/s]
+    int32_t SV_health{};  //!< SV Health
+    int32_t AS_status{};  //!< Anti-Spoofing Flags and SV Configuration
+    double af0{};         //!< Coefficient 0 of code phase offset model [s]
+    double af1{};         //!< Coefficient 1 of code phase offset model [s/s]
 
     template <class Archive>
 
@@ -62,20 +62,20 @@ public:
         if (version)
             {
             };
-        ar& BOOST_SERIALIZATION_NVP(i_satellite_PRN);
-        ar& BOOST_SERIALIZATION_NVP(d_Delta_i);
-        ar& BOOST_SERIALIZATION_NVP(i_Toa);
-        ar& BOOST_SERIALIZATION_NVP(i_WNa);
-        ar& BOOST_SERIALIZATION_NVP(d_M_0);
-        ar& BOOST_SERIALIZATION_NVP(d_e_eccentricity);
-        ar& BOOST_SERIALIZATION_NVP(d_sqrt_A);
-        ar& BOOST_SERIALIZATION_NVP(d_OMEGA0);
-        ar& BOOST_SERIALIZATION_NVP(d_OMEGA);
-        ar& BOOST_SERIALIZATION_NVP(d_OMEGA_DOT);
-        ar& BOOST_SERIALIZATION_NVP(i_SV_health);
-        ar& BOOST_SERIALIZATION_NVP(i_AS_status);
-        ar& BOOST_SERIALIZATION_NVP(d_A_f0);
-        ar& BOOST_SERIALIZATION_NVP(d_A_f1);
+        ar& BOOST_SERIALIZATION_NVP(PRN);
+        ar& BOOST_SERIALIZATION_NVP(delta_i);
+        ar& BOOST_SERIALIZATION_NVP(toa);
+        ar& BOOST_SERIALIZATION_NVP(WNa);
+        ar& BOOST_SERIALIZATION_NVP(M_0);
+        ar& BOOST_SERIALIZATION_NVP(ecc);
+        ar& BOOST_SERIALIZATION_NVP(sqrtA);
+        ar& BOOST_SERIALIZATION_NVP(OMEGA_0);
+        ar& BOOST_SERIALIZATION_NVP(omega);
+        ar& BOOST_SERIALIZATION_NVP(OMEGAdot);
+        ar& BOOST_SERIALIZATION_NVP(SV_health);
+        ar& BOOST_SERIALIZATION_NVP(AS_status);
+        ar& BOOST_SERIALIZATION_NVP(af0);
+        ar& BOOST_SERIALIZATION_NVP(af1);
     }
 };
 

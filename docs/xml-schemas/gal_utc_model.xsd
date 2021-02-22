@@ -1,20 +1,20 @@
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <!-- SPDX-License-Identifier: BSD-3-Clause -->
-  <!-- SPDX-FileCopyrightText: 2018-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
+  <!-- SPDX-FileCopyrightText: 2018-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es> -->
   <xs:element name="boost_serialization">
     <xs:complexType>
       <xs:sequence>
         <xs:element name="GNSS-SDR_gal_utc_model">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:float" name="A0_6"/>
-              <xs:element type="xs:float" name="A1_6"/>
-              <xs:element type="xs:byte" name="Delta_tLS_6"/>
-              <xs:element type="xs:int" name="t0t_6"/>
-              <xs:element type="xs:short" name="WNot_6"/>
-              <xs:element type="xs:short" name="WN_LSF_6"/>
-              <xs:element type="xs:byte" name="DN_6"/>
-              <xs:element type="xs:byte" name="Delta_tLSF_6"/>
+              <xs:element type="xs:float" name="A0"/>
+              <xs:element type="xs:float" name="A1"/>
+              <xs:element type="xs:byte" name="Delta_tLS"/>
+              <xs:element type="xs:int" name="tot"/>
+              <xs:element type="xs:short" name="WNot"/>
+              <xs:element type="xs:short" name="WN_LSF"/>
+              <xs:element type="xs:byte" name="DN"/>
+              <xs:element type="xs:byte" name="Delta_tLSF"/>
               <xs:element type="xs:byte" name="flag_utc_model"/>
             </xs:sequence>
             <xs:attribute type="xs:byte" name="class_id"/>

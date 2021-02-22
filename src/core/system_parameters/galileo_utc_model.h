@@ -41,24 +41,24 @@ public:
      */
     Galileo_Utc_Model() = default;
 
-    // double TOW_6;
+    // double TOW;
     double GST_to_UTC_time(double t_e, int32_t WN) const;  //!< GST-UTC Conversion Algorithm and Parameters
 
     // Word type 6: GST-UTC conversion parameters
-    double A0_6{};
-    double A1_6{};
-    int32_t Delta_tLS_6{};
-    int32_t t0t_6{};   //!< UTC data reference Time of Week [s]
-    int32_t WNot_6{};  //!< UTC data reference Week number [week]
-    int32_t WN_LSF_6{};
-    int32_t DN_6{};
-    int32_t Delta_tLSF_6{};
+    double A0{};
+    double A1{};
+    int32_t Delta_tLS{};
+    int32_t tot{};   //!< UTC data reference Time of Week [s]
+    int32_t WNot{};  //!< UTC data reference Week number [week]
+    int32_t WN_LSF{};
+    int32_t DN{};
+    int32_t Delta_tLSF{};
 
     // GPS to Galileo GST conversion parameters
-    double A_0G_10{};
-    double A_1G_10{};
-    int32_t t_0G_10{};
-    int32_t WN_0G_10{};
+    double A_0G{};
+    double A_1G{};
+    int32_t t_0G{};
+    int32_t WN_0G{};
 
     bool flag_utc_model{};
 
@@ -70,19 +70,18 @@ public:
      */
     inline void serialize(Archive& archive, const unsigned int version)
     {
-        using boost::serialization::make_nvp;
         if (version)
             {
             };
-        archive& make_nvp("A0_6", A0_6);
-        archive& make_nvp("A1_6", A1_6);
-        archive& make_nvp("Delta_tLS_6", Delta_tLS_6);
-        archive& make_nvp("t0t_6", t0t_6);
-        archive& make_nvp("WNot_6", WNot_6);
-        archive& make_nvp("WN_LSF_6", WN_LSF_6);
-        archive& make_nvp("DN_6", DN_6);
-        archive& make_nvp("Delta_tLSF_6", Delta_tLSF_6);
-        archive& make_nvp("flag_utc_model", flag_utc_model);
+        archive& BOOST_SERIALIZATION_NVP(A0);
+        archive& BOOST_SERIALIZATION_NVP(A1);
+        archive& BOOST_SERIALIZATION_NVP(Delta_tLS);
+        archive& BOOST_SERIALIZATION_NVP(tot);
+        archive& BOOST_SERIALIZATION_NVP(WNot);
+        archive& BOOST_SERIALIZATION_NVP(WN_LSF);
+        archive& BOOST_SERIALIZATION_NVP(DN);
+        archive& BOOST_SERIALIZATION_NVP(Delta_tLSF);
+        archive& BOOST_SERIALIZATION_NVP(flag_utc_model);
     }
 };
 

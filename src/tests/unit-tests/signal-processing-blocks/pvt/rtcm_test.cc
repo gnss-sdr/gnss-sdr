@@ -247,17 +247,17 @@ TEST(RtcmTest, MT1019)
     Gps_Ephemeris gps_eph = Gps_Ephemeris();
     Gps_Ephemeris gps_eph_read = Gps_Ephemeris();
 
-    gps_eph.i_satellite_PRN = 3;
-    gps_eph.d_IODC = 4;
-    gps_eph.d_e_eccentricity = 2.0 * ECCENTRICITY_LSB;
-    gps_eph.b_fit_interval_flag = true;
+    gps_eph.PRN = 3;
+    gps_eph.IODC = 4;
+    gps_eph.ecc = 2.0 * ECCENTRICITY_LSB;
+    gps_eph.fit_interval_flag = true;
     std::string tx_msg = rtcm->print_MT1019(gps_eph);
 
     EXPECT_EQ(0, rtcm->read_MT1019(tx_msg, gps_eph_read));
-    EXPECT_EQ(static_cast<unsigned int>(3), gps_eph_read.i_satellite_PRN);
-    EXPECT_DOUBLE_EQ(4, gps_eph_read.d_IODC);
-    EXPECT_DOUBLE_EQ(2.0 * ECCENTRICITY_LSB, gps_eph_read.d_e_eccentricity);
-    EXPECT_EQ(expected_true, gps_eph_read.b_fit_interval_flag);
+    EXPECT_EQ(static_cast<unsigned int>(3), gps_eph_read.PRN);
+    EXPECT_DOUBLE_EQ(4, gps_eph_read.IODC);
+    EXPECT_DOUBLE_EQ(2.0 * ECCENTRICITY_LSB, gps_eph_read.ecc);
+    EXPECT_EQ(expected_true, gps_eph_read.fit_interval_flag);
     EXPECT_EQ(1, rtcm->read_MT1019(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gps_eph_read));
 }
 
@@ -322,16 +322,16 @@ TEST(RtcmTest, MT1045)
     Galileo_Ephemeris gal_eph = Galileo_Ephemeris();
     Galileo_Ephemeris gal_eph_read = Galileo_Ephemeris();
 
-    gal_eph.i_satellite_PRN = 5;
-    gal_eph.OMEGA_dot_3 = 53.0 * OMEGA_DOT_3_LSB;
+    gal_eph.PRN = 5;
+    gal_eph.OMEGAdot = 53.0 * OMEGA_DOT_3_LSB;
     gal_eph.E5a_DVS = true;
 
     std::string tx_msg = rtcm->print_MT1045(gal_eph);
 
     EXPECT_EQ(0, rtcm->read_MT1045(tx_msg, gal_eph_read));
     EXPECT_EQ(expected_true, gal_eph_read.E5a_DVS);
-    EXPECT_DOUBLE_EQ(53.0 * OMEGA_DOT_3_LSB, gal_eph_read.OMEGA_dot_3);
-    EXPECT_EQ(static_cast<unsigned int>(5), gal_eph_read.i_satellite_PRN);
+    EXPECT_DOUBLE_EQ(53.0 * OMEGA_DOT_3_LSB, gal_eph_read.OMEGAdot);
+    EXPECT_EQ(static_cast<unsigned int>(5), gal_eph_read.PRN);
     EXPECT_EQ(1, rtcm->read_MT1045(rtcm->bin_to_binary_data(rtcm->hex_to_bin("FFFFFFFFFFF")), gal_eph_read));
 }
 
@@ -402,9 +402,9 @@ TEST(RtcmTest, MSMCell)
     bool more_messages = false;
     double obs_time = 25.0;
 
-    gps_eph.i_satellite_PRN = gnss_synchro2.PRN;
-    gal_eph.i_satellite_PRN = gnss_synchro.PRN;
-    // glo_gnav_eph.i_satellite_PRN = gnss_synchro.PRN;
+    gps_eph.PRN = gnss_synchro2.PRN;
+    gal_eph.PRN = gnss_synchro.PRN;
+    // glo_gnav_eph.PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
         {},
@@ -529,7 +529,7 @@ TEST(RtcmTest, MSM1)
     bool more_messages = false;
     double obs_time = 25.0;
 
-    gps_eph.i_satellite_PRN = gnss_synchro.PRN;
+    gps_eph.PRN = gnss_synchro.PRN;
 
     std::string MSM1 = rtcm->print_MSM_1(gps_eph,
         {}, {}, {},

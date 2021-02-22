@@ -7,8 +7,9 @@
         <xs:element name="GNSS-SDR_utc_model">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:float" name="A1"/>
               <xs:element type="xs:float" name="A0"/>
+              <xs:element type="xs:float" name="A1"/>
+              <xs:element type="xs:float" name="A2"/>
               <xs:element type="xs:int" name="tot"/>
               <xs:element type="xs:short" name="WN_T"/>
               <xs:element type="xs:byte" name="DeltaT_LS"/>

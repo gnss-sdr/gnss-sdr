@@ -63,8 +63,9 @@ public:
         if (version)
             {
             };
-        archive& BOOST_SERIALIZATION_NVP(A1);
         archive& BOOST_SERIALIZATION_NVP(A0);
+        archive& BOOST_SERIALIZATION_NVP(A1);
+        archive& BOOST_SERIALIZATION_NVP(A2);
         archive& BOOST_SERIALIZATION_NVP(tot);
         archive& BOOST_SERIALIZATION_NVP(WN_T);
         archive& BOOST_SERIALIZATION_NVP(DeltaT_LS);

@@ -32,7 +32,7 @@ TEST(Serdes_Monitor_Pvt_Test, Simpletest)
 
     serdes.readProtobuffer(mon);
 
-    gnss_sdr::MonitorGalileoEphemeris ephgal;
+    gnss_sdr::GalileoEphemeris ephgal;
     Serdes_Galileo_Eph gal_serdes = Serdes_Galileo_Eph();
     gal_serdes.readProtobuffer(ephgal);
 

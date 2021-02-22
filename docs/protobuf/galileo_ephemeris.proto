@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: 2018-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+syntax = "proto3";
+
+package gnss_sdr;
+
+message GalileoEphemeris {
+  int32 PRN = 1;        // SV ID
+  double M_0 = 2;       // Mean anomaly at reference time [semi-circles]
+  double delta_n = 3;   // Mean motion difference from computed value [semi-circles/sec]
+  double ecc = 4;       // Eccentricity
+  double sqrtA = 5;     // Square root of the semi-major axis [meters^1/2]
+  double OMEGA_0 = 6;   // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+  double i_0 = 7;       // Inclination angle at reference time [semi-circles]
+  double omega = 8;     // Argument of perigee [semi-circles]
+  double OMEGAdot = 9;  // Rate of right ascension [semi-circles/sec]
+  double idot = 10;     // Rate of inclination angle [semi-circles/sec]
+  double Cuc = 11;      // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+  double Cus = 12;      // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+  double Crc = 13;      // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+  double Crs = 14;      // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+  double Cic = 15;      // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
+  double Cis = 16;      // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+  int32 toe = 17;       // Ephemeris reference time [s]
+
+  // Clock correction parameters
+  int32 toc = 18;    // Clock correction data reference Time of Week [sec]
+  double af0 = 19;   // SV clock bias correction coefficient [s]
+  double af1 = 20;   // SV clock drift correction coefficient [s/s]
+  double af2 = 21;   // SV clock drift rate correction coefficient [s/s^2]
+
+  double satClkDrift = 22;  // SV clock drift
+  double dtr = 23;          // Relativistic clock correction term
+
+  // Time
+  int32 WN = 24;   // Week number
+  int32 tow = 25;  // Time of Week
+
+  // Galileo-specific parameters
+  int32 IOD_ephemeris = 26;
+  int32 IOD_nav = 27;
+
+  // SV status
+  int32 SISA = 28;        // Signal in space accuracy index
+  int32 E5a_HS = 29;      // E5a Signal Health Status
+  int32 E5b_HS = 30;      // E5b Signal Health Status
+  int32 E1B_HS = 31;      // E1B Signal Health Status
+  bool E5a_DVS = 32;      // E5a Data Validity Status
+  bool E5b_DVS = 33;      // E5b Data Validity Status
+  bool E1B_DVS = 34;      // E1B Data Validity Status
+  double BGD_E1E5a = 35;  // E1-E5a Broadcast Group Delay [s]
+  double BGD_E1E5b = 36;  // E1-E5b Broadcast Group Delay [s]
+}

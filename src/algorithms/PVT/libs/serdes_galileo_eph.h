@@ -19,7 +19,7 @@
 #define GNSS_SDR_SERDES_GALILEO_EPH_H
 
 #include "galileo_ephemeris.h"
-#include "monitor_galileo_ephemeris.pb.h"  // file created by Protocol Buffers at compile time
+#include "galileo_ephemeris.pb.h"  // file created by Protocol Buffers at compile time
 #include <memory>
 #include <string>
 #include <utility>
@@ -80,110 +80,97 @@ public:
 
         std::string data;
 
-        monitor_.set_i_satellite_prn(monitor->PRN);
+        monitor_.set_prn(monitor->PRN);
+        monitor_.set_m_0(monitor->M_0);
+        monitor_.set_delta_n(monitor->delta_n);
+        monitor_.set_ecc(monitor->ecc);
+        monitor_.set_sqrta(monitor->sqrtA);
+        monitor_.set_omega_0(monitor->OMEGA_0);
+        monitor_.set_i_0(monitor->i_0);
+        monitor_.set_omega(monitor->omega);
+        monitor_.set_omegadot(monitor->OMEGAdot);
+        monitor_.set_idot(monitor->idot);
+        monitor_.set_cuc(monitor->Cuc);
+        monitor_.set_cus(monitor->Cus);
+        monitor_.set_crc(monitor->Crc);
+        monitor_.set_crs(monitor->Crs);
+        monitor_.set_cic(monitor->Cic);
+        monitor_.set_cis(monitor->Cis);
+        monitor_.set_toe(monitor->toe);
+        monitor_.set_toc(monitor->toc);
+        monitor_.set_af0(monitor->af0);
+        monitor_.set_af1(monitor->af1);
+        monitor_.set_af2(monitor->af2);
+        monitor_.set_satclkdrift(monitor->satClkDrift);
+        monitor_.set_dtr(monitor->dtr);
+        monitor_.set_wn(monitor->WN);
+        monitor_.set_tow(monitor->tow);
+
+        // Galileo-specific parameters
         monitor_.set_iod_ephemeris(monitor->IOD_ephemeris);
-        monitor_.set_iod_nav_1(monitor->IOD_nav);
-        monitor_.set_m0_1(monitor->M_0);              //!< Mean anomaly at reference time [semi-circles]
-        monitor_.set_delta_n_3(monitor->delta_n);     //!< Mean motion difference from computed value [semi-circles/sec]
-        monitor_.set_e_1(monitor->ecc);               //!< Eccentricity
-        monitor_.set_a_1(monitor->sqrtA);             //!< Square root of the semi-major axis [meters^1/2]
-        monitor_.set_omega_0_2(monitor->OMEGA_0);     //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-        monitor_.set_i_0_2(monitor->i_0);             //!< Inclination angle at reference time  [semi-circles]
-        monitor_.set_omega_2(monitor->omega);         //!< Argument of perigee [semi-circles]
-        monitor_.set_omega_dot_3(monitor->OMEGAdot);  //!< Rate of right ascension [semi-circles/sec]
-        monitor_.set_idot_2(monitor->idot);           //!< Rate of inclination angle [semi-circles/sec]
-        monitor_.set_c_uc_3(monitor->Cuc);            //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-        monitor_.set_c_us_3(monitor->Cus);            //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-        monitor_.set_c_rc_3(monitor->Crc);            //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-        monitor_.set_c_rs_3(monitor->Crs);            //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
-        monitor_.set_c_ic_4(monitor->Cic);            //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-        monitor_.set_c_is_4(monitor->Cis);            //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-        monitor_.set_d_toe(monitor->toe);             //!< Ephemeris reference time
-
-        /*Clock correction parameters*/
-        monitor_.set_d_toc(monitor->toc);  //!< Clock correction data reference Time of Week
-        monitor_.set_af0_4(monitor->af0);  //!< SV clock bias correction coefficient [s]
-        monitor_.set_af1_4(monitor->af1);  //!< SV clock drift correction coefficient [s/s]
-        monitor_.set_af2_4(monitor->af2);  //!< SV clock drift rate correction coefficient [s/s^2]
-
-        /*GST*/
-        // Not belong to ephemeris set (page 1 to 4)
-        monitor_.set_wn_5(monitor->WN);    //!< Week number
-        monitor_.set_tow_5(monitor->tow);  //!< Time of Week
-        monitor_.set_galileo_satclkdrift(monitor->satClkDrift);
-        monitor_.set_galileo_dtr(monitor->dtr);  //!< relativistic clock correction term
-
-        // SV status
-        monitor_.set_sisa_3(monitor->SISA);
-        monitor_.set_e5a_hs(monitor->E5a_HS);      //!< E5a Signal Health Status
-        monitor_.set_e5b_hs_5(monitor->E5b_HS);    //!< E5b Signal Health Status
-        monitor_.set_e1b_hs_5(monitor->E1B_HS);    //!< E1B Signal Health Status
-        monitor_.set_e5a_dvs(monitor->E5a_DVS);    //!< E5a Data Validity Status
-        monitor_.set_e5b_dvs_5(monitor->E5b_DVS);  //!< E5b Data Validity Status
-        monitor_.set_e1b_dvs_5(monitor->E1B_DVS);  //!< E1B Data Validity Status
-
-        monitor_.set_bgd_e1e5a_5(monitor->BGD_E1E5a);  //!< E1-E5a Broadcast Group Delay [s]
-        monitor_.set_bgd_e1e5b_5(monitor->BGD_E1E5b);  //!< E1-E5b Broadcast Group Delay [s]
+        monitor_.set_iod_nav(monitor->IOD_nav);
+        monitor_.set_sisa(monitor->SISA);
+        monitor_.set_e5a_hs(monitor->E5a_HS);
+        monitor_.set_e5b_hs(monitor->E5b_HS);
+        monitor_.set_e1b_hs(monitor->E1B_HS);
+        monitor_.set_e5a_dvs(monitor->E5a_DVS);
+        monitor_.set_e5b_dvs(monitor->E5b_DVS);
+        monitor_.set_e1b_dvs(monitor->E1B_DVS);
+        monitor_.set_bgd_e1e5a(monitor->BGD_E1E5a);
+        monitor_.set_bgd_e1e5b(monitor->BGD_E1E5b);
 
         monitor_.SerializeToString(&data);
         return data;
     }
 
-    inline Galileo_Ephemeris readProtobuffer(const gnss_sdr::MonitorGalileoEphemeris& mon) const  //!< Deserialization
+    inline Galileo_Ephemeris readProtobuffer(const gnss_sdr::GalileoEphemeris& mon) const  //!< Deserialization
     {
         Galileo_Ephemeris monitor;
 
-        monitor.PRN = mon.i_satellite_prn();
+        monitor.PRN = mon.prn();
+        monitor.M_0 = mon.m_0();
+        monitor.delta_n = mon.delta_n();
+        monitor.ecc = mon.ecc();
+        monitor.sqrtA = mon.sqrta();
+        monitor.OMEGA_0 = mon.omega_0();
+        monitor.i_0 = mon.i_0();
+        monitor.omega = mon.omega();
+        monitor.OMEGAdot = mon.omegadot();
+        monitor.idot = mon.idot();
+        monitor.Cuc = mon.cuc();
+        monitor.Cus = mon.cus();
+        monitor.Crc = mon.crc();
+        monitor.Crs = mon.crs();
+        monitor.Cic = mon.cic();
+        monitor.Cis = mon.cis();
+        monitor.toe = mon.toe();
+        monitor.toc = mon.toc();
+        monitor.af0 = mon.af0();
+        monitor.af1 = mon.af1();
+        monitor.af2 = mon.af2();
+        monitor.satClkDrift = mon.satclkdrift();
+        monitor.dtr = mon.dtr();
+        monitor.WN = mon.wn();
+        monitor.tow = mon.tow();
 
+        // Galileo-specific parameters
         monitor.IOD_ephemeris = mon.iod_ephemeris();
-        monitor.IOD_nav = mon.iod_nav_1();
-        monitor.M_0 = mon.m0_1();              //!< Mean anomaly at reference time [semi-circles]
-        monitor.delta_n = mon.delta_n_3();     //!< Mean motion difference from computed value [semi-circles/sec]
-        monitor.ecc = mon.e_1();               //!< Eccentricity
-        monitor.sqrtA = mon.a_1();             //!< Square root of the semi-major axis [meters^1/2]
-        monitor.OMEGA_0 = mon.omega_0_2();     //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-        monitor.i_0 = mon.i_0_2();             //!< Inclination angle at reference time  [semi-circles]
-        monitor.omega = mon.omega_2();         //!< Argument of perigee [semi-circles]
-        monitor.OMEGAdot = mon.omega_dot_3();  //!< Rate of right ascension [semi-circles/sec]
-        monitor.idot = mon.idot_2();           //!< Rate of inclination angle [semi-circles/sec]
-        monitor.Cuc = mon.c_uc_3();            //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-        monitor.Cus = mon.c_us_3();            //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-        monitor.Crc = mon.c_rc_3();            //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-        monitor.Crs = mon.c_rs_3();            //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
-        monitor.Cic = mon.c_ic_4();            //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-        monitor.Cis = mon.c_is_4();            //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-        monitor.toe = mon.d_toe();             // Ephemeris reference time
-
-        /*Clock correction parameters*/
-        monitor.toc = mon.d_toc();  // Clock correction data reference Time of Week
-        monitor.af0 = mon.af0_4();  //!< SV clock bias correction coefficient [s]
-        monitor.af1 = mon.af1_4();  //!< SV clock drift correction coefficient [s/s]
-        monitor.af2 = mon.af2_4();  //!< SV clock drift rate correction coefficient [s/s^2]
-
-        /*GST*/
-        // Not belong to ephemeris set (page 1 to 4)
-        monitor.WN = mon.wn_5();    //!< Week number
-        monitor.tow = mon.tow_5();  //!< Time of Week
-        monitor.satClkDrift = mon.galileo_satclkdrift();
-        monitor.dtr = mon.galileo_dtr();  //!< relativistic clock correction term
-
-        // SV status
-        monitor.SISA = mon.sisa_3();
-        monitor.E5a_HS = mon.e5a_hs();      //!< E5a Signal Health Status
-        monitor.E5b_HS = mon.e5b_hs_5();    //!< E5b Signal Health Status
-        monitor.E1B_HS = mon.e1b_hs_5();    //!< E1B Signal Health Status
-        monitor.E5a_DVS = mon.e5a_dvs();    //!< E5a Data Validity Status
-        monitor.E5b_DVS = mon.e5b_dvs_5();  //!< E5b Data Validity Status
-        monitor.E1B_DVS = mon.e1b_dvs_5();  //!< E1B Data Validity Status
-
-        monitor.BGD_E1E5a = mon.bgd_e1e5a_5();  //!< E1-E5a Broadcast Group Delay [s]
-        monitor.BGD_E1E5b = mon.bgd_e1e5b_5();  //!< E1-E5b Broadcast Group Delay [s]
+        monitor.IOD_nav = mon.iod_nav();
+        monitor.SISA = mon.sisa();
+        monitor.E5a_HS = mon.e5a_hs();
+        monitor.E5b_HS = mon.e5b_hs();
+        monitor.E1B_HS = mon.e1b_hs();
+        monitor.E5a_DVS = mon.e5a_dvs();
+        monitor.E5b_DVS = mon.e5b_dvs();
+        monitor.E1B_DVS = mon.e1b_dvs();
+        monitor.BGD_E1E5a = mon.bgd_e1e5a();
+        monitor.BGD_E1E5b = mon.bgd_e1e5b();
 
         return monitor;
     }
 
 private:
-    gnss_sdr::MonitorGalileoEphemeris monitor_{};
+    gnss_sdr::GalileoEphemeris monitor_{};
 };
 
 

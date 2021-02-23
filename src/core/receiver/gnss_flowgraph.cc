@@ -75,6 +75,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
     configuration_ = std::move(configuration);
     queue_ = std::move(queue);
     multiband_ = GNSSFlowgraph::is_multiband();
+    enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
     init();
 }
 
@@ -107,17 +108,17 @@ void GNSSFlowgraph::init()
         {
             std::cout << "Creating source " << i << '\n';
             sig_source_.push_back(block_factory->GetSignalSource(configuration_.get(), queue_.get(), i));
-#if ENABLE_FPGA
-#else
-            auto& src = sig_source_.back();
-            auto RF_Channels = src->getRfChannels();
-            std::cout << "RF Channels " << RF_Channels << '\n';
-            for (auto j = 0U; j < RF_Channels; ++j)
+            if (enable_fpga_offloading_ == false)
                 {
-                    sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
-                    signal_conditioner_ID++;
+                    auto& src = sig_source_.back();
+                    auto RF_Channels = src->getRfChannels();
+                    std::cout << "RF Channels " << RF_Channels << '\n';
+                    for (auto j = 0U; j < RF_Channels; ++j)
+                        {
+                            sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
+                            signal_conditioner_ID++;
+                        }
                 }
-#endif
         }
     if (!sig_conditioner_.empty())
         {
@@ -247,13 +248,14 @@ void GNSSFlowgraph::start()
             return;
         }
 
-#if ENABLE_FPGA
-    // start the DMA if the receiver is in post-processing mode
-    if (configuration_->property(sig_source_.at(0)->role() + ".switch_position", 0) == 0)
+    if (enable_fpga_offloading_ == true)
         {
-            sig_source_.at(0)->start();
+            // start the DMA if the receiver is in post-processing mode
+            if (configuration_->property(sig_source_.at(0)->role() + ".switch_position", 0) == 0)
+                {
+                    sig_source_.at(0)->start();
+                }
         }
-#endif
 
     running_ = true;
 }
@@ -266,10 +268,12 @@ void GNSSFlowgraph::stop()
             chan->stop_channel();  // stop the acquisition or tracking operation
         }
     top_block_->stop();
-#if ENABLE_FPGA
-#else
-    top_block_->wait();
-#endif
+
+    if (enable_fpga_offloading_ == false)
+        {
+            top_block_->wait();
+        }
+
     running_ = false;
 }
 
@@ -298,11 +302,23 @@ void GNSSFlowgraph::connect()
         }
 
 #if ENABLE_FPGA
-    if (connect_fpga_flowgraph() != 0)
+    if (enable_fpga_offloading_ == true)
         {
-            LOG(ERROR) << "Unable to connect flowgraph with FPFA off-loading";
-            print_help();
-            return;
+            if (connect_fpga_flowgraph() != 0)
+                {
+                    LOG(ERROR) << "Unable to connect flowgraph with FPFA off-loading";
+                    print_help();
+                    return;
+                }
+        }
+    else
+        {
+            if (connect_desktop_flowgraph() != 0)
+                {
+                    LOG(ERROR) << "Unable to connect flowgraph";
+                    print_help();
+                    return;
+                }
         }
 #else
     if (connect_desktop_flowgraph() != 0)
@@ -331,9 +347,19 @@ void GNSSFlowgraph::disconnect()
     connected_ = false;
 
 #if ENABLE_FPGA
-    if (disconnect_fpga_flowgraph() != 0)
+    if (enable_fpga_offloading_ == true)
         {
-            return;
+            if (disconnect_fpga_flowgraph() != 0)
+                {
+                    return;
+                }
+        }
+    else
+        {
+            if (disconnect_desktop_flowgraph() != 0)
+                {
+                    return;
+                }
         }
 #else
     if (disconnect_desktop_flowgraph() != 0)
@@ -348,9 +374,6 @@ void GNSSFlowgraph::disconnect()
 
 int GNSSFlowgraph::connect_desktop_flowgraph()
 {
-#if ENABLE_FPGA
-    return 0;
-#else
     // Connect blocks to the top_block
     if (connect_signal_sources() != 0)
         {
@@ -429,15 +452,11 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
 
     LOG(INFO) << "The GNU Radio flowgraph for the current GNSS-SDR configuration has been successfully connected";
     return 0;
-#endif
 }
 
 
 int GNSSFlowgraph::disconnect_desktop_flowgraph()
 {
-#if ENABLE_FPGA
-    return 0;
-#else
     // Disconnect blocks between them
     if (disconnect_signal_sources_from_signal_conditioners() != 0)
         {
@@ -496,7 +515,6 @@ int GNSSFlowgraph::disconnect_desktop_flowgraph()
         }
 
     return 0;
-#endif
 }
 
 

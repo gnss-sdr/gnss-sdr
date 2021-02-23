@@ -107,6 +107,8 @@ void GNSSFlowgraph::init()
         {
             std::cout << "Creating source " << i << '\n';
             sig_source_.push_back(block_factory->GetSignalSource(configuration_.get(), queue_.get(), i));
+#if ENABLE_FPGA
+#else
             auto& src = sig_source_.back();
             auto RF_Channels = src->getRfChannels();
             std::cout << "RF Channels " << RF_Channels << '\n';
@@ -115,9 +117,12 @@ void GNSSFlowgraph::init()
                     sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
                     signal_conditioner_ID++;
                 }
+#endif
         }
-
-    signal_conditioner_connected_ = std::vector<bool>(sig_conditioner_.size(), false);
+    if (!sig_conditioner_.empty())
+        {
+            signal_conditioner_connected_ = std::vector<bool>(sig_conditioner_.size(), false);
+        }
 
     observables_ = block_factory->GetObservables(configuration_.get());
 
@@ -573,16 +578,6 @@ int GNSSFlowgraph::disconnect_fpga_flowgraph()
         }
 
     if (disconnect_observables_from_pvt() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_signal_sources() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_signal_conditioners() != 0)
         {
             return 1;
         }

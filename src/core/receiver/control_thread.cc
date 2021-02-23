@@ -209,7 +209,7 @@ void ControlThread::init()
             // Make an educated guess
             time_t rawtime;
             time(&rawtime);
-            agnss_ref_time_.d_tv_sec = rawtime;
+            agnss_ref_time_.seconds = rawtime;
             agnss_ref_time_.valid = true;
         }
     else
@@ -220,8 +220,8 @@ void ControlThread::init()
             };
             if (strptime(ref_time_str.c_str(), "%d/%m/%Y %H:%M:%S", &tm) != nullptr)
                 {
-                    agnss_ref_time_.d_tv_sec = timegm(&tm);
-                    if (agnss_ref_time_.d_tv_sec > 0)
+                    agnss_ref_time_.seconds = timegm(&tm);
+                    if (agnss_ref_time_.seconds > 0)
                         {
                             agnss_ref_time_.valid = true;
                         }
@@ -883,7 +883,7 @@ void ControlThread::assist_GNSS()
             time_t ref_rx_utc_time = 0;
             if (agnss_ref_time_.valid == true)
                 {
-                    ref_rx_utc_time = static_cast<time_t>(agnss_ref_time_.d_tv_sec);
+                    ref_rx_utc_time = static_cast<time_t>(agnss_ref_time_.seconds);
                 }
 
             const std::vector<std::pair<int, Gnss_Satellite>> visible_sats = get_visible_sats(ref_rx_utc_time, ref_LLH);

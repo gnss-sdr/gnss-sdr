@@ -454,8 +454,7 @@ alm_t alm_to_rtklib(const Galileo_Almanac& gal_alm)
     toa.time = gal_alm.toa;
     toa.sec = 0.0;
     rtklib_alm.toa = toa;
-    rtklib_alm.A = 5440.588203494 + gal_alm.delta_sqrtA;
-    rtklib_alm.A = rtklib_alm.A * rtklib_alm.A;
+    rtklib_alm.A = gal_alm.sqrtA * gal_alm.sqrtA;
     rtklib_alm.e = gal_alm.ecc;
     rtklib_alm.i0 = (gal_alm.delta_i + 56.0 / 180.0) * GNSS_PI;
     rtklib_alm.OMG0 = gal_alm.OMEGA_0 * GNSS_PI;

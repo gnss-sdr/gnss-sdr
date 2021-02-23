@@ -27,6 +27,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
+    gnss_almanac.h
     gnss_ephemeris.h
     gnss_satellite.h
     gnss_signal.h

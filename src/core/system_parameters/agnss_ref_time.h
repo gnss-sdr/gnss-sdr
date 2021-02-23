@@ -39,9 +39,9 @@ public:
     Agnss_Ref_Time() = default;
 
     double tow{};
-    double d_Week{};
-    double d_tv_sec{};
-    double d_tv_usec{};
+    double week{};
+    double seconds{};
+    double microseconds{};
     bool valid{};
 
     template <class Archive>
@@ -56,9 +56,9 @@ public:
             {
             };
         archive& BOOST_SERIALIZATION_NVP(tow);
-        archive& BOOST_SERIALIZATION_NVP(d_Week);
-        archive& BOOST_SERIALIZATION_NVP(d_tv_sec);
-        archive& BOOST_SERIALIZATION_NVP(d_tv_usec);
+        archive& BOOST_SERIALIZATION_NVP(week);
+        archive& BOOST_SERIALIZATION_NVP(seconds);
+        archive& BOOST_SERIALIZATION_NVP(microseconds);
         archive& BOOST_SERIALIZATION_NVP(valid);
     }
 };

@@ -19,6 +19,7 @@
 Galileo_Almanac Galileo_Almanac_Helper::get_almanac(int i) const
 {
     Galileo_Almanac galileo_almanac;
+    const double sqrtAnominal = 5440.588203494;  // square root of Galileo nominal orbit semi-major axis
     switch (i)
         {
         case 1:
@@ -29,7 +30,7 @@ Galileo_Almanac Galileo_Almanac_Helper::get_almanac(int i) const
             galileo_almanac.delta_i = this->delta_i_7;
             galileo_almanac.M_0 = this->M0_7;
             galileo_almanac.ecc = this->e_7;
-            galileo_almanac.delta_sqrtA = this->DELTA_A_7;
+            galileo_almanac.sqrtA = sqrtAnominal + this->DELTA_A_7;
             galileo_almanac.OMEGA_0 = this->Omega0_7;
             galileo_almanac.omega = this->omega_7;
             galileo_almanac.OMEGAdot = this->Omega_dot_7;
@@ -48,7 +49,7 @@ Galileo_Almanac Galileo_Almanac_Helper::get_almanac(int i) const
             galileo_almanac.delta_i = this->delta_i_8;
             galileo_almanac.M_0 = this->M0_9;
             galileo_almanac.ecc = this->e_8;
-            galileo_almanac.delta_sqrtA = this->DELTA_A_8;
+            galileo_almanac.sqrtA = sqrtAnominal + this->DELTA_A_8;
             galileo_almanac.OMEGA_0 = this->Omega0_8;
             galileo_almanac.omega = this->omega_8;
             galileo_almanac.OMEGAdot = this->Omega_dot_8;
@@ -66,7 +67,7 @@ Galileo_Almanac Galileo_Almanac_Helper::get_almanac(int i) const
             galileo_almanac.delta_i = this->delta_i_9;
             galileo_almanac.M_0 = this->M0_10;
             galileo_almanac.ecc = this->e_9;
-            galileo_almanac.delta_sqrtA = this->DELTA_A_9;
+            galileo_almanac.sqrtA = sqrtAnominal + this->DELTA_A_9;
             galileo_almanac.OMEGA_0 = this->Omega0_10;
             galileo_almanac.omega = this->omega_9;
             galileo_almanac.OMEGAdot = this->Omega_dot_10;

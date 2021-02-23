@@ -306,7 +306,7 @@ void GNSSFlowgraph::connect()
         {
             if (connect_fpga_flowgraph() != 0)
                 {
-                    LOG(ERROR) << "Unable to connect flowgraph with FPFA off-loading";
+                    std::cerr << "Unable to connect flowgraph with FPGA off-loading\n";
                     print_help();
                     return;
                 }
@@ -315,7 +315,7 @@ void GNSSFlowgraph::connect()
         {
             if (connect_desktop_flowgraph() != 0)
                 {
-                    LOG(ERROR) << "Unable to connect flowgraph";
+                    std::cerr << "Unable to connect flowgraph\n";
                     print_help();
                     return;
                 }
@@ -323,7 +323,7 @@ void GNSSFlowgraph::connect()
 #else
     if (connect_desktop_flowgraph() != 0)
         {
-            LOG(ERROR) << "Unable to connect flowgraph";
+            std::cerr << "Unable to connect flowgraph\n";
             print_help();
             return;
         }
@@ -521,7 +521,26 @@ int GNSSFlowgraph::disconnect_desktop_flowgraph()
 #if ENABLE_FPGA
 int GNSSFlowgraph::connect_fpga_flowgraph()
 {
+    // Check that the Signal Source has been instantiated successfully
+
+    for (auto& src : sig_source_)
+        {
+            if (src == nullptr)
+                {
+                    help_hint_ += " * Undefined SignalSource.implementation in the configuration file.\n";
+                    return 1;
+                }
+            if (src->item_size() == 0)
+                {
+                    help_hint_ += " * The global configuration parameter GNSS-SDR.enable_FPGA is set to true,\n";
+                    help_hint_ += "   but gnss-sdr does not appear to be executed in an FPGA-equipped platform,\n";
+                    help_hint_ += "   or there are some required files that are missing.\n";
+                    return 1;
+                }
+        }
+
     // Connect blocks to the top_block
+
     if (connect_channels() != 0)
         {
             return 1;
@@ -951,7 +970,16 @@ int GNSSFlowgraph::connect_fpga_sample_counter()
         }
     catch (const std::exception& e)
         {
-            LOG(ERROR) << "Can't connect FPGA sample counter: " << e.what();
+            std::string reported_error(e.what());
+            if (std::string::npos != reported_error.find(std::string("filesystem")))
+                {
+                    help_hint_ += " * The global configuration parameter GNSS-SDR.enable_FPGA is set to true,\n";
+                    help_hint_ += "   but gnss-sdr does not appear to be executed in an FPGA-equipped platform.\n";
+                }
+            else
+                {
+                    LOG(ERROR) << reported_error;
+                }
             top_block_->disconnect_all();
             return 1;
         }
@@ -979,6 +1007,13 @@ int GNSSFlowgraph::disconnect_fpga_sample_counter()
 
 int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
 {
+    if (enable_fpga_offloading_)
+        {
+            help_hint_ += " * The global configuration parameter GNSS-SDR.enable_FPGA is set to true,\n";
+            help_hint_ += "   but gnss-sdr was not compiled with the -DENABLE_FPGA=ON building option.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
     unsigned int signal_conditioner_ID = 0;
     for (int i = 0; i < sources_count_; i++)
         {

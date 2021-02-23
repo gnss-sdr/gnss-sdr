@@ -19,10 +19,11 @@
 #include "gnss_sdr_filesystem.h"
 #include <algorithm>  // sort
 #include <cstdlib>    // atoi, size_t
-#include <fstream>    // ifstream
-#include <iostream>   // cout
-#include <locale>     // isdigit
-#include <sstream>    // std::stringstream
+#include <exception>
+#include <fstream>   // ifstream
+#include <iostream>  // cout
+#include <locale>    // isdigit
+#include <sstream>   // std::stringstream
 #include <vector>
 
 
@@ -188,7 +189,15 @@ int32_t find_uio_num(const std::string &device_name, uint32_t device_num)
 
 int32_t find_uio_dev_file_name(std::string &device_file_name, const std::string &device_name, uint32_t device_num)
 {
-    int32_t uio_num = find_uio_num(device_name, device_num);
+    int32_t uio_num = 0;
+    try
+        {
+            uio_num = find_uio_num(device_name, device_num);
+        }
+    catch (const std::exception &e)
+        {
+            return -1;
+        }
     if (uio_num >= 0)
         {
             std::stringstream device_file_name_tmp;

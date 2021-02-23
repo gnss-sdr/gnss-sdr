@@ -96,7 +96,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 
-
     // initialize the variables that are used in post-processing mode
 
     enable_DMA_ = false;
@@ -165,10 +164,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     // find the uio device file corresponding to the switch.
     if (find_uio_dev_file_name(device_io_name, switch_device_name, 0) < 0)
         {
-            std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << std::endl;
-            LOG(ERROR) << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name;
-            // stop the receiver
-            queue_->push(pmt::make_any(command_event_make(200, 0)));
+            std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << '\n';
+            item_size_ = 0;
             return;
         }
 
@@ -204,10 +201,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                         }
                     else
                         {
-                            std::cerr << "file_signal_source: Unable to open the samples file " << filename0.c_str() << '\n';
-                            LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename0.c_str();
-                            // stop the receiver
-                            queue_->push(pmt::make_any(command_event_make(200, 0)));
+                            std::cerr << "SignalSource: Unable to open the samples file " << filename0.c_str() << '\n';
+                            item_size_ = 0;
                             return;
                         }
                     std::streamsize ss = std::cout.precision();
@@ -234,10 +229,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                                 }
                             else
                                 {
-                                    std::cerr << "file_signal_source: Unable to open the samples file " << filename1.c_str() << '\n';
-                                    LOG(ERROR) << "file_signal_source: Unable to open the samples file " << filename1.c_str();
-                                    // stop the receiver
-                                    queue_->push(pmt::make_any(command_event_make(200, 0)));
+                                    std::cerr << "SignalSource: Unable to open the samples file " << filename1.c_str() << '\n';
+                                    item_size_ = 0;
                                     return;
                                 }
                             std::streamsize ss = std::cout.precision();
@@ -384,8 +377,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             catch (const std::runtime_error &e)
                 {
                     std::cerr << "Exception cached when configuring the RX chain: " << e.what() << '\n';
-                    // stop the receiver
-                    queue_->push(pmt::make_any(command_event_make(200, 0)));
+                    item_size_ = 0;
                     return;
                 }
             // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
@@ -420,8 +412,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     catch (const std::runtime_error &e)
                         {
                             std::cerr << "Exception cached when configuring the TX carrier: " << e.what() << '\n';
-                            // stop the receiver
-                            queue_->push(pmt::make_any(command_event_make(200, 0)));
+                            item_size_ = 0;
                             return;
                         }
                 }
@@ -438,10 +429,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             // find the uio device file corresponding to the buffer monitor
             if (find_uio_dev_file_name(device_io_name_buffer_monitor, buffer_monitor_device_name, 0) < 0)
                 {
-                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << buffer_monitor_device_name << std::endl;
-                    LOG(ERROR) << "Cannot find the FPGA uio device file corresponding to device name " << buffer_monitor_device_name;
-                    // stop the receiver
-                    queue_->push(pmt::make_any(command_event_make(200, 0)));
+                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << buffer_monitor_device_name << '\n';
+                    item_size_ = 0;
                     return;
                 }
 
@@ -458,20 +447,16 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             // find the uio device file corresponding to the dynamic bit selector 0 module.
             if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_0, dyn_bit_sel_device_name, 0) < 0)
                 {
-                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
-                    LOG(ERROR) << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name;
-                    // stop the receiver
-                    queue_->push(pmt::make_any(command_event_make(200, 0)));
+                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
+                    item_size_ = 0;
                     return;
                 }
 
             // find the uio device file corresponding to the dynamic bit selector 1 module.
             if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_1, dyn_bit_sel_device_name, 1) < 0)
                 {
-                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
-                    LOG(ERROR) << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name;
-                    // stop the receiver
-                    queue_->push(pmt::make_any(command_event_make(200, 0)));
+                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
+                    item_size_ = 0;
                     return;
                 }
             dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1);
@@ -553,6 +538,7 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
         }
 }
 
+
 void Ad9361FpgaSignalSource::start()
 {
     thread_file_to_dma = std::thread([&] { run_DMA_process(filename0, filename1, samples_to_skip_, item_size_, samples_, repeat_, dma_buff_offset_pos_, queue_); });
@@ -571,8 +557,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception opening file " << filename0;
-            LOG(ERROR) << "Exception opening file " << filename0;
+            std::cerr << "Exception opening file " << filename0 << '\n';
             // stop the receiver
             queue->push(pmt::make_any(command_event_make(200, 0)));
             return;
@@ -588,8 +573,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cerr << "Exception opening file " << filename1;
-                    LOG(ERROR) << "Exception opening file " << filename1;
+                    std::cerr << "Exception opening file " << filename1 << '\n';
                     // stop the receiver
                     queue->push(pmt::make_any(command_event_make(200, 0)));
                     return;
@@ -605,7 +589,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
     catch (const std::ifstream::failure &e)
         {
             std::cerr << "Exception skipping initial samples file " << filename0 << '\n';
-            LOG(ERROR) << "Exception skipping initial samples file " << filename0;
             // stop the receiver
             queue->push(pmt::make_any(command_event_make(200, 0)));
             return;
@@ -620,7 +603,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
             catch (const std::ifstream::failure &e)
                 {
                     std::cerr << "Exception skipping initial samples file " << filename1 << '\n';
-                    LOG(ERROR) << "Exception skipping initial samples file " << filename1;
                     // stop the receiver
                     queue->push(pmt::make_any(command_event_make(200, 0)));
                     return;
@@ -641,7 +623,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
     if (tx_fd < 0)
         {
             std::cerr << "Cannot open loop device\n";
-            LOG(ERROR) << "Cannot open loop device";
             // stop the receiver
             queue->push(pmt::make_any(command_event_make(200, 0)));
             return;
@@ -680,7 +661,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
             catch (const std::ifstream::failure &e)
                 {
                     std::cerr << "Exception reading file " << filename0 << '\n';
-                    LOG(ERROR) << "Exception reading file " << filename0;
                     break;
                 }
             if (infile1)
@@ -712,7 +692,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                     catch (const std::ifstream::failure &e)
                         {
                             std::cerr << "Exception reading file " << filename1 << '\n';
-                            LOG(ERROR) << "Exception reading file " << filename1;
                             break;
                         }
                     if (infile1)
@@ -741,7 +720,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                     if (num_bytes_sent != num_transferred_bytes)
                         {
                             std::cerr << "Error: DMA could not send all the required samples\n";
-                            LOG(ERROR) << "Error: DMA could not send all the required samples";
                             break;
                         }
 
@@ -763,7 +741,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                             catch (const std::ifstream::failure &e)
                                 {
                                     std::cerr << "Exception resetting the position of the next byte to be extracted to zero " << filename0 << '\n';
-                                    LOG(ERROR) << "Exception resetting the position of the next byte to be extracted to zero " << filename0;
                                     break;
                                 }
 
@@ -776,7 +753,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                             catch (const std::ifstream::failure &e)
                                 {
                                     std::cerr << "Exception skipping initial samples file " << filename0 << '\n';
-                                    LOG(ERROR) << "Exception skipping initial samples file " << filename0;
                                     break;
                                 }
 
@@ -789,7 +765,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                                     catch (const std::ifstream::failure &e)
                                         {
                                             std::cerr << "Exception setting the position of the next byte to be extracted to zero " << filename1 << '\n';
-                                            LOG(ERROR) << "Exception resetting the position of the next byte to be extracted to zero " << filename1;
                                             break;
                                         }
 
@@ -800,7 +775,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                                     catch (const std::ifstream::failure &e)
                                         {
                                             std::cerr << "Exception skipping initial samples file " << filename1 << '\n';
-                                            LOG(ERROR) << "Exception skipping initial samples file " << filename1;
                                             break;
                                         }
                                 }
@@ -822,7 +796,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
     if (close(tx_fd) < 0)
         {
             std::cerr << "Error closing loop device " << '\n';
-            LOG(ERROR) << "Error closing loop device " << std::endl;
         }
 
     try
@@ -832,7 +805,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
     catch (const std::ifstream::failure &e)
         {
             std::cerr << "Exception closing file " << filename0 << '\n';
-            LOG(ERROR) << "Exception closing file " << filename0 << std::endl;
         }
 
     if (num_freq_bands_ > 1)
@@ -844,7 +816,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
             catch (const std::ifstream::failure &e)
                 {
                     std::cerr << "Exception closing file " << filename1 << '\n';
-                    LOG(ERROR) << "Exception closing file " << filename1 << std::endl;
                 }
         }
 
@@ -870,6 +841,7 @@ void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process()
             lock.unlock();
         }
 }
+
 
 void Ad9361FpgaSignalSource::run_buffer_monitor_process()
 {

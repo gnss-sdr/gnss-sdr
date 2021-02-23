@@ -519,19 +519,9 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
     // Connect the counter
     if (sig_source_.at(0) != nullptr)
         {
-            if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
+            if (connect_fpga_sample_counter() != 0)
                 {
-                    if (connect_sample_counter() != 0)
-                        {
-                            return 1;
-                        }
-                }
-            else
-                {
-                    if (connect_fpga_sample_counter() != 0)
-                        {
-                            return 1;
-                        }
+                    return 1;
                 }
         }
     else
@@ -544,11 +534,6 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
     if (connect_channels_to_observables() != 0)
         {
             return 1;
-        }
-
-    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
-        {
-            check_signal_conditioners();
         }
 
     assign_channels();
@@ -572,27 +557,9 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
 
 int GNSSFlowgraph::disconnect_fpga_flowgraph()
 {
-    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
+    if (disconnect_fpga_sample_counter() != 0)
         {
-            if (disconnect_signal_sources_from_signal_conditioners() != 0)
-                {
-                    return 1;
-                }
-        }
-
-    if (configuration_->property(sig_source_.at(0)->role() + ".enable_FPGA", false) == false)
-        {
-            if (disconnect_sample_counter() != 0)
-                {
-                    return 1;
-                }
-        }
-    else
-        {
-            if (disconnect_fpga_sample_counter() != 0)
-                {
-                    return 1;
-                }
+            return 1;
         }
 
     if (disconnect_monitors() != 0)

@@ -338,7 +338,7 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
                             d_HAS_data.delta_clock_c0_multiplier_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH, message.end());
                         }
-                    int number_sats_this_gnss_id = 0;
+                    uint64_t number_sats_this_gnss_id = 0;
                     for (uint8_t j = 0; j < d_HAS_data.Nsys; j++)
                         {
                             if (d_HAS_data.gnss_id_mask[j] == d_HAS_data.gnss_id_clock_subset[i])
@@ -354,7 +354,7 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
                         }
 
                     d_HAS_data.satellite_submask[i].reserve(number_sats_this_gnss_id);
-                    for (int j = 0; j < number_sats_this_gnss_id; j++)
+                    for (uint64_t j = 0; j < number_sats_this_gnss_id; j++)
                         {
                             d_HAS_data.satellite_submask[i][j] = read_has_message_body_uint64(message.substr(0, 1));
                             message = std::string(message.begin() + 1, message.end());
@@ -371,12 +371,12 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
             // read code bias
             d_HAS_data.validity_interval_index_code_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
             message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-            std::vector<int> number_sats(d_HAS_data.Nsys, 0);
-            std::vector<int> number_codes(d_HAS_data.Nsys, 0);
+            std::vector<uint64_t> number_sats(d_HAS_data.Nsys, 0);
+            std::vector<uint64_t> number_codes(d_HAS_data.Nsys, 0);
             for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
                 {
-                    int number_sats_this_gnss_id = 0;
-                    int number_signals_this_gnss_id = 0;
+                    uint64_t number_sats_this_gnss_id = 0;
+                    uint64_t number_signals_this_gnss_id = 0;
                     if (d_HAS_data.cell_mask_availability_flag[sys] == true)
                         {
                             uint64_t n = d_HAS_data.satellite_mask[sys];
@@ -400,14 +400,14 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
                     number_sats[sys] = number_sats_this_gnss_id;
                     number_codes[sys] = number_signals_this_gnss_id;
                 }
-            int Nsat_b = std::accumulate(number_sats.begin(), number_sats.end(), 0);
+            uint64_t Nsat_b = std::accumulate(number_sats.begin(), number_sats.end(), 0ULL);
 
             d_HAS_data.code_bias.reserve(Nsat_b);
             int sat = 0;
             for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
                 {
                     d_HAS_data.code_bias[sat].reserve(number_codes[sys]);
-                    for (int c = 0; c < number_codes[sys]; c++)
+                    for (uint64_t c = 0; c < number_codes[sys]; c++)
                         {
                             d_HAS_data.code_bias[sat][c] = read_has_message_body_int16(message.substr(0, HAS_MSG_CODE_BIAS_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_CODE_BIAS_LENGTH, message.end());
@@ -421,12 +421,12 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
             d_HAS_data.validity_interval_index_phase_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
             message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
 
-            std::vector<int> number_sats(d_HAS_data.Nsys, 0);
-            std::vector<int> number_phases(d_HAS_data.Nsys, 0);
+            std::vector<uint64_t> number_sats(d_HAS_data.Nsys, 0);
+            std::vector<uint64_t> number_phases(d_HAS_data.Nsys, 0);
             for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
                 {
-                    int number_sats_this_gnss_id = 0;
-                    int number_signals_this_gnss_id = 0;
+                    uint64_t number_sats_this_gnss_id = 0;
+                    uint64_t number_signals_this_gnss_id = 0;
                     if (d_HAS_data.cell_mask_availability_flag[sys] == true)
                         {
                             uint64_t n = d_HAS_data.satellite_mask[sys];
@@ -450,7 +450,7 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
                     number_sats[sys] = number_sats_this_gnss_id;
                     number_phases[sys] = number_signals_this_gnss_id;
                 }
-            int Nsat_p = std::accumulate(number_sats.begin(), number_sats.end(), 0);
+            uint64_t Nsat_p = std::accumulate(number_sats.begin(), number_sats.end(), 0ULL);
 
             d_HAS_data.phase_bias.reserve(Nsat_p);
             d_HAS_data.phase_discontinuity_indicator.reserve(Nsat_p);
@@ -459,7 +459,7 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
                 {
                     d_HAS_data.phase_bias[sat].reserve(number_phases[sys]);
                     d_HAS_data.phase_discontinuity_indicator[sat].reserve(number_phases[sys]);
-                    for (int p = 0; p < number_phases[sys]; p++)
+                    for (uint64_t p = 0; p < number_phases[sys]; p++)
                         {
                             d_HAS_data.phase_bias[sat][p] = read_has_message_body_int16(message.substr(0, HAS_MSG_PHASE_BIAS_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_PHASE_BIAS_LENGTH, message.end());

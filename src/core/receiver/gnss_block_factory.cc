@@ -187,7 +187,7 @@ std::unique_ptr<To> dynamic_unique_cast(std::unique_ptr<From>&& p)
     if (To* cast = dynamic_cast<To*>(p.get()))
         {
             result.reset(cast);
-            p.release();
+            p.release();  // NOLINT(bugprone-unused-return-value)
         }
     return result;
 }

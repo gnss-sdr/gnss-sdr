@@ -18,7 +18,6 @@
  */
 
 #include "rtl_tcp_dongle_info.h"
-#include <boost/foreach.hpp>
 #include <string>
 #include <vector>
 
@@ -115,7 +114,7 @@ double Rtl_Tcp_Dongle_Info::clip_gain(int gain) const
         }
 
     double last_stop = gains.front();
-    BOOST_FOREACH (double g, gains)
+    for (auto g : gains)
         {
             g /= 10.0;
 

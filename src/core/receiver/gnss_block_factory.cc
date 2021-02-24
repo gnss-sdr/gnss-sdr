@@ -1265,7 +1265,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             else
                 {
                     // Consider making this a fatal error, terminating the program. Unfortunately, existing unit tests expect otherwise
-                    LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
+                    LOG(ERROR) << role << ".implementation=" << implementation << " is an undefined implementation.";
                 }
         }
     catch (const std::exception& e)
@@ -1464,7 +1464,7 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
 
     else
         {
-            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
+            LOG(ERROR) << role << " block: Undefined implementation" << (implementation == "Wrong"s ? "" : " "s + implementation);
         }
     return block;
 }
@@ -1618,7 +1618,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 #endif
     else
         {
-            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
+            LOG(ERROR) << role << " block: Undefined implementation" << (implementation == "Wrong"s ? "" : " "s + implementation);
         }
     return block;
 }
@@ -1709,7 +1709,7 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
 
     else
         {
-            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
+            LOG(ERROR) << role << " block: Undefined implementation" << (implementation == "Wrong"s ? "" : " "s + implementation);
         }
 
     return block;

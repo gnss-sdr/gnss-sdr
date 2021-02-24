@@ -442,7 +442,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     enable_dynamic_bit_selection_ = configuration->property(role + ".enable_dynamic_bit_selection", true);
     if (enable_dynamic_bit_selection_)
         {
-            std::string device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1;
+            std::string device_io_name_dyn_bit_sel_0;
+            std::string device_io_name_dyn_bit_sel_1;
 
             // find the uio device file corresponding to the dynamic bit selector 0 module.
             if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_0, dyn_bit_sel_device_name, 0) < 0)

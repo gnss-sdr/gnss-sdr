@@ -75,8 +75,8 @@ private:
     // sample block size when running in post-processing mode
     const int sample_block_size = 16384;
 
-    void run_DMA_process(const std::string &Filename1,
-        const std::string &Filename2,
+    void run_DMA_process(const std::string &filename0,
+        const std::string &filename1,
         uint64_t &samples_to_skip,
         size_t &item_size,
         uint64_t &samples,

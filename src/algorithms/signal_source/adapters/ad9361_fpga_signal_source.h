@@ -19,9 +19,11 @@
 #define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
+#include "fpga_buffer_monitor.h"
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <pmt/pmt.h>
 #include <cstdint>
 #include <memory>
@@ -38,7 +40,7 @@
 
 class ConfigurationInterface;
 
-class Ad9361FpgaSignalSource : public GNSSBlockInterface
+class Ad9361FpgaSignalSource : public SignalSourceBase
 {
 public:
     Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,
@@ -48,19 +50,6 @@ public:
     ~Ad9361FpgaSignalSource();
 
     void start() override;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Ad9361_Fpga_Signal_Source"
-     */
-    inline std::string implementation() override
-    {
-        return "Ad9361_Fpga_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -74,24 +63,30 @@ public:
 
 private:
     const std::string switch_device_name = "AXIS_Switch_v1_0_0";          // Switch UIO device name
-    const std::string dyn_bit_sel_device_name = "dynamic_bits_selector";  // Switch UIO device name
-
+    const std::string dyn_bit_sel_device_name = "dynamic_bits_selector";  // Switch dhnamic bit selector device name
+    const std::string buffer_monitor_device_name = "buffer_monitor";      // buffer monitor device name
+    const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
     // perform dynamic bit selection every 500 ms by default
     static const uint32_t Gain_control_period_ms = 500;
+    // check buffer overflow and perform buffer monitoring every 1s by default
+    static const uint32_t buffer_monitor_period_ms = 1000;
+    // buffer overflow and buffer monitoring initial delay
+    static const uint32_t buffer_monitoring_initial_delay_ms = 2000;
 
     void run_DMA_process(const std::string &FreqBand,
         const std::string &Filename1,
         const std::string &Filename2);
 
     void run_dynamic_bit_selection_process();
+    void run_buffer_monitor_process();
 
     std::thread thread_file_to_dma;
     std::thread thread_dynamic_bit_selection;
+    std::thread thread_buffer_monitor;
 
     std::shared_ptr<Fpga_Switch> switch_fpga;
     std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
-
-    std::string role_;
+    std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
 
     // Front-end settings
     std::string gain_mode_rx1_;
@@ -106,6 +101,7 @@ private:
 
     std::mutex dma_mutex;
     std::mutex dynamic_bit_selection_mutex;
+    std::mutex buffer_monitor_mutex;
 
     double rf_gain_rx1_;
     double rf_gain_rx2_;
@@ -125,7 +121,7 @@ private:
     size_t item_size_;
     uint32_t in_stream_;
     uint32_t out_stream_;
-    int32_t switch_position;
+    int32_t switch_position_;
     bool enable_dds_lo_;
 
     bool filter_auto_;
@@ -136,6 +132,9 @@ private:
     bool rx2_enable_;
     bool enable_DMA_;
     bool enable_dynamic_bit_selection_;
+    bool enable_ovf_check_buffer_monitor_active_;
+    bool enable_ovf_check_buffer_monitor_;
+    bool dump_;
     bool rf_shutdown_;
 };
 

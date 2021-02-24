@@ -36,7 +36,8 @@
 #include "gps_iono.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gps_utc_model.h"
-#include <boost/any.hpp>  // for bad_any_cast
+#include "signal_source_interface.h"  // for SignalSourceInterface
+#include <boost/any.hpp>              // for bad_any_cast
 #include <boost/exception/exception.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gflags/gflags.h>
@@ -181,6 +182,10 @@ void wait_message()
 
 bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configuration)
 {
+    auto success = false;
+
+    std::string trace_step;
+
     gr::top_block_sptr top_block;
     GNSSBlockFactory block_factory;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
@@ -188,43 +193,37 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     top_block = gr::make_top_block("Acquisition test");
 
-    std::shared_ptr<GNSSBlockInterface> source;
     try
         {
+            // Note: the block_factory returns a unique_ptr (what you would get with an "auto"
+            // declaration), but the flowgraph uses shared_ptr. Without further understanding of why
+            // it should matter in this context, used shared_ptr throughout
+            std::shared_ptr<SignalSourceInterface> source;
+            std::shared_ptr<GNSSBlockInterface> conditioner;
+
+            trace_step = "creating source";
             source = block_factory.GetSignalSource(configuration.get(), queue.get());
-        }
-    catch (const boost::exception_ptr& e)
-        {
-            std::cout << "Exception caught in creating source " << e << '\n';
-            return false;
-        }
 
-    std::shared_ptr<GNSSBlockInterface> conditioner;
-    try
-        {
+            trace_step = "creating signal conditioner";
             conditioner = block_factory.GetSignalConditioner(configuration.get());
-        }
-    catch (const boost::exception_ptr& e)
-        {
-            std::cout << "Exception caught in creating signal conditioner " << e << '\n';
-            return false;
-        }
-    gr::block_sptr sink;
-    sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
 
-    // -- Find number of samples per spreading code ---
-    int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
-    int samples_per_code = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
-    int nsamples = samples_per_code * 50;
+            trace_step = "unexpected in setup code";
 
-    int skip_samples = fs_in_ * 5;  // skip 5 seconds
+            gr::block_sptr sink;
+            sink = gr::blocks::file_sink::make(sizeof(gr_complex), "tmp_capture.dat");
 
-    gr::block_sptr head = gr::blocks::head::make(sizeof(gr_complex), nsamples);
+            // -- Find number of samples per spreading code ---
+            int64_t fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", 2048000);
+            int samples_per_code = round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS));
+            int nsamples = samples_per_code * 50;
 
-    gr::block_sptr skiphead = gr::blocks::skiphead::make(sizeof(gr_complex), skip_samples);
+            int skip_samples = fs_in_ * 5;  // skip 5 seconds
 
-    try
-        {
+            gr::block_sptr head = gr::blocks::head::make(sizeof(gr_complex), nsamples);
+
+            gr::block_sptr skiphead = gr::blocks::skiphead::make(sizeof(gr_complex), skip_samples);
+
+            trace_step = "connecting the GNU Radio blocks";
             source->connect(top_block);
             conditioner->connect(top_block);
             top_block->connect(source->get_right_block(), 0, conditioner->get_left_block(), 0);
@@ -232,14 +231,15 @@ bool front_end_capture(const std::shared_ptr<ConfigurationInterface>& configurat
             top_block->connect(skiphead, 0, head, 0);
             top_block->connect(head, 0, sink, 0);
             top_block->run();
+
+            success = true;
         }
-    catch (const std::exception& e)
+    catch (std::exception const& e)
         {
-            std::cout << "Failure connecting the GNU Radio blocks " << e.what() << '\n';
-            return false;
+            std::cout << "Exception caught " << trace_step << ": " << e.what() << std::endl;
         }
 
-    return true;
+    return success;
 }
 
 
@@ -495,12 +495,12 @@ int main(int argc, char** argv)
                 {
                     std::map<int, Gps_Ephemeris> Eph_map;
                     Eph_map = global_gps_ephemeris_map.get_map_copy();
-                    current_TOW = Eph_map.begin()->second.d_TOW;
+                    current_TOW = Eph_map.begin()->second.tow;
 
-                    time_t t = utc_time(Eph_map.begin()->second.i_GPS_week, static_cast<int64_t>(current_TOW));
+                    time_t t = utc_time(Eph_map.begin()->second.WN, static_cast<int64_t>(current_TOW));
 
                     std::cout << "Reference Time:\n";
-                    std::cout << "  GPS Week: " << Eph_map.begin()->second.i_GPS_week << '\n';
+                    std::cout << "  GPS Week: " << Eph_map.begin()->second.WN << '\n';
                     std::cout << "  GPS TOW:  " << static_cast<int64_t>(current_TOW) << " " << static_cast<int64_t>(current_TOW) * 0.08 << '\n';
                     std::cout << "  ~ UTC:    " << ctime(&t) << '\n';
                     std::cout << "Current TOW obtained from SUPL assistance = " << current_TOW << '\n';

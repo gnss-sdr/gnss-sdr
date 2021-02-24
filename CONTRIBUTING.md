@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -116,8 +116,11 @@ $ git checkout -b my_feature
 ```
 
 Now you can do changes, add files, do commits (please take a look at
-[how to write good commit messages](https://chris.beams.io/posts/git-commit/)!)
-and push them to your repository:
+[how to write good commit messages](https://chris.beams.io/posts/git-commit/),
+and do not forget to
+[sign your commits](https://gnss-sdr.org/docs/tutorials/using-git/#sign-your-commits)
+if you plan to submit your code to the upstream repository in a pull-request,
+see below) and push them to your repository:
 
 ```
 $ git push origin my_feature
@@ -133,6 +136,24 @@ $ git pull --rebase upstream next
 
 ### How to submit a pull request
 
+Any code contributions going into GNSS-SDR will become part of a GPL-licensed,
+open source repository. It is therefore imperative that code submissions belong
+to the authors, and that submitters have the authority to merge that code into
+the public GNSS-SDR codebase.
+
+For that purpose, we use the
+[Developer's Certificate of Origin](https://github.com/gnss-sdr/gnss-sdr/blob/next/.github/DCO.txt).
+It is the same document used by other projects. Signing the DCO states that
+there are no legal reasons to not merge your code.
+
+To sign the DCO, suffix your git commits with a `Signed-off-by:` line. When
+using the command line, you can use `git commit -s` to automatically add this
+line. If there were multiple authors of the code, or other types of
+stakeholders, make sure that all are listed, each with a separate
+`Signed-off-by:` line. See
+[how to sign commits](https://gnss-sdr.org/docs/tutorials/using-git/#sign-your-commits)
+for details on how to tell Git to sign commits by default.
+
 Before submitting your code, please be sure to
 [apply clang-format](https://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting).
 
@@ -147,6 +168,7 @@ discuss potential modifications, and even push follow-up commits if necessary.
 
 Some things that will increase the chance that your pull request is accepted:
 
+- Your commits must be signed.
 - Avoid platform-dependent code. If your code require external dependencies,
   they must be available as packages in
   [Debian OldStable](https://wiki.debian.org/DebianOldStable).

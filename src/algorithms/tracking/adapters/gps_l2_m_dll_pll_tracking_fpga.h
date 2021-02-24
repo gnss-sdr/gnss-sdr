@@ -92,7 +92,7 @@ public:
     void stop_tracking() override;
 
 private:
-    const std::string default_device_name = "multicorrelator_resampler_S00_AXI";  // UIO device name
+    const std::string default_device_name_GPS_L2 = "multicorrelator_resampler_S00_AXI";  // UIO device name
 
     std::string device_name;
     uint32_t num_prev_assigned_ch;

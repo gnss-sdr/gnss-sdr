@@ -77,7 +77,7 @@ public:
     // Immediate deliverables of ephemeris information
     // Satellite Identification Information
     int32_t i_satellite_freq_channel{};  //!< SV Frequency Channel Number
-    uint32_t i_satellite_PRN{};          //!< SV PRN Number, equivalent to slot number for compatibility with GPS
+    uint32_t PRN{};                      //!< SV PRN Number, equivalent to slot number for compatibility with GPS
     uint32_t i_satellite_slot_number{};  //!< SV Slot Number
     double d_yr = 1972.0;                //!< Current year
     double d_satClkDrift{};              //!< GLONASS clock error
@@ -123,46 +123,46 @@ public:
     template <class Archive>
 
     /*!
-     * \brief Serialize is a boost standard method to be called by the boost XML serialization. Here is used to save the ephemeris data on disk file.
+     * \brief Serialize is a boost standard method to be called by the boost XML
+     * serialization. Here is used to save the ephemeris data on disk file.
      */
     void serialize(Archive& archive, const uint32_t version)
     {
-        using boost::serialization::make_nvp;
         if (version)
             {
             };
 
-        archive& make_nvp("i_satellite_freq_channel", i_satellite_freq_channel);  //!< SV PRN frequency channel number
-        archive& make_nvp("i_satellite_PRN", i_satellite_PRN);
-        archive& make_nvp("i_satellite_slot_number", i_satellite_slot_number);
-        archive& make_nvp("d_m", d_m);                      //!< String number within frame [dimensionless]
-        archive& make_nvp("d_t_k", d_t_k);                  //!< Time referenced to the beginning of the frame within the current day [hours, minutes, seconds]
-        archive& make_nvp("d_t_b", d_t_b);                  //!< Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [minutes]
-        archive& make_nvp("d_M", d_M);                      //!< Type of satellite transmitting navigation signal [dimensionless]
-        archive& make_nvp("d_gamma_n", d_gamma_n);          //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
-        archive& make_nvp("d_tau_n", d_tau_n);              //!< Correction to the nth satellite time (tn) relative to GLONASS time (te)
-        archive& make_nvp("d_Xn", d_Xn);                    //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
-        archive& make_nvp("d_Yn", d_Yn);                    //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
-        archive& make_nvp("d_Zn", d_Zn);                    //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
-        archive& make_nvp("d_VXn", d_VXn);                  //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
-        archive& make_nvp("d_VYn", d_VYn);                  //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
-        archive& make_nvp("d_VZn", d_VZn);                  //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
-        archive& make_nvp("d_AXn", d_AXn);                  //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
-        archive& make_nvp("d_AYn", d_AYn);                  //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
-        archive& make_nvp("d_AZn", d_AZn);                  //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
-        archive& make_nvp("d_B_n", d_B_n);                  //!< Health flag [dimensionless]
-        archive& make_nvp("d_P", d_P);                      //!< Technological parameter of control segment, indication the satellite operation mode in respect of time parameters [dimensionless]
-        archive& make_nvp("d_N_T", d_N_T);                  //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
-        archive& make_nvp("d_F_T", d_F_T);                  //!< Parameter that provides the predicted satellite user range accuracy at time tb [dimensionless]
-        archive& make_nvp("d_n", d_n);                      //!< Index of the satellite transmitting given navigation signal. It corresponds to a slot number within GLONASS constellation
-        archive& make_nvp("d_Delta_tau_n", d_Delta_tau_n);  //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
-        archive& make_nvp("d_E_n", d_E_n);                  //!< Characterises "age" of a current information [days]
-        archive& make_nvp("d_P_1", d_P_1);                  //!< Flag of the immediate data updating.
-        archive& make_nvp("d_P_2", d_P_2);                  //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
-        archive& make_nvp("d_P_3", d_P_3);                  //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
-        archive& make_nvp("d_P_4", d_P_4);                  //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
-        archive& make_nvp("d_l3rd_n", d_l3rd_n);            //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
-        archive& make_nvp("d_l5th_n", d_l5th_n);            //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(i_satellite_freq_channel);  //!< SV PRN frequency channel number
+        archive& BOOST_SERIALIZATION_NVP(PRN);
+        archive& BOOST_SERIALIZATION_NVP(i_satellite_slot_number);
+        archive& BOOST_SERIALIZATION_NVP(d_m);            //!< String number within frame [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_t_k);          //!< Time referenced to the beginning of the frame within the current day [hours, minutes, seconds]
+        archive& BOOST_SERIALIZATION_NVP(d_t_b);          //!< Index of a time interval within current day according to UTC(SU) + 03 hours 00 min. [minutes]
+        archive& BOOST_SERIALIZATION_NVP(d_M);            //!< Type of satellite transmitting navigation signal [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_gamma_n);      //!< Relative deviation of predicted carrier frequency value of n- satellite from nominal value at the instant tb [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_tau_n);        //!< Correction to the nth satellite time (tn) relative to GLONASS time (te)
+        archive& BOOST_SERIALIZATION_NVP(d_Xn);           //!< Earth-fixed coordinate x of the satellite in PZ-90.02 coordinate system [km].
+        archive& BOOST_SERIALIZATION_NVP(d_Yn);           //!< Earth-fixed coordinate y of the satellite in PZ-90.02 coordinate system [km]
+        archive& BOOST_SERIALIZATION_NVP(d_Zn);           //!< Earth-fixed coordinate z of the satellite in PZ-90.02 coordinate system [km]
+        archive& BOOST_SERIALIZATION_NVP(d_VXn);          //!< Earth-fixed velocity coordinate x of the satellite in PZ-90.02 coordinate system [km/s]
+        archive& BOOST_SERIALIZATION_NVP(d_VYn);          //!< Earth-fixed velocity coordinate y of the satellite in PZ-90.02 coordinate system [km/s]
+        archive& BOOST_SERIALIZATION_NVP(d_VZn);          //!< Earth-fixed velocity coordinate z of the satellite in PZ-90.02 coordinate system [km/s]
+        archive& BOOST_SERIALIZATION_NVP(d_AXn);          //!< Earth-fixed acceleration coordinate x of the satellite in PZ-90.02 coordinate system [km/s^2]
+        archive& BOOST_SERIALIZATION_NVP(d_AYn);          //!< Earth-fixed acceleration coordinate y of the satellite in PZ-90.02 coordinate system [km/s^2]
+        archive& BOOST_SERIALIZATION_NVP(d_AZn);          //!< Earth-fixed acceleration coordinate z of the satellite in PZ-90.02 coordinate system [km/s^2]
+        archive& BOOST_SERIALIZATION_NVP(d_B_n);          //!< Health flag [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_P);            //!< Technological parameter of control segment, indication the satellite operation mode in respect of time parameters [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_N_T);          //!< Current date, calendar number of day within four-year interval starting from the 1-st of January in a leap year [days]
+        archive& BOOST_SERIALIZATION_NVP(d_F_T);          //!< Parameter that provides the predicted satellite user range accuracy at time tb [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_n);            //!< Index of the satellite transmitting given navigation signal. It corresponds to a slot number within GLONASS constellation
+        archive& BOOST_SERIALIZATION_NVP(d_Delta_tau_n);  //!< Time difference between navigation RF signal transmitted in L2 sub- band and aviation RF signal transmitted in L1 sub-band by nth satellite. [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_E_n);          //!< Characterises "age" of a current information [days]
+        archive& BOOST_SERIALIZATION_NVP(d_P_1);          //!< Flag of the immediate data updating.
+        archive& BOOST_SERIALIZATION_NVP(d_P_2);          //!< Flag of oddness ("1") or evenness ("0") of the value of (tb) [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_P_3);          //!< Flag indicating a number of satellites for which almanac is transmitted within given frame: "1" corresponds to 5 satellites and "0" corresponds to 4 satellites [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_P_4);          //!< Flag to show that ephemeris parameters are present. "1" indicates that updated ephemeris or frequency/time parameters have been uploaded by the control segment [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_l3rd_n);       //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
+        archive& BOOST_SERIALIZATION_NVP(d_l5th_n);       //!< Health flag for nth satellite; ln = 0 indicates the n-th satellite is helthy, ln = 1 indicates malfunction of this nth satellite [dimensionless]
     }
 
 private:

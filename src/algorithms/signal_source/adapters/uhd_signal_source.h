@@ -18,7 +18,7 @@
 #define GNSS_SDR_UHD_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/hier_block2.h>
 #include <gnuradio/uhd/usrp_source.h>
@@ -38,7 +38,7 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples from a UHD device (see http://code.ettus.com/redmine/ettus/projects/uhd/wiki)
  */
-class UhdSignalSource : public GNSSBlockInterface
+class UhdSignalSource : public SignalSourceBase
 {
 public:
     UhdSignalSource(const ConfigurationInterface* configuration,
@@ -46,19 +46,6 @@ public:
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~UhdSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "UHD_Signal_Source"
-     */
-    inline std::string implementation() override
-    {
-        return "UHD_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -89,7 +76,6 @@ private:
     std::string item_type_;
     std::string subdevice_;
     std::string clock_source_;
-    std::string role_;
 
     double sample_rate_;
     size_t item_size_;

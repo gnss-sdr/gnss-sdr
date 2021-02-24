@@ -53,6 +53,7 @@ class ChannelInterface;
 class ConfigurationInterface;
 class GNSSBlockInterface;
 class Gnss_Satellite;
+class SignalSourceInterface;
 
 /*! \brief This class represents a GNSS flow graph.
  *
@@ -230,7 +231,7 @@ private:
     std::shared_ptr<ConfigurationInterface> configuration_;
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue_;
 
-    std::vector<std::shared_ptr<GNSSBlockInterface>> sig_source_;
+    std::vector<std::shared_ptr<SignalSourceInterface>> sig_source_;
     std::vector<std::shared_ptr<GNSSBlockInterface>> sig_conditioner_;
     std::vector<std::shared_ptr<ChannelInterface>> channels_;
     std::shared_ptr<GNSSBlockInterface> observables_;

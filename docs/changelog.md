@@ -22,14 +22,29 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
 - Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
   Boost >= 1.74.
+- Fix linking of the `<filesystem>` library when using GCC 8.x and GNU Radio >=
+  3.8.
 
 ### Improvements in Maintainability:
 
+- The Contributor License Agreement (CLA) signing for new contributors has been
+  replaced by a
+  [Developer's Certificate of Origin (DCO)](https://github.com/gnss-sdr/gnss-sdr/blob/next/.github/DCO.txt),
+  which implies that contributed commits in a pull request need to be signed as
+  a manifestation that contributors have the right to submit their work under
+  the open source license indicated in the contributed file(s) (instead of
+  asking them to sign the CLA document).
 - Improved handling of change in GNU Radio 3.9 FFT API.
 - Improved handling of the filesystem library.
+- Added an abstract class `SignalSourceInterface` and a common base class
+  `SignalSourceBase`, which allow to remove a lot of duplicated code in Signal
+  Source blocks, and further abstract file-based interfaces behind them.
 - Do not apply clang-tidy fixes to protobuf-generated headers.
 - Refactored private implementation of flow graph connection and disconnection
   for improved source code readability.
+- Added a base class for GNSS ephemeris, saving some duplicated code and
+  providing a common nomenclature for ephemeris' parameters. New generated XML
+  files make use of the new parameters' name.
 
 ### Improvements in Usability:
 
@@ -37,6 +52,9 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   some common inconsistencies in the configuration file.
 - Provide hints to the user in case of failed flow graph connection due to
   inconsistencies in the configuration file.
+- Fix segmentation fault if the RINEX output was disabled.
+- Added a feature that optionally enables the remote monitoring of GPS and
+  Galileo ephemeris using UDP and protobuffers.
 
 &nbsp;
 

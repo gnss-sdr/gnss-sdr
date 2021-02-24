@@ -69,7 +69,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     signal[0] = '1';
     signal[1] = 'C';
     signal[2] = '\0';
-    item_type = "gr_complex";
+    item_type = std::string("gr_complex");
 }
 
 

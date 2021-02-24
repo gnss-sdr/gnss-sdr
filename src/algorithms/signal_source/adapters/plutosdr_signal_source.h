@@ -19,7 +19,7 @@
 #ifndef GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H
 #define GNSS_SDR_PLUTOSDR_SIGNAL_SOURCE_H
 
-#include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #if GRIIO_INCLUDE_HAS_GNURADIO
 #include <gnuradio/iio/pluto_source.h>
@@ -42,7 +42,7 @@ class ConfigurationInterface;
 
 /*!
  */
-class PlutosdrSignalSource : public GNSSBlockInterface
+class PlutosdrSignalSource : public SignalSourceBase
 {
 public:
     PlutosdrSignalSource(const ConfigurationInterface* configuration,
@@ -51,18 +51,6 @@ public:
 
     ~PlutosdrSignalSource() = default;
 
-    std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Plutosdr_Signal_Source"
-     */
-    std::string implementation() override
-    {
-        return "Plutosdr_Signal_Source";
-    }
     size_t item_size() override
     {
         return item_size_;
@@ -79,7 +67,6 @@ private:
     gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
 
-    std::string role_;
     std::string dump_filename_;
 
     // Front-end settings

@@ -42,10 +42,10 @@ public:
      */
     Gps_Acq_Assist() = default;
 
-    uint32_t i_satellite_PRN{};   //!< SV PRN NUMBER
-    double d_TOW{};               //!< Time Of Week assigned to the acquisition data
-    double d_Doppler0{};          //!< Doppler (0 order term) [Hz]
-    double d_Doppler1{};          //!< Doppler (1 order term) [Hz]
+    uint32_t PRN{};               //!< SV PRN NUMBER
+    double tow{};                 //!< Time Of Week assigned to the acquisition data
+    double Doppler0{};            //!< Doppler (0 order term) [Hz]
+    double Doppler1{};            //!< Doppler (1 order term) [Hz]
     double dopplerUncertainty{};  //!< Doppler Uncertainty [Hz]
     double Code_Phase{};          //!< Code phase [chips]
     double Code_Phase_int{};      //!< Integer Code Phase [1 C/A code period]

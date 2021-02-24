@@ -457,7 +457,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obsd_t newobs{};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
-                                            galileo_ephemeris_iter->second.WN_5,
+                                            galileo_ephemeris_iter->second.WN,
                                             0);
                                         valid_obs++;
                                     }
@@ -481,7 +481,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {
                                                         obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
-                                                            galileo_ephemeris_iter->second.WN_5,
+                                                            galileo_ephemeris_iter->second.WN,
                                                             2);  // Band 3 (L5/E5)
                                                         found_E1_obs = true;
                                                         break;
@@ -499,7 +499,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
-                                                    galileo_ephemeris_iter->second.WN_5,
+                                                    galileo_ephemeris_iter->second.WN,
                                                     2);  // Band 3 (L5/E5)
                                                 valid_obs++;
                                             }
@@ -527,7 +527,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obsd_t newobs{};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
-                                            gps_ephemeris_iter->second.i_GPS_week,
+                                            gps_ephemeris_iter->second.WN,
                                             0,
                                             this->is_pre_2009());
                                         valid_obs++;
@@ -576,7 +576,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
-                                                    gps_cnav_ephemeris_iter->second.i_GPS_week,
+                                                    gps_cnav_ephemeris_iter->second.WN,
                                                     1);  // Band 2 (L2)
                                                 valid_obs++;
                                             }
@@ -605,7 +605,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                                 eph_data[i] = eph_to_rtklib(gps_cnav_ephemeris_iter->second);
                                                                 obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i],
                                                                     gnss_observables_iter->second,
-                                                                    gps_cnav_ephemeris_iter->second.i_GPS_week,
+                                                                    gps_cnav_ephemeris_iter->second.WN,
                                                                     2);  // Band 3 (L5)
                                                                 break;
                                                             }
@@ -623,7 +623,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
-                                                    gps_cnav_ephemeris_iter->second.i_GPS_week,
+                                                    gps_cnav_ephemeris_iter->second.WN,
                                                     2);  // Band 3 (L5)
                                                 valid_obs++;
                                             }
@@ -717,7 +717,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         obsd_t newobs{};
                                         obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
-                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                            beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
                                             0);
                                         valid_obs++;
                                     }
@@ -739,7 +739,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {
                                                         obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
-                                                            beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                            beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
                                                             2);  // Band 3 (L2/G2/B3)
                                                         found_B1I_obs = true;
                                                         break;
@@ -757,7 +757,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
-                                                    beidou_ephemeris_iter->second.i_BEIDOU_week + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
+                                                    beidou_ephemeris_iter->second.WN + BEIDOU_DNAV_BDT2GPST_WEEK_NUM_OFFSET,
                                                     2);  // Band 2 (L2/G2)
                                                 valid_obs++;
                                             }
@@ -791,59 +791,59 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             nav_data.ng = glo_valid_obs;
             if (gps_iono.valid)
                 {
-                    nav_data.ion_gps[0] = gps_iono.d_alpha0;
-                    nav_data.ion_gps[1] = gps_iono.d_alpha1;
-                    nav_data.ion_gps[2] = gps_iono.d_alpha2;
-                    nav_data.ion_gps[3] = gps_iono.d_alpha3;
-                    nav_data.ion_gps[4] = gps_iono.d_beta0;
-                    nav_data.ion_gps[5] = gps_iono.d_beta1;
-                    nav_data.ion_gps[6] = gps_iono.d_beta2;
-                    nav_data.ion_gps[7] = gps_iono.d_beta3;
+                    nav_data.ion_gps[0] = gps_iono.alpha0;
+                    nav_data.ion_gps[1] = gps_iono.alpha1;
+                    nav_data.ion_gps[2] = gps_iono.alpha2;
+                    nav_data.ion_gps[3] = gps_iono.alpha3;
+                    nav_data.ion_gps[4] = gps_iono.beta0;
+                    nav_data.ion_gps[5] = gps_iono.beta1;
+                    nav_data.ion_gps[6] = gps_iono.beta2;
+                    nav_data.ion_gps[7] = gps_iono.beta3;
                 }
             if (!(gps_iono.valid) and gps_cnav_iono.valid)
                 {
-                    nav_data.ion_gps[0] = gps_cnav_iono.d_alpha0;
-                    nav_data.ion_gps[1] = gps_cnav_iono.d_alpha1;
-                    nav_data.ion_gps[2] = gps_cnav_iono.d_alpha2;
-                    nav_data.ion_gps[3] = gps_cnav_iono.d_alpha3;
-                    nav_data.ion_gps[4] = gps_cnav_iono.d_beta0;
-                    nav_data.ion_gps[5] = gps_cnav_iono.d_beta1;
-                    nav_data.ion_gps[6] = gps_cnav_iono.d_beta2;
-                    nav_data.ion_gps[7] = gps_cnav_iono.d_beta3;
+                    nav_data.ion_gps[0] = gps_cnav_iono.alpha0;
+                    nav_data.ion_gps[1] = gps_cnav_iono.alpha1;
+                    nav_data.ion_gps[2] = gps_cnav_iono.alpha2;
+                    nav_data.ion_gps[3] = gps_cnav_iono.alpha3;
+                    nav_data.ion_gps[4] = gps_cnav_iono.beta0;
+                    nav_data.ion_gps[5] = gps_cnav_iono.beta1;
+                    nav_data.ion_gps[6] = gps_cnav_iono.beta2;
+                    nav_data.ion_gps[7] = gps_cnav_iono.beta3;
                 }
-            if (galileo_iono.ai0_5 != 0.0)
+            if (galileo_iono.ai0 != 0.0)
                 {
-                    nav_data.ion_gal[0] = galileo_iono.ai0_5;
-                    nav_data.ion_gal[1] = galileo_iono.ai1_5;
-                    nav_data.ion_gal[2] = galileo_iono.ai2_5;
+                    nav_data.ion_gal[0] = galileo_iono.ai0;
+                    nav_data.ion_gal[1] = galileo_iono.ai1;
+                    nav_data.ion_gal[2] = galileo_iono.ai2;
                     nav_data.ion_gal[3] = 0.0;
                 }
             if (beidou_dnav_iono.valid)
                 {
-                    nav_data.ion_cmp[0] = beidou_dnav_iono.d_alpha0;
-                    nav_data.ion_cmp[1] = beidou_dnav_iono.d_alpha1;
-                    nav_data.ion_cmp[2] = beidou_dnav_iono.d_alpha2;
-                    nav_data.ion_cmp[3] = beidou_dnav_iono.d_alpha3;
-                    nav_data.ion_cmp[4] = beidou_dnav_iono.d_beta0;
-                    nav_data.ion_cmp[5] = beidou_dnav_iono.d_beta0;
-                    nav_data.ion_cmp[6] = beidou_dnav_iono.d_beta0;
-                    nav_data.ion_cmp[7] = beidou_dnav_iono.d_beta3;
+                    nav_data.ion_cmp[0] = beidou_dnav_iono.alpha0;
+                    nav_data.ion_cmp[1] = beidou_dnav_iono.alpha1;
+                    nav_data.ion_cmp[2] = beidou_dnav_iono.alpha2;
+                    nav_data.ion_cmp[3] = beidou_dnav_iono.alpha3;
+                    nav_data.ion_cmp[4] = beidou_dnav_iono.beta0;
+                    nav_data.ion_cmp[5] = beidou_dnav_iono.beta0;
+                    nav_data.ion_cmp[6] = beidou_dnav_iono.beta0;
+                    nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
                 }
             if (gps_utc_model.valid)
                 {
-                    nav_data.utc_gps[0] = gps_utc_model.d_A0;
-                    nav_data.utc_gps[1] = gps_utc_model.d_A1;
-                    nav_data.utc_gps[2] = gps_utc_model.d_t_OT;
-                    nav_data.utc_gps[3] = gps_utc_model.i_WN_T;
-                    nav_data.leaps = gps_utc_model.d_DeltaT_LS;
+                    nav_data.utc_gps[0] = gps_utc_model.A0;
+                    nav_data.utc_gps[1] = gps_utc_model.A1;
+                    nav_data.utc_gps[2] = gps_utc_model.tot;
+                    nav_data.utc_gps[3] = gps_utc_model.WN_T;
+                    nav_data.leaps = gps_utc_model.DeltaT_LS;
                 }
             if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
                 {
-                    nav_data.utc_gps[0] = gps_cnav_utc_model.d_A0;
-                    nav_data.utc_gps[1] = gps_cnav_utc_model.d_A1;
-                    nav_data.utc_gps[2] = gps_cnav_utc_model.d_t_OT;
-                    nav_data.utc_gps[3] = gps_cnav_utc_model.i_WN_T;
-                    nav_data.leaps = gps_cnav_utc_model.d_DeltaT_LS;
+                    nav_data.utc_gps[0] = gps_cnav_utc_model.A0;
+                    nav_data.utc_gps[1] = gps_cnav_utc_model.A1;
+                    nav_data.utc_gps[2] = gps_cnav_utc_model.tot;
+                    nav_data.utc_gps[3] = gps_cnav_utc_model.WN_T;
+                    nav_data.leaps = gps_cnav_utc_model.DeltaT_LS;
                 }
             if (glonass_gnav_utc_model.valid)
                 {
@@ -852,21 +852,21 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     nav_data.utc_glo[2] = 0.0;                             // ??
                     nav_data.utc_glo[3] = 0.0;                             // ??
                 }
-            if (galileo_utc_model.A0_6 != 0.0)
+            if (galileo_utc_model.A0 != 0.0)
                 {
-                    nav_data.utc_gal[0] = galileo_utc_model.A0_6;
-                    nav_data.utc_gal[1] = galileo_utc_model.A1_6;
-                    nav_data.utc_gal[2] = galileo_utc_model.t0t_6;
-                    nav_data.utc_gal[3] = galileo_utc_model.WNot_6;
-                    nav_data.leaps = galileo_utc_model.Delta_tLS_6;
+                    nav_data.utc_gal[0] = galileo_utc_model.A0;
+                    nav_data.utc_gal[1] = galileo_utc_model.A1;
+                    nav_data.utc_gal[2] = galileo_utc_model.tot;
+                    nav_data.utc_gal[3] = galileo_utc_model.WNot;
+                    nav_data.leaps = galileo_utc_model.Delta_tLS;
                 }
             if (beidou_dnav_utc_model.valid)
                 {
-                    nav_data.utc_cmp[0] = beidou_dnav_utc_model.d_A0_UTC;
-                    nav_data.utc_cmp[1] = beidou_dnav_utc_model.d_A1_UTC;
+                    nav_data.utc_cmp[0] = beidou_dnav_utc_model.A0_UTC;
+                    nav_data.utc_cmp[1] = beidou_dnav_utc_model.A1_UTC;
                     nav_data.utc_cmp[2] = 0.0;  // ??
                     nav_data.utc_cmp[3] = 0.0;  // ??
-                    nav_data.leaps = beidou_dnav_utc_model.i_DeltaT_LS;
+                    nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS;
                 }
 
             /* update carrier wave length using native function call in RTKlib */

@@ -14,6 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "serdes_galileo_eph.h"
 #include "serdes_monitor_pvt.h"
 #include <memory>
 
@@ -28,6 +29,12 @@ TEST(Serdes_Monitor_Pvt_Test, Simpletest)
 
     gnss_sdr::MonitorPvt mon;
     mon.ParseFromString(serialized_data);
+
+    serdes.readProtobuffer(mon);
+
+    gnss_sdr::GalileoEphemeris ephgal;
+    Serdes_Galileo_Eph gal_serdes = Serdes_Galileo_Eph();
+    gal_serdes.readProtobuffer(ephgal);
 
     double read_latitude = mon.latitude();
     EXPECT_NEAR(true_latitude, read_latitude, 0.000001);

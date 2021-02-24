@@ -411,7 +411,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
 
     // if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) // all GGTO parameters arrived
     //     {
-    //         delta_t = d_nav.A_0G_10 + d_nav.A_1G_10 * (d_TOW_at_current_symbol - d_nav.t_0G_10 + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G_10), 64)));
+    //         delta_t = d_nav.A_0G + d_nav.A_1G * (d_TOW_at_current_symbol - d_nav.t_0G + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G), 64)));
     //     }
 
     if (d_flag_frame_sync == true and d_nav.is_flag_TOW_set() == true)

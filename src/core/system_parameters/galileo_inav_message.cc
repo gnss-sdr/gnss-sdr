@@ -267,45 +267,45 @@ Galileo_Ephemeris Galileo_Inav_Message::get_ephemeris() const
     Galileo_Ephemeris ephemeris;
     ephemeris.flag_all_ephemeris = flag_all_ephemeris;
     ephemeris.IOD_ephemeris = IOD_ephemeris;
-    ephemeris.SV_ID_PRN_4 = SV_ID_PRN_4;
-    ephemeris.i_satellite_PRN = SV_ID_PRN_4;
-    ephemeris.M0_1 = M0_1;                // Mean anomaly at reference time [semi-circles]
-    ephemeris.delta_n_3 = delta_n_3;      // Mean motion difference from computed value  [semi-circles/sec]
-    ephemeris.e_1 = e_1;                  // Eccentricity
-    ephemeris.A_1 = A_1;                  // Square root of the semi-major axis [meters^1/2]
-    ephemeris.OMEGA_0_2 = OMEGA_0_2;      // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    ephemeris.i_0_2 = i_0_2;              // Inclination angle at reference time  [semi-circles]
-    ephemeris.omega_2 = omega_2;          // Argument of perigee [semi-circles]
-    ephemeris.OMEGA_dot_3 = OMEGA_dot_3;  // Rate of right ascension [semi-circles/sec]
-    ephemeris.iDot_2 = iDot_2;            // Rate of inclination angle [semi-circles/sec]
-    ephemeris.C_uc_3 = C_uc_3;            // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_us_3 = C_us_3;            // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
-    ephemeris.C_rc_3 = C_rc_3;            // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_rs_3 = C_rs_3;            // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    ephemeris.C_ic_4 = C_ic_4;            // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-    ephemeris.C_is_4 = C_is_4;            // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
-    ephemeris.t0e_1 = t0e_1;              // Ephemeris reference time [s]
+    ephemeris.IOD_nav = IOD_nav_1;
+    ephemeris.PRN = SV_ID_PRN_4;
+    ephemeris.M_0 = M0_1;              // Mean anomaly at reference time [semi-circles]
+    ephemeris.delta_n = delta_n_3;     // Mean motion difference from computed value  [semi-circles/sec]
+    ephemeris.ecc = e_1;               // Eccentricity
+    ephemeris.sqrtA = A_1;             // Square root of the semi-major axis [meters^1/2]
+    ephemeris.OMEGA_0 = OMEGA_0_2;     // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+    ephemeris.i_0 = i_0_2;             // Inclination angle at reference time  [semi-circles]
+    ephemeris.omega = omega_2;         // Argument of perigee [semi-circles]
+    ephemeris.OMEGAdot = OMEGA_dot_3;  // Rate of right ascension [semi-circles/sec]
+    ephemeris.idot = iDot_2;           // Rate of inclination angle [semi-circles/sec]
+    ephemeris.Cuc = C_uc_3;            // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
+    ephemeris.Cus = C_us_3;            // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    ephemeris.Crc = C_rc_3;            // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
+    ephemeris.Crs = C_rs_3;            // Amplitude of the sine harmonic correction term to the orbit radius [meters]
+    ephemeris.Cic = C_ic_4;            // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
+    ephemeris.Cis = C_is_4;            // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    ephemeris.toe = t0e_1;             // Ephemeris reference time [s]
 
     // Clock correction parameters
-    ephemeris.t0c_4 = t0c_4;  // Clock correction data reference Time of Week [sec]
-    ephemeris.af0_4 = af0_4;  // SV clock bias correction coefficient [s]
-    ephemeris.af1_4 = af1_4;  // SV clock drift correction coefficient [s/s]
-    ephemeris.af2_4 = af2_4;  // SV clock drift rate correction coefficient [s/s^2]
+    ephemeris.toc = t0c_4;  // Clock correction data reference Time of Week [sec]
+    ephemeris.af0 = af0_4;  // SV clock bias correction coefficient [s]
+    ephemeris.af1 = af1_4;  // SV clock drift correction coefficient [s/s]
+    ephemeris.af2 = af2_4;  // SV clock drift rate correction coefficient [s/s^2]
 
     // GST
-    ephemeris.WN_5 = WN_5;    // Week number
-    ephemeris.TOW_5 = TOW_5;  // Time of Week
+    ephemeris.WN = WN_5;    // Week number
+    ephemeris.tow = TOW_5;  // Time of Week
 
-    ephemeris.SISA_3 = SISA_3;
-    ephemeris.E5b_HS_5 = E5b_HS_5;    // E5b Signal Health Status
-    ephemeris.E1B_HS_5 = E1B_HS_5;    // E1B Signal Health Status
-    ephemeris.E5b_DVS_5 = E5b_DVS_5;  // E5b Data Validity Status
-    ephemeris.E1B_DVS_5 = E1B_DVS_5;  // E1B Data Validity Status
+    ephemeris.SISA = SISA_3;
+    ephemeris.E5b_HS = E5b_HS_5;    // E5b Signal Health Status
+    ephemeris.E1B_HS = E1B_HS_5;    // E1B Signal Health Status
+    ephemeris.E5b_DVS = E5b_DVS_5;  // E5b Data Validity Status
+    ephemeris.E1B_DVS = E1B_DVS_5;  // E1B Data Validity Status
 
-    ephemeris.BGD_E1E5a_5 = BGD_E1E5a_5;  // E1-E5a Broadcast Group Delay [s]
-    ephemeris.BGD_E1E5b_5 = BGD_E1E5b_5;  // E1-E5b Broadcast Group Delay [s]
+    ephemeris.BGD_E1E5a = BGD_E1E5a_5;  // E1-E5a Broadcast Group Delay [s]
+    ephemeris.BGD_E1E5b = BGD_E1E5b_5;  // E1-E5b Broadcast Group Delay [s]
 
-    ephemeris.Galileo_satClkDrift = Galileo_satClkDrift;
+    ephemeris.satClkDrift = Galileo_satClkDrift;
 
     return ephemeris;
 }
@@ -315,21 +315,21 @@ Galileo_Iono Galileo_Inav_Message::get_iono() const
 {
     Galileo_Iono iono;
     // Ionospheric correction
-    iono.ai0_5 = ai0_5;  // Effective Ionisation Level 1st order parameter [sfu]
-    iono.ai1_5 = ai1_5;  // Effective Ionisation Level 2st order parameter [sfu/degree]
-    iono.ai2_5 = ai2_5;  // Effective Ionisation Level 3st order parameter [sfu/degree]
+    iono.ai0 = ai0_5;  // Effective Ionisation Level 1st order parameter [sfu]
+    iono.ai1 = ai1_5;  // Effective Ionisation Level 2st order parameter [sfu/degree]
+    iono.ai2 = ai2_5;  // Effective Ionisation Level 3st order parameter [sfu/degree]
 
     // GST
     // This is the ONLY page containing the Week Number (WN)
-    iono.TOW_5 = TOW_5;
-    iono.WN_5 = WN_5;
+    iono.tow = TOW_5;
+    iono.WN = WN_5;
 
     // Ionospheric disturbance flag
-    iono.Region1_flag_5 = Region1_flag_5;  // Ionospheric Disturbance Flag for region 1
-    iono.Region2_flag_5 = Region2_flag_5;  // Ionospheric Disturbance Flag for region 2
-    iono.Region3_flag_5 = Region3_flag_5;  // Ionospheric Disturbance Flag for region 3
-    iono.Region4_flag_5 = Region4_flag_5;  // Ionospheric Disturbance Flag for region 4
-    iono.Region5_flag_5 = Region5_flag_5;  // Ionospheric Disturbance Flag for region 5
+    iono.Region1_flag = Region1_flag_5;  // Ionospheric Disturbance Flag for region 1
+    iono.Region2_flag = Region2_flag_5;  // Ionospheric Disturbance Flag for region 2
+    iono.Region3_flag = Region3_flag_5;  // Ionospheric Disturbance Flag for region 3
+    iono.Region4_flag = Region4_flag_5;  // Ionospheric Disturbance Flag for region 4
+    iono.Region5_flag = Region5_flag_5;  // Ionospheric Disturbance Flag for region 5
 
     return iono;
 }
@@ -339,20 +339,20 @@ Galileo_Utc_Model Galileo_Inav_Message::get_utc_model() const
 {
     Galileo_Utc_Model utc_model;
     // Word type 6: GST-UTC conversion parameters
-    utc_model.A0_6 = A0_6;
-    utc_model.A1_6 = A1_6;
-    utc_model.Delta_tLS_6 = Delta_tLS_6;
-    utc_model.t0t_6 = t0t_6;
-    utc_model.WNot_6 = WNot_6;
-    utc_model.WN_LSF_6 = WN_LSF_6;
-    utc_model.DN_6 = DN_6;
-    utc_model.Delta_tLSF_6 = Delta_tLSF_6;
+    utc_model.A0 = A0_6;
+    utc_model.A1 = A1_6;
+    utc_model.Delta_tLS = Delta_tLS_6;
+    utc_model.tot = t0t_6;
+    utc_model.WNot = WNot_6;
+    utc_model.WN_LSF = WN_LSF_6;
+    utc_model.DN = DN_6;
+    utc_model.Delta_tLSF = Delta_tLSF_6;
     utc_model.flag_utc_model = flag_utc_model;
     // GPS to Galileo GST conversion parameters
-    utc_model.A_0G_10 = A_0G_10;
-    utc_model.A_1G_10 = A_1G_10;
-    utc_model.t_0G_10 = t_0G_10;
-    utc_model.WN_0G_10 = WN_0G_10;
+    utc_model.A_0G = A_0G_10;
+    utc_model.A_1G = A_1G_10;
+    utc_model.t_0G = t_0G_10;
+    utc_model.WN_0G = WN_0G_10;
     return utc_model;
 }
 

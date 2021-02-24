@@ -426,52 +426,56 @@ double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
 Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
 {
     Gps_Ephemeris ephemeris;
-    ephemeris.i_satellite_PRN = i_satellite_PRN;
-    ephemeris.d_TOW = d_TOW;
-    ephemeris.d_Crs = d_Crs;
-    ephemeris.d_Delta_n = d_Delta_n;
-    ephemeris.d_M_0 = d_M_0;
-    ephemeris.d_Cuc = d_Cuc;
-    ephemeris.d_e_eccentricity = d_e_eccentricity;
-    ephemeris.d_Cus = d_Cus;
-    ephemeris.d_sqrt_A = d_sqrt_A;
-    ephemeris.d_Toe = d_Toe;
-    ephemeris.d_Toc = d_Toc;
-    ephemeris.d_Cic = d_Cic;
-    ephemeris.d_OMEGA0 = d_OMEGA0;
-    ephemeris.d_Cis = d_Cis;
-    ephemeris.d_i_0 = d_i_0;
-    ephemeris.d_Crc = d_Crc;
-    ephemeris.d_OMEGA = d_OMEGA;
-    ephemeris.d_OMEGA_DOT = d_OMEGA_DOT;
-    ephemeris.d_IDOT = d_IDOT;
-    ephemeris.i_code_on_L2 = i_code_on_L2;
-    ephemeris.i_GPS_week = i_GPS_week;
-    ephemeris.b_L2_P_data_flag = b_L2_P_data_flag;
-    ephemeris.i_SV_accuracy = i_SV_accuracy;
-    ephemeris.i_SV_health = i_SV_health;
-    ephemeris.d_TGD = d_TGD;
-    ephemeris.d_IODC = d_IODC;
-    ephemeris.d_IODE_SF2 = d_IODE_SF2;
-    ephemeris.d_IODE_SF3 = d_IODE_SF3;
-    ephemeris.i_AODO = i_AODO;
-    ephemeris.b_fit_interval_flag = b_fit_interval_flag;
-    ephemeris.d_spare1 = d_spare1;
-    ephemeris.d_spare2 = d_spare2;
-    ephemeris.d_A_f0 = d_A_f0;
-    ephemeris.d_A_f1 = d_A_f1;
-    ephemeris.d_A_f2 = d_A_f2;
-    ephemeris.b_integrity_status_flag = b_integrity_status_flag;
-    ephemeris.b_alert_flag = b_alert_flag;
-    ephemeris.b_antispoofing_flag = b_antispoofing_flag;
-    ephemeris.d_satClkDrift = d_satClkDrift;
-    ephemeris.d_dtr = d_dtr;
-    ephemeris.d_satpos_X = d_satpos_X;
-    ephemeris.d_satpos_Y = d_satpos_Y;
-    ephemeris.d_satpos_Z = d_satpos_Z;
-    ephemeris.d_satvel_X = d_satvel_X;
-    ephemeris.d_satvel_Y = d_satvel_Y;
-    ephemeris.d_satvel_Z = d_satvel_Z;
+    ephemeris.PRN = i_satellite_PRN;
+    ephemeris.tow = d_TOW;
+    ephemeris.Crs = d_Crs;
+    ephemeris.delta_n = d_Delta_n;
+    ephemeris.M_0 = d_M_0;
+    ephemeris.Cuc = d_Cuc;
+    ephemeris.ecc = d_e_eccentricity;
+    ephemeris.Cus = d_Cus;
+    ephemeris.sqrtA = d_sqrt_A;
+    ephemeris.toe = d_Toe;
+    ephemeris.toc = d_Toc;
+    ephemeris.Cic = d_Cic;
+    ephemeris.OMEGA_0 = d_OMEGA0;
+    ephemeris.Cis = d_Cis;
+    ephemeris.i_0 = d_i_0;
+    ephemeris.Crc = d_Crc;
+    ephemeris.omega = d_OMEGA;
+    ephemeris.OMEGAdot = d_OMEGA_DOT;
+    ephemeris.idot = d_IDOT;
+    ephemeris.code_on_L2 = i_code_on_L2;
+    ephemeris.WN = i_GPS_week;
+    ephemeris.L2_P_data_flag = b_L2_P_data_flag;
+    ephemeris.SV_accuracy = i_SV_accuracy;
+    ephemeris.SV_health = i_SV_health;
+    ephemeris.TGD = d_TGD;
+    ephemeris.IODC = d_IODC;
+    ephemeris.IODE_SF2 = d_IODE_SF2;
+    ephemeris.IODE_SF3 = d_IODE_SF3;
+    ephemeris.AODO = i_AODO;
+    ephemeris.fit_interval_flag = b_fit_interval_flag;
+    ephemeris.spare1 = d_spare1;
+    ephemeris.spare2 = d_spare2;
+    ephemeris.af0 = d_A_f0;
+    ephemeris.af1 = d_A_f1;
+    ephemeris.af2 = d_A_f2;
+    ephemeris.integrity_status_flag = b_integrity_status_flag;
+    ephemeris.alert_flag = b_alert_flag;
+    ephemeris.antispoofing_flag = b_antispoofing_flag;
+
+    // These parameters are empty; can be computed later with
+    // ephemeris.sv_clock_drift(double transmitTime);
+    // ephemeris.satellitePosition(double transmitTime);
+    ephemeris.satClkDrift = d_satClkDrift;
+    ephemeris.dtr = d_dtr;
+    ephemeris.satpos_X = d_satpos_X;
+    ephemeris.satpos_Y = d_satpos_Y;
+    ephemeris.satpos_Z = d_satpos_Z;
+    ephemeris.satvel_X = d_satvel_X;
+    ephemeris.satvel_Y = d_satvel_Y;
+    ephemeris.satvel_Z = d_satvel_Z;
 
     return ephemeris;
 }
@@ -480,14 +484,14 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
 Gps_Iono Gps_Navigation_Message::get_iono()
 {
     Gps_Iono iono;
-    iono.d_alpha0 = d_alpha0;
-    iono.d_alpha1 = d_alpha1;
-    iono.d_alpha2 = d_alpha2;
-    iono.d_alpha3 = d_alpha3;
-    iono.d_beta0 = d_beta0;
-    iono.d_beta1 = d_beta1;
-    iono.d_beta2 = d_beta2;
-    iono.d_beta3 = d_beta3;
+    iono.alpha0 = d_alpha0;
+    iono.alpha1 = d_alpha1;
+    iono.alpha2 = d_alpha2;
+    iono.alpha3 = d_alpha3;
+    iono.beta0 = d_beta0;
+    iono.beta1 = d_beta1;
+    iono.beta2 = d_beta2;
+    iono.beta3 = d_beta3;
     iono.valid = flag_iono_valid;
     // WARNING: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
     flag_iono_valid = false;
@@ -500,14 +504,14 @@ Gps_Utc_Model Gps_Navigation_Message::get_utc_model()
     Gps_Utc_Model utc_model;
     utc_model.valid = flag_utc_model_valid;
     // UTC parameters
-    utc_model.d_A1 = d_A1;
-    utc_model.d_A0 = d_A0;
-    utc_model.d_t_OT = d_t_OT;
-    utc_model.i_WN_T = i_WN_T;
-    utc_model.d_DeltaT_LS = d_DeltaT_LS;
-    utc_model.i_WN_LSF = i_WN_LSF;
-    utc_model.i_DN = i_DN;
-    utc_model.d_DeltaT_LSF = d_DeltaT_LSF;
+    utc_model.A1 = d_A1;
+    utc_model.A0 = d_A0;
+    utc_model.tot = d_t_OT;
+    utc_model.WN_T = i_WN_T;
+    utc_model.DeltaT_LS = d_DeltaT_LS;
+    utc_model.WN_LSF = i_WN_LSF;
+    utc_model.DN = i_DN;
+    utc_model.DeltaT_LSF = d_DeltaT_LSF;
     // warning: We clear flag_utc_model_valid in order to not re-send the same information to the ionospheric parameters queue
     flag_utc_model_valid = false;
     return utc_model;

@@ -20,6 +20,7 @@
 
 #include "concurrent_queue.h"
 #include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/throttle.h>
 #include <gnuradio/hier_block2.h>
@@ -38,7 +39,7 @@ class ConfigurationInterface;
 /*!
  * \brief This class reads samples stored by a LabSat 2 or LabSat 3 device
  */
-class LabsatSignalSource : public GNSSBlockInterface
+class LabsatSignalSource : public SignalSourceBase
 {
 public:
     LabsatSignalSource(const ConfigurationInterface* configuration,
@@ -46,19 +47,6 @@ public:
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~LabsatSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Labsat_Signal_Source".
-     */
-    inline std::string implementation() override
-    {
-        return "Labsat_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -75,7 +63,6 @@ private:
     gr::blocks::file_sink::sptr file_sink_;
     gr::blocks::throttle::sptr throttle_;
 
-    std::string role_;
     std::string item_type_;
     std::string filename_;
     std::string dump_filename_;

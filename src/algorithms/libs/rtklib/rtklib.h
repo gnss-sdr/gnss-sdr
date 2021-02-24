@@ -186,18 +186,15 @@ const int MAXPRNGAL = 36;                         //!<   max satellite PRN numbe
 const int NSATGAL = (MAXPRNGAL - MINPRNGAL + 1);  //!<   number of Galileo satellites
 const int NSYSGAL = 1;
 
+const int MAXPRNQZS = 199;  //!<   max satellite PRN number of QZSS
+const int MINPRNQZS = 193;  //!<   min satellite PRN number of QZSS
 #ifdef ENAQZS
-const int MINPRNQZS = 193;                        //!<  min satellite PRN number of QZSS
-const int MAXPRNQZS = 199;                        //!<   max satellite PRN number of QZSS
 const int MINPRNQZS_S = 183;                      //!<   min satellite PRN number of QZSS SAIF
 const int MAXPRNQZS_S = 189;                      //!<   max satellite PRN number of QZSS SAIF
 const int NSATQZS = (MAXPRNQZS - MINPRNQZS + 1);  //!<   number of QZSS satellites
 const int NSYSQZS = 1;
 #else
-const int MINPRNQZS = 0;
-const int MAXPRNQZS = 0;
 const int MINPRNQZS_S = 0;
-const int MAXPRNQZS_S = 0;
 const int NSATQZS = 0;
 const int NSYSQZS = 0;
 #endif
@@ -215,26 +212,22 @@ const int NSATBDS = 0;
 const int NSYSBDS = 0;
 #endif
 
+const int MINPRNIRN = 1;  //!<   min satellite sat number of IRNSS
+const int MAXPRNIRN = 7;  //!<   max satellite sat number of IRNSS
 #ifdef ENAIRN
-const int MINPRNIRN = 1;                          //!<   min satellite sat number of IRNSS
-const int MAXPRNIRN = 7;                          //!<  max satellite sat number of IRNSS
 const int NSATIRN = (MAXPRNIRN - MINPRNIRN + 1);  //!<   number of IRNSS satellites
 const int NSYSIRN = 1;
 #else
-const int MINPRNIRN = 0;
-const int MAXPRNIRN = 0;
 const int NSATIRN = 0;
 const int NSYSIRN = 0;
 #endif
 
+const int MINPRNLEO = 1;   //!<   min satellite sat number of LEO
+const int MAXPRNLEO = 10;  //!<   max satellite sat number of LEO */
 #ifdef ENALEO
-const int MINPRNLEO = 1;                          //!<   min satellite sat number of LEO
-const int NSATLEO = 10;                           //!<   max satellite sat number of LEO
 const int NSATLEO = (MAXPRNLEO - MINPRNLEO + 1);  //!<   number of LEO satellites
 const int NSYSLEO = 1;
 #else
-const int MINPRNLEO = 0;
-const int MAXPRNLEO = 0;
 const int NSATLEO = 0;
 const int NSYSLEO = 0;
 #endif

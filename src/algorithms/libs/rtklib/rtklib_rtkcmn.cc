@@ -31,6 +31,7 @@
 
 #include "rtklib_rtkcmn.h"
 #include <glog/logging.h>
+#include <cassert>
 #include <cstring>
 #include <dirent.h>
 #include <iostream>
@@ -273,19 +274,19 @@ int satno(int sys, int prn)
                 }
             return NSATGPS + NSATGLO + NSATGAL + prn - MINPRNQZS + 1;
         case SYS_BDS:
-            if (prn < MINPRNBDS || MAXPRNBDS < prn)
+            if (MAXPRNBDS < prn)
                 {
                     return 0;
                 }
             return NSATGPS + NSATGLO + NSATGAL + NSATQZS + prn - MINPRNBDS + 1;
         case SYS_IRN:
-            if (prn < MINPRNIRN || MAXPRNIRN < prn)
+            if (MAXPRNIRN < prn)
                 {
                     return 0;
                 }
             return NSATGPS + NSATGLO + NSATGAL + NSATQZS + NSATBDS + prn - MINPRNIRN + 1;
         case SYS_LEO:
-            if (prn < MINPRNLEO || MAXPRNLEO < prn)
+            if (MAXPRNLEO < prn)
                 {
                     return 0;
                 }
@@ -442,6 +443,11 @@ int satid2no(const char *id)
         default:
             return 0;
         }
+    if (prn <= 0 || prn > MAXSAT)
+        {
+            return 0;
+        }
+
     return satno(sys, prn);
 }
 
@@ -1416,6 +1422,7 @@ void matfprint(const double A[], int n, int m, int p, int q, FILE *fp)
             fprintf(fp, "\n");
         }
 }
+
 
 void matsprint(const double A[], int n, int m, int p, int q, std::string &buffer)
 {
@@ -2689,6 +2696,20 @@ void addpcv(const pcv_t *pcv, pcvs_t *pcvs)
 }
 
 
+/* strncpy without truncation ------------------------------------------------*/
+char *strncpy_no_trunc(char *out, size_t outsz, const char *in, size_t insz)
+{
+    assert(outsz > 0);
+    while (--outsz > 0 && insz > 0 && *in)
+        {
+            *out++ = *in++;
+            insz--;
+        }
+    *out = 0;
+    return out;
+}
+
+
 /* read ngs antenna parameter file -------------------------------------------*/
 int readngspcv(const char *file, pcvs_t *pcvs)
 {
@@ -2718,7 +2739,7 @@ int readngspcv(const char *file, pcvs_t *pcvs)
             if (++n == 1)
                 {
                     pcv = pcv0;
-                    strncpy(pcv.type, buff, 61);
+                    strncpy_no_trunc(pcv.type, 61, buff, 256);
                     pcv.type[61] = '\0';
                 }
             else if (n == 2)

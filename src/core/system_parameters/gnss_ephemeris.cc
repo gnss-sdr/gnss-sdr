@@ -184,7 +184,7 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
         {
             n0 = sqrt(GALILEO_GM / (a * a * a));
         }
-    if (this->System == 'E')
+    else if (this->System == 'E')
         {
             n0 = sqrt(BEIDOU_GM / (a * a * a));
         }
@@ -225,7 +225,7 @@ double Gnss_Ephemeris::sv_clock_relativistic_term(double transmitTime) const
         {
             dtr_ = GALILEO_F * this->ecc * this->sqrtA * sek;
         }
-    if (this->System == 'B')
+    else if (this->System == 'B')
         {
             dtr_ = BEIDOU_F * this->ecc * this->sqrtA * sek;
         }

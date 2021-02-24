@@ -157,6 +157,8 @@ target_include_directories(signal_source_adapters
 
 if(ENABLE_FPGA OR ENABLE_AD9361)
     target_link_libraries(signal_source_adapters
+        PUBLIC
+            signal_source_libs
         PRIVATE
             core_libs
     )

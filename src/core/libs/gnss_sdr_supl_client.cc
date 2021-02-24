@@ -201,9 +201,9 @@ void Gnss_Sdr_Supl_Client::read_supl_data()
         {
             /* TS 44.031: GPSTOW, range 0-604799.92, resolution 0.08 sec, 23-bit presentation */
             gps_time.tow = static_cast<double>(assist.time.gps_tow) * 0.08;
-            gps_time.d_Week = static_cast<double>(assist.time.gps_week);
-            gps_time.d_tv_sec = static_cast<double>(assist.time.stamp.tv_sec);
-            gps_time.d_tv_usec = static_cast<double>(assist.time.stamp.tv_usec);
+            gps_time.week = static_cast<double>(assist.time.gps_week);
+            gps_time.seconds = static_cast<double>(assist.time.stamp.tv_sec);
+            gps_time.microseconds = static_cast<double>(assist.time.stamp.tv_usec);
             gps_time.valid = true;
         }
 
@@ -871,7 +871,7 @@ bool Gnss_Sdr_Supl_Client::read_gal_almanac_from_gsa(const std::string& file_nam
                     gal_alm.delta_i = std::stod(almanac.child("almanac").child_value("deltai"));
                     gal_alm.M_0 = std::stod(almanac.child("almanac").child_value("m0"));
                     gal_alm.ecc = std::stod(almanac.child("almanac").child_value("ecc"));
-                    gal_alm.delta_sqrtA = std::stod(almanac.child("almanac").child_value("aSqRoot"));
+                    gal_alm.sqrtA = std::stod(almanac.child("almanac").child_value("aSqRoot"));
                     gal_alm.OMEGA_0 = std::stod(almanac.child("almanac").child_value("omega0"));
                     gal_alm.omega = std::stod(almanac.child("almanac").child_value("w"));
                     gal_alm.OMEGAdot = std::stod(almanac.child("almanac").child_value("omegaDot"));

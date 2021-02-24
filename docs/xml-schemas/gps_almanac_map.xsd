@@ -26,10 +26,10 @@
                           <xs:element type="xs:float" name="OMEGA_0"/>
                           <xs:element type="xs:float" name="omega"/>
                           <xs:element type="xs:float" name="OMEGAdot"/>
-                          <xs:element type="xs:byte" name="SV_health"/>
-                          <xs:element type="xs:byte" name="AS_status"/>
                           <xs:element type="xs:float" name="af0"/>
                           <xs:element type="xs:float" name="af1"/>
+                          <xs:element type="xs:byte" name="SV_health"/>
+                          <xs:element type="xs:byte" name="AS_status"/>
                         </xs:sequence>
                         <xs:attribute type="xs:byte" name="class_id" use="optional"/>
                         <xs:attribute type="xs:byte" name="tracking_level" use="optional"/>

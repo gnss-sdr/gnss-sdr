@@ -23,6 +23,7 @@
 #include "GPS_L1_CA.h"
 #include "GPS_L5.h"
 #include "ad9361_manager.h"
+#include "command_event.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
@@ -35,6 +36,7 @@
 #include <exception>  // for exceptions
 #include <fcntl.h>    // for open, O_WRONLY
 #include <fstream>    // for std::ifstream
+#include <iomanip>    // for std::setprecision
 #include <iostream>   // for cout
 #include <string>     // for string manipulation
 #include <thread>     // for std::chrono
@@ -48,8 +50,10 @@ using namespace std::string_literals;
 Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
-    : SignalSourceBase(configuration, role, "Ad9361_Fpga_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
+    : SignalSourceBase(configuration, role, "Ad9361_Fpga_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream), queue_(queue)
 {
+    // initialize the variables that are used in real-time mode
+
     const std::string default_gain_mode("slow_attack");
     const double default_tx_attenuation_db = -10.0;
     const double default_manual_gain_rx1 = 64.0;
@@ -92,14 +96,77 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
 
+    // initialize the variables that are used in post-processing mode
 
-    // Switch UIO device file
-    std::string device_io_name;
+    enable_DMA_ = false;
+
+    const int l1_band = configuration->property("Channels_1C.count", 0) +
+                        configuration->property("Channels_1B.count", 0);
+
+    // by default the DMA transfers samples corresponding to two frequency bands to the FPGA
+    num_freq_bands_ = 2;
+    dma_buff_offset_pos_ = 0;
+
+    // if only one input file is specified in the configuration file then:
+    // if there is at least one channel assigned to frequency band 1 then the DMA transfers the samples to the L1 frequency band channels
+    // otherwise the DMA transfers the samples to the L2/L5 frequency band channels
+    if (filename1.empty())
+        {
+            num_freq_bands_ = 1;
+            if (l1_band != 0)
+                {
+                    dma_buff_offset_pos_ = 2;
+                }
+        }
+
+    const double default_seconds_to_skip = 0.0;
+
+    const std::string empty_string;
+    filename0 = configuration->property(role + ".filename", empty_string);
+
+    // override value with commandline flag, if present
+    if (FLAGS_signal_source != "-")
+        {
+            filename0 = FLAGS_signal_source;
+        }
+    if (FLAGS_s != "-")
+        {
+            filename0 = FLAGS_s;
+        }
+
+    if (filename0.empty())
+        {
+            filename0 = configuration->property(role + ".filename0", empty_string);
+            filename1 = configuration->property(role + ".filename1", empty_string);
+        }
+
+    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
+
+    const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
+    const size_t header_size = configuration->property(role + ".header_size", 0);
+    std::string item_type = "ibyte";  // for now only the ibyte format is supported
+    item_size_ = sizeof(int8_t);
+    repeat_ = configuration->property(role + ".repeat", false);
+
+    if (seconds_to_skip > 0)
+        {
+            samples_to_skip_ = static_cast<int64_t>(seconds_to_skip * sample_rate_) * 2;
+        }
+    if (header_size > 0)
+        {
+            samples_to_skip_ += header_size;
+        }
+
+    // check the switch status (determines real-time mode or post-processing mode)
+
+    std::string device_io_name;  // Switch UIO device file
+
     // find the uio device file corresponding to the switch.
     if (find_uio_dev_file_name(device_io_name, switch_device_name, 0) < 0)
         {
-            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << std::endl;
-            throw std::exception();
+            std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << '\n';
+            item_size_ = 0;
+            return;
         }
 
     switch_position_ = configuration->property(role + ".switch_position", 0);
@@ -113,55 +180,102 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     switch_fpga = std::make_shared<Fpga_Switch>(device_io_name);
     switch_fpga->set_switch_position(switch_position_);
 
-    item_size_ = sizeof(gr_complex);
-
-    std::cout << "Sample rate: " << sample_rate_ << " Sps\n";
-
-    enable_ovf_check_buffer_monitor_active_ = false;  // check buffer overflow and buffer monitor disabled by default
-
     if (switch_position_ == 0)  // Inject file(s) via DMA
         {
             enable_DMA_ = true;
-            const std::string empty_string;
-            filename_rx1 = configuration->property(role + ".filename", empty_string);
 
-            // override value with commandline flag, if present
-            if (FLAGS_signal_source != "-")
+            if (samples_ == 0)  // read all file
                 {
-                    filename_rx1 = FLAGS_signal_source;
-                }
-            if (FLAGS_s != "-")
-                {
-                    filename_rx1 = FLAGS_s;
+                    /*!
+                     * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
+                     * A possible solution is to compute the file length in samples using file size, excluding the last 100 milliseconds, and enable always the
+                     * valve block
+                     */
+                    std::ifstream file(filename0.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+                    std::ifstream::pos_type size;
+
+                    if (file.is_open())
+                        {
+                            size = file.tellg();
+                            DLOG(INFO) << "Total samples in the file= " << floor(static_cast<double>(size) / static_cast<double>(item_size_));
+                        }
+                    else
+                        {
+                            std::cerr << "SignalSource: Unable to open the samples file " << filename0.c_str() << '\n';
+                            item_size_ = 0;
+                            return;
+                        }
+                    std::streamsize ss = std::cout.precision();
+                    std::cout << std::setprecision(16);
+                    std::cout << "Processing file " << filename0 << ", which contains " << static_cast<double>(size) << " [bytes]\n";
+                    std::cout.precision(ss);
+
+                    if (size > 0)
+                        {
+                            const int64_t bytes_to_skip = samples_to_skip_ * item_size_;
+                            const int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
+                            samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size_) - ceil(0.002 * static_cast<double>(sample_rate_)));  // process all the samples available in the file excluding at least the last 1 ms
+                        }
+
+                    if (!filename1.empty())
+                        {
+                            std::ifstream file(filename1.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+                            std::ifstream::pos_type size;
+
+                            if (file.is_open())
+                                {
+                                    size = file.tellg();
+                                    DLOG(INFO) << "Total samples in the file= " << floor(static_cast<double>(size) / static_cast<double>(item_size_));
+                                }
+                            else
+                                {
+                                    std::cerr << "SignalSource: Unable to open the samples file " << filename1.c_str() << '\n';
+                                    item_size_ = 0;
+                                    return;
+                                }
+                            std::streamsize ss = std::cout.precision();
+                            std::cout << std::setprecision(16);
+                            std::cout << "Processing file " << filename1 << ", which contains " << static_cast<double>(size) << " [bytes]\n";
+                            std::cout.precision(ss);
+
+                            uint64_t samples_rx2 = 0;
+                            if (size > 0)
+                                {
+                                    const int64_t bytes_to_skip = samples_to_skip_ * item_size_;
+                                    const int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
+                                    samples_rx2 = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size_) - ceil(0.002 * static_cast<double>(sample_rate_)));  // process all the samples available in the file excluding at least the last 1 ms
+                                }
+                            samples_ = std::min(samples_, samples_rx2);
+                        }
                 }
 
-            if (filename_rx1.empty())
-                {
-                    filename_rx1 = configuration->property(role + ".filename0", empty_string);
-                    filename_rx2 = configuration->property(role + ".filename1", empty_string);
-                }
-            const int l1_band = configuration->property("Channels_1C.count", 0) +
-                                configuration->property("Channels_1B.count", 0);
+            CHECK(samples_ > 0) << "File does not contain enough samples to process.";
+            double signal_duration_s = (static_cast<double>(samples_) * (1 / static_cast<double>(sample_rate_))) / 2.0;
 
-            const int l2_band = configuration->property("Channels_L5.count", 0) +
-                                configuration->property("Channels_5X.count", 0) +
-                                configuration->property("Channels_2S.count", 0);
+            DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
+            std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 
-            if (l1_band != 0)
+            if (filename1.empty())
                 {
-                    freq_band = "L1";
+                    DLOG(INFO) << "File source filename " << filename0;
                 }
-            if (l2_band != 0 && l1_band == 0)
+            else
                 {
-                    freq_band = "L2";
+                    DLOG(INFO) << "File source filename rx1 " << filename0;
+                    DLOG(INFO) << "File source filename rx2 " << filename1;
                 }
-            if (l1_band != 0 && l2_band != 0)
-                {
-                    freq_band = "L1L2";
-                }
+            DLOG(INFO) << "Samples " << samples_;
+            DLOG(INFO) << "Sampling frequency " << sample_rate_;
+            DLOG(INFO) << "Item type " << item_type;
+            DLOG(INFO) << "Item size " << item_size_;
+            DLOG(INFO) << "Repeat " << repeat_;
         }
     if (switch_position_ == 2)  // Real-time via AD9361
         {
+            std::cout << "Sample rate: " << sample_rate_ << " Sps\n";
+
+            enable_ovf_check_buffer_monitor_active_ = false;  // check buffer overflow and buffer monitor disabled by default
+
             // some basic checks
             if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
                 {
@@ -262,7 +376,9 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                 }
             catch (const std::runtime_error &e)
                 {
-                    std::cout << "Exception cached when configuring the RX chain: " << e.what() << '\n';
+                    std::cerr << "Exception cached when configuring the RX chain: " << e.what() << '\n';
+                    item_size_ = 0;
+                    return;
                 }
             // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
             if (enable_dds_lo_ == true)
@@ -295,7 +411,9 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                         }
                     catch (const std::runtime_error &e)
                         {
-                            std::cout << "Exception cached when configuring the TX carrier: " << e.what() << '\n';
+                            std::cerr << "Exception cached when configuring the TX carrier: " << e.what() << '\n';
+                            item_size_ = 0;
+                            return;
                         }
                 }
 
@@ -311,12 +429,12 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             // find the uio device file corresponding to the buffer monitor
             if (find_uio_dev_file_name(device_io_name_buffer_monitor, buffer_monitor_device_name, 0) < 0)
                 {
-                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << buffer_monitor_device_name << std::endl;
-                    throw std::exception();
+                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << buffer_monitor_device_name << '\n';
+                    item_size_ = 0;
+                    return;
                 }
 
-            uint32_t num_freq_bands = (freq_band.compare("L1L2")) ? 1 : 2;
-            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands, dump_, dump_filename);
+            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands_, dump_, dump_filename);
             thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
         }
 
@@ -329,15 +447,17 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             // find the uio device file corresponding to the dynamic bit selector 0 module.
             if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_0, dyn_bit_sel_device_name, 0) < 0)
                 {
-                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
-                    throw std::exception();
+                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
+                    item_size_ = 0;
+                    return;
                 }
 
             // find the uio device file corresponding to the dynamic bit selector 1 module.
             if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_1, dyn_bit_sel_device_name, 1) < 0)
                 {
-                    std::cout << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << std::endl;
-                    throw std::exception();
+                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
+                    item_size_ = 0;
+                    return;
                 }
             dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
@@ -418,202 +538,177 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
         }
 }
 
+
 void Ad9361FpgaSignalSource::start()
 {
-    thread_file_to_dma = std::thread([&] { run_DMA_process(freq_band, filename_rx1, filename_rx2); });
+    thread_file_to_dma = std::thread([&] { run_DMA_process(filename0, filename1, samples_to_skip_, item_size_, samples_, repeat_, dma_buff_offset_pos_, queue_); });
 }
 
 
-void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const std::string &Filename1, const std::string &Filename2)
+void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const std::string &filename1, uint64_t &samples_to_skip, size_t &item_size, uint64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
 {
-    const int MAX_INPUT_SAMPLES_TOTAL = 16384;
-    int max_value = 0;
     std::ifstream infile1;
     infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
+    // open the files
     try
         {
-            infile1.open(Filename1, std::ios::binary);
+            infile1.open(filename0, std::ios::binary);
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception opening file " << Filename1 << '\n';
+            std::cerr << "Exception opening file " << filename0 << '\n';
+            // stop the receiver
+            queue->push(pmt::make_any(command_event_make(200, 0)));
             return;
         }
 
     std::ifstream infile2;
-    infile2.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    if (!filename1.empty())
+        {
+            infile2.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+            try
+                {
+                    infile2.open(filename1, std::ios::binary);
+                }
+            catch (const std::ifstream::failure &e)
+                {
+                    std::cerr << "Exception opening file " << filename1 << '\n';
+                    // stop the receiver
+                    queue->push(pmt::make_any(command_event_make(200, 0)));
+                    return;
+                }
+        }
+
+    // skip the initial samples if needed
+    uint64_t bytes_to_skeep = samples_to_skip * item_size;
     try
         {
-            infile2.open(Filename2, std::ios::binary);
+            infile1.ignore(bytes_to_skeep);
         }
     catch (const std::ifstream::failure &e)
         {
-            // could not exist
-        }
-
-    // rx signal
-    std::vector<int8_t> input_samples(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples2(MAX_INPUT_SAMPLES_TOTAL * 2);
-    std::vector<int8_t> input_samples_dma(MAX_INPUT_SAMPLES_TOTAL * 2 * 2);
-
-    int nread_elements = 0;   // num bytes read from the file corresponding to frequency band 1
-    int nread_elements2 = 0;  // num bytes read from the file corresponding to frequency band 2
-    int file_completed = 0;
-    int num_transferred_bytes;
-
-    //**************************************************************************
-    // Open DMA device
-    //**************************************************************************
-    const int tx_fd = open("/dev/loop_tx", O_WRONLY);
-    if (tx_fd < 0)
-        {
-            std::cout << "Cannot open loop device\n";
+            std::cerr << "Exception skipping initial samples file " << filename0 << '\n';
+            // stop the receiver
+            queue->push(pmt::make_any(command_event_make(200, 0)));
             return;
         }
 
-    //**************************************************************************
-    // Open input file
-    //**************************************************************************
-    int nsamples = 0;
-
-    while (file_completed == 0)
+    if (!filename1.empty())
         {
-            unsigned int dma_index = 0;
-
-            if (FreqBand == "L1")
+            try
                 {
-                    try
-                        {
-                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            std::cerr << "Exception reading file " << Filename1 << '\n';
-                        }
-                    if (infile1)
-                        {
-                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
-                        }
-                    else
-                        {
-                            nread_elements = infile1.gcount();
-                        }
-                    nsamples += (nread_elements / 2);
-
-                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
-                        {
-                            // channel 1 (queue 1)
-                            input_samples_dma[dma_index] = 0;
-                            input_samples_dma[dma_index + 1] = 0;
-                            // channel 0 (queue 0)
-                            input_samples_dma[dma_index + 2] = input_samples[index0];
-                            input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
-
-                            dma_index += 4;
-                        }
+                    infile2.ignore(bytes_to_skeep);
                 }
-            else if (FreqBand == "L2")
+            catch (const std::ifstream::failure &e)
+                {
+                    std::cerr << "Exception skipping initial samples file " << filename1 << '\n';
+                    // stop the receiver
+                    queue->push(pmt::make_any(command_event_make(200, 0)));
+                    return;
+                }
+        }
+
+
+    // rx signal vectors
+    std::vector<int8_t> input_samples(sample_block_size * 2);      // complex samples
+    std::vector<int8_t> input_samples_dma(sample_block_size * 4);  // complex samples, two frequency bands
+
+    int nread_elements = 0;  // num bytes read from the file corresponding to frequency band 1
+    bool run_DMA = true;
+    int num_transferred_bytes;
+
+    // Open DMA device
+    const int tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if (tx_fd < 0)
+        {
+            std::cerr << "Cannot open loop device\n";
+            // stop the receiver
+            queue->push(pmt::make_any(command_event_make(200, 0)));
+            return;
+        }
+
+    // if only one frequency band is used then clear the samples corresponding to the unused frequency band
+    uint32_t dma_index = 0;
+    if (num_freq_bands_ == 1)
+        {
+            // if only one file is enabled then clear the samples corresponding to the frequency band that is not used.
+            for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+                {
+                    input_samples_dma[dma_index + (2 - dma_buff_offset_pos)] = 0;
+                    input_samples_dma[dma_index + 1 + (2 - dma_buff_offset_pos)] = 0;
+                    dma_index += 4;
+                }
+        }
+
+    uint64_t nbytes_remaining = samples * item_size;
+    uint32_t read_buffer_size = sample_block_size * 2;  // complex samples
+
+    // run the DMA
+    while (run_DMA)
+        {
+            if (nbytes_remaining < read_buffer_size)
+                {
+                    read_buffer_size = nbytes_remaining;
+                }
+            nbytes_remaining = nbytes_remaining - read_buffer_size;
+
+            // read filename 0
+            try
+                {
+                    infile1.read(reinterpret_cast<char *>(input_samples.data()), read_buffer_size);
+                }
+            catch (const std::ifstream::failure &e)
+                {
+                    std::cerr << "Exception reading file " << filename0 << '\n';
+                    break;
+                }
+            if (infile1)
+                {
+                    nread_elements = read_buffer_size;
+                }
+            else
+                {
+                    // FLAG AS ERROR !! IT SHOULD NEVER HAPPEN
+                    nread_elements = infile1.gcount();
+                }
+
+            for (int index0 = 0; index0 < (nread_elements); index0 += 2)
+                {
+                    // dma_buff_offset_pos is 1 for the L1 band and 0 for the other bands
+                    input_samples_dma[dma_index + dma_buff_offset_pos] = input_samples[index0];
+                    input_samples_dma[dma_index + 1 + dma_buff_offset_pos] = input_samples[index0 + 1];
+                    dma_index += 4;
+                }
+
+            // read filename 1 (if enabled)
+            dma_index = 0;
+            if (num_freq_bands_ > 1)
                 {
                     try
                         {
-                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
+                            infile1.read(reinterpret_cast<char *>(input_samples.data()), read_buffer_size);
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            std::cerr << "Exception reading file " << Filename1 << '\n';
+                            std::cerr << "Exception reading file " << filename1 << '\n';
+                            break;
                         }
                     if (infile1)
                         {
-                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
+                            nread_elements = read_buffer_size;
                         }
                     else
                         {
+                            // FLAG AS ERROR !! IT SHOULD NEVER HAPPEN
                             nread_elements = infile1.gcount();
                         }
-                    nsamples += (nread_elements / 2);
 
                     for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                         {
-                            // channel 1 (queue 1)
+                            // filename2 is never the L1 band
                             input_samples_dma[dma_index] = input_samples[index0];
                             input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
-                            // channel 0 (queue 0)
-                            input_samples_dma[dma_index + 2] = 0;
-                            input_samples_dma[dma_index + 3] = 0;
-
-                            dma_index += 4;
-                        }
-                }
-            else if (FreqBand == "L1L2")
-                {
-                    try
-                        {
-                            infile1.read(reinterpret_cast<char *>(input_samples.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            std::cerr << "Exception reading file " << Filename1 << '\n';
-                        }
-                    if (infile1)
-                        {
-                            nread_elements = MAX_INPUT_SAMPLES_TOTAL * 2;
-                        }
-                    else
-                        {
-                            nread_elements = infile1.gcount();
-                        }
-                    try
-                        {
-                            infile2.read(reinterpret_cast<char *>(input_samples2.data()), MAX_INPUT_SAMPLES_TOTAL * 2);
-                        }
-                    catch (const std::ifstream::failure &e)
-                        {
-                            std::cerr << "Exception reading file " << Filename1 << '\n';
-                        }
-                    if (infile2)
-                        {
-                            nread_elements2 = MAX_INPUT_SAMPLES_TOTAL * 2;
-                        }
-                    else
-                        {
-                            nread_elements2 = infile2.gcount();
-                        }
-
-                    if (nread_elements > nread_elements2)
-                        {
-                            nread_elements = nread_elements2;  // take the smallest
-                        }
-
-                    nsamples += (nread_elements / 2);
-
-                    for (int index0 = 0; index0 < (nread_elements); index0 += 2)
-                        {
-                            if (input_samples[index0] > max_value)
-                                {
-                                    max_value = input_samples[index0];
-                                }
-                            else if (-input_samples[index0] > max_value)
-                                {
-                                    max_value = -input_samples[index0];
-                                }
-
-                            if (input_samples[index0 + 1] > max_value)
-                                {
-                                    max_value = input_samples[index0 + 1];
-                                }
-                            else if (-input_samples[index0 + 1] > max_value)
-                                {
-                                    max_value = -input_samples[index0 + 1];
-                                }
-
-                            // channel 1 (queue 1)
-                            input_samples_dma[dma_index] = input_samples2[index0];
-                            input_samples_dma[dma_index + 1] = input_samples2[index0 + 1];
-                            // channel 0 (queue 0)
-                            input_samples_dma[dma_index + 2] = input_samples[index0];
-                            input_samples_dma[dma_index + 3] = input_samples[index0 + 1];
-
                             dma_index += 4;
                         }
                 }
@@ -625,21 +720,75 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
                     if (num_bytes_sent != num_transferred_bytes)
                         {
                             std::cerr << "Error: DMA could not send all the required samples\n";
+                            break;
                         }
 
                     // Throttle the DMA
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
 
-            if (nread_elements != MAX_INPUT_SAMPLES_TOTAL * 2)
+            if (nbytes_remaining == 0)
                 {
-                    file_completed = 1;
-                }
+                    if (repeat)
+                        {
+                            // read the file again
+                            nbytes_remaining = samples * item_size;
+                            read_buffer_size = sample_block_size * 2;
+                            try
+                                {
+                                    infile1.seekg(0);
+                                }
+                            catch (const std::ifstream::failure &e)
+                                {
+                                    std::cerr << "Exception resetting the position of the next byte to be extracted to zero " << filename0 << '\n';
+                                    break;
+                                }
 
+                            // skip the initial samples if needed
+                            uint64_t bytes_to_skeep = samples_to_skip * item_size;
+                            try
+                                {
+                                    infile1.ignore(bytes_to_skeep);
+                                }
+                            catch (const std::ifstream::failure &e)
+                                {
+                                    std::cerr << "Exception skipping initial samples file " << filename0 << '\n';
+                                    break;
+                                }
+
+                            if (!filename1.empty())
+                                {
+                                    try
+                                        {
+                                            infile2.seekg(0);
+                                        }
+                                    catch (const std::ifstream::failure &e)
+                                        {
+                                            std::cerr << "Exception setting the position of the next byte to be extracted to zero " << filename1 << '\n';
+                                            break;
+                                        }
+
+                                    try
+                                        {
+                                            infile2.ignore(bytes_to_skeep);
+                                        }
+                                    catch (const std::ifstream::failure &e)
+                                        {
+                                            std::cerr << "Exception skipping initial samples file " << filename1 << '\n';
+                                            break;
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            // the input file is completely processed. Stop the receiver.
+                            run_DMA = false;
+                        }
+                }
             std::unique_lock<std::mutex> lock(dma_mutex);
             if (enable_DMA_ == false)
                 {
-                    file_completed = true;
+                    run_DMA = false;
                 }
             lock.unlock();
         }
@@ -652,15 +801,26 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &FreqBand, const 
     try
         {
             infile1.close();
-            if (FreqBand == "L1L2")
-                {
-                    infile2.close();
-                }
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception closing files " << Filename1 << " and " << Filename2 << '\n';
+            std::cerr << "Exception closing file " << filename0 << '\n';
         }
+
+    if (num_freq_bands_ > 1)
+        {
+            try
+                {
+                    infile2.close();
+                }
+            catch (const std::ifstream::failure &e)
+                {
+                    std::cerr << "Exception closing file " << filename1 << '\n';
+                }
+        }
+
+    // Stop the receiver
+    queue->push(pmt::make_any(command_event_make(200, 0)));
 }
 
 
@@ -681,6 +841,7 @@ void Ad9361FpgaSignalSource::run_dynamic_bit_selection_process()
             lock.unlock();
         }
 }
+
 
 void Ad9361FpgaSignalSource::run_buffer_monitor_process()
 {

@@ -1,6 +1,6 @@
 /*!
  * \file galileo_e1_pcps_acquisition_test_fpga.cc
- * \brief  This class implements an acquisition test Galileo FPFA acquisition
+ * \brief  This class implements an acquisition test Galileo FPGA acquisition
  * \authors <ul>
  *          <li> Marc Majoral, 2019. mmajoral(at)cttc.cat
  *          <li> Luis Esteve, 2012. luis(at)epsilon-formacion.com

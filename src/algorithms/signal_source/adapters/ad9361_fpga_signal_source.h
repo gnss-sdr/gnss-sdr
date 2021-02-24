@@ -67,15 +67,22 @@ private:
     const std::string buffer_monitor_device_name = "buffer_monitor";      // buffer monitor device name
     const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
     // perform dynamic bit selection every 500 ms by default
-    static const uint32_t Gain_control_period_ms = 500;
+    const uint32_t Gain_control_period_ms = 500;
     // check buffer overflow and perform buffer monitoring every 1s by default
-    static const uint32_t buffer_monitor_period_ms = 1000;
+    const uint32_t buffer_monitor_period_ms = 1000;
     // buffer overflow and buffer monitoring initial delay
-    static const uint32_t buffer_monitoring_initial_delay_ms = 2000;
+    const uint32_t buffer_monitoring_initial_delay_ms = 2000;
+    // sample block size when running in post-processing mode
+    const int sample_block_size = 16384;
 
-    void run_DMA_process(const std::string &FreqBand,
-        const std::string &Filename1,
-        const std::string &Filename2);
+    void run_DMA_process(const std::string &Filename1,
+        const std::string &Filename2,
+        uint64_t &samples_to_skip,
+        size_t &item_size,
+        uint64_t &samples,
+        bool &repeat,
+        uint32_t &dma_buff_offset_pos,
+        Concurrent_Queue<pmt::pmt_t> *queue);
 
     void run_dynamic_bit_selection_process();
     void run_buffer_monitor_process();
@@ -95,9 +102,8 @@ private:
     std::string filter_file_;
     std::string filter_source_;
     std::string filter_filename_;
-    std::string filename_rx1;
-    std::string filename_rx2;
-    std::string freq_band;
+    std::string filename0;
+    std::string filename1;
 
     std::mutex dma_mutex;
     std::mutex dynamic_bit_selection_mutex;
@@ -133,9 +139,17 @@ private:
     bool enable_DMA_;
     bool enable_dynamic_bit_selection_;
     bool enable_ovf_check_buffer_monitor_active_;
-    bool enable_ovf_check_buffer_monitor_;
     bool dump_;
     bool rf_shutdown_;
+
+    // post-processing mode
+    uint64_t samples_;
+    uint64_t samples_to_skip_;
+    bool repeat_;
+    uint32_t num_freq_bands_;
+    uint32_t dma_buff_offset_pos_;
+
+    Concurrent_Queue<pmt::pmt_t> *queue_;
 };
 
 

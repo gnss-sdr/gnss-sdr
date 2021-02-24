@@ -297,6 +297,7 @@ private:
     bool enable_monitor_;
     bool enable_acquisition_monitor_;
     bool enable_tracking_monitor_;
+    bool enable_fpga_offloading_;
 };
 
 

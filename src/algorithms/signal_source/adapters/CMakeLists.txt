@@ -186,8 +186,7 @@ if(ENABLE_UHD)
     target_link_libraries(signal_source_adapters
         PUBLIC
             Gnuradio::uhd
-        PRIVATE
-            Uhd::uhd
+            Uhd::uhd  # for uhd/config.hpp in gnuradio/uhd/usrp_source.h
     )
 endif()
 

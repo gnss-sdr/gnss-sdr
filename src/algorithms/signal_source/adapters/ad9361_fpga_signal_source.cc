@@ -140,7 +140,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             filename1 = configuration->property(role + ".filename1", empty_string);
         }
 
-    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
+    samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));
 
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", default_seconds_to_skip);
     const size_t header_size = configuration->property(role + ".header_size", 0);
@@ -148,9 +148,10 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     item_size_ = sizeof(int8_t);
     repeat_ = configuration->property(role + ".repeat", false);
 
+    samples_to_skip_ = 0;
     if (seconds_to_skip > 0)
         {
-            samples_to_skip_ = static_cast<int64_t>(seconds_to_skip * sample_rate_) * 2;
+            samples_to_skip_ = static_cast<uint64_t>(seconds_to_skip * sample_rate_) * 2;
         }
     if (header_size > 0)
         {
@@ -212,8 +213,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
                     if (size > 0)
                         {
-                            const int64_t bytes_to_skip = samples_to_skip_ * item_size_;
-                            const int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
+                            const uint64_t bytes_to_skip = samples_to_skip_ * item_size_;
+                            const uint64_t bytes_to_process = static_cast<uint64_t>(size) - bytes_to_skip;
                             samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size_) - ceil(0.002 * static_cast<double>(sample_rate_)));  // process all the samples available in the file excluding at least the last 1 ms
                         }
 
@@ -238,11 +239,11 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                             std::cout << "Processing file " << filename1 << ", which contains " << static_cast<double>(size) << " [bytes]\n";
                             std::cout.precision(ss);
 
-                            uint64_t samples_rx2 = 0;
+                            int64_t samples_rx2 = 0;
                             if (size > 0)
                                 {
-                                    const int64_t bytes_to_skip = samples_to_skip_ * item_size_;
-                                    const int64_t bytes_to_process = static_cast<int64_t>(size) - bytes_to_skip;
+                                    const uint64_t bytes_to_skip = samples_to_skip_ * item_size_;
+                                    const uint64_t bytes_to_process = static_cast<uint64_t>(size) - bytes_to_skip;
                                     samples_rx2 = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size_) - ceil(0.002 * static_cast<double>(sample_rate_)));  // process all the samples available in the file excluding at least the last 1 ms
                                 }
                             samples_ = std::min(samples_, samples_rx2);
@@ -546,7 +547,7 @@ void Ad9361FpgaSignalSource::start()
 }
 
 
-void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const std::string &filename1, uint64_t &samples_to_skip, size_t &item_size, uint64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
+void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const std::string &filename1, uint64_t &samples_to_skip, size_t &item_size, int64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
 {
     std::ifstream infile1;
     infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);

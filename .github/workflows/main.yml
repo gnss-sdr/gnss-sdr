@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: install dependencies
-      run: brew install ninja pkg-config hdf5 libtool automake armadillo lapack gflags glog gnuradio log4cpp pugixml protobuf && pip3 install mako
+      run: brew update && brew install ninja pkg-config hdf5 libtool automake armadillo lapack gflags glog gnuradio log4cpp pugixml protobuf && pip3 install mako
     - name: configure
       run: cd build && cmake -GNinja ..
     - name: build
@@ -54,7 +54,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: install dependencies
-      run: brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && ln -s /usr/local/opt/llvm/bin/clang-tidy /usr/local/bin && ln -s /usr/local/Cellar/llvm/11.*/bin/clang-apply-replacements /usr/local/bin && cp /usr/local/Cellar/llvm/11.*/share/clang/run-clang-tidy.py /usr/local/bin && pip3 install mako
+      run: brew update && brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && ln -s /usr/local/opt/llvm/bin/clang-tidy /usr/local/bin && ln -s /usr/local/Cellar/llvm/11.*/bin/clang-apply-replacements /usr/local/bin && cp /usr/local/Cellar/llvm/11.*/share/clang/run-clang-tidy.py /usr/local/bin && pip3 install mako
     - name: Prepare run
       run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.10.0 core_monitor pvt_libs
     - name: run clang-tidy

@@ -65,6 +65,7 @@ set(GNSS_SPLIBS_HEADERS
     pass_through.h
     short_x2_to_cshort.h
     gnss_sdr_string_literals.h
+    gnss_time.h
 )
 
 if(ENABLE_OPENCL)

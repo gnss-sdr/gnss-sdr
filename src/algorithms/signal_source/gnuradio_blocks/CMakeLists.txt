@@ -62,6 +62,7 @@ target_link_libraries(signal_source_gr_blocks
         signal_source_libs
         Boost::thread
     PRIVATE
+        algorithms_libs
         core_libs
         Gflags::gflags
         Glog::glog

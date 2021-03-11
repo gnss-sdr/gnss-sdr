@@ -62,6 +62,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   configurations.
 - Fix bug that made the Monitor block to always set to 0 the
   `carrier_phase_rads` parameter value.
+- The `Labsat_Signal_Source` implementation of the `SignalSource` block now can
+  read files in the LabSat 3 Wideband format (`.LS3W`).
 
 &nbsp;
 

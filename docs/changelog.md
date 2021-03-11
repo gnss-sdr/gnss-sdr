@@ -60,6 +60,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   make the receiver unusable when running on non-FPGA-enabled platforms. On
   FPGA-enabled platforms, now it is possible to run non-FPGA-enabled
   configurations.
+- Fix bug that made the Monitor block to always set to 0 the
+  `carrier_phase_rads` parameter value.
 
 &nbsp;
 

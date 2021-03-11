@@ -100,6 +100,7 @@ public:
                 obs->set_prompt_q(gs.Prompt_Q);
                 obs->set_cn0_db_hz(gs.CN0_dB_hz);
                 obs->set_carrier_doppler_hz(gs.Carrier_Doppler_hz);
+                obs->set_carrier_phase_rads(gs.Carrier_phase_rads);
                 obs->set_code_phase_samples(gs.Code_phase_samples);
                 obs->set_tracking_sample_counter(gs.Tracking_sample_counter);
                 obs->set_flag_valid_symbol_output(gs.Flag_valid_symbol_output);
@@ -143,6 +144,8 @@ public:
                 gs.Prompt_Q = gs_read.prompt_q();
                 gs.CN0_dB_hz = gs_read.cn0_db_hz();
                 gs.Carrier_Doppler_hz = gs_read.carrier_doppler_hz();
+                gs.Carrier_phase_rads = gs_read.carrier_phase_rads();
+                gs.Code_phase_samples = gs_read.code_phase_samples();
                 gs.Tracking_sample_counter = gs_read.tracking_sample_counter();
                 gs.Flag_valid_symbol_output = gs_read.flag_valid_symbol_output();
                 gs.correlation_length_ms = gs_read.correlation_length_ms();

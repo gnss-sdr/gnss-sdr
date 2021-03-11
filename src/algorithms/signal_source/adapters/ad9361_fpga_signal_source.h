@@ -75,11 +75,11 @@ private:
     // sample block size when running in post-processing mode
     const int sample_block_size = 16384;
 
-    void run_DMA_process(const std::string &Filename1,
-        const std::string &Filename2,
+    void run_DMA_process(const std::string &filename0,
+        const std::string &filename1,
         uint64_t &samples_to_skip,
         size_t &item_size,
-        uint64_t &samples,
+        int64_t &samples,
         bool &repeat,
         uint32_t &dma_buff_offset_pos,
         Concurrent_Queue<pmt::pmt_t> *queue);
@@ -143,7 +143,7 @@ private:
     bool rf_shutdown_;
 
     // post-processing mode
-    uint64_t samples_;
+    int64_t samples_;
     uint64_t samples_to_skip_;
     bool repeat_;
     uint32_t num_freq_bands_;

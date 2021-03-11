@@ -112,6 +112,7 @@
 #include "two_bit_packed_file_signal_source.h"
 #include <glog/logging.h>
 #include <exception>  // for exception
+#include <iostream>   // for cerr
 #include <utility>    // for move
 
 #if RAW_UDP
@@ -188,7 +189,7 @@ std::unique_ptr<To> dynamic_unique_cast(std::unique_ptr<From>&& p)
     if (To* cast = dynamic_cast<To*>(p.get()))
         {
             result.reset(cast);
-            p.release();
+            p.release();  // NOLINT(bugprone-unused-return-value)
         }
     return result;
 }
@@ -284,6 +285,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetSignalConditioner(
             return conditioner_;
         }
 
+    if (signal_conditioner != "Signal_Conditioner")
+        {
+            std::cerr << "Error in configuration file: SignalConditioner.implementation=" << signal_conditioner << " is not a valid value.\n";
+            return nullptr;
+        }
+
     // single-antenna version
     std::unique_ptr<GNSSBlockInterface> conditioner_ = std::make_unique<SignalConditioner>(
         GetBlock(configuration, role_datatypeadapter, 1, 1),
@@ -299,9 +306,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetObservables(const Confi
     const std::string empty_implementation;
     std::string implementation = configuration->property("Observables.implementation", empty_implementation);
     LOG(INFO) << "Getting Observables with implementation " << implementation;
-    if (implementation != "Hybrid_Observables")
+    if (implementation.find("_Observables") == std::string::npos)
         {
-            LOG(WARNING) << "Error in configuration file: please set Observables.implementation=Hybrid_Observables";
+            std::cerr << "Error in configuration file: please set Observables.implementation=Hybrid_Observables\n";
+            return nullptr;
         }
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
@@ -333,9 +341,10 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetPVT(const Configuration
     const std::string empty_implementation;
     std::string implementation = configuration->property("PVT.implementation", empty_implementation);
     LOG(INFO) << "Getting PVT with implementation " << implementation;
-    if (implementation != "RTKLIB_PVT")
+    if (implementation.find("_PVT") == std::string::npos)
         {
-            LOG(WARNING) << "Error in configuration file: please set PVT.implementation=RTKLIB_PVT";
+            std::cerr << "Error in configuration file: please set PVT.implementation=RTKLIB_PVT\n";
+            return nullptr;
         }
     unsigned int Galileo_channels = configuration->property("Channels_1B.count", 0);
     Galileo_channels += configuration->property("Channels_5X.count", 0);
@@ -389,7 +398,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
     std::string trk_item_type = configuration->property("Tracking_" + signal + appendix2 + item_prop, default_item_type);
     if (acq_item_type != trk_item_type)
         {
-            LOG(ERROR) << "Acquisition and Tracking blocks must have the same input data type!";
+            std::cerr << "Configuration error: Acquisition and Tracking blocks must have the same input data type!\n";
             return nullptr;
         }
 
@@ -411,7 +420,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetChannel(
         }
     if (trk_->item_size() == 0)
         {
-            LOG(ERROR) << trk_->role() << item_prop << "=" << acq_item_type << " is not defined for implementation " << trk_->implementation();
+            std::cerr << "Configuration error: " << trk_->role() << item_prop << "=" << acq_item_type << " is not defined for implementation " << trk_->implementation() << '\n';
             return nullptr;
         }
 
@@ -1271,13 +1280,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             else
                 {
-                    // Consider making this a fatal error, terminating the program. Unfortunately, existing unit tests expect otherwise
-                    LOG(ERROR) << role << "." << implementation << ": Undefined implementation for block";
+                    std::cerr << "Configuration error in " << role << " block: implementation " + implementation + " is not available.\n"s;
+                    block = nullptr;
                 }
         }
     catch (const std::exception& e)
         {
-            std::cout << "GNSS-SDR program ended.\n";
+            std::cout << "Configuration error. GNSS-SDR program ended.\n";
+            LOG(INFO) << "Exception raised while instantiating a block: " << e.what();
             exit(1);
         }
     return block;
@@ -1471,7 +1481,8 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
 
     else
         {
-            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
+            std::cerr << "Configuration error in " << role << " block: implementation " << (implementation == "Wrong"s ? "not defined."s : implementation + " not available."s) << '\n';
+            block = nullptr;
         }
     return block;
 }
@@ -1631,7 +1642,8 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 #endif
     else
         {
-            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
+            std::cerr << "Configuration error in " << role << " block: implementation " << (implementation == "Wrong"s ? "not defined."s : implementation + " not available."s) << '\n';
+            block = nullptr;
         }
     return block;
 }
@@ -1722,7 +1734,8 @@ std::unique_ptr<TelemetryDecoderInterface> GNSSBlockFactory::GetTlmBlock(
 
     else
         {
-            LOG(ERROR) << role << " block: Undefined implementation " << implementation;
+            std::cerr << "Configuration error in " << role << " block: implementation " << (implementation == "Wrong"s ? "not defined."s : implementation + " not available."s) << '\n';
+            block = nullptr;
         }
 
     return block;

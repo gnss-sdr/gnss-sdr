@@ -500,7 +500,7 @@ void FileSourceBase::create_sink_hook() {}
 
 
 // Subclass hooks for connection/disconnectino
-void FileSourceBase::pre_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
-void FileSourceBase::post_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
-void FileSourceBase::pre_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
-void FileSourceBase::post_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}
+void FileSourceBase::pre_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}      // NOLINT(performance-unnecessary-value-param)
+void FileSourceBase::post_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}     // NOLINT(performance-unnecessary-value-param)
+void FileSourceBase::pre_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}   // NOLINT(performance-unnecessary-value-param)
+void FileSourceBase::post_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}  // NOLINT(performance-unnecessary-value-param)

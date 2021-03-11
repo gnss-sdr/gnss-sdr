@@ -106,13 +106,13 @@ void GNSSFlowgraph::init()
 
     for (int i = 0; i < sources_count_; i++)
         {
-            std::cout << "Creating source " << i << '\n';
+            DLOG(INFO) << "Creating source " << i;
             sig_source_.push_back(block_factory->GetSignalSource(configuration_.get(), queue_.get(), i));
             if (enable_fpga_offloading_ == false)
                 {
                     auto& src = sig_source_.back();
                     auto RF_Channels = src->getRfChannels();
-                    std::cout << "RF Channels " << RF_Channels << '\n';
+                    std::cout << "RF Channels: " << RF_Channels << '\n';
                     for (auto j = 0U; j < RF_Channels; ++j)
                         {
                             sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
@@ -527,7 +527,8 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
         {
             if (src == nullptr)
                 {
-                    help_hint_ += " * Undefined SignalSource.implementation in the configuration file.\n";
+                    help_hint_ += " * Check implementation name for SignalSource block.\n";
+                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Fpga_Signal_Source\n";
                     return 1;
                 }
             if (src->item_size() == 0)
@@ -559,17 +560,9 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
     DLOG(INFO) << "Blocks connected internally to the top_block";
 
     // Connect the counter
-    if (sig_source_.at(0) != nullptr)
+
+    if (connect_fpga_sample_counter() != 0)
         {
-            if (connect_fpga_sample_counter() != 0)
-                {
-                    return 1;
-                }
-        }
-    else
-        {
-            help_hint_ += " * Check implementation name for SignalSource block\n";
-            help_hint_ += "   Signal Source block implementation for FPGA off-loading should be 'Ad9361_Fpga_Signal_Source'\n";
             return 1;
         }
 
@@ -695,6 +688,12 @@ int GNSSFlowgraph::connect_signal_conditioners()
         {
             for (auto& sig : sig_conditioner_)
                 {
+                    if (sig == nullptr)
+                        {
+                            help_hint_ += " * The Signal_Conditioner implementation set in the configuration file does not exist.\n";
+                            help_hint_ += "   Check the Signal Conditioner documentation at https://gnss-sdr.org/docs/sp-blocks/signal-conditioner/\n";
+                            return error;
+                        }
                     sig->connect(top_block_);
                 }
             DLOG(INFO) << "Signal Conditioner blocks successfully connected to the top_block";

@@ -42,10 +42,12 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     const std::string default_filename("./example_capture.LS3");
     filename_ = configuration->property(role + ".filename", default_filename);
 
+    const bool digital_io_enabled = configuration->property(role + ".digital_io_enabled", false);
+
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channel_selector, queue);
+            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channel_selector, queue, digital_io_enabled);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "labsat23_source_(" << labsat23_source_->unique_id() << ")";
         }

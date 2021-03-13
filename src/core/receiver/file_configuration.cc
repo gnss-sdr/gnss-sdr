@@ -22,6 +22,7 @@
 #include "file_configuration.h"
 #include "gnss_sdr_make_unique.h"
 #include <glog/logging.h>
+#include <iostream>
 #include <utility>
 
 
@@ -55,7 +56,7 @@ void FileConfiguration::init()
         }
     else
         {
-            LOG(WARNING) << "Unable to open configuration file " << filename_;
+            std::cerr << "Unable to open configuration file " << filename_ << '\n';
         }
 }
 

@@ -91,24 +91,23 @@ ControlThread::ControlThread()
 
     const std::string empty_implementation;
     std::string src_impl = configuration_->property("SignalSource.implementation", empty_implementation);
-    int src_count = configuration_->property("Receiver.sources_count", 1);
-    if (src_impl.empty() && (src_count != 1))
+    int src_count_deprecated = configuration_->property("Receiver.sources_count", 1);
+    int src_count = configuration_->property("GNSS-SDR.num_sources", src_count_deprecated);
+    if (src_impl.empty())
         {
+            src_impl = std::string("");
             int num_src = 0;
-            for (int i = 0; i < src_count; i++)
+            for (auto i = 0; i < src_count; i++)
                 {
-                    std::string src_impl_multiple = configuration_->property("SignalSource" + std::to_string(i) + ".implementation", empty_implementation);
-                    if (!src_impl_multiple.empty())
-                        {
-                            num_src++;
-                        }
+                    auto src_impl_multiple = configuration_->property("SignalSource" + std::to_string(i) + ".implementation", empty_implementation);
+                    num_src += !src_impl_multiple.empty();
                 }
-            if (num_src != src_count)
-                {
-                    src_impl = std::string("");
-                }
+            conf_has_signal_sources_ = (num_src == src_count);
         }
-    conf_has_signal_sources_ = !src_impl.empty();
+    else
+        {
+            conf_has_signal_sources_ = true;
+        }
 
     std::string pvt_impl = configuration_->property("PVT.implementation", empty_implementation);
     conf_has_pvt_ = !pvt_impl.empty();

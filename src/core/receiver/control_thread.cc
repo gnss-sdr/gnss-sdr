@@ -92,23 +92,37 @@ ControlThread::ControlThread()
     const std::string empty_implementation;
     std::string src_impl = configuration_->property("SignalSource.implementation", empty_implementation);
     int src_count = configuration_->property("Receiver.sources_count", 1);
-    if (src_impl.empty() && (src_count != 1))
+    if (src_impl.empty())
         {
-            int num_src = 0;
-            for (int i = 0; i < src_count; i++)
+            if ((src_count == 1))
                 {
-                    std::string src_impl_multiple = configuration_->property("SignalSource" + std::to_string(i) + ".implementation", empty_implementation);
-                    if (!src_impl_multiple.empty())
+                    conf_has_signal_sources_ = false;
+                }
+            else
+                {
+                    int num_src = 0;
+                    for (int i = 0; i < src_count; i++)
                         {
-                            num_src++;
+                            std::string src_impl_multiple = configuration_->property("SignalSource" + std::to_string(i) + ".implementation", empty_implementation);
+                            if (!src_impl_multiple.empty())
+                                {
+                                    num_src++;
+                                }
+                        }
+                    if (num_src == src_count)
+                        {
+                            conf_has_signal_sources_ = true;
+                        }
+                    else
+                        {
+                            conf_has_signal_sources_ = false;
                         }
                 }
-            if (num_src != src_count)
-                {
-                    src_impl = std::string("");
-                }
         }
-    conf_has_signal_sources_ = !src_impl.empty();
+    else
+        {
+            conf_has_signal_sources_ = true;
+        }
 
     std::string pvt_impl = configuration_->property("PVT.implementation", empty_implementation);
     conf_has_pvt_ = !pvt_impl.empty();

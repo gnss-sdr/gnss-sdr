@@ -928,7 +928,7 @@ int labsat23_source::general_work(int noutput_items,
     gr_vector_void_star &output_items)
 {
     std::vector<gr_complex *> out;
-    for (auto & output_item : output_items)
+    for (auto &output_item : output_items)
         {
             out.push_back(reinterpret_cast<gr_complex *>(output_item));
         }

@@ -63,7 +63,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Fix bug that made the Monitor block to always set to 0 the
   `carrier_phase_rads` parameter value.
 - The `Labsat_Signal_Source` implementation of the `SignalSource` block now can
-  read files in the LabSat 3 Wideband format (`.LS3W`).
+  read files in the LabSat 3 Wideband format (`.LS3W`). When using this format,
+  this source block can provide multiple RF chain outputs.
 - Replace `Receiver.sources_count` configuration parameter name by
   `GNSS-SDR.num_sources`. The former parameter name is still read to ensure
   backward compatibility with configuration files using that nomenclature.

@@ -1,6 +1,6 @@
 /*!
  * \file labsat_signal_source.cc
- * \brief Labsat 2 and 3 front-end signal sampler driver
+ * \brief LabSat version 2, 3, and 3 Wideband format reader
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -19,6 +19,8 @@
 #include "gnss_sdr_string_literals.h"
 #include "labsat23_source.h"
 #include <glog/logging.h>
+#include <iostream>
+#include <sstream>
 
 using namespace std::string_literals;
 
@@ -37,7 +39,25 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     const int64_t sampling_frequency_deprecated = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(16368000));
     const int64_t throttle_frequency_sps = configuration->property(role + ".throttle_frequency_sps", static_cast<int64_t>(sampling_frequency_deprecated));
 
-    const int channel_selector = configuration->property(role + ".selected_channel", 1);
+    std::string channels_to_read = configuration->property(role + ".selected_channel", default_item_type);
+    std::stringstream ss(channels_to_read);
+    int found;
+    while (ss.good())
+        {
+            std::string substr;
+            getline(ss, substr, ',');
+            if (std::stringstream(substr) >> found)
+                {
+                    if (found >= 1 && found <= 3)
+                        {
+                            channels_selector_vec_.push_back(found);
+                        }
+                }
+        }
+    if (channels_selector_vec_.empty())
+        {
+            channels_selector_vec_.push_back(1);
+        }
 
     const std::string default_filename("./example_capture.LS3");
     filename_ = configuration->property(role + ".filename", default_filename);
@@ -47,7 +67,7 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channel_selector, queue, digital_io_enabled);
+            labsat23_source_ = labsat23_make_source_sptr(filename_.c_str(), channels_selector_vec_, queue, digital_io_enabled);
             DLOG(INFO) << "Item size " << item_size_;
             DLOG(INFO) << "labsat23_source_(" << labsat23_source_->unique_id() << ")";
         }
@@ -58,24 +78,60 @@ LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configurati
         }
     if (dump_)
         {
-            DLOG(INFO) << "Dumping output into file " << dump_filename_;
-            DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
-            file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
+            std::vector<std::string> dump_filename;
+            file_sink_.reserve(channels_selector_vec_.size());
+            for (int i : channels_selector_vec_)
+                {
+                    if (channels_selector_vec_.size() == 1)
+                        {
+                            dump_filename.push_back(dump_filename_);
+                        }
+                    else
+                        {
+                            std::string aux(dump_filename_.substr(0, dump_filename_.length() - 4));
+                            std::string extension(dump_filename_.substr(dump_filename_.length() - 3, dump_filename_.length()));
+                            if (i == 1)
+                                {
+                                    aux += "_chA."s;
+                                }
+                            if (i == 2)
+                                {
+                                    aux += "_chB."s;
+                                }
+                            if (i == 3)
+                                {
+                                    aux += "_chC."s;
+                                }
+                            dump_filename.push_back(aux + extension);
+                        }
+                    std::cout << "Dumping output into file " << dump_filename.back() << '\n';
+                    file_sink_.push_back(gr::blocks::file_sink::make(item_size_, dump_filename.back().c_str()));
+                    DLOG(INFO) << "file_sink(" << file_sink_.back()->unique_id() << ")";
+                }
         }
 
     if (enable_throttle_control_)
         {
-            throttle_ = gr::blocks::throttle::make(item_size_, throttle_frequency_sps);
+            for (auto it = channels_selector_vec_.begin(); it != channels_selector_vec_.end(); ++it)
+                {
+                    throttle_.push_back(gr::blocks::throttle::make(item_size_, throttle_frequency_sps));
+                }
         }
 
     if (in_stream_ > 0)
         {
             LOG(ERROR) << "A signal source does not have an input stream";
         }
-    if (out_stream_ > 1)
+    if (out_stream_ > 3)
         {
-            LOG(ERROR) << "This implementation only supports one output stream";
+            LOG(ERROR) << "This implementation supports up to 3 output streams";
         }
+}
+
+
+size_t LabsatSignalSource::getRfChannels() const
+{
+    return channels_selector_vec_.size();
 }
 
 
@@ -83,24 +139,34 @@ void LabsatSignalSource::connect(gr::top_block_sptr top_block)
 {
     if (enable_throttle_control_ == true)
         {
-            top_block->connect(labsat23_source_, 0, throttle_, 0);
-            DLOG(INFO) << "connected labsat23_source_ to throttle";
-            if (dump_)
+            int rf_chan = 0;
+            for (const auto& th : throttle_)
                 {
-                    top_block->connect(labsat23_source_, 0, file_sink_, 0);
-                    DLOG(INFO) << "connected labsat23_source_to sink";
+                    top_block->connect(labsat23_source_, rf_chan, th, 0);
+                    DLOG(INFO) << "connected labsat23_source_ to throttle";
+                    if (dump_)
+                        {
+                            top_block->connect(labsat23_source_, rf_chan, file_sink_[rf_chan], 0);
+                            DLOG(INFO) << "connected labsat23_source_to sink";
+                        }
+                    rf_chan++;
                 }
         }
     else
         {
-            if (dump_)
+            int rf_chan = 0;
+            for (auto it = channels_selector_vec_.begin(); it != channels_selector_vec_.end(); ++it)
                 {
-                    top_block->connect(labsat23_source_, 0, file_sink_, 0);
-                    DLOG(INFO) << "connected labsat23_source_ to sink";
-                }
-            else
-                {
-                    DLOG(INFO) << "nothing to connect internally";
+                    if (dump_)
+                        {
+                            top_block->connect(labsat23_source_, 0, file_sink_[rf_chan], 0);
+                            DLOG(INFO) << "connected labsat23_source_ to sink";
+                        }
+                    else
+                        {
+                            DLOG(INFO) << "nothing to connect internally";
+                        }
+                    rf_chan++;
                 }
         }
 }
@@ -110,20 +176,30 @@ void LabsatSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (enable_throttle_control_ == true)
         {
-            top_block->disconnect(labsat23_source_, 0, throttle_, 0);
-            DLOG(INFO) << "disconnected labsat23_source_ to throttle";
-            if (dump_)
+            int rf_chan = 0;
+            for (const auto& th : throttle_)
                 {
-                    top_block->disconnect(labsat23_source_, 0, file_sink_, 0);
-                    DLOG(INFO) << "disconnected labsat23_source_ to sink";
+                    top_block->disconnect(labsat23_source_, rf_chan, th, 0);
+                    DLOG(INFO) << "disconnected labsat23_source_ to throttle";
+                    if (dump_)
+                        {
+                            top_block->disconnect(labsat23_source_, rf_chan, file_sink_[rf_chan], 0);
+                            DLOG(INFO) << "disconnected labsat23_source_ to sink";
+                        }
+                    rf_chan++;
                 }
         }
     else
         {
-            if (dump_)
+            int rf_chan = 0;
+            for (auto it = channels_selector_vec_.begin(); it != channels_selector_vec_.end(); ++it)
                 {
-                    top_block->disconnect(labsat23_source_, 0, file_sink_, 0);
-                    DLOG(INFO) << "disconnected labsat23_source_ to sink";
+                    if (dump_)
+                        {
+                            top_block->disconnect(labsat23_source_, rf_chan, file_sink_[rf_chan], 0);
+                            DLOG(INFO) << "disconnected labsat23_source_ to sink";
+                        }
+                    rf_chan++;
                 }
         }
 }
@@ -140,7 +216,17 @@ gr::basic_block_sptr LabsatSignalSource::get_right_block()
 {
     if (enable_throttle_control_ == true)
         {
-            return throttle_;
+            return throttle_[0];
+        }
+    return labsat23_source_;
+}
+
+
+gr::basic_block_sptr LabsatSignalSource::get_right_block(int i)
+{
+    if (enable_throttle_control_ == true)
+        {
+            return throttle_[i];
         }
     return labsat23_source_;
 }

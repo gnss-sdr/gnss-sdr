@@ -382,10 +382,10 @@ TEST(ReedSolomonTest, Decode1Error)
 
     // Introduce 1 error:
     encoded_input[23] = 0;
-    int result = rs->decode(encoded_input);
 
     auto rs = std::make_unique<ReedSolomon>();
 
+    int result = rs->decode(encoded_input);
     EXPECT_TRUE(result == 1);
     std::vector<uint8_t> decoded(encoded_input.begin(), encoded_input.begin() + 32);
     EXPECT_TRUE(expected_output == decoded);

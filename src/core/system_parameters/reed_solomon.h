@@ -79,11 +79,18 @@ public:
         const std::vector<std::vector<uint8_t>>& gen_matrix = std::vector<std::vector<uint8_t>>{});
 
     /*!
-     * \brief Decode an encoded block. The decoded symbols are at the first
-     * 255-nroots elements of the input vector. Returns the number of corrected
-     * errors or -1 if decoding failed.
+     * \brief Decode an encoded block.
+     *
+     * The decoded symbols are at the first 255-nroots elements
+     * of the input vector.
+     *
+     * The second parameter is optional, and contains a vector of erasure
+     * positions to be passed to the decoding algorithm.
+     *
+     * Returns the number of corrected errors or -1 if decoding failed.
      */
-    int decode(std::vector<uint8_t>& data_to_decode) const;
+    int decode(std::vector<uint8_t>& data_to_decode,
+        const std::vector<int>& erasure_positions = std::vector<int>{}) const;
 
     /*!
      * \brief Encode data with the generator matrix (for testing purposes)
@@ -98,7 +105,7 @@ public:
 private:
     static const int d_symbols_per_block = 255;  // the total number of symbols in a RS block.
 
-    int decode_rs_8(uint8_t* data, int* eras_pos, int no_eras, int pad) const;
+    int decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras, int pad) const;
     int mod255(int x) const;
     int rs_min(int a, int b) const;
 

@@ -540,26 +540,24 @@ void ReedSolomon::encode_rs_8(const uint8_t* data, uint8_t* parity) const
 }
 
 
-int ReedSolomon::decode(std::vector<uint8_t>& data_to_decode) const
+int ReedSolomon::decode(std::vector<uint8_t>& data_to_decode, const std::vector<int>& erasure_positions) const
 {
     if (data_to_decode.size() != d_symbols_per_block)
         {
             std::cerr << "Reed Solomon error: bad input length\n";
             return -1;
         }
-    std::vector<uint8_t> decoded_data(d_data_in_block, 0);
-    int result = decode_rs_8(data_to_decode.data(), nullptr, 0, d_pad);
+    int result = decode_rs_8(data_to_decode.data(), erasure_positions.data(), erasure_positions.size(), d_pad);
     return result;
 }
 
 
-int ReedSolomon::decode_rs_8(uint8_t* data, int* eras_pos, int no_eras, int pad) const
+int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras, int pad) const
 {
     if (pad < 0 || pad > 222)
         {
             return -1;
         }
-    int retval;
     int deg_lambda;
     int el;
     int deg_omega;
@@ -621,16 +619,7 @@ int ReedSolomon::decode_rs_8(uint8_t* data, int* eras_pos, int no_eras, int pad)
         {
             // if syndrome is zero, data[] is a codeword and there are no
             // errors to correct. So return data[] unmodified
-            count = 0;
-            if (eras_pos != nullptr)
-                {
-                    for (i = 0; i < count; i++)
-                        {
-                            eras_pos[i] = loc[i];
-                        }
-                }
-            retval = count;
-            return retval;
+            return 0;
         }
 
     memset(&lambda[1], 0, d_nroots * sizeof(lambda[0]));
@@ -761,16 +750,7 @@ int ReedSolomon::decode_rs_8(uint8_t* data, int* eras_pos, int no_eras, int pad)
         {
             // deg(lambda) unequal to number of roots => uncorrectable
             // error detected
-            count = -1;
-            if (eras_pos != nullptr)
-                {
-                    for (i = 0; i < count; i++)
-                        {
-                            eras_pos[i] = loc[i];
-                        }
-                }
-            retval = count;
-            return retval;
+            return -1;
         }
 
     // Compute err+eras evaluator poly omega(x) = s(x)*lambda(x) (modulo
@@ -821,14 +801,5 @@ int ReedSolomon::decode_rs_8(uint8_t* data, int* eras_pos, int no_eras, int pad)
                 }
         }
 
-    if (eras_pos != nullptr)
-        {
-            for (i = 0; i < count; i++)
-                {
-                    eras_pos[i] = loc[i];
-                }
-        }
-    retval = count;
-
-    return retval;
+    return count;
 }

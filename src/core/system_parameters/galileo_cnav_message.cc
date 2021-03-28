@@ -195,15 +195,15 @@ int Galileo_Cnav_Message::decode_message_type1()
     std::vector<int> erasure_positions;
     erasure_positions.reserve(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK - d_list_pid.size());
 
-    for (uint8_t mpid = 1; mpid <= GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK; mpid++)
+    for (int mpid = 1; mpid <= GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK; mpid++)
         {
-            if (std::find(d_list_pid.begin(), d_list_pid.end(), mpid) == d_list_pid.end())
+            if (std::find(d_list_pid.begin(), d_list_pid.end(), static_cast<uint8_t>(mpid)) == d_list_pid.end())
                 {
-                    erasure_positions.push_back(mpid - 1);
+                    erasure_positions.push_back(static_cast<uint8_t>(mpid - 1));
                 }
             else
                 {
-                    d_list_pid.remove(mpid);
+                    d_list_pid.remove(static_cast<uint8_t>(mpid));
                 }
         }
 

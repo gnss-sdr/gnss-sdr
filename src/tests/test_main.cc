@@ -126,6 +126,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/serdes_monitor_pvt_test.cc"
 #include "unit-tests/signal-processing-blocks/telemetry_decoder/galileo_fnav_inav_decoder_test.cc"
+#include "unit-tests/system-parameters/galileo_e6b_reed_solomon_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_crc_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"

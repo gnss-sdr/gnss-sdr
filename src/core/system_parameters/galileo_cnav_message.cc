@@ -3,14 +3,14 @@
  * \brief  Implementation of a Galileo CNAV Data message as described in
  * Galileo High Accuracy Service E6-B Signal-In-Space Message Specification v1.2
  * (April 2020)
- * \author Carles Fernandez-Prades, 2020 cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2020-2021 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -60,10 +60,11 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
     if (CRC_test(Word_for_CRC_bits, checksum.to_ulong()) == true)
         {
             d_flag_CRC_test = true;
-            // CRC correct: Read HAS page header
+            // CRC correct: Read 24 bits of HAS page header
             read_HAS_page_header(page_string.substr(GALILEO_CNAV_PAGE_RESERVED_BITS, GALILEO_CNAV_PAGE_HEADER_BITS));
             bool use_has = false;
             d_test_mode = false;
+            // HAS status as defined in ICD v1.2 Table 5 HAS Page Header
             switch (d_has_page_status)
                 {
                 case 0:  // HAS is in Test Mode
@@ -73,11 +74,14 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
                 case 1:  // HAS is in Operational Mode
                     use_has = true;
                     break;
+                case 2:  // HAS is in "reserved" status
+                case 3:  // Do not use HAS
                 default:
                     break;
                 }
             if (use_has)
                 {
+                    // Process the 424 bits of encoded data
                     process_HAS_page(page_string.substr(GALILEO_CNAV_PAGE_RESERVED_BITS + GALILEO_CNAV_PAGE_HEADER_BITS, GALILEO_CNAV_MESSAGE_BITS_PER_PAGE));
                 }
         }
@@ -101,11 +105,12 @@ void Galileo_Cnav_Message::read_HAS_page_header(const std::string& page_string)
         }
     if (!d_page_dummy)
         {
+            // ICD v1.2 Table 5: HAS page header
             const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS> has_page_header(page_string);
             d_has_page_status = read_has_page_header_parameter(has_page_header, GALILEO_HAS_STATUS);
             d_received_message_type = read_has_page_header_parameter(has_page_header, GALILEO_HAS_MESSAGE_TYPE);
             d_received_message_id = read_has_page_header_parameter(has_page_header, GALILEO_HAS_MESSAGE_ID);
-            d_received_message_size = read_has_page_header_parameter(has_page_header, GALILEO_HAS_MESSAGE_SIZE);
+            d_received_message_size = read_has_page_header_parameter(has_page_header, GALILEO_HAS_MESSAGE_SIZE) + 1;  // "0" means 1
             d_received_message_page_id = read_has_page_header_parameter(has_page_header, GALILEO_HAS_MESSAGE_PAGE_ID);
         }
 }
@@ -116,14 +121,27 @@ void Galileo_Cnav_Message::process_HAS_page(const std::string& page_string)
     if (d_current_message_id == d_received_message_id)
         {
             // if receiver pid was not there, store it.
-            if (std::find(d_list_pid.begin(), d_list_pid.end(), d_received_message_page_id) == d_list_pid.end())
+            if (d_received_message_page_id == 0)
                 {
-                    if (d_received_message_type == 1)  // contains satellite corrections
+                    // reserved, ignore it
+                }
+            else
+                {
+                    if (std::find(d_list_pid.begin(), d_list_pid.end(), d_received_message_page_id) == d_list_pid.end())
                         {
-                            d_received_encoded_messages++;
-                            d_list_pid.push_back(d_received_message_page_id);
-                            // Store encoded page
-                            d_encoded_message_type_1 += std::string(page_string);
+                            if (d_received_message_type == 1)  // contains satellite corrections
+                                {
+                                    d_received_encoded_messages++;
+                                    d_list_pid.push_back(d_received_message_page_id);
+                                    // Pack encoded string into 53 octets and put it in
+                                    // the corresponding row of d_C_matrix.
+                                    for (int k = 0; k < GALILEO_CNAV_OCTETS_IN_SUBPAGE; k++)
+                                        {
+                                            std::string bits8 = page_string.substr(k * 8, 8);
+                                            std::bitset<8> bs(bits8);
+                                            d_C_matrix[d_received_message_page_id - 1][k] = static_cast<uint8_t>(bs.to_ulong());
+                                        }
+                                }
                         }
                 }
         }
@@ -134,48 +152,112 @@ void Galileo_Cnav_Message::process_HAS_page(const std::string& page_string)
             d_received_encoded_messages = 0;
             d_new_message = false;
             d_current_message_size = d_received_message_size;
-            // erase stored pages and start storing again
-            d_encoded_message_type_1.clear();
+            // erase stored pages and data, and start storing again
             d_list_pid.clear();
+            d_HAS_data = Galileo_HAS_data();
             if (d_received_message_type == 1)
                 {
-                    d_encoded_message_type_1.reserve(GALILEO_CNAV_MAX_NUMBER_ENCODED_BLOCKS * GALILEO_CNAV_MESSAGE_BITS_PER_PAGE);
                     d_received_encoded_messages++;
                     d_list_pid.push_back(d_received_message_page_id);
-                    d_encoded_message_type_1 += std::string(page_string);
+                    // Pack encoded string into 53 octets and put it in
+                    // the corresponding row of d_C_matrix.
+                    for (int k = 0; k < GALILEO_CNAV_OCTETS_IN_SUBPAGE; k++)
+                        {
+                            std::string bits8 = page_string.substr(k * 8, 8);
+                            std::bitset<8> bs(bits8);
+                            d_C_matrix[d_received_message_page_id - 1][k] = static_cast<uint8_t>(bs.to_ulong());
+                        }
                 }
         }
 
     if (d_received_encoded_messages == d_current_message_size)
         {
-            // we have a full encoded message stored in d_encoded_message_type_1
+            // we have a full encoded message stored in d_C_matrix
             d_received_encoded_messages = 0;
             d_current_message_id = 0;
-            d_new_message = true;
-            decode_message_type1();
+
+            int res = decode_message_type1();
+            if (res == 0)
+                {
+                    d_new_message = true;
+                }
+            else
+                {
+                    d_new_message = false;
+                }
         }
 }
 
 
-void Galileo_Cnav_Message::decode_message_type1()
+int Galileo_Cnav_Message::decode_message_type1()
 {
-    // TODO: Reed-Solomon decoding of d_encoded_message_type_1
-    // TODO: reordering
-    // decoded_message_type1 = ...
-    // read_HAS_message_type1(decoded_message_type1);
-}
+    // All rows in d_C_matrix with no data are erasure positions
+    std::vector<int> erasure_positions;
+    erasure_positions.reserve(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK - d_list_pid.size());
 
+    for (int mpid = 1; mpid <= GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK; mpid++)
+        {
+            if (std::find(d_list_pid.begin(), d_list_pid.end(), static_cast<uint8_t>(mpid)) == d_list_pid.end())
+                {
+                    erasure_positions.push_back(static_cast<uint8_t>(mpid - 1));
+                }
+            else
+                {
+                    d_list_pid.remove(static_cast<uint8_t>(mpid));
+                }
+        }
 
-void Galileo_Cnav_Message::read_HAS_message_type1(const std::string& message_string)
-{
-    d_HAS_data = Galileo_HAS_data();
-    read_MT1_header(message_string);
-    read_MT1_body(message_string);
+    // Vertical decoding of d_C_matrix
+    for (int col = 0; col < GALILEO_CNAV_OCTETS_IN_SUBPAGE; col++)
+        {
+            std::vector<uint8_t> C_column(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, 0);
+            for (int row = 0; row < GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK; row++)
+                {
+                    C_column[row] = d_C_matrix[row][col];
+                }
+            int result = rs.decode(C_column, erasure_positions);
+            if (result < 0)
+                {
+                    // Decoding failed
+                    d_C_matrix = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};
+                    d_M_matrix = {GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)};
+                    return -1;
+                }
+
+            std::vector<uint8_t> M_column(C_column.begin(), C_column.begin() + GALILEO_CNAV_INFORMATION_VECTOR_LENGTH);
+            for (int i = 0; i < GALILEO_CNAV_INFORMATION_VECTOR_LENGTH; i++)
+                {
+                    d_M_matrix[i][col] = M_column[i];
+                }
+        }
+
+    // Form the decoded HAS message by reading rows of d_M_matrix
+    std::string decoded_message_type_1;
+    decoded_message_type_1.reserve(d_current_message_size * GALILEO_CNAV_OCTETS_IN_SUBPAGE * 8);
+    for (uint8_t row = 0; row < d_current_message_size; row++)
+        {
+            for (int col = 0; col < GALILEO_CNAV_OCTETS_IN_SUBPAGE; col++)
+                {
+                    std::bitset<8> bs(d_M_matrix[row][col]);
+                    decoded_message_type_1 += bs.to_string();
+                }
+        }
+
+    // reset d_C_matrix and d_M_matrix for next decoding
+    d_C_matrix = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};
+    d_M_matrix = {GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};
+
+    // Trigger HAS message content reading
+    read_MT1_header(decoded_message_type_1);
+    read_MT1_body(decoded_message_type_1);
+
+    return 0;
 }
 
 
 void Galileo_Cnav_Message::read_MT1_header(const std::string& message_string)
 {
+    // ICD v1.2 Table 6: MT1 Message Header.
     const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> has_mt1_header(message_string);
     d_HAS_data.header.toh = read_has_message_header_parameter_uint16(has_mt1_header, GALILEO_MT1_HEADER_TOH);
     d_HAS_data.header.mask_id = read_has_message_header_parameter_uint8(has_mt1_header, GALILEO_MT1_HEADER_MASK_ID);
@@ -192,6 +274,7 @@ void Galileo_Cnav_Message::read_MT1_header(const std::string& message_string)
 
 void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
 {
+    // ICD v1.2 Table 7: MT1 Message Body.
     auto message = std::string(message_string.begin() + GALILEO_CNAV_MT1_HEADER_BITS, message_string.end());  // Remove header
     int Nsat = 0;
     if (d_HAS_data.header.mask_flag)

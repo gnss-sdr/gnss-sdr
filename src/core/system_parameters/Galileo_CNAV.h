@@ -68,14 +68,16 @@ constexpr int32_t GALILEO_CNAV_CRC_LENGTH = 24;
 constexpr int32_t GALILEO_CNAV_MESSAGE_BITS_PER_PAGE = 424;
 constexpr int32_t GALILEO_CNAV_PAGE_HEADER_BITS = 24;
 constexpr int32_t GALILEO_CNAV_PREAMBLE_LENGTH_BITS = 16;
-constexpr int32_t GALILEO_CNAV_MAX_NUMBER_ENCODED_BLOCKS = 255;
+constexpr int32_t GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK = 255;
 constexpr int32_t GALILEO_CNAV_MT1_HEADER_BITS = 32;
+constexpr int32_t GALILEO_CNAV_OCTETS_IN_SUBPAGE = 53;
+constexpr int32_t GALILEO_CNAV_INFORMATION_VECTOR_LENGTH = 32;
 
 constexpr int32_t HAS_MSG_MAX_SATS = 40;
 constexpr int32_t HAS_MSG_MAX_SIGNALS = 16;
 
-constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // Table 8 ICD
-constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 8 ICD
+constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // Table 8 ICD v1.2
+constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 8 ICD v1.2
 
 constexpr char GALILEO_CNAV_PREAMBLE[17] = "1011011101110000";
 

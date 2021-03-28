@@ -26,6 +26,7 @@
 #include "display.h"
 #include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
+#include "galileo_has_data.h"        // For Galileo HAS messages
 #include "galileo_iono.h"            // for Galileo_Iono
 #include "galileo_utc_model.h"       // for Galileo_Utc_Model
 #include "gnss_synchro.h"
@@ -512,15 +513,15 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
     // 4. If we have a new full message, read it
     if (d_cnav_nav.have_new_HAS_message() == true)
         {
-            // TODO: Retrieve data from message and send it somewhere
-            // Galileo_HAS_data has_data = d_cnav_nav.get_HAS_data();
-            if (d_cnav_nav.is_HAS_message_dummy())
+            if (d_cnav_nav.is_HAS_message_dummy() == true)
                 {
-                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS dummy message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
                 }
             else
                 {
-                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS dummy message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                    const std::shared_ptr<Galileo_HAS_data> tmp_obj = std::make_shared<Galileo_HAS_data>(d_cnav_nav.get_HAS_data());
+                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
                 }
         }
 }
@@ -649,7 +650,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         if (abs(corr_value) >= d_samples_per_preamble)
                             {
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                DLOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite;
+                                LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite << " in channel " << this->d_channel;
                                 d_stat = 1;  // enter into frame pre-detection status
                             }
                     }

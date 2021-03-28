@@ -24,6 +24,7 @@
 #include "galileo_almanac.h"
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
+#include "galileo_has_data.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 #include "geojson_printer.h"
@@ -500,6 +501,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_galileo_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Utc_Model>).hash_code();
     d_galileo_almanac_helper_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac_Helper>).hash_code();
     d_galileo_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac>).hash_code();
+    d_galileo_has_message_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
     d_glonass_gnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>).hash_code();
     d_glonass_gnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>).hash_code();
     d_glonass_gnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Almanac>).hash_code();
@@ -1314,6 +1316,10 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->galileo_almanac_map[galileo_alm->PRN] = *galileo_alm;
                         }
+                }
+            else if (msg_type_hash_code == d_galileo_has_message_sptr_type_hash_code)
+                {
+                    // Store HAS message and print its content
                 }
 
             // **************** GLONASS GNAV Telemetry *************************

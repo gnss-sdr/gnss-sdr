@@ -85,7 +85,7 @@ public:
      * of the input vector.
      *
      * The second parameter is optional, and contains a vector of erasure
-     * positions to be passed to the decoding algorithm.
+     * positions to be passed to the decoding algorithm. Defaults to empty.
      *
      * Returns the number of corrected errors or -1 if decoding failed.
      */
@@ -105,36 +105,37 @@ public:
 private:
     static const int d_symbols_per_block = 255;  // the total number of symbols in a RS block.
 
-    int decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras, int pad) const;
     int mod255(int x) const;
     int rs_min(int a, int b) const;
+    int decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras, int pad) const;
 
     uint8_t galois_mul(uint8_t a, uint8_t b) const;
     uint8_t galois_add(uint8_t a, uint8_t b) const;
     uint8_t galois_mul_table(uint8_t a, uint8_t b) const;
 
     void encode_rs_8(const uint8_t* data, uint8_t* parity) const;
-    void init_log_tables();
-    void init_alpha_tables();
+    void init_log_tables();    // initialize d_log_table and d_antilog
+    void init_alpha_tables();  // initialize d_alpha_to, d_index_of
 
-    std::array<uint8_t, 256> log_table{};
-    std::array<uint8_t, 255> antilog{};
-    std::array<uint8_t, 256> d_alpha_to{};
-    std::array<uint8_t, 256> d_index_of{};
-    std::vector<std::vector<uint8_t>> d_genmatrix;
-    std::vector<uint8_t> d_genpoly_coeff;
-    std::vector<uint8_t> d_genpoly_index;
+    std::array<uint8_t, 256> d_alpha_to{};   // used for decoding
+    std::array<uint8_t, 256> d_index_of{};   // used for decoding
+    std::array<uint8_t, 256> d_log_table{};  // used for encoding
+    std::array<uint8_t, 255> d_antilog{};    // used for encoding
 
-    size_t d_data_in_block;
+    std::vector<std::vector<uint8_t>> d_genmatrix;  // used for encoding
+    std::vector<uint8_t> d_genpoly_coeff;           // used for encoding
+    std::vector<uint8_t> d_genpoly_index;           // used for encoding
+
+    size_t d_data_in_block;  // number of information symbols in a block
 
     int d_nroots;  // number of parity symbols in a block
-    int d_prim;    // The primitive root of the generator poly.
-    int d_pad;     // the number of pad symbols in a block.
+    int d_prim;    // The primitive root of the generator poly
+    int d_pad;     // the number of pad symbols in a block
     int d_iprim;   // prim-th root of 1, index form
     int d_fcr;     // first consecutive root
 
-    uint8_t d_min_poly;
-    uint8_t d_a0;
+    uint8_t d_min_poly;  // primitive polynomial
+    uint8_t d_a0;        // auxiliar variable
 };
 
 /** \} */

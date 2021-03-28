@@ -409,21 +409,21 @@ uint8_t ReedSolomon::galois_mul_table(uint8_t a, uint8_t b) const
             return 0;
         }
 
-    uint8_t x = log_table[a];
-    uint8_t y = log_table[b];
+    uint8_t x = d_log_table[a];
+    uint8_t y = d_log_table[b];
     uint8_t log_mult = (x + y) % d_symbols_per_block;
 
-    return antilog[log_mult];
+    return d_antilog[log_mult];
 }
 
 
 void ReedSolomon::init_log_tables()
 {
-    log_table[0] = 0;  // dummy value
+    d_log_table[0] = 0;  // dummy value
     for (int i = 0, x = 1; i < d_symbols_per_block; x = galois_mul(x, d_min_poly), i++)
         {
-            log_table[x] = i;
-            antilog[i] = x;
+            d_log_table[x] = i;
+            d_antilog[i] = x;
         }
 }
 

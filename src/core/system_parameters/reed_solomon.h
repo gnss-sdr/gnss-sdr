@@ -126,16 +126,16 @@ private:
     std::vector<uint8_t> d_genpoly_coeff;           // used for encoding
     std::vector<uint8_t> d_genpoly_index;           // used for encoding
 
-    size_t d_data_in_block;  // number of information symbols in a block
+    size_t d_data_in_block{};  // number of information symbols in a block
 
-    int d_nroots;  // number of parity symbols in a block
-    int d_prim;    // The primitive root of the generator poly
-    int d_pad;     // the number of pad symbols in a block
-    int d_iprim;   // prim-th root of 1, index form
-    int d_fcr;     // first consecutive root
+    int d_nroots{};  // number of parity symbols in a block
+    int d_prim{};    // The primitive root of the generator poly
+    int d_pad{};     // the number of pad symbols in a block
+    int d_iprim{};   // prim-th root of 1, index form
+    int d_fcr{};     // first consecutive root
 
-    uint8_t d_min_poly;  // primitive polynomial
-    uint8_t d_a0;        // auxiliar variable
+    uint8_t d_min_poly{};  // primitive polynomial
+    uint8_t d_a0{};        // auxiliar variable
 };
 
 /** \} */

@@ -745,10 +745,15 @@ int ReedSolomon::decode(std::vector<uint8_t>& data_to_decode, const std::vector<
             std::cerr << "Reed Solomon usage error: wrong vector input size in decode method.\n";
             return result;
         }
+    if (erasure_positions.size() > std::size_t(d_nroots))
+        {
+            std::cerr << "Reed Solomon usage error: too much erasure positions.\n";
+            return result;
+        }
 
     if (d_shortening == 0)
         {
-            result = decode_rs_8(data_to_decode.data(), erasure_positions.data(), erasure_positions.size(), d_pad);
+            result = decode_rs_8(data_to_decode.data(), erasure_positions.data(), erasure_positions.size());
         }
     else
         {
@@ -757,7 +762,7 @@ int ReedSolomon::decode(std::vector<uint8_t>& data_to_decode, const std::vector<
             std::copy(data_to_decode.begin(), data_to_decode.begin() + d_info_symbols_shortened, unshortened_code_vector.begin());
             std::copy(data_to_decode.begin() + d_info_symbols_shortened, data_to_decode.begin() + d_data_symbols_shortened, unshortened_code_vector.begin() + d_data_in_block);
 
-            result = decode_rs_8(unshortened_code_vector.data(), erasure_positions.data(), erasure_positions.size(), d_pad);
+            result = decode_rs_8(unshortened_code_vector.data(), erasure_positions.data(), erasure_positions.size());
             if (result >= 0)
                 {
                     // Store decoded result into the shortened code vector
@@ -769,7 +774,7 @@ int ReedSolomon::decode(std::vector<uint8_t>& data_to_decode, const std::vector<
 }
 
 
-int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras, int pad) const
+int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras) const
 {
     int deg_lambda;
     int el;

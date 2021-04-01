@@ -123,7 +123,7 @@ private:
 
     int mod255(int x) const;
     int rs_min(int a, int b) const;
-    int decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras, int pad) const;
+    int decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras) const;
 
     uint8_t galois_mul(uint8_t a, uint8_t b) const;
     uint8_t galois_add(uint8_t a, uint8_t b) const;

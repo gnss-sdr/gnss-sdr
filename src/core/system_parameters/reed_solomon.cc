@@ -771,10 +771,6 @@ int ReedSolomon::decode(std::vector<uint8_t>& data_to_decode, const std::vector<
 
 int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras, int pad) const
 {
-    if (pad < 0 || pad > 222)
-        {
-            return -1;
-        }
     int deg_lambda;
     int el;
     int deg_omega;

@@ -2901,6 +2901,10 @@ if(GNURADIO_IIO_FOUND)
     set(GR_IIO_INCLUDE_HAS_GNURADIO TRUE)
     set(GNURADIO_API_IIO TRUE)
 else()
+    # Force to always search for gr-iio
+    unset(GRIIO_FOUND CACHE)
+    unset(IIO_INCLUDE_DIRS CACHE)
+    unset(IIO_LIBRARIES CACHE)
     find_package(GRIIO)
     set_package_properties(GRIIO PROPERTIES
         PURPOSE "Used for communication with PlutoSDR and FMCOMMS devices."

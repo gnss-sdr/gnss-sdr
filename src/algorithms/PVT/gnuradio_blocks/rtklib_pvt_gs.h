@@ -216,6 +216,7 @@ private:
     size_t d_galileo_utc_model_sptr_type_hash_code;
     size_t d_galileo_almanac_helper_sptr_type_hash_code;
     size_t d_galileo_almanac_sptr_type_hash_code;
+    size_t d_galileo_has_message_sptr_type_hash_code;
     size_t d_glonass_gnav_ephemeris_sptr_type_hash_code;
     size_t d_glonass_gnav_utc_model_sptr_type_hash_code;
     size_t d_glonass_gnav_almanac_sptr_type_hash_code;

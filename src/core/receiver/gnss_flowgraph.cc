@@ -100,7 +100,8 @@ void GNSSFlowgraph::init()
     channels_status_ = channel_status_msg_receiver_make();
 
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
-    sources_count_ = configuration_->property("Receiver.sources_count", 1);
+    int sources_count_deprecated = configuration_->property("Receiver.sources_count", 1);
+    sources_count_ = configuration_->property("GNSS-SDR.num_sources", sources_count_deprecated);
 
     int signal_conditioner_ID = 0;
 
@@ -112,13 +113,20 @@ void GNSSFlowgraph::init()
                 {
                     auto& src = sig_source_.back();
                     auto RF_Channels = src->getRfChannels();
-                    std::cout << "RF Channels: " << RF_Channels << '\n';
+                    if (sources_count_ == 1)
+                        {
+                            std::cout << "RF Channels: " << RF_Channels << '\n';
+                        }
                     for (auto j = 0U; j < RF_Channels; ++j)
                         {
                             sig_conditioner_.push_back(block_factory->GetSignalConditioner(configuration_.get(), signal_conditioner_ID));
                             signal_conditioner_ID++;
                         }
                 }
+        }
+    if (sources_count_ != 1 && !enable_fpga_offloading_)
+        {
+            std::cout << "RF Channels: " << sources_count_ << '\n';
         }
     if (!sig_conditioner_.empty())
         {
@@ -522,7 +530,6 @@ int GNSSFlowgraph::disconnect_desktop_flowgraph()
 int GNSSFlowgraph::connect_fpga_flowgraph()
 {
     // Check that the Signal Source has been instantiated successfully
-
     for (auto& src : sig_source_)
         {
             if (src == nullptr)
@@ -541,7 +548,6 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
         }
 
     // Connect blocks to the top_block
-
     if (connect_channels() != 0)
         {
             return 1;
@@ -560,7 +566,6 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
     DLOG(INFO) << "Blocks connected internally to the top_block";
 
     // Connect the counter
-
     if (connect_fpga_sample_counter() != 0)
         {
             return 1;

@@ -24,6 +24,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_ephemeris.cc
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
+    reed_solomon.cc
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
@@ -82,6 +83,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     Beidou_B3I.h
     Beidou_DNAV.h
     MATH_CONSTANTS.h
+    reed_solomon.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

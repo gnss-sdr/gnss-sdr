@@ -103,22 +103,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     const int l1_band = configuration->property("Channels_1C.count", 0) +
                         configuration->property("Channels_1B.count", 0);
 
-    // by default the DMA transfers samples corresponding to two frequency bands to the FPGA
-    num_freq_bands_ = 2;
-    dma_buff_offset_pos_ = 0;
-
-    // if only one input file is specified in the configuration file then:
-    // if there is at least one channel assigned to frequency band 1 then the DMA transfers the samples to the L1 frequency band channels
-    // otherwise the DMA transfers the samples to the L2/L5 frequency band channels
-    if (filename1.empty())
-        {
-            num_freq_bands_ = 1;
-            if (l1_band != 0)
-                {
-                    dma_buff_offset_pos_ = 2;
-                }
-        }
-
     const double default_seconds_to_skip = 0.0;
 
     const std::string empty_string;
@@ -138,6 +122,27 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
         {
             filename0 = configuration->property(role + ".filename0", empty_string);
             filename1 = configuration->property(role + ".filename1", empty_string);
+        }
+
+    // by default the DMA transfers samples corresponding to two frequency bands to the FPGA
+    num_freq_bands_ = 2;
+    dma_buff_offset_pos_ = 0;
+
+    // if only one input file is specified in the configuration file then:
+    // if there is at least one channel assigned to frequency band 1 then the DMA transfers the samples to the L1 frequency band channels
+    // otherwise the DMA transfers the samples to the L2/L5 frequency band channels
+    // if more than one input file are specified then the DMA transfer the samples to both the L1 and the L2/L5 frequency channels.
+    if (filename1.empty())
+        {
+            num_freq_bands_ = 1;
+            if (l1_band != 0)
+                {
+                    dma_buff_offset_pos_ = 2;
+                }
+        }
+    else
+        {
+            dma_buff_offset_pos_ = 2;
         }
 
     samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));
@@ -649,6 +654,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
     // run the DMA
     while (run_DMA)
         {
+            dma_index = 0;
             if (nbytes_remaining < read_buffer_size)
                 {
                     read_buffer_size = nbytes_remaining;
@@ -684,26 +690,26 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                 }
 
             // read filename 1 (if enabled)
-            dma_index = 0;
             if (num_freq_bands_ > 1)
                 {
+                    dma_index = 0;
                     try
                         {
-                            infile1.read(reinterpret_cast<char *>(input_samples.data()), read_buffer_size);
+                            infile2.read(reinterpret_cast<char *>(input_samples.data()), read_buffer_size);
                         }
                     catch (const std::ifstream::failure &e)
                         {
                             std::cerr << "Exception reading file " << filename1 << '\n';
                             break;
                         }
-                    if (infile1)
+                    if (infile2)
                         {
                             nread_elements = read_buffer_size;
                         }
                     else
                         {
                             // FLAG AS ERROR !! IT SHOULD NEVER HAPPEN
-                            nread_elements = infile1.gcount();
+                            nread_elements = infile2.gcount();
                         }
 
                     for (int index0 = 0; index0 < (nread_elements); index0 += 2)

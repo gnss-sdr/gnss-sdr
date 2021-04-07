@@ -1,7 +1,7 @@
 /*!
  * \file labsat23_source.h
  *
- * \brief Unpacks capture files in the Labsat 2 (ls2), Labsat 3 (ls3), or Labsat
+ * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), or LabSat
  * 3 Wideband (LS3W) formats.
  * \author Javier Arribas jarribas (at) cttc.es
  *
@@ -23,9 +23,11 @@
 #include "gnss_block_interface.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
+#include <cstddef>
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <vector>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -39,12 +41,13 @@ using labsat23_source_sptr = gnss_shared_ptr<labsat23_source>;
 
 labsat23_source_sptr labsat23_make_source_sptr(
     const char *signal_file_basename,
-    int channel_selector,
+    const std::vector<int> &channel_selector,
     Concurrent_Queue<pmt::pmt_t> *queue,
     bool digital_io_enabled);
 
 /*!
- * \brief This class implements conversion between Labsat2 and 3 format byte packet samples to gr_complex
+ * \brief This class implements conversion between Labsat 2, 3 and 3 Wideband
+ * formats to gr_complex
  */
 class labsat23_source : public gr::block
 {
@@ -59,28 +62,29 @@ public:
 private:
     friend labsat23_source_sptr labsat23_make_source_sptr(
         const char *signal_file_basename,
-        int channel_selector,
+        const std::vector<int> &channel_selector,
         Concurrent_Queue<pmt::pmt_t> *queue,
         bool digital_io_enabled);
 
     labsat23_source(const char *signal_file_basename,
-        int channel_selector,
+        const std::vector<int> &channel_selector,
         Concurrent_Queue<pmt::pmt_t> *queue,
         bool digital_io_enabled);
 
     std::string generate_filename();
 
+    int parse_header();
     int getBit(uint8_t byte, int position);
     int read_ls3w_ini(const std::string &filename);
     int number_of_samples_per_ls3w_register() const;
 
     void decode_samples_one_channel(int16_t input_short, gr_complex *out, int type);
-    void decode_ls3w_register_one_channel(uint64_t input, gr_complex *out) const;
+    void decode_ls3w_register(uint64_t input, std::vector<gr_complex *> &out, std::size_t output_pointer) const;
 
     std::ifstream binary_input_file;
     std::string d_signal_file_basename;
     Concurrent_Queue<pmt::pmt_t> *d_queue;
-    int d_channel_selector_config;
+    std::vector<int> d_channel_selector_config;
     int d_current_file_number;
     uint8_t d_labsat_version;
     uint8_t d_channel_selector;
@@ -90,6 +94,7 @@ private:
 
     // Data members for Labsat 3 Wideband
     std::string d_ls3w_OSC;
+    std::vector<int> d_ls3w_selected_channel_offset;
     int64_t d_ls3w_SMP{};
     int32_t d_ls3w_QUA{};
     int32_t d_ls3w_CHN{};
@@ -101,7 +106,6 @@ private:
     int32_t d_ls3w_BWB{};
     int32_t d_ls3w_BWC{};
     int d_ls3w_spare_bits{};
-    int d_ls3w_selected_channel_offset{};
     int d_ls3w_samples_per_register{};
     bool d_is_ls3w = false;
     bool d_ls3w_digital_io_enabled = false;

@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![REUSE status](https://api.reuse.software/badge/github.com/gnss-sdr/gnss-sdr)](https://api.reuse.software/info/github.com/gnss-sdr/gnss-sdr)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 **Welcome to GNSS-SDR!**
 
@@ -292,9 +292,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget http://sourceforge.net/projects/arma/files/armadillo-10.2.1.tar.xz
-$ tar xvfz armadillo-10.2.1.tar.xz
-$ cd armadillo-10.2.1
+$ wget http://sourceforge.net/projects/arma/files/armadillo-10.3.0.tar.xz
+$ tar xvfz armadillo-10.3.0.tar.xz
+$ cd armadillo-10.3.0
 $ cmake .
 $ make
 $ sudo make install
@@ -395,9 +395,9 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ```
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.15.5/protobuf-cpp-3.15.5.tar.gz
-$ tar xvfz protobuf-cpp-3.15.5.tar.gz
-$ cd protobuf-3.15.5
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.15.7/protobuf-cpp-3.15.7.tar.gz
+$ tar xvfz protobuf-cpp-3.15.7.tar.gz
+$ cd protobuf-3.15.7
 $ ./autogen.sh
 $ ./configure
 $ make

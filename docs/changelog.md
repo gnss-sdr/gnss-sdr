@@ -68,6 +68,9 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Replace `Receiver.sources_count` configuration parameter name by
   `GNSS-SDR.num_sources`. The former parameter name is still read to ensure
   backward compatibility with configuration files using that nomenclature.
+- Fix bug in searching for gr-iio when CMake was re-run several times with
+  different settings for the `-DENABLE_FMCOMMS2` or `-DENABLE_PLUTOSDR` building
+  options.
 
 &nbsp;
 

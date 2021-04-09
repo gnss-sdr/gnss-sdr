@@ -208,6 +208,9 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_state0.reserve(max_states);
     d_state1.reserve(max_states);
 
+    d_inav_nav.init_PRN(d_satellite.get_PRN());
+    d_first_eph_sent = false;
+
     // create appropriate transition matrices
     nsc_transit(d_out0.data(), d_state0.data(), 0, g_encoder.data(), d_KK, d_nn);
     nsc_transit(d_out1.data(), d_state1.data(), 1, g_encoder.data(), d_KK, d_nn);
@@ -354,7 +357,19 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                     std::cout << TEXT_BLUE << "New Galileo E5b I/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
                 }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+            d_first_eph_sent = true;  // do not send reduced CED anymore, since we have the full ephemeris set
         }
+    else
+        {
+            // If we still do not have ephemeris, check if we have a reduced CED
+            if ((d_band == '1') && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))
+                {
+                    const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_reduced_ced());
+                    std::cout << "New Galileo E1 I/NAV reduced CED message received in channel " << d_channel << " from satellite " << d_satellite << '\n';
+                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                }
+        }
+
     if (d_inav_nav.have_new_iono_and_GST() == true)
         {
             // get object for this SV (mandatory)

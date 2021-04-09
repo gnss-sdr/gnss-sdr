@@ -139,6 +139,7 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_first_eph_sent;
 };
 
 

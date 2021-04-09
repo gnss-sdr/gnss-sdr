@@ -10,20 +10,13 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
-### Improvements in Portability:
+### Improvements in Availability:
 
-- Avoid collision of the `cpu_features` library when installing the
-  `volk_gnsssdr` library by its own, and VOLK has already installed its version.
-  Added a new building option `ENABLE_OWN_CPUFEATURES`, defaulting to `ON` when
-  building `gnss-sdr` but defaulting to `OFF` when building a stand-alone
-  version of `volk_gnsssdr`. When this building option is set to `ON`, it forces
-  the building of the local version of the cpu_features library, regardless of
-  whether it is already installed or not.
-- Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
-- Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
-  Boost >= 1.74.
-- Fix linking of the `<filesystem>` library when using GCC 8.x and GNU Radio >=
-  3.8.
+- Added the reading of reduced clock and ephemeris data (CED) in the Galileo E1B
+  INAV message introduced in Galileo ICD v2.0. If the reduced CED is available
+  before the full ephemeris set, it is used for PVT computation until the full
+  set has not yet been received. This can contribute to shorten the
+  Time-To-First-Fix.
 
 ### Improvements in Maintainability:
 
@@ -45,6 +38,21 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Added a base class for GNSS ephemeris, saving some duplicated code and
   providing a common nomenclature for ephemeris' parameters. New generated XML
   files make use of the new parameters' name.
+
+### Improvements in Portability:
+
+- Avoid collision of the `cpu_features` library when installing the
+  `volk_gnsssdr` library by its own, and VOLK has already installed its version.
+  Added a new building option `ENABLE_OWN_CPUFEATURES`, defaulting to `ON` when
+  building `gnss-sdr` but defaulting to `OFF` when building a stand-alone
+  version of `volk_gnsssdr`. When this building option is set to `ON`, it forces
+  the building of the local version of the cpu_features library, regardless of
+  whether it is already installed or not.
+- Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
+- Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
+  Boost >= 1.74.
+- Fix linking of the `<filesystem>` library when using GCC 8.x and GNU Radio >=
+  3.8.
 
 ### Improvements in Usability:
 

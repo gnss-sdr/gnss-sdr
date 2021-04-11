@@ -55,7 +55,7 @@ public:
      * \brief Compute CRC for GLONASS GNAV strings
      * \param bits Bits of the string message where to compute CRC
      */
-    bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS> bits) const;
+    bool CRC_test(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits) const;
 
     /*!
      * \brief Computes the frame number being decoded given the satellite slot number
@@ -170,9 +170,9 @@ public:
     }
 
 private:
-    uint64_t read_navigation_unsigned(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    int64_t read_navigation_signed(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    bool read_navigation_bool(std::bitset<GLONASS_GNAV_STRING_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_navigation_unsigned(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    int64_t read_navigation_signed(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    bool read_navigation_bool(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
 
     Glonass_Gnav_Ephemeris gnav_ephemeris{};                   // Ephemeris information decoded
     Glonass_Gnav_Utc_Model gnav_utc_model{};                   // UTC model information

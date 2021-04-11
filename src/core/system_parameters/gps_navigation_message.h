@@ -135,9 +135,9 @@ public:
     bool satellite_validation();
 
 private:
-    uint64_t read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    int64_t read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    bool read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    int64_t read_navigation_signed(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    bool read_navigation_bool(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     void print_gps_word_bytes(uint32_t GPS_word) const;
 
     std::map<int32_t, int32_t> almanacHealth;  //!< Map that stores the health information stored in the almanac

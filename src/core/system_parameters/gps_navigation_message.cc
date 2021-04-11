@@ -46,7 +46,7 @@ void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word) const
 }
 
 
-bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
+bool Gps_Navigation_Message::read_navigation_bool(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
 
@@ -62,7 +62,7 @@ bool Gps_Navigation_Message::read_navigation_bool(std::bitset<GPS_SUBFRAME_BITS>
 }
 
 
-uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
+uint64_t Gps_Navigation_Message::read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     const int32_t num_of_slices = parameter.size();
@@ -81,7 +81,7 @@ uint64_t Gps_Navigation_Message::read_navigation_unsigned(std::bitset<GPS_SUBFRA
 }
 
 
-int64_t Gps_Navigation_Message::read_navigation_signed(std::bitset<GPS_SUBFRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
+int64_t Gps_Navigation_Message::read_navigation_signed(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
     const int32_t num_of_slices = parameter.size();

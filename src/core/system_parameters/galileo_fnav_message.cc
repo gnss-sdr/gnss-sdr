@@ -50,7 +50,7 @@ void Galileo_Fnav_Message::split_page(const std::string& page_string)
 }
 
 
-bool Galileo_Fnav_Message::_CRC_test(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, uint32_t checksum) const
+bool Galileo_Fnav_Message::_CRC_test(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, uint32_t checksum) const
 {
     CRC_Galileo_FNAV_type CRC_Galileo;
 
@@ -279,7 +279,7 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
 }
 
 
-uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
+uint64_t Galileo_Fnav_Message::read_navigation_unsigned(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     const int num_of_slices = parameter.size();
@@ -298,7 +298,7 @@ uint64_t Galileo_Fnav_Message::read_navigation_unsigned(std::bitset<GALILEO_FNAV
 }
 
 
-int64_t Galileo_Fnav_Message::read_navigation_signed(std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
+int64_t Galileo_Fnav_Message::read_navigation_signed(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
     const int num_of_slices = parameter.size();

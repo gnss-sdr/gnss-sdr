@@ -138,9 +138,9 @@ public:
     }
 
 private:
-    uint64_t read_navigation_unsigned(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    int64_t read_navigation_signed(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    bool read_navigation_bool(std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_navigation_unsigned(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    int64_t read_navigation_signed(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    bool read_navigation_bool(const std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     void print_beidou_word_bytes(uint32_t BEIDOU_word) const;
 
     // broadcast orbit 1

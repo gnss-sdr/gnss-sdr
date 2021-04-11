@@ -599,6 +599,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // 1. Copy the current tracking output
     current_symbol = in[0][0];
     d_band = current_symbol.Signal[0];
+    if (d_band == '1')
+        {
+            d_inav_nav.enable_reed_solomon();
+        }
 
     // add new symbol to the symbol queue
     switch (d_frame_type)

@@ -283,26 +283,213 @@ TEST(ReedSolomonE1BTest, Decode31Errors)
 }
 
 
-TEST(ReedSolomonE1BTest, Decode33ErrorsWithErasure)
+TEST(ReedSolomonE1BTest, DecodeErasureCorrectionCase1)
 {
     // ICD 2.0 Annex F
     const std::vector<uint8_t> information_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162};
 
     std::vector<uint8_t> code_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162, 238, 77, 12, 72, 235, 21, 148, 213, 230, 54, 183, 82, 49, 104, 12, 228, 150, 157, 220, 112, 236, 187, 63, 31, 175, 47, 210, 164, 17, 104, 98, 46, 252, 165, 194, 57, 26, 213, 14, 133, 176, 148, 34, 9, 167, 43, 204, 198, 25, 164, 233, 55, 153, 31, 237, 84, 212, 76, 137, 242};
 
-    // Introduce 33 errors
-    for (int i = 0; i < 66; i += 2)
+    std::vector<int> erasure_positions;
+    erasure_positions.reserve(60);  // nroots is the maximum number of erasure positions
+
+    // We have received Word 2, Word 4, Word 18, Word 20
+    // So we have: c_1, c_3, g_1, g_3
+
+    // Delete c_0
+    // We always know c_{0,0}, so we start at 1
+    for (int i = 1; i < 16; i++)
         {
             code_vector[i] = 0;
+            erasure_positions.push_back(i);
         }
 
-    std::vector<int> erasure_positions{2, 4, 16, 18, 22, 54};
+    // Delete c_2
+    for (int i = 30; i < 44; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i);
+        }
+
+    // Delete g_0
+    for (int i = 58; i < 73; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);  // erasure position refers to the unshortened code, so we add 137
+        }
+
+    // Delete g_2
+    for (int i = 88; i < 103; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);
+        }
 
     auto rs = std::make_unique<ReedSolomon>("E1B");
 
     int result = rs->decode(code_vector, erasure_positions);
 
-    EXPECT_TRUE(result == 33);
+    EXPECT_TRUE(result == 59);
+
+    std::vector<uint8_t> decoded(code_vector.begin(), code_vector.begin() + 58);
+
+    EXPECT_TRUE(information_vector == decoded);
+}
+
+
+TEST(ReedSolomonE1BTest, DecodeErasureCorrectionCase2)
+{
+    // ICD 2.0 Annex F
+    const std::vector<uint8_t> information_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162};
+
+    std::vector<uint8_t> code_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162, 238, 77, 12, 72, 235, 21, 148, 213, 230, 54, 183, 82, 49, 104, 12, 228, 150, 157, 220, 112, 236, 187, 63, 31, 175, 47, 210, 164, 17, 104, 98, 46, 252, 165, 194, 57, 26, 213, 14, 133, 176, 148, 34, 9, 167, 43, 204, 198, 25, 164, 233, 55, 153, 31, 237, 84, 212, 76, 137, 242};
+
+    std::vector<int> erasure_positions;
+    erasure_positions.reserve(60);  // nroots is the maximum number of erasure positions
+
+    // We have received Word 2, Word 4, Word 17, Word 19
+    // So we have: c_1, c_3, g_0, g_2
+
+    // Delete c_0
+    // We always know c_{0,0}, so we start at 1
+    for (int i = 1; i < 16; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i);
+        }
+
+    // Delete c_2
+    for (int i = 30; i < 44; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i);
+        }
+
+    // Delete g_1
+    for (int i = 73; i < 88; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);  // erasure position refers to the unshortened code, so we add 137
+        }
+
+    // Delete g_3
+    for (int i = 103; i < 118; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);
+        }
+
+    auto rs = std::make_unique<ReedSolomon>("E1B");
+
+    int result = rs->decode(code_vector, erasure_positions);
+
+    EXPECT_TRUE(result == 59);
+
+    std::vector<uint8_t> decoded(code_vector.begin(), code_vector.begin() + 58);
+
+    EXPECT_TRUE(information_vector == decoded);
+}
+
+
+TEST(ReedSolomonE1BTest, DecodeErasureCorrectionCase3)
+{
+    // ICD 2.0 Annex F
+    const std::vector<uint8_t> information_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162};
+
+    std::vector<uint8_t> code_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162, 238, 77, 12, 72, 235, 21, 148, 213, 230, 54, 183, 82, 49, 104, 12, 228, 150, 157, 220, 112, 236, 187, 63, 31, 175, 47, 210, 164, 17, 104, 98, 46, 252, 165, 194, 57, 26, 213, 14, 133, 176, 148, 34, 9, 167, 43, 204, 198, 25, 164, 233, 55, 153, 31, 237, 84, 212, 76, 137, 242};
+
+    std::vector<int> erasure_positions;
+    erasure_positions.reserve(60);  // nroots is the maximum number of erasure positions
+
+    // We have received Word 1, Word 3, Word 17, Word 19
+    // So we have: c_0, c_2, g_0, g_2
+
+    // Delete c_1
+    for (int i = 16; i < 30; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i);
+        }
+
+    // Delete c_3
+    for (int i = 44; i < 58; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i);
+        }
+
+    // Delete g_1
+    for (int i = 73; i < 88; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);  // erasure position refers to the unshortened code, so we add 137
+        }
+
+    // Delete g_3
+    for (int i = 103; i < 118; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);
+        }
+
+    auto rs = std::make_unique<ReedSolomon>("E1B");
+
+    int result = rs->decode(code_vector, erasure_positions);
+
+    EXPECT_TRUE(result == 58);
+
+    std::vector<uint8_t> decoded(code_vector.begin(), code_vector.begin() + 58);
+
+    EXPECT_TRUE(information_vector == decoded);
+}
+
+
+TEST(ReedSolomonE1BTest, DecodeErasureCorrectionCase4)
+{
+    // ICD 2.0 Annex F
+    const std::vector<uint8_t> information_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162};
+
+    std::vector<uint8_t> code_vector = {147, 109, 66, 23, 234, 140, 74, 234, 49, 89, 241, 253, 169, 161, 89, 93, 75, 142, 83, 102, 98, 218, 14, 197, 155, 151, 43, 181, 9, 163, 142, 111, 8, 118, 21, 47, 135, 139, 108, 215, 51, 147, 185, 52, 17, 151, 97, 102, 238, 71, 83, 114, 47, 80, 67, 199, 215, 162, 238, 77, 12, 72, 235, 21, 148, 213, 230, 54, 183, 82, 49, 104, 12, 228, 150, 157, 220, 112, 236, 187, 63, 31, 175, 47, 210, 164, 17, 104, 98, 46, 252, 165, 194, 57, 26, 213, 14, 133, 176, 148, 34, 9, 167, 43, 204, 198, 25, 164, 233, 55, 153, 31, 237, 84, 212, 76, 137, 242};
+
+    std::vector<int> erasure_positions;
+    erasure_positions.reserve(60);  // nroots is the maximum number of erasure positions
+
+    // We have received Word 1, Word 3, Word 18, Word 20
+    // So we have: c_0, c_2, g_1, g_3
+
+    // Delete c_1
+    for (int i = 16; i < 30; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i);
+        }
+
+    // Delete c_3
+    for (int i = 44; i < 58; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i);
+        }
+
+    // Delete g_0
+    for (int i = 58; i < 73; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);  // erasure position refers to the unshortened code, so we add 137
+        }
+
+    // Delete g_2
+    for (int i = 88; i < 103; i++)
+        {
+            code_vector[i] = 0;
+            erasure_positions.push_back(i + 137);
+        }
+
+    auto rs = std::make_unique<ReedSolomon>("E1B");
+
+    int result = rs->decode(code_vector, erasure_positions);
+
+    EXPECT_TRUE(result == 58);
 
     std::vector<uint8_t> decoded(code_vector.begin(), code_vector.begin() + 58);
 

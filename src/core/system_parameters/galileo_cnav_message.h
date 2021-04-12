@@ -67,17 +67,17 @@ public:
     }
 
 private:
-    bool CRC_test(std::bitset<GALILEO_CNAV_BITS_FOR_CRC> bits, uint32_t checksum) const;
+    bool CRC_test(const std::bitset<GALILEO_CNAV_BITS_FOR_CRC>& bits, uint32_t checksum) const;
     void read_HAS_page_header(const std::string& page_string);
     void process_HAS_page(const std::string& page_string);
     void read_MT1_header(const std::string& message_string);
     void read_MT1_body(const std::string& message_string);
     int decode_message_type1();
 
-    uint8_t read_has_page_header_parameter(std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const;
-    uint8_t read_has_message_header_parameter_uint8(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const;
-    uint16_t read_has_message_header_parameter_uint16(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const;
-    bool read_has_message_header_parameter_bool(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const;
+    uint8_t read_has_page_header_parameter(const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
+    uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
+    uint16_t read_has_message_header_parameter_uint16(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
+    bool read_has_message_header_parameter_bool(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
 
     uint8_t read_has_message_body_uint8(const std::string& bits) const;
     uint16_t read_has_message_body_uint16(const std::string& bits) const;

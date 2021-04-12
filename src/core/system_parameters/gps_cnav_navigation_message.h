@@ -49,7 +49,7 @@ public:
      */
     Gps_CNAV_Navigation_Message();
 
-    void decode_page(std::bitset<GPS_CNAV_DATA_PAGE_BITS> data_bits);
+    void decode_page(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& data_bits);
 
     /*!
      * \brief Obtain a GPS SV Ephemeris class filled with current SV data
@@ -82,9 +82,9 @@ public:
     bool have_new_ephemeris();
 
 private:
-    uint64_t read_navigation_unsigned(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    int64_t read_navigation_signed(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    bool read_navigation_bool(std::bitset<GPS_CNAV_DATA_PAGE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_navigation_unsigned(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    int64_t read_navigation_signed(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    bool read_navigation_bool(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
 
     Gps_CNAV_Ephemeris ephemeris_record{};
     Gps_CNAV_Iono iono_record{};

@@ -44,7 +44,7 @@
 class Galileo_Inav_Message
 {
 public:
-    Galileo_Inav_Message() = default;
+    Galileo_Inav_Message();
 
     /*
      * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
@@ -191,12 +191,25 @@ public:
         SV_ID_PRN_4 = prn;
     }
 
+    /*
+     * \brief Enable Reed-Solomon in Galileo E1B
+     */
+    inline void enable_reed_solomon()
+    {
+        enable_rs = true;
+    }
+
 private:
-    bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum) const;
-    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
-    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    bool CRC_test(const std::bitset<GALILEO_DATA_FRAME_BITS>& bits, uint32_t checksum) const;
+    bool read_navigation_bool(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_navigation_unsigned(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_page_type_unsigned(const std::bitset<GALILEO_PAGE_TYPE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    int64_t read_navigation_signed(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint8_t read_octet_unsigned(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    void read_page_1(const std::bitset<GALILEO_DATA_JK_BITS>& data_bits);
+    void read_page_2(const std::bitset<GALILEO_DATA_JK_BITS>& data_bits);
+    void read_page_3(const std::bitset<GALILEO_DATA_JK_BITS>& data_bits);
+    void read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& data_bits);
 
     std::string page_Even{};
 
@@ -349,18 +362,16 @@ private:
     double ced_af0red{};
     double ced_af1red{};
 
-    // Word types 17, 18, 19, 20: Reed-Solomon parity vector
-    std::vector<uint8_t> gamma_rs0{INAV_RS_SUBVECTOR_LENGTH, 0};
-    std::vector<uint8_t> gamma_rs1{INAV_RS_SUBVECTOR_LENGTH, 0};
-    std::vector<uint8_t> gamma_rs2{INAV_RS_SUBVECTOR_LENGTH, 0};
-    std::vector<uint8_t> gamma_rs3{INAV_RS_SUBVECTOR_LENGTH, 0};
-    std::vector<uint8_t> rs_parity_vector{INAV_RS_PARITY_VECTOR_LENGTH, 0};
+    double Galileo_satClkDrift{};
+
+    int32_t current_IODnav{};
+
+    std::vector<uint8_t> rs_buffer; // Reed-Solomon buffer
+
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};
     uint8_t IODnav_LSB19{};
     uint8_t IODnav_LSB20{};
-
-    double Galileo_satClkDrift{};
 
     bool flag_CRC_test{};
     bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received
@@ -387,6 +398,7 @@ private:
     bool flag_GGTO_4{};
 
     bool flag_CED{};
+    bool enable_rs{};
 };
 
 

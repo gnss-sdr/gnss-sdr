@@ -26,7 +26,7 @@
 using CRC_Galileo_CNAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
 
 
-bool Galileo_Cnav_Message::CRC_test(std::bitset<GALILEO_CNAV_BITS_FOR_CRC> bits, uint32_t checksum) const
+bool Galileo_Cnav_Message::CRC_test(const std::bitset<GALILEO_CNAV_BITS_FOR_CRC>& bits, uint32_t checksum) const
 {
     CRC_Galileo_CNAV_type CRC_Galileo;
 
@@ -568,7 +568,7 @@ void Galileo_Cnav_Message::read_MT1_body(const std::string& message_string)
 }
 
 
-uint8_t Galileo_Cnav_Message::read_has_page_header_parameter(std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const
+uint8_t Galileo_Cnav_Message::read_has_page_header_parameter(const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const
 {
     uint8_t value = 0U;
     for (int j = 0; j < parameter.second; j++)
@@ -583,7 +583,7 @@ uint8_t Galileo_Cnav_Message::read_has_page_header_parameter(std::bitset<GALILEO
 }
 
 
-uint8_t Galileo_Cnav_Message::read_has_message_header_parameter_uint8(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const
+uint8_t Galileo_Cnav_Message::read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const
 {
     uint8_t value = 0U;
     for (int j = 0; j < parameter.second; j++)
@@ -598,7 +598,7 @@ uint8_t Galileo_Cnav_Message::read_has_message_header_parameter_uint8(std::bitse
 }
 
 
-uint16_t Galileo_Cnav_Message::read_has_message_header_parameter_uint16(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const
+uint16_t Galileo_Cnav_Message::read_has_message_header_parameter_uint16(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const
 {
     uint16_t value = 0U;
     for (int j = 0; j < parameter.second; j++)
@@ -613,7 +613,7 @@ uint16_t Galileo_Cnav_Message::read_has_message_header_parameter_uint16(std::bit
 }
 
 
-bool Galileo_Cnav_Message::read_has_message_header_parameter_bool(std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> bits, const std::pair<int32_t, int32_t>& parameter) const
+bool Galileo_Cnav_Message::read_has_message_header_parameter_bool(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const
 {
     bool value = false;
     if (static_cast<int>(bits[GALILEO_CNAV_MT1_HEADER_BITS - parameter.first]) == 1)

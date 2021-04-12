@@ -268,6 +268,8 @@ const std::vector<std::pair<int32_t, int32_t>> CED_af1red_BIT({{123, 6}});
 const std::vector<std::pair<int32_t, int32_t>> RS_IODNAV_LSBS({{15, 2}});
 constexpr size_t INAV_RS_SUBVECTOR_LENGTH = 15;
 constexpr size_t INAV_RS_PARITY_VECTOR_LENGTH = 60;
+constexpr size_t INAV_RS_INFO_VECTOR_LENGTH = 58;
+constexpr size_t INAV_RS_BUFFER_LENGTH = 118;
 constexpr int32_t BITS_IN_OCTET = 8;
 constexpr int32_t FIRST_RS_BIT = 7;
 constexpr int32_t FIRST_RS_BIT_AFTER_IODNAV = 17;

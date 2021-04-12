@@ -19,6 +19,7 @@
 #define GNSS_SDR_GALILEO_INAV_H
 
 #include "MATH_CONSTANTS.h"
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 #include <vector>
@@ -245,12 +246,44 @@ const std::vector<std::pair<int32_t, int32_t>> T_0_G_10_BIT({{115, 8}});
 constexpr int32_t T_0_G_10_LSB = 3600;
 const std::vector<std::pair<int32_t, int32_t>> WN_0_G_10_BIT({{123, 6}});
 
+/* Page 16 */
+constexpr double CED_DeltaAred_LSB = TWO_P8;
+const std::vector<std::pair<int32_t, int32_t>> CED_DeltaAred_BIT({{7, 5}});
+constexpr double CED_exred_LSB = TWO_N22;
+const std::vector<std::pair<int32_t, int32_t>> CED_exred_BIT({{12, 13}});
+constexpr double CED_eyred_LSB = TWO_N22;
+const std::vector<std::pair<int32_t, int32_t>> CED_eyred_BIT({{25, 13}});
+constexpr double CED_Deltai0red_LSB = TWO_N22;
+const std::vector<std::pair<int32_t, int32_t>> CED_Deltai0red_BIT({{38, 17}});
+constexpr double CED_Omega0red_LSB = TWO_N22;
+const std::vector<std::pair<int32_t, int32_t>> CED_Omega0red_BIT({{55, 23}});
+constexpr double CED_lambda0red_LSB = TWO_N22;
+const std::vector<std::pair<int32_t, int32_t>> CED_lambda0red_BIT({{78, 23}});
+constexpr double CED_af0red_LSB = TWO_N26;
+const std::vector<std::pair<int32_t, int32_t>> CED_af0red_BIT({{101, 22}});
+constexpr double CED_af1red_LSB = TWO_N35;
+const std::vector<std::pair<int32_t, int32_t>> CED_af1red_BIT({{123, 6}});
+
+/* Pages 17, 18, 19, 20 */
+const std::vector<std::pair<int32_t, int32_t>> RS_IODNAV_LSBS({{15, 2}});
+constexpr size_t INAV_RS_SUBVECTOR_LENGTH = 15;
+constexpr size_t INAV_RS_PARITY_VECTOR_LENGTH = 60;
+constexpr int32_t BITS_IN_OCTET = 8;
+constexpr int32_t FIRST_RS_BIT = 7;
+constexpr int32_t FIRST_RS_BIT_AFTER_IODNAV = 17;
 
 /* Page 0 */
 const std::vector<std::pair<int32_t, int32_t>> TIME_0_BIT({{7, 2}});
 const std::vector<std::pair<int32_t, int32_t>> WN_0_BIT({{97, 12}});
 const std::vector<std::pair<int32_t, int32_t>> TOW_0_BIT({{109, 20}});
 
+/* Secondary Synchronization Patters */
+constexpr char GALILEO_INAV_PLAIN_SSP1[9] = "00000100";
+constexpr char GALILEO_INAV_PLAIN_SSP2[9] = "00101011";
+constexpr char GALILEO_INAV_PLAIN_SSP3[9] = "00101111";
+constexpr char GALILEO_INAV_ENCODED_SSP1[17] = "1110100100100101";
+constexpr char GALILEO_INAV_ENCODED_SSP2[17] = "0110110001001110";
+constexpr char GALILEO_INAV_ENCODED_SSP3[17] = "1101000000111110";
 
 /** \} */
 /** \} */

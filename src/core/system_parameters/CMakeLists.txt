@@ -17,6 +17,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     galileo_cnav_message.cc
     galileo_fnav_message.cc
     galileo_inav_message.cc
+    galileo_reduced_ced.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
     sbas_ephemeris.cc
@@ -52,6 +53,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_fnav_message.h
     galileo_has_data.h
     galileo_inav_message.h
+    galileo_reduced_ced.h
     sbas_ephemeris.h
     gps_cnav_ephemeris.h
     gps_cnav_navigation_message.h

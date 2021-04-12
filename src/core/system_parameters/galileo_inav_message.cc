@@ -17,6 +17,7 @@
  */
 
 #include "galileo_inav_message.h"
+#include "galileo_reduced_ced.h"
 #include <boost/crc.hpp>             // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>  // for boost::dynamic_bitset
 #include <glog/logging.h>            // for DLOG
@@ -55,7 +56,7 @@ bool Galileo_Inav_Message::CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, u
 }
 
 
-uint64_t Galileo_Inav_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
+uint64_t Galileo_Inav_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     const int32_t num_of_slices = parameter.size();
@@ -74,7 +75,7 @@ uint64_t Galileo_Inav_Message::read_navigation_unsigned(std::bitset<GALILEO_DATA
 }
 
 
-uint64_t Galileo_Inav_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
+uint64_t Galileo_Inav_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
     const int32_t num_of_slices = parameter.size();
@@ -93,7 +94,7 @@ uint64_t Galileo_Inav_Message::read_page_type_unsigned(std::bitset<GALILEO_PAGE_
 }
 
 
-int64_t Galileo_Inav_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
+int64_t Galileo_Inav_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
     const int32_t num_of_slices = parameter.size();
@@ -124,7 +125,7 @@ int64_t Galileo_Inav_Message::read_navigation_signed(std::bitset<GALILEO_DATA_JK
 }
 
 
-bool Galileo_Inav_Message::read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const
+bool Galileo_Inav_Message::read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
     if (static_cast<int>(static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first])) == 1)
@@ -258,6 +259,18 @@ bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac
             return true;
         }
 
+    return false;
+}
+
+
+bool Galileo_Inav_Message::have_new_reduced_ced()
+{
+    // Check if we have a new CED data set stored in the galileo navigation class
+    if ((flag_CED == true) && (WN_5 > 0))  // We need the week number to compute GST
+        {
+            flag_CED = false;
+            return true;
+        }
     return false;
 }
 
@@ -413,6 +426,42 @@ Galileo_Almanac_Helper Galileo_Inav_Message::get_almanac() const
     almanac.E1B_HS_10 = E1B_HS_10;
 
     return almanac;
+}
+
+
+Galileo_Ephemeris Galileo_Inav_Message::get_reduced_ced() const
+{
+    Galileo_Reduced_CED ced{};
+    ced.PRN = SV_ID_PRN_4;
+    if (TOW_5 > TOW_6)
+        {
+            ced.TOTRedCED = WN_5 * 604800 + TOW_5 + 4;  // According to ICD 2.0, Table 38
+        }
+    else
+        {
+            ced.TOTRedCED = WN_5 * 604800 + TOW_6 + 10;  // According to ICD 2.0, Table 38
+        }
+    std::array<int32_t, 4> iod_navs = {IOD_nav_1, IOD_nav_2, IOD_nav_3, IOD_nav_4};
+    int32_t max_IOD_nav = IOD_nav_1;
+    for (int i = 1; i < 4; i++)
+        {
+            if (iod_navs[i] > max_IOD_nav)
+                {
+                    max_IOD_nav = iod_navs[i];
+                }
+        }
+    ced.IODnav = max_IOD_nav;
+    ced.DeltaAred = ced_DeltaAred;
+    ced.exred = ced_exred;
+    ced.eyred = ced_eyred;
+    ced.Deltai0red = ced_Deltai0red;
+    ced.Omega0red = ced_Omega0red;
+    ced.lambda0red = ced_lambda0red;
+    ced.af0red = ced_af0red;
+    ced.af1red = ced_af1red;
+
+    Galileo_Ephemeris eph = ced.compute_eph();
+    return eph;
 }
 
 
@@ -749,6 +798,99 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_almanac_4 = true;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             break;
+
+        case 16:  // Word type 16: Reduced Clock and Ephemeris Data (CED) parameters
+            DLOG(INFO) << "Word type 16 arrived";
+            ced_DeltaAred = static_cast<double>(read_navigation_signed(data_jk_bits, CED_DeltaAred_BIT));
+            ced_DeltaAred = ced_DeltaAred * CED_DeltaAred_LSB;
+            DLOG(INFO) << "DeltaAred = " << ced_DeltaAred;
+            ced_exred = static_cast<double>(read_navigation_signed(data_jk_bits, CED_exred_BIT));
+            ced_exred = ced_exred * CED_exred_LSB;
+            DLOG(INFO) << "exred = " << ced_exred;
+            ced_eyred = static_cast<double>(read_navigation_signed(data_jk_bits, CED_eyred_BIT));
+            ced_eyred = ced_eyred * CED_eyred_LSB;
+            DLOG(INFO) << "eyred = " << ced_eyred;
+            ced_Deltai0red = static_cast<double>(read_navigation_signed(data_jk_bits, CED_Deltai0red_BIT));
+            ced_Deltai0red = ced_Deltai0red * CED_Deltai0red_LSB;
+            DLOG(INFO) << "Deltai0red = " << ced_Deltai0red;
+            ced_Omega0red = static_cast<double>(read_navigation_signed(data_jk_bits, CED_Omega0red_BIT));
+            ced_Omega0red = ced_Omega0red * CED_Omega0red_LSB;
+            DLOG(INFO) << "Omega0red = " << ced_Omega0red;
+            ced_lambda0red = static_cast<double>(read_navigation_signed(data_jk_bits, CED_lambda0red_BIT));
+            ced_lambda0red = ced_lambda0red * CED_lambda0red_LSB;
+            DLOG(INFO) << "lambda0red = " << ced_lambda0red;
+            ced_af0red = static_cast<double>(read_navigation_signed(data_jk_bits, CED_af0red_BIT));
+            ced_af0red = ced_af0red * CED_af0red_LSB;
+            DLOG(INFO) << "af0red = " << ced_af0red;
+            ced_af1red = static_cast<double>(read_navigation_signed(data_jk_bits, CED_af1red_BIT));
+            ced_af1red = ced_af1red * CED_af1red_LSB;
+            DLOG(INFO) << "af1red = " << ced_af1red;
+            flag_CED = true;
+            break;
+
+        case 17:  // Word type 17: FEC2 Reed-Solomon for CED
+            {
+                std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
+                gamma_rs0[0] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                IODnav_LSB17 = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, RS_IODNAV_LSBS));
+                DLOG(INFO) << "IODnav 2 LSBs in Word type 17: " << static_cast<float>(IODnav_LSB17);
+                int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
+                for (size_t i = 1; i < INAV_RS_SUBVECTOR_LENGTH; i++)
+                    {
+                        gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
+                        gamma_rs0[i] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                        start_bit += BITS_IN_OCTET;
+                    }
+                break;
+            }
+
+        case 18:  // Word type 18: FEC2 Reed-Solomon for CED
+            {
+                std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
+                gamma_rs1[0] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                IODnav_LSB18 = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, RS_IODNAV_LSBS));
+                DLOG(INFO) << "IODnav 2 LSBs in Word type 18: " << static_cast<float>(IODnav_LSB18);
+                int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
+                for (size_t i = 1; i < INAV_RS_SUBVECTOR_LENGTH; i++)
+                    {
+                        gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
+                        gamma_rs1[i] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                        start_bit += BITS_IN_OCTET;
+                    }
+                break;
+            }
+
+        case 19:  // Word type 19: FEC2 Reed-Solomon for CED
+            {
+                std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
+                gamma_rs2[0] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                IODnav_LSB19 = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, RS_IODNAV_LSBS));
+                DLOG(INFO) << "IODnav 2 LSBs in Word type 19: " << static_cast<float>(IODnav_LSB19);
+                int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
+                for (size_t i = 1; i < INAV_RS_SUBVECTOR_LENGTH; i++)
+                    {
+                        gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
+                        gamma_rs2[i] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                        start_bit += BITS_IN_OCTET;
+                    }
+                break;
+            }
+
+        case 20:  // Word type 20: FEC2 Reed-Solomon for CED
+            {
+                std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
+                gamma_rs3[0] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                IODnav_LSB20 = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, RS_IODNAV_LSBS));
+                DLOG(INFO) << "IODnav 2 LSBs in Word type 20: " << static_cast<float>(IODnav_LSB20);
+                int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
+                for (size_t i = 1; i < INAV_RS_SUBVECTOR_LENGTH; i++)
+                    {
+                        gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
+                        gamma_rs3[i] = static_cast<uint8_t>(read_navigation_unsigned(data_jk_bits, gamma_octet_bits));
+                        start_bit += BITS_IN_OCTET;
+                    }
+                break;
+            }
 
         case 0:  // Word type 0: I/NAV Spare Word
             Time_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TIME_0_BIT));

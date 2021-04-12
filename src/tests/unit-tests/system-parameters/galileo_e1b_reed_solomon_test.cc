@@ -79,7 +79,7 @@ TEST(ReedSolomonE1BTest, EncodeWithCustomMatrix)
     const int nroots = 60;
     const int minpoly = 29;
     const int prim = 1;
-    const int fcr = 1;
+    const int fcr = 195;
     const int pad = 0;
     const int shortening = 137;
     const std::vector<uint8_t> genpoly_coeff;

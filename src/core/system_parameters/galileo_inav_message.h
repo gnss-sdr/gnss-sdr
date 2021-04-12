@@ -79,6 +79,11 @@ public:
     bool have_new_almanac();
 
     /*
+     * \brief Returns true if new Reduced CED parameters have arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_reduced_ced();
+
+    /*
      * \brief Returns a Galileo_Ephemeris object filled with the latest navigation data received
      */
     Galileo_Ephemeris get_ephemeris() const;
@@ -97,6 +102,11 @@ public:
      * \brief Returns a Galileo_Almanac_Helper object filled with the latest navigation data received
      */
     Galileo_Almanac_Helper get_almanac() const;
+
+    /*
+     * \brief Returns a Galileo_Ephemeris object filled with the latest reduced CED received
+     */
+    Galileo_Ephemeris get_reduced_ced() const;
 
     inline bool get_flag_CRC_test() const
     {
@@ -173,12 +183,20 @@ public:
         return WN_0G_10;
     }
 
+    /*
+     * \brief Initialize PRN field so we do not need to wait for page 4.
+     */
+    inline void init_PRN(uint32_t prn)
+    {
+        SV_ID_PRN_4 = prn;
+    }
+
 private:
     bool CRC_test(std::bitset<GALILEO_DATA_FRAME_BITS> bits, uint32_t checksum) const;
-    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
-    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
-    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
-    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t> >& parameter) const;
+    bool read_navigation_bool(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_navigation_unsigned(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    uint64_t read_page_type_unsigned(std::bitset<GALILEO_PAGE_TYPE_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
+    int64_t read_navigation_signed(std::bitset<GALILEO_DATA_JK_BITS> bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
 
     std::string page_Even{};
 
@@ -321,6 +339,27 @@ private:
     int32_t WN_0{};
     int32_t TOW_0{};
 
+    // Word type 16: Reduced Clock and Ephemeris Data (CED) parameters
+    double ced_DeltaAred{};
+    double ced_exred{};
+    double ced_eyred{};
+    double ced_Deltai0red{};
+    double ced_Omega0red{};
+    double ced_lambda0red{};
+    double ced_af0red{};
+    double ced_af1red{};
+
+    // Word types 17, 18, 19, 20: Reed-Solomon parity vector
+    std::vector<uint8_t> gamma_rs0{INAV_RS_SUBVECTOR_LENGTH, 0};
+    std::vector<uint8_t> gamma_rs1{INAV_RS_SUBVECTOR_LENGTH, 0};
+    std::vector<uint8_t> gamma_rs2{INAV_RS_SUBVECTOR_LENGTH, 0};
+    std::vector<uint8_t> gamma_rs3{INAV_RS_SUBVECTOR_LENGTH, 0};
+    std::vector<uint8_t> rs_parity_vector{INAV_RS_PARITY_VECTOR_LENGTH, 0};
+    uint8_t IODnav_LSB17{};
+    uint8_t IODnav_LSB18{};
+    uint8_t IODnav_LSB19{};
+    uint8_t IODnav_LSB20{};
+
     double Galileo_satClkDrift{};
 
     bool flag_CRC_test{};
@@ -346,6 +385,8 @@ private:
     bool flag_GGTO_2{};
     bool flag_GGTO_3{};
     bool flag_GGTO_4{};
+
+    bool flag_CED{};
 };
 
 

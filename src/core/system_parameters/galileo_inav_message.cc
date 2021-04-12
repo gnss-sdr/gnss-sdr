@@ -31,9 +31,9 @@ using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false
 
 Galileo_Inav_Message::Galileo_Inav_Message()
 {
-    rs_info_vector = std::vector<uint8_t>(INAV_RS_INFO_VECTOR_LENGTH, 0);
-    rs_parity_vector = std::vector<uint8_t>(INAV_RS_PARITY_VECTOR_LENGTH, 0);
+    rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
 }
+
 
 bool Galileo_Inav_Message::CRC_test(const std::bitset<GALILEO_DATA_FRAME_BITS>& bits, uint32_t checksum) const
 {
@@ -618,19 +618,19 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                             {
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_1;
-                                rs_info_vector = std::vector<uint8_t>(INAV_RS_INFO_VECTOR_LENGTH, 0);
+                                rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
                             }
 
                         // Store RS information vector C_{RS,0}
                         std::vector<std::pair<int32_t, int32_t>> info_octet_bits({{1, 6}, {15, 2}});
-                        rs_info_vector[0] = read_octet_unsigned(data_jk_bits, info_octet_bits);
+                        rs_buffer[0] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                         info_octet_bits = std::vector<std::pair<int32_t, int32_t>>({{7, BITS_IN_OCTET}});
-                        rs_info_vector[1] = read_octet_unsigned(data_jk_bits, info_octet_bits);
+                        rs_buffer[1] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = 2; i < 16; i++)
                             {
                                 info_octet_bits = std::vector<std::pair<int32_t, int32_t>>({{start_bit, BITS_IN_OCTET}});
-                                rs_info_vector[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
+                                rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }
@@ -651,16 +651,16 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                             {
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_2;
-                                rs_info_vector = std::vector<uint8_t>(INAV_RS_INFO_VECTOR_LENGTH, 0);
+                                rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
                             }
 
                         // Store RS information vector C_{RS,1}
-                        rs_info_vector[0] = 4 + current_IODnav % 4;  // we always know c_{0,0}
+                        rs_buffer[0] = 4 + current_IODnav % 4;  // we always know c_{0,0}
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = 16; i < 30; i++)
                             {
                                 std::vector<std::pair<int32_t, int32_t>> info_octet_bits({{start_bit, BITS_IN_OCTET}});
-                                rs_info_vector[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
+                                rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }
@@ -679,16 +679,16 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                             {
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_3;
-                                rs_info_vector = std::vector<uint8_t>(INAV_RS_INFO_VECTOR_LENGTH, 0);
+                                rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
                             }
 
                         // Store RS information vector C_{RS,2}
-                        rs_info_vector[0] = 4 + current_IODnav % 4;  // we always know c_{0,0}
+                        rs_buffer[0] = 4 + current_IODnav % 4;  // we always know c_{0,0}
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = 30; i < 44; i++)
                             {
                                 std::vector<std::pair<int32_t, int32_t>> info_octet_bits({{start_bit, BITS_IN_OCTET}});
-                                rs_info_vector[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
+                                rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }
@@ -708,16 +708,16 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                             {
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_4;
-                                rs_info_vector = std::vector<uint8_t>(INAV_RS_INFO_VECTOR_LENGTH, 0);
+                                rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
                             }
 
                         // Store RS information vector C_{RS,3}
-                        rs_info_vector[0] = 4 + current_IODnav % 4;  // we always know c_{0,0}
+                        rs_buffer[0] = 4 + current_IODnav % 4;  // we always know c_{0,0}
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = 44; i < INAV_RS_INFO_VECTOR_LENGTH; i++)
                             {
                                 std::vector<std::pair<int32_t, int32_t>> info_octet_bits({{start_bit, BITS_IN_OCTET}});
-                                rs_info_vector[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
+                                rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }
@@ -988,20 +988,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB17 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 17: " << static_cast<float>(IODnav_LSB17);
-                        if (IODnav_LSB17 != static_cast<uint8_t>((current_IODnav % 4)))
-                            {
-                                // IODnav changed, reset buffers
-                                current_IODnav = 0;
-                                rs_parity_vector = std::vector<uint8_t>(INAV_RS_PARITY_VECTOR_LENGTH, 0);
-                            }
                         // Store RS parity vector gamma_{RS,0}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
-                        rs_parity_vector[0] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                        rs_buffer[INAV_RS_INFO_VECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = 1; i < INAV_RS_SUBVECTOR_LENGTH; i++)
                             {
                                 gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
-                                rs_parity_vector[i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                                rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }
@@ -1014,20 +1008,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB18 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 18: " << static_cast<float>(IODnav_LSB18);
-                        if (IODnav_LSB18 != static_cast<uint8_t>((current_IODnav % 4)))
-                            {
-                                // IODnav changed, reset buffers
-                                current_IODnav = 0;
-                                rs_parity_vector = std::vector<uint8_t>(INAV_RS_PARITY_VECTOR_LENGTH, 0);
-                            }
                         // Store RS parity vector gamma_{RS,1}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
-                        rs_parity_vector[INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                        rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = INAV_RS_SUBVECTOR_LENGTH + 1; i < 2 * INAV_RS_SUBVECTOR_LENGTH; i++)
                             {
                                 gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
-                                rs_parity_vector[i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                                rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }
@@ -1040,20 +1028,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB19 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 19: " << static_cast<float>(IODnav_LSB19);
-                        if (IODnav_LSB19 != static_cast<uint8_t>((current_IODnav % 4)))
-                            {
-                                // IODnav changed, reset buffers
-                                current_IODnav = 0;
-                                rs_parity_vector = std::vector<uint8_t>(INAV_RS_PARITY_VECTOR_LENGTH, 0);
-                            }
                         // Store RS parity vector gamma_{RS,2}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
-                        rs_parity_vector[2 * INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                        rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + 2 * INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = 2 * INAV_RS_SUBVECTOR_LENGTH + 1; i < 3 * INAV_RS_SUBVECTOR_LENGTH; i++)
                             {
                                 gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
-                                rs_parity_vector[i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                                rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }
@@ -1066,20 +1048,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB20 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 20: " << static_cast<float>(IODnav_LSB20);
-                        if (IODnav_LSB20 != static_cast<uint8_t>((current_IODnav % 4)))
-                            {
-                                // IODnav changed, reset buffers
-                                current_IODnav = 0;
-                                rs_parity_vector = std::vector<uint8_t>(INAV_RS_PARITY_VECTOR_LENGTH, 0);
-                            }
                         // Store RS parity vector gamma_{RS,4}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
-                        rs_parity_vector[3 * INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                        rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + 3 * INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                         int32_t start_bit = FIRST_RS_BIT_AFTER_IODNAV;
                         for (size_t i = 3 * INAV_RS_SUBVECTOR_LENGTH + 1; i < 4 * INAV_RS_SUBVECTOR_LENGTH; i++)
                             {
                                 gamma_octet_bits[0] = std::pair<int32_t, int32_t>({start_bit, BITS_IN_OCTET});
-                                rs_parity_vector[i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
+                                rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
                     }

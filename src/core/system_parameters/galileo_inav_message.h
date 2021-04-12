@@ -366,11 +366,7 @@ private:
 
     int32_t current_IODnav{};
 
-    // Word types 1, 2, 3, 4: Reed-Solomon information vector
-    std::vector<uint8_t> rs_info_vector;
-
-    // Word types 17, 18, 19, 20: Reed-Solomon parity vector
-    std::vector<uint8_t> rs_parity_vector;
+    std::vector<uint8_t> rs_buffer; // Reed-Solomon buffer
 
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};

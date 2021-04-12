@@ -118,6 +118,8 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     d_flag_PLL_180_deg_phase_locked = false;
     d_prev_GPS_frame_4bytes = 0;
     d_symbol_history.set_capacity(d_required_symbols);
+
+    set_tag_propagation_policy(TPP_DONT);  //no tag propagation, the time tag will be adjusted and regenerated in work()
 }
 
 
@@ -350,6 +352,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     current_symbol = in[0][0];
     // add new symbol to the symbol queue
     d_symbol_history.push_back(current_symbol.Prompt_I);
+
     d_sample_counter++;  // count for the processed symbols
     consume_each(1);
     d_flag_preamble = false;
@@ -517,6 +520,33 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GNSS_PI;
                 }
+
+
+            //**************** time tags ****************
+            std::vector<gr::tag_t> tags_vec;
+            this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + 1);
+            for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+                {
+                    try
+                        {
+                            if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+                                {
+                                    const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+                                    std::cout << "[" << this->nitems_written(0) + 1 << "] TLM RX TimeTag Week: " << timetag->week << ", TOW: " << timetag->tow_ms << " [ms], TOW fraction: " << timetag->tow_ms_fraction
+                                              << " [ms], DELTA TLM TOW: " << static_cast<double>(timetag->tow_ms - current_symbol.TOW_at_current_symbol_ms) + timetag->tow_ms_fraction << " [ms] \n";
+                                }
+                            else
+                                {
+                                    std::cout << "hash code not match\n";
+                                }
+                        }
+                    catch (const boost::bad_any_cast &e)
+                        {
+                            std::cout << "msg Bad any_cast: " << e.what();
+                        }
+                }
+
+            //************* end time tags **************
 
             if (d_dump == true)
                 {

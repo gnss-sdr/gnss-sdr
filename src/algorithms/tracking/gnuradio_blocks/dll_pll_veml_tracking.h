@@ -22,6 +22,7 @@
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
+#include "gnss_time.h"                //for timetags produced by File_Timestamp_Signal_Source
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
@@ -83,6 +84,7 @@ private:
     void log_data();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
+    int64_t uint64diff(uint64_t first, uint64_t second);
     int32_t save_matfile() const;
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
@@ -163,8 +165,11 @@ private:
 
     std::ofstream d_dump_file;
 
-    uint64_t d_sample_counter;
+    //uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
+    GnssTime d_last_timetag;
+    uint64_t d_last_timetag_samplecounter;
+    bool d_timetag_waiting;
 
     float *d_prompt_data_shift;
     float d_rem_carr_phase_rad;

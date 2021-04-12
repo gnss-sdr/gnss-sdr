@@ -22,7 +22,8 @@ public:
     //time_t time;         /* time (s) expressed by standard time_t */
     int week; /*!< GPS week number (since January 1980) */
     //double sec;          /*!< second inside the GPS \a week */
-    int tow_ms; /* time of week [ms]*/
+    int tow_ms;             /* time of week [ms]*/
+    double tow_ms_fraction; /* tow ms fractional part [ms]*/
 
     template <class Archive>
 

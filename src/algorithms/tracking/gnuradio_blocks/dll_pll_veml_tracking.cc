@@ -496,7 +496,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_rem_carr_phase_rad = 0.0;
 
     // sample synchronization
-    d_sample_counter = 0ULL;
+    //d_sample_counter = 0ULL;
     d_acq_sample_stamp = 0ULL;
 
     d_current_prn_length_samples = static_cast<int32_t>(d_trk_parameters.vector_length);
@@ -588,6 +588,10 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
     d_corrected_doppler = false;
     d_acc_carrier_phase_initialized = false;
+
+    d_last_timetag_samplecounter = 0;
+    d_timetag_waiting = false;
+    set_tag_propagation_policy(TPP_DONT);  //no tag propagation, the time tag will be adjusted and regenerated in work()
 }
 
 
@@ -1390,7 +1394,7 @@ void dll_pll_veml_tracking::log_data()
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_I), sizeof(float));
                     d_dump_file.write(reinterpret_cast<char *>(&prompt_Q), sizeof(float));
                     // PRN start sample stamp
-                    tmp_long_int = d_sample_counter + static_cast<uint64_t>(d_current_prn_length_samples);
+                    tmp_long_int = this->nitems_read(0) + static_cast<uint64_t>(d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_long_int), sizeof(uint64_t));
                     // accumulated carrier phase
                     tmp_float = static_cast<float>(d_acc_carrier_phase_rad);
@@ -1424,7 +1428,7 @@ void dll_pll_veml_tracking::log_data()
                     // AUX vars (for debug purposes)
                     tmp_float = static_cast<float>(d_rem_code_phase_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_float), sizeof(float));
-                    tmp_double = static_cast<double>(d_sample_counter + d_current_prn_length_samples);
+                    tmp_double = static_cast<double>(this->nitems_read(0) + d_current_prn_length_samples);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
@@ -1682,6 +1686,13 @@ void dll_pll_veml_tracking::stop_tracking()
     d_state = 0;
 }
 
+int64_t dll_pll_veml_tracking::uint64diff(uint64_t first, uint64_t second)
+{
+    uint64_t abs_diff = (first > second) ? (first - second) : (second - first);
+    assert(abs_diff <= INT64_MAX);
+    return (first > second) ? (int64_t)abs_diff : -(int64_t)abs_diff;
+}
+
 
 int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
@@ -1695,7 +1706,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
     if (d_pull_in_transitory == true)
         {
-            if (d_trk_parameters.pull_in_time_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+            //if (d_trk_parameters.pull_in_time_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+            if (d_trk_parameters.pull_in_time_s < (this->nitems_read(0) - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                 {
                     d_pull_in_transitory = false;
                     d_carrier_lock_fail_counter = 0;
@@ -1706,7 +1718,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         {
         case 0:  // Standby - Consume samples at full throttle, do nothing
             {
-                d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
+                //d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
                 consume_each(ninput_items[0]);
                 return 0;
                 break;
@@ -1714,7 +1726,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 1:  // Pull-in
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
+                //const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
+                const int64_t acq_trk_diff_samples = static_cast<int64_t>(this->nitems_read(0)) - static_cast<int64_t>(d_acq_sample_stamp);
                 const double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_trk_parameters.fs_in;
                 const double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
 
@@ -1731,7 +1744,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 const int32_t samples_offset = round(d_acq_code_phase_samples);
                 d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
                 d_state = 2;
-                d_sample_counter += samples_offset;  // count for the processed samples
+                //d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
 
@@ -1762,7 +1775,8 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 //    }
 
                 // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
-                if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+                //if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+                if (d_trk_parameters.bit_synchronization_time_limit_s < (this->nitems_read(0) - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                     {
                         d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking synchronization time limit reached in channel " << d_channel
@@ -1981,14 +1995,65 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
             }
         }
+
+    //**************** time tags ****************
+    std::vector<gr::tag_t> tags_vec;
+    this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + d_current_prn_length_samples);
+    for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+        {
+            try
+                {
+                    if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+                        {
+                            //std::cout << "ch[" << d_acquisition_gnss_synchro->Channel_ID << "] tracking time tag with offset " << it->offset << " vs. counter " << d_sample_counter << " vs. nread " << this->nitems_read(0) << " containing ";
+                            //std::cout << "ch[" << d_acquisition_gnss_synchro->Channel_ID << "] tracking time tag with offset " << it->offset << " vs. nread " << this->nitems_read(0) << " containing ";
+                            const std::shared_ptr<GnssTime> last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+                            d_last_timetag = *last_timetag;
+                            d_last_timetag_samplecounter = it->offset;
+                            d_timetag_waiting = true;
+                        }
+                    else
+                        {
+                            std::cout << "hash code not match\n";
+                        }
+                }
+            catch (const boost::bad_any_cast &e)
+                {
+                    std::cout << "msg Bad any_cast: " << e.what();
+                }
+        }
+
+    //************* end time tags **************
+
     consume_each(d_current_prn_length_samples);
-    d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);
+    //d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);
     if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock)
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
-            current_synchro_data.Tracking_sample_counter = d_sample_counter;
+            current_synchro_data.Tracking_sample_counter = this->nitems_read(0);
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             *out[0] = current_synchro_data;
+
+            //generate new tag associated with gnss-synchro object
+
+            if (d_timetag_waiting == true)
+                {
+                    int64_t diff_samplecount = uint64diff(current_synchro_data.Tracking_sample_counter, d_last_timetag_samplecounter);
+
+                    double intpart;
+                    d_last_timetag.tow_ms_fraction = modf(1000.0 * static_cast<double>(diff_samplecount) / d_trk_parameters.fs_in, &intpart);
+
+                    const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
+                    tmp_obj->week = d_last_timetag.week;
+                    tmp_obj->tow_ms = d_last_timetag.tow_ms + static_cast<int>(intpart);
+                    tmp_obj->tow_ms_fraction = d_last_timetag.tow_ms_fraction;
+
+                    add_item_tag(0, this->nitems_written(0) + 1, pmt::mp("timetag"), pmt::make_any(tmp_obj));
+
+                    std::cout << "[" << this->nitems_written(0) + 1 << "] Sent TimeTag Week: " << d_last_timetag.week << ", TOW: " << d_last_timetag.tow_ms << " [ms], TOW fraction: " << d_last_timetag.tow_ms_fraction << " [ms] \n";
+                    d_timetag_waiting = false;
+                }
+
             return 1;
         }
     return 0;

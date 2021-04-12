@@ -101,10 +101,17 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
     for (size_t ch = 0; ch < output_items.size(); ch++)
         {
             std::memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
-            int64_t diff_samplecount = uint64diff(nitems_read(ch), next_timetag_samplecount);
-            if (diff_samplecount > 0 and diff_samplecount < noutput_items)
+            uint64_t bytes_to_samples = 2;  //todo: improve this.. hardcoded 2 bytes -> 1 complex sample!
+            int64_t diff_samplecount = uint64diff(this->nitems_written(ch), next_timetag_samplecount * bytes_to_samples);
+            //std::cout << "diff_samplecount: " << diff_samplecount << ", noutput_items: " << noutput_items << "\n";
+            if (diff_samplecount <= noutput_items and std::labs(diff_samplecount) <= noutput_items)
                 {
-                    add_item_tag(ch, this->nitems_written(0) + diff_samplecount, pmt::mp("timetag"), pmt::make_any(next_timetag));
+                    const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
+                    tmp_obj->tow_ms = next_timetag.tow_ms;
+                    tmp_obj->week = next_timetag.week;
+                    tmp_obj->tow_ms_fraction = 0;
+                    add_item_tag(ch, this->nitems_written(ch) - diff_samplecount, pmt::mp("timetag"), pmt::make_any(tmp_obj));
+                    std::cout << "[" << this->nitems_written(ch) - diff_samplecount << "] Sent TimeTag SC: " << next_timetag_samplecount * bytes_to_samples << ", Week: " << next_timetag.week << ", TOW: " << next_timetag.tow_ms << " [ms] \n";
                     get_next_timetag = true;
                 }
         }

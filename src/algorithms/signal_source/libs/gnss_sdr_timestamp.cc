@@ -110,8 +110,9 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
                     tmp_obj->tow_ms = next_timetag.tow_ms;
                     tmp_obj->week = next_timetag.week;
                     tmp_obj->tow_ms_fraction = 0;
+                    tmp_obj->rx_time = 0;
                     add_item_tag(ch, this->nitems_written(ch) - diff_samplecount, pmt::mp("timetag"), pmt::make_any(tmp_obj));
-                    std::cout << "[" << this->nitems_written(ch) - diff_samplecount << "] Sent TimeTag SC: " << next_timetag_samplecount * bytes_to_samples << ", Week: " << next_timetag.week << ", TOW: " << next_timetag.tow_ms << " [ms] \n";
+                    //std::cout << "[" << this->nitems_written(ch) - diff_samplecount << "] Sent TimeTag SC: " << next_timetag_samplecount * bytes_to_samples << ", Week: " << next_timetag.week << ", TOW: " << next_timetag.tow_ms << " [ms] \n";
                     get_next_timetag = true;
                 }
         }

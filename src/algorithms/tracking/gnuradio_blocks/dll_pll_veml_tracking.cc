@@ -2047,10 +2047,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     tmp_obj->week = d_last_timetag.week;
                     tmp_obj->tow_ms = d_last_timetag.tow_ms + static_cast<int>(intpart);
                     tmp_obj->tow_ms_fraction = d_last_timetag.tow_ms_fraction;
-
+                    tmp_obj->rx_time = static_cast<double>(current_synchro_data.Tracking_sample_counter) / d_trk_parameters.fs_in;
                     add_item_tag(0, this->nitems_written(0) + 1, pmt::mp("timetag"), pmt::make_any(tmp_obj));
 
-                    std::cout << "[" << this->nitems_written(0) + 1 << "] Sent TimeTag Week: " << d_last_timetag.week << ", TOW: " << d_last_timetag.tow_ms << " [ms], TOW fraction: " << d_last_timetag.tow_ms_fraction << " [ms] \n";
+                    //std::cout << "[" << this->nitems_written(0) + 1 << "] Sent TimeTag Week: " << d_last_timetag.week << ", TOW: " << d_last_timetag.tow_ms << " [ms], TOW fraction: " << d_last_timetag.tow_ms_fraction << " [ms] \n";
                     d_timetag_waiting = false;
                 }
 

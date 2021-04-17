@@ -18,14 +18,12 @@
 #include "fifo_signal_source.h"
 #include "configuration_interface.h"
 #include "fifo_reader.h"
-#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
-#include "gnss_sdr_valve.h"
 #include <glog/logging.h>
+#include <gnuradio/blocks/file_sink.h>
+#include <gnuradio/blocks/file_source.h>
 #include <cmath>  // ceil, floor
-#include <fstream>
-#include <utility>  // move
 
 
 using namespace std::string_literals;

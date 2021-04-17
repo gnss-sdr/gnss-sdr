@@ -16,25 +16,20 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FIFO_SOURCE_BASE_H
-#define GNSS_SDR_FIFO_SOURCE_BASE_H
+#ifndef GNSS_SDR_FIFO_SIGNAL_SOURCE_H
+#define GNSS_SDR_FIFO_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
-#include "file_source_base.h"
-#include "gnss_block_interface.h"
-#include <gnuradio/blocks/file_source.h>
-#include <gnuradio/blocks/throttle.h>
+#include "signal_source_base.h"
 #include <pmt/pmt.h>
-#include <tuple>
 
-// for dump
-#include <gnuradio/blocks/file_sink.h>
-#include <cstddef>
-#include <string>
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
 
 class ConfigurationInterface;
-
 
 //! \brief Class that reads a sample stream from a Unix fifo
 //!
@@ -79,5 +74,6 @@ private:
     const std::string dump_filename_;
 };
 
-
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_FIFO_SIGNAL_SOURCE_H

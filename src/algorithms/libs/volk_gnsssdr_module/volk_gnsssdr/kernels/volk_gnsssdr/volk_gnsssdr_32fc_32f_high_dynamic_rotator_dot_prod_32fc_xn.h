@@ -72,6 +72,9 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
     lv_32fc_t phase_doppler = (*phase);
     int n_vec;
     unsigned int n;
+#if _WIN32
+    const float arga = cargf(phase_inc_rate);
+#endif
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
         {
             result[n_vec] = lv_cmake(0.0f, 0.0f);
@@ -89,8 +92,13 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
                 }
             tmp32_1 = *in_common++ * (*phase);
             phase_doppler *= phase_inc;
+#if _WIN32
+            const float theta = (float)(n * n) * arga;
+            phase_doppler_rate = lv_cmake(cosf(theta), sinf(theta));
+#else
             phase_doppler_rate = cpowf(phase_inc_rate, lv_cmake((float)(n * n), 0.0f));
             phase_doppler_rate /= hypotf(lv_creal(phase_doppler_rate), lv_cimag(phase_doppler_rate));
+#endif
             (*phase) = phase_doppler * phase_doppler_rate;
 
             for (n_vec = 0; n_vec < num_a_vectors; n_vec++)

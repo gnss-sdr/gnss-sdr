@@ -37,8 +37,8 @@
 #include "channel.h"
 #include "configuration_interface.h"
 #include "direct_resampler_conditioner.h"
-#include "file_signal_source.h"
 #include "fifo_signal_source.h"
+#include "file_signal_source.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
@@ -649,11 +649,11 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             // SIGNAL SOURCES ----------------------------------------------------------
             else if (implementation == "Fifo_Signal_Source")
-            	{
-            		std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<FifoSignalSource>(configuration, role, in_streams,
-						out_streams, queue);
-					block = std::move(block_);
-            	}
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<FifoSignalSource>(configuration, role, in_streams,
+                        out_streams, queue);
+                    block = std::move(block_);
+                }
             else if (implementation == "File_Signal_Source")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<FileSignalSource>(configuration, role, in_streams,

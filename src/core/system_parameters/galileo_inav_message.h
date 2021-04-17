@@ -366,7 +366,7 @@ private:
 
     int32_t current_IODnav{};
 
-    std::vector<uint8_t> rs_buffer; // Reed-Solomon buffer
+    std::vector<uint8_t> rs_buffer;  // Reed-Solomon buffer
 
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};

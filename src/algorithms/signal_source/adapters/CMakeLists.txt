@@ -95,6 +95,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
     signal_source_base.cc
     file_source_base.cc
     file_signal_source.cc
+    fifo_signal_source.cc
     multichannel_file_signal_source.cc
     gen_signal_source.cc
     nsr_file_signal_source.cc
@@ -111,6 +112,7 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
     signal_source_base.h
     file_source_base.h
     file_signal_source.h
+    fifo_signal_source.h
     multichannel_file_signal_source.h
     gen_signal_source.h
     nsr_file_signal_source.h

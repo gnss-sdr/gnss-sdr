@@ -44,7 +44,7 @@ class ConfigurationInterface;
 //!             - may be overridden by the -signal_source or -s command-line arguments
 //!
 //!   .sample_type - data type read out from the fifo. default ishort ;
-//!				   - note: not output format. that is always gr_complex
+//!                - note: not output format. that is always gr_complex
 //!
 //!   .dump     - whether to archive input data
 //!

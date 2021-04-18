@@ -17,10 +17,6 @@
 
 #include "fifo_reader.h"
 #include <glog/logging.h>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <string>
 
 // initial construction; pass to private constructor
 FifoReader::sptr FifoReader::make(const std::string &file_name, const std::string &sample_type)
@@ -36,8 +32,7 @@ FifoReader::FifoReader(const std::string &file_name, const std::string &sample_t
       file_name_(file_name),
       sample_type_(sample_type)
 {
-    std::cout << "Starting FifoReader\n";
-    // instream: https://en.cppreference.com/w/cpp/io/basic_ifstream
+    DLOG(INFO) << "Starting FifoReader";
 }
 
 bool FifoReader::start()
@@ -45,7 +40,7 @@ bool FifoReader::start()
     fifo_.open(file_name_, std::ios::binary);
     if (!fifo_.is_open())
         {
-            DLOG(ERROR) << "Error opening fifo\n";
+            LOG(ERROR) << "Error opening FIFO";
             return false;
         }
     return true;
@@ -59,7 +54,7 @@ int FifoReader::work(int noutput_items,
 {
     if (output_items.size() > 1)
         {
-            DLOG(ERROR) << "FifoReader connected to too many outputs\n";
+            LOG(ERROR) << "FifoReader connected to too many outputs";
         }
 
     // read samples out
@@ -71,13 +66,13 @@ int FifoReader::work(int noutput_items,
         }
     else if (sample_type_ == "gr_complex")
         {
-            DLOG(WARNING) << sample_type_ << " is not yet tested. Please consider removing this warning if tested successfully\n";
+            LOG(WARNING) << sample_type_ << " is not yet tested. Please consider removing this warning if tested successfully";
             items_retrieved = read_gr_complex(noutput_items, output_items);
         }
     else
         {
             // please see gr_complex_ip_packet_source for inspiration on how to implement other sample types
-            DLOG(ERROR) << sample_type_ << " is unfortunately not yet implemented as sample type\n";
+            LOG(ERROR) << sample_type_ << " is unfortunately not yet implemented as sample type";
         }
 
     // we return varying number of data -> call produce & return flag
@@ -86,24 +81,27 @@ int FifoReader::work(int noutput_items,
 }
 
 // read gr_complex items from fifo
+// this fct has duplicate code with the templated read_interleaved fct in header
 size_t FifoReader::read_gr_complex(int noutput_items, gr_vector_void_star &output_items)
 {
     size_t items_retrieved = 0;
     for (int n = 0; n < noutput_items; n++)
         {
-            std::vector<char> buffer(4);
-            fifo_.read((char *)&buffer[0], buffer.size());
+            gr_complex sample;
+            fifo_.read(reinterpret_cast<char *>(&sample), sizeof(sample));
             if (fifo_.good())
                 {
-                    gr_complex sample;
-                    memcpy(&sample, &buffer[0], sizeof(sample));
                     static_cast<gr_complex *>(output_items.at(0))[n] = sample;
                     items_retrieved++;
                 }
-            else if (fifo_.eof() || fifo_.fail())
+            else if (fifo_.eof())
                 {
-                    // not enough samples.. what if we did not have a complete sample? need to reassemble in between loops
                     fifo_.clear();
+                    break;
+                }
+            else
+                {
+                    LOG(ERROR) << "unhandled FIFO event";
                     break;
                 }
         }

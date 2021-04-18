@@ -1,7 +1,7 @@
 /*!
- * \file file_source_base.cc
+ * \file fifo_signal_source.cc
  *
- * \brief Implementation of the class for retrieving samples through a Unix fifo
+ * \brief Implementation of the class for retrieving samples through a Unix FIFO
  * \author Malte Lenhart, 2021. malte.lenhart(at)mailbox.org
  *
  * -----------------------------------------------------------------------------
@@ -18,12 +18,10 @@
 #include "fifo_signal_source.h"
 #include "configuration_interface.h"
 #include "fifo_reader.h"
-#include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
-#include <cmath>  // ceil, floor
 
 
 using namespace std::string_literals;
@@ -69,7 +67,7 @@ void FifoSignalSource::disconnect(gr::top_block_sptr top_block)
     if (dump_)
         {
             top_block->disconnect(fifo_reader_, 0, file_sink_, 0);
-            DLOG(INFO) << "disconnected source to file sink";
+            DLOG(INFO) << "disconnected source from file sink";
         }
 }
 

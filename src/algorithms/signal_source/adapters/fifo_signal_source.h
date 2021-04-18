@@ -1,7 +1,7 @@
 /*!
- * \file file_source_base.h
+ * \file fifo_signal_source.h
  *
- * \brief Header file of the class for retrieving samples through a Unix fifo
+ * \brief Header file of the class for retrieving samples through a Unix FIFO
  * \author Malte Lenhart, 2021. malte.lenhart(at)mailbox.org
  *
  *
@@ -29,23 +29,23 @@
 /** \addtogroup Signal_Source_adapters
  * \{ */
 
+// forward declaration to avoid include in header
 class ConfigurationInterface;
 
-//! \brief Class that reads a sample stream from a Unix fifo
+//! \brief Class that reads a sample stream from a Unix FIFO.
 //!
 //! This class supports the following properties:
 //!
 //!   .filename - the path to the input file
 //!             - may be overridden by the -signal_source or -s command-line arguments
 //!
-//!   .sample_type - data type read out from the fifo. default ishort ;
+//!   .sample_type - data type read out from the FIFO. default ishort ;
 //!                - note: not output format. that is always gr_complex
 //!
 //!   .dump     - whether to archive input data
 //!
 //!   .dump_filename - if dumping, path to file for output
-
-
+//!
 class FifoSignalSource : public SignalSourceBase
 {
 public:

@@ -36,7 +36,7 @@ public:
 
     ~FifoReader() = default;
 
-    //! initialize istream resource for fifo
+    //! initialize istream resource for FIFO
     bool start();
 
     // gnu radio work cycle function
@@ -52,7 +52,7 @@ private:
 
 
     size_t read_gr_complex(int noutput_items, gr_vector_void_star &output_items);
-    //! function to read data out of fifo which is stored as interleaved I/Q stream.
+    //! function to read data out of FIFO which is stored as interleaved I/Q stream.
     //! template argument determines sample_type
     template <typename Type>
     size_t read_interleaved(int noutput_items, gr_vector_void_star &output_items)
@@ -61,22 +61,26 @@ private:
         for (int n = 0; n < noutput_items; n++)
             {
                 // TODO: try if performance increases if we copy larger chunks to vector.
-                // read from fifo: https://en.cppreference.com/w/cpp/io/basic_ifstream
-                std::vector<char> buffer(4);  // dynamically change buffer size depending on read speed? where to throttle?
-                fifo_.read((char *)&buffer[0], buffer.size());
+                // how to read from stream: https://en.cppreference.com/w/cpp/io/basic_ifstream
+                std::array<char, 4> buffer;  // gr_complex is 32bit = 4*char
+                fifo_.read(reinterpret_cast<char *>(&buffer[0]), buffer.size());
                 if (fifo_.good())
                     {
                         Type real;
                         Type imag;
                         memcpy(&real, &buffer[0], sizeof(real));
                         memcpy(&imag, &buffer[2], sizeof(imag));
-                        static_cast<gr_complex *>(output_items.at(0))[n] = gr_complex(imag, real);
+                        static_cast<gr_complex *>(output_items.at(0))[n] = gr_complex(real, imag);
                         items_retrieved++;
                     }
-                else if (fifo_.eof() || fifo_.fail())
+                else if (fifo_.eof())
                     {
-                        // not enough samples.. what if we did not have a complete sample? need to reassemble in between loops
                         fifo_.clear();
+                        break;
+                    }
+                else
+                    {
+                        LOG(ERROR) << "unhandled FIFO event";
                         break;
                     }
             }

@@ -27,7 +27,7 @@
 #include <boost/bind/bind.hpp>
 #endif
 
-const int FIFO_SIZE = 1'472'000;
+const int FIFO_SIZE = 1472000;
 
 
 /* 4 bytes IP address */

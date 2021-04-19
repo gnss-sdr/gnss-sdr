@@ -739,18 +739,19 @@ void ReedSolomon::encode_rs_8(const uint8_t* data, uint8_t* parity) const
 int ReedSolomon::decode(std::vector<uint8_t>& data_to_decode, const std::vector<int>& erasure_positions) const
 {
     int result = -1;
-    if (data_to_decode.size() != d_data_symbols_shortened)
-        {
-            std::cerr << "Reed Solomon usage error: wrong vector input size in decode method.\n";
-            return result;
-        }
     if (erasure_positions.size() > std::size_t(d_nroots))
         {
             std::cerr << "Reed Solomon usage error: too much erasure positions.\n";
             return result;
         }
+    size_t size_buffer = data_to_decode.size();
+    if ((size_buffer != d_data_symbols_shortened) && (size_buffer != static_cast<size_t>(d_symbols_per_block)))
+        {
+            std::cerr << "Reed Solomon usage error: wrong vector input size in decode method.\n";
+            return result;
+        }
 
-    if (d_shortening == 0)
+    if (d_shortening == 0 || (size_buffer == static_cast<size_t>(d_symbols_per_block)))
         {
             result = decode_rs_8(data_to_decode.data(), erasure_positions.data(), erasure_positions.size());
         }

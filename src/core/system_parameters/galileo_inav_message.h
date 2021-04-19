@@ -1,7 +1,7 @@
 /*!
  * \file galileo_inav_message.h
  * \brief  Implementation of a Galileo I/NAV Data message
- *         as described in Galileo OS SIS ICD Issue 1.2 (Nov. 2015)
+ *         as described in Galileo OS SIS ICD Issue 2.0 (Jan. 2021)
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
@@ -10,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -24,11 +24,15 @@
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
+#include "gnss_sdr_make_unique.h"  // for std::unique_ptr in C++11
 #include <bitset>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+class ReedSolomon;  // Forward declaration of the ReedSolomon class
 
 /** \addtogroup Core
  * \{ */
@@ -45,6 +49,8 @@ class Galileo_Inav_Message
 {
 public:
     Galileo_Inav_Message();
+
+    ~Galileo_Inav_Message();
 
     /*
      * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
@@ -210,6 +216,10 @@ private:
     void read_page_2(const std::bitset<GALILEO_DATA_JK_BITS>& data_bits);
     void read_page_3(const std::bitset<GALILEO_DATA_JK_BITS>& data_bits);
     void read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& data_bits);
+    std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_1(const std::vector<uint8_t>& decoded) const;
+    std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_2(const std::vector<uint8_t>& decoded) const;
+    std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_3(const std::vector<uint8_t>& decoded) const;
+    std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_4(const std::vector<uint8_t>& decoded) const;
 
     std::string page_Even{};
 
@@ -366,7 +376,9 @@ private:
 
     int32_t current_IODnav{};
 
-    std::vector<uint8_t> rs_buffer; // Reed-Solomon buffer
+    std::vector<uint8_t> rs_buffer;   // Reed-Solomon buffer
+    std::unique_ptr<ReedSolomon> rs;  // The Reed-Solomon decoder
+    std::vector<int> inav_rs_pages;   // Pages 1,2,3,4,17,18,19,20. Holds 1 if the page has arrived, 0 otherwise.
 
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};

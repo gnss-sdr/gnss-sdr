@@ -26,7 +26,6 @@
  * \{ */
 /** \addtogroup Signal_Source_gnuradio_blocks
  * \{ */
-
 class FifoReader : virtual public gr::sync_block
 {
 public:
@@ -80,12 +79,16 @@ private:
                     }
                 else
                     {
-                        LOG(ERROR) << "unhandled FIFO event";
+                        fifo_error_output();
                         break;
                     }
             }
         return items_retrieved;
     }
+
+    //! this function moves logging output from this header into the source file
+    //! thereby eliminating the need to include glog/logging.h in this header
+    void fifo_error_output() const;
 
     const std::string file_name_;
     const std::string sample_type_;

@@ -101,9 +101,14 @@ size_t FifoReader::read_gr_complex(int noutput_items, gr_vector_void_star &outpu
                 }
             else
                 {
-                    LOG(ERROR) << "unhandled FIFO event";
+                    fifo_error_output();
                     break;
                 }
         }
     return items_retrieved;
+}
+
+void FifoReader::fifo_error_output() const
+{
+    LOG(ERROR) << "unhandled FIFO event";
 }

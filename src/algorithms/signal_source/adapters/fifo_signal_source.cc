@@ -28,7 +28,7 @@ using namespace std::string_literals;
 
 FifoSignalSource::FifoSignalSource(ConfigurationInterface const* configuration,
     std::string const& role, unsigned int in_streams, unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue)
+    [[maybe_unused]] Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, "Fifo_Signal_Source"s),
       item_size_(sizeof(gr_complex)),  // currenty output item size is always gr_complex
       fifo_reader_(FifoReader::make(configuration->property(role + ".filename"s, "../data/example_capture.dat"s),

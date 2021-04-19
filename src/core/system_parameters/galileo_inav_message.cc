@@ -1,7 +1,7 @@
 /*!
  * \file galileo_inav_message.cc
  * \brief  Implementation of a Galileo I/NAV Data message
- *         as described in Galileo OS SIS ICD Issue 1.1 (Sept. 2010)
+ *         as described in Galileo OS SIS ICD Issue 2.0 (Jan. 2021)
  * \author Mara Branzanti 2013. mara.branzanti(at)gmail.com
  * \author Javier Arribas, 2013. jarribas(at)cttc.es
  *
@@ -10,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -18,12 +18,14 @@
 
 #include "galileo_inav_message.h"
 #include "galileo_reduced_ced.h"
+#include "reed_solomon.h"
 #include <boost/crc.hpp>             // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>  // for boost::dynamic_bitset
 #include <glog/logging.h>            // for DLOG
 #include <algorithm>                 // for reverse
 #include <iostream>                  // for operator<<
 #include <limits>                    // for std::numeric_limits
+#include <numeric>                   // for std::accumulate
 
 
 using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
@@ -32,7 +34,14 @@ using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false
 Galileo_Inav_Message::Galileo_Inav_Message()
 {
     rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
+    // Instantiate ReedSolomon without encoding capabilities, saves some memory
+    rs = std::make_unique<ReedSolomon>(60, 29, 1, 195, 0, 137);
+    inav_rs_pages = std::vector<int>(8, 0);
 }
+
+
+// here the compiler knows how to destrcut rs
+Galileo_Inav_Message::~Galileo_Inav_Message() = default;
 
 
 bool Galileo_Inav_Message::CRC_test(const std::bitset<GALILEO_DATA_FRAME_BITS>& bits, uint32_t checksum) const
@@ -241,6 +250,116 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                     IOD_ephemeris = IOD_nav_1;
                     DLOG(INFO) << "Batch number: " << IOD_ephemeris;
                     return true;
+                }
+        }
+
+    if (enable_rs)
+        {
+            // Implement FEC2 Erasure Correction defined in Galileo ICD 2.0
+            if (std::accumulate(inav_rs_pages.begin(), inav_rs_pages.end(), 0) == 4)
+                {
+                    // Four different INAV pages received with CRC ok
+                    // so we can decode the buffer and retrieve data from missing pages
+
+                    // Generate erasure vector
+                    std::vector<int> erasure_positions;
+                    erasure_positions.reserve(60);  // max number of erasure positions
+                    if (inav_rs_pages[0] == 0)
+                        {
+                            // we always know rs_buffer[0], so we start at 1
+                            for (int i = 1; i < 16; i++)
+                                {
+                                    erasure_positions.push_back(i);
+                                }
+                        }
+                    if (inav_rs_pages[1] == 0)
+                        {
+                            for (int i = 16; i < 30; i++)
+                                {
+                                    erasure_positions.push_back(i);
+                                }
+                        }
+                    if (inav_rs_pages[2] == 0)
+                        {
+                            for (int i = 30; i < 44; i++)
+                                {
+                                    erasure_positions.push_back(i);
+                                }
+                        }
+                    if (inav_rs_pages[3] == 0)
+                        {
+                            for (int i = 44; i < 58; i++)
+                                {
+                                    erasure_positions.push_back(i);
+                                }
+                        }
+                    if (inav_rs_pages[4] == 0)
+                        {
+                            for (int i = 58; i < 73; i++)
+                                {
+                                    erasure_positions.push_back(i + 137);  // erasure position refers to the unshortened code, so we add 137
+                                }
+                        }
+                    if (inav_rs_pages[5] == 0)
+                        {
+                            for (int i = 73; i < 88; i++)
+                                {
+                                    erasure_positions.push_back(i + 137);
+                                }
+                        }
+                    if (inav_rs_pages[6] == 0)
+                        {
+                            for (int i = 88; i < 103; i++)
+                                {
+                                    erasure_positions.push_back(i + 137);
+                                }
+                        }
+                    if (inav_rs_pages[7] == 0)
+                        {
+                            for (int i = 103; i < 118; i++)
+                                {
+                                    erasure_positions.push_back(i + 137);
+                                }
+                        }
+
+                    // Decode rs_buffer
+                    int result = rs->decode(rs_buffer, erasure_positions);
+
+                    // if decoding ok
+                    if (result >= 0)
+                        {
+                            if (inav_rs_pages[0] == 0)
+                                {
+                                    std::bitset<GALILEO_DATA_JK_BITS> missing_bits = regenerate_page_1(rs_buffer);
+                                    read_page_1(missing_bits);
+                                }
+                            if (inav_rs_pages[1] == 0)
+                                {
+                                    std::bitset<GALILEO_DATA_JK_BITS> missing_bits = regenerate_page_2(rs_buffer);
+                                    read_page_2(missing_bits);
+                                }
+                            if (inav_rs_pages[2] == 0)
+                                {
+                                    std::bitset<GALILEO_DATA_JK_BITS> missing_bits = regenerate_page_3(rs_buffer);
+                                    read_page_3(missing_bits);
+                                }
+                            if (inav_rs_pages[3] == 0)
+                                {
+                                    std::bitset<GALILEO_DATA_JK_BITS> missing_bits = regenerate_page_4(rs_buffer);
+                                    read_page_4(missing_bits);
+                                }
+
+                            // Reset flags
+                            inav_rs_pages = std::vector<int>(8, 0);
+                            flag_ephemeris_1 = false;  // clear the flag
+                            flag_ephemeris_2 = false;  // clear the flag
+                            flag_ephemeris_3 = false;  // clear the flag
+                            flag_ephemeris_4 = false;  // clear the flag
+                            flag_all_ephemeris = true;
+                            IOD_ephemeris = IOD_nav_1;
+                            DLOG(INFO) << "Batch number: " << IOD_ephemeris;
+                            return true;
+                        }
                 }
         }
     return false;
@@ -458,6 +577,8 @@ Galileo_Ephemeris Galileo_Inav_Message::get_reduced_ced() const
 {
     Galileo_Reduced_CED ced{};
     ced.PRN = SV_ID_PRN_4;
+    // From ICD: TOTRedCED is the start time of transmission of the
+    // Reduced CED word 16 in GST
     if (TOW_5 > TOW_6)
         {
             ced.TOTRedCED = WN_5 * 604800 + TOW_5 + 4;  // According to ICD 2.0, Table 38
@@ -595,6 +716,104 @@ void Galileo_Inav_Message::read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& 
 }
 
 
+std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_1(const std::vector<uint8_t>& decoded) const
+{
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits;
+    // Set page type to 1
+    data_bits.set(5);
+    std::bitset<8> c0(decoded[0]);
+    std::bitset<8> c1(decoded[1]);
+    for (int i = 0; i < 8; i++)
+        {
+            data_bits[6 + i] = c1[i];
+        }
+    data_bits[14] = c0[6];
+    data_bits[15] = c0[7];
+    for (int k = 2; k < 16; k++)
+        {
+            std::bitset<8> octet(decoded[k]);
+            for (int i = 0; i < 8; i++)
+                {
+                    data_bits[i + k * 8] = octet[i];
+                }
+        }
+    return data_bits;
+}
+
+
+std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_2(const std::vector<uint8_t>& decoded) const
+{
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits;
+    // Set page type to 2
+    data_bits.set(4);
+
+    std::bitset<10> iodnav(current_IODnav);
+
+    for (int i = 0; i < 10; i++)
+        {
+            data_bits[6 + i] = iodnav[i];
+        }
+    for (int k = 0; k < 14; k++)
+        {
+            std::bitset<8> octet(decoded[k + 16]);
+            for (int i = 0; i < 8; i++)
+                {
+                    data_bits[16 + i + k * 8] = octet[i];
+                }
+        }
+    return data_bits;
+}
+
+
+std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_3(const std::vector<uint8_t>& decoded) const
+{
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits;
+    // Set page type to 3
+    data_bits.set(4);
+    data_bits.set(5);
+
+    std::bitset<10> iodnav(current_IODnav);
+
+    for (int i = 0; i < 10; i++)
+        {
+            data_bits[6 + i] = iodnav[i];
+        }
+    for (int k = 0; k < 14; k++)
+        {
+            std::bitset<8> octet(decoded[k + 30]);
+            for (int i = 0; i < 8; i++)
+                {
+                    data_bits[16 + i + k * 8] = octet[i];
+                }
+        }
+    return data_bits;
+}
+
+
+std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_4(const std::vector<uint8_t>& decoded) const
+{
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits;
+    // Set page type to 4
+    data_bits.set(3);
+
+    std::bitset<10> iodnav(current_IODnav);
+
+    for (int i = 0; i < 10; i++)
+        {
+            data_bits[6 + i] = iodnav[i];
+        }
+    for (int k = 0; k < 14; k++)
+        {
+            std::bitset<8> octet(decoded[k + 44]);
+            for (int i = 0; i < 8; i++)
+                {
+                    data_bits[16 + i + k * 8] = octet[i];
+                }
+        }
+    return data_bits;
+}
+
+
 int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 {
     const std::string data_jk_string = data_jk;
@@ -619,6 +838,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_1;
                                 rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
+                                // Reed-Solomon data is invalid
+                                inav_rs_pages = std::vector<int>(8, 0);
                             }
 
                         // Store RS information vector C_{RS,0}
@@ -633,6 +854,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[0] = 1;
                     }
 
                 break;
@@ -652,6 +874,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_2;
                                 rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
+                                // Reed-Solomon data is invalid
+                                inav_rs_pages = std::vector<int>(8, 0);
                             }
 
                         // Store RS information vector C_{RS,1}
@@ -663,6 +887,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[1] = 1;
                     }
                 break;
             }
@@ -680,6 +905,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_3;
                                 rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
+                                // Reed-Solomon data is invalid
+                                inav_rs_pages = std::vector<int>(8, 0);
                             }
 
                         // Store RS information vector C_{RS,2}
@@ -691,6 +918,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[2] = 1;
                     }
                 break;
             }
@@ -709,6 +937,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 // IODnav changed, reset buffer
                                 current_IODnav = IOD_nav_4;
                                 rs_buffer = std::vector<uint8_t>(INAV_RS_BUFFER_LENGTH, 0);
+                                // Reed-Solomon data is invalid
+                                inav_rs_pages = std::vector<int>(8, 0);
                             }
 
                         // Store RS information vector C_{RS,3}
@@ -720,6 +950,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[i] = read_octet_unsigned(data_jk_bits, info_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[3] = 1;
                     }
                 break;
             }
@@ -988,6 +1219,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB17 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 17: " << static_cast<float>(IODnav_LSB17);
+                        if (IODnav_LSB17 != static_cast<uint8_t>((current_IODnav % 4)))
+                            {
+                                // IODnav changed, information vector is invalid
+                                inav_rs_pages[0] = 0;
+                                inav_rs_pages[1] = 0;
+                                inav_rs_pages[2] = 0;
+                                inav_rs_pages[3] = 0;
+                            }
                         // Store RS parity vector gamma_{RS,0}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
                         rs_buffer[INAV_RS_INFO_VECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
@@ -998,6 +1237,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[4] = 1;
                     }
                 break;
             }
@@ -1008,6 +1248,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB18 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 18: " << static_cast<float>(IODnav_LSB18);
+                        if (IODnav_LSB18 != static_cast<uint8_t>((current_IODnav % 4)))
+                            {
+                                // IODnav changed, information vector is invalid
+                                inav_rs_pages[0] = 0;
+                                inav_rs_pages[1] = 0;
+                                inav_rs_pages[2] = 0;
+                                inav_rs_pages[3] = 0;
+                            }
                         // Store RS parity vector gamma_{RS,1}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
                         rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
@@ -1018,6 +1266,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[5] = 1;
                     }
                 break;
             }
@@ -1028,6 +1277,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB19 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 19: " << static_cast<float>(IODnav_LSB19);
+                        if (IODnav_LSB19 != static_cast<uint8_t>((current_IODnav % 4)))
+                            {
+                                // IODnav changed, information vector is invalid
+                                inav_rs_pages[0] = 0;
+                                inav_rs_pages[1] = 0;
+                                inav_rs_pages[2] = 0;
+                                inav_rs_pages[3] = 0;
+                            }
                         // Store RS parity vector gamma_{RS,2}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
                         rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + 2 * INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
@@ -1038,6 +1295,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[6] = 1;
                     }
                 break;
             }
@@ -1048,6 +1306,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     {
                         IODnav_LSB20 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
                         DLOG(INFO) << "IODnav 2 LSBs in Word type 20: " << static_cast<float>(IODnav_LSB20);
+                        if (IODnav_LSB20 != static_cast<uint8_t>((current_IODnav % 4)))
+                            {
+                                // IODnav changed, information vector is invalid
+                                inav_rs_pages[0] = 0;
+                                inav_rs_pages[1] = 0;
+                                inav_rs_pages[2] = 0;
+                                inav_rs_pages[3] = 0;
+                            }
                         // Store RS parity vector gamma_{RS,4}
                         std::vector<std::pair<int32_t, int32_t>> gamma_octet_bits({{FIRST_RS_BIT, BITS_IN_OCTET}});
                         rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + 3 * INAV_RS_SUBVECTOR_LENGTH] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
@@ -1058,6 +1324,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                 rs_buffer[INAV_RS_INFO_VECTOR_LENGTH + i] = read_octet_unsigned(data_jk_bits, gamma_octet_bits);
                                 start_bit += BITS_IN_OCTET;
                             }
+                        inav_rs_pages[7] = 1;
                     }
                 break;
             }
@@ -1065,11 +1332,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
         case 0:  // Word type 0: I/NAV Spare Word
             Time_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TIME_0_BIT));
             DLOG(INFO) << "Time_0= " << Time_0;
-            WN_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0_BIT));
-            DLOG(INFO) << "WN_0= " << WN_0;
-            TOW_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_0_BIT));
-            DLOG(INFO) << "TOW_0= " << TOW_0;
-            DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            if (Time_0 == 2)  // valid data
+                {
+                    WN_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0_BIT));
+                    DLOG(INFO) << "WN_0= " << WN_0;
+                    TOW_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_0_BIT));
+                    DLOG(INFO) << "TOW_0= " << TOW_0;
+                    DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+                }
             break;
 
         default:

@@ -13,10 +13,16 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 ### Improvements in Availability:
 
 - Added the reading of reduced clock and ephemeris data (CED) in the Galileo E1B
-  INAV message introduced in Galileo ICD v2.0. If the reduced CED is available
-  before the full ephemeris set, it is used for PVT computation until the full
-  set has not yet been received. This can contribute to shorten the
+  INAV message introduced in Galileo OS SIS ICD Issue 2.0. If the reduced CED is
+  available before the full ephemeris set, it is used for PVT computation until
+  the full set has not yet been received. This can contribute to shorten the
   Time-To-First-Fix.
+- Added the exploitation of the FEC2 Erasure Correction in the Galileo E1B INAV
+  message introduced in Galileo OS SIS ICD Issue 2.0. This can contribute to
+  shorten the Time-To-First-Fix. Since the added computational cost could break
+  some real-time configurations, this feature is disabled by default. It can be
+  activated from the configuration file by adding
+  `TelemetryDecoder_1B.enable_reed_solomon=true`.
 
 ### Improvements in Maintainability:
 

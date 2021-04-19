@@ -143,6 +143,8 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
     d_mapStringValues["B1"] = evBDS_B1;
     d_mapStringValues["B2"] = evBDS_B2;
     d_mapStringValues["B3"] = evBDS_B3;
+    last_rx_clock_round20ms_error = 0;
+    set_tag_propagation_policy(TPP_DONT);  //no tag propagation, the time tag will be adjusted and regenerated in work()
 }
 
 
@@ -192,12 +194,16 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
             if (pmt::any_ref(msg).type().hash_code() == d_double_type_hash_code)
                 {
                     const auto new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
+                    double old_tow_corrected = static_cast<double>(d_T_rx_TOW_ms) - new_rx_clock_offset_s * 1000.0;
+
                     d_T_rx_TOW_ms = d_T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
+
                     // align the receiver clock to integer multiple of 20 ms
                     if (d_T_rx_TOW_ms % 20)
                         {
                             d_T_rx_TOW_ms += 20 - d_T_rx_TOW_ms % 20;
                         }
+                    last_rx_clock_round20ms_error = static_cast<double>(d_T_rx_TOW_ms) - old_tow_corrected;
                     // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
@@ -605,32 +611,93 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
 
 void hybrid_observables_gs::check_tag_timestamp(const std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
 {
-    std::vector<Gnss_Synchro>::const_iterator it;
-    for (it = data.begin(); it != data.end(); it++)
-        {
-            if (!d_SourceTagTimestamps[it->Channel_ID].empty() and it->Flag_valid_pseudorange == true)
-                {
-                    //std::cout << "RX Time: " << (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) << "s\n";
-                    double delta_rxtime_to_tag;
-                    GnssTime current_tag;
-                    do
-                        {
-                            current_tag = d_SourceTagTimestamps[it->Channel_ID].front();
-                            delta_rxtime_to_tag = (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) - current_tag.rx_time;
-                            //                            std::cout << "[ch:" << it->Channel_ID << "][" << delta_rxtime_to_tag << "]\n";
-                            d_SourceTagTimestamps[it->Channel_ID].pop();
-                        }
-                    while (fabs(delta_rxtime_to_tag) >= 0.05 and !d_SourceTagTimestamps[it->Channel_ID].empty());
+    //    std::vector<Gnss_Synchro>::const_iterator it;
+    //    for (it = data.begin(); it != data.end(); it++)
+    //        {
+    //            if (!d_SourceTagTimestamps[it->Channel_ID].empty() and it->Flag_valid_pseudorange == true)
+    //                {
+    //                    //std::cout << "RX Time: " << (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) << "s\n";
+    //                    double delta_rxtime_to_tag;
+    //                    GnssTime current_tag;
+    //                    do
+    //                        {
+    //                            current_tag = d_SourceTagTimestamps[it->Channel_ID].front();
+    //                            delta_rxtime_to_tag = (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) - current_tag.rx_time;
+    //                            //                            std::cout << "[ch:" << it->Channel_ID << "][" << delta_rxtime_to_tag << "]\n";
+    //                            d_SourceTagTimestamps[it->Channel_ID].pop();
+    //                        }
+    //                    while (fabs(delta_rxtime_to_tag) >= 0.2 and !d_SourceTagTimestamps[it->Channel_ID].empty());
+    //
+    //                    if (fabs(delta_rxtime_to_tag) <= 0.2)
+    //                        {
+    //                            std::cout << "[ch:" << it->Channel_ID << "][" << delta_rxtime_to_tag
+    //                                      << "] OBS RX TimeTag Week: " << current_tag.week
+    //                                      << ", TOW: " << current_tag.tow_ms
+    //                                      << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
+    //                                      << " [ms], DELTA TLM TOW: " << last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
+    //
+    //                            const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
+    //                            *tmp_obj = current_tag;
+    //                            tmp_obj->week = current_tag.week;
+    //                            double intpart;
+    //                            tmp_obj->tow_ms_fraction = modf(delta_rxtime_to_tag * 1000.0, &intpart);
+    //                            tmp_obj->tow_ms = current_tag.tow_ms + static_cast<int>(intpart);
+    //                            tmp_obj->rx_time = static_cast<double>(rx_clock) / static_cast<double>(it->fs);
+    //                            add_item_tag(it->Channel_ID, this->nitems_written(it->Channel_ID) + 1, pmt::mp("timetag"), pmt::make_any(tmp_obj));
+    //                        }
+    //                }
+    //        }
 
-                    if (fabs(delta_rxtime_to_tag) <= 0.05)
+    //std::cout << "RX Time: " << (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) << "s\n";
+
+    if (!d_TimeChannelTagTimestamps.empty())
+        {
+            double fs = 0;
+            std::vector<Gnss_Synchro>::const_iterator it;
+            for (it = data.begin(); it != data.end(); it++)
+                {
+                    if (it->Flag_valid_pseudorange == true)
                         {
-                            std::cout << "[ch:" << it->Channel_ID << "][" << delta_rxtime_to_tag
-                                      << "] OBS RX TimeTag Week: " << current_tag.week
-                                      << ", TOW: " << current_tag.tow_ms
-                                      << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
-                                      << " [ms], DELTA TLM TOW: " << delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - it->RX_time * 1000.0 + current_tag.tow_ms_fraction << " [ms] \n";
+                            fs = static_cast<double>(it->fs);
+                            break;
                         }
                 }
+
+            double delta_rxtime_to_tag = 100;
+            GnssTime current_tag;
+            do
+                {
+                    current_tag = d_TimeChannelTagTimestamps.front();
+                    delta_rxtime_to_tag = (static_cast<double>(rx_clock) / fs) - current_tag.rx_time;
+                    if (delta_rxtime_to_tag >= 0)
+                        {
+                            d_TimeChannelTagTimestamps.pop();
+                        }
+                }
+            while (delta_rxtime_to_tag >= 0.1 and !d_TimeChannelTagTimestamps.empty());
+
+
+            if (delta_rxtime_to_tag >= 0 and delta_rxtime_to_tag <= 0.1)
+                {
+                    //                    std::cout << "[Time ch][" << delta_rxtime_to_tag
+                    //                              << "] OBS RX TimeTag Week: " << current_tag.week
+                    //                              << ", TOW: " << current_tag.tow_ms
+                    //                              << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
+                    //                              << " [ms], DELTA TLM TOW: " << last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
+
+                    const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
+                    *tmp_obj = current_tag;
+                    double intpart;
+                    tmp_obj->tow_ms_fraction = tmp_obj->tow_ms_fraction + modf(delta_rxtime_to_tag * 1000.0, &intpart);
+                    tmp_obj->tow_ms = current_tag.tow_ms + static_cast<int>(intpart);
+                    tmp_obj->rx_time = static_cast<double>(d_T_rx_TOW_ms);  //static_cast<double>(rx_clock) / static_cast<double>(data.begin()->fs);
+                    add_item_tag(0, this->nitems_written(0) + 1, pmt::mp("timetag"), pmt::make_any(tmp_obj));
+                    delta_rxtime_to_tag = 100;
+                }
+            //            else
+            //                {
+            //                    std::cout << "Delta: " << delta_rxtime_to_tag << "\n";
+            //                }
         }
 }
 
@@ -647,16 +714,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
     if (ninput_items[d_nchannels_in - 1] > 0)
         {
             d_Rx_clock_buffer.push_back(in[d_nchannels_in - 1][0].Tracking_sample_counter);
-            // Consume one item from the clock channel (last of the input channels)
-            consume(static_cast<int32_t>(d_nchannels_in) - 1, 1);
-        }
 
-    // Push the tracking observables into buffers to allow the observable interpolation at the desired Rx clock
-    for (uint32_t n = 0; n < d_nchannels_out; n++)
-        {
             //**************** time tags ****************
             std::vector<gr::tag_t> tags_vec;
-            this->get_tags_in_range(tags_vec, n, this->nitems_read(n), this->nitems_read(n) + ninput_items[n]);
+            this->get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1);
             for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
                 {
                     try
@@ -664,8 +725,8 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
                                     const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
-                                    //std::cout << "[ch " << n << "] timetag: " << timetag->rx_time << "\n";
-                                    d_SourceTagTimestamps.at(n).push(*timetag);
+                                    //std::cout << "[Time ch ] timetag: " << timetag->rx_time << "\n";
+                                    d_TimeChannelTagTimestamps.push(*timetag);
                                 }
                             else
                                 {
@@ -677,6 +738,40 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             std::cout << "msg Bad any_cast: " << e.what();
                         }
                 }
+
+            //************* end time tags **************
+
+
+            // Consume one item from the clock channel (last of the input channels)
+            consume(static_cast<int32_t>(d_nchannels_in) - 1, 1);
+        }
+
+    // Push the tracking observables into buffers to allow the observable interpolation at the desired Rx clock
+    for (uint32_t n = 0; n < d_nchannels_out; n++)
+        {
+            //**************** time tags ****************
+            //            std::vector<gr::tag_t> tags_vec;
+            //            this->get_tags_in_range(tags_vec, n, this->nitems_read(n), this->nitems_read(n) + ninput_items[n]);
+            //            for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+            //                {
+            //                    try
+            //                        {
+            //                            if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+            //                                {
+            //                                    const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+            //                                    //std::cout << "[ch " << n << "] timetag: " << timetag->rx_time << "\n";
+            //                                    d_SourceTagTimestamps.at(n).push(*timetag);
+            //                                }
+            //                            else
+            //                                {
+            //                                    std::cout << "hash code not match\n";
+            //                                }
+            //                        }
+            //                    catch (const boost::bad_any_cast &e)
+            //                        {
+            //                            std::cout << "msg Bad any_cast: " << e.what();
+            //                        }
+            //                }
 
             //************* end time tags **************
             for (int32_t m = 0; m < ninput_items[n]; m++)

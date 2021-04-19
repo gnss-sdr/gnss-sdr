@@ -19,6 +19,7 @@
 
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
+#include "gnss_time.h"
 #include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -31,9 +32,10 @@
 #include <ctime>                  // for time_t
 #include <map>                    // for map
 #include <memory>                 // for shared_ptr, unique_ptr
-#include <string>                 // for string
-#include <sys/types.h>            // for key_t
-#include <vector>                 // for vector
+#include <queue>
+#include <string>       // for string
+#include <sys/types.h>  // for key_t
+#include <vector>       // for vector
 
 /** \addtogroup PVT
  * \{ */
@@ -201,6 +203,8 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
+
+    std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
     boost::posix_time::time_duration d_utc_diff_time;
 

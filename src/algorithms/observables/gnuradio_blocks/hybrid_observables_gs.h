@@ -106,6 +106,7 @@ private:
     boost::circular_buffer<uint64_t> d_Rx_clock_buffer;  // time history
 
     std::vector<std::queue<GnssTime>> d_SourceTagTimestamps;
+    std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
     std::vector<bool> d_channel_last_pll_lock;
     std::vector<double> d_channel_last_pseudorange_smooth;
@@ -118,6 +119,7 @@ private:
     double d_smooth_filter_M;
 
     uint32_t d_T_rx_TOW_ms;
+    double last_rx_clock_round20ms_error;
     uint32_t d_T_rx_step_ms;
     uint32_t d_T_status_report_timer_ms;
     uint32_t d_nchannels_in;

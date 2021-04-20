@@ -49,7 +49,6 @@ private:
     //! (gr handles this with public and private header pair)
     FifoReader(const std::string &file_name, const std::string &sample_type);
 
-
     size_t read_gr_complex(int noutput_items, gr_vector_void_star &output_items);
     //! function to read data out of FIFO which is stored as interleaved I/Q stream.
     //! template argument determines sample_type

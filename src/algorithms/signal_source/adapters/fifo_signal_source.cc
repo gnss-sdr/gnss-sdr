@@ -52,6 +52,7 @@ FifoSignalSource::FifoSignalSource(ConfigurationInterface const* configuration,
         }
 }
 
+
 void FifoSignalSource::connect(gr::top_block_sptr top_block)
 {
     // here we could add a throttle as done in the file_source_base if required
@@ -62,6 +63,7 @@ void FifoSignalSource::connect(gr::top_block_sptr top_block)
         }
 }
 
+
 void FifoSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (dump_)
@@ -71,10 +73,12 @@ void FifoSignalSource::disconnect(gr::top_block_sptr top_block)
         }
 }
 
+
 size_t FifoSignalSource::item_size()
 {
     return item_size_;
 }
+
 
 gr::basic_block_sptr FifoSignalSource::get_left_block()
 {

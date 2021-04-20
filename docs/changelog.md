@@ -62,8 +62,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Usability:
 
-- Added a new `Fifo_Signal_Source` implementation that allows using a [UNIX
-  FIFO](https://en.wikipedia.org/wiki/Named_pipe) as a signal source, thus
+- Added a new `Fifo_Signal_Source` implementation that allows using a
+  [Unix FIFO](https://en.wikipedia.org/wiki/Named_pipe) as a signal source, thus
   allowing to multiplex signal streams outside of `gnss-sdr`, letting another
   program holds access to the receiver, or allowing signal sources that are not
   supported by `gnss-sdr` but can dump the signal to a FIFO.

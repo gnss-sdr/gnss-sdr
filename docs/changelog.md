@@ -44,6 +44,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Added a base class for GNSS ephemeris, saving some duplicated code and
   providing a common nomenclature for ephemeris' parameters. New generated XML
   files make use of the new parameters' name.
+- Update GSL implementation to 0.38.1. See
+  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.38.1
 
 ### Improvements in Portability:
 

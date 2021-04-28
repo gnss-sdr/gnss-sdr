@@ -63,11 +63,11 @@ if(NOT GOOGLETEST_FOUND)
                 ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
-        set(GOOGLETEST_GIT_TAG "v1.10.x")
+        set(GOOGLETEST_GIT_TAG "v${GNSSSDR_GTEST_LOCAL_VERSION}")
         if(CMAKE_VERSION VERSION_GREATER 3.18.99)
             # workaround to avoid warning about deprecated CMakeLists.txt with CMake >= 3.19
             # Remove after a stable release of Googletest including this fix
-            set(GOOGLETEST_GIT_TAG "d128fc8252d53baad6ea456fa08cbf9028d255f4")
+            set(GOOGLETEST_GIT_TAG ${GNSSSDR_GTEST_LOCAL_VERSION_POST_CMAKE_3_19})
         endif()
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest

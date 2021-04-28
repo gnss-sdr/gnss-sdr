@@ -272,7 +272,7 @@ void signal_generator_c::generate_codes()
                                 {
                                     for (unsigned int i = 0; i < vector_length_; i++)
                                         {
-                                            sampled_code_pilot_[sat][i] *= sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
+                                            sampled_code_pilot_[sat][i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
                                         }
                                 }
                         }
@@ -313,7 +313,7 @@ void signal_generator_c::generate_codes()
                                 {
                                     for (unsigned int i = 0; i < vector_length_; i++)
                                         {
-                                            sampled_code_pilot_[sat][i] *= sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
+                                            sampled_code_pilot_[sat][i] *= std::sqrt(std::pow(10.0F, CN0_dB_[sat] / 10.0F) / BW_BB_ / 2.0F);
                                         }
                                 }
                         }

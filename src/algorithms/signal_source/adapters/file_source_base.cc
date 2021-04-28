@@ -261,7 +261,7 @@ uint64_t FileSourceBase::samples() const
 
 std::tuple<size_t, bool> FileSourceBase::itemTypeToSize()
 {
-    auto is_complex_t = false;
+    auto is_interleaved = false;
     auto item_size = size_t(0);
 
     if (item_type_ == "gr_complex")
@@ -279,7 +279,7 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize()
     else if (item_type_ == "ishort")
         {
             item_size = sizeof(int16_t);
-            is_complex_t = true;
+            is_interleaved = true;
         }
     else if (item_type_ == "byte")
         {
@@ -288,7 +288,7 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize()
     else if (item_type_ == "ibyte")
         {
             item_size = sizeof(int8_t);
-            is_complex_t = true;
+            is_interleaved = true;
         }
     else
         {
@@ -297,7 +297,7 @@ std::tuple<size_t, bool> FileSourceBase::itemTypeToSize()
             item_size = sizeof(gr_complex);
         }
 
-    return std::make_tuple(item_size, is_complex_t);
+    return std::make_tuple(item_size, is_interleaved);
 }
 
 
@@ -338,7 +338,7 @@ size_t FileSourceBase::samplesToSkip() const
 
 size_t FileSourceBase::computeSamplesInFile() const
 {
-    auto n_samples = size_t(samples());
+    auto n_samples = static_cast<size_t>(samples());
 
     // if configured with 0 samples (read the whole file), figure out how many samples are in the file, and go from there
     if (n_samples == 0)
@@ -467,7 +467,7 @@ gnss_shared_ptr<gr::block> FileSourceBase::create_valve()
     if (samples() > 0)
         {
             // if a number of samples is specified, honor it by creating a valve
-            // In practice, this is always true
+            // in practice, this is always true
             valve_ = gnss_sdr_make_valve(source_item_size(), samples(), queue_);
             DLOG(INFO) << "valve(" << valve_->unique_id() << ")";
 
@@ -499,7 +499,7 @@ void FileSourceBase::create_valve_hook() {}
 void FileSourceBase::create_sink_hook() {}
 
 
-// Subclass hooks for connection/disconnectino
+// Subclass hooks for connection/disconnection
 void FileSourceBase::pre_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}      // NOLINT(performance-unnecessary-value-param)
 void FileSourceBase::post_connect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}     // NOLINT(performance-unnecessary-value-param)
 void FileSourceBase::pre_disconnect_hook(gr::top_block_sptr top_block [[maybe_unused]]) {}   // NOLINT(performance-unnecessary-value-param)

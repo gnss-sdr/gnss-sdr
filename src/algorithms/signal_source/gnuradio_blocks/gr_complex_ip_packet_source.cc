@@ -104,6 +104,7 @@ Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
           gr::io_signature::make(1, 4, item_size))  // 1 to 4 baseband complex channels
 {
     std::cout << "Start Ethernet packet capture\n";
+    std::cout << "Overflow events will be indicated by o's\n";
 
     d_n_baseband_channels = n_baseband_channels;
     if (wire_sample_type == "cbyte")
@@ -120,6 +121,11 @@ Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
         {
             d_wire_sample_type = 3;
             d_bytes_per_sample = d_n_baseband_channels * 8;
+        }
+    else if (wire_sample_type == "ishort")
+        {
+            d_wire_sample_type = 4;
+            d_bytes_per_sample = d_n_baseband_channels * 4;
         }
     else
         {
@@ -307,7 +313,7 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                     else
                         {
                             // notify overflow
-                            std::cout << "O" << std::flush;
+                            std::cout << "o" << std::flush;
                         }
                 }
         }
@@ -397,6 +403,25 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
                                 }
                         }
                     break;
+                case 4:  // interleaved short samples
+                    for (const auto &output_item : output_items)
+                        {
+                            int16_t real;
+                            int16_t imag;
+                            memcpy(&real, &fifo_buff[fifo_read_ptr], sizeof(real));
+                            fifo_read_ptr += 2;  // two bytes in short
+                            memcpy(&imag, &fifo_buff[fifo_read_ptr], sizeof(imag));
+                            fifo_read_ptr += 2;  // two bytes in short
+                            if (d_IQ_swap)
+                                {
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(real, imag);
+                                }
+                            else
+                                {
+                                    static_cast<gr_complex *>(output_item)[n] = gr_complex(imag, real);
+                                }
+                        }
+                    break;
                 default:
                     std::cout << "Unknown wire sample type\n";
                     exit(0);
@@ -422,36 +447,20 @@ int Gr_Complex_Ip_Packet_Source::work(int noutput_items,
 
     if (output_items.size() > static_cast<uint64_t>(d_n_baseband_channels))
         {
-            std::cout << "Configuration error: more baseband channels connected than the available in the UDP source\n";
+            std::cout << "Configuration error: more baseband channels connected than available in the UDP source\n";
             exit(0);
         }
     int num_samples_readed;
     int bytes_requested;
-    switch (d_wire_sample_type)
+
+    bytes_requested = noutput_items * d_bytes_per_sample;
+    if (bytes_requested < fifo_items)
         {
-        case 1:  // complex byte samples
-        case 2:  // complex 4 bits samples
-        case 3:  // complex float samples
-            bytes_requested = noutput_items * d_bytes_per_sample;
-            if (bytes_requested < fifo_items)
-                {
-                    num_samples_readed = noutput_items;  // read all
-                }
-            else
-                {
-                    num_samples_readed = fifo_items / d_bytes_per_sample;  // read what we have
-                }
-            break;
-        default:  // complex byte samples
-            bytes_requested = noutput_items * d_bytes_per_sample;
-            if (bytes_requested < fifo_items)
-                {
-                    num_samples_readed = noutput_items;  // read all
-                }
-            else
-                {
-                    num_samples_readed = fifo_items / d_bytes_per_sample;  // read what we have
-                }
+            num_samples_readed = noutput_items;  // read all
+        }
+    else
+        {
+            num_samples_readed = fifo_items / d_bytes_per_sample;  // read what we have
         }
 
     bytes_requested = num_samples_readed * d_bytes_per_sample;

@@ -14,6 +14,7 @@ endif()
 
 
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
+    fifo_reader.cc
     unpack_byte_2bit_samples.cc
     unpack_byte_2bit_cpx_samples.cc
     unpack_byte_4bit_samples.cc
@@ -27,6 +28,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
 
 
 set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
+    fifo_reader.h
     unpack_byte_2bit_samples.h
     unpack_byte_2bit_cpx_samples.h
     unpack_byte_4bit_samples.h

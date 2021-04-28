@@ -44,6 +44,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Added a base class for GNSS ephemeris, saving some duplicated code and
   providing a common nomenclature for ephemeris' parameters. New generated XML
   files make use of the new parameters' name.
+- Update GSL implementation to 0.38.1. See
+  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.38.1
 
 ### Improvements in Portability:
 
@@ -62,6 +64,11 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Usability:
 
+- Added a new `Fifo_Signal_Source` implementation that allows using a
+  [Unix FIFO](https://en.wikipedia.org/wiki/Named_pipe) as a signal source, thus
+  allowing to multiplex signal streams outside of `gnss-sdr`, letting another
+  program to hold access to the receiver, or allowing signal sources that are
+  not supported by `gnss-sdr` but can dump the signal to a FIFO.
 - Avoid segmentation faults in the flow graph connection and/or starting due to
   some common inconsistencies in the configuration file.
 - Provide hints to the user in case of failed flow graph connection due to
@@ -85,6 +92,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Fix bug in searching for gr-iio when CMake was re-run several times with
   different settings for the `-DENABLE_FMCOMMS2` or `-DENABLE_PLUTOSDR` building
   options.
+- Fix building when using UHD v4.0.0.0.
 
 &nbsp;
 

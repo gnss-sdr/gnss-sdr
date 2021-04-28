@@ -173,8 +173,8 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
        protobuf-devel protobuf-compiler
 ```
 
-Once you have installed these packages, you can jump directly to
-[download the source code and build GNSS-SDR](#download-and-build-linux).
+In Fedora 33 and above, you will need to add `gmp-devel` to the package list.
+Optionally, you can add `uhd-devel` starting from Fedora 32.
 
 #### openSUSE
 

@@ -513,6 +513,13 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_beidou_dnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code();
     d_beidou_dnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code();
 
+    //timetag
+    d_log_timetag = conf_.log_source_timetag;
+    if (d_log_timetag)
+        {
+            d_log_timetag_file = std::fstream(conf_.log_source_timetag_file, std::ios::out | std::ios::binary);
+            std::cout << "Log PVT timetag metadata enabled, log file: " << conf_.log_source_timetag_file << "\n";
+        }
     d_start = std::chrono::system_clock::now();
 }
 
@@ -1060,6 +1067,11 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                             LOG(INFO) << "Failed to save BeiDou DNAV UTC model parameters, not valid data";
                         }
                 }
+
+            if (d_log_timetag_file.is_open())
+                {
+                    d_log_timetag_file.close();
+                }
         }
     catch (std::length_error& e)
         {
@@ -1573,6 +1585,14 @@ bool rtklib_pvt_gs::save_gnss_synchro_map_xml(const std::string& file_name)
     return false;
 }
 
+void rtklib_pvt_gs::log_source_timetag_info(double RX_time_ns, double TAG_time_ns)
+{
+    if (d_log_timetag_file.is_open())
+        {
+            d_log_timetag_file.write(reinterpret_cast<char*>(&RX_time_ns), sizeof(double));
+            d_log_timetag_file.write(reinterpret_cast<char*>(&TAG_time_ns), sizeof(double));
+        }
+}
 
 bool rtklib_pvt_gs::load_gnss_synchro_map_xml(const std::string& file_name)
 {
@@ -1979,6 +1999,45 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, false))
                         {
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
+
+                            //**************** time tags ****************
+                            if (d_enable_rx_clock_correction == false)  //todo: currently only works if clock correction is disabled
+                                {
+                                    //************ Source TimeTag comparison with GNSS computed TOW *************
+
+                                    if (!d_TimeChannelTagTimestamps.empty())
+                                        {
+                                            double delta_rxtime_to_tag_ms;
+                                            GnssTime current_tag;
+                                            do
+                                                {
+                                                    current_tag = d_TimeChannelTagTimestamps.front();
+                                                    delta_rxtime_to_tag_ms = d_rx_time * 1000.0 - current_tag.rx_time;
+                                                    d_TimeChannelTagTimestamps.pop();
+                                                }
+                                            while (fabs(delta_rxtime_to_tag_ms) >= 100 and !d_TimeChannelTagTimestamps.empty());
+
+
+                                            if (fabs(delta_rxtime_to_tag_ms) <= 100)  //[ms]
+                                                {
+                                                    if (d_log_timetag == true)
+                                                        {
+                                                            double current_corrected_RX_clock_ns = (d_rx_time - Rx_clock_offset_s) * 1e9;
+                                                            double TAG_time_ns = (static_cast<double>(current_tag.tow_ms) + current_tag.tow_ms_fraction + delta_rxtime_to_tag_ms) * 1e6;
+                                                            log_source_timetag_info(current_corrected_RX_clock_ns, TAG_time_ns);
+
+                                                            //                                                    double timestamp_tow_error_ns = 1000000.0 * (Rx_clock_offset_s * 1000.0 + delta_rxtime_to_tag + static_cast<double>(current_tag.tow_ms) - d_rx_time * 1000.0 + current_tag.tow_ms_fraction);
+                                                            double timestamp_tow_error_ns = TAG_time_ns - current_corrected_RX_clock_ns;
+                                                            std::cout << "[Time ch] RX TimeTag Week: " << current_tag.week
+                                                                      << ", TOW: " << current_tag.tow_ms
+                                                                      << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
+                                                                      << " [ms], GNSS-SDR OBS CORRECTED TOW - EXTERNAL TIMETAG TOW: " << timestamp_tow_error_ns << " [ns] \n";
+                                                        }
+                                                }
+                                        }
+                                }
+                            //**********************************************
+
                             if (fabs(Rx_clock_offset_s) * 1000.0 > d_max_obs_block_rx_clock_offset_ms)
                                 {
                                     if (!d_waiting_obs_block_rx_clock_offset_correction_msg)
@@ -2061,36 +2120,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             initialize_and_apply_carrier_phase_offset();
 
                             const double Rx_clock_offset_s = d_user_pvt_solver->get_time_offset_s();
-
-                            //**************** time tags ****************
-                            if (d_enable_rx_clock_correction == false)  //todo: currently only works if clock correction is disabled
-                                {
-                                    //************ Source TimeTag comparison with GNSS computed TOW *************
-
-                                    if (!d_TimeChannelTagTimestamps.empty())
-                                        {
-                                            double delta_rxtime_to_tag;
-                                            GnssTime current_tag;
-                                            do
-                                                {
-                                                    current_tag = d_TimeChannelTagTimestamps.front();
-                                                    delta_rxtime_to_tag = d_rx_time * 1000.0 - current_tag.rx_time;
-                                                    d_TimeChannelTagTimestamps.pop();
-                                                }
-                                            while (fabs(delta_rxtime_to_tag) >= 100 and !d_TimeChannelTagTimestamps.empty());
-
-
-                                            if (fabs(delta_rxtime_to_tag) <= 100)  //[ms]
-                                                {
-                                                    double timestamp_tow_error_ns = 1000000.0 * (Rx_clock_offset_s * 1000.0 + delta_rxtime_to_tag + static_cast<double>(current_tag.tow_ms) - d_rx_time * 1000.0 + current_tag.tow_ms_fraction);
-                                                    std::cout << "[Time ch] RX TimeTag Week: " << current_tag.week
-                                                              << ", TOW: " << current_tag.tow_ms
-                                                              << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
-                                                              << " [ms], GNSS-SDR OBS CORRECTED TOW - EXTERNAL TIMETAG TOW: " << timestamp_tow_error_ns << " [ns] \n";
-                                                }
-                                        }
-                                }
-                            //**********************************************
 
                             if (d_enable_rx_clock_correction == true and fabs(Rx_clock_offset_s) > 0.000001)  // 1us !!
                                 {

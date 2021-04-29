@@ -133,6 +133,8 @@ private:
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
+    void log_source_timetag_info(double RX_time_ns, double TAG_time_ns);
+
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
     void initialize_and_apply_carrier_phase_offset();
@@ -160,6 +162,9 @@ private:
 
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
+
+    bool d_log_timetag;
+    std::fstream d_log_timetag_file;
 
     std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
     std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;

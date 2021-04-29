@@ -67,4 +67,7 @@ Pvt_Conf::Pvt_Conf()
     udp_eph_port = 0;
     pre_2009_file = false;
     show_local_time_zone = false;
+
+    log_source_timetag = false;
+    log_source_timetag_file = "PVT_timetag.dat";
 }

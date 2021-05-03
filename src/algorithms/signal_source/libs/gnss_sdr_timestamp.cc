@@ -94,7 +94,8 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
         {
             if (read_next_timetag() == false)
                 {
-                    return -1;
+                    //std::cout << "End of TimeTag file reached!\n";
+                    //return 0;  //todo: find why return -1 does not stop gnss-sdr!
                 }
             get_next_timetag = false;
         }

@@ -14,6 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 #include "file_timestamp_signal_source.h"
+#include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_timestamp.h"
 #include <glog/logging.h>
@@ -32,6 +33,12 @@ FileTimestampSignalSource::FileTimestampSignalSource(const ConfigurationInterfac
     if (out_streams > 1)
         {
             LOG(ERROR) << "This implementation only supports one output stream";
+        }
+
+    // override value with commandline flag, if present
+    if (FLAGS_timestamp_source != "-")
+        {
+            timestamp_file_ = FLAGS_timestamp_source;
         }
 }
 

@@ -35,9 +35,10 @@ DECLARE_string(config_file);  //!< Path to the configuration file.
 DECLARE_string(log_dir);  //!< Path to the folder in which logging will be stored.
 
 // Declare flags for signal sources
-DECLARE_string(s);              //!< Path to the file containing the signal samples.
-DECLARE_string(signal_source);  //!< Path to the file containing the signal samples.
-DECLARE_bool(rf_shutdown);      //!< Shutdown RF when program exits.
+DECLARE_string(s);                 //!< Path to the file containing the signal samples.
+DECLARE_string(signal_source);     //!< Path to the file containing the signal samples.
+DECLARE_string(timestamp_source);  //!< Path to the file containing the signal samples.
+DECLARE_bool(rf_shutdown);         //!< Shutdown RF when program exits.
 
 // Declare flags for acquisition blocks
 DECLARE_int32(doppler_max);   //!< If defined, maximum Doppler value in the search grid, in Hz (overrides the configuration file).

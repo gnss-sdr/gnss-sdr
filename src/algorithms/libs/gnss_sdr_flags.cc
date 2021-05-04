@@ -33,6 +33,9 @@ DEFINE_string(s, "-",
 DEFINE_string(signal_source, "-",
     "If defined, path to the file containing the signal samples (overrides the configuration file).");
 
+DEFINE_string(timestamp_source, "-",
+    "If defined, path to the file containing the signal timestamp data (overrides the configuration file).");
+
 DEFINE_bool(rf_shutdown, true, "If set to false, AD9361 RF channels are not shut down when exiting the program. Useful to leave the AD9361 configured and running.");
 
 DEFINE_int32(doppler_max, 0, "If defined, sets the maximum Doppler value in the search grid, in Hz (overrides the configuration file).");

@@ -170,8 +170,8 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
 void GpsL5iPcpsAcquisitionFpga::stop_acquisition()
 {
-    // this command causes the SW to reset the HW.
-    acquisition_fpga_->reset_acquisition();
+    // stop the acquisition and the other FPGA modules.
+    acquisition_fpga_->stop_acquisition();
 }
 
 

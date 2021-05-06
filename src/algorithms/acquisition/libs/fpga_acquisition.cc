@@ -240,11 +240,15 @@ void Fpga_Acquisition::close_device()
 
 void Fpga_Acquisition::reset_acquisition()
 {
-    // printf("============ resetting the hw now from the acquisition ===============");
-    d_map_base[8] = RESET_ACQUISITION;  // writing a 2 to d_map_base[8] resets the acquisition. This causes a reset of all
+    d_map_base[8] = RESET_ACQUISITION;  // setting bit 2 of d_map_base[8] resets the acquisition. This causes a reset of all
                                         // the FPGA HW modules including the multicorrelators
 }
 
+void Fpga_Acquisition::stop_acquisition()
+{
+    d_map_base[8] = STOP_ACQUISITION;  // setting bit 3 of d_map_base[8] stops the acquisition module. This stops all
+                                       // the FPGA HW modules including the multicorrelators
+}
 
 // this function is only used for the unit tests
 void Fpga_Acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)

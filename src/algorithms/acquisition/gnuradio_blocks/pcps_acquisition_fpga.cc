@@ -301,3 +301,11 @@ void pcps_acquisition_fpga::reset_acquisition()
     d_acquisition_fpga->reset_acquisition();
     d_acquisition_fpga->close_device();
 }
+
+void pcps_acquisition_fpga::stop_acquisition()
+{
+    // this function stops the acquisition and the other FPGA Modules.
+    d_acquisition_fpga->open_device();
+    d_acquisition_fpga->stop_acquisition();
+    d_acquisition_fpga->close_device();
+}

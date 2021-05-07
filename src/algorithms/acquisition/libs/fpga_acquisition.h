@@ -106,6 +106,11 @@ public:
     void reset_acquisition();
 
     /*!
+     * \brief stop the acquisition and the FPGA modules.
+     */
+    void stop_acquisition();
+
+    /*!
      * \brief Read the scaling factor that has been used by the FFT-IFFT
      */
     void read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor);
@@ -138,8 +143,9 @@ public:
 private:
     // FPGA register parameters
     static const uint32_t PAGE_SIZE_DEFAULT = 0x10000;            // default page size for the multicorrelator memory map
-    static const uint32_t RESET_ACQUISITION = 2;                  // command to reset the multicorrelator
-    static const uint32_t LAUNCH_ACQUISITION = 1;                 // command to launch the multicorrelator
+    static const uint32_t LAUNCH_ACQUISITION = 1;                 // command to launch the acquisition process
+    static const uint32_t RESET_ACQUISITION = 2;                  // command to reset the acquisition and the FPGA Modules
+    static const uint32_t STOP_ACQUISITION = 4;                   // command to stop the acquisition and the FPGA modules
     static const uint32_t TEST_REG_SANITY_CHECK = 0x55AA;         // value to check the presence of the test register (to detect the hw)
     static const uint32_t LOCAL_CODE_CLEAR_MEM = 0x10000000;      // command to clear the internal memory of the multicorrelator
     static const uint32_t MEM_LOCAL_CODE_WR_ENABLE = 0x0C000000;  // command to enable the ENA and WR pins of the internal memory of the multicorrelator

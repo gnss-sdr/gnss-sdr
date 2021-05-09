@@ -322,24 +322,26 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 # Versions to download and build (but not installed) if not found
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
-set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
+set(GNSSSDR_GLOG_LOCAL_VERSION "0.5.0")
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.4.x")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
-set(GNSSSDR_GTEST_LOCAL_VERSION_POST_CMAKE_3_19 "23ef29555ef4789f555f1ba8c51b4c52975f0907")  # Used with CMake >= 3.19
+set(GNSSSDR_GTEST_LOCAL_VERSION_POST_CMAKE_3_19 "f5e592d8ee5ffb1d9af5be7f715ce3576b8bf9c4")  # Used with CMake >= 3.19
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.21")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11.4")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.15.8")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.16.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.3")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
+
+if(CMAKE_VERSION VERSION_LESS "3.3")
+    set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")    # Fix for Debian 8
+endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.4")    # Fix for Ubuntu 14.04
 endif()
-
-
 
 ################################################################################
 # Check compiler version
@@ -1467,7 +1469,7 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
         set(GLOG_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
     endif()
 
-    if(CMAKE_VERSION VERSION_LESS 3.2)
+    if(CMAKE_VERSION VERSION_LESS 3.3)
         if(CMAKE_VERSION VERSION_LESS 3.0)
             set(GLOG_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
             set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
@@ -1576,7 +1578,7 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
                 ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
                 ${CMAKE_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
             )
-        else()  # CMake > 3.0 but < 3.2
+        else()  # CMake > 3.0 but < 3.3
             ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 DEPENDS ${TARGET_GFLAGS}
                 PREFIX ${CMAKE_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
@@ -1600,7 +1602,7 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
                 ${GFlags_INCLUDE_DIRS}
             )
         endif()
-    else()  # CMake > 3.2
+    else()  # CMake > 3.3
         set(GLOG_BUILD_BYPRODUCTS
             ${CMAKE_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
         )
@@ -1621,10 +1623,10 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                 -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
                 ${GLOG_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                -DBUILD_SHARED_LIBS=OFF
             BUILD_COMMAND "${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""

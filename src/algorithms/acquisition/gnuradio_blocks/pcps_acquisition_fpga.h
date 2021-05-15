@@ -189,6 +189,11 @@ public:
      */
     void reset_acquisition();
 
+    /*!
+     * \brief stop the acquisition and the other FPGA modules.
+     */
+    void stop_acquisition();
+
 private:
     friend pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_);
     explicit pcps_acquisition_fpga(pcpsconf_fpga_t conf_);

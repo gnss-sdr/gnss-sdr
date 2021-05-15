@@ -158,6 +158,8 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
 void GpsL2MPcpsAcquisitionFpga::stop_acquisition()
 {
+    // stop the acquisition and the other FPGA modules.
+    acquisition_fpga_->stop_acquisition();
 }
 
 

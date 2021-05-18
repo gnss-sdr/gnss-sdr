@@ -74,7 +74,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
         {
             for (uint32_t k = 0; k < configuration->property("Channels_1C.count", 0U); k++)
                 {
-                    if (find_uio_dev_file_name(device_io_name, default_device_name_GPS_L1, k + 1) == 0)
+                    if (find_uio_dev_file_name(device_io_name, default_device_name_GPS_L1, k) == 0)
                         {
                             num_prev_assigned_ch_1C = num_prev_assigned_ch_1C + 1;
                         }

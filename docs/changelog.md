@@ -98,6 +98,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   options.
 - Fix building when using UHD v4.0.0.0.
 
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
 &nbsp;
 
 ## [GNSS-SDR v0.0.14](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.14) - 2021-01-08
@@ -203,6 +206,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   navigation message bits. If `TelemetryDecoder_XX.dump=true`, the resulting
   `.dat` binary file is also delivered in `.mat` format, which is readable from
   Matlab and Python.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
 
 &nbsp;
 

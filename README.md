@@ -46,6 +46,8 @@ a framework for the development of new features. Please visit
 [https://gnss-sdr.org](https://gnss-sdr.org "GNSS-SDR website") for more
 information about this open-source, software-defined GNSS receiver.
 
+:sparkles: See what's new in the [changelog](./docs/changelog.md).
+
 # Table of Contents
 
 <details>

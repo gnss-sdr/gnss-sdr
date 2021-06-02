@@ -186,6 +186,21 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
 #endif
 #endif
+
+    //Galileo E6 HAS messages
+    this->message_port_register_in(pmt::mp("E6_HAS_to_PVT"));
+    //TODO: bind the Galileo E6 HAS message input with the desired function
+    //    this->set_msg_handler(pmt::mp("E6_HAS_to_PVT"),
+    //#if HAS_GENERIC_LAMBDA
+    //        [this](auto&& PH1) { msg_handler_telemetry(PH1); });
+    //#else
+    //#if USE_BOOST_BIND_PLACEHOLDERS
+    //        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, boost::placeholders::_1));
+    //#else
+    //        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
+    //#endif
+    //#endif
+
     // initialize kml_printer
     const std::string kml_dump_filename = d_dump_filename;
     d_kml_output_enabled = conf_.kml_output_enabled;

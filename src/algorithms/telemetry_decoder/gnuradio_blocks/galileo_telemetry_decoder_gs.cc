@@ -65,6 +65,9 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    //register Gal E6 messages HAS out
+    this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
+
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
     d_band = '1';
@@ -537,9 +540,12 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
                 }
             else
                 {
+                    //TODO: do not send HAS data over telemetry msg port
                     const std::shared_ptr<Galileo_HAS_data> tmp_obj = std::make_shared<Galileo_HAS_data>(d_cnav_nav.get_HAS_data());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
                     std::cout << TEXT_MAGENTA << "New Galileo E6 HAS message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                    //Send HAS data to HAS processing class
+                    this->message_port_pub(pmt::mp("E6_HAS_from_TLM"), pmt::make_any(tmp_obj));
                 }
         }
 }

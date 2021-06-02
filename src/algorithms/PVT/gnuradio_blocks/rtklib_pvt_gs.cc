@@ -187,19 +187,18 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 #endif
 #endif
 
-    //Galileo E6 HAS messages
+    // Galileo E6 HAS messages port in
     this->message_port_register_in(pmt::mp("E6_HAS_to_PVT"));
-    //TODO: bind the Galileo E6 HAS message input with the desired function
-    //    this->set_msg_handler(pmt::mp("E6_HAS_to_PVT"),
-    //#if HAS_GENERIC_LAMBDA
-    //        [this](auto&& PH1) { msg_handler_telemetry(PH1); });
-    //#else
-    //#if USE_BOOST_BIND_PLACEHOLDERS
-    //        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, boost::placeholders::_1));
-    //#else
-    //        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
-    //#endif
-    //#endif
+    this->set_msg_handler(pmt::mp("E6_HAS_to_PVT"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_has_data(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, boost::placeholders::_1));
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, _1));
+#endif
+#endif
 
     // initialize kml_printer
     const std::string kml_dump_filename = d_dump_filename;
@@ -524,6 +523,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_beidou_dnav_iono_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code();
     d_beidou_dnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code();
     d_beidou_dnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code();
+    d_galileo_has_data_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
 
     d_start = std::chrono::system_clock::now();
 }
@@ -1476,6 +1476,25 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
             else
                 {
                     LOG(WARNING) << "msg_handler_telemetry unknown object type!";
+                }
+        }
+    catch (const boost::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_telemetry Bad any_cast: " << e.what();
+        }
+}
+
+
+void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
+{
+    try
+        {
+            const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
+            if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
+                {
+                    const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
+                    // TODO: Store HAS message
+                    // std::cout << "HAS data received at PVT block.\n";
                 }
         }
     catch (const boost::bad_any_cast& e)

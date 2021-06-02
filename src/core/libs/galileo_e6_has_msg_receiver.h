@@ -1,6 +1,7 @@
 /*!
- * \file GALILEO_E6_HAS_msg_receiver.h
- * \brief GNU Radio block that receives asynchronous Galileo E6 HAS message sections from Galileo E6 telemetry blocks
+ * \file galileo_e6_has_msg_receiver.h
+ * \brief GNU Radio block that receives asynchronous Galileo E6 HAS message
+ * sections from Galileo E6 telemetry blocks
  * \author Javier Arribas, 2021. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -14,12 +15,11 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GALILEO_E6_HAS_MSG_RECEIVER_CC_H
-#define GNSS_SDR_GALILEO_E6_HAS_MSG_RECEIVER_CC_H
+#ifndef GNSS_SDR_GALILEO_E6_HAS_MSG_RECEIVER_H
+#define GNSS_SDR_GALILEO_E6_HAS_MSG_RECEIVER_H
 
 #include "gnss_block_interface.h"
-#include "gnss_synchro.h"
-#include "monitor_pvt.h"
+#include "reed_solomon.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
 #include <map>
@@ -49,9 +49,10 @@ private:
     friend galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make();
     galileo_e6_has_msg_receiver();
     void msg_handler_galileo_e6_has(const pmt::pmt_t& msg);
+    ReedSolomon rs = ReedSolomon();
 };
 
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GALILEO_E6_HAS_MSG_RECEIVER_CC_H
+#endif  // GNSS_SDR_GALILEO_E6_HAS_MSG_RECEIVER_H

@@ -86,6 +86,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     Beidou_DNAV.h
     MATH_CONSTANTS.h
     reed_solomon.h
+    galileo_has_page.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

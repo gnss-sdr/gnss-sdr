@@ -82,6 +82,7 @@ constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 8 ICD v1.2
 constexpr char GALILEO_CNAV_PREAMBLE[17] = "1011011101110000";
 
 const std::pair<int32_t, int32_t> GALILEO_HAS_STATUS({1, 2});
+const std::pair<int32_t, int32_t> GALILEO_HAS_RESERVED({3, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_TYPE({5, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_ID({7, 5});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_SIZE({12, 5});

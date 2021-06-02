@@ -539,7 +539,9 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
                     if (is_page_dummy != d_cnav_dummy_page)
                         {
                             d_cnav_dummy_page = is_page_dummy;
-                            std::cout << TEXT_MAGENTA << "Receiving Galileo E6 CNAV dummy pages in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                            std::cout << TEXT_MAGENTA << "Receiving Galileo E6 CNAV dummy pages in channel "
+                                      << d_channel << " from satellite " << d_satellite
+                                      << TEXT_RESET << '\n';
                         }
                 }
             else
@@ -547,7 +549,10 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
                     const std::shared_ptr<Galileo_HAS_page> tmp_obj = std::make_shared<Galileo_HAS_page>(d_cnav_nav.get_HAS_encoded_page());
                     // TODO: send to the decoder
                     // this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS page received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS page received in channel "
+                              << d_channel << " from satellite " << d_satellite
+                              << (d_cnav_nav.is_HAS_in_test_mode() == true ? " (test mode)" : "")
+                              << TEXT_RESET << '\n';
                 }
         }
 }

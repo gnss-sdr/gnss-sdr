@@ -20,13 +20,11 @@
 #define GNSS_SDR_GALILEO_CNAV_MESSAGE_H
 
 #include "Galileo_CNAV.h"
-#include "galileo_has_data.h"
-#include "reed_solomon.h"
+#include "galileo_has_page.h"
 #include <bitset>
 #include <cstdint>
-#include <list>
 #include <string>
-#include <vector>
+#include <utility>
 
 /** \addtogroup Core
  * \{ */
@@ -46,64 +44,49 @@ public:
 
     void read_HAS_page(const std::string& page_string);
 
-    inline bool have_new_HAS_message()
-    {
-        return d_new_message;
-    }
-
     inline bool is_HAS_in_test_mode() const
     {
         return d_test_mode;
     }
 
-    inline bool is_HAS_message_dummy() const
+    inline bool is_HAS_page_dummy() const
     {
         return d_page_dummy;
     }
 
-    inline Galileo_HAS_data get_HAS_data() const
+    inline bool have_new_HAS_page() const
     {
-        return d_HAS_data;
+        return d_new_HAS_page;
+    }
+
+    inline Galileo_HAS_page get_HAS_encoded_page() const
+    {
+        return has_page;
+    }
+
+    inline bool get_flag_CRC_test() const
+    {
+        return d_flag_CRC_test;
     }
 
 private:
+    uint8_t read_has_page_header_parameter(const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     bool CRC_test(const std::bitset<GALILEO_CNAV_BITS_FOR_CRC>& bits, uint32_t checksum) const;
     void read_HAS_page_header(const std::string& page_string);
-    void process_HAS_page(const std::string& page_string);
-    void read_MT1_header(const std::string& message_string);
-    void read_MT1_body(const std::string& message_string);
-    int decode_message_type1();
 
-    uint8_t read_has_page_header_parameter(const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
-    uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
-    uint16_t read_has_message_header_parameter_uint16(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
-    bool read_has_message_header_parameter_bool(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
-
-    uint8_t read_has_message_body_uint8(const std::string& bits) const;
-    uint16_t read_has_message_body_uint16(const std::string& bits) const;
-    uint64_t read_has_message_body_uint64(const std::string& bits) const;
-    int16_t read_has_message_body_int16(const std::string& bits) const;
-
-    Galileo_HAS_data d_HAS_data{};
-    ReedSolomon rs = ReedSolomon();
-    std::vector<std::vector<uint8_t>> d_C_matrix{GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};  // 255 x 53
-    std::vector<std::vector<uint8_t>> d_M_matrix{GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};         // 32 x 53
-    std::list<uint8_t> d_list_pid;
+    Galileo_HAS_page has_page{};
 
     uint8_t d_has_page_status{};
-    uint8_t d_current_message_id{};
-    uint8_t d_current_message_size{};
-
+    uint8_t d_has_reserved{};
     uint8_t d_received_message_page_id{};
     uint8_t d_received_message_type{};
     uint8_t d_received_message_id{};
-    uint8_t d_received_encoded_messages{};
     uint8_t d_received_message_size{};
 
     bool d_test_mode{};
-    bool d_new_message{};
     bool d_flag_CRC_test{};
     bool d_page_dummy{};
+    bool d_new_HAS_page{};
 };
 
 

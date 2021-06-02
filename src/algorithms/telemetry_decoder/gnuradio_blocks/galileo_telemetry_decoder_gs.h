@@ -140,6 +140,7 @@ private:
     bool d_dump_mat;
     bool d_remove_dat;
     bool d_first_eph_sent;
+    bool d_cnav_dummy_page;
 };
 
 

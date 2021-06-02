@@ -590,7 +590,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             nsys += SYS_GPS;
         }
-    if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0))
+    if ((gal_1B_count > 0) || (gal_E5a_count > 0) || (gal_E5b_count > 0) || (gal_E6_count > 0))
         {
             nsys += SYS_GAL;
         }

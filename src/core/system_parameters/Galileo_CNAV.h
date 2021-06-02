@@ -63,7 +63,7 @@ constexpr int32_t GALILEO_CNAV_TELEMETRY_RATE_BITS_SECOND = 1000;  // bps
 constexpr int32_t GALILEO_CNAV_HAS_PAGE_DATA_BITS = 448;
 constexpr int32_t GALILEO_CNAV_PAGE_RESERVED_BITS = 14;
 constexpr int32_t GALILEO_CNAV_BITS_FOR_CRC = GALILEO_CNAV_HAS_PAGE_DATA_BITS + GALILEO_CNAV_PAGE_RESERVED_BITS;  // 462
-constexpr int32_t GALILEO_CNAV_BYTES_FOR_CRC = 60;
+constexpr int32_t GALILEO_CNAV_BYTES_FOR_CRC = 58;
 constexpr int32_t GALILEO_CNAV_CRC_LENGTH = 24;
 constexpr int32_t GALILEO_CNAV_MESSAGE_BITS_PER_PAGE = 424;
 constexpr int32_t GALILEO_CNAV_PAGE_HEADER_BITS = 24;
@@ -82,6 +82,7 @@ constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 8 ICD v1.2
 constexpr char GALILEO_CNAV_PREAMBLE[17] = "1011011101110000";
 
 const std::pair<int32_t, int32_t> GALILEO_HAS_STATUS({1, 2});
+const std::pair<int32_t, int32_t> GALILEO_HAS_RESERVED({3, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_TYPE({5, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_ID({7, 5});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_SIZE({12, 5});

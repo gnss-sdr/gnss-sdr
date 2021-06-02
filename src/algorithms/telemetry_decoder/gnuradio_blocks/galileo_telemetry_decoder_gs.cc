@@ -65,7 +65,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
-    //register Gal E6 messages HAS out
+    // register Gal E6 messages HAS out
     this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
 
     d_last_valid_preamble = 0;

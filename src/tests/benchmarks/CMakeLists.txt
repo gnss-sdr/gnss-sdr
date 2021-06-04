@@ -39,7 +39,7 @@ if(NOT benchmark_FOUND)
         SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/benchmark
         BINARY_DIR ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}
         CMAKE_ARGS ${BENCHMARK_COMPILER}
-            -DBENCHMARK_ENABLE_GTEST_TESTS=OFF
+            -DBENCHMARK_ENABLE_TESTING=OFF
             ${BENCHMARK_TOOLCHAIN_ARG}
             -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
         BUILD_COMMAND "${BENCHMARK_BUILD_COMMAND} ${BENCHMARK_PARALLEL_BUILD}"

@@ -61,7 +61,11 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+#if GNURADIO_API_IIO
+    gr::iio::fmcomms2_source::sptr fmcomms2_source_f32c_;
+#else
     gr::iio::fmcomms2_source_f32c::sptr fmcomms2_source_f32c_;
+#endif
     gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
 

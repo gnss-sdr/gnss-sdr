@@ -121,15 +121,20 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
 
     std::cout << "device address: " << uri_ << '\n';
     std::cout << "frequency : " << freq_ << " Hz\n";
-    std::cout << "sample rate: " << sample_rate_ << " Hz\n";
+    std::cout << "sample rate: " << sample_rate_ << " Sps\n";
     std::cout << "gain mode: " << gain_mode_ << '\n';
     std::cout << "item type: " << item_type_ << '\n';
 
 #if GNURADIO_API_IIO
-    plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,
-        bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,
-        gain_mode_.c_str(), rf_gain_, filter_source_.c_str(),
-        filter_filename_.c_str(), Fpass_, Fstop_);
+    plutosdr_source_ = gr::iio::pluto_source::make(uri_, buffer_size_);
+    plutosdr_source_->set_frequency(freq_);
+    plutosdr_source_->set_samplerate(sample_rate_);
+    plutosdr_source_->set_gain_mode(gain_mode_);
+    plutosdr_source_->set_gain(rf_gain_);
+    plutosdr_source_->set_quadrature(quadrature_);
+    plutosdr_source_->set_rfdc(rf_dc_);
+    plutosdr_source_->set_bbdc(bb_dc_);
+    plutosdr_source_->set_filter_params(filter_source_, filter_filename_, Fpass_, Fstop_);
 #else
     plutosdr_source_ = gr::iio::pluto_source::make(uri_, freq_, sample_rate_,
         bandwidth_, buffer_size_, quadrature_, rf_dc_, bb_dc_,

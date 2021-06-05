@@ -206,6 +206,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_flag_PLL_180_deg_phase_locked = false;
     d_symbol_history.set_capacity(d_required_symbols + 1);
     d_cnav_dummy_page = false;
+    d_print_cnav_page = true;
 
     // vars for Viterbi decoder
     const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
@@ -538,10 +539,12 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
             bool is_page_dummy = d_cnav_nav.is_HAS_page_dummy();
             if (is_page_dummy == true)
                 {
+                    d_print_cnav_page = true;
                     // Only print the message once
                     if (is_page_dummy != d_cnav_dummy_page)
                         {
                             d_cnav_dummy_page = is_page_dummy;
+
                             std::cout << TEXT_MAGENTA << "Receiving Galileo E6 CNAV dummy pages in channel "
                                       << d_channel << " from satellite " << d_satellite
                                       << TEXT_RESET << '\n';
@@ -551,10 +554,14 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
                 {
                     const std::shared_ptr<Galileo_HAS_page> tmp_obj = std::make_shared<Galileo_HAS_page>(d_cnav_nav.get_HAS_encoded_page());
                     this->message_port_pub(pmt::mp("E6_HAS_from_TLM"), pmt::make_any(tmp_obj));
-                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS page received in channel "
-                              << d_channel << " from satellite " << d_satellite
-                              << (d_cnav_nav.is_HAS_in_test_mode() == true ? " (test mode)" : "")
-                              << TEXT_RESET << '\n';
+                    if (d_print_cnav_page == true)
+                        {
+                            d_print_cnav_page = false;  // only print the first page
+                            std::cout << TEXT_MAGENTA << "Receiving Galileo E6 HAS pages"
+                                      << (d_cnav_nav.is_HAS_in_test_mode() == true ? " (test mode) " : " ")
+                                      << "in channel " << d_channel << " from satellite " << d_satellite
+                                      << TEXT_RESET << '\n';
+                        }
                 }
         }
 }

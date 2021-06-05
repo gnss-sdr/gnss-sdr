@@ -141,6 +141,7 @@ private:
     bool d_remove_dat;
     bool d_first_eph_sent;
     bool d_cnav_dummy_page;
+    bool d_print_cnav_page;
 };
 
 

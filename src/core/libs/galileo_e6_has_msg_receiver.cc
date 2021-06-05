@@ -19,6 +19,7 @@
 
 
 #include "galileo_e6_has_msg_receiver.h"
+#include "display.h"
 #include "galileo_has_page.h"  // for Galileo_HAS_page
 #include "gnss_sdr_make_unique.h"
 #include "reed_solomon.h"
@@ -141,6 +142,8 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
             if (res == 0)
                 {
                     // Successful decoding, we have a valid HAS message stored at d_HAS_data
+                    std::cout << TEXT_MAGENTA << "New Galileo HAS message type " << static_cast<float>(has_page.message_id)
+                              << " received and successfully decoded" << TEXT_RESET << '\n';
                     d_new_message = true;
                 }
             else
@@ -157,23 +160,24 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
     // Compute erasure positions
     std::vector<int> erasure_positions;
-    erasure_positions.reserve(223);         // Maximum erasure positions ( = number of parity symbols in a block)
-    for (int i = 0; i < message_size; i++)  // we know that from message_size to 32, the value is 0
+    erasure_positions.reserve(223);  // Maximum erasure positions ( = number of parity symbols in a block)
+
+    for (uint8_t i = 0; i < message_size; i++)  // we know that from message_size to 32, the value is 0
         {
-            if (d_C_matrix[message_id][i][0] == 0)
+            if (std::find(d_received_pages[message_id].begin(), d_received_pages[message_id].end(), i) == d_received_pages[message_id].end())
                 {
                     erasure_positions.push_back(i);
                 }
         }
     for (int i = 32; i < 255; i++)
         {
-            if (d_C_matrix[message_id][i][0] == 0)
+            if (std::find(d_received_pages[message_id].begin(), d_received_pages[message_id].end(), static_cast<uint8_t>(i)) == d_received_pages[message_id].end())
                 {
                     erasure_positions.push_back(i);
                 }
         }
 
-    // Reset HAS message matrix
+    // Reset HAS decoded message matrix
     d_M_matrix = {GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)};
 
     // Vertical decoding of d_C_matrix
@@ -189,7 +193,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
             if (result < 0)
                 {
-                    DLOG(INFO) << "Decoding of HAS page failed";
+                    DLOG(ERROR) << "Decoding of HAS page failed";
                     return -1;
                 }
             DLOG(INFO) << "Successful HAS page decoding";
@@ -264,6 +268,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_strin
         {
             // read mask
             d_HAS_data.Nsys = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYS_LENGTH));
+            DLOG(INFO) << "Nsys: " << static_cast<float>(d_HAS_data.Nsys);
             message = std::string(message.begin() + HAS_MSG_NSYS_LENGTH, message.end());
             d_HAS_data.gnss_id_mask.reserve(d_HAS_data.Nsys);
             d_HAS_data.cell_mask.reserve(d_HAS_data.Nsys);
@@ -387,6 +392,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_strin
             message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
 
             d_HAS_data.Nsysprime = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYSPRIME_LENGTH));
+            DLOG(INFO) << "Nsysprime: " << static_cast<float>(d_HAS_data.Nsysprime);
             message = std::string(message.begin() + HAS_MSG_NSYSPRIME_LENGTH, message.end());
 
             d_HAS_data.gnss_id_clock_subset.reserve(d_HAS_data.Nsysprime);

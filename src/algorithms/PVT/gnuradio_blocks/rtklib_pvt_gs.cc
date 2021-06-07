@@ -1485,7 +1485,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
 }
 
 
-void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
+void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg) const
 {
     try
         {
@@ -1493,13 +1493,13 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
             if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
                 {
                     const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
-                    // TODO: Store HAS message
+                    // TODO: Dump HAS message
                     // std::cout << "HAS data received at PVT block.\n";
                 }
         }
     catch (const boost::bad_any_cast& e)
         {
-            LOG(WARNING) << "msg_handler_telemetry Bad any_cast: " << e.what();
+            LOG(WARNING) << "msg_handler_has_data Bad any_cast: " << e.what();
         }
 }
 

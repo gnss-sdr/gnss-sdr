@@ -133,7 +133,7 @@ private:
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
-    void msg_handler_has_data(const pmt::pmt_t& msg);
+    void msg_handler_has_data(const pmt::pmt_t& msg) const;
 
     void initialize_and_apply_carrier_phase_offset();
 

@@ -78,7 +78,7 @@ private:
     Galileo_HAS_data d_HAS_data{};
     std::vector<std::vector<std::vector<uint8_t>>> d_C_matrix{32, std::vector<std::vector<uint8_t>>(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0))};  // 32 x 255 x 53
     std::vector<std::vector<uint8_t>> d_M_matrix{GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};                                                             // HAS message matrix 32 x 53
-    std::vector<std::vector<uint8_t>> d_received_pages{32, std::vector<uint8_t>()};
+    std::vector<std::vector<uint8_t>> d_received_pids{32, std::vector<uint8_t>()};
     bool d_new_message{};
 };
 

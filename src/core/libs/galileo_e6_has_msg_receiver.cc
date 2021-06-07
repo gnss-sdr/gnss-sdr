@@ -117,10 +117,10 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
                         {
                             if (has_page.message_id < 32)  // MID range is from 0 to 31
                                 {
-                                    if (std::find(d_received_pages[has_page.message_id].begin(), d_received_pages[has_page.message_id].end(), has_page.message_page_id) == d_received_pages[has_page.message_id].end())
+                                    if (std::find(d_received_pids[has_page.message_id].begin(), d_received_pids[has_page.message_id].end(), has_page.message_page_id) == d_received_pids[has_page.message_id].end())
                                         {
                                             // New pid! Annotate it.
-                                            d_received_pages[has_page.message_id].push_back(has_page.message_page_id);
+                                            d_received_pids[has_page.message_id].push_back(has_page.message_page_id);
                                             for (int k = 0; k < GALILEO_CNAV_OCTETS_IN_SUBPAGE; k++)
                                                 {
                                                     std::string bits8 = page_string.substr(k * 8, 8);
@@ -134,7 +134,7 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
         }
 
     // If we have received for this message ID a number of pages equal to the message size
-    if (d_received_pages[has_page.message_id].size() == has_page.message_size)
+    if (d_received_pids[has_page.message_id].size() == has_page.message_size)
         {
             // Try to decode the message
             int res = decode_message_type1(has_page.message_id, has_page.message_size);
@@ -162,18 +162,18 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
     std::vector<int> erasure_positions;
     erasure_positions.reserve(223);  // Maximum erasure positions ( = number of parity symbols in a block)
 
-    for (uint8_t i = 0; i < message_size; i++)  // we know that from message_size to 32, the value is 0
+    for (uint8_t i = 1; i < message_size + 1; i++)  // we know that from message_size to 32, the value is 0
         {
-            if (std::find(d_received_pages[message_id].begin(), d_received_pages[message_id].end(), i) == d_received_pages[message_id].end())
+            if (std::find(d_received_pids[message_id].begin(), d_received_pids[message_id].end(), i) == d_received_pids[message_id].end())
                 {
-                    erasure_positions.push_back(i);
+                    erasure_positions.push_back(i - 1);
                 }
         }
-    for (int i = 32; i < 255; i++)
+    for (int i = 33; i < 256; i++)
         {
-            if (std::find(d_received_pages[message_id].begin(), d_received_pages[message_id].end(), static_cast<uint8_t>(i)) == d_received_pages[message_id].end())
+            if (std::find(d_received_pids[message_id].begin(), d_received_pids[message_id].end(), static_cast<uint8_t>(i)) == d_received_pids[message_id].end())
                 {
-                    erasure_positions.push_back(i);
+                    erasure_positions.push_back(i - 1);
                 }
         }
 
@@ -184,7 +184,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
     for (int col = 0; col < GALILEO_CNAV_OCTETS_IN_SUBPAGE; col++)
         {
             std::vector<uint8_t> C_column(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, 0);
-            for (auto pid : d_received_pages[message_id])
+            for (auto pid : d_received_pids[message_id])
                 {
                     C_column[pid - 1] = d_C_matrix[message_id][pid - 1][col];
                 }
@@ -219,7 +219,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
     // reset data for next decoding
     d_C_matrix[message_id] = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};
-    d_received_pages[message_id].clear();
+    d_received_pids[message_id].clear();
 
     // Trigger HAS message content reading and fill the d_HAS_data object
     d_HAS_data = Galileo_HAS_data();
@@ -263,7 +263,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_strin
 {
     // ICD v1.2 Table 7: MT1 Message Body.
     auto message = std::string(message_string.begin() + GALILEO_CNAV_MT1_HEADER_BITS, message_string.end());  // Remove header
-    int Nsat = 0;
+    // int Nsat = 0;
     if (d_HAS_data.header.mask_flag)
         {
             // read mask
@@ -276,283 +276,284 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_strin
             d_HAS_data.nav_message.reserve(d_HAS_data.Nsys);
             for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
                 {
-                    d_HAS_data.gnss_id_mask[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_MASK_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_ID_MASK_LENGTH, message.end());
-                    std::string msg = message.substr(0, HAS_MSG_SATELLITE_MASK_LENGTH);
-                    d_HAS_data.satellite_mask[i] = read_has_message_body_uint64(msg);
-                    int ones_in_satellite_mask = 0;
-                    for (char c : msg)
-                        {
-                            if (c == '1')
-                                {
-                                    ones_in_satellite_mask++;
-                                }
-                        }
-                    Nsat += ones_in_satellite_mask;
-                    message = std::string(message.begin() + HAS_MSG_SATELLITE_MASK_LENGTH, message.end());
-
-                    msg = message.substr(0, HAS_MSG_SIGNAL_MASK_LENGTH);
-                    d_HAS_data.signal_mask[i] = read_has_message_body_uint16(msg);
-                    int ones_in_signal_mask = 0;
-                    for (char c : msg)
-                        {
-                            if (c == '1')
-                                {
-                                    ones_in_signal_mask++;
-                                }
-                        }
-                    message = std::string(message.begin() + HAS_MSG_SIGNAL_MASK_LENGTH, message.end());
-
-                    if (message.substr(0, 1) == "1")
-                        {
-                            d_HAS_data.cell_mask_availability_flag[i] = true;
-                        }
-                    else
-                        {
-                            d_HAS_data.cell_mask_availability_flag[i] = false;
-                        }
-                    message = std::string(message.begin() + 1, message.end());
-                    int size_cell = ones_in_satellite_mask * ones_in_signal_mask;
-
-                    d_HAS_data.cell_mask[i].reserve(ones_in_satellite_mask);
-                    for (int s = 0; s < ones_in_satellite_mask; s++)
-                        {
-                            d_HAS_data.cell_mask[i][s].reserve(ones_in_signal_mask);
-                            for (int sig = 0; sig < ones_in_signal_mask; sig++)
-                                {
-                                    d_HAS_data.cell_mask[i][s][sig] = (message[sig] == '1' ? true : false);
-                                }
-                        }
-                    message = std::string(message.begin() + size_cell, message.end());
-
-                    d_HAS_data.nav_message[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_NAV_MESSAGE_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_NAV_MESSAGE_LENGTH, message.end());
+                    //         d_HAS_data.gnss_id_mask[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_MASK_LENGTH));
+                    //         // DLOG(ERROR) << "GNSS ID" << static_cast<float>(i) << ": " << static_cast<float>(d_HAS_data.gnss_id_mask[i]);
+                    //         message = std::string(message.begin() + HAS_MSG_ID_MASK_LENGTH, message.end());
+                    //         std::string msg = message.substr(0, HAS_MSG_SATELLITE_MASK_LENGTH);
+                    //         d_HAS_data.satellite_mask[i] = read_has_message_body_uint64(msg);
+                    //         int ones_in_satellite_mask = 0;
+                    //         for (char c : msg)
+                    //             {
+                    //                 if (c == '1')
+                    //                     {
+                    //                         ones_in_satellite_mask++;
+                    //                     }
+                    //             }
+                    //         Nsat += ones_in_satellite_mask;
+                    //         message = std::string(message.begin() + HAS_MSG_SATELLITE_MASK_LENGTH, message.end());
+                    //
+                    //         msg = message.substr(0, HAS_MSG_SIGNAL_MASK_LENGTH);
+                    //         d_HAS_data.signal_mask[i] = read_has_message_body_uint16(msg);
+                    //         int ones_in_signal_mask = 0;
+                    //         for (char c : msg)
+                    //             {
+                    //                 if (c == '1')
+                    //                     {
+                    //                         ones_in_signal_mask++;
+                    //                     }
+                    //             }
+                    //         message = std::string(message.begin() + HAS_MSG_SIGNAL_MASK_LENGTH, message.end());
+                    //
+                    //         if (message.substr(0, 1) == "1")
+                    //             {
+                    //                 d_HAS_data.cell_mask_availability_flag[i] = true;
+                    //             }
+                    //         else
+                    //             {
+                    //                 d_HAS_data.cell_mask_availability_flag[i] = false;
+                    //             }
+                    //         message = std::string(message.begin() + 1, message.end());
+                    //         int size_cell = ones_in_satellite_mask * ones_in_signal_mask;
+                    //
+                    //         d_HAS_data.cell_mask[i].reserve(ones_in_satellite_mask);
+                    //         for (int s = 0; s < ones_in_satellite_mask; s++)
+                    //             {
+                    //                 d_HAS_data.cell_mask[i][s].reserve(ones_in_signal_mask);
+                    //                 for (int sig = 0; sig < ones_in_signal_mask; sig++)
+                    //                     {
+                    //                         d_HAS_data.cell_mask[i][s][sig] = (message[sig] == '1' ? true : false);
+                    //                     }
+                    //             }
+                    //         message = std::string(message.begin() + size_cell, message.end());
+                    //
+                    //         d_HAS_data.nav_message[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_NAV_MESSAGE_LENGTH));
+                    //         message = std::string(message.begin() + HAS_MSG_NAV_MESSAGE_LENGTH, message.end());
                 }
         }
-    if (d_HAS_data.header.orbit_correction_flag)
-        {
-            // read orbit corrections
-            d_HAS_data.validity_interval_index_orbit_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-            d_HAS_data.gnss_iod.reserve(Nsat);
-            d_HAS_data.delta_radial.reserve(Nsat);
-            d_HAS_data.delta_along_track.reserve(Nsat);
-            d_HAS_data.delta_cross_track.reserve(Nsat);
-            for (int i = 0; i < Nsat; i++)
-                {
-                    if (d_HAS_data.gnss_id_mask[i] == HAS_MSG_GPS_SYSTEM)
-                        {
-                            d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GPS_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_IOD_GPS_LENGTH, message.end());
-                        }
-                    if (d_HAS_data.gnss_id_mask[i] == HAS_MSG_GALILEO_SYSTEM)
-                        {
-                            d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GAL_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_IOD_GAL_LENGTH, message.end());
-                        }
-                    d_HAS_data.delta_radial[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_RADIAL_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_RADIAL_LENGTH, message.end());
-
-                    d_HAS_data.delta_along_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_ALONG_TRACK_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_ALONG_TRACK_LENGTH, message.end());
-
-                    d_HAS_data.delta_cross_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CROSS_TRACK_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CROSS_TRACK_LENGTH, message.end());
-                }
-        }
-    if (d_HAS_data.header.clock_fullset_flag)
-        {
-            // read clock full-set corrections
-            d_HAS_data.validity_interval_index_clock_fullset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-
-            d_HAS_data.delta_clock_c0_multiplier.reserve(d_HAS_data.Nsys);
-            for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
-                {
-                    if (d_HAS_data.gnss_id_mask[i] != HAS_MSG_GALILEO_SYSTEM)
-                        {
-                            d_HAS_data.delta_clock_c0_multiplier[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH, message.end());
-                        }
-                }
-            d_HAS_data.iod_change_flag.reserve(Nsat);
-            d_HAS_data.delta_clock_c0.reserve(Nsat);
-            for (int i = 0; i < Nsat; i++)
-                {
-                    d_HAS_data.iod_change_flag[i] = (message[0] == '1' ? true : false);
-                    message = std::string(message.begin() + 1, message.end());
-                    d_HAS_data.delta_clock_c0[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_LENGTH, message.end());
-                }
-        }
-    if (d_HAS_data.header.clock_subset_flag)
-        {
-            // read clock subset corrections
-            d_HAS_data.validity_interval_index_clock_subset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-
-            d_HAS_data.Nsysprime = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYSPRIME_LENGTH));
-            DLOG(INFO) << "Nsysprime: " << static_cast<float>(d_HAS_data.Nsysprime);
-            message = std::string(message.begin() + HAS_MSG_NSYSPRIME_LENGTH, message.end());
-
-            d_HAS_data.gnss_id_clock_subset.reserve(d_HAS_data.Nsysprime);
-            d_HAS_data.delta_clock_c0_multiplier_clock_subset.reserve(d_HAS_data.Nsysprime);
-            d_HAS_data.satellite_submask.reserve(d_HAS_data.Nsysprime);
-            d_HAS_data.iod_change_flag_clock_subset.reserve(d_HAS_data.Nsysprime);
-            d_HAS_data.delta_clock_c0_clock_subset.reserve(d_HAS_data.Nsysprime);
-            for (uint8_t i = 0; i < d_HAS_data.Nsysprime; i++)
-                {
-                    d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_CLOCK_SUBSET_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_ID_CLOCK_SUBSET_LENGTH, message.end());
-                    if (d_HAS_data.gnss_id_clock_subset[i] != HAS_MSG_GALILEO_SYSTEM)
-                        {
-                            d_HAS_data.delta_clock_c0_multiplier_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH, message.end());
-                        }
-                    uint64_t number_sats_this_gnss_id = 0;
-                    for (uint8_t j = 0; j < d_HAS_data.Nsys; j++)
-                        {
-                            if (d_HAS_data.gnss_id_mask[j] == d_HAS_data.gnss_id_clock_subset[i])
-                                {
-                                    uint64_t n = d_HAS_data.satellite_mask[j];
-                                    while (n)
-                                        {
-                                            number_sats_this_gnss_id += n & 1;
-                                            n >>= 1;
-                                        }
-                                    break;
-                                }
-                        }
-
-                    d_HAS_data.satellite_submask[i].reserve(number_sats_this_gnss_id);
-                    for (uint64_t j = 0; j < number_sats_this_gnss_id; j++)
-                        {
-                            d_HAS_data.satellite_submask[i][j] = read_has_message_body_uint64(message.substr(0, 1));
-                            message = std::string(message.begin() + 1, message.end());
-                        }
-                    d_HAS_data.iod_change_flag_clock_subset[i] = (message[0] == '1' ? true : false);
-                    message = std::string(message.begin() + 1, message.end());
-
-                    d_HAS_data.delta_clock_c0_clock_subset[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH, message.end());
-                }
-        }
-    if (d_HAS_data.header.code_bias_flag)
-        {
-            // read code bias
-            d_HAS_data.validity_interval_index_code_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-            std::vector<uint64_t> number_sats(d_HAS_data.Nsys, 0);
-            std::vector<uint64_t> number_codes(d_HAS_data.Nsys, 0);
-            for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
-                {
-                    uint64_t number_sats_this_gnss_id = 0;
-                    uint64_t number_signals_this_gnss_id = 0;
-                    if (d_HAS_data.cell_mask_availability_flag[sys] == true)
-                        {
-                            uint64_t n = d_HAS_data.satellite_mask[sys];
-                            while (n)
-                                {
-                                    number_sats_this_gnss_id += n & 1;
-                                    n >>= 1;
-                                }
-                            uint64_t m = d_HAS_data.signal_mask[sys];
-                            while (m)
-                                {
-                                    number_signals_this_gnss_id += m & 1;
-                                    m >>= 1;
-                                }
-                        }
-                    else
-                        {
-                            number_sats_this_gnss_id = HAS_MSG_MAX_SATS;
-                            number_signals_this_gnss_id = HAS_MSG_MAX_SIGNALS;
-                        }
-                    number_sats[sys] = number_sats_this_gnss_id;
-                    number_codes[sys] = number_signals_this_gnss_id;
-                }
-            uint64_t Nsat_b = std::accumulate(number_sats.begin(), number_sats.end(), 0ULL);
-
-            d_HAS_data.code_bias.reserve(Nsat_b);
-            int sat = 0;
-            for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
-                {
-                    d_HAS_data.code_bias[sat].reserve(number_codes[sys]);
-                    for (uint64_t c = 0; c < number_codes[sys]; c++)
-                        {
-                            d_HAS_data.code_bias[sat][c] = read_has_message_body_int16(message.substr(0, HAS_MSG_CODE_BIAS_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_CODE_BIAS_LENGTH, message.end());
-                            sat += 1;
-                        }
-                }
-        }
-    if (d_HAS_data.header.phase_bias_flag)
-        {
-            // read phase bias
-            d_HAS_data.validity_interval_index_phase_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-
-            std::vector<uint64_t> number_sats(d_HAS_data.Nsys, 0);
-            std::vector<uint64_t> number_phases(d_HAS_data.Nsys, 0);
-            for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
-                {
-                    uint64_t number_sats_this_gnss_id = 0;
-                    uint64_t number_signals_this_gnss_id = 0;
-                    if (d_HAS_data.cell_mask_availability_flag[sys] == true)
-                        {
-                            uint64_t n = d_HAS_data.satellite_mask[sys];
-                            while (n)
-                                {
-                                    number_sats_this_gnss_id += n & 1;
-                                    n >>= 1;
-                                }
-                            uint64_t m = d_HAS_data.signal_mask[sys];
-                            while (m)
-                                {
-                                    number_signals_this_gnss_id += m & 1;
-                                    m >>= 1;
-                                }
-                        }
-                    else
-                        {
-                            number_sats_this_gnss_id = HAS_MSG_MAX_SATS;
-                            number_signals_this_gnss_id = HAS_MSG_MAX_SIGNALS;
-                        }
-                    number_sats[sys] = number_sats_this_gnss_id;
-                    number_phases[sys] = number_signals_this_gnss_id;
-                }
-            uint64_t Nsat_p = std::accumulate(number_sats.begin(), number_sats.end(), 0ULL);
-
-            d_HAS_data.phase_bias.reserve(Nsat_p);
-            d_HAS_data.phase_discontinuity_indicator.reserve(Nsat_p);
-            int sat = 0;
-            for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
-                {
-                    d_HAS_data.phase_bias[sat].reserve(number_phases[sys]);
-                    d_HAS_data.phase_discontinuity_indicator[sat].reserve(number_phases[sys]);
-                    for (uint64_t p = 0; p < number_phases[sys]; p++)
-                        {
-                            d_HAS_data.phase_bias[sat][p] = read_has_message_body_int16(message.substr(0, HAS_MSG_PHASE_BIAS_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_PHASE_BIAS_LENGTH, message.end());
-
-                            d_HAS_data.phase_discontinuity_indicator[sat][p] = read_has_message_body_uint8(message.substr(0, HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH, message.end());
-                            sat += 1;
-                        }
-                }
-        }
-    if (d_HAS_data.header.ura_flag)
-        {
-            // read URA
-            d_HAS_data.validity_interval_index_ura_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-            d_HAS_data.ura.reserve(Nsat);
-            for (int i = 0; i < Nsat; i++)
-                {
-                    d_HAS_data.ura[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_URA_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_URA_LENGTH, message.end());
-                }
-        }
+    // if (d_HAS_data.header.orbit_correction_flag)
+    //     {
+    //         // read orbit corrections
+    //         d_HAS_data.validity_interval_index_orbit_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
+    //         message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+    //         d_HAS_data.gnss_iod.reserve(Nsat);
+    //         d_HAS_data.delta_radial.reserve(Nsat);
+    //         d_HAS_data.delta_along_track.reserve(Nsat);
+    //         d_HAS_data.delta_cross_track.reserve(Nsat);
+    //         for (int i = 0; i < Nsat; i++)
+    //             {
+    //                 if (d_HAS_data.gnss_id_mask[i] == HAS_MSG_GPS_SYSTEM)
+    //                     {
+    //                         d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GPS_LENGTH));
+    //                         message = std::string(message.begin() + HAS_MSG_IOD_GPS_LENGTH, message.end());
+    //                     }
+    //                 if (d_HAS_data.gnss_id_mask[i] == HAS_MSG_GALILEO_SYSTEM)
+    //                     {
+    //                         d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GAL_LENGTH));
+    //                         message = std::string(message.begin() + HAS_MSG_IOD_GAL_LENGTH, message.end());
+    //                     }
+    //                 d_HAS_data.delta_radial[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_RADIAL_LENGTH));
+    //                 message = std::string(message.begin() + HAS_MSG_DELTA_RADIAL_LENGTH, message.end());
+    //
+    //                 d_HAS_data.delta_along_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_ALONG_TRACK_LENGTH));
+    //                 message = std::string(message.begin() + HAS_MSG_DELTA_ALONG_TRACK_LENGTH, message.end());
+    //
+    //                 d_HAS_data.delta_cross_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CROSS_TRACK_LENGTH));
+    //                 message = std::string(message.begin() + HAS_MSG_DELTA_CROSS_TRACK_LENGTH, message.end());
+    //             }
+    //     }
+    // if (d_HAS_data.header.clock_fullset_flag)
+    //     {
+    //         // read clock full-set corrections
+    //         d_HAS_data.validity_interval_index_clock_fullset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
+    //         message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+    //
+    //         d_HAS_data.delta_clock_c0_multiplier.reserve(d_HAS_data.Nsys);
+    //         for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
+    //             {
+    //                 if (d_HAS_data.gnss_id_mask[i] != HAS_MSG_GALILEO_SYSTEM)
+    //                     {
+    //                         d_HAS_data.delta_clock_c0_multiplier[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH));
+    //                         message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH, message.end());
+    //                     }
+    //             }
+    //         d_HAS_data.iod_change_flag.reserve(Nsat);
+    //         d_HAS_data.delta_clock_c0.reserve(Nsat);
+    //         for (int i = 0; i < Nsat; i++)
+    //             {
+    //                 d_HAS_data.iod_change_flag[i] = (message[0] == '1' ? true : false);
+    //                 message = std::string(message.begin() + 1, message.end());
+    //                 d_HAS_data.delta_clock_c0[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_LENGTH));
+    //                 message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_LENGTH, message.end());
+    //             }
+    //     }
+    // if (d_HAS_data.header.clock_subset_flag)
+    //     {
+    //         // read clock subset corrections
+    //         d_HAS_data.validity_interval_index_clock_subset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
+    //         message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+    //
+    //         d_HAS_data.Nsysprime = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYSPRIME_LENGTH));
+    //         DLOG(INFO) << "Nsysprime: " << static_cast<float>(d_HAS_data.Nsysprime);
+    //         message = std::string(message.begin() + HAS_MSG_NSYSPRIME_LENGTH, message.end());
+    //
+    //         d_HAS_data.gnss_id_clock_subset.reserve(d_HAS_data.Nsysprime);
+    //         d_HAS_data.delta_clock_c0_multiplier_clock_subset.reserve(d_HAS_data.Nsysprime);
+    //         d_HAS_data.satellite_submask.reserve(d_HAS_data.Nsysprime);
+    //         d_HAS_data.iod_change_flag_clock_subset.reserve(d_HAS_data.Nsysprime);
+    //         d_HAS_data.delta_clock_c0_clock_subset.reserve(d_HAS_data.Nsysprime);
+    //         for (uint8_t i = 0; i < d_HAS_data.Nsysprime; i++)
+    //             {
+    //                 d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_CLOCK_SUBSET_LENGTH));
+    //                 message = std::string(message.begin() + HAS_MSG_ID_CLOCK_SUBSET_LENGTH, message.end());
+    //                 if (d_HAS_data.gnss_id_clock_subset[i] != HAS_MSG_GALILEO_SYSTEM)
+    //                     {
+    //                         d_HAS_data.delta_clock_c0_multiplier_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH));
+    //                         message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH, message.end());
+    //                     }
+    //                 uint64_t number_sats_this_gnss_id = 0;
+    //                 for (uint8_t j = 0; j < d_HAS_data.Nsys; j++)
+    //                     {
+    //                         if (d_HAS_data.gnss_id_mask[j] == d_HAS_data.gnss_id_clock_subset[i])
+    //                             {
+    //                                 uint64_t n = d_HAS_data.satellite_mask[j];
+    //                                 while (n)
+    //                                     {
+    //                                         number_sats_this_gnss_id += n & 1;
+    //                                         n >>= 1;
+    //                                     }
+    //                                 break;
+    //                             }
+    //                     }
+    //
+    //                 d_HAS_data.satellite_submask[i].reserve(number_sats_this_gnss_id);
+    //                 for (uint64_t j = 0; j < number_sats_this_gnss_id; j++)
+    //                     {
+    //                         d_HAS_data.satellite_submask[i][j] = read_has_message_body_uint64(message.substr(0, 1));
+    //                         message = std::string(message.begin() + 1, message.end());
+    //                     }
+    //                 d_HAS_data.iod_change_flag_clock_subset[i] = (message[0] == '1' ? true : false);
+    //                 message = std::string(message.begin() + 1, message.end());
+    //
+    //                 d_HAS_data.delta_clock_c0_clock_subset[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH));
+    //                 message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH, message.end());
+    //             }
+    //     }
+    // if (d_HAS_data.header.code_bias_flag)
+    //     {
+    //         // read code bias
+    //         d_HAS_data.validity_interval_index_code_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
+    //         message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+    //         std::vector<uint64_t> number_sats(d_HAS_data.Nsys, 0);
+    //         std::vector<uint64_t> number_codes(d_HAS_data.Nsys, 0);
+    //         for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
+    //             {
+    //                 uint64_t number_sats_this_gnss_id = 0;
+    //                 uint64_t number_signals_this_gnss_id = 0;
+    //                 if (d_HAS_data.cell_mask_availability_flag[sys] == true)
+    //                     {
+    //                         uint64_t n = d_HAS_data.satellite_mask[sys];
+    //                         while (n)
+    //                             {
+    //                                 number_sats_this_gnss_id += n & 1;
+    //                                 n >>= 1;
+    //                             }
+    //                         uint64_t m = d_HAS_data.signal_mask[sys];
+    //                         while (m)
+    //                             {
+    //                                 number_signals_this_gnss_id += m & 1;
+    //                                 m >>= 1;
+    //                             }
+    //                     }
+    //                 else
+    //                     {
+    //                         number_sats_this_gnss_id = HAS_MSG_MAX_SATS;
+    //                         number_signals_this_gnss_id = HAS_MSG_MAX_SIGNALS;
+    //                     }
+    //                 number_sats[sys] = number_sats_this_gnss_id;
+    //                 number_codes[sys] = number_signals_this_gnss_id;
+    //             }
+    //         uint64_t Nsat_b = std::accumulate(number_sats.begin(), number_sats.end(), 0ULL);
+    //
+    //         d_HAS_data.code_bias.reserve(Nsat_b);
+    //         int sat = 0;
+    //         for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
+    //             {
+    //                 d_HAS_data.code_bias[sat].reserve(number_codes[sys]);
+    //                 for (uint64_t c = 0; c < number_codes[sys]; c++)
+    //                     {
+    //                         d_HAS_data.code_bias[sat][c] = read_has_message_body_int16(message.substr(0, HAS_MSG_CODE_BIAS_LENGTH));
+    //                         message = std::string(message.begin() + HAS_MSG_CODE_BIAS_LENGTH, message.end());
+    //                         sat += 1;
+    //                     }
+    //             }
+    //     }
+    // if (d_HAS_data.header.phase_bias_flag)
+    //     {
+    //         // read phase bias
+    //         d_HAS_data.validity_interval_index_phase_bias_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
+    //         message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+    //
+    //         std::vector<uint64_t> number_sats(d_HAS_data.Nsys, 0);
+    //         std::vector<uint64_t> number_phases(d_HAS_data.Nsys, 0);
+    //         for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
+    //             {
+    //                 uint64_t number_sats_this_gnss_id = 0;
+    //                 uint64_t number_signals_this_gnss_id = 0;
+    //                 if (d_HAS_data.cell_mask_availability_flag[sys] == true)
+    //                     {
+    //                         uint64_t n = d_HAS_data.satellite_mask[sys];
+    //                         while (n)
+    //                             {
+    //                                 number_sats_this_gnss_id += n & 1;
+    //                                 n >>= 1;
+    //                             }
+    //                         uint64_t m = d_HAS_data.signal_mask[sys];
+    //                         while (m)
+    //                             {
+    //                                 number_signals_this_gnss_id += m & 1;
+    //                                 m >>= 1;
+    //                             }
+    //                     }
+    //                 else
+    //                     {
+    //                         number_sats_this_gnss_id = HAS_MSG_MAX_SATS;
+    //                         number_signals_this_gnss_id = HAS_MSG_MAX_SIGNALS;
+    //                     }
+    //                 number_sats[sys] = number_sats_this_gnss_id;
+    //                 number_phases[sys] = number_signals_this_gnss_id;
+    //             }
+    //         uint64_t Nsat_p = std::accumulate(number_sats.begin(), number_sats.end(), 0ULL);
+    //
+    //         d_HAS_data.phase_bias.reserve(Nsat_p);
+    //         d_HAS_data.phase_discontinuity_indicator.reserve(Nsat_p);
+    //         int sat = 0;
+    //         for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
+    //             {
+    //                 d_HAS_data.phase_bias[sat].reserve(number_phases[sys]);
+    //                 d_HAS_data.phase_discontinuity_indicator[sat].reserve(number_phases[sys]);
+    //                 for (uint64_t p = 0; p < number_phases[sys]; p++)
+    //                     {
+    //                         d_HAS_data.phase_bias[sat][p] = read_has_message_body_int16(message.substr(0, HAS_MSG_PHASE_BIAS_LENGTH));
+    //                         message = std::string(message.begin() + HAS_MSG_PHASE_BIAS_LENGTH, message.end());
+    //
+    //                         d_HAS_data.phase_discontinuity_indicator[sat][p] = read_has_message_body_uint8(message.substr(0, HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH));
+    //                         message = std::string(message.begin() + HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH, message.end());
+    //                         sat += 1;
+    //                     }
+    //             }
+    //     }
+    // if (d_HAS_data.header.ura_flag)
+    //     {
+    //         // read URA
+    //         d_HAS_data.validity_interval_index_ura_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
+    //         message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
+    //         d_HAS_data.ura.reserve(Nsat);
+    //         for (int i = 0; i < Nsat; i++)
+    //             {
+    //                 d_HAS_data.ura[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_URA_LENGTH));
+    //                 message = std::string(message.begin() + HAS_MSG_URA_LENGTH, message.end());
+    //             }
+    //     }
 }
 
 
@@ -600,12 +601,11 @@ bool galileo_e6_has_msg_receiver::read_has_message_header_parameter_bool(const s
 uint8_t galileo_e6_has_msg_receiver::read_has_message_body_uint8(const std::string& bits) const
 {
     uint8_t value = 0U;
-    size_t len = bits.length();
-
+    const size_t len = bits.length();
     for (size_t j = 0; j < len; j++)
         {
             value <<= 1U;  // shift left
-            if (static_cast<int>(bits[len - 1 - j]) == 1)
+            if (bits[j] == '1')
                 {
                     value += 1;  // insert the bit
                 }
@@ -617,12 +617,12 @@ uint8_t galileo_e6_has_msg_receiver::read_has_message_body_uint8(const std::stri
 uint16_t galileo_e6_has_msg_receiver::read_has_message_body_uint16(const std::string& bits) const
 {
     uint16_t value = 0U;
-    size_t len = bits.length();
+    const size_t len = bits.length();
 
     for (size_t j = 0; j < len; j++)
         {
             value <<= 1U;  // shift left
-            if (static_cast<int>(bits[len - 1 - j]) == 1)
+            if (bits[j] == '1')
                 {
                     value += 1;  // insert the bit
                 }
@@ -634,12 +634,12 @@ uint16_t galileo_e6_has_msg_receiver::read_has_message_body_uint16(const std::st
 uint64_t galileo_e6_has_msg_receiver::read_has_message_body_uint64(const std::string& bits) const
 {
     uint64_t value = 0U;
-    size_t len = bits.length();
+    const size_t len = bits.length();
 
     for (size_t j = 0; j < len; j++)
         {
             value <<= 1U;  // shift left
-            if (static_cast<int>(bits[len - 1 - j]) == 1)
+            if (bits[j] == '1')
                 {
                     value += 1;  // insert the bit
                 }
@@ -651,10 +651,10 @@ uint64_t galileo_e6_has_msg_receiver::read_has_message_body_uint64(const std::st
 int16_t galileo_e6_has_msg_receiver::read_has_message_body_int16(const std::string& bits) const
 {
     int16_t value = 0;
-    size_t len = bits.length();
+    const size_t len = bits.length();
 
     // read the MSB and perform the sign extension
-    if (static_cast<int>(bits[len - 1]) == 1)
+    if (static_cast<int>(bits[0]) == 1)
         {
             value ^= 0xFFFF;  // 16 bits variable
         }
@@ -667,7 +667,7 @@ int16_t galileo_e6_has_msg_receiver::read_has_message_body_int16(const std::stri
         {
             value *= 2;       // shift left the signed integer
             value &= 0xFFFE;  // reset the corresponding bit (for the 16 bits variable)
-            if (static_cast<int>(bits[len - 1 - j]) == 1)
+            if (bits[j] == '1')
                 {
                     value += 1;  // insert the bit
                 }

@@ -4,3 +4,4 @@
 *
 # Except this file
 !.gitignore
+.bin

@@ -19,6 +19,7 @@
 
 #include <cstdint>
 #include <map>
+#include <pvt_sd_conf.h>
 #include <string>
 
 /** \addtogroup PVT
@@ -85,6 +86,9 @@ public:
     bool pre_2009_file;
     bool dump;
     bool dump_mat;
+
+    bool security_checks;
+    Pvt_SD_Conf security_parameters;
 };
 
 

@@ -61,9 +61,8 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
     d_new_HAS_page = false;
     has_page = Galileo_HAS_page();
     d_flag_CRC_test = CRC_test(Word_for_CRC_bits, checksum.to_ulong());
-    if (d_flag_CRC_test)
+    if (d_flag_CRC_test == true)
         {
-            d_flag_CRC_test = true;
             // CRC correct: Read 24 bits of HAS page header
             read_HAS_page_header(page_string.substr(GALILEO_CNAV_PAGE_RESERVED_BITS, GALILEO_CNAV_PAGE_HEADER_BITS));
             bool use_has = false;
@@ -128,12 +127,12 @@ void Galileo_Cnav_Message::read_HAS_page_header(const std::string& page_string)
             d_received_message_size = read_has_page_header_parameter(has_page_header, GALILEO_HAS_MESSAGE_SIZE) + 1;  // "0" means 1
             d_received_message_page_id = read_has_page_header_parameter(has_page_header, GALILEO_HAS_MESSAGE_PAGE_ID);
 
-            DLOG(INFO) << "HAS page header received:  "
-                       << "d_has_page_status: " << static_cast<float>(d_has_page_status) << ", "
-                       << "d_has_reserved: " << static_cast<float>(d_has_reserved) << ", "
-                       << "d_received_message_type: " << static_cast<float>(d_received_message_type) << ", "
-                       << "d_received_message_id: " << static_cast<float>(d_received_message_id) << ", "
-                       << "d_received_message_size: " << static_cast<float>(d_received_message_size) << ", "
+            DLOG(INFO) << "HAS page header received " << page_string << ":\n"
+                       << "d_has_page_status: " << static_cast<float>(d_has_page_status) << "\n"
+                       << "d_has_reserved: " << static_cast<float>(d_has_reserved) << "\n"
+                       << "d_received_message_type: " << static_cast<float>(d_received_message_type) << "\n"
+                       << "d_received_message_id: " << static_cast<float>(d_received_message_id) << "\n"
+                       << "d_received_message_size: " << static_cast<float>(d_received_message_size) << "\n"
                        << "d_received_message_page_id: " << static_cast<float>(d_received_message_page_id);
         }
 }

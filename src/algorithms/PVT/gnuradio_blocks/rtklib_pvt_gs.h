@@ -20,6 +20,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "rtklib.h"
+#include "spoofing_detector.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/sync_block.h>  // for sync_block
@@ -34,7 +35,6 @@
 #include <string>                 // for string
 #include <sys/types.h>            // for key_t
 #include <vector>                 // for vector
-#include "spoofing_detector.h"
 
 /** \addtogroup PVT
  * \{ */
@@ -65,8 +65,7 @@ using rtklib_pvt_gs_sptr = gnss_shared_ptr<rtklib_pvt_gs>;
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk,
-    SpoofingDetector spoofing_detector);
+    const rtk_t& rtk);
 
 /*!
  * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
@@ -127,13 +126,11 @@ public:
 private:
     friend rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        const rtk_t& rtk,
-        SpoofingDetector spoofing_detector);
+        const rtk_t& rtk);
 
     rtklib_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        const rtk_t& rtk,
-        SpoofingDetector spoofing_detector);
+        const rtk_t& rtk);
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
@@ -253,7 +250,7 @@ private:
     int32_t d_report_rate_ms;
     int32_t d_max_obs_block_rx_clock_offset_ms;
     int32_t d_total_pvt_measurements;
-    
+
     uint32_t d_nchannels;
     uint32_t d_type_of_rx;
 
@@ -274,6 +271,7 @@ private:
     bool d_enable_rx_clock_correction;
 
     SpoofingDetector d_spoofing_detector;
+    std::string COLOR;
 };
 
 

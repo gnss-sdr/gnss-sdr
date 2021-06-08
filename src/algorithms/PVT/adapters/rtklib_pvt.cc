@@ -24,9 +24,10 @@
 #include "gps_almanac.h"              // for Gps_Almanac
 #include "gps_ephemeris.h"            // for Gps_Ephemeris
 #include "pvt_conf.h"                 // for Pvt_Conf
-#include "rtklib_rtkpos.h"            // for rtkfree, rtkinit
-#include <glog/logging.h>             // for LOG
-#include <iostream>                   // for operator<<
+#include "pvt_sd_conf.h"
+#include "rtklib_rtkpos.h"  // for rtkfree, rtkinit
+#include <glog/logging.h>   // for LOG
+#include <iostream>         // for operator<<
 #if USE_OLD_BOOST_MATH_COMMON_FACTOR
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -120,8 +121,6 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.gpx_rate_ms = bc::lcm(configuration->property(role + ".gpx_rate_ms", pvt_output_parameters.gpx_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.geojson_rate_ms = bc::lcm(configuration->property(role + ".geojson_rate_ms", pvt_output_parameters.geojson_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.nmea_rate_ms = bc::lcm(configuration->property(role + ".nmea_rate_ms", pvt_output_parameters.nmea_rate_ms), pvt_output_parameters.output_rate_ms);
-
-    SpoofingDetector *spoofing_detector = new SpoofingDetector(configuration);  
     // Infer the type of receiver
     /*
      *   TYPE  |  RECEIVER
@@ -819,8 +818,29 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Set maximum clock offset allowed if pvt_output_parameters.enable_rx_clock_correction = false
     pvt_output_parameters.max_obs_block_rx_clock_offset_ms = configuration->property(role + ".max_clock_offset_ms", pvt_output_parameters.max_obs_block_rx_clock_offset_ms);
 
+    // Spoofing detection parameters
+    pvt_output_parameters.security_checks = configuration->property(role + ".security_checks", false);
+    // ####### Position consistency check configuration
+
+    if (pvt_output_parameters.security_checks)
+        {
+            Pvt_SD_Conf spoofing_detection_parameters = Pvt_SD_Conf();
+            spoofing_detection_parameters.dump_pos_checks_results = configuration->property("Spoofing_Detection.dump_results", true);
+
+            spoofing_detection_parameters.position_check = configuration->property("SecurePVT.position_check", false);
+            spoofing_detection_parameters.max_jump_distance = configuration->property("SecurePVT.max_jump_distance", 100);
+            spoofing_detection_parameters.geo_fence_radius = configuration->property("SecurePVT.geo_fence_radius", 15);
+            spoofing_detection_parameters.velocity_difference = configuration->property("SecurePVT.velocity_difference", 15);
+            spoofing_detection_parameters.static_lat = configuration->property("SecurePVT.static_lat", 0);
+            spoofing_detection_parameters.static_lon = configuration->property("SecurePVT.static_lon", 0);
+            spoofing_detection_parameters.static_alt = configuration->property("SecurePVT.static_alt", 0);
+
+            pvt_output_parameters.security_parameters = spoofing_detection_parameters;
+        }
+
     // make PVT object
-    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk, *spoofing_detector);
+    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
+
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

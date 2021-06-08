@@ -61,8 +61,8 @@ private:
     galileo_e6_has_msg_receiver();
     void msg_handler_galileo_e6_has(const pmt::pmt_t& msg);
     void process_HAS_page(const Galileo_HAS_page& has_page);
-    void read_MT1_header(const std::string& message_string);
-    void read_MT1_body(const std::string& message_string);
+    void read_MT1_header(const std::string& message_header);
+    void read_MT1_body(const std::string& message_body);
 
     int decode_message_type1(uint8_t message_id, uint8_t message_size);
     uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
@@ -73,6 +73,10 @@ private:
     uint16_t read_has_message_body_uint16(const std::string& bits) const;
     uint64_t read_has_message_body_uint64(const std::string& bits) const;
     int16_t read_has_message_body_int16(const std::string& bits) const;
+
+    template <class T>
+    std::string debug_print_vector(const std::string& title, const std::vector<T>& vec) const;                     // only for debug purposes
+    std::string debug_print_matrix(const std::string& title, const std::vector<std::vector<uint8_t>>& mat) const;  // only for debug purposes
 
     std::unique_ptr<ReedSolomon> d_rs;
     Galileo_HAS_data d_HAS_data{};

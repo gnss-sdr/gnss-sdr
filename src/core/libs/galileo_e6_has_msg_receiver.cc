@@ -29,6 +29,7 @@
 #include <algorithm>  // std::find
 #include <cstddef>    // size_t
 #include <numeric>    // std::accumulate
+#include <sstream>    // std::stringstream
 #include <typeinfo>   // typeid
 
 #if HAS_GENERIC_LAMBDA
@@ -177,6 +178,10 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
                 }
         }
 
+    DLOG(INFO) << debug_print_vector("List of received PIDs", d_received_pids[message_id]);
+    DLOG(INFO) << debug_print_vector("erasure_positions", erasure_positions);
+    DLOG(INFO) << debug_print_matrix("d_C_matrix produced", d_C_matrix[message_id]);
+
     // Reset HAS decoded message matrix
     d_M_matrix = {GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)};
 
@@ -188,6 +193,8 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
                 {
                     C_column[pid - 1] = d_C_matrix[message_id][pid - 1][col];
                 }
+
+            DLOG(INFO) << debug_print_vector("C_column entering the decoder", C_column);
 
             int result = d_rs->decode(C_column, erasure_positions);
 
@@ -204,6 +211,8 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
                     d_M_matrix[i][col] = M_column[i];
                 }
         }
+
+    DLOG(INFO) << debug_print_matrix("M_matrix", d_M_matrix);
 
     // Form the decoded HAS message by reading rows of d_M_matrix
     std::string decoded_message_type_1;
@@ -223,17 +232,17 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
     // Trigger HAS message content reading and fill the d_HAS_data object
     d_HAS_data = Galileo_HAS_data();
-    read_MT1_header(decoded_message_type_1);
-    read_MT1_body(decoded_message_type_1);
+    read_MT1_header(decoded_message_type_1.substr(0, GALILEO_CNAV_MT1_HEADER_BITS));
+    read_MT1_body(std::string(decoded_message_type_1.begin() + GALILEO_CNAV_MT1_HEADER_BITS, decoded_message_type_1.end()));
 
     return 0;
 }
 
 
-void galileo_e6_has_msg_receiver::read_MT1_header(const std::string& message_string)
+void galileo_e6_has_msg_receiver::read_MT1_header(const std::string& message_header)
 {
     // ICD v1.2 Table 6: MT1 Message Header
-    const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> has_mt1_header(message_string);
+    const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> has_mt1_header(message_header);
     d_HAS_data.header.toh = read_has_message_header_parameter_uint16(has_mt1_header, GALILEO_MT1_HEADER_TOH);
     d_HAS_data.header.mask_id = read_has_message_header_parameter_uint8(has_mt1_header, GALILEO_MT1_HEADER_MASK_ID);
     d_HAS_data.header.iod_id = read_has_message_header_parameter_uint8(has_mt1_header, GALILEO_MT1_HEADER_IOD_ID);
@@ -245,10 +254,10 @@ void galileo_e6_has_msg_receiver::read_MT1_header(const std::string& message_str
     d_HAS_data.header.phase_bias_flag = read_has_message_header_parameter_bool(has_mt1_header, GALILEO_MT1_HEADER_PHASE_BIAS_FLAG);
     d_HAS_data.header.ura_flag = read_has_message_header_parameter_bool(has_mt1_header, GALILEO_MT1_HEADER_URA_FLAG);
 
-    DLOG(INFO) << "MT1 header:  "
+    DLOG(INFO) << "MT1 header " << message_header << ":  "
                << "TOH: " << static_cast<float>(d_HAS_data.header.toh) << ", "
-               << "mask iD: " << static_cast<float>(d_HAS_data.header.mask_id) << ", "
-               << "iod iD: " << static_cast<float>(d_HAS_data.header.iod_id) << ", "
+               << "mask ID: " << static_cast<float>(d_HAS_data.header.mask_id) << ", "
+               << "iod ID: " << static_cast<float>(d_HAS_data.header.iod_id) << ", "
                << "mask_flag: " << static_cast<float>(d_HAS_data.header.mask_flag) << ", "
                << "orbit_correction_flag: " << static_cast<float>(d_HAS_data.header.orbit_correction_flag) << ", "
                << "clock_fullset_flag: " << static_cast<float>(d_HAS_data.header.clock_fullset_flag) << ", "
@@ -259,16 +268,16 @@ void galileo_e6_has_msg_receiver::read_MT1_header(const std::string& message_str
 }
 
 
-void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_string)
+void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
 {
     // ICD v1.2 Table 7: MT1 Message Body.
-    auto message = std::string(message_string.begin() + GALILEO_CNAV_MT1_HEADER_BITS, message_string.end());  // Remove header
+    auto message = std::string(message_body);
     // int Nsat = 0;
     if (d_HAS_data.header.mask_flag)
         {
             // read mask
             d_HAS_data.Nsys = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYS_LENGTH));
-            DLOG(INFO) << "Nsys: " << static_cast<float>(d_HAS_data.Nsys);
+            // DLOG(ERROR) << "Nsys " << static_cast<float>(d_HAS_data.Nsys);
             message = std::string(message.begin() + HAS_MSG_NSYS_LENGTH, message.end());
             d_HAS_data.gnss_id_mask.reserve(d_HAS_data.Nsys);
             d_HAS_data.cell_mask.reserve(d_HAS_data.Nsys);
@@ -674,4 +683,38 @@ int16_t galileo_e6_has_msg_receiver::read_has_message_body_int16(const std::stri
         }
 
     return value;
+}
+
+
+template <class T>
+std::string galileo_e6_has_msg_receiver::debug_print_vector(const std::string& title, const std::vector<T>& vec) const
+{
+    std::string msg(title);
+    msg += ": \n";
+    std::stringstream ss;
+    for (auto el : vec)
+        {
+            ss << static_cast<float>(el) << " ";
+        }
+    msg += ss.str();
+    return msg;
+}
+
+
+std::string galileo_e6_has_msg_receiver::debug_print_matrix(const std::string& title, const std::vector<std::vector<uint8_t>>& mat) const
+{
+    std::string msg(title);
+    msg += ": \n";
+    std::stringstream ss;
+
+    for (size_t row = 0; row < mat.size(); row++)
+        {
+            for (size_t col = 0; col < mat[0].size(); col++)
+                {
+                    ss << static_cast<float>(mat[row][col]) << " ";
+                }
+            ss << '\n';
+        }
+    msg += ss.str();
+    return msg;
 }

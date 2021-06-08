@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
- */
+*/
 
 #include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
@@ -93,17 +93,20 @@ namespace bc = boost::integer;
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk)
+    const rtk_t& rtk,
+    SpoofingDetector spoofing_detector)
 {
     return rtklib_pvt_gs_sptr(new rtklib_pvt_gs(nchannels,
         conf_,
-        rtk));
+        rtk,
+        spoofing_detector));
 }
 
 
 rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk) : gr::sync_block("rtklib_pvt_gs",
+    const rtk_t& rtk,
+    SpoofingDetector spoofing_detector) : gr::sync_block("rtklib_pvt_gs",
                             gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
                             gr::io_signature::make(0, 0, 0))
 {
@@ -136,7 +139,11 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_dump = conf_.dump;
     d_dump_mat = conf_.dump_mat and d_dump;
     d_dump_filename = conf_.dump_filename;
+    
+    d_total_pvt_measurements = 0;
+
     std::string dump_ls_pvt_filename = conf_.dump_filename;
+    
     if (d_dump)
         {
             std::string dump_path;
@@ -174,7 +181,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     d_type_of_rx = conf_.type_of_receiver;
 
-    // GPS Ephemeris data message port in
+    // GPS Ephemeris data message pspoofing_detectorort in
     this->message_port_register_in(pmt::mp("telemetry"));
     this->set_msg_handler(pmt::mp("telemetry"),
 #if HAS_GENERIC_LAMBDA
@@ -511,11 +518,14 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_beidou_dnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code();
 
     d_start = std::chrono::system_clock::now();
+
+    d_spoofing_detector = spoofing_detector;
 }
 
 
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
+    std::cout << "\nTotal iterations: " << d_total_pvt_measurements << "\n";
     DLOG(INFO) << "PVT block destructor called.";
     if (d_sysv_msqid != -1)
         {
@@ -1813,8 +1823,11 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
+    std::cout << "\nNumber of records in iteration: " << noutput_items;
+    
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
-        {
+        {   
+            d_total_pvt_measurements++;
             bool flag_display_pvt = false;
             bool flag_compute_pvt_output = false;
             bool flag_write_RTCM_1019_output = false;
@@ -1825,6 +1838,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
+            d_spoofing_detector.check_position_consistency(1, 1, 1, in);
             // ############ 1. READ PSEUDORANGES ####
             for (uint32_t i = 0; i < d_nchannels; i++)
                 {
@@ -2238,6 +2252,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
                 }
         }
-
+        
     return noutput_items;
 }

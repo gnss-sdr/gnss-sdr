@@ -34,6 +34,7 @@
 #include <string>                 // for string
 #include <sys/types.h>            // for key_t
 #include <vector>                 // for vector
+#include "spoofing_detector.h"
 
 /** \addtogroup PVT
  * \{ */
@@ -64,7 +65,8 @@ using rtklib_pvt_gs_sptr = gnss_shared_ptr<rtklib_pvt_gs>;
 
 rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk);
+    const rtk_t& rtk,
+    SpoofingDetector spoofing_detector);
 
 /*!
  * \brief This class implements a block that computes the PVT solution using the RTKLIB integrated library
@@ -125,11 +127,13 @@ public:
 private:
     friend rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        const rtk_t& rtk);
+        const rtk_t& rtk,
+        SpoofingDetector spoofing_detector);
 
     rtklib_pvt_gs(uint32_t nchannels,
         const Pvt_Conf& conf_,
-        const rtk_t& rtk);
+        const rtk_t& rtk,
+        SpoofingDetector spoofing_detector);
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
@@ -248,7 +252,8 @@ private:
     int32_t d_display_rate_ms;
     int32_t d_report_rate_ms;
     int32_t d_max_obs_block_rx_clock_offset_ms;
-
+    int32_t d_total_pvt_measurements;
+    
     uint32_t d_nchannels;
     uint32_t d_type_of_rx;
 
@@ -267,6 +272,8 @@ private:
     bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;
+
+    SpoofingDetector d_spoofing_detector;
 };
 
 

@@ -121,6 +121,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.geojson_rate_ms = bc::lcm(configuration->property(role + ".geojson_rate_ms", pvt_output_parameters.geojson_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.nmea_rate_ms = bc::lcm(configuration->property(role + ".nmea_rate_ms", pvt_output_parameters.nmea_rate_ms), pvt_output_parameters.output_rate_ms);
 
+    SpoofingDetector *spoofing_detector = new SpoofingDetector(configuration);  
     // Infer the type of receiver
     /*
      *   TYPE  |  RECEIVER
@@ -819,7 +820,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.max_obs_block_rx_clock_offset_ms = configuration->property(role + ".max_clock_offset_ms", pvt_output_parameters.max_obs_block_rx_clock_offset_ms);
 
     // make PVT object
-    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
+    pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk, *spoofing_detector);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";
     if (out_streams_ > 0)
         {

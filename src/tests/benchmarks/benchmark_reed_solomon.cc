@@ -203,8 +203,42 @@ void bm_e6b_correction(benchmark::State& state)
         }
 }
 
+void bm_e6b_erasure(benchmark::State& state)
+{
+    const std::vector<uint8_t> expected_output = {71, 12, 25, 210, 178, 81, 243, 9, 112, 98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31, 128, 245, 87, 150, 58, 192, 66, 130, 179};
+
+    std::vector<uint8_t> encoded_input = {
+        71, 12, 25, 210, 178, 81, 243, 9, 112, 98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31, 128, 245, 87, 150, 58, 192, 66, 130, 179, 133, 210, 122, 224, 75, 138, 20, 205, 14, 245, 209, 187, 246, 228, 12, 39, 244, 238, 223, 217, 84, 233, 137, 168, 153, 8, 94, 26, 99, 169, 149, 203, 115, 69, 211, 43, 70, 96, 70, 38, 160, 1, 232, 153, 223, 165, 93, 205, 101, 170, 60, 188, 198, 82, 168, 79, 95, 23, 118, 215, 187, 136, 24, 99, 252, 3, 144, 166, 117, 45, 168, 239, 77, 42, 246, 33, 122, 97, 242, 236, 13, 217, 96, 186, 71, 250, 242, 177, 125, 87, 27, 13, 118, 181, 178, 12, 27, 66, 31, 74, 127, 46, 112, 127, 116, 122, 190, 71, 240, 95, 78, 194, 113, 80, 46, 126, 74, 136, 118, 133, 105, 176, 47, 230, 162, 195, 93, 157, 72, 119, 13, 232, 151, 200, 191, 143, 75, 161, 111, 29, 158, 16, 181, 165, 92, 39, 17, 218, 228, 58, 176, 233, 55, 211, 195, 73, 37, 137, 232, 241, 150, 236, 152, 153, 53, 74, 81, 91, 160, 244, 21, 95, 176, 179, 141, 39, 61, 136, 16, 58, 160, 51, 210, 31, 134, 63, 203, 96, 219, 44, 231, 61, 220, 0, 241, 220, 207, 17, 52, 150, 117, 54, 222, 128, 101, 213, 164, 234, 74, 224, 57, 246, 70, 27, 202, 229, 4, 243, 128, 211, 158, 199, 4};
+
+    // Introduce 223 erasures:
+    std::vector<int> erasure_positions;
+    erasure_positions.reserve(223);
+    for (int i = 0; i < 223; i++)
+        {
+            encoded_input[i] = 0;
+            erasure_positions.push_back(i);
+        }
+    std::vector<uint8_t> code_vector_missing = encoded_input;
+
+    auto rs = std::make_unique<ReedSolomon>();
+
+    while (state.KeepRunning())
+        {
+            int result = rs->decode(encoded_input, erasure_positions);
+            if (result < 0)
+                {
+                    state.SkipWithError("Failed to decode data!");
+                    break;
+                }
+            state.PauseTiming();
+            encoded_input = code_vector_missing;
+            state.ResumeTiming();
+        }
+}
+
 
 BENCHMARK(bm_e1b_erasurecorrection_shortened);
 BENCHMARK(bm_e1b_erasurecorrection_unshortened);
 BENCHMARK(bm_e6b_correction);
+BENCHMARK(bm_e6b_erasure);
 BENCHMARK_MAIN();

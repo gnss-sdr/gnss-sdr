@@ -15,30 +15,29 @@
  */
 
 #ifndef GNSS_SDR_SPOOFING_DETECTOR_H_
-#define	GNSS_SDR_SPOOFING_DETECTOR_H_
+#define GNSS_SDR_SPOOFING_DETECTOR_H_
 
-#include <iostream>
-#include <fstream>
-#include <list>
-#include <map>
-#include <vector>
-#include <set>
-#include "gnss_synchro.h"
-#include <boost/circular_buffer.hpp>
 #include "configuration_interface.h"
+#include "gnss_synchro.h"
+#include "pvt_sd_conf.h"
 #include <glog/logging.h>
-#include <gflags/gflags.h>
+#include <map>
 
-struct pvt_solution_assurance
+
+struct score
 {
     // ####### Structure to store assurance score - total score and individual scores
-    int position_jump_score;
-    int velocity_check_score;
-    int static_pos_check_score;
-    int aux_peak_score;
-    int cno_score;
-    int agc_score;
-    int total_score;
+    int position_jump_score = 0;
+    int velocity_check_score = 0;
+    int static_pos_check_score = 0;
+    int aux_peak_score = 0;
+    int cno_score = 0;
+    int agc_score = 0;
+
+    int total_score()
+    {
+        return (position_jump_score + velocity_check_score + static_pos_check_score + aux_peak_score + cno_score + agc_score);
+    }
 };
 
 struct pos_sol
@@ -51,38 +50,46 @@ struct pos_sol
 
 class SpoofingDetector
 {
-    public:
-        SpoofingDetector();
-        SpoofingDetector(const ConfigurationInterface* configuration);
-        
-        void check_position_consistency(double lat, double lon, double alt, const Gnss_Synchro **in);
-        void dump_results(int check_id);
+public:
+    SpoofingDetector();
+    SpoofingDetector(const Pvt_SD_Conf* conf_);
 
-        ~SpoofingDetector();
+    void check_position_consistency(double lat, double lon, double alt, const Gnss_Synchro** in);
+    void dump_results(int check_id);
 
-    private:
-        bool d_print_assurance_score;
-        bool d_dump_results;
-        
-        // ####### Position consistency check variables
-        bool d_position_check;
+    bool d_position_check;
 
-        int d_max_jump_distance;
-        int d_geo_fence_radius;
-        int d_velocity_difference;
-        int d_observation_count;
+    int d_spoofer_score;
+    double d_assurance_score;
 
-        // ####### Map of last known good location. key is the check type's enumeration
-        std::map<unsigned int, pos_sol> last_known_good_location;
+private:
+    bool d_dump_results;
 
-        // ####### Position consistency check functions
-        void position_jump(double lat, double lon, double alt); // Jump check, recheck with a known good location - increase score if close to known location.
-        void compare_velocity(); 
-        void static_pos_check(double lat, double lon, double alt);
-        void set_last_known_good_location(double lat, double lon, double alt, int check_enum_id);
+    // ####### Map of last known good location. key is the check type's enumeration
+    std::map<unsigned int, pos_sol> last_known_good_location;
 
-        // ####### General Functions
-        double distance(double lat1, double lon1, double lat2, double lon2);
+    score d_score;
+
+    // ####### Position consistency check variables
+    int d_max_jump_distance;
+    int d_geo_fence_radius;
+    int d_velocity_difference;
+    double d_static_lat;
+    double d_static_lon;
+    double d_static_alt;
+    bool d_dump_pos_checks_results;
+
+    int get_spoofer_score();
+
+    // ####### Position consistency check functions
+    void position_jump(double lat, double lon, double alt);  // Jump check, recheck with a known good location - increase score if close to known location.
+    void compare_velocity();
+    void static_pos_check(double lat, double lon, double alt);
+    void set_last_known_good_location(double lat, double lon, double alt, int check_enum_id);
+
+    // ####### General Functions
+    long double calculate_distance(double lat1, double lon1, double lat2, double lon2);
+    long double to_radians(double degree);
 };
 
 #endif

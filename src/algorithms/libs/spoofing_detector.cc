@@ -15,53 +15,106 @@
  */
 
 #include "spoofing_detector.h"
-#include "GPS_L1_CA.h"
-#include <cmath>    // for floor, fmod, rint, ceil
-#include <cstring>  // for memcpy
-#include <iostream>
+#include <cmath>  // for floor, fmod, rint, ceil
 #include <map>
 
 SpoofingDetector::SpoofingDetector()
 {
-
 }
 
-SpoofingDetector::SpoofingDetector(const ConfigurationInterface* configuration)
+SpoofingDetector::SpoofingDetector(const Pvt_SD_Conf* conf_)
 {
-    d_dump_results = configuration->property("Spoofing.dump_results", true);
+    DLOG(INFO) << "Spoofing detector initialized";
+    d_max_jump_distance = conf_->max_jump_distance;
+    d_geo_fence_radius = conf_->geo_fence_radius;
+    d_velocity_difference = conf_->velocity_difference;
 
-    // ####### Position consistency check configuration
-    d_position_check = configuration->property("Spoofing.position_check", false);
-    d_max_jump_distance = configuration->property("Spoofing.max_jump_distance", 100);
-    d_geo_fence_radius = configuration->property("Spoofing.geo_fence_radius", 15);
-    d_velocity_difference = configuration->property("Spoofing.geo_fence_radius", 15);
+    d_static_lat = conf_->static_lat;
+    d_static_lon = conf_->static_lon;
+    d_static_alt = conf_->static_alt;
 
-    DLOG(INFO) << "Spoofing detector constructor";
+    d_dump_pos_checks_results = conf_->dump_pos_checks_results;
+
+    d_position_check = conf_->position_check;
+    d_spoofer_score = 0;
 }
 
-SpoofingDetector::~SpoofingDetector()
+// ####### Position consistency functions
+void SpoofingDetector::check_position_consistency(double lat, double lon, double alt,
+    const Gnss_Synchro** in)
 {
-    DLOG(INFO) << "Spoofing detector destructor";
-}
-
-void SpoofingDetector::check_position_consistency(
-    double lat, 
-    double lon, 
-    double alt, 
-    const Gnss_Synchro **in)
-{
-    DLOG(INFO) << "Check position consistency function";
+    static_pos_check(lat, lon, alt);
 }
 
 void SpoofingDetector::compare_velocity()
 {
-    DLOG(INFO) << "Compare velocity function";
+    //DLOG(INFO) << "Compare velocity function";
 }
 
-void SpoofingDetector::static_pos_check(
-    double lat, 
-    double lon, 
-    double alt)
+void SpoofingDetector::static_pos_check(double lat, double lon, double alt)
 {
     DLOG(INFO) << "Check static position function";
+    double distance = calculate_distance(lat, lon, d_static_lat, d_static_lon);
+
+    if (distance > d_geo_fence_radius)
+        {
+            d_score.static_pos_check_score = 1;
+            d_spoofer_score = d_score.total_score();
+            DLOG(INFO) << "Spoofer score: " << d_spoofer_score << " - Distance: " << distance;
+        }
+    else
+        {
+            if (d_score.static_pos_check_score == 1)
+                {
+                    DLOG(INFO) << "Received location within geo-fence, resetting static position score";
+                }
+
+            d_score.static_pos_check_score = 0;
+            d_spoofer_score = d_score.total_score();
+        }
+}
+
+void SpoofingDetector::position_jump(double lat, double lon, double alt)
+{
+    //DLOG(INFO) << "Check position jump function";
+}
+
+// ####### General functions
+int SpoofingDetector::get_spoofer_score()
+{
+    int d_spoofer_score = d_score.total_score();
+    DLOG(INFO) << "Total spoofer score: " << d_spoofer_score;
+    return d_spoofer_score;
+}
+
+long double SpoofingDetector::to_radians(double degree)
+{
+    // Convert degrees to radians
+    long double one_deg = (M_PI) / 180;
+    return (one_deg * degree);
+}
+
+long double SpoofingDetector::calculate_distance(double lat1, double lon1, double lat2, double lon2)
+{
+    // Calculate distance between l1 and l2 using Haversine formula
+    lat1 = to_radians(lat1);
+    lon1 = to_radians(lon1);
+    lat2 = to_radians(lat2);
+    lon2 = to_radians(lon2);
+
+    // Haversine Formula
+    long double dlong = lon2 - lon2;
+    long double dlat = lat2 - lat1;
+
+    long double distance = pow(sin(dlat / 2), 2) +
+                           cos(lat1) * cos(lat2) *
+                               pow(sin(dlong / 2), 2);
+
+    distance = 2 * asin(sqrt(distance));
+
+    long double R = 6371000;
+
+    // Calculate the result
+    distance = distance * R;
+    return distance;
 }

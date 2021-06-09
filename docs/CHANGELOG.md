@@ -97,6 +97,12 @@ All notable changes to GNSS-SDR will be documented in this file.
   different settings for the `-DENABLE_FMCOMMS2` or `-DENABLE_PLUTOSDR` building
   options.
 - Fix building when using UHD v4.0.0.0.
+- Fix building for `-DENABLE_FMCOMMS2=ON` and/or `-DENABLE_PLUTOSDR=ON` when the
+  built-in gr-iio module introduced in GNU Radio 3.10 is found. This in-tree GNU
+  Radio module takes precedence over the gr-iio package provided at
+  https://github.com/analogdevicesinc/gr-iio. If the GNU Radio module is found,
+  the other one is ignored.
+- File `changelog.md` renamed to the more usual `CHANGELOG.md` uppercase name.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

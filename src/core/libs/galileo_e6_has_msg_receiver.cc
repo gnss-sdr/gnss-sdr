@@ -225,6 +225,9 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
                     decoded_message_type_1 += bs.to_string();
                 }
         }
+    DLOG(INFO) << "Decoded message ID " << static_cast<float>(message_id)
+               << " (size: " << static_cast<float>(message_size) << ") with body: "
+               << std::string(decoded_message_type_1.begin() + GALILEO_CNAV_MT1_HEADER_BITS, decoded_message_type_1.end());
 
     // reset data for next decoding
     d_C_matrix[message_id] = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};
@@ -277,7 +280,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
         {
             // read mask
             d_HAS_data.Nsys = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYS_LENGTH));
-            // DLOG(ERROR) << "Nsys " << static_cast<float>(d_HAS_data.Nsys);
+            DLOG(INFO) << "Nsys " << static_cast<float>(d_HAS_data.Nsys);
             message = std::string(message.begin() + HAS_MSG_NSYS_LENGTH, message.end());
             d_HAS_data.gnss_id_mask.reserve(d_HAS_data.Nsys);
             d_HAS_data.cell_mask.reserve(d_HAS_data.Nsys);

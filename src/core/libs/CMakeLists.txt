@@ -15,6 +15,7 @@ set(CORE_LIBS_SOURCES
     channel_status_msg_receiver.cc
     channel_event.cc
     command_event.cc
+    galileo_e6_has_msg_receiver.cc
 )
 
 set(CORE_LIBS_HEADERS

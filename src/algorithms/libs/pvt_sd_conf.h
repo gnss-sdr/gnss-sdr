@@ -27,11 +27,13 @@ public:
     Pvt_SD_Conf();
 
     bool position_check;
+    bool static_pos_check;
     bool dump_pos_checks_results;
 
     int max_jump_distance;
     int geo_fence_radius;
     int velocity_difference;
+    int pos_jump_recovery;
 
     double static_lat;
     double static_lon;

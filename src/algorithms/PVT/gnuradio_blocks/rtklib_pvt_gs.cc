@@ -144,6 +144,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     if (conf_.security_checks)
         {
             d_spoofing_detector = SpoofingDetector(&conf_.security_parameters);
+            d_print_score = conf_.print_score;
         }
 
     std::string dump_ls_pvt_filename = conf_.dump_filename;
@@ -2226,22 +2227,25 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             int score = d_spoofing_detector.d_spoofer_score;
 
-                            if (score < 1)
+                            if (d_print_score)
                                 {
-                                    COLOR = TEXT_BOLD_GREEN;
-                                }
-                            else if (score >= 1 and score < 4)
-                                {
-                                    COLOR = TEXT_BOLD_YELLOW;
-                                }
-                            else if (score >= 4)
-                                {
-                                    COLOR = TEXT_BOLD_RED;
-                                }
+                                    if (score < 1)
+                                        {
+                                            COLOR = TEXT_BOLD_GREEN;
+                                        }
+                                    else if (score >= 1 and score < 4)
+                                        {
+                                            COLOR = TEXT_BOLD_YELLOW;
+                                        }
+                                    else if (score >= 4)
+                                        {
+                                            COLOR = TEXT_BOLD_RED;
+                                        }
 
-                            std::cout
-                                << COLOR
-                                << "Spoofer score: " << score << TEXT_RESET << "\n";
+                                    std::cout
+                                        << COLOR
+                                        << "Spoofer score: " << score << TEXT_RESET << "\n";
+                                }
 
                             DLOG(INFO) << "RX clock drift: " << d_user_pvt_solver->get_clock_drift_ppm() << " [ppm]";
 

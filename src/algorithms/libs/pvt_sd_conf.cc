@@ -20,16 +20,18 @@ Pvt_SD_Conf::Pvt_SD_Conf()
 {
     // ####### Position consistency check variables
 
-    int max_jump_distance = 100;   // meters
-    int geo_fence_radius = 15;     // meters
-    int velocity_difference = 15;  // meters/s
+    max_jump_distance = 100;   // meters
+    geo_fence_radius = 15;     // meters
+    velocity_difference = 15;  // meters/s
+    pos_jump_recovery = 10;    // meters
 
-    double static_lat = 0;  //degrees
-    double static_lon = 0;  //degrees
-    double static_alt = 0;  //meters
+    static_lat = 0;  //degrees
+    static_lon = 0;  //degrees
+    static_alt = 0;  //meters
 
     position_check = false;
     dump_pos_checks_results = false;
+    static_pos_check = false;
 
     std::string filename = "./pos_consistency_results.mat";
 }

@@ -824,6 +824,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     if (pvt_output_parameters.security_checks)
         {
+            pvt_output_parameters.print_score = configuration->property(role + ".print_score", false);
+
             Pvt_SD_Conf spoofing_detection_parameters = Pvt_SD_Conf();
             spoofing_detection_parameters.dump_pos_checks_results = configuration->property("Spoofing_Detection.dump_results", true);
 
@@ -831,6 +833,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             spoofing_detection_parameters.max_jump_distance = configuration->property("SecurePVT.max_jump_distance", 100);
             spoofing_detection_parameters.geo_fence_radius = configuration->property("SecurePVT.geo_fence_radius", 15);
             spoofing_detection_parameters.velocity_difference = configuration->property("SecurePVT.velocity_difference", 15);
+            spoofing_detection_parameters.pos_jump_recovery = configuration->property("SecurePVT.pos_jump_recovery", 10);
+            spoofing_detection_parameters.static_pos_check = configuration->property("SecurePVT.static_pos_check", false);
+
             spoofing_detection_parameters.static_lat = configuration->property("SecurePVT.static_lat", 0);
             spoofing_detection_parameters.static_lon = configuration->property("SecurePVT.static_lon", 0);
             spoofing_detection_parameters.static_alt = configuration->property("SecurePVT.static_alt", 0);
@@ -848,13 +853,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         }
 }
 
-
 Rtklib_Pvt::~Rtklib_Pvt()
 {
     DLOG(INFO) << "PVT adapter destructor called.";
     rtkfree(&rtk);
 }
-
 
 bool Rtklib_Pvt::get_latest_PVT(double* longitude_deg,
     double* latitude_deg,

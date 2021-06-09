@@ -271,6 +271,7 @@ private:
     bool d_enable_rx_clock_correction;
 
     SpoofingDetector d_spoofing_detector;
+    bool d_print_score;
     std::string COLOR;
 };
 

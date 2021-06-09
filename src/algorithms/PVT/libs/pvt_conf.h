@@ -88,6 +88,7 @@ public:
     bool dump_mat;
 
     bool security_checks;
+    bool print_score;
     Pvt_SD_Conf security_parameters;
 };
 

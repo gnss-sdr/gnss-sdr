@@ -48,6 +48,7 @@ struct pos_sol
     double alt;
 };
 
+
 class SpoofingDetector
 {
 public:
@@ -70,26 +71,41 @@ private:
 
     score d_score;
 
-    // ####### Position consistency check variables
+    // ####### Position consistency
     int d_max_jump_distance;
     int d_geo_fence_radius;
     int d_velocity_difference;
+    int d_pos_jump_recovery;
+
+    // Static surveyed coordinates to compare received coordinates with
     double d_static_lat;
     double d_static_lon;
     double d_static_alt;
+
+    bool d_first_record;
+    bool d_static_pos_check;
     bool d_dump_pos_checks_results;
 
-    int get_spoofer_score();
+    // Compare with new coordinates with these coordinates for position jumps
+    double d_old_lat;
+    double d_old_lon;
+    double d_old_alt;
 
-    // ####### Position consistency check functions
+    double d_last_known_good_lat;
+    double d_last_known_good_lon;
+    double d_last_known_good_alt;
+
     void position_jump(double lat, double lon, double alt);  // Jump check, recheck with a known good location - increase score if close to known location.
     void compare_velocity();
     void static_pos_check(double lat, double lon, double alt);
-    void set_last_known_good_location(double lat, double lon, double alt, int check_enum_id);
 
     // ####### General Functions
+    void set_old_location(double lat, double lon, double alt);
+    void set_last_known_good_location(double lat, double lon, double alt);
+
     long double calculate_distance(double lat1, double lon1, double lat2, double lon2);
     long double to_radians(double degree);
+    int get_spoofer_score();
 };
 
 #endif

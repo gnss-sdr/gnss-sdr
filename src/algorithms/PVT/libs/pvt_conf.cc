@@ -69,4 +69,5 @@ Pvt_Conf::Pvt_Conf()
     show_local_time_zone = false;
 
     security_checks = false;
+    print_score = false;
 }

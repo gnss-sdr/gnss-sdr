@@ -82,6 +82,7 @@ private:
     double d_static_lon;
     double d_static_alt;
 
+    bool d_update_lkgl;
     bool d_first_record;
     bool d_static_pos_check;
     bool d_dump_pos_checks_results;

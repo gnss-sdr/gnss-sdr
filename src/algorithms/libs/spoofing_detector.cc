@@ -52,6 +52,9 @@ SpoofingDetector::SpoofingDetector(const Pvt_SD_Conf* conf_)
 
     // Used to set old coordinates and last known good location
     d_first_record = true;
+
+    //  Used to decide whether to update LKGL
+    d_update_lkgl = true;
 }
 
 // ####### Position consistency functions
@@ -141,7 +144,11 @@ void SpoofingDetector::position_jump(double new_lat, double new_lon, double new_
                     DLOG(INFO) << "POS_JUMP: Spoofer score: " << d_spoofer_score << " - Jump distance: " << jump_distance;
 
                     // Set last known good location to old coordinates
-                    set_last_known_good_location(d_old_lat, d_old_lon, d_old_alt);
+                    if (d_update_lkgl)
+                        {
+                            set_last_known_good_location(d_old_lat, d_old_lon, d_old_alt);
+                            d_update_lkgl = false;
+                        }
                 }
         }
     else
@@ -196,6 +203,8 @@ void SpoofingDetector::reset_pos_jump_check(double new_lat, double new_lon, doub
 
     d_score.position_jump_score = 0;
     d_spoofer_score = d_score.total_score();
+
+    d_update_lkgl = true;
 }
 
 int SpoofingDetector::get_spoofer_score()

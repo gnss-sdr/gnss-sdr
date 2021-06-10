@@ -34,6 +34,8 @@ SpoofingDetector::SpoofingDetector(const Pvt_SD_Conf* conf_)
     d_static_lon = conf_->static_lon;
     d_static_alt = conf_->static_alt;
 
+    DLOG(INFO) << "Static pos check: " << d_static_lat << ", " << d_static_lon;
+
     d_dump_pos_checks_results = conf_->dump_pos_checks_results;
     d_position_check = conf_->position_check;
     d_static_pos_check = conf_->static_pos_check;
@@ -77,20 +79,19 @@ void SpoofingDetector::compare_velocity()
 
 void SpoofingDetector::static_pos_check(double lat, double lon, double alt)
 {
-    DLOG(INFO) << "Check static position function";
-    double distance = calculate_distance(lat, lon, d_static_lat, d_static_lon);
-
+    long double distance = calculate_distance(lat, lon, d_static_lat, d_static_lon);
+    DLOG(INFO) << "STATIC_POS: static_coords (" << d_static_lat << "," << d_static_lon << ") received (" << lat << "," << lon << ") Distance: " << distance;
     if (distance > d_geo_fence_radius)
         {
             d_score.static_pos_check_score = 1;
             d_spoofer_score = d_score.total_score();
-            DLOG(INFO) << "Spoofer score: " << d_spoofer_score << " - Distance: " << distance;
+            DLOG(INFO) << "STATIC_POS: Spoofer score: " << d_spoofer_score << " - Distance: " << distance;
         }
     else
         {
             if (d_score.static_pos_check_score == 1)
                 {
-                    DLOG(INFO) << "Received location within geo-fence, resetting static position score";
+                    DLOG(INFO) << "STATIC_POS: Received location within geo-fence, resetting static position score";
                 }
 
             d_score.static_pos_check_score = 0;
@@ -100,58 +101,71 @@ void SpoofingDetector::static_pos_check(double lat, double lon, double alt)
 
 void SpoofingDetector::position_jump(double new_lat, double new_lon, double new_alt)
 {
-    double distance;
+    double distance_to_lkgl;  // LKGL - Last Known Good Location
     double jump_distance;
+
+    DLOG(INFO) << "POS_JUMP: check";
+
     if (d_first_record)
         {
-            set_old_location(new_lat, new_lat, new_alt);
+            set_old_location(new_lat, new_lon, new_alt);
 
             // In case of a cold start there is no way to know if the received location is legit. Hence a naive way is to check for spoofer score.
             // The score will be 0 if no other technique detects spoofing
             if (get_spoofer_score() == 0)
                 {
                     // Set last known good location to current coordinates
-                    set_last_known_good_location(new_lat, new_lat, new_alt);
+                    set_last_known_good_location(new_lat, new_lon, new_alt);
+                    DLOG(INFO) << "POS_JUMP: location update: " << new_lat << ", " << new_lon << ", " << new_alt;
                 }
 
+            d_first_record = false;
             return;
         }
 
     jump_distance = calculate_distance(d_old_lat, d_old_lon, new_lat, new_lon);
-
-    if (jump_distance > d_max_jump_distance and d_score.position_jump_score != 0)
+    DLOG(INFO) << "POS_JUMP: Old (" << d_old_lat << "," << d_old_lon << ") received (" << new_lat << "," << new_lon << ") Distance: " << jump_distance << " Spoofer score: " << get_spoofer_score();
+    if (jump_distance > d_max_jump_distance)
         {
-            d_score.position_jump_score = 2;
-            d_spoofer_score = d_score.total_score();
-            DLOG(INFO) << "Spoofer score: " << d_spoofer_score << " - Jump distance: " << distance;
+            distance_to_lkgl = calculate_distance(d_last_known_good_lat, d_last_known_good_lon, new_lat, new_lon);
 
-            // Set last known good location to old coordinates
-            set_last_known_good_location(d_old_lat, d_old_lon, d_old_alt);
+            if (distance_to_lkgl < d_pos_jump_recovery)
+                {
+                    // Reset jump check when the receiver is back to the last known good location
+                    reset_pos_jump_check(new_lat, new_lon, new_alt);
+                }
+            else
+                {
+                    d_score.position_jump_score = 2;
+                    d_spoofer_score = d_score.total_score();
+                    DLOG(INFO) << "POS_JUMP: Spoofer score: " << d_spoofer_score << " - Jump distance: " << jump_distance;
+
+                    // Set last known good location to old coordinates
+                    set_last_known_good_location(d_old_lat, d_old_lon, d_old_alt);
+                }
         }
     else
         {
             if (d_score.position_jump_score == 2)
                 {
-                    distance = calculate_distance(d_last_known_good_lat, d_last_known_good_lat, new_lat, new_lon);
-                    if (distance < d_pos_jump_recovery)
+                    distance_to_lkgl = calculate_distance(d_last_known_good_lat, d_last_known_good_lon, new_lat, new_lon);
+                    if (distance_to_lkgl < d_pos_jump_recovery)
                         {
-                            d_score.position_jump_score = 0;
-
-                            // Set last known good location to current coordinates
-                            set_last_known_good_location(new_lat, new_lat, new_alt);
-
-                            d_score.position_jump_score = 0;
-                            d_spoofer_score = d_score.total_score();
+                            // Reset jump check when the receiver is back to the last known good location
+                            reset_pos_jump_check(new_lat, new_lon, new_alt);
+                            DLOG(INFO) << "POS_JUMP: Received location within geo-fence, resetting static position score";
                         }
-                    DLOG(INFO) << "Received location within geo-fence, resetting static position score";
                 }
             else
                 {
-                    //set_last_known_good_location(new_lat, new_lat, new_alt);
+                    set_last_known_good_location(new_lat, new_lon, new_alt);
                 }
         }
 
-    set_old_location(new_lat, new_lat, new_alt);
+    set_old_location(new_lat, new_lon, new_alt);
+    DLOG(INFO) << "POS_JUMP: Old location updated to: " << new_lat << ", " << new_lon << ", " << new_alt;
+    DLOG(INFO) << "POS_JUMP: Last known good location: " << d_last_known_good_lat << ", " << d_last_known_good_lon;
+    DLOG(INFO) << "POS_JUMP: Distance to LKGL: " << distance_to_lkgl;
 }
 
 // ####### General functions
@@ -169,6 +183,19 @@ void SpoofingDetector::set_old_location(double new_lat, double new_lon, double n
     d_old_lat = new_lat;
     d_old_lon = new_lon;
     d_old_alt = new_alt;
+
+    DLOG(INFO) << "Old location updated to: " << new_lat << ", " << new_lon << ", " << new_alt;
+}
+
+void SpoofingDetector::reset_pos_jump_check(double new_lat, double new_lon, double new_alt)
+{
+    d_score.position_jump_score = 0;
+
+    // Set last known good location to current coordinates
+    set_last_known_good_location(new_lat, new_lon, new_alt);
+
+    d_score.position_jump_score = 0;
+    d_spoofer_score = d_score.total_score();
 }
 
 int SpoofingDetector::get_spoofer_score()
@@ -194,7 +221,7 @@ long double SpoofingDetector::calculate_distance(double lat1, double lon1, doubl
     lon2 = to_radians(lon2);
 
     // Haversine Formula
-    long double dlong = lon2 - lon2;
+    long double dlong = lon2 - lon1;
     long double dlat = lat2 - lat1;
 
     long double distance = pow(sin(dlat / 2), 2) +

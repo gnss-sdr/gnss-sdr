@@ -102,6 +102,7 @@ private:
     // ####### General Functions
     void set_old_location(double lat, double lon, double alt);
     void set_last_known_good_location(double lat, double lon, double alt);
+    void reset_pos_jump_check(double lat, double lon, double alt);
 
     long double calculate_distance(double lat1, double lon1, double lat2, double lon2);
     long double to_radians(double degree);

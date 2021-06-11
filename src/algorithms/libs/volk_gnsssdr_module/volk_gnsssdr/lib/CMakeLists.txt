@@ -599,7 +599,8 @@ endif()
 if(NOT MSVC)
     target_link_libraries(volk_gnsssdr PUBLIC m)
 endif()
-set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${LIBVER})
+set_target_properties(volk_gnsssdr PROPERTIES VERSION ${VERSION})
+set_target_properties(volk_gnsssdr PROPERTIES SOVERSION ${SOVERSION})
 set_target_properties(volk_gnsssdr PROPERTIES DEFINE_SYMBOL "volk_gnsssdr_EXPORTS")
 
 # Install locations

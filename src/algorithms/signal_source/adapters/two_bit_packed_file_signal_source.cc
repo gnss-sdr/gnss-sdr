@@ -46,6 +46,11 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
 }
 
 
+gr::basic_block_sptr TwoBitPackedFileSignalSource::get_right_block()
+{
+    return char_to_float_;
+}
+
 std::tuple<size_t, bool> TwoBitPackedFileSignalSource::itemTypeToSize()
 {
     auto is_complex_t = false;

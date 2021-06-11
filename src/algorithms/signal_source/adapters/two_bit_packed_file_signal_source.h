@@ -47,6 +47,9 @@ public:
 
     ~TwoBitPackedFileSignalSource() = default;
 
+    // This is a chain; override the default implementation
+    gr::basic_block_sptr get_right_block() override;
+
 private:
     inline bool big_endian_items() const
     {

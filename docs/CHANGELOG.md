@@ -103,6 +103,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   https://github.com/analogdevicesinc/gr-iio. If the GNU Radio module is found,
   the other one is ignored.
 - File `changelog.md` renamed to the more usual `CHANGELOG.md` uppercase name.
+- New global configuration parameter `GNSS-SDR.observable_interval_ms`, set by
+  default to 20 [ms], allows to control the internal rate at which computed
+  observables sets are processed (50 observables sets per second by default).
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

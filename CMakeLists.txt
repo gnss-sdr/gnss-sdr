@@ -2105,7 +2105,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
         message(FATAL_ERROR "*** The hdf5 library is required to build Matio from source.")
     endif()
 
-    if(CMAKE_VERSION VERSION_LESS 3.7)
+    if(CMAKE_VERSION VERSION_LESS 3.7 OR "${HDF5_VERSION}" VERSION_LESS "1.8.13")
         if(ZLIB_FOUND)
             get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
             if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")

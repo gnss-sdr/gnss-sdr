@@ -25,9 +25,6 @@ if(NOT benchmark_FOUND)
         "--build" "${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}"
         "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
     )
-    if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(BENCHMARK_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target" "benchmark_main")
-    endif()
 
     if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
         set(BENCHMARK_PARALLEL_BUILD "--parallel 2")

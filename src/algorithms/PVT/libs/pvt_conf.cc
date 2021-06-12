@@ -19,6 +19,7 @@
 Pvt_Conf::Pvt_Conf()
 {
     type_of_receiver = 0U;
+    observable_interval_ms = 20U;
     output_rate_ms = 0;
     display_rate_ms = 0;
     kml_rate_ms = 1000;

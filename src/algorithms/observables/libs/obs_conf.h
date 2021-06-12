@@ -36,6 +36,7 @@ public:
     int32_t smoothing_factor;
     uint32_t nchannels_in;
     uint32_t nchannels_out;
+    uint32_t observable_interval_ms;
     bool enable_carrier_smoothing;
     bool dump;
     bool dump_mat;

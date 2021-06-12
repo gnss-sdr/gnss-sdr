@@ -51,6 +51,8 @@ public:
     std::string udp_eph_addresses;
 
     uint32_t type_of_receiver;
+    uint32_t observable_interval_ms;
+
     int32_t output_rate_ms;
     int32_t display_rate_ms;
     int32_t kml_rate_ms;

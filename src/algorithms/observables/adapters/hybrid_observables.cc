@@ -31,13 +31,14 @@ HybridObservables::HybridObservables(const ConfigurationInterface* configuration
     dump_mat_ = configuration->property(role + ".dump_mat", true);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 
-    Obs_Conf conf;
+    Obs_Conf conf{};
 
     conf.dump = dump_;
     conf.dump_mat = dump_mat_;
     conf.dump_filename = dump_filename_;
     conf.nchannels_in = in_streams_;
     conf.nchannels_out = out_streams_;
+    conf.observable_interval_ms = configuration->property("GNSS-SDR.observable_interval_ms", conf.observable_interval_ms);
     conf.enable_carrier_smoothing = configuration->property(role + ".enable_carrier_smoothing", conf.enable_carrier_smoothing);
 
     if (FLAGS_carrier_smoothing_factor == DEFAULT_CARRIER_SMOOTHING_FACTOR)

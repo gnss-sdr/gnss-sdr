@@ -173,6 +173,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_nchannels = nchannels;
 
     d_type_of_rx = conf_.type_of_receiver;
+    d_observable_interval_ms = conf_.observable_interval_ms;
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
@@ -2003,8 +2004,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             if (!d_gnss_observables_map_t0.empty())
                                                 {
                                                     const auto t0_int_ms = static_cast<uint32_t>(d_gnss_observables_map_t0.cbegin()->second.RX_time * 1000.0);
-                                                    const uint32_t adjust_next_20ms = 20 - t0_int_ms % 20;
-                                                    current_RX_time_ms = t0_int_ms + adjust_next_20ms;
+                                                    const uint32_t adjust_next_obs_interval_ms = d_observable_interval_ms - t0_int_ms % d_observable_interval_ms;
+                                                    current_RX_time_ms = t0_int_ms + adjust_next_obs_interval_ms;
 
                                                     if (current_RX_time_ms % d_output_rate_ms == 0)
                                                         {

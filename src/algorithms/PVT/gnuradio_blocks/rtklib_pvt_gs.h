@@ -254,6 +254,7 @@ private:
 
     uint32_t d_nchannels;
     uint32_t d_type_of_rx;
+    uint32_t d_observable_interval_ms;
 
     bool d_dump;
     bool d_dump_mat;

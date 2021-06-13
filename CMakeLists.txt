@@ -2217,6 +2217,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 -DMATIO_DEFAULT_FILE_VERSION:STRING=7.3
                 -DMATIO_MAT73=ON
                 -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/matio
+                -DHDF5_USE_STATIC_LIBRARIES=OFF
             BUILD_COMMAND ${CMAKE_COMMAND}
                 "--build" "${CMAKE_BINARY_DIR}/matio"
                 "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>

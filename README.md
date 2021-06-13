@@ -398,8 +398,8 @@ $ sudo ldconfig
 #### Download the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as Google Test:
 
 ```
-$ wget https://github.com/google/googletest/archive/v1.10.x.zip
-$ unzip v1.10.x.zip
+$ wget https://github.com/google/googletest/archive/release-1.11.0.zip
+$ unzip release-1.11.0.zip
 ```
 
 Please **DO NOT build or install** Google Test. Every user needs to compile
@@ -423,10 +423,10 @@ downloaded resides. Just type in your terminal (or add it to your
 `$HOME/.bashrc` file for a permanent solution) the following line:
 
 ```
-export GTEST_DIR=/home/username/googletest-1.10.x
+export GTEST_DIR=/home/username/googletest-release-1.11.0
 ```
 
-changing `/home/username/googletest-1.10.x` by the actual path where you
+changing `/home/username/googletest-release-1.11.0` by the actual path where you
 unpacked Google Test. If the CMake script does not find that folder, or the
 environment variable is not defined, or the source code is not installed by a
 package, then it will download a fresh copy of the Google Test source code and

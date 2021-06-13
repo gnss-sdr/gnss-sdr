@@ -37,11 +37,16 @@ if(NOT GOOGLETEST_FOUND)
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(GTEST_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target" "gtest_main")
     endif()
-
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
+      (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
+        set(GOOGLETEST_GIT_TAG v${GNSSSDR_GTEST_LOCAL_VERSION})
+    else()
+        set(GOOGLETEST_GIT_TAG release-${GNSSSDR_GTEST_LOCAL_VERSION})
+    endif()
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest
-            GIT_TAG v1.10.x
+            GIT_TAG ${GOOGLETEST_GIT_TAG}
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER}
@@ -66,12 +71,6 @@ if(NOT GOOGLETEST_FOUND)
                 ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtestd${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
-        endif()
-        set(GOOGLETEST_GIT_TAG "v${GNSSSDR_GTEST_LOCAL_VERSION}")
-        if(CMAKE_VERSION VERSION_GREATER 3.18.99)
-            # workaround to avoid warning about deprecated CMakeLists.txt with CMake >= 3.19
-            # Remove after a stable release of Googletest including this fix
-            set(GOOGLETEST_GIT_TAG ${GNSSSDR_GTEST_LOCAL_VERSION_POST_CMAKE_3_19})
         endif()
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest

@@ -2061,6 +2061,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     set_package_properties(MATIO PROPERTIES
         PURPOSE "Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+    # Find ZLIB library https://github.com/madler/zlib
     find_package(ZLIB)
     set_package_properties(ZLIB PROPERTIES
         URL "https://www.zlib.net/"
@@ -2076,6 +2077,11 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library"
         )
     endif()
+    if(NOT ZLIB_FOUND)
+        message(FATAL_ERROR "*** The zlib library is required to build Matio from source.")
+    endif()
+
+    # Find HDF5 library
     find_package(HDF5)
     set_package_properties(HDF5 PROPERTIES
         URL "https://support.hdfgroup.org/HDF5/"
@@ -2100,86 +2106,87 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             message(STATUS "  $ brew install hdf5")
         endif()
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
-            message(STATUS "  $ sudo apt-get install libhdf5-dev")
+            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat" OR ${LINUX_DISTRIBUTION} MATCHES "CentOS")
+                message(STATUS " sudo yum install hdf5-devel")
+            elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                message(STATUS " sudo zypper install hdf5-devel")
+            else()
+                message(STATUS " sudo apt-get install libhdf5-dev")
+            endif()
         endif()
         message(FATAL_ERROR "*** The hdf5 library is required to build Matio from source.")
     endif()
 
     if(CMAKE_VERSION VERSION_LESS 3.7 OR "${HDF5_VERSION}" VERSION_LESS "1.8.13")
-        if(ZLIB_FOUND)
-            get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
-            if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
-                if(NOT EXISTS "/usr/bin/libtoolize")
-                    message(" libtool has not been found.")
-                    message(" You can try to install it by typing:")
-                    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-                        message(" sudo yum groupinstall 'Development Tools'")
-                    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-                        message(" sudo zypper install libtoool")
-                    else()
-                        message(" sudo apt-get install libtool")
-                    endif()
-                    message(FATAL_ERROR "libtool is required to build matio from source")
-                endif()
-                if(EXISTS "/usr/bin/aclocal" OR
-                    EXISTS "/usr/bin/aclocal-1.16" OR
-                    EXISTS "/usr/bin/aclocal-1.15" OR
-                    EXISTS "/usr/bin/aclocal-1.14" OR
-                    EXISTS "/usr/bin/aclocal-1.13" OR
-                    EXISTS "/usr/bin/aclocal-1.11" OR
-                    EXISTS "/usr/bin/aclocal-1.10")
-                    message(STATUS "Automake found.")
+        get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+            if(NOT EXISTS "/usr/bin/libtoolize")
+                message(" libtool has not been found.")
+                message(" You can try to install it by typing:")
+                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo yum groupinstall 'Development Tools'")
+                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                    message(" sudo zypper install libtoool")
                 else()
-                    message(" aclocal has not been found.")
-                    message(" You can try to install it by typing:")
-                    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-                        message(" sudo yum groupinstall 'Development Tools'")
-                    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-                        message(" sudo zypper install automake")
-                    else()
-                        message(" sudo apt-get install automake")
-                    endif()
-                    message(FATAL_ERROR "aclocal is required to build matio from source")
+                    message(" sudo apt-get install libtool")
                 endif()
+                message(FATAL_ERROR "libtool is required to build matio from source.")
+            endif()
+            if(EXISTS "/usr/bin/aclocal" OR
+                EXISTS "/usr/bin/aclocal-1.16" OR
+                EXISTS "/usr/bin/aclocal-1.15" OR
+                EXISTS "/usr/bin/aclocal-1.14" OR
+                EXISTS "/usr/bin/aclocal-1.13" OR
+                EXISTS "/usr/bin/aclocal-1.11" OR
+                EXISTS "/usr/bin/aclocal-1.10")
+                message(STATUS "Automake found.")
+            else()
+                message(" aclocal has not been found.")
+                message(" You can try to install it by typing:")
+                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                    message(" sudo yum groupinstall 'Development Tools'")
+                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                    message(" sudo zypper install automake")
+                else()
+                    message(" sudo apt-get install automake")
+                endif()
+                message(FATAL_ERROR "aclocal is required to build matio from source.")
+            endif()
+        endif()
 
-                if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-                    if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS /opt/local/bin/glibtoolize) OR
-                        (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS /opt/local/bin/aclocal))
-                        message(" libtool/automake tools have not been found.")
-                        message(" You can try to install them by typing:")
-                        message(" 'sudo port install libtool automake', if you use Macports, or 'brew install libtool automake', if you use Homebrew")
-                        message(FATAL_ERROR "libtool/automake tools are required to build matio from source")
-                    endif()
-                    if(CMAKE_GENERATOR STREQUAL Xcode)
-                        if(EXISTS /opt/local/bin/glibtoolize OR EXISTS /opt/local/bin/aclocal)
-                            if(NOT EXISTS /usr/local/bin/glibtoolize OR NOT EXISTS /usr/local/bin/aclocal)
-                                message(" WARNING: libtool/atomake binaries cannot be found by Xcode. Please do:")
-                                message("sudo ln -s /opt/local/bin/glibtoolize /usr/local/bin/")
-                                message("sudo ln -s /opt/local/bin/aclocal /usr/local/bin/")
-                                message("sudo ln -s /opt/local/bin/autom4te /usr/local/bin/")
-                                message("sudo ln -s /opt/local/bin/automake /usr/local/bin/")
-                                message("sudo ln -s /opt/local/bin/autoconf /usr/local/bin/")
-                                message("sudo ln -s /opt/local/bin/autoreconf /usr/local/bin/")  # not needed by Matio, but by Protocol Buffers
-                                message(FATAL_ERROR "libtool/automake tools cannot be found by Xcode")
-                            endif()
-                        endif()
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+            if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS /opt/local/bin/glibtoolize) OR
+                (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS /opt/local/bin/aclocal))
+                message(" libtool/automake tools have not been found.")
+                message(" You can try to install them by typing:")
+                message(" 'sudo port install libtool automake', if you use Macports, or 'brew install libtool automake', if you use Homebrew")
+                message(FATAL_ERROR "libtool/automake tools are required to build matio from source")
+            endif()
+            if(CMAKE_GENERATOR STREQUAL Xcode)
+                if(EXISTS /opt/local/bin/glibtoolize OR EXISTS /opt/local/bin/aclocal)
+                    if(NOT EXISTS /usr/local/bin/glibtoolize OR NOT EXISTS /usr/local/bin/aclocal)
+                        message(" WARNING: libtool/atomake binaries cannot be found by Xcode. Please do:")
+                        message("sudo ln -s /opt/local/bin/glibtoolize /usr/local/bin/")
+                        message("sudo ln -s /opt/local/bin/aclocal /usr/local/bin/")
+                        message("sudo ln -s /opt/local/bin/autom4te /usr/local/bin/")
+                        message("sudo ln -s /opt/local/bin/automake /usr/local/bin/")
+                        message("sudo ln -s /opt/local/bin/autoconf /usr/local/bin/")
+                        message("sudo ln -s /opt/local/bin/autoreconf /usr/local/bin/")  # not needed by Matio, but by Protocol Buffers
+                        message(FATAL_ERROR "libtool/automake tools cannot be found by Xcode")
                     endif()
                 endif()
             endif()
-        else()
-            message(FATAL_ERROR "*** The zlib library is required to build Matio from source.")
         endif()
-        if(HDF5_FOUND)
-            list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
-            get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
-            get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
-            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-                if(EXISTS /opt/local/include/hdf5.h)
-                    set(HDF5_BASE_DIR /opt/local)
-                endif()
-                if(EXISTS /usr/local/include/hdf5.h)
-                    set(HDF5_BASE_DIR /usr/local)
-                endif()
+
+        list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
+        get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
+        get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+            if(EXISTS /opt/local/include/hdf5.h)
+                set(HDF5_BASE_DIR /opt/local)
+            endif()
+            if(EXISTS /usr/local/include/hdf5.h)
+                set(HDF5_BASE_DIR /usr/local)
             endif()
         endif()
         set(MATIO_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
@@ -2194,7 +2201,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             endif()
             set(MATIO_MAKE_PROGRAM ${MATIO_MAKE_EXECUTABLE})
         endif()
-
+        set(MATIO_STATIC_LIB ${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX})
         ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
             PREFIX ${CMAKE_BINARY_DIR}/matio
             GIT_REPOSITORY https://github.com/tbeu/matio
@@ -2204,7 +2211,14 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
         )
-    else()
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/lib)
+    else()  # CMake >= 3.7
+        include(GNUInstallDirs)
+        set(MATIO_STATIC_LIB ${CMAKE_BINARY_DIR}/matio/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX})
+        if(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+            # weird workaround for OpenSUSE
+            set(EXTRA_MATIO_BUILD_FLAGS -DMATIO_WITH_ZLIB=OFF -DHAVE_ZLIB=1)
+        endif()
         ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
             PREFIX ${CMAKE_BINARY_DIR}/matio
             GIT_REPOSITORY https://github.com/tbeu/matio
@@ -2214,27 +2228,28 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
                 -DMATIO_SHARED=OFF
+                "${EXTRA_MATIO_BUILD_FLAGS}"
+                -DHDF5_USE_STATIC_LIBRARIES=OFF
                 -DMATIO_DEFAULT_FILE_VERSION:STRING=7.3
                 -DMATIO_MAT73=ON
                 -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/matio
-                -DHDF5_USE_STATIC_LIBRARIES=OFF
             BUILD_COMMAND ${CMAKE_COMMAND}
                 "--build" "${CMAKE_BINARY_DIR}/matio"
                 "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
+            BUILD_BYPRODUCTS ${MATIO_STATIC_LIB}
         )
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/${CMAKE_INSTALL_LIBDIR})
     endif()
-    set(MATIO_LOCAL TRUE)
+
     if(NOT TARGET Matio::matio)
         file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/include)
-        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/lib)
         add_library(Matio::matio STATIC IMPORTED)
         add_dependencies(Matio::matio matio-${GNSSSDR_MATIO_LOCAL_VERSION})
         set_target_properties(Matio::matio PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            IMPORTED_LOCATION ${MATIO_STATIC_LIB}
             INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/matio/include
-            INTERFACE_LINK_LIBRARIES "${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX};${HDF5_LIBRARIES};${ZLIB_LIBRARIES}"
+            INTERFACE_LINK_LIBRARIES "${MATIO_STATIC_LIB};${HDF5_LIBRARIES};${ZLIB_LIBRARIES}"
         )
     endif()
 endif()

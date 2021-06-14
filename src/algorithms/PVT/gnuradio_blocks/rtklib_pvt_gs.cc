@@ -140,8 +140,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_dump_filename = conf_.dump_filename;
 
     d_total_pvt_measurements = 0;
+    d_enable_spoofing_detector = conf_.security_checks;
 
-    if (conf_.security_checks)
+    if (d_enable_spoofing_detector)
         {
             d_spoofing_detector = SpoofingDetector(&conf_.security_parameters);
             d_print_score = conf_.print_score;
@@ -1840,6 +1841,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
+
             // ############ 1. READ PSEUDORANGES ####
             for (uint32_t i = 0; i < d_nchannels; i++)
                 {
@@ -2032,9 +2034,25 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (flag_pvt_valid == true)
                         {
                             // Position check is enabled
-                            if (d_spoofing_detector.d_position_check)
+                            if (d_enable_spoofing_detector)
                                 {
-                                    d_spoofing_detector.check_position_consistency(d_user_pvt_solver->get_latitude(), d_user_pvt_solver->get_longitude(), d_user_pvt_solver->get_height(), in);
+                                    d_spoofing_detector.update_pvt(d_user_pvt_solver->get_latitude(),
+                                        d_user_pvt_solver->get_longitude(),
+                                        d_user_pvt_solver->get_height(),
+                                        d_user_pvt_solver->get_rx_vel()[0],
+                                        d_user_pvt_solver->get_rx_vel()[1],
+                                        d_user_pvt_solver->get_rx_vel()[2],
+                                        d_user_pvt_solver->get_speed_over_ground(),
+                                        d_user_pvt_solver->get_course_over_ground(),
+                                        current_RX_time_ms);
+
+                                    // Set gnss_synchro for spoofing detector
+                                    d_spoofing_detector.d_gnss_synchro = in;
+
+                                    if (d_spoofing_detector.d_position_check)
+                                        {
+                                            d_spoofing_detector.check_position_consistency();
+                                        }
                                 }
 
                             // initialize (if needed) the accumulated phase offset and apply it to the active channels

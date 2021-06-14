@@ -20,11 +20,12 @@
 #include "configuration_interface.h"
 #include "gnss_synchro.h"
 #include "pvt_sd_conf.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <map>
 
 
-struct score
+struct Score
 {
     // ####### Structure to store assurance score - total score and individual scores
     int position_jump_score = 0;
@@ -40,12 +41,21 @@ struct score
     }
 };
 
-struct pos_sol
+struct PvtSol
 {
     // ####### Structure to store position solution
     double lat;
     double lon;
     double alt;
+
+    double vel_x;
+    double vel_y;
+    double vel_z;
+
+    double speed_over_ground;
+    double heading;
+
+    uint32_t tstamp;
 };
 
 
@@ -55,7 +65,8 @@ public:
     SpoofingDetector();
     SpoofingDetector(const Pvt_SD_Conf* conf_);
 
-    void check_position_consistency(double lat, double lon, double alt, const Gnss_Synchro** in);
+    void update_pvt(double lat, double lon, double alt, double vel_x, double vel_y, double vel_z, double speed_over_ground, double heading, uint32_t tstamp);
+    void check_position_consistency();
     void dump_results(int check_id);
 
     bool d_position_check;
@@ -63,13 +74,15 @@ public:
     int d_spoofer_score;
     double d_assurance_score;
 
+    const Gnss_Synchro** d_gnss_synchro;
+
 private:
     bool d_dump_results;
 
     // ####### Map of last known good location. key is the check type's enumeration
-    std::map<unsigned int, pos_sol> last_known_good_location;
+    std::map<unsigned int, PvtSol> last_known_good_location;
 
-    score d_score;
+    Score d_score;
 
     // ####### Position consistency
     int d_max_jump_distance;
@@ -77,37 +90,32 @@ private:
     int d_velocity_difference;
     int d_pos_jump_recovery;
 
-    // Static surveyed coordinates to compare received coordinates with
-    double d_static_lat;
-    double d_static_lon;
-    double d_static_alt;
-
     bool d_update_lkgl;
     bool d_first_record;
     bool d_static_pos_check;
     bool d_dump_pos_checks_results;
 
     // Compare with new coordinates with these coordinates for position jumps
-    double d_old_lat;
-    double d_old_lon;
-    double d_old_alt;
+    PvtSol d_new_pvt;
+    PvtSol d_old_pvt;
+    PvtSol d_lkg_pvt;     // Last known good PVT sol
+    PvtSol d_static_pvt;  // Static surveyed coordinates to compare received coordinates with
 
-    double d_last_known_good_lat;
-    double d_last_known_good_lon;
-    double d_last_known_good_alt;
-
-    void position_jump(double lat, double lon, double alt);  // Jump check, recheck with a known good location - increase score if close to known location.
-    void compare_velocity();
-    void static_pos_check(double lat, double lon, double alt);
+    void position_jump();     // Jump check, recheck with a known good location - increase score if close to known location.
+    void compare_velocity();  // velocity consistency.
+    void static_pos_check();  // Static position check with a known pre-determined location
+    bool check_propagated_pos();
 
     // ####### General Functions
-    void set_old_location(double lat, double lon, double alt);
-    void set_last_known_good_location(double lat, double lon, double alt);
-    void reset_pos_jump_check(double lat, double lon, double alt);
+    void update_old_pvt();
+    void update_lkg_pvt(bool set_old);
+    void reset_pos_jump_check();
 
     long double calculate_distance(double lat1, double lon1, double lat2, double lon2);
     long double to_radians(double degree);
     int get_spoofer_score();
+
+    boost::posix_time::ptime d_pvt_epoch;
 };
 
 #endif

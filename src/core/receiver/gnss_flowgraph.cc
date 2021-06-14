@@ -1052,7 +1052,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                 {
                                     // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
-                                    size_t output_size = src->item_size();
+                                    size_t output_size = src->get_right_block()->output_signature()->sizeof_stream_item(0);
                                     size_t input_size = sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->sizeof_stream_item(0);
                                     // Check configuration inconsistencies
                                     if (output_size != input_size)

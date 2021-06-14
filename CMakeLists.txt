@@ -2215,8 +2215,8 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     else()  # CMake >= 3.7
         include(GNUInstallDirs)
         set(MATIO_STATIC_LIB ${CMAKE_BINARY_DIR}/matio/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX})
-        if(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-            # weird workaround for OpenSUSE
+        if("${HDF5_VERSION}" VERSION_GREATER "1.8.18" AND "${HDF5_VERSION}" VERSION_LESS "1.10.4")
+            # weird workaround, but it works in all tested distros (Ubuntu, Debian, Fedora, CentOS, OpenSUSE)
             set(EXTRA_MATIO_BUILD_FLAGS -DMATIO_WITH_ZLIB=OFF -DHAVE_ZLIB=1)
         endif()
         ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
@@ -2226,6 +2226,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
             BINARY_DIR ${CMAKE_BINARY_DIR}/matio
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
                 -DMATIO_SHARED=OFF
                 "${EXTRA_MATIO_BUILD_FLAGS}"

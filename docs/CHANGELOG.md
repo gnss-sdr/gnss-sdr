@@ -65,6 +65,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   Boost >= 1.74.
 - Fix linking of the `<filesystem>` library when using GCC 8.x and GNU Radio >=
   3.8.
+- If the Matio library is not found, now it is configured and built by CMake
+  instead of using autotools.
 
 ### Improvements in Usability:
 

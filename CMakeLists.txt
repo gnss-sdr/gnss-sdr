@@ -2062,6 +2062,10 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
     endif()
     message(STATUS " Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded, built, and statically linked automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
+    set_package_properties(MATIO PROPERTIES
+        PURPOSE "Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+    )
+    # Find ZLIB library https://github.com/madler/zlib
     find_package(ZLIB)
     set_package_properties(ZLIB PROPERTIES
         URL "https://www.zlib.net/"
@@ -2077,7 +2081,47 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             DESCRIPTION "A Massively Spiffy Yet Delicately Unobtrusive Compression Library"
         )
     endif()
-    if(ZLIB_FOUND)
+    if(NOT ZLIB_FOUND)
+        message(FATAL_ERROR "*** The zlib library is required to build Matio from source.")
+    endif()
+
+    # Find HDF5 library
+    find_package(HDF5)
+    set_package_properties(HDF5 PROPERTIES
+        URL "https://support.hdfgroup.org/HDF5/"
+        PURPOSE "Required to build Matio."
+        TYPE REQUIRED
+    )
+    if(HDF5_FOUND AND HDF5_VERSION)
+        set_package_properties(HDF5 PROPERTIES
+            DESCRIPTION "A versatile data model, a portable file format and a software library (found: v${HDF5_VERSION})"
+        )
+    else()
+        set_package_properties(HDF5 PROPERTIES
+            DESCRIPTION "A versatile data model, a portable file format and a software library"
+        )
+    endif()
+    if(NOT HDF5_FOUND)
+        message(STATUS " The hdf5 library has not been found in your system.")
+        message(STATUS " Please try to install it by doing:")
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+            message(STATUS "  $ sudo port install hdf5")
+            message(STATUS " or")
+            message(STATUS "  $ brew install hdf5")
+        endif()
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat" OR ${LINUX_DISTRIBUTION} MATCHES "CentOS")
+                message(STATUS " sudo yum install hdf5-devel")
+            elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                message(STATUS " sudo zypper install hdf5-devel")
+            else()
+                message(STATUS " sudo apt-get install libhdf5-dev")
+            endif()
+        endif()
+        message(FATAL_ERROR "*** The hdf5 library is required to build Matio from source.")
+    endif()
+
+    if(CMAKE_VERSION VERSION_LESS 3.7 OR "${HDF5_VERSION}" VERSION_LESS "1.8.13")
         get_filename_component(ZLIB_BASE_DIR ${ZLIB_INCLUDE_DIRS} DIRECTORY)
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
             if(NOT EXISTS "/usr/bin/libtoolize")
@@ -2090,7 +2134,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 else()
                     message(" sudo apt-get install libtool")
                 endif()
-                message(FATAL_ERROR "libtool is required to build matio from source")
+                message(FATAL_ERROR "libtool is required to build matio from source.")
             endif()
             if(EXISTS "/usr/bin/aclocal" OR
                 EXISTS "/usr/bin/aclocal-1.16" OR
@@ -2110,9 +2154,10 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 else()
                     message(" sudo apt-get install automake")
                 endif()
-                message(FATAL_ERROR "aclocal is required to build matio from source")
+                message(FATAL_ERROR "aclocal is required to build matio from source.")
             endif()
         endif()
+
         if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS /opt/local/bin/glibtoolize) OR
                 (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS /opt/local/bin/aclocal))
@@ -2136,101 +2181,82 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
                 endif()
             endif()
         endif()
-        find_package(HDF5)
-        set_package_properties(HDF5 PROPERTIES
-            URL "https://support.hdfgroup.org/HDF5/"
-            PURPOSE "Required to build Matio."
-            TYPE REQUIRED
+
+        list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
+        get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
+        get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+            if(EXISTS /opt/local/include/hdf5.h)
+                set(HDF5_BASE_DIR /opt/local)
+            endif()
+            if(EXISTS /usr/local/include/hdf5.h)
+                set(HDF5_BASE_DIR /usr/local)
+            endif()
+        endif()
+        set(MATIO_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
+        if(MATIO_MAKE_PROGRAM MATCHES "ninja" OR CMAKE_GENERATOR STREQUAL Xcode)
+            find_program(MATIO_MAKE_EXECUTABLE make
+                PATHS
+                /usr/bin
+                /usr/local/bin
+            )
+            if(NOT MATIO_MAKE_EXECUTABLE)
+                message(FATAL_ERROR "make is required to build Matio from source.")
+            endif()
+            set(MATIO_MAKE_PROGRAM ${MATIO_MAKE_EXECUTABLE})
+        endif()
+        set(MATIO_STATIC_LIB ${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX})
+        ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+            PREFIX ${CMAKE_BINARY_DIR}/matio
+            GIT_REPOSITORY https://github.com/tbeu/matio
+            GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+            UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
+            CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
+            BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
         )
-        if(HDF5_FOUND AND HDF5_VERSION)
-            set_package_properties(HDF5 PROPERTIES
-                DESCRIPTION "A versatile data model, a portable file format and a software library (found: v${HDF5_VERSION})"
-            )
-        else()
-            set_package_properties(HDF5 PROPERTIES
-                DESCRIPTION "A versatile data model, a portable file format and a software library"
-            )
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/lib)
+    else()  # CMake >= 3.7
+        include(GNUInstallDirs)
+        set(MATIO_STATIC_LIB ${CMAKE_BINARY_DIR}/matio/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX})
+        if("${HDF5_VERSION}" VERSION_GREATER "1.8.18" AND "${HDF5_VERSION}" VERSION_LESS "1.10.4")
+            # weird workaround, but it works in all tested distros (Ubuntu, Debian, Fedora, CentOS, OpenSUSE)
+            set(EXTRA_MATIO_BUILD_FLAGS -DMATIO_WITH_ZLIB=OFF -DHAVE_ZLIB=1)
         endif()
-        if(HDF5_FOUND)
-            list(GET HDF5_LIBRARIES 0 HDF5_FIRST_DIR)
-            get_filename_component(HDF5_BASE_DIR2 ${HDF5_FIRST_DIR} DIRECTORY)
-            get_filename_component(HDF5_BASE_DIR ${HDF5_BASE_DIR2} DIRECTORY)
-            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-                if(EXISTS /opt/local/include/hdf5.h)
-                    set(HDF5_BASE_DIR /opt/local)
-                endif()
-                if(EXISTS /usr/local/include/hdf5.h)
-                    set(HDF5_BASE_DIR /usr/local)
-                endif()
-            endif()
-
-            set(MATIO_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
-            if(MATIO_MAKE_PROGRAM MATCHES "ninja" OR CMAKE_GENERATOR STREQUAL Xcode)
-                find_program(MATIO_MAKE_EXECUTABLE make
-                    PATHS
-                        /usr/bin
-                        /usr/local/bin
-                )
-                if(NOT MATIO_MAKE_EXECUTABLE)
-                    message(FATAL_ERROR "make is required to build Matio from source.")
-                endif()
-                set(MATIO_MAKE_PROGRAM ${MATIO_MAKE_EXECUTABLE})
-            endif()
-
-            if(CMAKE_VERSION VERSION_LESS 3.2)
-                ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                    PREFIX ${CMAKE_BINARY_DIR}/matio
-                    GIT_REPOSITORY https://github.com/tbeu/matio
-                    GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
-                    SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                    UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
-                    CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
-                )
-            else()
-                ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                    PREFIX ${CMAKE_BINARY_DIR}/matio
-                    GIT_REPOSITORY https://github.com/tbeu/matio
-                    GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
-                    SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
-                    UPDATE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/autogen.sh
-                    CONFIGURE_COMMAND ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}/configure --with-hdf5=${HDF5_BASE_DIR} --with-zlib=${ZLIB_BASE_DIR} --with-default-file-ver=7.3 --enable-mat73=yes --prefix=<INSTALL_DIR>
-                    BUILD_COMMAND ${MATIO_MAKE_PROGRAM}
-                    BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}
-                )
-            endif()
-            set(MATIO_LOCAL TRUE)
-            if(NOT TARGET Matio::matio)
-                file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/include)
-                file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/lib)
-                add_library(Matio::matio STATIC IMPORTED)
-                add_dependencies(Matio::matio matio-${GNSSSDR_MATIO_LOCAL_VERSION})
-                set_target_properties(Matio::matio PROPERTIES
-                    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                    IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX}"
-                    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/matio/include
-                    INTERFACE_LINK_LIBRARIES "${CMAKE_BINARY_DIR}/matio/lib/${CMAKE_FIND_LIBRARY_PREFIXES}matio${CMAKE_STATIC_LIBRARY_SUFFIX};${HDF5_LIBRARIES};${ZLIB_LIBRARIES}"
-                )
-            endif()
-        else()
-            message(STATUS " The hdf5 library has not been found in your system.")
-            message(STATUS " Please try to install it by doing:")
-            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-                message(STATUS "  $ sudo port install hdf5")
-                message(STATUS " or")
-                message(STATUS "  $ brew install hdf5")
-            endif()
-            if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
-                message(STATUS "  $ sudo apt-get install libhdf5-dev")
-            endif()
-            message(FATAL_ERROR "*** The hdf5 library is required to build gnss-sdr")
-        endif()
-    else()
-        message(FATAL_ERROR "*** The zlib library is required to build gnss-sdr")
+        ExternalProject_Add(matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+            PREFIX ${CMAKE_BINARY_DIR}/matio
+            GIT_REPOSITORY https://github.com/tbeu/matio
+            GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
+            BINARY_DIR ${CMAKE_BINARY_DIR}/matio
+            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                -DMATIO_SHARED=OFF
+                "${EXTRA_MATIO_BUILD_FLAGS}"
+                -DHDF5_USE_STATIC_LIBRARIES=OFF
+                -DMATIO_DEFAULT_FILE_VERSION:STRING=7.3
+                -DMATIO_MAT73=ON
+                -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/matio
+            BUILD_COMMAND ${CMAKE_COMMAND}
+                "--build" "${CMAKE_BINARY_DIR}/matio"
+                "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            BUILD_BYPRODUCTS ${MATIO_STATIC_LIB}
+        )
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/${CMAKE_INSTALL_LIBDIR})
     endif()
-    set_package_properties(MATIO PROPERTIES
-        PURPOSE "Matio v${GNSSSDR_MATIO_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
-    )
+
+    if(NOT TARGET Matio::matio)
+        file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/matio/include)
+        add_library(Matio::matio STATIC IMPORTED)
+        add_dependencies(Matio::matio matio-${GNSSSDR_MATIO_LOCAL_VERSION})
+        set_target_properties(Matio::matio PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION ${MATIO_STATIC_LIB}
+            INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/matio/include
+            INTERFACE_LINK_LIBRARIES "${MATIO_STATIC_LIB};${HDF5_LIBRARIES};${ZLIB_LIBRARIES}"
+        )
+    endif()
 endif()
 
 

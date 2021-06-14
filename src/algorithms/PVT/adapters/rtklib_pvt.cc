@@ -58,7 +58,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.pre_2009_file = configuration->property("GNSS-SDR.pre_2009_file", false);
 
     // output rate
-    pvt_output_parameters.output_rate_ms = bc::lcm(20, configuration->property(role + ".output_rate_ms", 500));
+    pvt_output_parameters.observable_interval_ms = configuration->property("GNSS-SDR.observable_interval_ms", pvt_output_parameters.observable_interval_ms);
+
+    pvt_output_parameters.output_rate_ms = bc::lcm(static_cast<int>(pvt_output_parameters.observable_interval_ms), configuration->property(role + ".output_rate_ms", 500));
 
     // display rate
     pvt_output_parameters.display_rate_ms = bc::lcm(pvt_output_parameters.output_rate_ms, configuration->property(role + ".display_rate_ms", 500));

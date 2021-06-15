@@ -37,7 +37,7 @@
 class ConfigurationInterface;
 
 /*!
- * \brief This class reads samples from a GN3S USB dongle, a RF front-end signal sampler
+ * \brief This class reads samples from an antenna array RF front-end signal sampler
  */
 class RawArraySignalSource : public SignalSourceBase
 {

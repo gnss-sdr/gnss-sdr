@@ -676,6 +676,8 @@ features and bug fixes:
   features.log in the building directory.
 - Improved information provided to the user in case of building configuration
   and runtime failures.
+- Remove abandoned building option `-DENABLE_GN3S` and `Gn3s_Signal_Source`
+  implementation.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

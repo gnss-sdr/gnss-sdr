@@ -38,8 +38,6 @@ option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample
 
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNU Radio driver" OFF)
 
-option(ENABLE_GN3S "Enable the use of the GN3S dongle as signal source (experimental)" OFF)
-
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
 
 # Performance analysis tools
@@ -3032,32 +3030,6 @@ if(ENABLE_FLEXIBAND)
 endif()
 
 
-######################
-# GN3S - OPTIONAL
-######################
-if(DEFINED ENV{GN3S_DRIVER})
-    message(STATUS "GN3S_DRIVER environment variable found.")
-    set(ENABLE_GN3S ON)
-endif()
-if(GN3S_DRIVER)
-    set(ENABLE_GN3S ON)
-endif()
-find_package(GRGN3S QUIET)
-set_package_properties(GRGN3S PROPERTIES
-    URL "https://github.com/gnss-sdr/gr-gn3s"
-    DESCRIPTION "The GN3S v2 front-end GNU Radio block."
-    PURPOSE "Used for communication with the GN3S v2 front-end."
-    TYPE OPTIONAL
-)
-if(ENABLE_GN3S)
-    message(STATUS "The GN3S driver will be compiled.")
-    message(STATUS " You can disable it with 'cmake -DENABLE_GN3S=OFF ..'")
-else()
-    message(STATUS "The (optional and experimental) GN3S driver is not enabled.")
-    message(STATUS " Enable it with 'cmake -DENABLE_GN3S=ON ..' to add support for the GN3S dongle.")
-endif()
-
-
 #######################################################
 # CTTC's digital array beamformer prototype - OPTIONAL
 #######################################################
@@ -3265,7 +3237,6 @@ add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source
 add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio and libad9361-dev.")
 add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
-add_feature_info(ENABLE_GN3S ENABLE_GN3S "Enables Gn3s_Signal_Source for using the GN3S v2 dongle. Requires gr-gn3s.")
 add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
 add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
 add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")

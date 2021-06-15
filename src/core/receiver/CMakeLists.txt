@@ -100,10 +100,6 @@ if(ENABLE_OSMOSDR)
     endif()
 endif()
 
-if(ENABLE_GN3S)
-    target_compile_definitions(core_receiver PRIVATE -DGN3S_DRIVER=1)
-endif()
-
 if(ENABLE_ARRAY)
     target_compile_definitions(core_receiver PRIVATE -DRAW_ARRAY_DRIVER=1)
 endif()
@@ -221,13 +217,6 @@ if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     target_link_libraries(core_receiver
         PRIVATE
             Gnuradio::teleorbit
-    )
-endif()
-
-if(ENABLE_GN3S AND GRGN3S_FOUND)
-    target_link_libraries(core_receiver
-        PRIVATE
-            Gnuradio::gn3s
     )
 endif()
 

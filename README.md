@@ -2139,9 +2139,9 @@ processed.
 Another interesting option is working in real-time with an RF front-end. We
 provide drivers for UHD-compatible hardware such as the
 [USRP family](https://www.ettus.com/product), for OsmoSDR and other front-ends
-(HackRF, bladeRF, LimeSDR, and for some DVB-T USB dongles).
-Start with a low number of channels and then increase it in order to
-test how many channels your processor can handle in real-time.
+(HackRF, bladeRF, LimeSDR, and for some DVB-T USB dongles). Start with a low
+number of channels and then increase it in order to test how many channels your
+processor can handle in real-time.
 
 You can find more information at the
 [GNSS-SDR Documentation page](https://gnss-sdr.org/docs/) or directly asking to

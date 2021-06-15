@@ -22,15 +22,18 @@ Pvt_SD_Conf::Pvt_SD_Conf()
 
     max_jump_distance = 100;   // meters
     geo_fence_radius = 15;     // meters
-    velocity_difference = 15;  // meters/s
-    pos_jump_recovery = 10;    // meters
-
-    static_lat = 0;  //degrees
-    static_lon = 0;  //degrees
-    static_alt = 0;  //meters
+    velocity_difference = 15;  // m/s
+    pos_error_threshold = 10;  // meters
+    min_altitude = -10;        // meters
+    max_altitude = 20000;      // meters
+    min_ground_speed = 0;      // m/s
+    max_ground_speed = 200;    // m/s
+    static_lat = 0;            //degrees
+    static_lon = 0;            //degrees
+    static_alt = 0;            //meters
 
     position_check = false;
-    dump_pos_checks_results = false;
+    dump_pvt_checks_results = false;
     static_pos_check = false;
 
     std::string filename = "./pos_consistency_results.mat";

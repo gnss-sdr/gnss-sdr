@@ -29,20 +29,25 @@ SpoofingDetector::SpoofingDetector(const Pvt_SD_Conf *conf_)
     d_max_jump_distance = conf_->max_jump_distance;
     d_geo_fence_radius = conf_->geo_fence_radius;
     d_velocity_difference = conf_->velocity_difference;
-    d_pos_jump_recovery = conf_->pos_jump_recovery;
+    d_pos_error_threshold = conf_->pos_error_threshold;
 
     // Set predetermined location
     d_static_pvt.lat = conf_->static_lat;
     d_static_pvt.lon = conf_->static_lon;
     d_static_pvt.alt = conf_->static_alt;
 
-    DLOG(INFO) << "Static pos check: " << d_static_pvt.lat << ", " << d_static_pvt.lon;
-
-    d_dump_pos_checks_results = conf_->dump_pos_checks_results;
+    d_dump_pvt_checks_results = conf_->dump_pvt_checks_results;
     d_position_check = conf_->position_check;
     d_static_pos_check = conf_->static_pos_check;
 
+    // Position abnormalities check paramaters
+    d_min_altitude = conf_->min_altitude;
+    d_max_altitude = conf_->max_altitude;
+    d_min_ground_speed = conf_->min_ground_speed;
+    d_max_ground_speed = conf_->max_ground_speed;
+
     d_spoofer_score = 0;
+    d_checked_velocity_pairs = 0;  // Number of velocity measurements checked. Velocity measurements are processed in pairs (old and new)
 
     // Used to set old coordinates and last known good location
     d_first_record = true;
@@ -56,13 +61,16 @@ SpoofingDetector::SpoofingDetector(const Pvt_SD_Conf *conf_)
 // ####### Position consistency functions
 void SpoofingDetector::check_position_consistency()
 {
-    // Need to check this for dynamic scenarios.
+    // Public function
+    // PVT block calls this function. Actual consistency checks are triggered from here
     if (d_static_pos_check)
         {
             static_pos_check();
         }
 
     position_jump();
+    compare_velocity();
+    abnormal_position_checks();
 
     if (d_first_record)
         {
@@ -70,9 +78,62 @@ void SpoofingDetector::check_position_consistency()
         }
 }
 
+void SpoofingDetector::abnormal_position_checks()
+{
+    double s1, s2, s3, s4;
+
+    // A collection of model based position abnormalities check Min/Max altitude and speed
+    if (d_new_pvt.alt < d_min_altitude)
+        {
+            s1 = 0.25;
+        }
+    else
+        {
+            s1 = 0;
+        }
+
+    if (d_new_pvt.alt > d_max_altitude)
+        {
+            s2 = 0.25;
+        }
+    else
+        {
+            s2 = 0;
+        }
+    if (d_new_pvt.speed_over_ground < d_min_ground_speed)
+        {
+            s3 = 0.25;
+        }
+    else
+        {
+            s3 = 0;
+        }
+    if (d_new_pvt.speed_over_ground > d_max_ground_speed)
+        {
+            s4 = 0.25;
+        }
+    else
+        {
+            s4 = 0;
+        }
+
+    d_score.abnormal_position_score = s1 + s2 + s3 + s4;
+
+    DLOG(INFO) << "ABNORMAL_CHECK: " << s1 << ", " << s2 << ", " << s3 << ", " << s4;
+}
+
 void SpoofingDetector::compare_velocity()
 {
-    //DLOG(INFO) << "Compare velocity function";
+    /// Compares the reported velocity with the position pairs. If the projected coordinates do not match the received coordinate velocity error is increased
+    ++d_checked_velocity_pairs;
+
+    if (check_propagated_pos())
+        {
+            ++d_velocity_error;
+        }
+    d_score.velocity_check_score = d_velocity_error / d_checked_velocity_pairs;
+    DLOG(INFO) << "VELOCITY_COMPARE: Confidence " << d_velocity_error << "/" << d_checked_velocity_pairs;
+    update_old_pvt();
 }
 
 void SpoofingDetector::static_pos_check()
@@ -133,7 +194,7 @@ void SpoofingDetector::position_jump()
         {
             distance_to_lkgl = calculate_distance(d_lkg_pvt.lat, d_lkg_pvt.lon, d_new_pvt.lat, d_new_pvt.lon);
 
-            if (distance_to_lkgl < d_pos_jump_recovery)
+            if (distance_to_lkgl < d_pos_error_threshold)
                 {
                     // Reset jump check when the receiver is back to the last known good location
                     reset_pos_jump_check();
@@ -186,7 +247,7 @@ void SpoofingDetector::position_jump()
             if (d_score.position_jump_score == 2)
                 {
                     distance_to_lkgl = calculate_distance(d_lkg_pvt.lat, d_lkg_pvt.lon, d_new_pvt.lat, d_new_pvt.lon);
-                    if (distance_to_lkgl < d_pos_jump_recovery)
+                    if (distance_to_lkgl < d_pos_error_threshold)
                         {
                             // Reset jump check when the receiver is back to the last known good location
                             reset_pos_jump_check();
@@ -222,7 +283,9 @@ bool SpoofingDetector::check_propagated_pos()
 
     DLOG(INFO) << "PROPAGATE_POS: Pro " << temp_pvt.lat << "," << temp_pvt.lon << ", " << temp_pvt.alt;
     DLOG(INFO) << "PROPAGATE_POS: Recv " << d_new_pvt.lat << "," << d_new_pvt.lon << ", " << d_new_pvt.alt;
-    return distance_error > d_pos_jump_recovery;
+    DLOG(INFO) << "PROPAGATE_POS: Error: " << distance_error;
+
+    return distance_error > d_pos_error_threshold;
 }
 
 // ####### General functions

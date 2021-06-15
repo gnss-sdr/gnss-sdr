@@ -28,12 +28,17 @@ public:
 
     bool position_check;
     bool static_pos_check;
-    bool dump_pos_checks_results;
+    bool dump_pvt_checks_results;
 
     int max_jump_distance;
     int geo_fence_radius;
     int velocity_difference;
-    int pos_jump_recovery;
+    int pos_error_threshold;
+
+    int min_altitude;
+    int max_altitude;
+    int min_ground_speed;
+    int max_ground_speed;
 
     double static_lat;
     double static_lon;

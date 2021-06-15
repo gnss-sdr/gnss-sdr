@@ -827,14 +827,20 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.print_score = configuration->property(role + ".print_score", false);
 
             Pvt_SD_Conf spoofing_detection_parameters = Pvt_SD_Conf();
-            spoofing_detection_parameters.dump_pos_checks_results = configuration->property("Spoofing_Detection.dump_results", true);
+
+            spoofing_detection_parameters.dump_pvt_checks_results = configuration->property("SecurePVT.dump_pvt_checks_results", false);
 
             spoofing_detection_parameters.position_check = configuration->property("SecurePVT.position_check", false);
             spoofing_detection_parameters.max_jump_distance = configuration->property("SecurePVT.max_jump_distance", 100);
             spoofing_detection_parameters.geo_fence_radius = configuration->property("SecurePVT.geo_fence_radius", 15);
             spoofing_detection_parameters.velocity_difference = configuration->property("SecurePVT.velocity_difference", 15);
-            spoofing_detection_parameters.pos_jump_recovery = configuration->property("SecurePVT.pos_jump_recovery", 10);
+            spoofing_detection_parameters.pos_error_threshold = configuration->property("SecurePVT.pos_error_threshold", 10);
             spoofing_detection_parameters.static_pos_check = configuration->property("SecurePVT.static_pos_check", false);
+
+            spoofing_detection_parameters.min_altitude = configuration->property("SecurePVT.min_altitude", -10);
+            spoofing_detection_parameters.max_altitude = configuration->property("SecurePVT.max_altitude", 20000);
+            spoofing_detection_parameters.min_ground_speed = configuration->property("SecurePVT.min_ground_speed", 0);
+            spoofing_detection_parameters.max_ground_speed = configuration->property("SecurePVT.max_ground_speed", 200);
 
             spoofing_detection_parameters.static_lat = configuration->property("SecurePVT.static_lat", 0.0);
             spoofing_detection_parameters.static_lon = configuration->property("SecurePVT.static_lon", 0.0);

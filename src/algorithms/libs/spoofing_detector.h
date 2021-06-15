@@ -23,21 +23,19 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <map>
-
-
 struct Score
 {
     // ####### Structure to store assurance score - total score and individual scores
     int position_jump_score = 0;
-    int velocity_check_score = 0;
+    double velocity_check_score = 0;
     int static_pos_check_score = 0;
     int aux_peak_score = 0;
     int cno_score = 0;
     int agc_score = 0;
-
-    int total_score()
+    double abnormal_position_score = 0;
+    double total_score()
     {
-        return (position_jump_score + velocity_check_score + static_pos_check_score + aux_peak_score + cno_score + agc_score);
+        return (position_jump_score + velocity_check_score + static_pos_check_score + aux_peak_score + cno_score + agc_score + abnormal_position_score);
     }
 };
 
@@ -88,12 +86,20 @@ private:
     int d_max_jump_distance;
     int d_geo_fence_radius;
     int d_velocity_difference;
-    int d_pos_jump_recovery;
+    int d_pos_error_threshold;  // Spoofing detector will tolerate position error within the specified radius.
+    int d_checked_velocity_pairs;
+    int d_velocity_error;
+
+    int d_min_altitude;
+    int d_max_altitude;
+
+    int d_min_ground_speed;
+    int d_max_ground_speed;
 
     bool d_update_lkgl;
     bool d_first_record;
     bool d_static_pos_check;
-    bool d_dump_pos_checks_results;
+    bool d_dump_pvt_checks_results;
 
     // Compare with new coordinates with these coordinates for position jumps
     PvtSol d_new_pvt;
@@ -105,7 +111,7 @@ private:
     void compare_velocity();  // velocity consistency.
     void static_pos_check();  // Static position check with a known pre-determined location
     bool check_propagated_pos();
-
+    void abnormal_position_checks();  // Check for abnormal positions
     // ####### General Functions
     void update_old_pvt();
     void update_lkg_pvt(bool set_old);

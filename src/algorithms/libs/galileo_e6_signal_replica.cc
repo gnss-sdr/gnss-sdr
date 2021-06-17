@@ -235,6 +235,10 @@ std::string galileo_e6_c_secondary_code(int32_t prn)
 {
     std::string dest(static_cast<size_t>(GALILEO_E6_C_SECONDARY_CODE_LENGTH_CHIPS), '0');
     const uint32_t prn_ = prn - 1;
+    if ((prn < 1) || (prn > 50))
+        {
+            return dest;
+        }
     uint32_t index = 0;
     for (size_t i = 0; i < GALILEO_E6_C_SECONDARY_CODE_STR_LENGTH; i++)
         {

@@ -518,7 +518,7 @@ gnss-sdr with the following structure:
  |-----utils    <- some utilities (e.g. Matlab scripts).
 ```
 
-By default, you will be in the 'master' branch of the Git repository, which
+By default, you will be in the 'main' branch of the Git repository, which
 corresponds to the latest stable release. If you want to try the latest
 developments, you can use the 'next' branch by going to the newly created
 gnss-sdr folder doing:
@@ -968,8 +968,8 @@ $ git remote add upstream https://github.com/gnss-sdr/gnss-sdr.git
 and then you can update your working copy by doing:
 
 ```
-$ git checkout master        # Switch to branch you want to update
-$ git pull upstream master   # Download the newest code from our repository
+$ git checkout main        # Switch to branch you want to update
+$ git pull upstream main   # Download the newest code from our repository
 ```
 
 or, if you want to test the latest developments:

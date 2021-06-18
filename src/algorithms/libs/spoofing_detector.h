@@ -19,7 +19,7 @@
 
 #include "configuration_interface.h"
 #include "gnss_synchro.h"
-#include "pvt_sd_conf.h"
+#include "spoofing_detector_conf.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <map>
@@ -61,7 +61,7 @@ class SpoofingDetector
 {
 public:
     SpoofingDetector();
-    SpoofingDetector(const Pvt_SD_Conf* conf_);
+    SpoofingDetector(const SpoofingDetectorConf* conf_);
 
     void update_pvt(double lat, double lon, double alt, double vel_x, double vel_y, double vel_z, double speed_over_ground, double heading, uint32_t tstamp);
     void check_position_consistency();

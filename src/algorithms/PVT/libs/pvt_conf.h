@@ -19,7 +19,7 @@
 
 #include <cstdint>
 #include <map>
-#include <pvt_sd_conf.h>
+#include <spoofing_detector_conf.h>
 #include <string>
 
 /** \addtogroup PVT
@@ -89,7 +89,7 @@ public:
 
     bool security_checks;
     bool print_score;
-    Pvt_SD_Conf security_parameters;
+    SpoofingDetectorConf security_parameters;
 };
 
 

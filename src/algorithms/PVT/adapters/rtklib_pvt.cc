@@ -24,10 +24,10 @@
 #include "gps_almanac.h"              // for Gps_Almanac
 #include "gps_ephemeris.h"            // for Gps_Ephemeris
 #include "pvt_conf.h"                 // for Pvt_Conf
-#include "pvt_sd_conf.h"
-#include "rtklib_rtkpos.h"  // for rtkfree, rtkinit
-#include <glog/logging.h>   // for LOG
-#include <iostream>         // for operator<<
+#include "rtklib_rtkpos.h"            // for rtkfree, rtkinit
+#include "spoofing_detector_conf.h"
+#include <glog/logging.h>  // for LOG
+#include <iostream>        // for operator<<
 #if USE_OLD_BOOST_MATH_COMMON_FACTOR
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -826,7 +826,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             pvt_output_parameters.print_score = configuration->property(role + ".print_score", false);
 
-            Pvt_SD_Conf spoofing_detection_parameters = Pvt_SD_Conf();
+            SpoofingDetectorConf spoofing_detection_parameters = SpoofingDetectorConf();
 
             spoofing_detection_parameters.dump_pvt_checks_results = configuration->property("SecurePVT.dump_pvt_checks_results", false);
 

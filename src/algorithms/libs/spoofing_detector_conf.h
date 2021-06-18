@@ -21,10 +21,10 @@
 #include <map>
 #include <string>
 
-class Pvt_SD_Conf
+class SpoofingDetectorConf
 {
 public:
-    Pvt_SD_Conf();
+    SpoofingDetectorConf();
 
     bool position_check;
     bool static_pos_check;

@@ -49,7 +49,6 @@
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
 #include "pvt_conf.h"
-#include "pvt_sd_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
 #include "rtklib_solver.h"

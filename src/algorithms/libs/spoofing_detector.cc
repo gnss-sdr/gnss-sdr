@@ -22,7 +22,7 @@ SpoofingDetector::SpoofingDetector()
 {
 }
 
-SpoofingDetector::SpoofingDetector(const Pvt_SD_Conf *conf_)
+SpoofingDetector::SpoofingDetector(const SpoofingDetectorConf *conf_)
 {
     DLOG(INFO) << "Spoofing detector for PVT initialized";
 

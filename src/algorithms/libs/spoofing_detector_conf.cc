@@ -14,9 +14,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "pvt_sd_conf.h"
+#include "spoofing_detector_conf.h"
 
-Pvt_SD_Conf::Pvt_SD_Conf()
+SpoofingDetectorConf::SpoofingDetectorConf()
 {
     // ####### Position consistency check variables
 

@@ -33,7 +33,7 @@ set(GNSS_SPLIBS_SOURCES
     short_x2_to_cshort.cc
     gnss_sdr_string_literals.cc
     spoofing_detector.cc
-    pvt_sd_conf.cc
+    spoofing_detector_conf.cc
 )
 
 set(GNSS_SPLIBS_HEADERS
@@ -66,7 +66,7 @@ set(GNSS_SPLIBS_HEADERS
     short_x2_to_cshort.h
     gnss_sdr_string_literals.h
     spoofing_detector.h
-    pvt_sd_conf.h
+    spoofing_detector_conf.h
 )
 
 if(ENABLE_OPENCL)

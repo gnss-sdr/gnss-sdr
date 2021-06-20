@@ -188,6 +188,14 @@ private:
     uint32_t d_secondary_code_length;
     uint32_t d_data_secondary_code_length;
 
+    // Spoofing detection
+    uint32_t d_prompt_I_count;
+    uint32_t d_spoofing_mark;
+    float d_prompt_I_sum;
+    float d_threshold;
+    bool d_bit_synchronization;
+    bool d_spoofing;
+
     bool d_pull_in_transitory;
     bool d_corrected_doppler;
     bool d_interchange_iq;

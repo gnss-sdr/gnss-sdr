@@ -588,6 +588,15 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
     d_corrected_doppler = false;
     d_acc_carrier_phase_initialized = false;
+
+    // Spoofing detector
+    d_prompt_I_count = 0;
+    d_spoofing_mark = 0;
+    d_prompt_I_sum = 0;
+    d_threshold = 0;
+
+    d_spoofing = false;
+    d_bit_synchronization = false;
 }
 
 
@@ -1429,6 +1438,33 @@ void dll_pll_veml_tracking::log_data()
                     // PRN
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
+
+                    // Spoofing detection part - need to move this to a suitable location later.
+                    if (d_bit_synchronization and !d_spoofing)
+                        {
+                            if (abs(prompt_I) > d_threshold * 2)
+                                {
+                                    d_spoofing = true;
+                                    DLOG(INFO) << "TRK: Jump in baseband amp detected PRN " << prn_;
+                                    d_spoofing_mark = d_prompt_I_count;
+                                }
+                        }
+
+                    if (d_spoofing)
+                        {
+                            if (abs(prompt_I) <= d_threshold * 2)
+                                {
+                                    d_spoofing = false;
+                                    DLOG(INFO) << "TRK: Baseband amp back to normal PRN " << prn_;
+                                    d_spoofing_mark = d_prompt_I_count;
+                                }
+                        }
+
+                    d_dump_file.write(reinterpret_cast<char *>(&d_spoofing_mark), sizeof(uint32_t));
+
+                    ++d_prompt_I_count;
+                    d_prompt_I_sum = d_prompt_I_sum + abs(prompt_I);
+                    d_threshold = abs(d_prompt_I_sum) / d_prompt_I_count;
                 }
             catch (const std::ifstream::failure &e)
                 {
@@ -1445,7 +1481,7 @@ int32_t dll_pll_veml_tracking::save_matfile() const
     const int32_t number_of_double_vars = 1;
     const int32_t number_of_float_vars = 19;
     const int32_t epoch_size_bytes = sizeof(uint64_t) + sizeof(double) * number_of_double_vars +
-                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t);
+                                     sizeof(float) * number_of_float_vars + sizeof(uint32_t) * 2;
     std::ifstream dump_file;
     std::string dump_filename_ = d_dump_filename;
     // add channel number to the filename
@@ -1497,6 +1533,7 @@ int32_t dll_pll_veml_tracking::save_matfile() const
     auto aux1 = std::vector<float>(num_epoch);
     auto aux2 = std::vector<double>(num_epoch);
     auto PRN = std::vector<uint32_t>(num_epoch);
+    auto spoofing_mark = std::vector<uint32_t>(num_epoch);
     try
         {
             if (dump_file.is_open())
@@ -1525,7 +1562,10 @@ int32_t dll_pll_veml_tracking::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&aux1[i]), sizeof(float));
                             dump_file.read(reinterpret_cast<char *>(&aux2[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&PRN[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&spoofing_mark[i]), sizeof(uint32_t));
                         }
+
+                    //
                 }
             dump_file.close();
         }
@@ -1632,6 +1672,10 @@ int32_t dll_pll_veml_tracking::save_matfile() const
             matvar = Mat_VarCreate("PRN", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), PRN.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("Spoofing", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), spoofing_mark.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
         }
     Mat_Close(matfp);
     return 0;
@@ -1691,6 +1735,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
+    current_synchro_data.Prompt_corr_detection = false;
     bool loss_of_lock = false;
 
     if (d_pull_in_transitory == true)
@@ -1831,6 +1876,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                             }
                         if (next_state)
                             {  // reset extended correlator
+                                d_bit_synchronization = true;
                                 d_VE_accu = gr_complex(0.0, 0.0);
                                 d_E_accu = gr_complex(0.0, 0.0);
                                 d_P_accu = gr_complex(0.0, 0.0);

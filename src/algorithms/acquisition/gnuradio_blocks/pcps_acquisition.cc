@@ -940,6 +940,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         consume_each(ninput_items[0]);
                     }
                 break;
+                d_gnss_synchro->Acquisition_detection = false;
             }
         case 1:
             {

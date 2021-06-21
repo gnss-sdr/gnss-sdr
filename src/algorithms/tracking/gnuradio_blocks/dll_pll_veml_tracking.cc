@@ -1440,31 +1440,47 @@ void dll_pll_veml_tracking::log_data()
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
 
                     // Spoofing detection part - need to move this to a suitable location later.
-                    if (d_bit_synchronization and !d_spoofing)
+                    if (d_bit_synchronization)
                         {
-                            if (abs(prompt_I) > d_threshold * 2)
+                            if (abs(prompt_I) > d_threshold)
                                 {
-                                    d_spoofing = true;
-                                    DLOG(INFO) << "TRK: Jump in baseband amp detected PRN " << prn_;
-                                    d_spoofing_mark = d_prompt_I_count;
+                                    if (!d_spoofing)
+                                        {
+                                            d_spoofing = true;
+                                            DLOG(INFO) << "TRK: Baseband amp jump detected " << prn_ << " Threshold " << d_threshold << " PromptI " << abs(prompt_I);
+                                            d_spoofing_mark = d_prompt_I_count;
+                                            d_acquisition_gnss_synchro->Prompt_corr_detection = true;
+                                        }
+                                }
+                            else
+                                {
+                                    if (d_spoofing)
+                                        {
+                                            d_spoofing = false;
+                                            DLOG(INFO) << "TRK: Baseband amp back to normal PRN " << prn_ << " Threshold " << d_threshold << " PromptI " << abs(prompt_I);
+                                            d_spoofing_mark = 0;
+                                            d_acquisition_gnss_synchro->Prompt_corr_detection = false;
+                                            if (abs(prompt_I) > d_threshold)
+                                                {
+                                                    d_threshold = abs(prompt_I);
+                                                }
+                                        }
                                 }
                         }
-
-                    if (d_spoofing)
+                    else
                         {
-                            if (abs(prompt_I) <= d_threshold * 2)
+                            d_prompt_I_sum = d_prompt_I_sum + abs(prompt_I);
+
+                            if (abs(prompt_I) > d_threshold)
                                 {
-                                    d_spoofing = false;
-                                    DLOG(INFO) << "TRK: Baseband amp back to normal PRN " << prn_;
-                                    d_spoofing_mark = d_prompt_I_count;
+                                    d_threshold = abs(prompt_I);
                                 }
                         }
-
                     d_dump_file.write(reinterpret_cast<char *>(&d_spoofing_mark), sizeof(uint32_t));
 
                     ++d_prompt_I_count;
-                    d_prompt_I_sum = d_prompt_I_sum + abs(prompt_I);
-                    d_threshold = abs(d_prompt_I_sum) / d_prompt_I_count;
+
+                    //d_threshold = abs(d_prompt_I_sum) / d_prompt_I_count;
                 }
             catch (const std::ifstream::failure &e)
                 {
@@ -1734,8 +1750,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
     const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
-    current_synchro_data.Flag_valid_symbol_output = false;
-    current_synchro_data.Prompt_corr_detection = false;
     bool loss_of_lock = false;
 
     if (d_pull_in_transitory == true)

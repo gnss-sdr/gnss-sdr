@@ -1840,8 +1840,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
-            
-             
+
+
             // ############ 1. READ PSEUDORANGES ####
             for (uint32_t i = 0; i < d_nchannels; i++)
                 {
@@ -2247,22 +2247,50 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             if (d_print_score)
                                 {
-                                    if (score < 1)
-                                        {
-                                            COLOR = TEXT_BOLD_GREEN;
-                                        }
-                                    else if (score >= 1 and score < 4)
-                                        {
-                                            COLOR = TEXT_BOLD_YELLOW;
-                                        }
-                                    else if (score >= 4)
-                                        {
-                                            COLOR = TEXT_BOLD_RED;
-                                        }
+                                    set_warning_color(COLOR, score);
 
                                     std::cout
                                         << COLOR
                                         << "Spoofer score: " << score << TEXT_RESET << "\n";
+
+                                    uint32_t count = 0;
+
+                                    // Find channels with overshadow attack
+                                    for (uint32_t i = 0; i < d_nchannels; i++)
+                                        {
+                                            DLOG(INFO) << "Satellite " << in[i][epoch].PRN << " " << in[i][epoch].Prompt_corr_detection;
+                                            if (in[i][epoch].Prompt_corr_detection)
+                                                {
+                                                    ++count;
+                                                }
+                                            else
+                                                {
+                                                    if (count > 0)
+                                                        {
+                                                            --count;
+                                                        }
+                                                }
+                                        }
+
+                                    set_warning_color(COLOR, count);
+
+                                    // Print only if atleast 1 overshadow attack is detected
+                                    if (count > 0)
+                                        {
+                                            std::cout
+                                                << COLOR
+                                                << "Overshadow attack detected on PRNs ";
+
+                                            for (uint32_t i = 0; i < d_nchannels; i++)
+                                                {
+                                                    if (in[i][epoch].Prompt_corr_detection)
+                                                        {
+                                                            std::cout << in[i][epoch].PRN << " ";
+                                                        }
+                                                }
+
+                                            std::cout << TEXT_RESET << "\n";
+                                        }
                                 }
 
                             DLOG(INFO) << "RX clock drift: " << d_user_pvt_solver->get_clock_drift_ppm() << " [ppm]";
@@ -2302,4 +2330,20 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
         }
 
     return noutput_items;
+}
+
+void rtklib_pvt_gs::set_warning_color(std::string& COLOR, int score)
+{
+    if (score < 1)
+        {
+            COLOR = TEXT_BOLD_GREEN;
+        }
+    else if (score >= 1 and score < 4)
+        {
+            COLOR = TEXT_BOLD_YELLOW;
+        }
+    else if (score >= 4)
+        {
+            COLOR = TEXT_BOLD_RED;
+        }
 }

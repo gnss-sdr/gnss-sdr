@@ -148,6 +148,8 @@ private:
         return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
     }
 
+    void set_warning_color(std::string& COLOR, int score);
+
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
     typedef struct

@@ -61,7 +61,6 @@ As signal inputs, it accepts:
 \li Raw data file captured with a data grabber (digitized at some intermediate frequency or directly at baseband).
 \li Any suitable RF configuration that can be driven by the Universal Software Radio Peripheral Hardware Driver (<a href="https://files.ettus.com/uhd_docs/manual/html/" target="_blank">UHD</a>).
 This includes all current and future <a href="https://www.ettus.com/">Ettus Research</a> products. The USRP1 + DBSRX 2.2 daughterboard is an example of working configuration for GPS L1 C/A and Galileo E1B and E1C signals.
-\li The <a href="https://gnss-sdr.org/docs/tutorials/sige-gn3s-sampler-v2-usb-front-end/" target="blank">GN3S v2 USB dongle</a> (GN3S v3 might work with small modifications).
 \li Experimentally, with some <a href="https://gnss-sdr.org/docs/tutorials/gnss-sdr-operation-realtek-rtl2832u-usb-dongle-dvb-t-receiver/" target="_blank">USB DVB-T dongles based on the Realtek RTL2832U chipset</a>.
 \li For mathematical representations of the targeted signals, check out the \ref the_signal_model page.
 
@@ -630,8 +629,8 @@ of a Radio Frequency front-end's Analog-to_Digital converter. GNSS-SDR needs sig
 Prepare your configuration file, and then you are ready for going to the <tt> gnss-sdr/install</tt> folder, running <tt>./gnss-sdr</tt>, and see how the file is processed.
 Please ask the Developer Team for a signal sample if you need one, and they will do their best ;-)
 
-Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware (see \ref signal_source), for the GN3S v2 USB dongle
-and for some DVB-T USB dongles. Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
+Another interesting option is working in real-time with a RF front-end. We provide drivers for UHD-compatible hardware (see \ref signal_source) and for some DVB-T USB dongles.
+Start with a low number of channels and then increase it in order to test how many channels your processor can handle in real-time.
 
 You can find more information at the <a href="https://gnss-sdr.org/docs/" target="_blank"><b>GNSS-SDR Documentation page</b></a> or directly asking to the
 <a href="https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers" target="_blank"><b>GNSS-SDR Developers mailing list</b></a>.

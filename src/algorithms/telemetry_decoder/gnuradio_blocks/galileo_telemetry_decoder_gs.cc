@@ -26,7 +26,7 @@
 #include "display.h"
 #include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
-#include "galileo_has_data.h"        // For Galileo HAS messages
+#include "galileo_has_page.h"        // For Galileo_HAS_page
 #include "galileo_iono.h"            // for Galileo_Iono
 #include "galileo_utc_model.h"       // for Galileo_Utc_Model
 #include "gnss_synchro.h"
@@ -65,6 +65,9 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    // register Gal E6 messages HAS out
+    this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
+
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
     d_band = '1';
@@ -202,6 +205,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_channel = 0;
     d_flag_PLL_180_deg_phase_locked = false;
     d_symbol_history.set_capacity(d_required_symbols + 1);
+    d_cnav_dummy_page = false;
+    d_print_cnav_page = true;
 
     // vars for Viterbi decoder
     const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
@@ -528,18 +533,35 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
         }
     d_cnav_nav.read_HAS_page(page_String);
 
-    // 4. If we have a new full message, read it
-    if (d_cnav_nav.have_new_HAS_message() == true)
+    // 4. If we have a new HAS page, read it
+    if (d_cnav_nav.have_new_HAS_page() == true)
         {
-            if (d_cnav_nav.is_HAS_message_dummy() == true)
+            bool is_page_dummy = d_cnav_nav.is_HAS_page_dummy();
+            if (is_page_dummy == true)
                 {
-                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS dummy message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                    d_print_cnav_page = true;
+                    // Only print the message once
+                    if (is_page_dummy != d_cnav_dummy_page)
+                        {
+                            d_cnav_dummy_page = is_page_dummy;
+
+                            std::cout << TEXT_MAGENTA << "Receiving Galileo E6 CNAV dummy pages in channel "
+                                      << d_channel << " from satellite " << d_satellite
+                                      << TEXT_RESET << '\n';
+                        }
                 }
             else
                 {
-                    const std::shared_ptr<Galileo_HAS_data> tmp_obj = std::make_shared<Galileo_HAS_data>(d_cnav_nav.get_HAS_data());
-                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-                    std::cout << TEXT_MAGENTA << "New Galileo E6 HAS message received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
+                    const std::shared_ptr<Galileo_HAS_page> tmp_obj = std::make_shared<Galileo_HAS_page>(d_cnav_nav.get_HAS_encoded_page());
+                    this->message_port_pub(pmt::mp("E6_HAS_from_TLM"), pmt::make_any(tmp_obj));
+                    if (d_print_cnav_page == true)
+                        {
+                            d_print_cnav_page = false;  // only print the first page
+                            std::cout << TEXT_MAGENTA << "Receiving Galileo E6 HAS pages"
+                                      << (d_cnav_nav.is_HAS_in_test_mode() == true ? " (test mode) " : " ")
+                                      << "in channel " << d_channel << " from satellite " << d_satellite
+                                      << TEXT_RESET << '\n';
+                        }
                 }
         }
 }
@@ -761,7 +783,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 break;
                             }
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                        if (d_inav_nav.get_flag_CRC_test() == true or d_fnav_nav.get_flag_CRC_test() == true)
+                        if (d_inav_nav.get_flag_CRC_test() == true or d_fnav_nav.get_flag_CRC_test() == true or d_cnav_nav.get_flag_CRC_test() == true)
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
@@ -894,6 +916,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 case 3:  // CNAV
                     {
                         // TODO
+                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;  // this is not the TOW!
                         break;
                     }
                 }
@@ -930,7 +953,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         }
 
-    if (d_inav_nav.get_flag_TOW_set() == true or d_fnav_nav.get_flag_TOW_set() == true)
+    if (d_inav_nav.get_flag_TOW_set() == true or d_fnav_nav.get_flag_TOW_set() == true or d_cnav_nav.get_flag_CRC_test() == true)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.
@@ -977,7 +1000,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                            LOG(WARNING) << "Exception writing navigation data dump file " << e.what();
                         }
                 }
             // 3. Make the output (copy the object contents to the GNURadio reserved memory)

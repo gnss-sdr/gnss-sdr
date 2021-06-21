@@ -139,10 +139,6 @@
 #include "gps_l1_ca_pcps_opencl_acquisition.h"
 #endif
 
-#if GN3S_DRIVER
-#include "gn3s_signal_source.h"
-#endif
-
 #if RAW_ARRAY_DRIVER
 #include "raw_array_signal_source.h"
 #endif
@@ -728,15 +724,6 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             else if (implementation == "UHD_Signal_Source")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<UhdSignalSource>(configuration, role, in_streams,
-                        out_streams, queue);
-                    block = std::move(block_);
-                }
-#endif
-
-#if GN3S_DRIVER
-            else if (implementation == "GN3S_Signal_Source")
-                {
-                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Gn3sSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }

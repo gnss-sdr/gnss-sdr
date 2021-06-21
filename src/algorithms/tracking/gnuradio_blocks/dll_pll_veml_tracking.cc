@@ -734,7 +734,7 @@ void dll_pll_veml_tracking::start_tracking()
         {
             if (d_trk_parameters.track_pilot)
                 {
-                    d_secondary_code_string = galileo_e6_c_secondary_code(d_acquisition_gnss_synchro->PRN - 1);
+                    d_secondary_code_string = galileo_e6_c_secondary_code(d_acquisition_gnss_synchro->PRN);
                     galileo_e6_b_code_gen_float_primary(d_data_code, d_acquisition_gnss_synchro->PRN);
                     galileo_e6_c_code_gen_float_primary(d_tracking_code, d_acquisition_gnss_synchro->PRN);
                     d_Prompt_Data[0] = gr_complex(0.0, 0.0);

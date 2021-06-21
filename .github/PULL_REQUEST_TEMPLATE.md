@@ -30,14 +30,14 @@ stakeholders, make sure that all are listed, each with a separate
 Before submitting your pull request, please make sure the following is done:
 
 1.  You undertake the
-    [Contributor Covenant Code of Conduct](https://github.com/gnss-sdr/gnss-sdr/blob/master/CODE_OF_CONDUCT.md).
+    [Contributor Covenant Code of Conduct](https://github.com/gnss-sdr/gnss-sdr/blob/main/CODE_OF_CONDUCT.md).
 2.  You have read the
     [Developer's Certificate of Origin](https://github.com/gnss-sdr/gnss-sdr/blob/next/.github/DCO.txt)
     and
     [signed your commits](https://gnss-sdr.org/docs/tutorials/using-git/#sign-your-commits)
     as an indication of fulfillment.
 3.  You have read the
-    [Contributing Guidelines](https://github.com/gnss-sdr/gnss-sdr/blob/master/CONTRIBUTING.md).
+    [Contributing Guidelines](https://github.com/gnss-sdr/gnss-sdr/blob/main/CONTRIBUTING.md).
 4.  You have read the [coding style guide](https://gnss-sdr.org/coding-style/).
     Specifically, you have read
     [about clang-format](https://gnss-sdr.org/coding-style/#use-tools-for-automated-code-formatting)

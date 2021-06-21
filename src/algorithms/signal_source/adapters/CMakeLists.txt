@@ -42,19 +42,6 @@ if(ENABLE_AD9361)
 endif()
 
 
-if(ENABLE_GN3S)
-    ##############################################
-    # GN3S (USB dongle)
-    ##############################################
-    if(NOT GRGN3S_FOUND)
-        message(" gr-gn3s not found, install it from https://github.com/gnss-sdr/gr-gn3s")
-        message(FATAL_ERROR "gr-gn3s required for building gnss-sdr with this option enabled")
-    endif()
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gn3s_signal_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gn3s_signal_source.h)
-endif()
-
-
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} flexiband_signal_source.h)
@@ -238,13 +225,6 @@ if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
             Gnuradio::teleorbit
-    )
-endif()
-
-if(ENABLE_GN3S AND GRGN3S_FOUND)
-    target_link_libraries(signal_source_adapters
-        PRIVATE
-            Gnuradio::gn3s
     )
 endif()
 

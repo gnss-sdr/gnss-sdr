@@ -176,6 +176,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_nchannels = nchannels;
 
     d_type_of_rx = conf_.type_of_receiver;
+    d_observable_interval_ms = conf_.observable_interval_ms;
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
@@ -189,6 +190,20 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
 #endif
 #endif
+
+    // Galileo E6 HAS messages port in
+    this->message_port_register_in(pmt::mp("E6_HAS_to_PVT"));
+    this->set_msg_handler(pmt::mp("E6_HAS_to_PVT"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_has_data(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, boost::placeholders::_1));
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, _1));
+#endif
+#endif
+
     // initialize kml_printer
     const std::string kml_dump_filename = d_dump_filename;
     d_kml_output_enabled = conf_.kml_output_enabled;
@@ -512,6 +527,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_beidou_dnav_iono_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code();
     d_beidou_dnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code();
     d_beidou_dnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code();
+    d_galileo_has_data_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
 
     //timetag
     d_log_timetag = conf_.log_source_timetag;
@@ -1485,6 +1501,25 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
 }
 
 
+void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg) const
+{
+    try
+        {
+            const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
+            if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
+                {
+                    const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
+                    // TODO: Dump HAS message
+                    // std::cout << "HAS data received at PVT block.\n";
+                }
+        }
+    catch (const boost::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_has_data Bad any_cast: " << e.what();
+        }
+}
+
+
 std::map<int, Gps_Ephemeris> rtklib_pvt_gs::get_gps_ephemeris_map() const
 {
     return d_internal_pvt_solver->gps_ephemeris_map;
@@ -2060,8 +2095,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             if (!d_gnss_observables_map_t0.empty())
                                                 {
                                                     const auto t0_int_ms = static_cast<uint32_t>(d_gnss_observables_map_t0.cbegin()->second.RX_time * 1000.0);
-                                                    const uint32_t adjust_next_20ms = 20 - t0_int_ms % 20;
-                                                    current_RX_time_ms = t0_int_ms + adjust_next_20ms;
+                                                    const uint32_t adjust_next_obs_interval_ms = d_observable_interval_ms - t0_int_ms % d_observable_interval_ms;
+                                                    current_RX_time_ms = t0_int_ms + adjust_next_obs_interval_ms;
 
                                                     if (current_RX_time_ms % d_output_rate_ms == 0)
                                                         {

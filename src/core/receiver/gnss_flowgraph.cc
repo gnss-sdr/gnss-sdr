@@ -99,6 +99,8 @@ void GNSSFlowgraph::init()
 
     channels_status_ = channel_status_msg_receiver_make();
 
+    gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     int sources_count_deprecated = configuration_->property("Receiver.sources_count", 1);
     sources_count_ = configuration_->property("GNSS-SDR.num_sources", sources_count_deprecated);
@@ -439,6 +441,11 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
         }
 
     if (connect_monitors() != 0)
+        {
+            return 1;
+        }
+
+    if (connect_gal_e6_has() != 0)
         {
             return 1;
         }
@@ -1045,7 +1052,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                 {
                                     // Connect the multichannel signal source to multiple signal conditioners
                                     // GNURADIO max_streams=-1 means infinite ports!
-                                    size_t output_size = src->item_size();
+                                    size_t output_size = src->get_right_block()->output_signature()->sizeof_stream_item(0);
                                     size_t input_size = sig_conditioner_.at(signal_conditioner_ID)->get_left_block()->input_signature()->sizeof_stream_item(0);
                                     // Check configuration inconsistencies
                                     if (output_size != input_size)
@@ -1539,6 +1546,42 @@ int GNSSFlowgraph::connect_monitors()
     return 0;
 }
 
+int GNSSFlowgraph::connect_gal_e6_has()
+{
+    try
+        {
+            bool gal_e6_channels = false;
+            for (int i = 0; i < channels_count_; i++)
+                {
+                    const std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();
+                    std::string gnss_system;
+                    Gnss_Signal signal_value;
+                    switch (mapStringValues_[gnss_signal])
+                        {
+                        case evGAL_E6:
+                            top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("E6_HAS_from_TLM"), gal_e6_has_rx_, pmt::mp("E6_HAS_from_TLM"));
+                            gal_e6_channels = true;
+                            break;
+
+                        default:
+                            break;
+                        }
+                }
+
+            if (gal_e6_channels == true)
+                {
+                    top_block_->msg_connect(gal_e6_has_rx_, pmt::mp("E6_HAS_to_PVT"), pvt_->get_left_block(), pmt::mp("E6_HAS_to_PVT"));
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(ERROR) << "Can't connect Galileo E6 HAS msg ports: " << e.what();
+            top_block_->disconnect_all();
+            return 1;
+        }
+    DLOG(INFO) << "Galileo E6 HAS message ports connected";
+    return 0;
+}
 
 int GNSSFlowgraph::disconnect_monitors()
 {

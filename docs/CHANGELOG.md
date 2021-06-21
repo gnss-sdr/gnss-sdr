@@ -8,6 +8,10 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 )
 <!-- prettier-ignore-end -->
 
+# Changelog
+
+All notable changes to GNSS-SDR will be documented in this file.
+
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
 ### Improvements in Availability:
@@ -15,13 +19,13 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Added the reading of reduced clock and ephemeris data (CED) in the Galileo E1B
   INAV message introduced in Galileo OS SIS ICD Issue 2.0. If the reduced CED is
   available before the full ephemeris set, it is used for PVT computation until
-  the full set has not yet been received. This can contribute to shorten the
+  the full set has not yet been received. This can contribute to shortening the
   Time-To-First-Fix.
 - Added the exploitation of the FEC2 Erasure Correction in the Galileo E1B INAV
   message introduced in Galileo OS SIS ICD Issue 2.0. This can contribute to
-  shorten the Time-To-First-Fix. Since the added computational cost could break
-  some real-time configurations, this feature is disabled by default. It can be
-  activated from the configuration file by adding
+  shortening the Time-To-First-Fix. Since the added computational cost could
+  break some real-time configurations, this feature is disabled by default. It
+  can be activated from the configuration file by adding
   `TelemetryDecoder_1B.enable_reed_solomon=true`.
 
 ### Improvements in Maintainability:
@@ -36,39 +40,41 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Improved handling of change in GNU Radio 3.9 FFT API.
 - Improved handling of the filesystem library.
 - Added an abstract class `SignalSourceInterface` and a common base class
-  `SignalSourceBase`, which allow to remove a lot of duplicated code in Signal
+  `SignalSourceBase`, which allow removing a lot of duplicated code in Signal
   Source blocks, and further abstract file-based interfaces behind them.
 - Do not apply clang-tidy fixes to protobuf-generated headers.
 - Refactored private implementation of flow graph connection and disconnection
   for improved source code readability.
 - Added a base class for GNSS ephemeris, saving some duplicated code and
   providing a common nomenclature for ephemeris' parameters. New generated XML
-  files make use of the new parameters' name.
+  files make use of the new parameters' names.
 - Update GSL implementation to 0.38.1. See
   https://github.com/gsl-lite/gsl-lite/releases/tag/v0.38.1
 
 ### Improvements in Portability:
 
 - Avoid collision of the `cpu_features` library when installing the
-  `volk_gnsssdr` library by its own, and VOLK has already installed its version.
+  `volk_gnsssdr` library on its own, and VOLK has already installed its version.
   Added a new building option `ENABLE_OWN_CPUFEATURES`, defaulting to `ON` when
   building `gnss-sdr` but defaulting to `OFF` when building a stand-alone
   version of `volk_gnsssdr`. When this building option is set to `ON`, it forces
-  the building of the local version of the cpu_features library, regardless of
+  the building of the local version of the `cpu_features` library, regardless of
   whether it is already installed or not.
 - Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
 - Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
   Boost >= 1.74.
 - Fix linking of the `<filesystem>` library when using GCC 8.x and GNU Radio >=
   3.8.
+- If the Matio library is not found, now it is configured and built by CMake
+  instead of using autotools.
 
 ### Improvements in Usability:
 
 - Added a new `Fifo_Signal_Source` implementation that allows using a
   [Unix FIFO](https://en.wikipedia.org/wiki/Named_pipe) as a signal source, thus
   allowing to multiplex signal streams outside of `gnss-sdr`, letting another
-  program to hold access to the receiver, or allowing signal sources that are
-  not supported by `gnss-sdr` but can dump the signal to a FIFO.
+  program hold access to the receiver, or allowing signal sources that are not
+  supported by `gnss-sdr` but can dump the signal to a FIFO.
 - Avoid segmentation faults in the flow graph connection and/or starting due to
   some common inconsistencies in the configuration file.
 - Provide hints to the user in case of failed flow graph connection due to
@@ -93,17 +99,29 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   different settings for the `-DENABLE_FMCOMMS2` or `-DENABLE_PLUTOSDR` building
   options.
 - Fix building when using UHD v4.0.0.0.
+- Fix building for `-DENABLE_FMCOMMS2=ON` and/or `-DENABLE_PLUTOSDR=ON` when the
+  built-in gr-iio module introduced in GNU Radio 3.10 is found. This in-tree GNU
+  Radio module takes precedence over the gr-iio package provided at
+  https://github.com/analogdevicesinc/gr-iio. If the GNU Radio module is found,
+  the other one is ignored.
+- File `changelog.md` renamed to the more usual `CHANGELOG.md` uppercase name.
+- New global configuration parameter `GNSS-SDR.observable_interval_ms`, set by
+  default to 20 [ms], allows to control the internal rate at which computed
+  observables sets are processed (50 observables sets per second by default).
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
 
 &nbsp;
 
-## [GNSS-SDR v0.0.14](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.14)
+## [GNSS-SDR v0.0.14](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.14) - 2021-01-08
 
 ### Improvements in Availability:
 
 - Fixed bug in acquisition detection when the configuration parameter
   `Acquisition_XX.threshold` was set but `Acquisition_XX.pfa` was not, causing
   false locks.
-- Fixed anti-jamming filters: `Pulse_Blanking_Filter`, `Notch_Filter` and
+- Fixed anti-jamming filters: `Pulse_Blanking_Filter`, `Notch_Filter`, and
   `Notch_Filter_Lite`.
 
 ### Improvements in Efficiency:
@@ -121,8 +139,8 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Maintainability:
 
-- Added a common shared pointer definition `gnss_shared_ptr`, which allows to
-  handle the `boost::shared_ptr` to `std::shared_ptr` transition in GNU Radio
+- Added a common shared pointer definition `gnss_shared_ptr`, which allows
+  handling the `boost::shared_ptr` to `std::shared_ptr` transition in GNU Radio
   3.9 API more nicely.
 - Support new FFT and firdes blocks' API in GNU Radio 3.9.
 - Added detection of inconsistent function prototypes in `volk_gnsssdr` library
@@ -165,7 +183,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Fixed a bug introduced in v0.0.13 that prevented getting Galileo-only PVT
   fixes in some environments.
 - Fixed duplication of protobuf build tree if it was locally built and then
-  installed with DESTDIR variable set.
+  installed with `DESTDIR` variable set.
 
 ### Improvements in Usability:
 
@@ -200,9 +218,12 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
   `.dat` binary file is also delivered in `.mat` format, which is readable from
   Matlab and Python.
 
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
 &nbsp;
 
-## [GNSS-SDR v0.0.13](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.13)
+## [GNSS-SDR v0.0.13](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.13) - 2020-07-29
 
 ### Improvements in Efficiency:
 
@@ -223,7 +244,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 - Improved usage of smart pointers to better express ownership of resources.
 - Add definition of `std::make_unique` for buildings with C++11, and make use of
-  it along the source code.
+  it through the source code.
 - Private members in headers have been sorted by type and size, minimizing
   padding space in the stack and making the files more readable for humans.
 - Simpler, less error-prone design of the `GNSSBlockFactory` class public API
@@ -231,14 +252,14 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 - Simpler API for the `Pvt_Solution` class.
 - Improved system constant definition headers, numerical values are only written
   once.
-- Improved const correctness.
+- Improved `const` correctness.
 - The software can now be built against the GNU Radio 3.9 API that uses standard
   library's smart pointers instead of Boost's. Minimum GNU Radio required
   version still remains at 3.7.3.
 - The software can now be built against Boost <= 1.73 (minimum version: 1.53).
 - Fixed building with GCC 10 (gcc-10 and above flipped a default from `-fcommon`
   to `-fno-common`, causing an error due to multiple defined lambda functions).
-- Fixed warnings risen by GCC 10 and Clang 10.
+- Fixed warnings raised by GCC 10 and Clang 10.
 - Various improvements in the CMake scripts: better decision on the C++ standard
   to use; simplifications for various API dependency and environment versions
   requirements, with more intuitive naming for variables; fixed the
@@ -249,10 +270,10 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 - The software can now be cross-compiled on Petalinux environments.
 - Removed python six module as a dependency if using Python 3.x.
-- Make use of `std::span` if the compiler supports it, and use gsl-lite as a
+- Make use of `std::span` if the compiler supports it, and use `gsl-lite` as a
   fallback. The latter has been updated to version
   [0.37.0](https://github.com/gsl-lite/gsl-lite/releases/tag/0.37.0).
-- Improved finding of libgfortran in openSUSE and Fedora distributions.
+- Improved finding of `libgfortran` in openSUSE and Fedora distributions.
 - Improved interface for FPGA off-loading.
 - Allow a random name for the build type. If not recognized, it is set to
   `None`. This allows packaging in some distributions that pass an arbitrary
@@ -269,7 +290,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 ### Improvements in Reproducibility:
 
-- Improved reproducibility of the volk_gnsssdr library: Drop compile-time CPU
+- Improved reproducibility of the `volk_gnsssdr` library: Drop compile-time CPU
   detection.
 
 ### Improvements in Testability:
@@ -282,7 +303,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 - Do not pollute the source directory if the software is built from an
   out-of-source-tree directory. Downloaded external sources and test raw files
-  are now stored in a `./thirdparty` folder under the building directory. In
+  are now stored in a `./thirdparty` folder under the building directory. In the
   case of an out-of-source-tree build, the generated binaries are stored in an
   `./install` folder, also under the building directory. The old behavior for
   generated binaries is maintained if the building is done from any source tree
@@ -316,7 +337,7 @@ https://gnss-sdr.org/design-forces/
 
 &nbsp;
 
-## [GNSS-SDR v0.0.12](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.12)
+## [GNSS-SDR v0.0.12](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.12) - 2020-03-13
 
 ### Improvements in Accuracy:
 
@@ -338,7 +359,7 @@ https://gnss-sdr.org/design-forces/
 ### Improvements in Flexibility:
 
 - New Tracking parameters allow the configuration of the C/N0 and lock detector
-  smoothers, as well as the activation of the FLL in pull-in and steady state
+  smoothers, as well as the activation of the FLL in pull-in and steady-state
   stages.
 - Added new Tracking parameter `Tracking_XX.carrier_aiding`, allowing
   enabling/disabling of carrier aiding to the code tracking loop.
@@ -389,8 +410,8 @@ https://gnss-sdr.org/design-forces/
 - Apply more clang-tidy checks related to readability:
   `readability-avoid-const-params-in-decls`,
   `readability-braces-around-statements`, `readability-isolate-declaration`,
-  `readability-redundant-control-flow`, `readability-uppercase-literal-suffix`.
-  Fixed raised warnings.
+  `readability-redundant-control-flow`, and
+  `readability-uppercase-literal-suffix`. Fixed raised warnings.
 - Fixed a number of defects detected by `cpplint.py`. Filters applied:
   `+build/class`, `+build/c++14`, `+build/deprecated`,
   `+build/explicit_make_pair`, `+build/include_what_you_use`,
@@ -399,19 +420,19 @@ https://gnss-sdr.org/design-forces/
   `+runtime/casting`, `+runtime/explicit`, `+runtime/indentation_namespace`,
   `+runtime/init`, `+runtime/invalid_increment`,
   `+runtime/member_string_references`, `+runtime/memset`, `+runtime/operator`,
-  `+runtime/printf`, `+runtime/printf_format`, `+whitespace/blank_line`.
+  `+runtime/printf`, `+runtime/printf_format`, and `+whitespace/blank_line`.
 - `clang-format` can now be applied to the whole code tree without breaking
   compilation.
 - Added more check options to `.clang-tidy` file.
 - Default Python version is now >= 3.4. Python 2.7 still can be used in systems
   where Python 3 is not available (e.g., CentOS 7, Debian 8, Ubuntu 10.04).
 - CMake now passes the `-DCMAKE_BUILD_TYPE` (or configuration in
-  multi-configuration generators like Xcode) to modules built along gnss-sdr
-  (e.g, the volk_gnsssdr library and googletest). Build types available: `None`,
-  `Release` (by default), `Debug`, `RelWithDebInfo`, `MinSizeRel`, `Coverage`,
-  `NoOptWithASM`, `O2WithASM`, `O3WithASM`, `ASAN`.
+  multi-configuration generators like Xcode) to modules built along with
+  `gnss-sdr` (e.g, the `volk_gnsssdr` library and googletest). Build types
+  available: `None`, `Release` (by default), `Debug`, `RelWithDebInfo`,
+  `MinSizeRel`, `Coverage`, `NoOptWithASM`, `O2WithASM`, `O3WithASM`, `ASAN`.
 - Fix runtime errors when compiling in `Debug` mode on macOS.
-- Updated links in comments along the source code and in CMake scripts.
+- Updated links in comments through the source code and in CMake scripts.
 - Update GSL implementation to 0.36.0. See
   https://github.com/gsl-lite/gsl-lite/releases/tag/v0.36.0
 - Create a CI job on GitHub to ensure that `clang-tidy` has been applied in most
@@ -433,18 +454,20 @@ https://gnss-sdr.org/design-forces/
 ### Improvements in Portability:
 
 - The CMake scripts now find dependencies in Debian's riscv64 architecture.
-- Enable AVX2 kernels of the volk_gnsssdr library when using the Clang compiler.
+- Enable AVX2 kernels of the `volk_gnsssdr` library when using the Clang
+  compiler.
 - Fixed building in some ARM-based devices. Now Clang and ARMClang can be used
   for native building.
-- Added toolchain files for building gnss-sdr and the volk_gnsssdr library in
+- Added toolchain files for building gnss-sdr and the `volk_gnsssdr` library in
   several ARM processor architectures, including those in Raspberry Pi 3 and 4.
 - The software can now be built using Xcode (passing `-GXcode` to CMake) without
-  previous manual installation of volk_gnsssdr.
+  previous manual installation of `volk_gnsssdr`.
 - The software can now be built using Xcode (passing `-GXcode` to CMake) without
   gflags, glog, matio, PugiXML, Protocol Buffers or googletest previously
   installed.
-- Now the volk_gnsssdr library can be built on Microsoft Windows.
-- Now the volk_gnsssdr library makes use of C11 `aligned_alloc` where available.
+- Now the `volk_gnsssdr` library can be built on Microsoft Windows.
+- Now the `volk_gnsssdr` library makes use of C11 `aligned_alloc` where
+  available.
 - Improved CMake script for cross-compilation and for the detection of AVX, AVX2
   and NEON (v7 and v8) instructions.
 - Fixed warnings raised by CMake 3.17.
@@ -490,10 +513,10 @@ https://gnss-sdr.org/design-forces/
 - Improved DLL-PLL binary dump MATLAB/Octave plot script. Old versions removed.
 - Simplified RTKLIB error log.
 - Added a Python 3 plotting script to show relative performance of generic
-  volk_gnsssdr kernels wrt SIMD fastest versions.
+  `volk_gnsssdr` kernels wrt. SIMD fastest versions.
 - Added reporting of velocity in the terminal.
-- Added reporting of user clock drift estimation, in ppm, in the Pvt_Monitor and
-  in internal logging (`Debug` mode).
+- Added reporting of user clock drift estimation, in ppm, in the `Pvt_Monitor`
+  and in internal logging (`Debug` mode).
 - Updated documentation generated by Doxygen, now the `pdfmanual` target works
   when using ninja.
 - CMake now generates an improved summary of required/optional dependency
@@ -508,7 +531,7 @@ https://gnss-sdr.org/design-forces/
 
 &nbsp;
 
-## [GNSS-SDR v0.0.11](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.11)
+## [GNSS-SDR v0.0.11](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.11) - 2019-08-04
 
 This release has several improvements in different dimensions, addition of new
 features and bug fixes:
@@ -541,14 +564,15 @@ features and bug fixes:
   messages (acceleration by x1.6 on average per channel).
 - Shortened Acquisition to Tracking transition time.
 - Applied clang-tidy checks and fixes related to performance:
-  performance-faster-string-find, performance-for-range-copy,
-  performance-implicit-conversion-in-loop, performance-inefficient-algorithm,
-  performance-inefficient-string-concatenation,
-  performance-inefficient-vector-operation, performance-move-const-arg,
-  performance-move-constructor-init, performance-noexcept-move-constructor,
-  performance-type-promotion-in-math-fn,
-  performance-unnecessary-copy-initialization,
-  performance-unnecessary-value-param, readability-string-compare.
+  `performance-faster-string-find`, `performance-for-range-copy`,
+  `performance-implicit-conversion-in-loop`,
+  `performance-inefficient-algorithm`,
+  `performance-inefficient-string-concatenation`,
+  `performance-inefficient-vector-operation`, `performance-move-const-arg`,
+  `performance-move-constructor-init`, `performance-noexcept-move-constructor`,
+  `performance-type-promotion-in-math-fn`,
+  `performance-unnecessary-copy-initialization`,
+  `performance-unnecessary-value-param`, `readability-string-compare`.
 
 ### Improvements in Flexibility:
 
@@ -566,36 +590,36 @@ features and bug fixes:
 - Added a custom UDP/IP output for PVT data streaming.
 - Improved Monitor block with UDP/IP output for internal receiver's data
   streaming.
-- Custom output formats described with .proto files, making easier to other
+- Custom output formats described with `.proto` files, making easier to other
   applications reading them in a forward and backward-compatible fashion upon
   future format changes. New dependency: Protocol Buffers >= 3.0.0
 - Fixes in RINEX generation: week rollover, annotations are not repeated anymore
-  in navigation files. Parameter rinexnav_rate_ms has been removed, annotations
-  are made as new ephemeris arrive.
+  in navigation files. Parameter `PVT.rinexnav_rate_ms` has been removed,
+  annotations are made as new ephemeris arrive.
 - Fixes in RTCM messages generation: week rollover.
 
 ### Improvements in Maintainability:
 
-- The internal communication mechanism based on gr::msg_queue has been replaced
-  by a thread-safe, built-in asynchronous message passing system based on GNU
-  Radio's Polymorphic Types. This change is backwards-compatible and prevents
-  from a failure in case of a possible future deprecation or removal of the
-  gr::msg_queue API.
-- Deprecated boost::asio::io_service replaced by boost::asio::io_context if
+- The internal communication mechanism based on `gr::msg_queue` has been
+  replaced by a thread-safe, built-in asynchronous message passing system based
+  on GNU Radio's Polymorphic Types. This change is backwards-compatible and
+  prevents from a failure in case of a possible future deprecation or removal of
+  the `gr::msg_queue` API.
+- Deprecated `boost::asio::io_service` replaced by `boost::asio::io_context` if
   Boost > 1.65
 - CMake turns all policies to ON according to the running version up to version
   3.15.
 - Usage of clang-tidy integrated into CMake scripts. New option
-  -DENABLE_CLANG_TIDY=ON executes clang-tidy along with compilation. Requires
+  `-DENABLE_CLANG_TIDY=ON` executes clang-tidy along with compilation. Requires
   clang compiler.
 - Applied clang-tidy checks and fixes related to readability:
-  readability-container-size-empty, readability-identifier-naming,
-  readability-inconsistent-declaration-parameter-name,
-  readability-named-parameter, readability-non-const-parameter,
-  readability-string-compare.
-- Improved includes selection following suggestions by include-what-you-use (see
-  https://include-what-you-use.org/), allowing faster compiles, fewer recompiles
-  and making refactoring easier.
+  `readability-container-size-empty`, `readability-identifier-naming`,
+  `readability-inconsistent-declaration-parameter-name`,
+  `readability-named-parameter`, `readability-non-const-parameter`,
+  `readability-string-compare`.
+- Improved includes selection following suggestions by `include-what-you-use`
+  (see https://include-what-you-use.org/), allowing faster compiles, fewer
+  recompiles and making refactoring easier.
 - Massive reduction of warnings triggered by clang-tidy checks.
 - Throughout code cleaning and formatting performed with automated tools in
   order to reduce future commit noise.
@@ -609,12 +633,12 @@ features and bug fixes:
 - Improvements for macOS users using Homebrew.
 - The software builds against GNU Radio >= 3.7.3, including 3.8.0. Automatically
   detected, no user intervention is required.
-- The volk_gnsssdr library can now be built without requiring Boost if the
+- The `volk_gnsssdr` library can now be built without requiring Boost if the
   compiler supports C++17 or higher.
 - The Boost Filesystem library is not anymore a required dependency in cases
-  where it can be replaced by std::filesystem. Automatically detected, no user
+  where it can be replaced by `std::filesystem`. Automatically detected, no user
   intervention is required.
-- CMake scripts automatically select among C++11, C++14, C++17 or C++20
+- CMake scripts automatically select among C++11, C++14, C++17, or C++20
   standards, the most recent as possible, depending on compiler and dependencies
   versions.
 - Drawback in portability: Protocol Buffers >= 3.0.0 is a new required
@@ -625,10 +649,11 @@ features and bug fixes:
 - Included the Guidelines Support Library. General improvement of memory
   management, replacement of raw pointers by containers or smart pointers.
 - Applied clang-tidy checks and fixes related to High Integrity C++:
-  performance-move-const-arg, modernize-use-auto, modernize-use-equals-default,
-  modernize-use-equals-delete, modernize-use-noexcept, modernize-use-nullptr,
-  cert-dcl21-cpp, misc-new-delete-overloads, cert-dcl58-cpp, cert-err52-cpp,
-  cert-err60-cpp, hicpp-exception-baseclass, hicpp-explicit-conversions.
+  `performance-move-const-arg`, `modernize-use-auto`,
+  `modernize-use-equals-default`, `modernize-use-equals-delete`,
+  `modernize-use-noexcept`, `modernize-use-nullptr`, `cert-dcl21-cpp`,
+  `misc-new-delete-overloads`, `cert-dcl58-cpp`, `cert-err52-cpp`,
+  `cert-err60-cpp`, `hicpp-exception-baseclass`, `hicpp-explicit-conversions`.
 - Fixed a number of defects detected by Coverity Scan (version June 2019).
 
 ### Improvements in Usability:
@@ -638,12 +663,12 @@ features and bug fixes:
   channels per signal in multiple bands.
 - Fixed program termination (avoiding hangs and segfaults in some
   platforms/configurations).
-- The Labsat_Signal_Source now terminates the receiver's execution when the end
-  of file(s) is reached. It now accepts LabSat 2 filenames and series of LabSat
-  3 files.
+- The `Labsat_Signal_Source` now terminates the receiver's execution when the
+  end of file(s) is reached. It now accepts LabSat 2 filenames and series of
+  LabSat 3 files.
 - Added configuration parameters to set the annotation rate in KML, GPX, GeoJSON
   and NMEA outputs, set by default to 1 s.
-- New parameter PVT.show_local_time_zone displays time in the local time zone.
+- New parameter `PVT.show_local_time_zone` displays time in the local time zone.
   Subject to the proper system configuration of the machine running the software
   receiver. This feature is not available in old compilers.
 - CMake now generates a summary of required/optional dependency packages found
@@ -651,13 +676,15 @@ features and bug fixes:
   features.log in the building directory.
 - Improved information provided to the user in case of building configuration
   and runtime failures.
+- Remove abandoned building option `-DENABLE_GN3S` and `Gn3s_Signal_Source`
+  implementation.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/
 
 &nbsp;
 
-## [GNSS-SDR v0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10)
+## [GNSS-SDR v0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10) - 2018-12-14
 
 This release has several improvements in different dimensions, addition of new
 features and bug fixes:
@@ -693,11 +720,11 @@ features and bug fixes:
   band are immediately searched in others.
 - Complex local codes have been replaced by real codes, alleviating the
   computational burden.
-- New volk_gnsssdr kernels: volk_gnsssdr_16i_xn_resampler_16i_xn.h,
-  volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h,
-  volk_gnsssdr_32f_xn_resampler_32f_xn.h,
-  volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h
-- Some AVX2 implementations added to the volk_gnsssdr library.
+- New `volk_gnsssdr` kernels: `volk_gnsssdr_16i_xn_resampler_16i_xn.h`,
+  `volk_gnsssdr_16ic_16i_rotator_dot_prod_16ic_xn.h`,
+  `volk_gnsssdr_32f_xn_resampler_32f_xn.h`, and
+  `volk_gnsssdr_32fc_32f_rotator_dot_prod_32fc_xn.h`.
+- Some AVX2 implementations added to the `volk_gnsssdr` library.
 - Improvement in C++ usage: Use of const container calls when result is
   immediately converted to a const iterator. Using these members removes an
   implicit conversion from iterator to const_iterator.
@@ -722,13 +749,13 @@ features and bug fixes:
 - Added the GLONASS L2 SP receiver chain.
 - Improvements in the Galileo E5a and GPS L2C receiver chains.
 - Updated list of available GNSS satellites.
-- Added five more signal sources: "Fmcomms2_Signal_Source" (requires gr-iio),
-  "Plutosdr_Signal Source" (requires gr-iio), "Spir_GSS6450_File_Signal_Source",
-  "Labsat_Signal_Source" and "Custom_UDP_Signal_Source" (requires libpcap).
+- Added five more signal sources: `Fmcomms2_Signal_Source` (requires gr-iio),
+  `Plutosdr_Signal Source` (requires gr-iio), `Spir_GSS6450_File_Signal_Source`,
+  `Labsat_Signal_Source` and `Custom_UDP_Signal_Source` (requires libpcap).
   Documented in https://gnss-sdr.org/docs/sp-blocks/signal-source/
 - Improved support for BladeRF, HackRF and RTL-SDR front-ends.
 - Added tools for the interaction with front-ends based on the AD9361 chipset.
-- Intermediate results are now saved in MAT-file format (.mat), readable from
+- Intermediate results are now saved in MAT-file format (`.mat`), readable from
   Matlab/Octave and from Python via h5py.
 - Added the GPX output format.
 - Improvements in the generation of KML files.
@@ -741,7 +768,7 @@ features and bug fixes:
   https://www.gsc-europa.eu/system-status/almanac-data
 - Own-defined XML schemas for navigation data published at
   https://github.com/gnss-sdr/gnss-sdr/tree/next/docs/xml-schemas
-- Added program rinex2assist to convert RINEX navigation files into XML files
+- Added program `rinex2assist` to convert RINEX navigation files into XML files
   usable for Assisted GNSS. Only available building from source. See
   https://github.com/gnss-sdr/gnss-sdr/tree/next/src/utils/rinex2assist
 
@@ -769,7 +796,7 @@ features and bug fixes:
   system headers. This helps to detect missing includes.
 - Improvement in C++ usage: Enhanced const correctness. Misuses of those
   variables are detected by the compiler.
-- Improved code with clang-tidy and generation of a compile_commands.json file
+- Improved code with clang-tidy and generation of a `compile_commands.json` file
   containing the exact compiler calls for all translation units of the project
   in machine-readable form if clang-tidy is detected.
 - Applied some style rules to CMake scripts.
@@ -787,16 +814,16 @@ features and bug fixes:
 - The software can now be built using GCC >= 4.7.2 or LLVM/Clang >= 3.4.0
   compilers on GNU/Linux, and with Clang/AppleClang on macOS.
 - The Ninja build system can be used in replacement of make.
-- The volk_gnsssdr library can be built using Python 2.7+ or Python 3.6+.
-- The volk_gnsssdr library is now ready for AArch64 NEON instructions.
+- The `volk_gnsssdr` library can be built using Python 2.7+ or Python 3.6+.
+- The `volk_gnsssdr` library is now ready for AArch64 NEON instructions.
 - Improved detection of required and optional dependencies in many GNU/Linux
   distributions and processor architectures.
-- Improvement in C++ usage: The <ctime> library has been replaced by the more
-  modern and portable <chrono> (except for the interaction with RTKLIB).
-- Improvement in C++ usage: The <stdio.h> library has been replaced by the more
-  modern and portable <fstream> for file handling.
+- Improvement in C++ usage: The `<ctime>` library has been replaced by the more
+  modern and portable `<chrono>` (except for the interaction with RTKLIB).
+- Improvement in C++ usage: The `<stdio.h>` library has been replaced by the
+  more modern and portable `<fstream>` for file handling.
 - Improvement in C++ usage: C++ libraries preferred over C libraries (e.g.,
-  <cctype> instead of <ctype.h>, <cmath> instead of <math.h>).
+  `<cctype>` instead of `<ctype.h>`, `<cmath>` instead of `<math.h>`).
 - Fix compatibility with Boost 1.67 (closes Debian bug #911882
   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=911882)
 - Fixes required by Debian packaging.
@@ -822,9 +849,9 @@ features and bug fixes:
 - Fixed a number of defects detected by Coverity Scan.
 - Improvement of QA code and addition of a number of new tests. Documented at
   https://gnss-sdr.org/docs/tutorials/testing-software-receiver-2/
-- Improvement in C++ usage: rand() function replaced by <random> library.
-- Improvement in C++ usage: strlen and strncpy have been replaced by safer C++
-  counterparts.
+- Improvement in C++ usage: `rand()` function replaced by `<random>` library.
+- Improvement in C++ usage: `strlen` and `strncpy` have been replaced by safer
+  C++ counterparts.
 - Improvement in C++ usage: Some destructors have been fixed, avoiding
   segmentation faults when exiting the program.
 - Website switched from http to https. Links in the source tree switched when
@@ -835,7 +862,7 @@ features and bug fixes:
 - Setup of a Continuous Reproducibility system at GitLab for the automatic
   reproduction of experiments. The concept was introduced in
   https://ieeexplore.ieee.org/document/8331069/ Example added in the
-  src/utils/reproducibility/ieee-access18/ folder.
+  `src/utils/reproducibility/ieee-access18/` folder.
 - Fixes of Lintian warnings related to build reproducibility.
 
 ### Improvements in Scalability:
@@ -849,17 +876,17 @@ features and bug fixes:
 
 - Several Unit Tests added. Documentation of testing concepts and available
   tests at https://gnss-sdr.org/docs/tutorials/testing-software-receiver/
-- New extra unit test AcquisitionPerformanceTest checks the performance of
+- New extra unit test `AcquisitionPerformanceTest` checks the performance of
   Acquisition blocks.
-- New extra unit test TrackingPullInTest checks acquisition to tracking
+- New extra unit test `TrackingPullInTest` checks acquisition to tracking
   transition.
-- New extra unit test HybridObservablesTest checks the generation of
+- New extra unit test `HybridObservablesTest` checks the generation of
   observables.
 - Improved system testing: position_test accepts a wide list of parameters and
   can be used with external files.
 - Receiver channels can now be fixed to a given satellite.
 - Testing integrated in a Continuous Reproducibility system (see above).
-- Improved CTest support in volk_gnsssdr.
+- Improved CTest support in `volk_gnsssdr`.
 
 ### Improvements in Usability:
 
@@ -867,8 +894,8 @@ features and bug fixes:
   implementation for all kinds of GNSS signals, making it easier to configure.
 - All PVT block implementations have been merged into a single implementation
   for all kinds of GNSS signals, making it easier to configure.
-- Misleading parameter name GNSS-SDR.internal_fs_hz has been replaced by
-  GNSS-SDR.internal_fs_sps. The old parameter name is still read. If found, a
+- Misleading parameter name `GNSS-SDR.internal_fs_hz` has been replaced by
+  `GNSS-SDR.internal_fs_sps`. The old parameter name is still read. If found, a
   warning is provided to the user. The old name will be removed in future
   releases.
 - Updated and improved online documentation of processing blocks at
@@ -882,14 +909,14 @@ features and bug fixes:
   template in the source tree.
 - Added colors to the commandline user interface.
 - Updated manfiles.
-- Updated examples of configuration files under the conf/ folder.
+- Updated examples of configuration files under the `conf/` folder.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/
 
 &nbsp;
 
-## [GNSS-SDR v0.0.9](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.9)
+## [GNSS-SDR v0.0.9](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.9) - 2017-02-13
 
 DOI: https://doi.org/10.5281/zenodo.291371
 
@@ -914,8 +941,8 @@ many dimensions:
 ### Improvements in Efficiency:
 
 - VOLK_GNSSSDR: Added NEON,AVX and unaligned protokernels for
-  volk_gnsssdr_32f_index_max_32 kernel.
-- VOLK_GNSSSDR: Added volk_gnsssdr-config-info to the list of generated
+  `volk_gnsssdr_32f_index_max_32` kernel.
+- VOLK_GNSSSDR: Added `volk_gnsssdr-config-info` to the list of generated
   executables.
 
 ### Improvements in Flexibility:
@@ -970,24 +997,24 @@ many dimensions:
 ### Improvements in Testability:
 
 - Major QA source code refactoring: they has been split into
-  src/tests/unit-tests and src/tests/system-tests folders. They are optionally
-  built with the ENABLE_UNIT_TESTING=ON (unit testing QA code),
-  ENABLE_UNIT_TESTING_EXTRA=ON (unit tests that require extra files downloaded
-  at configure time), ENABLE_SYSTEM_TESTING=ON (system tests, such as
-  measurement of Time-To-First-Fix) and ENABLE_SYSTEM_TESTING_EXTRA=ON (extra
+  `src/tests/unit-tests` and `src/tests/system-tests` folders. They are
+  optionally built with the `ENABLE_UNIT_TESTING=ON` (unit testing QA code),
+  `ENABLE_UNIT_TESTING_EXTRA=ON` (unit tests that require extra files downloaded
+  at configure time), `ENABLE_SYSTEM_TESTING=ON` (system tests, such as
+  measurement of Time-To-First-Fix) and `ENABLE_SYSTEM_TESTING_EXTRA=ON` (extra
   system test requiring external tools, automatically downloaded and built at
   building time) configuration flags. The EXTRA options also download and build
   a custom software-defined signal generator and version 2.9 of GPSTk, if not
   already found on the system. Download and local link of version 2.9 can be
-  forced by ENABLE_OWN_GPSTK=ON building configuration flag. Only
-  ENABLE_UNIT_TESTING is set to ON by default.
-- Unit tests added: CPU_multicorrelator_test and GPU_multicorrelator_test
+  forced by `ENABLE_OWN_GPSTK=ON` building configuration flag. Only
+  `ENABLE_UNIT_TESTING` is set to ON by default.
+- Unit tests added: `CPU_multicorrelator_test` and `GPU_multicorrelator_test`
   measure computer performance in multicorrelator setups.
-- Unit tests added: GpsL1CADllPllTracking and GpsL1CATelemetryDecoderTest.
-- System test added: ttff_gps_l1 performs a set of cold / assisted runs of the
+- Unit tests added: `GpsL1CADllPllTracking` and `GpsL1CATelemetryDecoderTest`.
+- System test added: `ttff_gps_l1` performs a set of cold / assisted runs of the
   software receiver and computes statistics about the obtained Time To First
   Fix.
-- System test added: obs_gps_l1_system_test uses an external software-defined
+- System test added: `obs_gps_l1_system_test` uses an external software-defined
   signal generator to produce raw digital GNSS signal from a RINEX navigation
   file and a position (static or dynamic), processes it with GNSS-SDR, and then
   compares the RINEX observation file produced by the software receiver to that
@@ -1010,7 +1037,7 @@ https://gnss-sdr.org/design-forces/
 
 &nbsp;
 
-## [GNSS-SDR v0.0.8](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.8)
+## [GNSS-SDR v0.0.8](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.8) - 2016-07-04
 
 DOI: https://doi.org/10.5281/zenodo.57022
 
@@ -1025,7 +1052,7 @@ respect to v0.0.7. The main changes are:
 - Improved CUDA-based correlation.
 - Updated documentation
 - Fixed building in mips and powerpc architectures.
-- gr-gn3s and gr-dbfcttc moved to its own repository.
+- `gr-gn3s` and `gr-dbfcttc` moved to its own repository.
 - Improved package reproducibility
 - VOLK_GNSSSDR: Fixed a bug in AVX2 puppet
 - VOLK_GNSSSDR: can now be built using the C98 standard
@@ -1036,7 +1063,7 @@ respect to v0.0.7. The main changes are:
 
 &nbsp;
 
-## [GNSS-SDR v0.0.7](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.7)
+## [GNSS-SDR v0.0.7](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.7) - 2016-05-15
 
 DOI: https://doi.org/10.5281/zenodo.51521
 
@@ -1058,9 +1085,9 @@ This release has several improvements, addition of new features and bug fixes:
   approach addresses both efficiency and portability. Now the library provides
   the key kernels for GNSS signal processing in 16ic and 32fc versions,
   including SSE2, SSE3, SSE4.1, AVX, AV2 and NEON implementations. Please
-  execute volk_gnsssdr_profile and volk_profile to use the fastest
+  execute `volk_gnsssdr_profile` and `volk_profile` to use the fastest
   implementation for your host machine.
-- New source block: Two_Bit_Packed_File_Signal_Source. This block takes 2 bit
+- New source block: `Two_Bit_Packed_File_Signal_Source`. This block takes 2 bit
   samples that have been packed into bytes or shorts as input and generates a
   byte for each sample.
 - Fixes in SUPL assistance (supl.nokia.com removed).
@@ -1075,38 +1102,38 @@ This release has several improvements, addition of new features and bug fixes:
 - Improvements in tracking sensitivity: Added configuration option to customize
   the extension of the GPS L1 CA correlation length after bit synchronization
   (options are: [1,2,4,5,10,20] ms). Only available in the
-  GPS_L1_CA_DLL_PLL_C_Aid_Tracking implementation.
-- New tracking block introduced: GPS_L1_CA_DLL_PLL_C_Aid_Tracking is a GPS L1
+  `GPS_L1_CA_DLL_PLL_C_Aid_Tracking` implementation.
+- New tracking block introduced: `GPS_L1_CA_DLL_PLL_C_Aid_Tracking` is a GPS L1
   C/A carrier PLL and code DLL with optional carrier-aid feedback. It is
-  available in both 32 bits gr_complex input samples and in 16 bits short int
-  complex samples. The gr_complex version has also the capability to extend the
-  coherent correlation period from 1ms to 20ms using telemetry symbol
+  available in both 32 bits `gr_complex` input samples and in 16 bits short int
+  complex samples. The `gr_complex` version has also the capability to extend
+  the coherent correlation period from 1 ms to 20 ms using telemetry symbol
   synchronization.
 - Increased resolution in CN0 estimator internal variables.
 - Fixed a bug in computation of GPS L1 C/A carrier phase observable.
 - Fixed a bug in the internal state machine that was blocking the receiver after
   a few hours of usage. Now the receiver can work continually (tested for more
   than one week, no known limit).
-- New tracking block introduced: GPS_L1_CA_DLL_PLL_Tracking_GPU is a GPS L1 C/A
-  carrier PLL and code DLL that uses the CUDA-compatible GPU to compute carrier
-  wipe off and correlation operations, alleviating the CPU load.
-- Obsolete/buggy blocks removed: GPS_L1_CA_DLL_FLL_PLL_Tracking,
-  GPS_L1_CA_DLL_PLL_Optim_Tracking.
+- New tracking block introduced: `GPS_L1_CA_DLL_PLL_Tracking_GPU` is a GPS L1
+  C/A carrier PLL and code DLL that uses the CUDA-compatible GPU to compute
+  carrier wipe off and correlation operations, alleviating the CPU load.
+- Obsolete/buggy blocks removed: `GPS_L1_CA_DLL_FLL_PLL_Tracking`,
+  `GPS_L1_CA_DLL_PLL_Optim_Tracking`.
 - Added a RTCM printer and TCP server in PVT blocks (still experimental). The
   receiver is now able to stream data in real time, serving RTCM 3.2 messages to
   multiple clients. For instance, it can act as a Ntrip Source feeding a Ntrip
   Server, or to be used as data input in RTKLIB, obtaining Precise Point
   Positioning fixes in real-time. The TCP port, Station ID, and rate of
-  MT1019/MT1045 and MSM can be configured. GPS_L1_CA_PVT serves MT1019 (GPS
+  MT1019/MT1045 and MSM can be configured. `GPS_L1_CA_PVT` serves MT1019 (GPS
   Ephemeris) and MSM7 (MT1077, full GPS pseudoranges, phase ranges, phase range
-  rates and CNR - high resolution) messages, while GALILEO_E1_PVT serves MT1045
-  (Galileo ephemeris) and MSM7 (MT1097, full Galileo pseudoranges, phase ranges,
-  phase range rates and CNR - high resolution).
+  rates and CNR - high resolution) messages, while `GALILEO_E1_PVT` serves
+  MT1045 (Galileo ephemeris) and MSM7 (MT1097, full Galileo pseudoranges, phase
+  ranges, phase range rates and CNR - high resolution).
 - Added a GeoJSON printer. Basic (least-squares) position fixes can be now also
   stored in this format, in addition to KML.
 - Obsolete block removed: output filter.
 - QA code migrated to the new asynchronous message passing system.
-- Improvements in documentation: update of README.md file, addition of
+- Improvements in documentation: update of `README.md` file, addition of
   documentation for the VOLK_GNSSSDR library, updated links to new ICDs.
 - Improvements in documentation: Satellite identification updated to current
   constellation status.
@@ -1128,7 +1155,7 @@ This release has several improvements, addition of new features and bug fixes:
 
 &nbsp;
 
-## [GNSS-SDR v0.0.6](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.6)
+## [GNSS-SDR v0.0.6](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.6) - 2015-09-02
 
 This release has several improvements and bug fixes:
 
@@ -1151,12 +1178,13 @@ This release has several improvements and bug fixes:
   on the Realtek's RTL2832U chipset.
 - Fixed bug in UTC time computation for GPS signals.
 - Updated satellite identification for GPS and Galileo.
-- Defined ‘cbyte’ as a new input data type (std::complex<unsigned char>)
-- Adding a new data_type_adapter, from interleaved short to std::complex<short>
+- Defined `cbyte` as a new input data type (`std::complex<signed char>`).
+- Adding a new data_type_adapter, from interleaved short to
+  `std::complex<short>`.
 - Adding a filter for complex short streams.
-- Adding a fir_filter for std::complex<signed char> (aka cbyte). It converts the
-  data type to floats, filters, and converts back to cbyte.
-- Added a resampler for cbytes and cshorts.
+- Adding a fir_filter for `std::complex<signed char>` (aka `cbyte`). It converts
+  the data type to floats, filters, and converts back to cbyte.
+- Added a resampler for `cbyte`s and `cshort`s.
 - First working version of a GPS tracking block implementation using CUDA with
   multi-GPU device support.
 - Updating RINEX obs header when leap second is available.
@@ -1177,34 +1205,34 @@ This release has several improvements and bug fixes:
 
 &nbsp;
 
-## [GNSS-SDR v0.0.5](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.5)
+## [GNSS-SDR v0.0.5](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.5) - 2015-01-13
 
 This release has several improvements and bug fixes:
 
-- Now GNSS-SDR can be installed on the system with the usual ‘cmake ../ && make
-  && sudo make install’.
-- Added volk_gnsssdr library, a volk-like library implementing some specific
+- Now GNSS-SDR can be installed on the system with the usual
+  `cmake ../ && make && sudo make install`.
+- Added `volk_gnsssdr` library, a volk-like library implementing some specific
   kernels and ensuring portable executables. It comes with a
-  ‘volk_gnsssdr_profile’ executable, in the fashion of volk_profile. Volk and
-  volk_gnsssdr are compatible and can be mixed together. This is expected to
+  `volk_gnsssdr_profile` executable, in the fashion of `volk_profile`. Volk and
+  `volk_gnsssdr` are compatible and can be mixed together. This is expected to
   enable faster execution of the software receiver in upcoming versions.
-- The former ‘rtlsdr_signal_source’ has been replaced by a more general
-  ‘osmosdr_signal_source’ compatible with all those front-ends accessible by the
+- The former `rtlsdr_signal_source` has been replaced by a more general
+  `osmosdr_signal_source` compatible with all those front-ends accessible by the
   OsmoSDR driver (bladeRF, hackRF, etc.) in addition to RTL-based dongles.
-- Added manpages when binaries gnss-sdr, volk_gnsssdr_profile and front-end-cal
-  are installed.
+- Added manpages when binaries `gnss-sdr`, `volk_gnsssdr_profile` and
+  `front-end-cal` are installed.
 - Now GNSS-SDR can be built on i386, amd64, armhf, armel and arm64
   architectures.
 - Now GNSS-SDR builds on Ubuntu 14.04 and 14.10, Debian jessie/sid and Mac OS X
   10.9 and 10.10.
 - Improved detection of dependencies, specially when installed as .deb packages.
-- Added a ‘check' target with some minimal tests.
+- Added a `check` target with some minimal tests.
 - Added support for interleaved I/Q byte-size sample files.
 - Minor bug fixes, updated documentation and code cleaning.
 
 &nbsp;
 
-## [GNSS-SDR v0.0.4](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.4)
+## [GNSS-SDR v0.0.4](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.4) - 2014-09-08
 
 This release has several improvements and bug fixes:
 
@@ -1218,14 +1246,14 @@ This release has several improvements and bug fixes:
   same receiver.
 - Added tropospheric corrections to GPS and Galileo PVT solution.
 - Improved precision obtained by changing some variables from float to double.
-- New building options: ENABLE_GN3S, ENABLE_RTLSDR and ENABLE_ARRAY and
-  ENABLE_OPENCL.
+- New building options: `ENABLE_GN3S`, `ENABLE_RTLSDR`, `ENABLE_ARRAY`, and
+  `ENABLE_OPENCL`.
 - Improved documentation on how to enable optional drivers.
 - Fixed bug in memory alignment that caused problems with high data rates.
-- Added ENABLE_GENERIC_ARCH, an option to build the binary without detecting the
-  SIMD instruction set present in the compiling machine, so it can be executed
-  in other machines without those specific sets.
-- Added ENABLE_GPERFTOOLS, which links the executable to tcmalloc and profiler
+- Added `ENABLE_GENERIC_ARCH`, an option to build the binary without detecting
+  the SIMD instruction set present in the compiling machine, so it can be
+  executed in other machines without those specific sets.
+- Added `ENABLE_GPERFTOOLS`, which links the executable to tcmalloc and profiler
   if Gperftools is available on the system.
 - Added carrier phase, Doppler shift and signal strength observables to the
   RINEX files. Static PPP solutions are available for GPS with RTKLIB via RINEX
@@ -1241,7 +1269,7 @@ This release has several improvements and bug fixes:
 
 &nbsp;
 
-## [GNSS-SDR v0.0.3](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.3)
+## [GNSS-SDR v0.0.3](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.3) - 2014-06-30
 
 This release has several improvements and bug fixes, completing the transition
 from Subversion to Git. The main changes are:

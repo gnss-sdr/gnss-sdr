@@ -137,6 +137,8 @@ private:
 
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
+    void msg_handler_has_data(const pmt::pmt_t& msg) const;
+
     void initialize_and_apply_carrier_phase_offset();
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
@@ -233,6 +235,7 @@ private:
     size_t d_beidou_dnav_iono_sptr_type_hash_code;
     size_t d_beidou_dnav_utc_model_sptr_type_hash_code;
     size_t d_beidou_dnav_almanac_sptr_type_hash_code;
+    size_t d_galileo_has_data_sptr_type_hash_code;
 
     double d_rinex_version;
     double d_rx_time;
@@ -260,6 +263,7 @@ private:
 
     uint32_t d_nchannels;
     uint32_t d_type_of_rx;
+    uint32_t d_observable_interval_ms;
 
     bool d_dump;
     bool d_dump_mat;

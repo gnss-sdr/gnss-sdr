@@ -16,16 +16,20 @@
 
 #include "limesdr_signal_source.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <iostream>
 #include <utility>
 
+using namespace std::string_literals;
 
 LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream, unsigned int out_stream,
-    Concurrent_Queue<pmt::pmt_t>* queue) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "Limesdr_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
+
 {
     // DUMP PARAMETERS
     const std::string empty;
@@ -43,16 +47,23 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
     gain_ = configuration->property(role + ".gain", 40.0);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
     //todo: check aif bw is within limits
-    analog_bw_hz_ = configuration->property(role + ".analog_bw", sample_rate_);
-    digital_bw_hz_ = configuration->property(role + ".digital_bw", sample_rate_);
+    analog_bw_hz_ = configuration->property(role + ".analog_bw", sample_rate_ / 2);  //LPF analog filters in I,Q branches
+    digital_bw_hz_ = configuration->property(role + ".digital_bw", 0);               //disable by default
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     limesdr_serial_ = configuration->property(role + ".limesdr_serial", std::string());
     limesdr_file_ = configuration->property(role + ".limesdr_file", std::string());
     antenna_ = configuration->property(role + ".antenna", 255);
 
     PPS_mode_ = configuration->property(role + ".PPS_mode", false);
-    //channel_mode Channel and mode selection A(1), B(2), (A+B)MIMO(3).
-    limechannel_mode_ = configuration->property(role + ".limechannel_mode", 1);
+    ext_clock_MHz_ = configuration->property(role + ".ext_clock_MHz", 0.0);  //external clock: 0.0 MHz will enable the internal clock
+    limechannel_mode_ = configuration->property(role + ".limechannel_mode", 0);
+    if (limechannel_mode_ < 0 && limechannel_mode_ > 2)
+        {
+            std::cout
+                << "ERROR: source_impl::source_impl(): ChannelMode must be A(0), B(1) or (A+B) MIMO(2)"
+                << std::endl;
+            exit(0);
+        }
 
 
     if (item_type_ == "short")
@@ -68,6 +79,21 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
                 {
 #ifdef LimeSDR_PPS
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, PPS_mode_);
+                    if (ext_clock_MHz_ != 0.0)
+                        {
+                            if (limesdr_source_->set_ext_clk(ext_clock_MHz_))
+                                {
+                                    std::cout << "External clock enabled with expected frequency input of " << ext_clock_MHz_ << "\n";
+                                }
+                            else
+                                {
+                                    std::cout << "Error setting external reference clock\n";
+                                }
+                        }
+                    else
+                        {
+                            limesdr_source_->disable_ext_clk();
+                        }
 #else
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_);
 #endif
@@ -123,9 +149,12 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
             // Set analog bandwidth
             double actual_analog_bw = limesdr_source_->set_bandwidth(analog_bw_hz_, channel_);
             std::cout << "Actual Analog Bandwidth: " << actual_analog_bw << " [Hz]...\n";
+            LOG(INFO) << "Actual Analog Bandwidth: : " << actual_analog_bw << " [Hz]...";
 
             // Set digital bandwidth
             limesdr_source_->set_digital_filter(digital_bw_hz_, channel_);
+
+            limesdr_source_->calibrate(sample_rate_ / 2, channel_);
         }
     else
         {

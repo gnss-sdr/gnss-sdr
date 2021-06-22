@@ -163,6 +163,10 @@
 #include "ad9361_fpga_signal_source.h"
 #endif
 
+#if LIMESDR_DRIVER
+#include "limesdr_signal_source.h"
+#endif
+
 #if FLEXIBAND_DRIVER
 #include "flexiband_signal_source.h"
 #endif
@@ -743,6 +747,16 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<OsmosdrSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
+                    block = std::move(block_);
+                }
+#endif
+
+#if LIMESDR_DRIVER
+            else if (implementation == "Limesdr_Signal_Source")
+                {
+                    std::unique_ptr<GNSSBlockInterface>
+                        block_ = std::make_unique<LimesdrSignalSource>(configuration, role, in_streams,
+                            out_streams, queue);
                     block = std::move(block_);
                 }
 #endif

@@ -170,6 +170,10 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                 {
                     std::cout << "msg Bad any_cast: " << e.what();
                 }
+            catch (const std::exception &ee)
+                {
+                    return 1;
+                }
         }
 
     //************* end time tags **************

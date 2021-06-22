@@ -18,7 +18,7 @@
 #define GNSS_SDR_LIMESDR_SIGNAL_SOURCE_H
 
 #include "concurrent_queue.h"
-#include "gnss_block_interface.h"
+#include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <pmt/pmt.h>
 #include <cstdint>
@@ -39,7 +39,7 @@ class ConfigurationInterface;
  * \brief This class instantiates the LimeSDR gnuradio signal source.
  * It has support also for a customized LimeSDR firmware and signal source to support PPS samplestamp reading.
  */
-class LimesdrSignalSource : public GNSSBlockInterface
+class LimesdrSignalSource : public SignalSourceBase
 {
 public:
     LimesdrSignalSource(const ConfigurationInterface* configuration,
@@ -47,19 +47,6 @@ public:
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue);
 
     ~LimesdrSignalSource() = default;
-
-    inline std::string role() override
-    {
-        return role_;
-    }
-
-    /*!
-     * \brief Returns "Osmosdr_Signal_Source"
-     */
-    inline std::string implementation() override
-    {
-        return "Limesdr_Signal_Source";
-    }
 
     inline size_t item_size() override
     {
@@ -90,6 +77,7 @@ private:
     double gain_;
     double analog_bw_hz_;
     double digital_bw_hz_;
+    double ext_clock_MHz_;
     size_t item_size_;
     int64_t samples_;
 

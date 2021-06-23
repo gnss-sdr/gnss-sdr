@@ -24,47 +24,48 @@
 #include <glog/logging.h>
 #include <map>
 
-struct Score
-{
-    // ####### Structure to store assurance score - total score and individual scores
-    int position_jump_score = 0;
-    double velocity_check_score = 0;
-    int static_pos_check_score = 0;
-    int aux_peak_score = 0;
-    int cno_score = 0;
-    int agc_score = 0;
-    double abnormal_position_score = 0;
-    double total_score()
-    {
-        return (position_jump_score + velocity_check_score + static_pos_check_score + aux_peak_score + cno_score + agc_score + abnormal_position_score);
-    }
-};
 
-struct PvtSol
-{
-    // ####### Structure to store position solution
-    double lat;
-    double lon;
-    double alt;
-
-    double vel_x;
-    double vel_y;
-    double vel_z;
-
-    double speed_over_ground;
-    double heading;
-
-    uint32_t tstamp;
-
-    boost::posix_time::ptime utc_time;
-};
-
-
+// Collection of PVT consistency checks
 class PVTConsistencyChecks
 {
 public:
+    // ####### Structure to store assurance score - total score and individual scores
+    struct Score
+    {
+        int position_jump_score = 0;
+        double velocity_check_score = 0;
+        int static_pos_check_score = 0;
+        int aux_peak_score = 0;
+        int cno_score = 0;
+        int agc_score = 0;
+        double abnormal_position_score = 0;
+        double total_score()
+        {
+            return (position_jump_score + velocity_check_score + static_pos_check_score + aux_peak_score + cno_score + agc_score + abnormal_position_score);
+        }
+    };
+
+    // ####### Structure to store position solution
+    struct PvtSol
+    {
+        double lat;
+        double lon;
+        double alt;
+
+        double vel_x;
+        double vel_y;
+        double vel_z;
+
+        double speed_over_ground;
+        double heading;
+
+        uint32_t tstamp;
+
+        boost::posix_time::ptime utc_time;
+    };
+
     PVTConsistencyChecks();
-    PVTConsistencyChecks(const SpoofingDetectorConf* conf_);
+    PVTConsistencyChecks(const PVTConsistencyChecksConf* conf_);
 
     void update_pvt(double lat, double lon, double alt, double vel_x, double vel_y, double vel_z,
         double speed_over_ground, double heading,
@@ -135,7 +136,42 @@ private:
     boost::posix_time::ptime d_pvt_epoch;
 };
 
+// Collection of telemetry consistency checks
+class TLMConsistencyChecks
+{
+public:
+    // Store RX clock info
+    struct Clock
+    {
+        uint64_t sample_counter;
+        uint32_t tow;
+        uint32_t wn;
+    };
 
+    TLMConsistencyChecks();
+    TLMConsistencyChecks(const TLMConsistencyChecksConf* conf_);
+
+    void check_RX_clock();
+    void check_ephemeris();
+
+    void update_clock_info(uint64_t sample_counter, uint32_t tow, uint32_t wn);
+    void update_eph_info();
+
+private:
+    bool d_first_record;
+    bool d_check_TOW;
+    bool d_check_RX_clock;
+
+    Clock old_clock;
+    Clock new_clock;
+    Clock lkg_clock;
+
+    void check_TOW_jump();
+
+    void set_old_clock();
+    void set_new_clock();
+    void set_lkg_clock();
+};
 #endif
 /*
 Position Jump - 1

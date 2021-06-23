@@ -33,7 +33,9 @@ set(GNSS_SPLIBS_SOURCES
     short_x2_to_cshort.cc
     gnss_sdr_string_literals.cc
     pvt_consistency_checks.cc
-    spoofing_detector_conf.cc
+    tlm_consistency_checks.cc
+    pvt_consistency_checks_conf.cc
+    tlm_consistency_checks_conf.cc
 )
 
 set(GNSS_SPLIBS_HEADERS

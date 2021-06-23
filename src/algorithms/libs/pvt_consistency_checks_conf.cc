@@ -1,5 +1,5 @@
 /*!
- * \file pvt_sd_conf.cc
+ * \file pvt_consistency_checks_conf.cc
  * \brief Class that contains all the configuration parameters for spoofing detection techniques that are a part of PVT block
  * \author Harshad Sathaye sathaye.h(at)northeastern.edu
  *
@@ -16,7 +16,7 @@
 
 #include "spoofing_detector_conf.h"
 
-SpoofingDetectorConf::SpoofingDetectorConf()
+PVTConsistencyChecksConf::PVTConsistencyChecksConf()
 {
     // ####### Position consistency check variables
 

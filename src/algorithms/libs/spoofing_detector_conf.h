@@ -21,10 +21,10 @@
 #include <map>
 #include <string>
 
-class SpoofingDetectorConf
+class PVTConsistencyChecksConf
 {
 public:
-    SpoofingDetectorConf();
+    PVTConsistencyChecksConf();
 
     bool position_check;
     bool static_pos_check;
@@ -45,4 +45,12 @@ public:
     double static_alt;
 };
 
+class TLMConsistencyChecksConf
+{
+public:
+    TLMConsistencyChecksConf();
+
+    bool check_TOW;
+    bool check_RX_clock;
+};
 #endif  // GNSS_SDR_PVT_CONF_H

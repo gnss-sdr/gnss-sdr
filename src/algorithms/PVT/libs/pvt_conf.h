@@ -89,7 +89,7 @@ public:
 
     bool security_checks;
     bool print_score;
-    SpoofingDetectorConf security_parameters;
+    PVTConsistencyChecksConf security_parameters;
 };
 
 

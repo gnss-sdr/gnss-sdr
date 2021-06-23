@@ -22,7 +22,7 @@ PVTConsistencyChecks::PVTConsistencyChecks()
 {
 }
 
-PVTConsistencyChecks::PVTConsistencyChecks(const SpoofingDetectorConf *conf_)
+PVTConsistencyChecks::PVTConsistencyChecks(const PVTConsistencyChecksConf *conf_)
 {
     DLOG(INFO) << "Spoofing detector for PVT initialized";
 

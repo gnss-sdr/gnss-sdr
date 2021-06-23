@@ -826,7 +826,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             pvt_output_parameters.print_score = configuration->property(role + ".print_score", false);
 
-            SpoofingDetectorConf spoofing_detection_parameters = SpoofingDetectorConf();
+            PVTConsistencyChecksConf spoofing_detection_parameters = PVTConsistencyChecksConf();
 
             spoofing_detection_parameters.dump_pvt_checks_results = configuration->property("SecurePVT.dump_pvt_checks_results", false);
 

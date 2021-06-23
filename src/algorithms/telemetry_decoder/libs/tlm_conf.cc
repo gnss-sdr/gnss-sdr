@@ -34,4 +34,11 @@ void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     dump = configuration->property(role + ".dump", false);
     dump_mat = configuration->property(role + ".dump_mat", dump);
     remove_dat = configuration->property(role + ".remove_dat", false);
+    security_checks = configuration->property(role + ".security_checks", false);
+
+    if (security_checks)
+        {
+            security_parameters.check_RX_clock = configuration->property("SecureTLM.check_RX_clock", false);
+            security_parameters.check_TOW = configuration->property("SecureTLM.check_TOW", false);
+        }
 }

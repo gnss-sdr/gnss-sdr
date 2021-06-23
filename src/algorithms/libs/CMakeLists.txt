@@ -32,9 +32,6 @@ set(GNSS_SPLIBS_SOURCES
     pass_through.cc
     short_x2_to_cshort.cc
     gnss_sdr_string_literals.cc
-
-    tlm_consistency_checks.cc
-    tlm_consistency_checks_conf.cc
 )
 
 set(GNSS_SPLIBS_HEADERS

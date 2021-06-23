@@ -11,6 +11,8 @@ set(TELEMETRY_DECODER_LIB_SOURCES
     tlm_conf.cc
     tlm_utils.cc
     viterbi_decoder.cc
+    tlm_consistency_checks.cc
+    tlm_consistency_checks_conf.cc
 )
 
 set(TELEMETRY_DECODER_LIB_HEADERS
@@ -42,6 +44,8 @@ endif()
 target_link_libraries(telemetry_decoder_libs
     PUBLIC
         Volkgnsssdr::volkgnsssdr
+        core_system_parameters
+        Boost::headers
     PRIVATE
         algorithms_libs
         Gflags::gflags

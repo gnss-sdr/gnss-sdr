@@ -22,6 +22,7 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "gps_navigation_message.h"
+#include "spoofing_detector.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
@@ -110,6 +111,9 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_security_checks;
+
+    TLMConsistencyChecks d_spoofing_detector;
 };
 
 

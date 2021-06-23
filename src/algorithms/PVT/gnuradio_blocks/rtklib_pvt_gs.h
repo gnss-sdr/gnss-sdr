@@ -271,7 +271,7 @@ private:
     bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;
-    bool d_enable_spoofing_detector;
+    bool d_enable_security_checks;
 
     PVTConsistencyChecks d_spoofing_detector;
     bool d_print_score;

@@ -23,4 +23,8 @@ TLMConsistencyChecks::TLMConsistencyChecks()
 
 TLMConsistencyChecks::TLMConsistencyChecks(const TLMConsistencyChecksConf *conf_)
 {
+    d_check_RX_clock = conf_->check_RX_clock;
+    d_check_TOW = conf_->check_TOW;
+    DLOG(INFO) << "TLM_CHECKS: RX_clock" << d_check_RX_clock;
+    DLOG(INFO) << "TLM_CHECKS: TOW" << d_check_TOW;
 }

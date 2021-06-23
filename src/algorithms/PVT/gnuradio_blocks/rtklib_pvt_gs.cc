@@ -139,9 +139,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_dump_filename = conf_.dump_filename;
 
     d_total_pvt_measurements = 0;
-    d_enable_spoofing_detector = conf_.security_checks;
+    d_enable_security_checks = conf_.security_checks;
 
-    if (d_enable_spoofing_detector)
+    if (d_enable_security_checks)
         {
             d_spoofing_detector = PVTConsistencyChecks(&conf_.security_parameters);
             d_print_score = conf_.print_score;
@@ -2034,7 +2034,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (flag_pvt_valid == true)
                         {
                             // Position check is enabled
-                            if (d_enable_spoofing_detector)
+                            if (d_enable_security_checks)
                                 {
                                     d_spoofing_detector.update_pvt(d_user_pvt_solver->get_latitude(),
                                         d_user_pvt_solver->get_longitude(),

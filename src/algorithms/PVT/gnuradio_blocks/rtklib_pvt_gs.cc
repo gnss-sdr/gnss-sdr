@@ -143,7 +143,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     if (d_enable_spoofing_detector)
         {
-            d_spoofing_detector = SpoofingDetector(&conf_.security_parameters);
+            d_spoofing_detector = PVTConsistencyChecks(&conf_.security_parameters);
             d_print_score = conf_.print_score;
         }
 
@@ -2044,14 +2044,15 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         d_user_pvt_solver->get_rx_vel()[2],
                                         d_user_pvt_solver->get_speed_over_ground(),
                                         d_user_pvt_solver->get_course_over_ground(),
-                                        current_RX_time_ms);
+                                        current_RX_time_ms,
+                                        d_user_pvt_solver->get_position_UTC_time());
 
                                     // Set gnss_synchro for spoofing detector
                                     d_spoofing_detector.d_gnss_synchro = in;
 
                                     if (d_spoofing_detector.d_position_check)
                                         {
-                                            d_spoofing_detector.check_position_consistency();
+                                            d_spoofing_detector.check_PVT_consistency();
                                         }
                                 }
 

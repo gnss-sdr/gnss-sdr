@@ -1,5 +1,5 @@
 /*!
- * \file spoofing_detector.cc
+ * \file pvt_consistency_checks.cc
  * \brief Library of anti-spoofing functions
  * \author Harshad Sathaye sathaye.h(at)northeastern.edu
  *
@@ -18,11 +18,11 @@
 #include <cmath>  // for floor, fmod, rint, ceil
 #include <map>
 
-SpoofingDetector::SpoofingDetector()
+PVTConsistencyChecks::PVTConsistencyChecks()
 {
 }
 
-SpoofingDetector::SpoofingDetector(const SpoofingDetectorConf *conf_)
+PVTConsistencyChecks::PVTConsistencyChecks(const SpoofingDetectorConf *conf_)
 {
     DLOG(INFO) << "Spoofing detector for PVT initialized";
 
@@ -55,11 +55,12 @@ SpoofingDetector::SpoofingDetector(const SpoofingDetectorConf *conf_)
     // Used to decide whether to update LKGL
     d_update_lkgl = true;
 
+
     boost::posix_time::ptime d_pvt_epoch(boost::gregorian::date(1970, 1, 1));
 }
 
 // ####### Position consistency functions
-void SpoofingDetector::check_position_consistency()
+void PVTConsistencyChecks::check_PVT_consistency()
 {
     // Public function
     // PVT block calls this function. Actual consistency checks are triggered from here
@@ -71,6 +72,7 @@ void SpoofingDetector::check_position_consistency()
     position_jump();
     compare_velocity();
     abnormal_position_checks();
+    check_time();
 
     if (d_first_record)
         {
@@ -78,7 +80,7 @@ void SpoofingDetector::check_position_consistency()
         }
 }
 
-void SpoofingDetector::abnormal_position_checks()
+void PVTConsistencyChecks::abnormal_position_checks()
 {
     double s1, s2, s3, s4;
 
@@ -122,7 +124,7 @@ void SpoofingDetector::abnormal_position_checks()
     DLOG(INFO) << "ABNORMAL_CHECK: " << s1 << ", " << s2 << ", " << s3 << ", " << s4;
 }
 
-void SpoofingDetector::compare_velocity()
+void PVTConsistencyChecks::compare_velocity()
 {
     /// Compares the reported velocity with the position pairs. If the projected coordinates do not match the received coordinate velocity error is increased
     ++d_checked_velocity_pairs;
@@ -136,7 +138,7 @@ void SpoofingDetector::compare_velocity()
     update_old_pvt();
 }
 
-void SpoofingDetector::static_pos_check()
+void PVTConsistencyChecks::static_pos_check()
 {
     long double distance = calculate_distance(d_new_pvt.lat, d_new_pvt.lon, d_static_pvt.lat, d_static_pvt.lon);
     DLOG(INFO) << "STATIC_POS: static_coords (" << d_static_pvt.lat << "," << d_static_pvt.lon << ") received (" << d_new_pvt.lat << "," << d_new_pvt.lon << ") Distance: " << distance;
@@ -159,7 +161,7 @@ void SpoofingDetector::static_pos_check()
         }
 }
 
-void SpoofingDetector::position_jump()
+void PVTConsistencyChecks::position_jump()
 {
     double distance_to_lkgl;  // LKGL - Last Known Good Location
     double jump_distance;
@@ -265,7 +267,7 @@ void SpoofingDetector::position_jump()
     DLOG(INFO) << "POS_JUMP: Distance to LKGL: " << distance_to_lkgl;
 }
 
-bool SpoofingDetector::check_propagated_pos()
+bool PVTConsistencyChecks::check_propagated_pos()
 {
     double metersPerDegLat = 111111.0;
     double metersPerRadLat = metersPerDegLat * 180 / M_PI;
@@ -288,8 +290,25 @@ bool SpoofingDetector::check_propagated_pos()
     return distance_error > d_pos_error_threshold;
 }
 
+void PVTConsistencyChecks::check_time()
+{
+    boost::posix_time::ptime now(boost::posix_time::microsec_clock::universal_time());
+
+    if ((now - d_new_pvt.utc_time).total_seconds() < -18)
+        {
+            DLOG(INFO) << "UTC_TIME_CHECK: Calculated UTC time is " << (now - d_new_pvt.utc_time).total_seconds() << " in future";
+        }
+    else if ((now - d_new_pvt.utc_time).total_seconds() > 18)
+        {
+            DLOG(INFO) << "UTC_TIME_CHECK: Calculated UTC time is " << (now - d_new_pvt.utc_time).total_seconds() << " in past";
+        }
+}
+
 // ####### General functions
-void SpoofingDetector::update_pvt(double lat, double lon, double alt, double vel_x, double vel_y, double vel_z, double speed_over_ground, double heading, uint32_t tstamp)
+void PVTConsistencyChecks::update_pvt(double lat, double lon, double alt,
+    double vel_x, double vel_y, double vel_z,
+    double speed_over_ground, double heading,
+    uint32_t tstamp, boost::posix_time::ptime utc_time)
 {
     d_new_pvt.lat = lat;
     d_new_pvt.lon = lon;
@@ -300,13 +319,15 @@ void SpoofingDetector::update_pvt(double lat, double lon, double alt, double vel
     d_new_pvt.speed_over_ground = sqrt(pow(vel_x, 2) + pow(vel_y, 2) + pow(vel_y, 2));
     d_new_pvt.heading = 180 + 180 / M_PI * (atan2(-vel_x, -vel_z));
     d_new_pvt.tstamp = tstamp;
+    d_new_pvt.utc_time = utc_time;
 
-    DLOG(INFO) << "New PVT: " << lat << ", " << lon << ", " << alt
-               << ", " << vel_x << ", " << vel_y << ", " << vel_z
-               << ", " << speed_over_ground << ", " << heading << ", " << tstamp;
+    DLOG(INFO)
+        << "New PVT: " << lat << ", " << lon << ", " << alt
+        << ", " << vel_x << ", " << vel_y << ", " << vel_z
+        << ", " << speed_over_ground << ", " << heading << ", " << tstamp;
 }
 
-void SpoofingDetector::update_old_pvt()
+void PVTConsistencyChecks::update_old_pvt()
 {
     d_old_pvt.lat = d_new_pvt.lat;
     d_old_pvt.lon = d_new_pvt.lon;
@@ -317,11 +338,12 @@ void SpoofingDetector::update_old_pvt()
     d_old_pvt.speed_over_ground = d_new_pvt.speed_over_ground;
     d_old_pvt.heading = d_new_pvt.heading;
     d_old_pvt.tstamp = d_new_pvt.tstamp;
+    d_old_pvt.utc_time = d_new_pvt.utc_time;
 
     DLOG(INFO) << "Old pvt updated to: " << d_old_pvt.lat << ", " << d_old_pvt.lon << ", " << d_old_pvt.alt;
 }
 
-void SpoofingDetector::update_lkg_pvt(bool set_old)
+void PVTConsistencyChecks::update_lkg_pvt(bool set_old)
 {
     if (set_old)
         {
@@ -334,6 +356,7 @@ void SpoofingDetector::update_lkg_pvt(bool set_old)
             d_lkg_pvt.speed_over_ground = d_old_pvt.speed_over_ground;
             d_lkg_pvt.heading = d_old_pvt.heading;
             d_lkg_pvt.tstamp = d_old_pvt.tstamp;
+            d_lkg_pvt.utc_time = d_old_pvt.utc_time;
         }
     else
         {
@@ -346,13 +369,14 @@ void SpoofingDetector::update_lkg_pvt(bool set_old)
             d_lkg_pvt.speed_over_ground = d_new_pvt.speed_over_ground;
             d_lkg_pvt.heading = d_new_pvt.heading;
             d_lkg_pvt.tstamp = d_new_pvt.tstamp;
+            d_lkg_pvt.utc_time = d_new_pvt.utc_time;
         }
 
 
     DLOG(INFO) << "LKG updated to: " << d_lkg_pvt.lat << ", " << d_lkg_pvt.lon << ", " << d_lkg_pvt.alt;
 }
 
-void SpoofingDetector::reset_pos_jump_check()
+void PVTConsistencyChecks::reset_pos_jump_check()
 {
     d_score.position_jump_score = 0;
 
@@ -365,21 +389,21 @@ void SpoofingDetector::reset_pos_jump_check()
     d_update_lkgl = true;
 }
 
-int SpoofingDetector::get_spoofer_score()
+int PVTConsistencyChecks::get_spoofer_score()
 {
     int d_spoofer_score = d_score.total_score();
     DLOG(INFO) << "Total spoofer score: " << d_spoofer_score;
     return d_spoofer_score;
 }
 
-long double SpoofingDetector::to_radians(double degree)
+long double PVTConsistencyChecks::to_radians(double degree)
 {
     // Convert degrees to radians
     long double one_deg = (M_PI) / 180;
     return (one_deg * degree);
 }
 
-long double SpoofingDetector::calculate_distance(double lat1, double lon1, double lat2, double lon2)
+long double PVTConsistencyChecks::calculate_distance(double lat1, double lon1, double lat2, double lon2)
 {
     // Calculate distance between l1 and l2 using Haversine formula
     lat1 = to_radians(lat1);

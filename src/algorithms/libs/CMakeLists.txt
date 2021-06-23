@@ -32,7 +32,7 @@ set(GNSS_SPLIBS_SOURCES
     pass_through.cc
     short_x2_to_cshort.cc
     gnss_sdr_string_literals.cc
-    spoofing_detector.cc
+    pvt_consistency_checks.cc
     spoofing_detector_conf.cc
 )
 

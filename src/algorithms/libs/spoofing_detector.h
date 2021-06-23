@@ -23,6 +23,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <map>
+
 struct Score
 {
     // ####### Structure to store assurance score - total score and individual scores
@@ -54,18 +55,25 @@ struct PvtSol
     double heading;
 
     uint32_t tstamp;
+
+    boost::posix_time::ptime utc_time;
 };
 
 
-class SpoofingDetector
+class PVTConsistencyChecks
 {
 public:
-    SpoofingDetector();
-    SpoofingDetector(const SpoofingDetectorConf* conf_);
+    PVTConsistencyChecks();
+    PVTConsistencyChecks(const SpoofingDetectorConf* conf_);
 
-    void update_pvt(double lat, double lon, double alt, double vel_x, double vel_y, double vel_z, double speed_over_ground, double heading, uint32_t tstamp);
-    void check_position_consistency();
+    void update_pvt(double lat, double lon, double alt, double vel_x, double vel_y, double vel_z,
+        double speed_over_ground, double heading,
+        uint32_t tstamp, boost::posix_time::ptime utc_time);
+
+    void check_PVT_consistency();
     void dump_results(int check_id);
+
+    void check_RX_time();
 
     bool d_position_check;
 
@@ -112,6 +120,9 @@ private:
     void static_pos_check();  // Static position check with a known pre-determined location
     bool check_propagated_pos();
     void abnormal_position_checks();  // Check for abnormal positions
+
+    void check_time();
+
     // ####### General Functions
     void update_old_pvt();
     void update_lkg_pvt(bool set_old);
@@ -123,6 +134,7 @@ private:
 
     boost::posix_time::ptime d_pvt_epoch;
 };
+
 
 #endif
 /*

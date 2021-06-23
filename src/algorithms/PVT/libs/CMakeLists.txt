@@ -21,6 +21,8 @@ set(PVT_LIB_SOURCES
     rtklib_solver.cc
     monitor_pvt_udp_sink.cc
     monitor_ephemeris_udp_sink.cc
+    pvt_consistency_checks.cc
+    pvt_consistency_checks_conf.cc
 )
 
 set(PVT_LIB_HEADERS

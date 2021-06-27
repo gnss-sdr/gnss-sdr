@@ -119,6 +119,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block(
         }
     d_T_rx_TOW_ms = 0U;
     d_T_rx_step_ms = conf_.observable_interval_ms;
+    d_T_rx_step_s = static_cast<double>(d_T_rx_step_ms) / 1000.0;
     d_T_rx_TOW_set = false;
     d_T_status_report_timer_ms = 0;
     d_Rx_clock_buffer.set_capacity(std::min(std::max(200U / d_T_rx_step_ms, 3U), 10U));
@@ -371,7 +372,7 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
 
     if (nearest_element != -1 and nearest_element != static_cast<int32_t>(d_gnss_synchro_history->size(ch)))
         {
-            if ((static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->get(ch, nearest_element).fs)) < static_cast<double>(d_T_rx_step_ms) / 1000.0)
+            if ((static_cast<double>(old_abs_diff) / static_cast<double>(d_gnss_synchro_history->get(ch, nearest_element).fs)) < d_T_rx_step_s)
                 {
                     int32_t neighbor_element;
                     if (rx_clock > d_gnss_synchro_history->get(ch, nearest_element).Tracking_sample_counter)

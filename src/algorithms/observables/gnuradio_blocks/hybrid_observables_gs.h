@@ -117,6 +117,7 @@ private:
     std::ofstream d_dump_file;
 
     double d_smooth_filter_M;
+    double d_T_rx_step_s;
 
     uint32_t d_T_rx_TOW_ms;
     double last_rx_clock_round20ms_error;

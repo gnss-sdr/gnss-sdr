@@ -1132,6 +1132,10 @@ if(NOT VOLKGNSSSDR_FOUND)
             set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
                 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake
             )
+        else()
+            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+            )
         endif()
     else()
         if(CMAKE_TOOLCHAIN_FILE)
@@ -1139,6 +1143,9 @@ if(NOT VOLKGNSSSDR_FOUND)
                 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
             )
         endif()
+    endif()
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^cortex")
+        set(CMAKE_SYSTEM_PROCESSOR arm-${CMAKE_SYSTEM_PROCESSOR})
     endif()
     include(GNUInstallDirs)
     set(SUPPORTED_CPU_FEATURES_ARCH FALSE)

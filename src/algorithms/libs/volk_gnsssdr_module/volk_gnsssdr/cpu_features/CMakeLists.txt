@@ -23,16 +23,6 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
-# Workaround for cross-compilation with SDK
-if(DEFINED ENV{OECORE_TARGET_SYSROOT})
-  set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/Toolchains/oe-sdk_cross.cmake)
-  set(CMAKE_CROSSCOMPILING ON)
-  include(${CMAKE_TOOLCHAIN_FILE})
-  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^cortexa9hf")
-    set(CMAKE_SYSTEM_PROCESSOR arm-${CMAKE_SYSTEM_PROCESSOR})
-  endif()
-endif()
-
 # BUILD_TESTING is a standard CMake variable, but we declare it here to make it
 # prominent in the GUI.
 option(BUILD_TESTING "Enable test (depends on googletest)." OFF)

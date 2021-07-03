@@ -42,7 +42,7 @@ if(GIT_FOUND)
         )
     endif()
     # Sanitize branch name
-    string(REGEX REPLACE "[#!?&|\/^$%*]" "_" GIT_BRANCH "${GIT_BRANCH}")
+    string(REGEX REPLACE "[#!?&|/^$%*]" "_" GIT_BRANCH "${GIT_BRANCH}")
     set(VOLK_GNSSSDR_GIT_BRANCH "${GIT_BRANCH}")
     set(VOLK_GNSSSDR_GIT_HASH "${GIT_COMMIT_HASH}")
 else()
@@ -54,7 +54,7 @@ else()
 
     if(GIT_BRANCH)
         # Sanitize branch name
-        string(REGEX REPLACE "[#!?&|\/^$%*]" "_" GIT_BRANCH "${GIT_BRANCH}")
+        string(REGEX REPLACE "[#!?&|/^$%*]" "_" GIT_BRANCH "${GIT_BRANCH}")
         set(VOLK_GNSSSDR_GIT_BRANCH "${GIT_BRANCH}")
     else()
         set(VOLK_GNSSSDR_GIT_BRANCH "unknown")

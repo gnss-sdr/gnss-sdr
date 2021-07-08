@@ -518,6 +518,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_symbol.Flag_valid_word = d_flag_TOW_set;
 
+            if (d_enable_security_checks)
+                {
+                    d_spoofing_detector.update_clock_info(current_symbol.Tracking_sample_counter, d_TOW_at_current_symbol_ms, d_nav.get_GPS_week());
+                    d_spoofing_detector.check_RX_clock();
+                }
+
             if (d_flag_PLL_180_deg_phase_locked == true)
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required

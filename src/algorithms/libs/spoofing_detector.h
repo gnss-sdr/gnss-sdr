@@ -135,43 +135,6 @@ private:
 
     boost::posix_time::ptime d_pvt_epoch;
 };
-
-// Collection of telemetry consistency checks
-class TLMConsistencyChecks
-{
-public:
-    // Store RX clock info
-    struct Clock
-    {
-        uint64_t sample_counter;
-        uint32_t tow;
-        uint32_t wn;
-    };
-
-    TLMConsistencyChecks();
-    TLMConsistencyChecks(const TLMConsistencyChecksConf* conf_);
-
-    void check_RX_clock();
-    void check_ephemeris();
-
-    void update_clock_info(uint64_t sample_counter, uint32_t tow, uint32_t wn);
-    void update_eph_info();
-
-private:
-    bool d_first_record;
-    bool d_check_TOW;
-    bool d_check_RX_clock;
-
-    Clock old_clock;
-    Clock new_clock;
-    Clock lkg_clock;
-
-    void check_TOW_jump();
-
-    void set_old_clock();
-    void set_new_clock();
-    void set_lkg_clock();
-};
 #endif
 /*
 Position Jump - 1

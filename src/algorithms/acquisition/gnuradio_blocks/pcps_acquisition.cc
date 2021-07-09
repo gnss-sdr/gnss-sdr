@@ -789,7 +789,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
             else
                 {
                     d_buffer_count = 0;
-                    d_state = 1; // Negative acquisition
+                    d_state = 1;  // Negative acquisition
                 }
 
             if (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)
@@ -940,7 +940,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         consume_each(ninput_items[0]);
                     }
                 break;
-                d_gnss_synchro->Acquisition_detection = false;
             }
         case 1:
             {

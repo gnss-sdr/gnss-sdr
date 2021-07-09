@@ -8,11 +8,9 @@
 add_subdirectory(libswiftcnav)
 
 set(TELEMETRY_DECODER_LIB_SOURCES
-    tlm_conf.cc
+    tlm_conf.cc 
     tlm_utils.cc
     viterbi_decoder.cc
-    tlm_consistency_checks.cc
-    tlm_consistency_checks_conf.cc
 )
 
 set(TELEMETRY_DECODER_LIB_HEADERS

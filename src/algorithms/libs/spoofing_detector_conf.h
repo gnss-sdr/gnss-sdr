@@ -44,13 +44,4 @@ public:
     double static_lon;
     double static_alt;
 };
-
-class TLMConsistencyChecksConf
-{
-public:
-    TLMConsistencyChecksConf();
-
-    bool check_TOW;
-    bool check_RX_clock;
-};
 #endif  // GNSS_SDR_PVT_CONF_H

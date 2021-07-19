@@ -22,7 +22,7 @@ PVTConsistencyChecks::PVTConsistencyChecks()
 {
 }
 
-PVTConsistencyChecks::PVTConsistencyChecks(const PVTConsistencyChecksConf *conf_)
+PVTConsistencyChecks::PVTConsistencyChecks(const PVTConsistencyChecksConf* conf_)
 {
     DLOG(INFO) << "Spoofing detector for PVT initialized";
 
@@ -32,9 +32,9 @@ PVTConsistencyChecks::PVTConsistencyChecks(const PVTConsistencyChecksConf *conf_
     d_pos_error_threshold = conf_->pos_error_threshold;
 
     // Set predetermined location
-    d_static_pvt.lat = conf_->static_lat;
-    d_static_pvt.lon = conf_->static_lon;
-    d_static_pvt.alt = conf_->static_alt;
+    d_static_pvt.ecef_y = conf_->static_lat;
+    d_static_pvt.ecef_x = conf_->static_lon;
+    d_static_pvt.ecef_z = conf_->static_alt;
 
     d_dump_pvt_checks_results = conf_->dump_pvt_checks_results;
     d_position_check = conf_->position_check;
@@ -82,46 +82,15 @@ void PVTConsistencyChecks::check_PVT_consistency()
 
 void PVTConsistencyChecks::abnormal_position_checks()
 {
-    double s1, s2, s3, s4;
-
     // A collection of model based position abnormalities check Min/Max altitude and speed
-    if (d_new_pvt.alt < d_min_altitude)
-        {
-            s1 = 0.25;
-        }
-    else
-        {
-            s1 = 0;
-        }
+    d_score.abnormal_position_score = 0;
 
-    if (d_new_pvt.alt > d_max_altitude)
-        {
-            s2 = 0.25;
-        }
-    else
-        {
-            s2 = 0;
-        }
-    if (d_new_pvt.speed_over_ground < d_min_ground_speed)
-        {
-            s3 = 0.25;
-        }
-    else
-        {
-            s3 = 0;
-        }
-    if (d_new_pvt.speed_over_ground > d_max_ground_speed)
-        {
-            s4 = 0.25;
-        }
-    else
-        {
-            s4 = 0;
-        }
+    if (d_new_pvt.ecef_z < d_min_altitude) d_score.abnormal_position_score += 0.25;
+    if (d_new_pvt.ecef_z > d_max_altitude) d_score.abnormal_position_score += 0.25;
+    if (d_new_pvt.speed_over_ground < d_min_ground_speed) d_score.abnormal_position_score += 0.25;
+    if (d_new_pvt.speed_over_ground > d_max_ground_speed) d_score.abnormal_position_score += 0.25;
 
-    d_score.abnormal_position_score = s1 + s2 + s3 + s4;
-
-    DLOG(INFO) << "ABNORMAL_CHECK: " << s1 << ", " << s2 << ", " << s3 << ", " << s4;
+    DLOG(INFO) << "ABNORMAL_CHECK: " << d_score.abnormal_position_score;
 }
 
 void PVTConsistencyChecks::compare_velocity()
@@ -140,8 +109,8 @@ void PVTConsistencyChecks::compare_velocity()
 
 void PVTConsistencyChecks::static_pos_check()
 {
-    long double distance = calculate_distance(d_new_pvt.lat, d_new_pvt.lon, d_static_pvt.lat, d_static_pvt.lon);
-    DLOG(INFO) << "STATIC_POS: static_coords (" << d_static_pvt.lat << "," << d_static_pvt.lon << ") received (" << d_new_pvt.lat << "," << d_new_pvt.lon << ") Distance: " << distance;
+    long double distance = calculate_distance_ECEF(&d_static_pvt, &d_new_pvt);
+    DLOG(INFO) << "STATIC_POS: static_coords (" << d_static_pvt.ecef_y << "," << d_static_pvt.ecef_x << ") received (" << d_new_pvt.ecef_y << "," << d_new_pvt.ecef_x << ") Distance: " << distance;
     if (distance > d_geo_fence_radius)
         {
             d_score.static_pos_check_score = 1;
@@ -180,21 +149,21 @@ void PVTConsistencyChecks::position_jump()
                 {
                     // Set last known good location to current coordinates
                     update_lkg_pvt(false);  // Set old = false, hence set new location as lkg
-                    DLOG(INFO) << "POS_JUMP: location update: " << d_new_pvt.lat << ", " << d_new_pvt.lon << ", " << d_new_pvt.alt;
+                    DLOG(INFO) << "POS_JUMP: location update: " << d_new_pvt.ecef_y << ", " << d_new_pvt.ecef_x << ", " << d_new_pvt.ecef_z;
                 }
 
             d_first_record = false;
             return;
         }
 
-    jump_distance = calculate_distance(d_old_pvt.lat, d_old_pvt.lon, d_new_pvt.lat, d_new_pvt.lon);
-    DLOG(INFO) << "POS_JUMP: Old (" << d_old_pvt.lat << "," << d_old_pvt.lon << ") received ("
-               << d_new_pvt.lat << "," << d_new_pvt.lon << ") Distance: "
+    jump_distance = calculate_distance_ECEF(&d_old_pvt, &d_new_pvt);
+    DLOG(INFO) << "POS_JUMP: Old (" << d_old_pvt.ecef_y << "," << d_old_pvt.ecef_x << ") received ("
+               << d_new_pvt.ecef_y << "," << d_new_pvt.ecef_x << ") Distance: "
                << jump_distance << " Spoofer score: " << get_spoofer_score();
 
     if (jump_distance > d_max_jump_distance)
         {
-            distance_to_lkgl = calculate_distance(d_lkg_pvt.lat, d_lkg_pvt.lon, d_new_pvt.lat, d_new_pvt.lon);
+            distance_to_lkgl = calculate_distance_ECEF(&d_lkg_pvt, &d_new_pvt);
 
             if (distance_to_lkgl < d_pos_error_threshold)
                 {
@@ -248,7 +217,7 @@ void PVTConsistencyChecks::position_jump()
         {
             if (d_score.position_jump_score == 2)
                 {
-                    distance_to_lkgl = calculate_distance(d_lkg_pvt.lat, d_lkg_pvt.lon, d_new_pvt.lat, d_new_pvt.lon);
+                    distance_to_lkgl = calculate_distance_ECEF(&d_lkg_pvt, &d_new_pvt);
                     if (distance_to_lkgl < d_pos_error_threshold)
                         {
                             // Reset jump check when the receiver is back to the last known good location
@@ -262,29 +231,24 @@ void PVTConsistencyChecks::position_jump()
                 }
         }
 
-    DLOG(INFO) << "POS_JUMP: Old location updated to: " << d_new_pvt.lat << ", " << d_new_pvt.lon << ", " << d_new_pvt.alt;
-    DLOG(INFO) << "POS_JUMP: Last known good location: " << d_lkg_pvt.lat << ", " << d_lkg_pvt.lon;
+    DLOG(INFO) << "POS_JUMP: Old location updated to: " << d_new_pvt.ecef_y << ", " << d_new_pvt.ecef_x << ", " << d_new_pvt.ecef_z;
+    DLOG(INFO) << "POS_JUMP: Last known good location: " << d_lkg_pvt.ecef_y << ", " << d_lkg_pvt.ecef_x;
     DLOG(INFO) << "POS_JUMP: Distance to LKGL: " << distance_to_lkgl;
 }
 
 bool PVTConsistencyChecks::check_propagated_pos()
 {
-    double metersPerDegLat = 111111.0;
-    double metersPerRadLat = metersPerDegLat * 180 / M_PI;
-    double metersPerDegLon = metersPerDegLat * cos(d_old_pvt.lat);
-    double metersPerRadLon = metersPerDegLon * 180 / M_PI;
-
     PvtSol temp_pvt;
-    uint32_t dt = (d_new_pvt.tstamp - d_old_pvt.tstamp) / 1000;
+    double dt = (d_new_pvt.tstamp - d_old_pvt.tstamp) / 1000;
 
-    temp_pvt.lat = d_old_pvt.lat + d_old_pvt.vel_x * dt / metersPerRadLat;
-    temp_pvt.lon = d_old_pvt.lon + d_old_pvt.vel_y * dt / metersPerRadLon;
-    temp_pvt.alt = d_old_pvt.alt + d_old_pvt.vel_z * dt;
+    temp_pvt.ecef_y = d_old_pvt.ecef_y + d_old_pvt.vel_x * dt;  // / metersPerRadLat;
+    temp_pvt.ecef_x = d_old_pvt.ecef_x + d_old_pvt.vel_y * dt;  // / metersPerRadLon;
+    temp_pvt.ecef_z = d_old_pvt.ecef_z + d_old_pvt.vel_z * dt;
 
-    double distance_error = calculate_distance(temp_pvt.lat, temp_pvt.lon, d_new_pvt.lat, d_new_pvt.lon);
+    double distance_error = calculate_distance_ECEF(&temp_pvt, &d_new_pvt);
 
-    DLOG(INFO) << "PROPAGATE_POS: Pro " << temp_pvt.lat << "," << temp_pvt.lon << ", " << temp_pvt.alt;
-    DLOG(INFO) << "PROPAGATE_POS: Recv " << d_new_pvt.lat << "," << d_new_pvt.lon << ", " << d_new_pvt.alt;
+    DLOG(INFO) << "PROPAGATE_POS: Pro " << temp_pvt.ecef_y << "," << temp_pvt.ecef_x << ", " << temp_pvt.ecef_z;
+    DLOG(INFO) << "PROPAGATE_POS: Recv " << d_new_pvt.ecef_y << "," << d_new_pvt.ecef_x << ", " << d_new_pvt.ecef_z;
     DLOG(INFO) << "PROPAGATE_POS: Error: " << distance_error;
 
     return distance_error > d_pos_error_threshold;
@@ -305,33 +269,35 @@ void PVTConsistencyChecks::check_time()
 }
 
 // ####### General functions
-void PVTConsistencyChecks::update_pvt(double lat, double lon, double alt,
-    double vel_x, double vel_y, double vel_z,
+void PVTConsistencyChecks::update_pvt(const std::array<double, 3>& pos,
+    const std::array<double, 3>& vel,
     double speed_over_ground, double heading,
     uint32_t tstamp, boost::posix_time::ptime utc_time)
 {
-    d_new_pvt.lat = lat;
-    d_new_pvt.lon = lon;
-    d_new_pvt.alt = alt;
-    d_new_pvt.vel_x = vel_x;
-    d_new_pvt.vel_y = vel_y;
-    d_new_pvt.vel_z = vel_z;
-    d_new_pvt.speed_over_ground = sqrt(pow(vel_x, 2) + pow(vel_y, 2) + pow(vel_y, 2));
-    d_new_pvt.heading = 180 + 180 / M_PI * (atan2(-vel_x, -vel_z));
+    d_new_pvt.ecef_y = pos[1];
+    d_new_pvt.ecef_x = pos[0];
+    d_new_pvt.ecef_z = pos[2];
+
+    d_new_pvt.vel_x = vel[0];
+    d_new_pvt.vel_y = vel[1];
+    d_new_pvt.vel_z = vel[2];
+
+    d_new_pvt.speed_over_ground = sqrt(pow(vel[0], 2) + pow(vel[1], 2) + pow(vel[1], 2));
+    d_new_pvt.heading = 180 + 180 / M_PI * (atan2(-vel[0], -vel[2]));
     d_new_pvt.tstamp = tstamp;
     d_new_pvt.utc_time = utc_time;
 
     DLOG(INFO)
-        << "New PVT: " << lat << ", " << lon << ", " << alt
-        << ", " << vel_x << ", " << vel_y << ", " << vel_z
+        << "New PVT: " << pos[1] << ", " << pos[0] << ", " << pos[2]
+        << ", " << vel[0] << ", " << vel[1] << ", " << vel[2]
         << ", " << speed_over_ground << ", " << heading << ", " << tstamp;
 }
 
 void PVTConsistencyChecks::update_old_pvt()
 {
-    d_old_pvt.lat = d_new_pvt.lat;
-    d_old_pvt.lon = d_new_pvt.lon;
-    d_old_pvt.alt = d_new_pvt.alt;
+    d_old_pvt.ecef_y = d_new_pvt.ecef_y;
+    d_old_pvt.ecef_x = d_new_pvt.ecef_x;
+    d_old_pvt.ecef_z = d_new_pvt.ecef_z;
     d_old_pvt.vel_x = d_new_pvt.vel_x;
     d_old_pvt.vel_y = d_new_pvt.vel_y;
     d_old_pvt.vel_z = d_new_pvt.vel_z;
@@ -340,16 +306,16 @@ void PVTConsistencyChecks::update_old_pvt()
     d_old_pvt.tstamp = d_new_pvt.tstamp;
     d_old_pvt.utc_time = d_new_pvt.utc_time;
 
-    DLOG(INFO) << "Old pvt updated to: " << d_old_pvt.lat << ", " << d_old_pvt.lon << ", " << d_old_pvt.alt;
+    DLOG(INFO) << "Old pvt updated to: " << d_old_pvt.ecef_y << ", " << d_old_pvt.ecef_x << ", " << d_old_pvt.ecef_z;
 }
 
 void PVTConsistencyChecks::update_lkg_pvt(bool set_old)
 {
     if (set_old)
         {
-            d_lkg_pvt.lat = d_old_pvt.lat;
-            d_lkg_pvt.lon = d_old_pvt.lon;
-            d_lkg_pvt.alt = d_old_pvt.alt;
+            d_lkg_pvt.ecef_y = d_old_pvt.ecef_y;
+            d_lkg_pvt.ecef_x = d_old_pvt.ecef_x;
+            d_lkg_pvt.ecef_z = d_old_pvt.ecef_z;
             d_lkg_pvt.vel_x = d_old_pvt.vel_x;
             d_lkg_pvt.vel_y = d_old_pvt.vel_y;
             d_lkg_pvt.vel_z = d_old_pvt.vel_z;
@@ -360,9 +326,9 @@ void PVTConsistencyChecks::update_lkg_pvt(bool set_old)
         }
     else
         {
-            d_lkg_pvt.lat = d_new_pvt.lat;
-            d_lkg_pvt.lon = d_new_pvt.lon;
-            d_lkg_pvt.alt = d_new_pvt.alt;
+            d_lkg_pvt.ecef_y = d_new_pvt.ecef_y;
+            d_lkg_pvt.ecef_x = d_new_pvt.ecef_x;
+            d_lkg_pvt.ecef_z = d_new_pvt.ecef_z;
             d_lkg_pvt.vel_x = d_new_pvt.vel_x;
             d_lkg_pvt.vel_y = d_new_pvt.vel_y;
             d_lkg_pvt.vel_z = d_new_pvt.vel_z;
@@ -373,7 +339,7 @@ void PVTConsistencyChecks::update_lkg_pvt(bool set_old)
         }
 
 
-    DLOG(INFO) << "LKG updated to: " << d_lkg_pvt.lat << ", " << d_lkg_pvt.lon << ", " << d_lkg_pvt.alt;
+    DLOG(INFO) << "LKG updated to: " << d_lkg_pvt.ecef_y << ", " << d_lkg_pvt.ecef_x << ", " << d_lkg_pvt.ecef_z;
 }
 
 void PVTConsistencyChecks::reset_pos_jump_check()
@@ -426,4 +392,9 @@ long double PVTConsistencyChecks::calculate_distance(double lat1, double lon1, d
     // Calculate the result
     distance = distance * R;
     return distance;
+}
+
+long double PVTConsistencyChecks::calculate_distance_ECEF(const PvtSol* pvtsol1, const PvtSol* pvtsol2)
+{
+    return sqrt(pow((pvtsol1->ecef_x - pvtsol2->ecef_x), 2) + pow((pvtsol1->ecef_y - pvtsol2->ecef_y), 2) + pow((pvtsol1->ecef_z - pvtsol2->ecef_z), 2));
 }

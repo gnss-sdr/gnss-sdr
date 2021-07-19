@@ -2036,12 +2036,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // Position check is enabled
                             if (d_enable_security_checks)
                                 {
-                                    d_spoofing_detector.update_pvt(d_user_pvt_solver->get_latitude(),
-                                        d_user_pvt_solver->get_longitude(),
-                                        d_user_pvt_solver->get_height(),
-                                        d_user_pvt_solver->get_rx_vel()[0],
-                                        d_user_pvt_solver->get_rx_vel()[1],
-                                        d_user_pvt_solver->get_rx_vel()[2],
+                                    d_spoofing_detector.update_pvt(d_user_pvt_solver->get_rx_pos(),
+                                        d_user_pvt_solver->get_rx_vel(),
                                         d_user_pvt_solver->get_speed_over_ground(),
                                         d_user_pvt_solver->get_course_over_ground(),
                                         current_RX_time_ms,

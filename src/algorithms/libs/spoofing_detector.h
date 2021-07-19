@@ -48,9 +48,9 @@ public:
     // ####### Structure to store position solution
     struct PvtSol
     {
-        double lat;
-        double lon;
-        double alt;
+        double ecef_y;
+        double ecef_x;
+        double ecef_z;
 
         double vel_x;
         double vel_y;
@@ -67,7 +67,8 @@ public:
     PVTConsistencyChecks();
     PVTConsistencyChecks(const PVTConsistencyChecksConf* conf_);
 
-    void update_pvt(double lat, double lon, double alt, double vel_x, double vel_y, double vel_z,
+    void update_pvt(const std::array<double, 3>& pos,
+        const std::array<double, 3>& vel,
         double speed_over_ground, double heading,
         uint32_t tstamp, boost::posix_time::ptime utc_time);
 
@@ -130,6 +131,8 @@ private:
     void reset_pos_jump_check();
 
     long double calculate_distance(double lat1, double lon1, double lat2, double lon2);
+    long double calculate_distance_ECEF(const PvtSol* sol1, const PvtSol* sol2);
+
     long double to_radians(double degree);
     int get_spoofer_score();
 

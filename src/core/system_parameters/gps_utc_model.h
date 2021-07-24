@@ -28,9 +28,9 @@
 
 
 /*!
- * \brief This class is a storage for the GPS UTC MODEL data as described in IS-GPS-200L
+ * \brief This class is a storage for the GPS UTC MODEL data as described in IS-GPS-200M
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf Appendix II
  */
 class Gps_Utc_Model
 {
@@ -41,10 +41,10 @@ public:
     Gps_Utc_Model() = default;
 
     // UTC parameters
-    double A0{};           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s]
-    double A1{};           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s/s]
-    double A2{};           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200L) [s/s]
-    int32_t tot{};         //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200L) [s]
+    double A0{};           //!< Constant of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200M) [s]
+    double A1{};           //!< 1st order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200M) [s/s]
+    double A2{};           //!< 2nd order term of a model that relates GPS and UTC time (ref. 20.3.3.5.2.4 IS-GPS-200M) [s/s]
+    int32_t tot{};         //!< Reference time for UTC data (reference 20.3.4.5 and 20.3.3.5.2.4 IS-GPS-200M) [s]
     int32_t WN_T{};        //!< UTC reference week number [weeks]
     int32_t DeltaT_LS{};   //!< Delta time due to leap seconds [s]. Number of leap seconds since 6-Jan-1980 as transmitted by the GPS almanac.
     int32_t WN_LSF{};      //!< Week number at the end of which the leap second becomes effective [weeks]

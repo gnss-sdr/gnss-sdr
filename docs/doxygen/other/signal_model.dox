@@ -62,7 +62,7 @@ and civilian users on a continuous, worldwide basis. Two GPS services are provid
 the Precise Positioning Service (PPS), available primarily to the military of the United
 States and its allies, and the Standard Positioning Service (SPS) open to civilian users.
 
-\li <b>GPS L1</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision L</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
+\li <b>GPS L1</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision M</b></a>, this band is centered at \f$f_{\text{GPS L1}}=1575.42\f$ MHz.  The complex baseband transmitted signal can be written as
 \f{equation}{
 s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
 \f}
@@ -76,12 +76,12 @@ s^{\text{(GPS L1)}}_{T}(t)=e_{L1I}(t) + j e_{L1Q}(t)~,
   \f$L_{\text{P(Y)}}=6.1871 \cdot 10^{12}\f$, and \f$p(t)\f$ is a rectangular pulse of a chip-period duration centered at \f$t=0\f$ and filtered at the transmitter.
   According to the chip rate, the binary phase-shift keying modulations in the equations above are denoted as BPSK(10) and BPSK(1), respectively. The precision P codes (named Y codes whenever
   the anti-spoofing mode is activated, encrypting the code and thus denying non-U.S. military users) are sequences of \f$7\f$ days in length. Regarding the modernization plans for GPS, it
-  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-800G.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision G</b></a>,
-  to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C will be available with first Block III launch, currently scheduled for 2013. The implementation will
-  provide C/A code to ensure backward compatibility.
+  is worthwhile to mention that there is a new civilian-use signal planned, called L1C and defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-800H.pdf" target="_blank"><b>Interface Specification IS-GPS-800 Revision H</b></a>,
+  to be broadcast on the same L1 frequency that currently contains the C/A signal. The L1C is available with first Block III launch. The implementation
+  provides C/A code to ensure backward compatibility.
 
 
-\li <b>GPS L2C</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision L</b></a>, is only available on
+\li <b>GPS L2C</b>. Defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf" target="_blank"><b>Interface Specification IS-GPS-200 Revision M</b></a>, is only available on
 Block IIR-M and subsequent satellite blocks. Centered at \f$f_{\text{GPS L2}}=1227.60\f$ MHz, the signal structure is the same than in (\ref{eq:GPSL1}), with the precision code in the In-phase
 component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navigation message \f$D_{\text{NAV}}\f$. For the Quadrature-phase component, three options are defined:
      \f{align}{ e_{L2CQ}(t) =&  \sum_{l=-\infty}^{\infty}     D_{\text{CNAV}}  \Big[ [l]_{10230}  \Big]    \oplus      \left(  C_{\text{CL}} \Big[ |l|_{L_{\text{CL}}} \Big]  p_{\text{\tiny{1/2}}}  \left(  t - lT_{c,L2C}   \right)   +  \right.\\ {} &+ \left. C_{\text{CM}}  \Big[ |l|_{L_{\text{CM}}} \Big] p_{\text{\tiny{1/2}}}\left(t - \left(l+\frac{3}{4}\right)T_{c,L2C}\right) \right),\\
@@ -94,7 +94,7 @@ component, just as in (\ref{eq:L1CAI}) but with an optional presence of the navi
        data than the NAV data. It is transmitted at \f$25\f$ bps with forward error correction (FEC) encoding, resulting in \f$50\f$ sps.
 
 
-\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-705G.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision G</b></a>, is only available
+\li <b>GPS L5</b>. The GPS L5 link, defined at <a href="https://www.gps.gov/technical/icwg/IS-GPS-705H.pdf" target="_blank"><b>Interface Specification IS-GPS-705 Revision H</b></a>, is only available
 in Block IIF (first satellite launched on May, 2010) and subsequent satellite blocks. Centered at \f$f_{\text{GPS L5}}=1176.45\f$ MHz, this signal in space can be written as:
     \f{equation}{
 s^{\text{(GPS L5)}}_{T}(t)=e_{L5I}(t) +j e_{L5Q}(t)~,

@@ -32,7 +32,7 @@ public:
     /*!
      * \brief Sets (\a satClkDrift) and (\a dtr), and returns the clock drift in
      * seconds according to the User Algorithm for SV Clock Correction
-     * (IS-GPS-200L, 20.3.3.3.3.1, and Galileo OS SIS ICD, 5.1.4).
+     * (IS-GPS-200M, 20.3.3.3.3.1, and Galileo OS SIS ICD, 5.1.4).
      */
     double sv_clock_drift(double transmitTime);
 

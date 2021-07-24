@@ -5083,7 +5083,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
 
             if (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.PRN) == "IIA")
                 {
-                    // Block II/IIA (Table 20-XI IS-GPS-200L )
+                    // Block II/IIA (Table 20-XI IS-GPS-200M)
                     if ((gps_ephemeris_iter->second.IODC > 239) && (gps_ephemeris_iter->second.IODC < 248))
                         {
                             curve_fit_interval = 8;
@@ -5113,9 +5113,9 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             if ((gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.PRN) == "IIR") ||
                 (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.PRN) == "IIR-M") ||
                 (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.PRN) == "IIF") ||
-                (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.PRN) == "IIIA"))
+                (gps_ephemeris_iter->second.satelliteBlock.at(gps_ephemeris_iter->second.PRN) == "III"))
                 {
-                    // Block IIR/IIR-M/IIF/IIIA (Table 20-XII IS-GPS-200L )
+                    // Block IIR/IIR-M/IIF/III/IIIF (Table 20-XII IS-GPS-200M)
                     if ((gps_ephemeris_iter->second.IODC > 239) && (gps_ephemeris_iter->second.IODC < 248))
                         {
                             curve_fit_interval = 8;
@@ -5202,7 +5202,7 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             line += std::string(5, ' ');
             // If there is no IODE in CNAV, so we check if Toe in message Type 10, Toe in Message type 11 and Toc in message types 30-37.
             // Whenever these three terms do not match, a data set cutover has occurred and new data must be collected.
-            // See IS-GPS-200L, p. 155
+            // See IS-GPS-200M, paragraph 20.3.3.4.1
             if (!((gps_ephemeris_iter->second.toe1 == gps_ephemeris_iter->second.toe2) && (gps_ephemeris_iter->second.toe1 == gps_ephemeris_iter->second.toc)))  // Toe1: Toe in message type 10,  Toe2: Toe in message type 11
                 {
                     // Toe1: Toe in message type 10,  Toe2: Toe in message type 11,

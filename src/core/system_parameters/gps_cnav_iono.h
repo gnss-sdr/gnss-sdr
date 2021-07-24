@@ -27,9 +27,9 @@
 
 
 /*!
- * \brief This class is a storage for the GPS IONOSPHERIC data as described in IS-GPS-200L
+ * \brief This class is a storage for the GPS IONOSPHERIC data as described in IS-GPS-200M
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix III
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf Appendix III
  */
 class Gps_CNAV_Iono : public Gps_Iono
 {

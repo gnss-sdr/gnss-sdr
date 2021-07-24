@@ -47,7 +47,7 @@ gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
     const Tlm_Conf &conf);
 
 /*!
- * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200L
+ * \brief This class implements a block that decodes the NAV data defined in IS-GPS-200M
  */
 class gps_l1_ca_telemetry_decoder_gs : public gr::block
 {

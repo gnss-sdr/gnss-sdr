@@ -68,6 +68,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - If the Matio library is not found, now it is configured and built by CMake
   instead of using autotools.
 
+### Improvements in Reliability
+
+- Check satellites' health status. If a satellite is marked as not healthy in
+  its navigation message, the corresponding observables are not used for
+  navigation.
+
 ### Improvements in Usability:
 
 - Added a new `Fifo_Signal_Source` implementation that allows using a

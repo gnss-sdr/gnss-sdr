@@ -62,6 +62,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   version of `volk_gnsssdr`. When this building option is set to `ON`, it forces
   the building of the local version of the `cpu_features` library, regardless of
   whether it is already installed or not.
+- CMake's `<policy_max>` version bumped to 3.21. The minimum CMake version is
+  2.8.12.
 - Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
 - Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
   Boost >= 1.74.

@@ -33,9 +33,9 @@
 
 /*!
  * \brief This class is a storage and orbital model functions for the GPS SV
- * ephemeris data as described in IS-GPS-200L
+ * ephemeris data as described in IS-GPS-200M
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf Appendix II
  */
 class Gps_Ephemeris : public Gnss_Ephemeris
 {
@@ -47,7 +47,7 @@ public:
 
     int32_t code_on_L2{};   //!< If 1, P code ON in L2;  if 2, C/A code ON in L2;
     bool L2_P_data_flag{};  //!< When true, indicates that the NAV data stream was commanded OFF on the P-code of the L2 channel
-    int32_t SV_accuracy{};  //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200L)
+    int32_t SV_accuracy{};  //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200M)
     int32_t SV_health{};    //!< Satellite heath status
     double TGD{};           //!< Estimated Group Delay Differential: L1-L2 correction term only for the benefit of "L1 P(Y)" or "L2 P(Y)" s users [s]
     int32_t IODC{};         //!< Issue of Data, Clock

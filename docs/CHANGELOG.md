@@ -50,6 +50,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   files make use of the new parameters' names.
 - Update GSL implementation to 0.38.1. See
   https://github.com/gsl-lite/gsl-lite/releases/tag/v0.38.1
+- Update references to the latest GPS ICDs (IS-GPS-200M, IS-GPS-800H,
+  IS-GPS-705H) published in May, 2021.
 
 ### Improvements in Portability:
 

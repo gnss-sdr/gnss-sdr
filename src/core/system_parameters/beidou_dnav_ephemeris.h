@@ -44,7 +44,7 @@ public:
      */
     Beidou_Dnav_Ephemeris();
 
-    int SV_accuracy{};  //!< User Range Accuracy (URA) index of the SV (reference paragraph 6.2.1) for the standard positioning service user (Ref 20.3.3.3.1.3 IS-GPS-200L)
+    int SV_accuracy{};  //!< User Range Accuracy (URA) index of the SV (reference paragraph 5.2.4.5) for the standard positioning service user
     int SV_health{};
     double TGD1{};  //!< Estimated Group Delay Differential on B1I [s]
     double TGD2{};  //!< Estimated Group Delay Differential on B2I [s]

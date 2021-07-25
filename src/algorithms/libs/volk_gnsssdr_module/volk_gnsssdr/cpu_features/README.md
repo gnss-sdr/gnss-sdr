@@ -194,7 +194,7 @@ supporting Android and offers a drop in replacement of for the NDK's
 ## License
 
 The cpu_features library is licensed under the terms of the Apache license. See
-[LICENSE](LICENSE) for more information.
+[LICENSE](https://www.apache.org/licenses/LICENSE-2.0.txt) for more information.
 
 <a name="cmake"></a>
 

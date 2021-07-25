@@ -5,7 +5,14 @@
 *.pyo
 html/
 build/
+cmake_build/
+cmake-build-*/
+out/
 .project
 .cproject
+.vagrant/
+.vscode/
+.vs/
+*.swp
 /.DS_Store
 /gen/volk_gnsssdr_arch_defs.py

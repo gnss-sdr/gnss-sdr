@@ -71,7 +71,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   3.8.
 - If the Matio library is not found, now it is configured and built by CMake
   instead of using autotools.
-- Added support for Apple M1 AArch64 architecture processor.
+- Added support for Apple M1 AArch64 architecture processor and for FreeBSD on
+  x86, improved AMD microarchitecture detection.
 
 ### Improvements in Reliability
 

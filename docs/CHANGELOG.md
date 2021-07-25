@@ -120,6 +120,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 - New global configuration parameter `GNSS-SDR.observable_interval_ms`, set by
   default to 20 [ms], allows to control the internal rate at which computed
   observables sets are processed (50 observables sets per second by default).
+- Fix bug in the `Monitor.decimation_factor` parameter, which was not working
+  properly for other values than 1.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

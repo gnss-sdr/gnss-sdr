@@ -9,6 +9,33 @@
 #include <assert.h>
 #include <ctype.h>
 
+#if defined(CPU_FEATURES_OS_DARWIN)
+#if !defined(HAVE_SYSCTLBYNAME)
+#error "Darwin needs support for sysctlbyname"
+#endif
+#include <sys/sysctl.h>
+
+#if defined(CPU_FEATURES_MOCK_CPUID_ARM64)
+extern bool GetDarwinSysCtlByName(const char*);
+extern int GetDarwinSysCtlByNameValue(const char*);
+#else  // CPU_FEATURES_MOCK_CPUID_ARM64
+static bool GetDarwinSysCtlByName(const char* name)
+{
+    int enabled;
+    size_t enabled_len = sizeof(enabled);
+    const int failure = sysctlbyname(name, &enabled, &enabled_len, NULL, 0);
+    return failure ? false : enabled;
+}
+static int GetDarwinSysCtlByNameValue(const char* name)
+{
+    int enabled;
+    size_t enabled_len = sizeof(enabled);
+    const int failure = sysctlbyname(name, &enabled, &enabled_len, NULL, 0);
+    return failure ? 0 : enabled;
+}
+#endif
+#endif  // CPU_FEATURES_OS_DARWIN
+
 // Generation of feature's getters/setters functions and kGetters, kSetters,
 // kCpuInfoFlags and kHardwareCapabilities global tables.
 #define DEFINE_TABLE_FEATURES                                                   \
@@ -67,6 +94,8 @@
 #define DEFINE_TABLE_FEATURE_TYPE Aarch64Features
 #include "define_tables.h"
 
+#if !defined(CPU_FEATURES_OS_DARWIN)
+
 static bool HandleAarch64Line(const LineResult result,
     Aarch64Info* const info)
 {
@@ -120,6 +149,8 @@ static void FillProcCpuInfoData(Aarch64Info* const info)
         }
 }
 
+#endif /* !CPU_FEATURES_OS_DARWIN */
+
 static const Aarch64Info kEmptyAarch64Info;
 
 Aarch64Info GetAarch64Info(void)
@@ -128,6 +159,24 @@ Aarch64Info GetAarch64Info(void)
     // have some information if the executable is sandboxed (aka no access to
     // /proc/cpuinfo).
     Aarch64Info info = kEmptyAarch64Info;
+
+#if defined(CPU_FEATURES_OS_DARWIN)
+
+    // Handling Darwin platform through sysctlbyname
+    info.implementer = GetDarwinSysCtlByNameValue("hw.cputype");
+    info.variant = GetDarwinSysCtlByNameValue("hw.cpusubtype");
+    info.part = GetDarwinSysCtlByNameValue("hw.cpufamily");
+    info.revision = GetDarwinSysCtlByNameValue("hw.cpusubfamily");
+
+    info.features.fp = GetDarwinSysCtlByName("hw.optional.floatingpoint");
+    info.features.fphp = GetDarwinSysCtlByName("hw.optional.neon_hpfp");
+    info.features.sha512 = GetDarwinSysCtlByName("hw.optional.armv8_2_sha512");
+    info.features.atomics = GetDarwinSysCtlByName("hw.optional.armv8_1_atomics");
+    info.features.asimdfhm = GetDarwinSysCtlByName("hw.optional.armv8_2_fhm");
+    info.features.sha3 = GetDarwinSysCtlByName("hw.optional.armv8_2_sha3");
+    info.features.crc32 = GetDarwinSysCtlByName("hw.optional.armv8_crc32");
+
+#else
 
     FillProcCpuInfoData(&info);
     const HardwareCapabilities hwcaps = CpuFeatures_GetHardwareCapabilities();
@@ -138,6 +187,8 @@ Aarch64Info GetAarch64Info(void)
                     kSetters[i](&info.features, true);
                 }
         }
+
+#endif
 
     return info;
 }

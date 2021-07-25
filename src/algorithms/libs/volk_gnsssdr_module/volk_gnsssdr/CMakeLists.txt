@@ -8,7 +8,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.12...3.20)
+cmake_minimum_required(VERSION 2.8.12...3.21)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -253,9 +253,9 @@ endif()
 set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
     set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(^aarch64)|(arm64)")
     set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
     set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(^i.86$)")
     set(SUPPORTED_CPU_FEATURES_ARCH TRUE)

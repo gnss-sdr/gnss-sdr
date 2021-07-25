@@ -84,10 +84,10 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
                             udp_sink_ptr->write_gnss_synchro(stocks);
                             // Reset count variable
                             count = 0;
+                            // Consume the number of items for the input stream channel
+                            consume(channel_index, ninput_items[channel_index]);
                         }
                 }
-            // Consume the number of items for the input stream channel
-            consume(channel_index, ninput_items[channel_index]);
         }
 
     // Not producing any outputs

@@ -29,10 +29,10 @@ cpu_features directly and use the `cpu_features` target in your project.
 3- Add the `cpu_features` target to the `target_link_libraries()` section of
 your executable or of your library.
 
-## Disabling tests
+## Enabling tests
 
-CMake default options for cpu_features is Release built type with tests enabled.
-To disable testing set cmake `BUILD_TESTING` variable to `OFF`,
+CMake default options for cpu_features is Release built type with tests
+disabled. To enable testing set cmake `BUILD_TESTING` variable to `ON`,
 [.travis.yml](https://github.com/google/cpu_features/blob/master/.travis.yml)
 and
 [appveyor.yml](https://github.com/google/cpu_features/blob/master/appveyor.yml)

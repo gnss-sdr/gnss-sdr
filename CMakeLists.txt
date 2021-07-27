@@ -635,6 +635,12 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
                 # UHD 4.0.0.0 still does not support C++20
                 if((NOT UHD_FOUND) OR (UHD_FOUND AND ("${UHD_VERSION}" VERSION_LESS 3.99)))
                     set(CMAKE_CXX_STANDARD 20)
+                    if(CMAKE_VERSION VERSION_GREATER 3.20.99)
+                        if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")) OR
+                            ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12.0")))
+                            set(CMAKE_CXX_STANDARD 23)
+                        endif()
+                    endif()
                 endif()
             endif()
             set(CMAKE_CXX_STANDARD_REQUIRED ON)

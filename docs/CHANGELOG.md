@@ -73,6 +73,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   instead of using autotools.
 - Added support for Apple M1 AArch64 architecture processor and for FreeBSD on
   x86, improved AMD microarchitecture detection.
+- CMake now selects the C++23 standard if the environment allows for it.
 
 ### Improvements in Reliability
 
@@ -110,7 +111,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fix bug in searching for gr-iio when CMake was re-run several times with
   different settings for the `-DENABLE_FMCOMMS2` or `-DENABLE_PLUTOSDR` building
   options.
-- Fix building when using UHD v4.0.0.0.
+- Fix building when using UHD >= v4.0.0.0.
 - Fix building for `-DENABLE_FMCOMMS2=ON` and/or `-DENABLE_PLUTOSDR=ON` when the
   built-in gr-iio module introduced in GNU Radio 3.10 is found. This in-tree GNU
   Radio module takes precedence over the gr-iio package provided at

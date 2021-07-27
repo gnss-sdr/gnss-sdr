@@ -255,7 +255,7 @@ endif()
 
 cmake_pop_check_state()
 
-set(FILESYSTEM_FOUND ${_found} CACHE BOOL "TRUE if we can compile and link a program using std::filesystem" FORCE)
+set(FILESYSTEM_FOUND ${_found})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(FILESYSTEM DEFAULT_MSG FILESYSTEM_FOUND)

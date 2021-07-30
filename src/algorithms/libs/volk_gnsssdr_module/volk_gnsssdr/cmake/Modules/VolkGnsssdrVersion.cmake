@@ -41,6 +41,8 @@ if(GIT_FOUND)
             OUTPUT_STRIP_TRAILING_WHITESPACE
         )
     endif()
+    # Sanitize branch name
+    string(REGEX REPLACE "[#!?&|/^$%*]" "_" GIT_BRANCH "${GIT_BRANCH}")
     set(VOLK_GNSSSDR_GIT_BRANCH "${GIT_BRANCH}")
     set(VOLK_GNSSSDR_GIT_HASH "${GIT_COMMIT_HASH}")
 else()
@@ -51,6 +53,8 @@ else()
     endif()
 
     if(GIT_BRANCH)
+        # Sanitize branch name
+        string(REGEX REPLACE "[#!?&|/^$%*]" "_" GIT_BRANCH "${GIT_BRANCH}")
         set(VOLK_GNSSSDR_GIT_BRANCH "${GIT_BRANCH}")
     else()
         set(VOLK_GNSSSDR_GIT_BRANCH "unknown")

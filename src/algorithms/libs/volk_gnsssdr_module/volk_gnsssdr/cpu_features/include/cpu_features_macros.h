@@ -29,7 +29,7 @@
 #define CPU_FEATURES_ARCH_ARM
 #endif
 
-#if defined(__aarch64__)
+#if (defined(__aarch64__) || (defined(__APPLE__) && defined(__arm64__)))
 #define CPU_FEATURES_ARCH_AARCH64
 #endif
 
@@ -71,6 +71,10 @@
 
 #if (defined(__apple__) || defined(__APPLE__) || defined(__MACH__))
 #define CPU_FEATURES_OS_DARWIN
+#endif
+
+#if (defined(__freebsd__) || defined(__FreeBSD__))
+#define CPU_FEATURES_OS_FREEBSD
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -204,5 +208,18 @@
 #define CPU_FEATURES_COMPILED_MIPS_MSA 0
 #endif  //  defined(__mips_msa)
 #endif  //  defined(CPU_FEATURES_ARCH_MIPS)
+
+////////////////////////////////////////////////////////////////////////////////
+// Utils
+////////////////////////////////////////////////////////////////////////////////
+
+// Communicates to the compiler that the block is unreachable
+#if defined(CPU_FEATURES_COMPILER_CLANG) || defined(CPU_FEATURES_COMPILER_GCC)
+#define UNREACHABLE() __builtin_unreachable()
+#elif defined(CPU_FEATURES_COMPILER_MSC)
+#define UNREACHABLE() __assume(0)
+#else
+#define UNREACHABLE()
+#endif
 
 #endif  // CPU_FEATURES_INCLUDE_CPU_FEATURES_MACROS_H_

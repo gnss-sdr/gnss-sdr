@@ -10,7 +10,8 @@ namespace cpu_features
 namespace
 {
 static auto* const g_hardware_capabilities = new HardwareCapabilities();
-static auto* const g_platform_types = new PlatformType();
+static const char* g_platform_pointer = nullptr;
+static const char* g_base_platform_pointer = nullptr;
 }  // namespace
 
 void SetHardwareCapabilities(uint32_t hwcaps, uint32_t hwcaps2)
@@ -18,20 +19,27 @@ void SetHardwareCapabilities(uint32_t hwcaps, uint32_t hwcaps2)
     g_hardware_capabilities->hwcaps = hwcaps;
     g_hardware_capabilities->hwcaps2 = hwcaps2;
 }
+void SetPlatformPointer(const char* string) { g_platform_pointer = string; }
+void SetBasePlatformPointer(const char* string)
+{
+    g_base_platform_pointer = string;
+}
+
+void ResetHwcaps()
+{
+    SetHardwareCapabilities(0, 0);
+    SetPlatformPointer(nullptr);
+    SetBasePlatformPointer(nullptr);
+}
 
 HardwareCapabilities CpuFeatures_GetHardwareCapabilities(void)
 {
     return *g_hardware_capabilities;
 }
-
-void SetPlatformTypes(const char* platform, const char* base_platform)
+const char* CpuFeatures_GetPlatformPointer(void) { return g_platform_pointer; }
+const char* CpuFeatures_GetBasePlatformPointer(void)
 {
-    CpuFeatures_StringView_CopyString(str(platform), g_platform_types->platform,
-        sizeof(g_platform_types->platform));
-    CpuFeatures_StringView_CopyString(str(base_platform),
-        g_platform_types->base_platform,
-        sizeof(g_platform_types->base_platform));
+    return g_base_platform_pointer;
 }
 
-PlatformType CpuFeatures_GetPlatformType(void) { return *g_platform_types; }
 }  // namespace cpu_features

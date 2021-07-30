@@ -29,8 +29,8 @@
  *
  *
  * References :
- *     [1] IS-GPS-200L, Navstar GPS Space Segment/Navigation User Interfaces,
- *         7 March, 2006
+ *     [1] IS-GPS-200M, Navstar GPS Space Segment/Navigation User Interfaces,
+ *         May, 2021
  *     [2] RTCA/DO-229C, Minimum operational performanc standards for global
  *         positioning system/wide area augmentation system airborne equipment,
  *         RTCA inc, November 28, 2001

@@ -50,6 +50,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   files make use of the new parameters' names.
 - Update GSL implementation to 0.38.1. See
   https://github.com/gsl-lite/gsl-lite/releases/tag/v0.38.1
+- Update references to the latest GPS ICDs (IS-GPS-200M, IS-GPS-800H,
+  IS-GPS-705H) published in May, 2021.
 
 ### Improvements in Portability:
 
@@ -60,6 +62,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   version of `volk_gnsssdr`. When this building option is set to `ON`, it forces
   the building of the local version of the `cpu_features` library, regardless of
   whether it is already installed or not.
+- CMake's `<policy_max>` version bumped to 3.21. The minimum CMake version is
+  2.8.12.
 - Fix building when using the Xcode generator, Xcode >= 12 and CMake >= 3.19.
 - Fix building of FPGA blocks when linking against GNU Radio >= 3.9 and/or
   Boost >= 1.74.
@@ -67,6 +71,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   3.8.
 - If the Matio library is not found, now it is configured and built by CMake
   instead of using autotools.
+- Added support for Apple M1 AArch64 architecture processor and for FreeBSD on
+  x86, improved AMD microarchitecture detection.
+- CMake now selects the C++23 standard if the environment allows for it.
+
+### Improvements in Reliability
+
+- Check satellites' health status. If a satellite is marked as not healthy in
+  its navigation message, the corresponding observables are not used for
+  navigation.
 
 ### Improvements in Usability:
 
@@ -98,7 +111,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fix bug in searching for gr-iio when CMake was re-run several times with
   different settings for the `-DENABLE_FMCOMMS2` or `-DENABLE_PLUTOSDR` building
   options.
-- Fix building when using UHD v4.0.0.0.
+- Fix building when using UHD >= v4.0.0.0.
 - Fix building for `-DENABLE_FMCOMMS2=ON` and/or `-DENABLE_PLUTOSDR=ON` when the
   built-in gr-iio module introduced in GNU Radio 3.10 is found. This in-tree GNU
   Radio module takes precedence over the gr-iio package provided at
@@ -108,6 +121,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 - New global configuration parameter `GNSS-SDR.observable_interval_ms`, set by
   default to 20 [ms], allows to control the internal rate at which computed
   observables sets are processed (50 observables sets per second by default).
+- Fix bug in the `Monitor.decimation_factor` parameter, which was not working
+  properly for other values than 1.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

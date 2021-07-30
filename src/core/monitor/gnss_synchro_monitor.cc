@@ -52,6 +52,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_port, enable_protobuf);
 }
 
+
 void gnss_synchro_monitor::forecast(int noutput_items __attribute__((unused)), gr_vector_int& ninput_items_required)
 {
     for (int32_t channel_index = 0; channel_index < d_nchannels; channel_index++)
@@ -60,6 +61,7 @@ void gnss_synchro_monitor::forecast(int noutput_items __attribute__((unused)), g
             ninput_items_required[channel_index] = 0;
         }
 }
+
 
 int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused)), gr_vector_int& ninput_items,
     gr_vector_const_void_star& input_items, gr_vector_void_star& output_items __attribute__((unused)))
@@ -84,10 +86,10 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
                             udp_sink_ptr->write_gnss_synchro(stocks);
                             // Reset count variable
                             count = 0;
+                            // Consume the number of items for the input stream channel
+                            consume(channel_index, ninput_items[channel_index]);
                         }
                 }
-            // Consume the number of items for the input stream channel
-            consume(channel_index, ninput_items[channel_index]);
         }
 
     // Not producing any outputs

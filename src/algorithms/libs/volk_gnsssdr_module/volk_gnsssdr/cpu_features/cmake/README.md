@@ -33,5 +33,7 @@ your executable or of your library.
 
 CMake default options for cpu_features is Release built type with tests
 disabled. To enable testing set cmake `BUILD_TESTING` variable to `ON`,
-[.travis.yml](../.travis.yml) and [appveyor.yml](../appveyor.yml) have up to
-date examples.
+[.travis.yml](https://github.com/google/cpu_features/blob/master/.travis.yml)
+and
+[appveyor.yml](https://github.com/google/cpu_features/blob/master/appveyor.yml)
+have up to date examples.

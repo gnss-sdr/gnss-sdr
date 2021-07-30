@@ -624,6 +624,10 @@ void dll_pll_veml_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
         {
             LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any_cast: " << e.what();
         }
+    catch (std::exception &ex)
+        {
+            LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any_cast: " << ex.what();
+        }
 }
 
 

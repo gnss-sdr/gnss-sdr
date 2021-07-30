@@ -7,7 +7,6 @@
 
 #include "cpu_features_cache_info.h"
 #include "cpu_features_macros.h"
-#include "internal/hwcaps.h"
 
 CPU_FEATURES_START_CPP_NAMESPACE
 
@@ -68,11 +67,17 @@ PPCInfo GetPPCInfo(void);
 
 typedef struct
 {
+    char platform[64];       // 0 terminated string
+    char base_platform[64];  // 0 terminated string
+} PPCPlatformTypeStrings;
+
+typedef struct
+{
     char platform[64];  // 0 terminated string
     char model[64];     // 0 terminated string
     char machine[64];   // 0 terminated string
     char cpu[64];       // 0 terminated string
-    PlatformType type;
+    PPCPlatformTypeStrings type;
 } PPCPlatformStrings;
 
 PPCPlatformStrings GetPPCPlatformStrings(void);

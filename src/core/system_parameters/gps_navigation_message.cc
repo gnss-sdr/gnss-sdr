@@ -1,9 +1,9 @@
 /*!
  * \file gps_navigation_message.cc
- * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200L
+ * \brief  Implementation of a GPS NAV Data message decoder as described in IS-GPS-200M
  * \author Javier Arribas, 2011. jarribas(at)cttc.es
  *
- * See https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf Appendix II
+ * See https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf Appendix II
  *
  *
  * -----------------------------------------------------------------------------
@@ -135,7 +135,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
     switch (subframe_ID)
         {
         // --- Decode the sub-frame id -----------------------------------------
-        // ICD (IS-GPS-200L Appendix II). https://www.gps.gov/technical/icwg/IS-GPS-200L.pdf
+        // ICD (IS-GPS-200M Appendix II). https://www.gps.gov/technical/icwg/IS-GPS-200M.pdf
         case 1:
             // --- It is subframe 1 -------------------------------------
             // Compute the time of week (TOW) of the first sub-frames in the array ====
@@ -233,7 +233,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
             b_antispoofing_flag = read_navigation_bool(subframe_bits, ANTI_SPOOFING_FLAG);
             SV_data_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_DATA_ID));
             SV_page = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SV_PAGE));
-            if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
+            if (SV_page > 24 && SV_page < 33)  // Page 4 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
                 {
                     //! \TODO read almanac
                     if (SV_data_ID != 0)
@@ -241,12 +241,12 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                         }
                 }
 
-            if (SV_page == 52)  // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
+            if (SV_page == 52)  // Page 13 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
                 {
                     //! \TODO read Estimated Range Deviation (ERD) values
                 }
 
-            if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
+            if (SV_page == 56)  // Page 18 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
                 {
                     // Page 18 - Ionospheric and UTC data
                     d_alpha0 = static_cast<double>(read_navigation_signed(subframe_bits, ALPHA_0));
@@ -284,7 +284,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                     // Reserved
                 }
 
-            if (SV_page == 63)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
+            if (SV_page == 63)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
                 {
                     // Page 25 Anti-Spoofing, SV config and almanac health (PRN: 25-32)
                     //! \TODO Read Anti-Spoofing, SV config
@@ -317,7 +317,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
                         {
                         }
                 }
-            if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200L, page 110)
+            if (SV_page_5 == 51)  // Page 25 (from Table 20-V. Data IDs and SV IDs in Subframes 4 and 5, IS-GPS-200M)
                 {
                     i_Toa = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, T_OA));
                     i_Toa = i_Toa * T_OA_LSB;

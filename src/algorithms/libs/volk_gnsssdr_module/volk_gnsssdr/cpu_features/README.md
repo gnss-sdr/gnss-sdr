@@ -157,13 +157,14 @@ flags           : aes,avx,cx16,smx,sse4_1,sse4_2,ssse3
 
 ## What's supported
 
-|         | x86³ |   ARM   | AArch64 | MIPS⁴ | POWER |
-| ------- | :--: | :-----: | :-----: | :---: | :---: |
-| Android | yes² |  yes¹   |  yes¹   | yes¹  |  N/A  |
-| iOS     | N/A  | not yet | not yet |  N/A  |  N/A  |
-| Linux   | yes² |  yes¹   |  yes¹   | yes¹  | yes¹  |
-| MacOs   | yes² |   N/A   | not yet |  N/A  |  no   |
-| Windows | yes² | not yet | not yet |  N/A  |  N/A  |
+|         | x86³ |   ARM   | AArch64 |  MIPS⁴  |  POWER  |
+| ------- | :--: | :-----: | :-----: | :-----: | :-----: |
+| Android | yes² |  yes¹   |  yes¹   |  yes¹   |   N/A   |
+| iOS     | N/A  | not yet | not yet |   N/A   |   N/A   |
+| Linux   | yes² |  yes¹   |  yes¹   |  yes¹   |  yes¹   |
+| MacOS   | yes² |   N/A   |  yes²   |   N/A   |   no    |
+| Windows | yes² | not yet | not yet |   N/A   |   N/A   |
+| FreeBSD | yes² | not yet | not yet | not yet | not yet |
 
 1.  **Features revealed from Linux.** We gather data from several sources
     depending on availability:
@@ -193,7 +194,7 @@ supporting Android and offers a drop in replacement of for the NDK's
 ## License
 
 The cpu_features library is licensed under the terms of the Apache license. See
-[LICENSE](LICENSE) for more information.
+[LICENSE](https://www.apache.org/licenses/LICENSE-2.0.txt) for more information.
 
 <a name="cmake"></a>
 

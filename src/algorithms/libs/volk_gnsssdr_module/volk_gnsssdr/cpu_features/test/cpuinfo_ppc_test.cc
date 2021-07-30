@@ -11,10 +11,9 @@ namespace cpu_features
 {
 namespace
 {
-void DisableHardwareCapabilities() { SetHardwareCapabilities(0, 0); }
-
 TEST(CpustringsPPCTest, FromHardwareCap)
 {
+    ResetHwcaps();
     SetHardwareCapabilities(PPC_FEATURE_HAS_FPU | PPC_FEATURE_HAS_VSX,
         PPC_FEATURE2_ARCH_3_00);
     GetEmptyFilesystem();  // disabling /proc/cpuinfo
@@ -31,22 +30,25 @@ TEST(CpustringsPPCTest, FromHardwareCap)
 
 TEST(CpustringsPPCTest, Blade)
 {
-    DisableHardwareCapabilities();
+    ResetHwcaps();
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo",
         R"(processor       : 14
 cpu             : POWER7 (architected), altivec supported
 clock           : 3000.000000MHz
 revision        : 2.1 (pvr 003f 0201)
+
 processor       : 15
 cpu             : POWER7 (architected), altivec supported
 clock           : 3000.000000MHz
 revision        : 2.1 (pvr 003f 0201)
+
 timebase        : 512000000
 platform        : pSeries
 model           : IBM,8406-70Y
 machine         : CHRP IBM,8406-70Y)");
-    SetPlatformTypes("power7", "power8");
+    SetPlatformPointer("power7");
+    SetBasePlatformPointer("power8");
     const auto strings = GetPPCPlatformStrings();
     ASSERT_STREQ(strings.platform, "pSeries");
     ASSERT_STREQ(strings.model, "IBM,8406-70Y");
@@ -58,17 +60,19 @@ machine         : CHRP IBM,8406-70Y)");
 
 TEST(CpustringsPPCTest, Firestone)
 {
-    DisableHardwareCapabilities();
+    ResetHwcaps();
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo",
         R"(processor       : 126
 cpu             : POWER8 (raw), altivec supported
 clock           : 2061.000000MHz
 revision        : 2.0 (pvr 004d 0200)
+
 processor       : 127
 cpu             : POWER8 (raw), altivec supported
 clock           : 2061.000000MHz
 revision        : 2.0 (pvr 004d 0200)
+
 timebase        : 512000000
 platform        : PowerNV
 model           : 8335-GTA
@@ -83,13 +87,14 @@ firmware        : OPAL v3)");
 
 TEST(CpustringsPPCTest, w8)
 {
-    DisableHardwareCapabilities();
+    ResetHwcaps();
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo",
         R"(processor       : 143
 cpu             : POWER9, altivec supported
 clock           : 2300.000000MHz
 revision        : 2.2 (pvr 004e 1202)
+
 timebase        : 512000000
 platform        : PowerNV
 model           : 0000000000000000

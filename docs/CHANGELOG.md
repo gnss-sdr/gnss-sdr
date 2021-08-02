@@ -74,6 +74,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added support for Apple M1 AArch64 architecture processor and for FreeBSD on
   x86, improved AMD microarchitecture detection.
 - CMake now selects the C++23 standard if the environment allows for it.
+- Improved detection of Gnuplot and `gnss_sim` when cross-compiling.
 
 ### Improvements in Reliability
 

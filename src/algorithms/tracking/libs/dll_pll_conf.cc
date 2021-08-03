@@ -34,7 +34,7 @@ Dll_Pll_Conf::Dll_Pll_Conf()
     enable_fll_pull_in = false;
     enable_fll_steady_state = false;
     pull_in_time_s = 10;
-    bit_synchronization_time_limit_s = pull_in_time_s + 60;
+    bit_synchronization_time_limit_s = pull_in_time_s + 10;
     fll_filter_order = 1;
     pll_filter_order = 3;
     dll_filter_order = 2;
@@ -138,7 +138,7 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     enable_fll_steady_state = configuration->property(role + ".enable_fll_steady_state", enable_fll_steady_state);
     fll_bw_hz = configuration->property(role + ".fll_bw_hz", fll_bw_hz);
     pull_in_time_s = configuration->property(role + ".pull_in_time_s", pull_in_time_s);
-    bit_synchronization_time_limit_s = pull_in_time_s + 60;
+    bit_synchronization_time_limit_s = configuration->property(role + ".bit_synchronization_time_limit_s", bit_synchronization_time_limit_s);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", early_late_space_chips);
     early_late_space_narrow_chips = configuration->property(role + ".early_late_space_narrow_chips", early_late_space_narrow_chips);
     very_early_late_space_chips = configuration->property(role + ".very_early_late_space_chips", very_early_late_space_chips);

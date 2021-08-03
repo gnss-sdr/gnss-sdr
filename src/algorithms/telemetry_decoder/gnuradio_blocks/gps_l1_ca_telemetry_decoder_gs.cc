@@ -294,6 +294,24 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
 
                     switch (subframe_ID)
                         {
+                        case 1:
+                            if (d_nav.satellite_validation() == true)
+                                {
+                                    // get ephemeris object for this SV (mandatory)
+                                    const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav.get_ephemeris());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
+
+                            break;
+                        case 2:
+                            if (d_nav.satellite_validation() == true)
+                                {
+                                    // get ephemeris object for this SV (mandatory)
+                                    const std::shared_ptr<Gps_Ephemeris> tmp_obj = std::make_shared<Gps_Ephemeris>(d_nav.get_ephemeris());
+                                    this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                                }
+
+                            break;
                         case 3:  // we have a new set of ephemeris data for the current SV
                             if (d_nav.satellite_validation() == true)
                                 {
@@ -389,63 +407,33 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                 if (abs(corr_value) >= d_samples_per_preamble)
                     {
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+                        if (corr_value < 0)
+                            {
+                                d_flag_PLL_180_deg_phase_locked = true;
+                            }
+                        else
+                            {
+                                d_flag_PLL_180_deg_phase_locked = false;
+                            }
                         DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
-                        decode_subframe();
-                        d_stat = 1;  // enter into frame pre-detection status
+                        if (decode_subframe())
+                            {
+                                d_CRC_error_counter = 0;
+                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
+                                gr::thread::scoped_lock lock(d_setlock);
+                                d_last_valid_preamble = d_sample_counter;
+                                if (!d_flag_frame_sync)
+                                    {
+                                        d_flag_frame_sync = true;
+                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                    }
+                                d_stat = 1;  // preamble acquired
+                            }
                     }
                 d_flag_TOW_set = false;
                 break;
             }
-        case 1:  // possible preamble lock
-            {
-                // correlate with preamble
-                int32_t corr_value = 0;
-                if (d_symbol_history.size() >= GPS_CA_PREAMBLE_LENGTH_BITS)
-                    {
-                        // ******* preamble correlation ********
-                        for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-                            {
-                                if (d_symbol_history[i] < 0.0)  // symbols clipping
-                                    {
-                                        corr_value -= d_preamble_samples[i];
-                                    }
-                                else
-                                    {
-                                        corr_value += d_preamble_samples[i];
-                                    }
-                            }
-                    }
-                if (abs(corr_value) >= d_samples_per_preamble)
-                    {
-                        // check preamble separation
-                        const auto preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
-                        if (abs(preamble_diff - d_preamble_period_symbols) == 0)
-                            {
-                                DLOG(INFO) << "Preamble confirmation for SAT " << this->d_satellite;
-                                d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                if (corr_value < 0)
-                                    {
-                                        d_flag_PLL_180_deg_phase_locked = true;
-                                    }
-                                else
-                                    {
-                                        d_flag_PLL_180_deg_phase_locked = false;
-                                    }
-                                decode_subframe();
-                                d_stat = 2;
-                            }
-                        else
-                            {
-                                if (preamble_diff > d_preamble_period_symbols)
-                                    {
-                                        d_stat = 0;  // start again
-                                        d_flag_TOW_set = false;
-                                    }
-                            }
-                    }
-                break;
-            }
-        case 2:  // preamble acquired
+        case 1:  // preamble acquired
             {
                 if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                     {

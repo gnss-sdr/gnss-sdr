@@ -198,6 +198,8 @@ private:
     bool d_dump_mat;
     bool d_acc_carrier_phase_initialized;
     bool d_enable_extended_integration;
+    //debug only
+    //bool debug_action1;
 };
 
 

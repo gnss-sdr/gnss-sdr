@@ -75,6 +75,7 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
                                                                               gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
+    //debug_action1 = false;
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
     d_trk_parameters = conf_;
@@ -1981,6 +1982,14 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
             }
         }
+    //*** debug only!!
+    //force tracking loss after 120 seconds
+    //if (debug_action1 == false and (static_cast<double>(d_sample_counter) / d_trk_parameters.fs_in >= 120))
+    //    {
+    //        d_carrier_lock_fail_counter = 200000;  // force loss-of-lock condition
+    //        debug_action1 = true;
+    //    }
+    //*************
     consume_each(d_current_prn_length_samples);
     d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);
     if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock)

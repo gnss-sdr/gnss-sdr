@@ -164,6 +164,21 @@ public:
         flag_TOW_6 = flag_tow6;
     }
 
+    inline int32_t get_TOW0() const
+    {
+        return TOW_0;
+    }
+
+    inline bool is_TOW0_set() const
+    {
+        return flag_TOW_0;
+    }
+
+    inline void set_TOW0_flag(bool flag_tow0)
+    {
+        flag_TOW_0 = flag_tow0;
+    }
+
     inline bool get_flag_GGTO() const
     {
         return (flag_GGTO_1 == true and flag_GGTO_2 == true and flag_GGTO_3 == true and flag_GGTO_4 == true);
@@ -395,6 +410,7 @@ private:
     bool flag_iono_and_GST{};  // Flag indicating that ionospheric and GST parameters (word 5) have been received
     bool flag_TOW_5{};
     bool flag_TOW_6{};
+    bool flag_TOW_0{};
     bool flag_TOW_set{};    // it is true when page 5 or page 6 arrives
     bool flag_utc_model{};  // Flag indicating that utc model parameters (word 6) have been received
 

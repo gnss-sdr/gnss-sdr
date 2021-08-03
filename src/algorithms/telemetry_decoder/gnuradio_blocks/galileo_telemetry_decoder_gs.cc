@@ -581,6 +581,11 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 void galileo_telemetry_decoder_gs::reset()
 {
     gr::thread::scoped_lock lock(d_setlock);
+    d_flag_frame_sync = false;
+    d_TOW_at_current_symbol_ms = 0;
+    d_TOW_at_Preamble_ms = 0;
+    d_fnav_nav.set_flag_TOW_set(false);
+    d_inav_nav.set_flag_TOW_set(false);
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     d_stat = 0;
@@ -840,6 +845,15 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
                                         d_inav_nav.set_TOW6_flag(false);
                                     }
+                                // warning: type 0 frame does not contain a valid TOW in some simulated signals, thus it is not safe to activate the following code:
+                                //                                else if (d_inav_nav.is_TOW0_set() == true)  // page 0 arrived and decoded
+                                //                                    {
+                                //                                        // TOW_0 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
+                                //                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW0() * 1000.0);
+                                //                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                                //                                        d_inav_nav.set_TOW0_flag(false);
+                                //                                        // std::cout << "FRAME 0 current tow: " << tmp_d_TOW_at_current_symbol_ms << " vs. " << d_TOW_at_current_symbol_ms + d_PRN_code_period_ms << "\n";
+                                //                                    }
                                 else
                                     {
                                         // this page has no timing information

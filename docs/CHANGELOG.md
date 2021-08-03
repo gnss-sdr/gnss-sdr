@@ -27,6 +27,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   break some real-time configurations, this feature is disabled by default. It
   can be activated from the configuration file by adding
   `TelemetryDecoder_1B.enable_reed_solomon=true`.
+- Reduction of the TTFF in GPS L1 and Galileo E1 by improving the frame
+  synchronization mechanism.
 
 ### Improvements in Maintainability:
 
@@ -78,6 +80,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Reliability
 
+- Bug fix in the Galileo E1/E5 telemetry decoder that produced incorrect timing
+  information if a satellite is lost and then readquired.
 - Check satellites' health status. If a satellite is marked as not healthy in
   its navigation message, the corresponding observables are not used for
   navigation.

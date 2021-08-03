@@ -1337,6 +1337,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     WN_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0_BIT));
                     DLOG(INFO) << "WN_0= " << WN_0;
                     TOW_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_0_BIT));
+                    flag_TOW_set = true;  // set to false externally
+                    flag_TOW_0 = true;    // set to false externally
                     DLOG(INFO) << "TOW_0= " << TOW_0;
                     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
                 }

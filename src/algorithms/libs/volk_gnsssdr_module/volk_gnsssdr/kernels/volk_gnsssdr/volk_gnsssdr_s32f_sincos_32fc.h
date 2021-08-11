@@ -816,7 +816,7 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_u_avx2(lv_32fc_t *out, const fl
 #endif /* LV_HAVE_AVX2  */
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const float phase_inc, float *phase, unsigned int num_points)
@@ -930,6 +930,6 @@ static inline void volk_gnsssdr_s32f_sincos_32fc_neon(lv_32fc_t *out, const floa
     (*phase) = _phase;
 }
 
-#endif /* LV_HAVE_NEONV7  */
+#endif /* LV_HAVE_NEON  */
 
 #endif /* INCLUDED_volk_gnsssdr_s32f_sincos_32fc_H */

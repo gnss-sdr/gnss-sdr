@@ -77,6 +77,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   x86, improved AMD microarchitecture detection.
 - CMake now selects the C++23 standard if the environment allows for it.
 - Improved detection of Gnuplot and `gnss_sim` when cross-compiling.
+- NEON kernel implementations of the `volk_gnsssdr` library are now enabled in
+  aarch64 architectures.
 
 ### Improvements in Reliability
 

@@ -206,7 +206,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_a_avx(lv_32
 #endif  // AVX
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_neon(lv_32fc_t* result, const lv_32fc_t* local_code, const lv_32fc_t* in, unsigned int num_points)
 {
     // phases must be normalized. Phase rotator expects a complex exponential input!
@@ -233,7 +233,7 @@ static inline void volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_neon(lv_32f
     volk_gnsssdr_free(in_a);
 }
 
-#endif  // AVX
+#endif  // LV_HAVE_NEON
 
 
 #endif  // INCLUDED_volk_gnsssdr_32fc_x2_rotator_dotprodxnpuppet_32fc_H

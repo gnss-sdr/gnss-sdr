@@ -89,13 +89,13 @@ static inline void volk_gnsssdr_s32f_sincospuppet_32fc_u_avx2(lv_32fc_t* out, co
 #endif /* LV_HAVE_AVX2  */
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 static inline void volk_gnsssdr_s32f_sincospuppet_32fc_neon(lv_32fc_t* out, const float phase_inc, unsigned int num_points)
 {
     float phase[1];
     phase[0] = 3;
     volk_gnsssdr_s32f_sincos_32fc_neon(out, phase_inc, phase, num_points);
 }
-#endif /* LV_HAVE_NEONV7  */
+#endif /* LV_HAVE_NEON  */
 
 #endif /* INCLUDED_volk_gnsssdr_s32f_sincospuppet_32fc_H */

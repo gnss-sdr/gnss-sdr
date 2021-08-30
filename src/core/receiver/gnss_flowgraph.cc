@@ -785,6 +785,15 @@ int GNSSFlowgraph::disconnect_signal_conditioners()
 
 int GNSSFlowgraph::connect_channels()
 {
+    if (channels_count_ <= 0)
+        {
+            LOG(ERROR) << "No channels have been assigned.";
+            help_hint_ += " * No channels have been assigned, check your configuration file.\n";
+            help_hint_ += "   At least one of the Channels_XX.count must be > 0.\n";
+            help_hint_ += "   Channels documentation at https://gnss-sdr.org/docs/sp-blocks/channels/\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
     for (int i = 0; i < channels_count_; i++)
         {
             if (channels_.at(i) != nullptr)

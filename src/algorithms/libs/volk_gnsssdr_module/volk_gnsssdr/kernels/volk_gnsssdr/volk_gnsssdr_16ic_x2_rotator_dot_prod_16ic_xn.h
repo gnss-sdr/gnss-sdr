@@ -1286,7 +1286,7 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_a_avx2_reload(l
 #endif /* LV_HAVE_AVX2 */
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t* result, const lv_16sc_t* in_common, const lv_32fc_t phase_inc, lv_32fc_t* phase, const lv_16sc_t** in_a, int num_a_vectors, unsigned int num_points)
@@ -1472,10 +1472,10 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon(lv_16sc_t*
         }
 }
 
-#endif /* LV_HAVE_NEONV7 */
+#endif /* LV_HAVE_NEON */
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 #include <volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h>
 #include <arm_neon.h>
 
@@ -1610,11 +1610,11 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
 
                             // Round = vmulq_f32(_phase_real, _phase_real);
                             // Round = vmlaq_f32(Round, _phase_imag, _phase_imag);
-                            //               Round = vsqrtq_f32(Round);// printf("sqrt: %f \n", Round[0]);
+                            //               Round = _vsqrtq_f32(Round);// printf("sqrt: %f \n", Round[0]);
                             // Round = vrsqrteq_f32(Round);printf("1/sqtr: %f  \n",Round[0]);
                             // Round = vrecpeq_f32((Round);
-                            //              _phase_real = vdivq_f32(_phase_real, Round);
-                            //              _phase_imag = vdivq_f32(_phase_imag, Round);
+                            //              _phase_real = _vdivq_f32(_phase_real, Round);
+                            //              _phase_imag = _vdivq_f32(_phase_imag, Round);
                             // _phase_real = vmulq_f32(_phase_real, Round);
                             // _phase_imag = vmulq_f32(_phase_imag, Round);
                             // printf("After  %i: %f,%f, %f\n\n", number, _phase_real[0], _phase_imag[0], sqrt(_phase_real[0]*_phase_real[0]+_phase_imag[0]*_phase_imag[0]));
@@ -1669,10 +1669,10 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_vma(lv_16s
         }
 }
 
-#endif /* LV_HAVE_NEONV7 */
+#endif /* LV_HAVE_NEON */
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 #include <volk_gnsssdr/volk_gnsssdr_neon_intrinsics.h>
 #include <arm_neon.h>
 
@@ -1858,6 +1858,6 @@ static inline void volk_gnsssdr_16ic_x2_rotator_dot_prod_16ic_xn_neon_optvma(lv_
         }
 }
 
-#endif /* LV_HAVE_NEONV7 */
+#endif /* LV_HAVE_NEON */
 
 #endif /* INCLUDED_volk_gnsssdr_16ic_x2_dot_prod_16ic_xn_H */

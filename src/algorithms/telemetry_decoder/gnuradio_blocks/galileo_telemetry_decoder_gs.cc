@@ -827,6 +827,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 if ((d_CRC_error_counter > CRC_ERROR_LIMIT) and (d_frame_type != 3))
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
+                                        gr::thread::scoped_lock lock(d_setlock);
                                         d_flag_frame_sync = false;
                                         d_stat = 0;
                                         d_TOW_at_current_symbol_ms = 0;

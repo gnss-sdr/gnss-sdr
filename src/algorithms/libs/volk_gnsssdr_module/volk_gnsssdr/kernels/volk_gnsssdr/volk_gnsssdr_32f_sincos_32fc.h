@@ -627,7 +627,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_generic_fxpt(lv_32fc_t* out, con
 #endif /* LV_HAVE_GENERIC  */
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_32f_sincos_32fc_neon(lv_32fc_t* out, const float* in, unsigned int num_points)
@@ -731,7 +731,7 @@ static inline void volk_gnsssdr_32f_sincos_32fc_neon(lv_32fc_t* out, const float
         }
 }
 
-#endif /* LV_HAVE_NEONV7  */
+#endif /* LV_HAVE_NEON  */
 
 
 #endif /* INCLUDED_volk_gnsssdr_32f_sincos_32fc_H  */

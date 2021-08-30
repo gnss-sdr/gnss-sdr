@@ -236,7 +236,7 @@ static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_a_avx(lv_16sc_t* res
 #endif
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 static inline void volk_gnsssdr_16ic_resamplerxnpuppet_16ic_neon(lv_16sc_t* result, const lv_16sc_t* local_code, unsigned int num_points)
 {
     int code_length_chips = 2046;

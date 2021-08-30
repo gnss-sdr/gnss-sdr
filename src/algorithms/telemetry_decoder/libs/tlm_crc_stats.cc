@@ -29,7 +29,7 @@ Tlm_CRC_Stats::Tlm_CRC_Stats()
 
 void Tlm_CRC_Stats::initialize(std::string dump_crc_stats_filename_)
 {
-    d_dump_crc_stats_filename = dump_crc_stats_filename_;
+    d_dump_crc_stats_filename = std::move(dump_crc_stats_filename_);
 
     enable_crc_stats = true;
     num_crc_ok = 0;

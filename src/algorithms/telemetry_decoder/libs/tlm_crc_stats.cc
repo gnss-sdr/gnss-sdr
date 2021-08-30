@@ -20,12 +20,14 @@
 #include <glog/logging.h>
 #include <iomanip>   // for std::setw()
 #include <iostream>  // for cerr, cout
+#include <utility>   // for atd::move
 
 
 Tlm_CRC_Stats::Tlm_CRC_Stats()
 {
     enable_crc_stats = false;
 }
+
 
 void Tlm_CRC_Stats::initialize(std::string dump_crc_stats_filename_)
 {
@@ -35,6 +37,7 @@ void Tlm_CRC_Stats::initialize(std::string dump_crc_stats_filename_)
     num_crc_ok = 0;
     num_crc_not_ok = 0;
 }
+
 
 bool Tlm_CRC_Stats::set_channel(int32_t channel_)
 {
@@ -84,6 +87,7 @@ bool Tlm_CRC_Stats::set_channel(int32_t channel_)
     return true;
 }
 
+
 void Tlm_CRC_Stats::update_CRC_stats(bool CRC)
 {
     if (CRC)
@@ -95,6 +99,7 @@ void Tlm_CRC_Stats::update_CRC_stats(bool CRC)
             num_crc_not_ok++;
         }
 }
+
 
 Tlm_CRC_Stats::~Tlm_CRC_Stats()
 {
@@ -125,7 +130,6 @@ Tlm_CRC_Stats::~Tlm_CRC_Stats()
                 {
                     DLOG(INFO) << "Telemetry CRC stats cannot write on the output file " << d_dump_crc_stats_filename.c_str();
                 }
-
 
             const auto pos = d_dump_file.tellp();
             try

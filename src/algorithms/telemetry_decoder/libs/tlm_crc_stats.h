@@ -17,6 +17,7 @@
 #ifndef GNSS_SDR_CRC_STATS_H
 #define GNSS_SDR_CRC_STATS_H
 
+#include <cstdint>
 #include <fstream>  // for std::ofstream
 #include <string>   // for std::string
 

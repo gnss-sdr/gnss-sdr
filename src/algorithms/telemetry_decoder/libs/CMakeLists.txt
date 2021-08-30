@@ -11,6 +11,7 @@ set(TELEMETRY_DECODER_LIB_SOURCES
     tlm_conf.cc
     tlm_utils.cc
     viterbi_decoder.cc
+    tlm_crc_stats.cc
 )
 
 set(TELEMETRY_DECODER_LIB_HEADERS
@@ -18,6 +19,7 @@ set(TELEMETRY_DECODER_LIB_HEADERS
     viterbi_decoder.h
     convolutional.h
     tlm_utils.h
+    tlm_crc_stats.h
 )
 
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)

@@ -26,6 +26,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "tlm_conf.h"
+#include "tlm_crc_stats.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -104,6 +105,10 @@ private:
     Galileo_Cnav_Message d_cnav_nav;
     Galileo_Inav_Message d_inav_nav;
     Galileo_Fnav_Message d_fnav_nav;
+
+    // CRC statistics
+    bool d_dump_crc_stats;
+    Tlm_CRC_Stats d_Tlm_CRC_Stats;
 
     double d_delta_t;  // GPS-GALILEO time offset
 

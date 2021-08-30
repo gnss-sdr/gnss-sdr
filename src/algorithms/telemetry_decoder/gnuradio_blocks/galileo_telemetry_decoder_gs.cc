@@ -30,6 +30,7 @@
 #include "galileo_iono.h"            // for Galileo_Iono
 #include "galileo_utc_model.h"       // for Galileo_Utc_Model
 #include "gnss_synchro.h"
+#include "tlm_crc_stats.h"
 #include "tlm_utils.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -81,6 +82,12 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_frame_type = frame_type;
     DLOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
 
+    d_dump_crc_stats = conf.dump_crc_stats;
+    if (d_dump_crc_stats)
+        {
+            // initialize the telemetry CRC statistics class
+            d_Tlm_CRC_Stats.initialize(conf.dump_crc_stats_filename);
+        }
     switch (d_frame_type)
         {
         case 1:  // INAV
@@ -616,6 +623,13 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
                         }
                 }
         }
+
+    if (d_dump_crc_stats)
+        {
+            // set the channel number for the telemetry CRC statistics
+            // disable the telemetry CRC statistics if there is a problem opening the output file
+            d_dump_crc_stats = d_Tlm_CRC_Stats.set_channel(d_channel);
+        }
 }
 
 
@@ -787,6 +801,13 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 return -1;
                                 break;
                             }
+
+                        if (d_dump_crc_stats)
+                            {
+                                // update CRC statistics
+                                d_Tlm_CRC_Stats.update_CRC_stats(d_inav_nav.get_flag_CRC_test() or d_fnav_nav.get_flag_CRC_test() or d_cnav_nav.get_flag_CRC_test());
+                            }
+
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                         if (d_inav_nav.get_flag_CRC_test() == true or d_fnav_nav.get_flag_CRC_test() == true or d_cnav_nav.get_flag_CRC_test() == true)
                             {

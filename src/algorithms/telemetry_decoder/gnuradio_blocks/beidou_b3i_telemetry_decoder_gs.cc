@@ -56,6 +56,14 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+    if (d_enable_navdata_monitor)
+        {
+            // register nav message monitor out
+            this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
+            d_nav_msg_packet.system = std::string("C");
+            d_nav_msg_packet.signal = std::string("B3");
+        }
     // initialize internal vars
     d_dump_filename = conf.dump_filename;
     d_dump = conf.dump;
@@ -239,6 +247,11 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
                 {
                     data_bits.push_back((dec_word_bits[jj] > 0) ? ('1') : ('0'));
                 }
+        }
+
+    if (d_enable_navdata_monitor)
+        {
+            d_nav_msg_packet.nav_message = data_bits;
         }
 
     if (d_satellite.get_PRN() > 0 and d_satellite.get_PRN() < 6)
@@ -610,6 +623,15 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                 {
                     d_last_valid_preamble = d_sample_counter;
                     d_flag_valid_word = true;
+                }
+
+            if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                {
+                    d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                    d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                    const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                    this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                    d_nav_msg_packet.nav_message = "";
                 }
         }
     else

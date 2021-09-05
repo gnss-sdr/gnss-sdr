@@ -22,6 +22,7 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "gps_navigation_message.h"
+#include "nav_message_packet.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
@@ -75,6 +76,7 @@ private:
 
     Gps_Navigation_Message d_nav;
     Gnss_Satellite d_satellite;
+    Nav_Message_Packet d_nav_msg_packet;
 
     std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
 
@@ -110,6 +112,7 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_navdata_monitor;
 };
 
 

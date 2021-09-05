@@ -40,6 +40,7 @@ public:
     bool remove_dat;
     bool enable_reed_solomon;  // for INAV message in Galileo E1B
     bool dump_crc_stats;       // telemetry CRC statistics
+    bool enable_navdata_monitor;
     std::string dump_crc_stats_filename;
 };
 

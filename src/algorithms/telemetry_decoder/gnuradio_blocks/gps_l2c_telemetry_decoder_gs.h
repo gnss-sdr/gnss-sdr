@@ -21,6 +21,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gps_cnav_navigation_message.h"
+#include "nav_message_packet.h"
 #include "tlm_conf.h"
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -77,6 +78,8 @@ private:
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
 
+    Nav_Message_Packet d_nav_msg_packet;
+
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
@@ -98,6 +101,7 @@ private:
     bool d_flag_valid_word;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_navdata_monitor;
 };
 
 

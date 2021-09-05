@@ -27,6 +27,7 @@
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
+#include <bitset>           // for bitset
 #include <cmath>            // for round
 #include <cstddef>          // for size_t
 #include <cstring>          // for memcpy
@@ -68,6 +69,15 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+    if (d_enable_navdata_monitor)
+        {
+            // register nav message monitor out
+            this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
+            d_nav_msg_packet.system = std::string("G");
+            d_nav_msg_packet.signal = std::string("1C");
+        }
+
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
 
@@ -284,6 +294,22 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
     // NEW GPS SUBFRAME HAS ARRIVED!
     if (subframe_synchro_confirmation)
         {
+            if (d_enable_navdata_monitor)
+                {
+                    uint32_t gps_word;
+                    std::bitset<GPS_SUBFRAME_BITS> subframe_bits;
+                    std::bitset<GPS_WORD_BITS + 2> word_bits;
+                    for (int32_t i = 0; i < 10; i++)
+                        {
+                            memcpy(&gps_word, &subframe[i * 4], sizeof(char) * 4);
+                            word_bits = std::bitset<(GPS_WORD_BITS + 2)>(gps_word);
+                            for (int32_t j = 0; j < GPS_WORD_BITS; j++)
+                                {
+                                    subframe_bits[GPS_WORD_BITS * (9 - i) + j] = word_bits[j];
+                                }
+                        }
+                    d_nav_msg_packet.nav_message = subframe_bits.to_string();
+                }
             const int32_t subframe_ID = d_nav.subframe_decoder(subframe.data());  // decode the subframe
             if (subframe_ID > 0 and subframe_ID < 6)
                 {
@@ -499,6 +525,15 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_symbol.Flag_valid_word = d_flag_TOW_set;
+
+            if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                {
+                    d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                    d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                    const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                    this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                    d_nav_msg_packet.nav_message = "";
+                }
 
             if (d_flag_PLL_180_deg_phase_locked == true)
                 {

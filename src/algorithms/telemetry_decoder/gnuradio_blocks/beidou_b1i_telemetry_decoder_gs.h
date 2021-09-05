@@ -22,6 +22,7 @@
 
 #include "beidou_dnav_navigation_message.h"
 #include "gnss_block_interface.h"
+#include "nav_message_packet.h"
 #include "gnss_satellite.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
@@ -87,6 +88,8 @@ private:
     // Navigation Message variable
     Beidou_Dnav_Navigation_Message d_nav;
 
+    Nav_Message_Packet d_nav_msg_packet;
+
     // Satellite Information and logging capacity
     Gnss_Satellite d_satellite;
     std::string d_dump_filename;
@@ -119,6 +122,7 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_navdata_monitor;
 };
 
 

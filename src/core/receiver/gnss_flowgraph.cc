@@ -36,6 +36,7 @@
 #include "gnss_satellite.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"
+#include "nav_message_monitor.h"
 #include "signal_source_interface.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
@@ -235,6 +236,20 @@ void GNSSFlowgraph::init()
                 configuration_->property("TrackingMonitor.decimation_factor", 1),
                 configuration_->property("TrackingMonitor.udp_port", 1236),
                 udp_addr_vec, enable_protobuf);
+        }
+
+    /*
+     * Instantiate the receiver av message monitor block, if required
+     */
+    enable_navdata_monitor_ = configuration_->property("NavDataMonitor.enable_monitor", false);
+    if (enable_navdata_monitor_)
+        {
+            // Retrieve monitor properties
+            std::string address_string = configuration_->property("NavDataMonitor.client_addresses", std::string("127.0.0.1"));
+            std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+            std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+            udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
+            NavDataMonitor_ = nav_message_monitor_make(udp_addr_vec, configuration_->property("NavDataMonitor.port", 1237));
         }
 }
 
@@ -1512,6 +1527,25 @@ int GNSSFlowgraph::connect_tracking_monitor()
     return 0;
 }
 
+int GNSSFlowgraph::connect_navdata_monitor()
+{
+    try
+        {
+            for (int i = 0; i < channels_count_; i++)
+                {
+                    top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(ERROR) << "Can't connect TlM outputs to Monitor block: " << e.what();
+            top_block_->disconnect_all();
+            return 1;
+        }
+    DLOG(INFO) << "navdata monitor successfully connected to Channel blocks";
+    return 0;
+}
+
 
 int GNSSFlowgraph::connect_monitors()
 {
@@ -1542,8 +1576,17 @@ int GNSSFlowgraph::connect_monitors()
                 }
         }
 
+    // NAVIGATION DATA MONITOR
+    if (enable_navdata_monitor_)
+        {
+            if (connect_navdata_monitor() != 0)
+                {
+                    return 1;
+                }
+        }
     return 0;
 }
+
 
 int GNSSFlowgraph::connect_gal_e6_has()
 {
@@ -1582,6 +1625,7 @@ int GNSSFlowgraph::connect_gal_e6_has()
     return 0;
 }
 
+
 int GNSSFlowgraph::disconnect_monitors()
 {
     try
@@ -1599,6 +1643,10 @@ int GNSSFlowgraph::disconnect_monitors()
                     if (enable_tracking_monitor_)
                         {
                             top_block_->disconnect(channels_.at(i)->get_right_block_trk(), 0, GnssSynchroTrackingMonitor_, i);
+                        }
+                    if (enable_navdata_monitor_)
+                        {
+                            top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
                         }
                 }
         }

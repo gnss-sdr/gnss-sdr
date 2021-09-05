@@ -21,6 +21,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"               // for Gnss_Satellite
 #include "gps_cnav_navigation_message.h"  // for Gps_CNAV_Navigation_Message
+#include "nav_message_packet.h"
 #include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
@@ -75,6 +76,8 @@ private:
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
 
+    Nav_Message_Packet d_nav_msg_packet;
+
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
@@ -93,6 +96,7 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_navdata_monitor;
 };
 
 

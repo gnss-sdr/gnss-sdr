@@ -25,6 +25,7 @@
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
 #include "tlm_conf.h"
+#include "nav_message_packet.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -93,6 +94,8 @@ private:
     // Navigation Message variable
     Glonass_Gnav_Navigation_Message d_nav;
 
+    Nav_Message_Packet d_nav_msg_packet;
+
     Gnss_Satellite d_satellite;
 
     std::string d_dump_filename;
@@ -118,6 +121,7 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_navdata_monitor;
 };
 
 

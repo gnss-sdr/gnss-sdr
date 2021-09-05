@@ -24,6 +24,7 @@
 #include "galileo_fnav_message.h"
 #include "galileo_inav_message.h"
 #include "gnss_block_interface.h"
+#include "nav_message_packet.h"
 #include "gnss_satellite.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
@@ -110,6 +111,8 @@ private:
     bool d_dump_crc_stats;
     Tlm_CRC_Stats d_Tlm_CRC_Stats;
 
+    Nav_Message_Packet d_nav_msg_packet;
+
     double d_delta_t;  // GPS-GALILEO time offset
 
     uint64_t d_sample_counter;
@@ -147,6 +150,7 @@ private:
     bool d_first_eph_sent;
     bool d_cnav_dummy_page;
     bool d_print_cnav_page;
+    bool d_enable_navdata_monitor;
 };
 
 

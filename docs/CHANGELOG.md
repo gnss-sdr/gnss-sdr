@@ -12,6 +12,16 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Usability:
+
+- Added a new monitor to extract the raw data bits in the navigation message and
+  send them elsewhere via UDP. Activated by setting
+  `NavDataMonitor.enable_monitor=true`,
+  `NavDataMonitor.client_addresses=127.0.0.1` and `NavDataMonitor.port=1237` in
+  the configuration file. Format described in the `nav_message.proto` file.
+
 ## [GNSS-SDR v0.0.15](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.15) - 2021-08-23
 
 ### Improvements in Availability:

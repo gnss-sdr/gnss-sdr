@@ -53,6 +53,14 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+    if (d_enable_navdata_monitor)
+        {
+            // register nav message monitor out
+            this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
+            d_nav_msg_packet.system = std::string("R");
+            d_nav_msg_packet.signal = std::string("1G");
+        }
     // initialize internal vars
     d_dump_filename = conf.dump_filename;
     d_dump = conf.dump;
@@ -185,6 +193,11 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
     for (int32_t i = 1; i < (GLONASS_GNAV_STRING_BITS); i++)
         {
             data_bits.push_back(((relative_code[i - 1] - '0') ^ (relative_code[i] - '0')) + '0');
+        }
+
+    if (d_enable_navdata_monitor)
+        {
+            d_nav_msg_packet.nav_message = data_bits;
         }
 
     // 2. Call the GLONASS GNAV string decoder
@@ -414,17 +427,26 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
     //         delta_t = d_nav.A_0G + d_nav.A_1G * (d_TOW_at_current_symbol - d_nav.t_0G + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G), 64)));
     //     }
 
+    current_symbol.PRN = this->d_satellite.get_PRN();
+    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+
     if (d_flag_frame_sync == true and d_nav.is_flag_TOW_set() == true)
         {
             current_symbol.Flag_valid_word = true;
+            if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                {
+                    d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                    d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(current_symbol.TOW_at_current_symbol_ms);
+                    const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                    this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                    d_nav_msg_packet.nav_message = "";
+                }
         }
     else
         {
             current_symbol.Flag_valid_word = false;
         }
 
-    current_symbol.PRN = this->d_satellite.get_PRN();
-    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
     // todo: glonass time to gps time should be done in observables block
     // current_symbol.TOW_at_current_symbol_ms -= -= static_cast<uint32_t>(delta_t) * 1000;  // Galileo to GPS TOW
 

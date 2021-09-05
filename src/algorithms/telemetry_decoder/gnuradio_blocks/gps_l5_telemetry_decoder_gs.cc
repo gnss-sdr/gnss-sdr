@@ -52,6 +52,15 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+    if (d_enable_navdata_monitor)
+        {
+            // register nav message monitor out
+            this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
+            d_nav_msg_packet.system = std::string("G");
+            d_nav_msg_packet.signal = std::string("L5");
+        }
+
     d_last_valid_preamble = 0;
     d_sent_tlm_failed_msg = false;
     d_max_symbols_without_valid_frame = GPS_L5_CNAV_DATA_PAGE_BITS * GPS_L5_SYMBOLS_PER_BIT * 10;  // rise alarm if 20 consecutive subframes have no valid CRC
@@ -205,6 +214,11 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                     raw_bits[GPS_L5_CNAV_DATA_PAGE_BITS - 1 - i] = ((msg.raw_msg[i / 8] >> (7 - i % 8)) & 1U);
                 }
 
+            if (d_enable_navdata_monitor)
+                {
+                    d_nav_msg_packet.nav_message = raw_bits.to_string();
+                }
+
             d_CNAV_Message.decode_page(raw_bits);
 
             // Push the new navigation data to the queues
@@ -253,6 +267,15 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 {
                     d_last_valid_preamble = d_sample_counter;
                     d_flag_valid_word = true;
+                }
+
+            if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                {
+                    d_nav_msg_packet.prn = static_cast<int32_t>(current_synchro_data.PRN);
+                    d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                    const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                    this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                    d_nav_msg_packet.nav_message = "";
                 }
         }
     else

@@ -18,8 +18,8 @@
 #ifndef GNSS_SDR_NAV_MESSAGE_MONITOR_H
 #define GNSS_SDR_NAV_MESSAGE_MONITOR_H
 
-#include "nav_message_udp_sink.h"
 #include "gnss_block_interface.h"
+#include "nav_message_udp_sink.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
 #include <cstdint>

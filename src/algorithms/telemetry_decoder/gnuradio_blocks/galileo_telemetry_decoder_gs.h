@@ -24,8 +24,8 @@
 #include "galileo_fnav_message.h"
 #include "galileo_inav_message.h"
 #include "gnss_block_interface.h"
-#include "nav_message_packet.h"
 #include "gnss_satellite.h"
+#include "nav_message_packet.h"
 #include "tlm_conf.h"
 #include "tlm_crc_stats.h"
 #include <boost/circular_buffer.hpp>

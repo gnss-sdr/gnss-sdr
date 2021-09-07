@@ -23,8 +23,8 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
-#include "tlm_conf.h"
 #include "nav_message_packet.h"
+#include "tlm_conf.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star

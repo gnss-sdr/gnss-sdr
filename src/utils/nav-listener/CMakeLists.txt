@@ -4,8 +4,8 @@
 # SPDX-FileCopyrightText: 2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required (VERSION 3.9...3.21)
-project (nav-msg-listener CXX)
+cmake_minimum_required(VERSION 3.9...3.21)
+project(nav-msg-listener CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -14,7 +14,7 @@ find_package(Boost COMPONENTS system REQUIRED)
 
 find_package(Protobuf REQUIRED)
 if(${Protobuf_VERSION} VERSION_LESS "3.0.0")
-     message(FATAL_ERROR "Fatal error: Protocol Buffers >= v3.0.0 required.")
+    message(FATAL_ERROR "Fatal error: Protocol Buffers >= v3.0.0 required.")
 endif()
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/nav_message.proto)

@@ -22,7 +22,7 @@
 class Nav_Msg_Udp_Listener
 {
 public:
-    Nav_Msg_Udp_Listener(unsigned short port);
+    explicit Nav_Msg_Udp_Listener(unsigned short port);
     bool print_content();
 
 private:

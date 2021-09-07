@@ -1,14 +1,23 @@
+<!-- prettier-ignore-start -->
+[comment]: # (
+SPDX-License-Identifier: BSD-3-Clause
+)
+
+[comment]: # (
+SPDX-FileCopyrightText: 2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+)
+<!-- prettier-ignore-end -->
+
 # nav_msg_listener
 
 Simple application that retrieves decoded navigation messages produced by
 GNSS-SDR and prints them in a terminal. This is only for demonstration purposes,
 as a example on how to retrieve data using the `nav_message.proto` file.
 
-
 # Build the software
 
-This software requires [Boost](https://www.boost.org/) and [Protocol
-Buffers](https://developers.google.com/protocol-buffers).
+This software requires [Boost](https://www.boost.org/) and
+[Protocol Buffers](https://developers.google.com/protocol-buffers).
 
 In a terminal, type:
 
@@ -17,7 +26,6 @@ $ mkdir build && cd build
 $ cmake ..
 $ make
 ```
-
 
 ## Usage
 

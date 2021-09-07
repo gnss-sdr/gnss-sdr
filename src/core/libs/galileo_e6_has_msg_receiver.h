@@ -23,6 +23,7 @@
 #include "Galileo_CNAV.h"
 #include "galileo_has_data.h"
 #include "gnss_block_interface.h"
+#include "nav_message_packet.h"
 #include <gnuradio/block.h>
 #include <pmt/pmt.h>
 #include <bitset>
@@ -55,6 +56,7 @@ class galileo_e6_has_msg_receiver : public gr::block
 {
 public:
     ~galileo_e6_has_msg_receiver() = default;  //!< Default destructor
+    void set_enable_navdata_monitor(bool enable);
 
 private:
     friend galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make();
@@ -63,6 +65,8 @@ private:
     void process_HAS_page(const Galileo_HAS_page& has_page);
     void read_MT1_header(const std::string& message_header);
     void read_MT1_body(const std::string& message_body);
+
+    Nav_Message_Packet d_nav_msg_packet;
 
     int decode_message_type1(uint8_t message_id, uint8_t message_size);
     uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
@@ -84,6 +88,7 @@ private:
     std::vector<std::vector<uint8_t>> d_M_matrix{GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};                                                             // HAS message matrix 32 x 53
     std::vector<std::vector<uint8_t>> d_received_pids{32, std::vector<uint8_t>()};
     bool d_new_message{};
+    bool d_enable_navdata_monitor{};
 };
 
 

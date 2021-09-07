@@ -1527,6 +1527,7 @@ int GNSSFlowgraph::connect_tracking_monitor()
     return 0;
 }
 
+
 int GNSSFlowgraph::connect_navdata_monitor()
 {
     try
@@ -1535,6 +1536,8 @@ int GNSSFlowgraph::connect_navdata_monitor()
                 {
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
                 }
+            gal_e6_has_rx_->set_enable_navdata_monitor(true);
+            top_block_->msg_connect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
         }
     catch (const std::exception& e)
         {
@@ -1596,8 +1599,6 @@ int GNSSFlowgraph::connect_gal_e6_has()
             for (int i = 0; i < channels_count_; i++)
                 {
                     const std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();
-                    std::string gnss_system;
-                    Gnss_Signal signal_value;
                     switch (mapStringValues_[gnss_signal])
                         {
                         case evGAL_E6:
@@ -1647,6 +1648,7 @@ int GNSSFlowgraph::disconnect_monitors()
                     if (enable_navdata_monitor_)
                         {
                             top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                            top_block_->msg_disconnect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
                         }
                 }
         }

@@ -48,6 +48,8 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
 {
     // register Gal E6 HAS input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("E6_HAS_from_TLM"));
+    // register nav message monitor out
+    this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
     this->set_msg_handler(pmt::mp("E6_HAS_from_TLM"),
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_galileo_e6_has(PH1); });
@@ -64,6 +66,17 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
 
     // initialize Reed-Solomon decoder
     d_rs = std::make_unique<ReedSolomon>();
+
+    d_nav_msg_packet.system = std::string("E");
+    d_nav_msg_packet.signal = std::string("E6");
+    d_nav_msg_packet.prn = 0;
+    d_nav_msg_packet.tow_at_current_symbol_ms = 0;
+}
+
+
+void galileo_e6_has_msg_receiver::set_enable_navdata_monitor(bool enable)
+{
+    d_enable_navdata_monitor = enable;
 }
 
 
@@ -178,6 +191,24 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
                 }
         }
 
+    if (erasure_positions.size() > 223)
+        {
+            // This should not happen! Maybe message_size < PID < 33 ?
+            // Don't even try to decode
+            std::string msg("Reed Solomon decoding of HAS message is not possible. Received PIDs:");
+            std::stringstream ss;
+            for (auto pid : d_received_pids[message_id])
+                {
+                    ss << " " << static_cast<float>(pid);
+                }
+            ss << ", Message size: " << static_cast<float>(message_size) << "  Message ID: " << static_cast<float>(message_id);
+            msg += ss.str();
+            LOG(ERROR) << msg;
+            d_received_pids[message_id].clear();
+            d_C_matrix[message_id] = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};
+            return -1;
+        }
+
     DLOG(INFO) << debug_print_vector("List of received PIDs", d_received_pids[message_id]);
     DLOG(INFO) << debug_print_vector("erasure_positions", erasure_positions);
     DLOG(INFO) << debug_print_matrix("d_C_matrix produced", d_C_matrix[message_id]);
@@ -235,6 +266,14 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
     // Trigger HAS message content reading and fill the d_HAS_data object
     d_HAS_data = Galileo_HAS_data();
+
+    if (d_enable_navdata_monitor)
+        {
+            d_nav_msg_packet.nav_message = decoded_message_type_1;
+            const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+            this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+        }
+
     read_MT1_header(decoded_message_type_1.substr(0, GALILEO_CNAV_MT1_HEADER_BITS));
     read_MT1_body(std::string(decoded_message_type_1.begin() + GALILEO_CNAV_MT1_HEADER_BITS, decoded_message_type_1.end()));
 

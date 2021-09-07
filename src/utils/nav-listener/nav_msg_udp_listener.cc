@@ -26,7 +26,7 @@ Nav_Msg_Udp_Listener::Nav_Msg_Udp_Listener(unsigned short port)
 
 bool Nav_Msg_Udp_Listener::read_nav_message(gnss_sdr::navMsg &message)
 {
-    char buff[1500];  // Buffer for storing the received data.
+    char buff[8192];  // Buffer for storing the received data.
 
     message_ = message;
     // This call will block until one or more bytes of data has been received.

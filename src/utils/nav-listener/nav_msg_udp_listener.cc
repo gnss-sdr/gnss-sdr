@@ -42,13 +42,19 @@ bool Nav_Msg_Udp_Listener::print_content()
 {
     if (read_nav_message(message_))
         {
+            std::string system = message_.system();
+            std::string signal = message_.signal();
+            int prn = message_.prn();
+            int tow_at_current_symbol_ms = message_.tow_at_current_symbol_ms();
+            std::string nav_message = message_.nav_message();
+
             std::cout << "\nNew Data received:\n";
-            std::cout << "System: " << message_.system() << '\n';
-            std::cout << "Signal: " << message_.signal() << '\n';
-            std::cout << "PRN: " << message_.prn() << '\n';
+            std::cout << "System: " << system << '\n';
+            std::cout << "Signal: " << signal << '\n';
+            std::cout << "PRN: " << prn << '\n';
             std::cout << "TOW of last symbol [ms]: "
-                      << message_.tow_at_current_symbol_ms() << '\n';
-            std::cout << "Nav message: " << message_.nav_message() << "\n\n";
+                      << tow_at_current_symbol_ms << '\n';
+            std::cout << "Nav message: " << nav_message << "\n\n";
         }
     else
         {

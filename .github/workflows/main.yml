@@ -56,7 +56,7 @@ jobs:
     - name: install dependencies
       run: brew update && brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp pugixml protobuf && ln -s /usr/local/opt/llvm/bin/clang-tidy /usr/local/bin && ln -s /usr/local/Cellar/llvm/12.*/bin/clang-apply-replacements /usr/local/bin && cp /usr/local/Cellar/llvm/12.*/share/clang/run-clang-tidy.py /usr/local/bin && pip3 install mako
     - name: Prepare run
-      run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.11.0 core_monitor pvt_libs
+      run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.11.0 core_monitor core_libs pvt_libs
     - name: run clang-tidy
       run: cd build && run-clang-tidy.py -fix
     - name: check

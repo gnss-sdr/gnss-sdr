@@ -24,6 +24,7 @@ Tlm_Conf::Tlm_Conf()
     remove_dat = false;
     enable_reed_solomon = false;
     dump_crc_stats = false;
+    enable_navdata_monitor = false;
 }
 
 

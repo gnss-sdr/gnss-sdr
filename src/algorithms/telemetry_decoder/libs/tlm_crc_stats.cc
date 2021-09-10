@@ -26,6 +26,9 @@
 Tlm_CRC_Stats::Tlm_CRC_Stats()
 {
     enable_crc_stats = false;
+    num_crc_ok = 0;
+    num_crc_not_ok = 0;
+    channel = 0;
 }
 
 

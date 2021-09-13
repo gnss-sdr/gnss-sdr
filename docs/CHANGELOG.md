@@ -23,6 +23,17 @@ All notable changes to GNSS-SDR will be documented in this file.
   the configuration file. Format described in the `nav_message.proto` file. A
   simple listener application written in C++ is included in
   `src/utils/nav-listener` as a example.
+- Extract successful rate of the CRC check in the decoding of navigation
+  messages. This can be enbled by setting
+  `TelemetryDecoder_XX.dump_crc_stats=true` and, optionally,
+  `TelemetryDecoder_XX.dump_crc_stats_filename=./crc_stats` in the configuration
+  file. At the end of the processing (or exiting with `q` + `[Enter]`), the CRC
+  check success rate will be reported in a file.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
 
 ## [GNSS-SDR v0.0.15](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.15) - 2021-08-23
 

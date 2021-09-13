@@ -72,6 +72,11 @@ target_include_directories(telemetry_decoder_gr_blocks
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
 )
 
+target_include_directories(telemetry_decoder_gr_blocks
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique.h
+)
+
 if(has_rotl)
     target_compile_definitions(telemetry_decoder_gr_blocks
         PRIVATE -DCOMPILER_HAS_ROTL=1

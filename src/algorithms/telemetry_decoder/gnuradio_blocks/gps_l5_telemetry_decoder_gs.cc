@@ -17,6 +17,7 @@
 
 #include "gps_l5_telemetry_decoder_gs.h"
 #include "display.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"
 #include "gps_cnav_iono.h"
@@ -81,6 +82,18 @@ gps_l5_telemetry_decoder_gs::gps_l5_telemetry_decoder_gs(
 
     d_sample_counter = 0;
     d_flag_PLL_180_deg_phase_locked = false;
+
+    d_dump_crc_stats = conf.dump_crc_stats;
+    if (d_dump_crc_stats)
+        {
+            // initialize the telemetry CRC statistics class
+            d_Tlm_CRC_Stats = std::make_unique<Tlm_CRC_Stats>();
+            d_Tlm_CRC_Stats->initialize(conf.dump_crc_stats_filename);
+        }
+    else
+        {
+            d_Tlm_CRC_Stats = nullptr;
+        }
 }
 
 
@@ -154,6 +167,13 @@ void gps_l5_telemetry_decoder_gs::set_channel(int32_t channel)
                         }
                 }
         }
+
+    if (d_dump_crc_stats)
+        {
+            // set the channel number for the telemetry CRC statistics
+            // disable the telemetry CRC statistics if there is a problem opening the output file
+            d_dump_crc_stats = d_Tlm_CRC_Stats->set_channel(d_channel);
+        }
 }
 
 
@@ -197,9 +217,18 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
     const auto symbol_clip = static_cast<uint8_t>(current_synchro_data.Prompt_Q > 0) * 255;
     // 2. Add the telemetry decoder information
     // check if new CNAV frame is available
-    if (cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay) == true)
+    bool new_page = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
+    if (d_dump_crc_stats && (d_cnav_decoder.part1.message_lock || d_cnav_decoder.part2.message_lock))
         {
-            if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part2.invert == true)
+            // update CRC statistics
+            d_Tlm_CRC_Stats->update_CRC_stats((d_cnav_decoder.part1.crc_ok || d_cnav_decoder.part2.crc_ok));
+            d_cnav_decoder.part1.message_lock = false;
+            d_cnav_decoder.part2.message_lock = false;
+        }
+
+    if (new_page)
+        {
+            if (d_cnav_decoder.part1.invert == true || d_cnav_decoder.part2.invert == true)
                 {
                     d_flag_PLL_180_deg_phase_locked = true;
                 }
@@ -254,7 +283,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
             // check TOW update consistency
             const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             d_TOW_at_current_symbol_ms = msg.tow * 6000 + (delay + 12) * GPS_L5I_SYMBOL_PERIOD_MS;
-            if (last_d_TOW_at_current_symbol_ms != 0 and std::llabs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(GPS_L5I_SYMBOL_PERIOD_MS))
+            if (last_d_TOW_at_current_symbol_ms != 0 && std::llabs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(GPS_L5I_SYMBOL_PERIOD_MS))
                 {
                     DLOG(INFO) << "Warning: GPS L5 TOW update in ch " << d_channel
                                << " does not match the TLM TOW counter " << static_cast<int64_t>(d_TOW_at_current_symbol_ms) - static_cast<int64_t>(last_d_TOW_at_current_symbol_ms) << " ms "

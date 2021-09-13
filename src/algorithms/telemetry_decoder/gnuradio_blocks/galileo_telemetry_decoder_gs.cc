@@ -29,6 +29,7 @@
 #include "galileo_has_page.h"        // For Galileo_HAS_page
 #include "galileo_iono.h"            // for Galileo_Iono
 #include "galileo_utc_model.h"       // for Galileo_Utc_Model
+#include "gnss_sdr_make_unique.h"    // for std::make_unique in C++11
 #include "gnss_synchro.h"
 #include "tlm_crc_stats.h"
 #include "tlm_utils.h"
@@ -91,7 +92,12 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     if (d_dump_crc_stats)
         {
             // initialize the telemetry CRC statistics class
-            d_Tlm_CRC_Stats.initialize(conf.dump_crc_stats_filename);
+            d_Tlm_CRC_Stats = std::make_unique<Tlm_CRC_Stats>();
+            d_Tlm_CRC_Stats->initialize(conf.dump_crc_stats_filename);
+        }
+    else
+        {
+            d_Tlm_CRC_Stats = nullptr;
         }
     switch (d_frame_type)
         {
@@ -643,7 +649,7 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
         {
             // set the channel number for the telemetry CRC statistics
             // disable the telemetry CRC statistics if there is a problem opening the output file
-            d_dump_crc_stats = d_Tlm_CRC_Stats.set_channel(d_channel);
+            d_dump_crc_stats = d_Tlm_CRC_Stats->set_channel(d_channel);
         }
 }
 
@@ -816,15 +822,15 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 return -1;
                                 break;
                             }
-
+                        bool crc_ok = (d_inav_nav.get_flag_CRC_test() || d_fnav_nav.get_flag_CRC_test() || d_cnav_nav.get_flag_CRC_test());
                         if (d_dump_crc_stats)
                             {
                                 // update CRC statistics
-                                d_Tlm_CRC_Stats.update_CRC_stats(d_inav_nav.get_flag_CRC_test() or d_fnav_nav.get_flag_CRC_test() or d_cnav_nav.get_flag_CRC_test());
+                                d_Tlm_CRC_Stats->update_CRC_stats(crc_ok);
                             }
 
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                        if (d_inav_nav.get_flag_CRC_test() == true or d_fnav_nav.get_flag_CRC_test() == true or d_cnav_nav.get_flag_CRC_test() == true)
+                        if (crc_ok)
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
@@ -839,7 +845,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         else
                             {
                                 d_CRC_error_counter++;
-                                if ((d_CRC_error_counter > CRC_ERROR_LIMIT) and (d_frame_type != 3))
+                                if ((d_CRC_error_counter > CRC_ERROR_LIMIT) && (d_frame_type != 3))
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                         gr::thread::scoped_lock lock(d_setlock);
@@ -1024,7 +1030,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         }
 
-    if (d_inav_nav.get_flag_TOW_set() == true or d_fnav_nav.get_flag_TOW_set() == true or d_cnav_nav.get_flag_CRC_test() == true)
+    if (d_inav_nav.get_flag_TOW_set() == true || d_fnav_nav.get_flag_TOW_set() == true || d_cnav_nav.get_flag_CRC_test() == true)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.

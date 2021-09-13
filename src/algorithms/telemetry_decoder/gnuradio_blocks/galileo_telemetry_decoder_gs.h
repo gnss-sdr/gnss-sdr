@@ -33,6 +33,7 @@
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
+#include <memory>  // for std::unique_ptr
 #include <string>
 #include <vector>
 
@@ -107,11 +108,8 @@ private:
     Galileo_Inav_Message d_inav_nav;
     Galileo_Fnav_Message d_fnav_nav;
 
-    // CRC statistics
-    bool d_dump_crc_stats;
-    Tlm_CRC_Stats d_Tlm_CRC_Stats;
-
     Nav_Message_Packet d_nav_msg_packet;
+    std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
 
     double d_delta_t;  // GPS-GALILEO time offset
 
@@ -151,6 +149,7 @@ private:
     bool d_cnav_dummy_page;
     bool d_print_cnav_page;
     bool d_enable_navdata_monitor;
+    bool d_dump_crc_stats;
 };
 
 

@@ -18,6 +18,7 @@
 #include "gps_l2c_telemetry_decoder_gs.h"
 #include "GPS_L2C.h"  // for GPS_L2_CNAV_DATA_PAGE_BITS, GPS_L...
 #include "display.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
 #include "gps_cnav_ephemeris.h"  // for Gps_CNAV_Ephemeris
 #include "gps_cnav_iono.h"       // for Gps_CNAV_Iono
@@ -87,6 +88,18 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
 
     d_sample_counter = 0;
     d_flag_PLL_180_deg_phase_locked = false;
+
+    d_dump_crc_stats = conf.dump_crc_stats;
+    if (d_dump_crc_stats)
+        {
+            // initialize the telemetry CRC statistics class
+            d_Tlm_CRC_Stats = std::make_unique<Tlm_CRC_Stats>();
+            d_Tlm_CRC_Stats->initialize(conf.dump_crc_stats_filename);
+        }
+    else
+        {
+            d_Tlm_CRC_Stats = nullptr;
+        }
 }
 
 
@@ -158,6 +171,12 @@ void gps_l2c_telemetry_decoder_gs::set_channel(int channel)
                         }
                 }
         }
+    if (d_dump_crc_stats)
+        {
+            // set the channel number for the telemetry CRC statistics
+            // disable the telemetry CRC statistics if there is a problem opening the output file
+            d_dump_crc_stats = d_Tlm_CRC_Stats->set_channel(d_channel);
+        }
 }
 
 
@@ -183,6 +202,13 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // add the symbol to the decoder
     const uint8_t symbol_clip = static_cast<uint8_t>(in[0].Prompt_I > 0) * 255;
     flag_new_cnav_frame = cnav_msg_decoder_add_symbol(&d_cnav_decoder, symbol_clip, &msg, &delay);
+    if (d_dump_crc_stats && (d_cnav_decoder.part1.message_lock || d_cnav_decoder.part2.message_lock))
+        {
+            // update CRC statistics
+            d_Tlm_CRC_Stats->update_CRC_stats((d_cnav_decoder.part1.crc_ok || d_cnav_decoder.part2.crc_ok));
+            d_cnav_decoder.part1.message_lock = false;
+            d_cnav_decoder.part2.message_lock = false;
+        }
 
     consume_each(1);  // one by one
 
@@ -208,7 +234,7 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // check if new CNAV frame is available
     if (flag_new_cnav_frame == true)
         {
-            if (d_cnav_decoder.part1.invert == true or d_cnav_decoder.part2.invert == true)
+            if (d_cnav_decoder.part1.invert == true || d_cnav_decoder.part2.invert == true)
                 {
                     d_flag_PLL_180_deg_phase_locked = true;
                 }

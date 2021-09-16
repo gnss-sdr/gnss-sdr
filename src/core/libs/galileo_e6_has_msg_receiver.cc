@@ -339,7 +339,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                 {
                     message = std::string(message.begin() + HAS_MSG_NSYS_LENGTH, message.end());
                     d_HAS_data.gnss_id_mask.reserve(d_HAS_data.Nsys);
-                    d_HAS_data.cell_mask = {d_HAS_data.Nsys, std::vector<std::vector<bool>>(40, std::vector<bool>(16, 0))};
+                    d_HAS_data.cell_mask = {d_HAS_data.Nsys, std::vector<std::vector<bool>>(40, std::vector<bool>(16, false))};
                     d_HAS_data.cell_mask_availability_flag.reserve(d_HAS_data.Nsys);
                     d_HAS_data.nav_message.reserve(d_HAS_data.Nsys);
                     d_HAS_data.satellite_mask.reserve(d_HAS_data.Nsys);

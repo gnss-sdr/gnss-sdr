@@ -30,6 +30,7 @@
 #include <cstddef>    // size_t
 #include <numeric>    // std::accumulate
 #include <sstream>    // std::stringstream
+#include <stdexcept>  // std::out_of_range
 #include <typeinfo>   // typeid
 
 #if HAS_GENERIC_LAMBDA
@@ -275,8 +276,21 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
         }
 
     read_MT1_header(decoded_message_type_1.substr(0, GALILEO_CNAV_MT1_HEADER_BITS));
-    read_MT1_body(std::string(decoded_message_type_1.begin() + GALILEO_CNAV_MT1_HEADER_BITS, decoded_message_type_1.end()));
 
+    try
+        {
+            read_MT1_body(std::string(decoded_message_type_1.begin() + GALILEO_CNAV_MT1_HEADER_BITS, decoded_message_type_1.end()));
+        }
+    catch (const std::out_of_range& oor)
+        {
+            std::cerr << "Out of Range error when reading HAS messages: " << oor.what() << '\n';
+            return -1;
+        }
+    catch (const std::bad_alloc& e)
+        {
+            std::cerr << "Allocation failed when reading HAS messages: " << e.what() << '\n';
+            return -1;
+        }
     return 0;
 }
 

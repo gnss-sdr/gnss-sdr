@@ -17,7 +17,6 @@
 
 #ifndef GNSS_SDR_TLM_CONF_H
 #define GNSS_SDR_TLM_CONF_H
-
 #include "configuration_interface.h"
 #include <string>
 

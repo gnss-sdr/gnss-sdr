@@ -20,6 +20,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "rtklib.h"
+#include "spoofing_detector.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <gnuradio/sync_block.h>  // for sync_block
@@ -149,6 +150,8 @@ private:
         return (pt - boost::posix_time::ptime(boost::gregorian::date(1970, 1, 1))).total_seconds();
     }
 
+    void set_warning_color(std::string& COLOR, int score);
+
     std::vector<std::string> split_string(const std::string& s, char delim) const;
 
     typedef struct
@@ -251,6 +254,7 @@ private:
     int32_t d_display_rate_ms;
     int32_t d_report_rate_ms;
     int32_t d_max_obs_block_rx_clock_offset_ms;
+    int32_t d_total_pvt_measurements;
 
     uint32_t d_nchannels;
     uint32_t d_type_of_rx;
@@ -271,6 +275,11 @@ private:
     bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;
+    bool d_enable_security_checks;
+
+    PVTConsistencyChecks d_spoofing_detector;
+    bool d_print_score;
+    std::string COLOR;
 };
 
 

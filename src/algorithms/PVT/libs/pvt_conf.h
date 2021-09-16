@@ -19,6 +19,7 @@
 
 #include <cstdint>
 #include <map>
+#include <spoofing_detector_conf.h>
 #include <string>
 
 /** \addtogroup PVT
@@ -87,6 +88,10 @@ public:
     bool pre_2009_file;
     bool dump;
     bool dump_mat;
+
+    bool security_checks;
+    bool print_score;
+    PVTConsistencyChecksConf security_parameters;
 };
 
 

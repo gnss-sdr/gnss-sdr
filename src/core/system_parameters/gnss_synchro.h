@@ -79,6 +79,10 @@ public:
     bool Flag_valid_word{};           //!< Set by Telemetry Decoder processing block
     bool Flag_valid_pseudorange{};    //!< Set by Observables processing block
 
+    // Spoofing detector
+    bool Acquisition_detection{}; //!< Set by acquisition block
+    bool Prompt_corr_detection{}; //!< Set by tracking block
+    
     /// Copy constructor
     Gnss_Synchro(const Gnss_Synchro& other) noexcept
     {
@@ -118,6 +122,8 @@ public:
                 this->Flag_valid_symbol_output = rhs.Flag_valid_symbol_output;
                 this->Flag_valid_word = rhs.Flag_valid_word;
                 this->Flag_valid_pseudorange = rhs.Flag_valid_pseudorange;
+                this->Acquisition_detection = rhs.Acquisition_detection;
+                this->Prompt_corr_detection = rhs.Prompt_corr_detection;
             }
         return *this;
     };
@@ -160,6 +166,8 @@ public:
                 this->Flag_valid_symbol_output = other.Flag_valid_symbol_output;
                 this->Flag_valid_word = other.Flag_valid_word;
                 this->Flag_valid_pseudorange = other.Flag_valid_pseudorange;
+                this->Acquisition_detection = other.Acquisition_detection;
+                this->Prompt_corr_detection = other.Prompt_corr_detection;                
             }
         return *this;
     };
@@ -206,6 +214,8 @@ public:
         ar& BOOST_SERIALIZATION_NVP(Flag_valid_symbol_output);
         ar& BOOST_SERIALIZATION_NVP(Flag_valid_word);
         ar& BOOST_SERIALIZATION_NVP(Flag_valid_pseudorange);
+        ar& BOOST_SERIALIZATION_NVP(Acquisition_detection);    
+        ar& BOOST_SERIALIZATION_NVP(Prompt_corr_detection);    
     }
 };
 

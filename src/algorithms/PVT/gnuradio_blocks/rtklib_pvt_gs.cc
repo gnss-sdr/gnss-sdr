@@ -12,7 +12,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
- */
+*/
 
 #include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
@@ -71,12 +71,13 @@
 #include <iomanip>                      // for put_time, setprecision
 #include <iostream>                     // for operator<<
 #include <locale>                       // for locale
-#include <sstream>                      // for ostringstream
-#include <stdexcept>                    // for length_error
-#include <sys/ipc.h>                    // for IPC_CREAT
-#include <sys/msg.h>                    // for msgctl
-#include <typeinfo>                     // for std::type_info, typeid
-#include <utility>                      // for pair
+#include <spoofing_detector.h>
+#include <sstream>    // for ostringstream
+#include <stdexcept>  // for length_error
+#include <sys/ipc.h>  // for IPC_CREAT
+#include <sys/msg.h>  // for msgctl
+#include <typeinfo>   // for std::type_info, typeid
+#include <utility>    // for pair
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -137,7 +138,18 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_dump = conf_.dump;
     d_dump_mat = conf_.dump_mat && d_dump;
     d_dump_filename = conf_.dump_filename;
+
+    d_total_pvt_measurements = 0;
+    d_enable_security_checks = conf_.security_checks;
+
+    if (d_enable_security_checks)
+        {
+            d_spoofing_detector = PVTConsistencyChecks(&conf_.security_parameters);
+            d_print_score = conf_.print_score;
+        }
+
     std::string dump_ls_pvt_filename = conf_.dump_filename;
+
     if (d_dump)
         {
             std::string dump_path;
@@ -528,6 +540,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_galileo_has_data_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
 
     d_start = std::chrono::system_clock::now();
+
+    COLOR = "";
 }
 
 
@@ -1873,6 +1887,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 {
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {
+            d_total_pvt_measurements++;
             bool flag_display_pvt = false;
             bool flag_compute_pvt_output = false;
             bool flag_write_RTCM_1019_output = false;
@@ -1883,6 +1898,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
+
+
             // ############ 1. READ PSEUDORANGES ####
             for (uint32_t i = 0; i < d_nchannels; i++)
                 {
@@ -2077,6 +2094,25 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                     if (flag_pvt_valid == true)
                         {
+                            // Position check is enabled
+                            if (d_enable_security_checks)
+                                {
+                                    d_spoofing_detector.update_pvt(d_user_pvt_solver->get_rx_pos(),
+                                        d_user_pvt_solver->get_rx_vel(),
+                                        d_user_pvt_solver->get_speed_over_ground(),
+                                        d_user_pvt_solver->get_course_over_ground(),
+                                        current_RX_time_ms,
+                                        d_user_pvt_solver->get_position_UTC_time());
+
+                                    // Set gnss_synchro for spoofing detector
+                                    d_spoofing_detector.d_gnss_synchro = in;
+
+                                    if (d_spoofing_detector.d_position_check)
+                                        {
+                                            d_spoofing_detector.check_PVT_consistency();
+                                        }
+                                }
+
                             // initialize (if needed) the accumulated phase offset and apply it to the active channels
                             // required to report accumulated phase cycles comparable to pseudoranges
                             initialize_and_apply_carrier_phase_offset();
@@ -2264,6 +2300,57 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << " [m/s]" << TEXT_RESET << '\n';
 
                             std::cout << std::setprecision(ss);
+
+                            int score = d_spoofing_detector.d_spoofer_score;
+
+                            if (d_print_score)
+                                {
+                                    set_warning_color(COLOR, score);
+
+                                    std::cout
+                                        << COLOR
+                                        << "Spoofer score: " << score << TEXT_RESET << "\n";
+
+                                    uint32_t count = 0;
+
+                                    // Find channels with overshadow attack
+                                    for (uint32_t i = 0; i < d_nchannels; i++)
+                                        {
+                                            DLOG(INFO) << "Satellite " << in[i][epoch].PRN << " " << in[i][epoch].Prompt_corr_detection;
+                                            if (in[i][epoch].Prompt_corr_detection)
+                                                {
+                                                    ++count;
+                                                }
+                                            else
+                                                {
+                                                    if (count > 0)
+                                                        {
+                                                            --count;
+                                                        }
+                                                }
+                                        }
+
+                                    set_warning_color(COLOR, count);
+
+                                    // Print only if atleast 1 overshadow attack is detected
+                                    if (count > 0)
+                                        {
+                                            std::cout
+                                                << COLOR
+                                                << "Overshadow attack detected on PRNs ";
+
+                                            for (uint32_t i = 0; i < d_nchannels; i++)
+                                                {
+                                                    if (in[i][epoch].Prompt_corr_detection)
+                                                        {
+                                                            std::cout << in[i][epoch].PRN << " ";
+                                                        }
+                                                }
+
+                                            std::cout << TEXT_RESET << "\n";
+                                        }
+                                }
+
                             DLOG(INFO) << "RX clock drift: " << d_user_pvt_solver->get_clock_drift_ppm() << " [ppm]";
 
                             // boost::posix_time::ptime p_time;
@@ -2301,4 +2388,20 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
         }
 
     return noutput_items;
+}
+
+void rtklib_pvt_gs::set_warning_color(std::string& COLOR, int score)
+{
+    if (score < 1)
+        {
+            COLOR = TEXT_BOLD_GREEN;
+        }
+    else if (score >= 1 and score < 4)
+        {
+            COLOR = TEXT_BOLD_YELLOW;
+        }
+    else if (score >= 4)
+        {
+            COLOR = TEXT_BOLD_RED;
+        }
 }

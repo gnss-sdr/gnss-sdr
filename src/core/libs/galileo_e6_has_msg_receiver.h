@@ -87,6 +87,9 @@ private:
     std::vector<std::vector<std::vector<uint8_t>>> d_C_matrix{32, std::vector<std::vector<uint8_t>>(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0))};  // 32 x 255 x 53
     std::vector<std::vector<uint8_t>> d_M_matrix{GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};                                                             // HAS message matrix 32 x 53
     std::vector<std::vector<uint8_t>> d_received_pids{32, std::vector<uint8_t>()};
+    std::vector<int> d_nsat_in_mask_id{32, 0};
+    std::vector<std::vector<uint8_t>> d_gnss_id_in_mask{32, std::vector<uint8_t>(16)};
+    std::vector<uint8_t> d_nsys_in_mask{32};
     bool d_new_message{};
     bool d_enable_navdata_monitor{};
 };

@@ -81,6 +81,10 @@ constexpr int32_t HAS_MSG_NUMBER_MESSAGE_IDS = 32;
 constexpr int32_t HAS_MSG_NUMBER_SATELLITE_IDS = 40;
 constexpr int32_t HAS_MSG_NUMBER_SIGNAL_MASKS = 16;
 
+constexpr float HAS_MSG_DELTA_RADIAL_SCALE_FACTOR = 0.0025;
+constexpr float HAS_MSG_CODE_BIAS_SCALE_FACTOR = 0.02;
+constexpr float HAS_MSG_PHASE_BIAS_SCALE_FACTOR = 0.01;
+
 constexpr uint16_t HAS_MSG_NUMBER_MAX_TOH = 3599;
 
 constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // Table 8 ICD v1.2

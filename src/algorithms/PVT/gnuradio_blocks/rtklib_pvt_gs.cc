@@ -44,6 +44,7 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "gpx_printer.h"
+#include "has_simple_printer.h"
 #include "kml_printer.h"
 #include "monitor_ephemeris_udp_sink.h"
 #include "monitor_pvt.h"
@@ -395,6 +396,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_xml_base_path = d_xml_base_path + fs::path::preferred_separator;
         }
 
+    // Initialize HAS simple printer
+    d_has_simple_printer = std::make_unique<Has_Simple_Printer>();
+
     d_rx_time = 0.0;
     d_last_status_print_seg = 0;
 
@@ -517,7 +521,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_galileo_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Utc_Model>).hash_code();
     d_galileo_almanac_helper_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac_Helper>).hash_code();
     d_galileo_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac>).hash_code();
-    d_galileo_has_message_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
     d_glonass_gnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>).hash_code();
     d_glonass_gnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>).hash_code();
     d_glonass_gnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Almanac>).hash_code();
@@ -1351,10 +1354,6 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->galileo_almanac_map[galileo_alm->PRN] = *galileo_alm;
                         }
                 }
-            else if (msg_type_hash_code == d_galileo_has_message_sptr_type_hash_code)
-                {
-                    // Store HAS message and print its content
-                }
 
             // **************** GLONASS GNAV Telemetry *************************
             else if (msg_type_hash_code == d_glonass_gnav_ephemeris_sptr_type_hash_code)
@@ -1517,8 +1516,7 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg) const
             if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
                 {
                     const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
-                    // TODO: Dump HAS message
-                    // std::cout << "HAS data received at PVT block.\n";
+                    d_has_simple_printer->print_message(has_data.get());
                 }
         }
     catch (const boost::bad_any_cast& e)

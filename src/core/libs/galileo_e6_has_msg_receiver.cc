@@ -591,7 +591,6 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                         }
                 }
 
-
             DLOG(INFO) << "Nsysprime: " << static_cast<float>(d_HAS_data.Nsysprime);
             DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("gnss_id_clock_subset", d_HAS_data.gnss_id_clock_subset));
             DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("delta_clock_c0_multiplier_clock_subset", d_HAS_data.delta_clock_c0_multiplier_clock_subset));

@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -39,7 +39,7 @@ class Galileo_HAS_data;
 class Has_Simple_Printer
 {
 public:
-    Has_Simple_Printer(const std::string& base_path = std::string("."), const std::string& filename = std::string("HAS_Messages"), bool time_tag_name = true);
+    explicit Has_Simple_Printer(const std::string& base_path = std::string("."), const std::string& filename = std::string("HAS_Messages"), bool time_tag_name = true);
     ~Has_Simple_Printer();
     bool print_message(const Galileo_HAS_data* const has_data);
     bool close_file();

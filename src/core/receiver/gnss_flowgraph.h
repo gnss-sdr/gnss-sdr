@@ -305,6 +305,7 @@ private:
     bool enable_tracking_monitor_;
     bool enable_navdata_monitor_;
     bool enable_fpga_offloading_;
+    bool enable_e6_has_rx_;
 };
 
 

@@ -73,6 +73,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 {
     connected_ = false;
     running_ = false;
+    enable_e6_has_rx_ = false;
     configuration_ = std::move(configuration);
     queue_ = std::move(queue);
     multiband_ = GNSSFlowgraph::is_multiband();
@@ -100,7 +101,15 @@ void GNSSFlowgraph::init()
 
     channels_status_ = channel_status_msg_receiver_make();
 
-    gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+    if (configuration_->property("Channels_E6.count", 0) > 0)
+        {
+            enable_e6_has_rx_ = true;
+            gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+        }
+    else
+        {
+            gal_e6_has_rx_ = nullptr;
+        }
 
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     int sources_count_deprecated = configuration_->property("Receiver.sources_count", 1);
@@ -460,11 +469,13 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
             return 1;
         }
 
-    if (connect_gal_e6_has() != 0)
+    if (enable_e6_has_rx_)
         {
-            return 1;
+            if (connect_gal_e6_has() != 0)
+                {
+                    return 1;
+                }
         }
-
     // Activate acquisition in enabled channels
     for (int i = 0; i < channels_count_; i++)
         {
@@ -1536,8 +1547,11 @@ int GNSSFlowgraph::connect_navdata_monitor()
                 {
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
                 }
-            gal_e6_has_rx_->set_enable_navdata_monitor(true);
-            top_block_->msg_connect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+            if (enable_e6_has_rx_)
+                {
+                    gal_e6_has_rx_->set_enable_navdata_monitor(true);
+                    top_block_->msg_connect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                }
         }
     catch (const std::exception& e)
         {
@@ -1648,7 +1662,10 @@ int GNSSFlowgraph::disconnect_monitors()
                     if (enable_navdata_monitor_)
                         {
                             top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
-                            top_block_->msg_disconnect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                            if (enable_e6_has_rx_)
+                                {
+                                    top_block_->msg_disconnect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                                }
                         }
                 }
         }

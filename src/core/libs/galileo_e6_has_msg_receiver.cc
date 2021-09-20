@@ -719,6 +719,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                 }
 
             d_HAS_data.phase_bias = std::vector<std::vector<int16_t>>(Nsat, std::vector<int16_t>(max_signals));
+            d_HAS_data.phase_discontinuity_indicator = std::vector<std::vector<uint8_t>>(Nsat, std::vector<uint8_t>(max_signals));
 
             int sat = 0;
             for (int sys = 0; sys < d_HAS_data.Nsys; sys++)
@@ -729,8 +730,11 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                                 {
                                     if ((d_HAS_data.cell_mask_availability_flag[sys] == false) || ((d_HAS_data.cell_mask_availability_flag[sys] == true) && (d_HAS_data.cell_mask[sys][s][p])))
                                         {
-                                            d_HAS_data.phase_bias[sat][p] = read_has_message_body_int16(message.substr(0, HAS_MSG_CODE_BIAS_LENGTH));
-                                            message = std::string(message.begin() + HAS_MSG_CODE_BIAS_LENGTH, message.end());
+                                            d_HAS_data.phase_bias[sat][p] = read_has_message_body_int16(message.substr(0, HAS_MSG_PHASE_BIAS_LENGTH));
+                                            message = std::string(message.begin() + HAS_MSG_PHASE_BIAS_LENGTH, message.end());
+
+                                            d_HAS_data.phase_discontinuity_indicator[sat][p] = read_has_message_body_uint8(message.substr(0, HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH));
+                                            message = std::string(message.begin() + HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH, message.end());
                                         }
                                 }
                             sat += 1;
@@ -738,6 +742,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                 }
 
             DLOG(INFO) << debug_print_matrix("phase bias", d_HAS_data.phase_bias);
+            DLOG(INFO) << debug_print_matrix("phase discontinuity indicator", d_HAS_data.phase_discontinuity_indicator);
         }
 
     // if (d_HAS_data.header.ura_flag && have_mask)
@@ -836,7 +841,7 @@ int16_t galileo_e6_has_msg_receiver::read_has_message_body_int16(const std::stri
     const size_t len = bits.length();
 
     // read the MSB and perform the sign extension
-    if (static_cast<int>(bits[0]) == 1)
+    if (bits[0] == '1')
         {
             value ^= 0xFFFF;  // 16 bits variable
         }

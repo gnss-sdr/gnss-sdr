@@ -3,8 +3,8 @@
  * \brief GNU Radio block that processes Galileo HAS message pages received from
  * Galileo E6B telemetry blocks. After successful decoding, sends the content to
  * the PVT block.
- * \author Javier Arribas, 2021. jarribas(at)cttc.es
  * \author Carles Fernandez-Prades, 2021. cfernandez(at)cttc.es
+ * \author Javier Arribas, 2021. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
@@ -28,7 +28,7 @@
 #include <pmt/pmt.h>
 #include <bitset>
 #include <cstdint>
-#include <memory>
+#include <memory>  // for std::unique_ptr
 #include <string>
 #include <utility>  // std::pair
 #include <vector>
@@ -66,30 +66,42 @@ private:
     void read_MT1_header(const std::string& message_header);
     void read_MT1_body(const std::string& message_body);
 
-    Nav_Message_Packet d_nav_msg_packet;
-
     int decode_message_type1(uint8_t message_id, uint8_t message_size);
-    uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
+
     uint16_t read_has_message_header_parameter_uint16(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
+    uint8_t read_has_message_header_parameter_uint8(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     bool read_has_message_header_parameter_bool(const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
 
-    uint8_t read_has_message_body_uint8(const std::string& bits) const;
-    uint16_t read_has_message_body_uint16(const std::string& bits) const;
     uint64_t read_has_message_body_uint64(const std::string& bits) const;
+    uint16_t read_has_message_body_uint16(const std::string& bits) const;
     int16_t read_has_message_body_int16(const std::string& bits) const;
+    uint8_t read_has_message_body_uint8(const std::string& bits) const;
 
     template <class T>
-    std::string debug_print_vector(const std::string& title, const std::vector<T>& vec) const;                     // only for debug purposes
-    std::string debug_print_matrix(const std::string& title, const std::vector<std::vector<uint8_t>>& mat) const;  // only for debug purposes
+    std::string debug_print_vector(const std::string& title, const std::vector<T>& vec) const;  // only for debug purposes
+
+    template <class T>
+    std::string debug_print_matrix(const std::string& title, const std::vector<std::vector<T>>& mat) const;  // only for debug purposes
 
     std::unique_ptr<ReedSolomon> d_rs;
     Galileo_HAS_data d_HAS_data{};
-    std::vector<std::vector<std::vector<uint8_t>>> d_C_matrix{32, std::vector<std::vector<uint8_t>>(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0))};  // 32 x 255 x 53
-    std::vector<std::vector<uint8_t>> d_M_matrix{GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE, 0)};                                                             // HAS message matrix 32 x 53
-    std::vector<std::vector<uint8_t>> d_received_pids{32, std::vector<uint8_t>()};
-    std::vector<int> d_nsat_in_mask_id{32, 0};
-    std::vector<std::vector<uint8_t>> d_gnss_id_in_mask{32, std::vector<uint8_t>(16)};
-    std::vector<uint8_t> d_nsys_in_mask{32};
+    Nav_Message_Packet d_nav_msg_packet;
+
+    // Store decoding matrices and received PIDs
+    std::vector<std::vector<std::vector<uint8_t>>> d_C_matrix;
+    std::vector<std::vector<uint8_t>> d_M_matrix;
+    std::vector<std::vector<uint8_t>> d_received_pids;
+
+    // Store masks
+    std::vector<int> d_nsat_in_mask_id;
+    std::vector<std::vector<uint8_t>> d_gnss_id_in_mask;
+    std::vector<std::vector<uint64_t>> d_satellite_mask;
+    std::vector<std::vector<uint16_t>> d_signal_mask;
+    std::vector<std::vector<bool>> d_cell_mask_availability_flag;
+    std::vector<std::vector<std::vector<std::vector<bool>>>> d_cell_mask;
+    std::vector<uint8_t> d_nsys_in_mask;
+    std::vector<std::vector<uint8_t>> d_nav_message_mask;
+
     bool d_new_message{};
     bool d_enable_navdata_monitor{};
 };

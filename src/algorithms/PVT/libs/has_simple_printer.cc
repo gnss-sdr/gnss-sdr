@@ -22,6 +22,7 @@
 #include "gnss_sdr_filesystem.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
+#include <algorithm>  // for std::find, std::count
 #include <bitset>
 #include <cstdint>
 #include <ctime>      // for tm
@@ -187,38 +188,36 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "GNSS ID:                   " << print_vector(has_data->gnss_id_clock_subset) << '\n';
                     d_has_file << indent << indent << "Delta Clock C0 Multiplier: " << print_vector(has_data->delta_clock_c0_multiplier_clock_subset) << '\n';
                     d_has_file << indent << indent << "Satellite sub-mask:        ";
-                    // for (uint8_t k = 0; k < has_data->Nsysprime; k++)
-                    //     {
-                    //         int j=0;
-                    //         auto it = std::find(has_data->gnss_id_mask.begin(), has_data->gnss_id_mask.end(), has_data->gnss_id_clock_subset[k]);
-                    //         if (it = !has_data->gnss_id_mask.end())
-                    //             {
-                    //                 int index = it - gnss_id_mask.begin();
-                    //                 std::string sat_mask = print_vector_binary(has_data->satellite_mask[index], HAS_MSG_SATELLITE_MASK_LENGTH);
-                    //                 number_sats_satellite_mask = std::count(sat_mask.begin(), sat_mask.end(), '1');
-                    //                 uint64_t mask_value = has_data->satellite_submask[k][j];
-                    //
-                    //                 std::string binary("");
-                    //                 uint64_t mask = 1;
-                    //                 for (int i = 0; i < number_sats_satellite_mask - 1; i++)
-                    //                     {
-                    //                         if ((mask & mask_value) >= 1)
-                    //                             {
-                    //                                 binary = "1" + binary;
-                    //                             }
-                    //                         else
-                    //                             {
-                    //                                 binary = "0" + binary;
-                    //                             }
-                    //                         mask <<= 1;
-                    //                     }
-                    //                 d_has_file << binary << " ";
-                    //                 j++;
-                    //             }
-                    //         d_has_file << '\n';
-                    //     }
-                    d_has_file << '\n';
-                    d_has_file << indent << indent << "Delta Clock C0 [m]:        " << print_vector(has_data->delta_clock_c0_clock_subset, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
+
+                    for (uint8_t k = 0; k < has_data->Nsysprime; k++)
+                        {
+                            auto it = std::find(has_data->gnss_id_mask.begin(), has_data->gnss_id_mask.end(), has_data->gnss_id_clock_subset[k]);
+                            if (it != has_data->gnss_id_mask.end())
+                                {
+                                    int index = it - has_data->gnss_id_mask.begin();
+                                    std::string sat_mask = print_vector_binary(std::vector<uint64_t>(1, has_data->satellite_mask[index]), HAS_MSG_SATELLITE_MASK_LENGTH);
+                                    int number_sats_satellite_mask = std::count(sat_mask.begin(), sat_mask.end(), '1');
+                                    uint64_t mask_value = has_data->satellite_mask[index];
+
+                                    std::string binary("");
+                                    uint64_t mask = 1;
+                                    for (int i = 0; i < number_sats_satellite_mask - 1; i++)
+                                        {
+                                            if ((mask & mask_value) >= 1)
+                                                {
+                                                    binary = "1" + binary;
+                                                }
+                                            else
+                                                {
+                                                    binary = "0" + binary;
+                                                }
+                                            mask <<= 1;
+                                        }
+                                    d_has_file << binary << " ";
+                                }
+                            d_has_file << '\n';
+                            d_has_file << indent << indent << "Delta Clock C0 [m]:        " << print_vector(has_data->delta_clock_c0_clock_subset[k], HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
+                        }
                 }
 
             if (has_data->header.code_bias_flag == true)

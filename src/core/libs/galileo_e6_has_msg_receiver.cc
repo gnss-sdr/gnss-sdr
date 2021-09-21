@@ -436,11 +436,6 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             DLOG(INFO) << "Nsys: " << static_cast<float>(d_HAS_data.Nsys);
             DLOG(INFO) << debug_print_vector("GNSS ID", d_HAS_data.gnss_id_mask);
             DLOG(INFO) << debug_print_vector("cell_mask_availability_flag", d_HAS_data.cell_mask_availability_flag);
-            // for (uint8_t k = 0; k < d_HAS_data.Nsys; k++)
-            //     {
-            //         std::string aux = "cell_mask " + std::to_string(k);
-            //         DLOG(INFO) << debug_print_matrix(aux, d_HAS_data.cell_mask[k]);
-            //     }
             DLOG(INFO) << debug_print_vector("nav_message", d_HAS_data.nav_message);
         }
     else
@@ -462,11 +457,6 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                     DLOG(INFO) << "Nsys: " << static_cast<float>(d_HAS_data.Nsys);
                     DLOG(INFO) << debug_print_vector("GNSS ID", d_HAS_data.gnss_id_mask);
                     DLOG(INFO) << debug_print_vector("cell_mask_availability_flag", d_HAS_data.cell_mask_availability_flag);
-                    // for (uint8_t k = 0; k < d_HAS_data.Nsys; k++)
-                    //     {
-                    //         std::string aux = "cell_mask " + std::to_string(k);
-                    //         DLOG(INFO) << debug_print_matrix(aux, d_HAS_data.cell_mask[k]);
-                    //     }
                     DLOG(INFO) << debug_print_vector("nav_message", d_HAS_data.nav_message);
                 }
         }
@@ -524,7 +514,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             d_HAS_data.delta_clock_c0_multiplier = std::vector<uint8_t>(d_HAS_data.Nsys);
             for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
                 {
-                    d_HAS_data.delta_clock_c0_multiplier[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH));
+                    d_HAS_data.delta_clock_c0_multiplier[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH)) + 1;  // b00 means x1, b01 means x2, etc
                     message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH, message.end());
                 }
 
@@ -560,33 +550,55 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
 
             d_HAS_data.gnss_id_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsysprime);
             d_HAS_data.delta_clock_c0_multiplier_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsysprime);
-            d_HAS_data.satellite_submask = std::vector<std::vector<uint64_t>>(d_HAS_data.Nsysprime, std::vector<uint64_t>(HAS_MSG_NUMBER_SATELLITE_IDS));
-            d_HAS_data.iod_change_flag_clock_subset = std::vector<bool>(d_HAS_data.Nsysprime);
-            d_HAS_data.delta_clock_c0_clock_subset = std::vector<int16_t>(d_HAS_data.Nsysprime);
+            d_HAS_data.satellite_submask = std::vector<uint64_t>(d_HAS_data.Nsysprime);
+            d_HAS_data.iod_change_flag_clock_subset = std::vector<std::vector<bool>>(d_HAS_data.Nsysprime, std::vector<bool>());
+            d_HAS_data.delta_clock_c0_clock_subset = std::vector<std::vector<int16_t>>(d_HAS_data.Nsysprime, std::vector<int16_t>());
+
             for (uint8_t i = 0; i < d_HAS_data.Nsysprime; i++)
                 {
                     d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_CLOCK_SUBSET_LENGTH));
                     message = std::string(message.begin() + HAS_MSG_ID_CLOCK_SUBSET_LENGTH, message.end());
 
                     uint8_t clock_multiplier = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH));
-                    d_HAS_data.delta_clock_c0_multiplier_clock_subset[i] = clock_multiplier + 1;
+                    d_HAS_data.delta_clock_c0_multiplier_clock_subset[i] = clock_multiplier + 1;  // b00 means x1, b01 means x2, etc
                     message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH, message.end());
 
-                    uint64_t satellite_mask = d_HAS_data.satellite_mask[i];
-                    std::bitset<40> satellite_mask_bits(satellite_mask);
+                    // find the satellite mask corresponding to this GNSS ID
+                    auto it = std::find(d_HAS_data.gnss_id_mask.begin(), d_HAS_data.gnss_id_mask.end(), d_HAS_data.gnss_id_clock_subset[i]);
+                    int index = it - d_HAS_data.gnss_id_mask.begin();
+                    uint64_t satellite_mask = d_HAS_data.satellite_mask[index];
+
+                    // count satellites in the mask
+                    std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> satellite_mask_bits(satellite_mask);
                     std::string satellite_mask_string = satellite_mask_bits.to_string();
                     int number_sats_this_gnss_id = std::count(satellite_mask_string.begin(), satellite_mask_string.end(), '1');
-                    d_HAS_data.satellite_submask[i] = std::vector<uint64_t>(number_sats_this_gnss_id);
-                    for (int j = 0; j < number_sats_this_gnss_id; j++)
-                        {
-                            d_HAS_data.satellite_submask[i][j] = read_has_message_body_uint64(message.substr(0, 1));
-                            message = std::string(message.begin() + 1, message.end());
-                        }
 
-                    int Nsatprime = std::count(d_HAS_data.satellite_submask[i].begin(), d_HAS_data.satellite_submask[i].end(), 1UL);
+                    d_HAS_data.satellite_submask[i] = read_has_message_body_uint64(message.substr(0, number_sats_this_gnss_id));
+                    message = std::string(message.begin() + number_sats_this_gnss_id, message.end());
+
+                    // Count ones in satellite submask
+                    std::string binary("");
+                    uint64_t aux = 1;
+                    uint64_t mask_value = d_HAS_data.satellite_submask[i];
+                    for (int k = 0; k < number_sats_this_gnss_id - 1; k++)
+                        {
+                            if ((aux & mask_value) >= 1)
+                                {
+                                    binary = "1" + binary;
+                                }
+                            else
+                                {
+                                    binary = "0" + binary;
+                                }
+                            aux <<= 1;
+                        }
+                    int Nsatprime = std::count(binary.begin(), binary.end(), '1');
+                    d_HAS_data.delta_clock_c0_clock_subset[i].reserve(Nsatprime);
+
+                    // Read Nsatprime values of delta_clock_c0_clock_subset
                     for (int j = 0; j < Nsatprime; j++)
                         {
-                            d_HAS_data.delta_clock_c0_clock_subset[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH));
+                            d_HAS_data.delta_clock_c0_clock_subset[i][j] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH, message.end());
                         }
                 }
@@ -594,8 +606,8 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             DLOG(INFO) << "Nsysprime: " << static_cast<float>(d_HAS_data.Nsysprime);
             DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("gnss_id_clock_subset", d_HAS_data.gnss_id_clock_subset));
             DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("delta_clock_c0_multiplier_clock_subset", d_HAS_data.delta_clock_c0_multiplier_clock_subset));
-            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_matrix("satellite_submask", d_HAS_data.satellite_submask));
-            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("delta_clock_c0_clock_subset", d_HAS_data.delta_clock_c0_clock_subset));
+            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("satellite_submask", d_HAS_data.satellite_submask));
+            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_matrix("delta_clock_c0_clock_subset", d_HAS_data.delta_clock_c0_clock_subset));
         }
 
     if (d_HAS_data.header.code_bias_flag && have_mask)

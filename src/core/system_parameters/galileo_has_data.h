@@ -79,9 +79,9 @@ public:
     uint8_t Nsysprime;
     std::vector<uint8_t> gnss_id_clock_subset;
     std::vector<uint8_t> delta_clock_c0_multiplier_clock_subset;
-    std::vector<std::vector<uint64_t>> satellite_submask;
-    std::vector<bool> iod_change_flag_clock_subset;
-    std::vector<int16_t> delta_clock_c0_clock_subset;
+    std::vector<uint64_t> satellite_submask;
+    std::vector<std::vector<bool>> iod_change_flag_clock_subset;
+    std::vector<std::vector<int16_t>> delta_clock_c0_clock_subset;
 
     // Code bias
     uint8_t validity_interval_index_code_bias_corrections;

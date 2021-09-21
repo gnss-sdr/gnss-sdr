@@ -175,7 +175,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "--------------------------------\n";
                     d_has_file << indent << indent << "Validity interval:         " << static_cast<float>(has_data->validity_interval_index_clock_fullset_corrections) << '\n';
                     d_has_file << indent << indent << "Delta Clock C0 Multiplier: " << print_vector(has_data->delta_clock_c0_multiplier) << '\n';
-                    d_has_file << indent << indent << "Delta Clock C0 [m]:        " << print_vector(has_data->delta_clock_c0_multiplier, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
+                    d_has_file << indent << indent << "Delta Clock C0 [m]:        " << print_vector(has_data->delta_clock_c0, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
                 }
 
             if (has_data->header.clock_subset_flag == true)

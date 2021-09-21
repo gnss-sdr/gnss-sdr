@@ -325,6 +325,11 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_synchro_data.Carrier_phase_rads += GNSS_PI;
+                    current_synchro_data.Flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    current_synchro_data.Flag_PLL_180_deg_phase_locked = false;
                 }
             current_synchro_data.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             current_synchro_data.Flag_valid_word = d_flag_valid_word;

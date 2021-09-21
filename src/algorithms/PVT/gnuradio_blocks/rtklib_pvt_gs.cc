@@ -397,7 +397,15 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // Initialize HAS simple printer
-    d_has_simple_printer = std::make_unique<Has_Simple_Printer>();
+    d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 107)) && (conf_.output_enabled));
+    if (d_enable_has_messages)
+        {
+            d_has_simple_printer = std::make_unique<Has_Simple_Printer>();
+        }
+    else
+        {
+            d_has_simple_printer = nullptr;
+        }
 
     d_rx_time = 0.0;
     d_last_status_print_seg = 0;
@@ -1515,8 +1523,11 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg) const
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
             if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
                 {
-                    const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
-                    d_has_simple_printer->print_message(has_data.get());
+                    if (d_enable_has_messages)
+                        {
+                            const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
+                            d_has_simple_printer->print_message(has_data.get());
+                        }
                 }
         }
     catch (const boost::bad_any_cast& e)

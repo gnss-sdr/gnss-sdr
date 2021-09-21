@@ -272,6 +272,7 @@ private:
     bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;
+    bool d_enable_has_messages;
 };
 
 

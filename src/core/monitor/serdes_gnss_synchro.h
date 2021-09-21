@@ -112,6 +112,7 @@ public:
                 obs->set_pseudorange_m(gs.Pseudorange_m);
                 obs->set_rx_time(gs.RX_time);
                 obs->set_flag_valid_pseudorange(gs.Flag_valid_pseudorange);
+                obs->set_flag_pll_180_deg_phase_locked(gs.Flag_PLL_180_deg_phase_locked);
                 obs->set_interp_tow_ms(gs.interp_TOW_ms);
             }
         observables.SerializeToString(&data);
@@ -156,6 +157,7 @@ public:
                 gs.Pseudorange_m = gs_read.pseudorange_m();
                 gs.RX_time = gs_read.rx_time();
                 gs.Flag_valid_pseudorange = gs_read.flag_valid_pseudorange();
+                gs.Flag_PLL_180_deg_phase_locked = gs_read.flag_pll_180_deg_phase_locked();
                 gs.interp_TOW_ms = gs_read.interp_tow_ms();
 
                 vgs.push_back(gs);

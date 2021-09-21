@@ -29,7 +29,6 @@
 #include <exception>  // for std::exception
 #include <iomanip>    // for std::setw, std::setprecision
 #include <iostream>   // for std::cout, std::cerr
-#include <mutex>      // for std::mutex
 #include <sstream>    // for std::stringstream
 
 
@@ -308,17 +307,6 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
 }
 
 
-bool Has_Simple_Printer::close_file()
-{
-    if (d_has_file.is_open())
-        {
-            d_has_file.close();
-            return true;
-        }
-    return false;
-}
-
-
 template <class T>
 std::string Has_Simple_Printer::print_vector(const std::vector<T>& vec, float scale_factor) const
 {
@@ -402,4 +390,15 @@ std::string Has_Simple_Printer::print_matrix(const std::vector<std::vector<T>>& 
         }
     msg += ss.str();
     return msg;
+}
+
+
+bool Has_Simple_Printer::close_file()
+{
+    if (d_has_file.is_open())
+        {
+            d_has_file.close();
+            return true;
+        }
+    return false;
 }

@@ -14,27 +14,25 @@
  * -----------------------------------------------------------------------------
  */
 
-
 #ifndef GNSS_SDR_HAS_SIMPLE_PRINTER_H
 #define GNSS_SDR_HAS_SIMPLE_PRINTER_H
 
 #include <cstddef>  // for size_t
 #include <fstream>  // for std::ofstream
-#include <string>
-#include <vector>
+#include <mutex>    // for std::mutex
+#include <string>   // for std::string
+#include <vector>   // for std::vector
 
 /** \addtogroup PVT
  * \{ */
 /** \addtogroup PVT_libs
  * \{ */
 
-
 class Galileo_HAS_data;
 
 /*!
- * \brief Prints PVT information to OGC KML format file (can be viewed with Google Earth)
- *
- * See https://www.opengeospatial.org/standards/kml
+ * \brief Prints HAS messages content in a txt file. See HAS-SIS-ICD for a
+ * message description.
  */
 class Has_Simple_Printer
 {
@@ -42,7 +40,6 @@ public:
     explicit Has_Simple_Printer(const std::string& base_path = std::string("."), const std::string& filename = std::string("HAS_Messages"), bool time_tag_name = true);
     ~Has_Simple_Printer();
     bool print_message(const Galileo_HAS_data* const has_data);
-    bool close_file();
 
 private:
     template <class T>
@@ -54,6 +51,8 @@ private:
     template <class T>
     std::string print_matrix(const std::vector<std::vector<T>>& mat, const std::string& filler, float scale_factor = 1) const;
 
+    bool close_file();
+
     std::mutex d_mutex;
     std::ofstream d_has_file;
     std::string d_has_filename;
@@ -61,7 +60,6 @@ private:
     bool d_data_printed;
 };
 
-
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_KML_PRINTER_H
+#endif  // GNSS_SDR_HAS_SIMPLE_PRINTER_H

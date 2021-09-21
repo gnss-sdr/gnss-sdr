@@ -51,6 +51,8 @@ public:
     Galileo_HAS_data() = default;
 
     mt1_header header;
+    uint8_t has_status;
+    uint8_t message_id;
 
     // Mask
     uint8_t Nsys;

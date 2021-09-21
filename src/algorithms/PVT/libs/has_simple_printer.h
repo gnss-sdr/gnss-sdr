@@ -54,6 +54,7 @@ private:
     template <class T>
     std::string print_matrix(const std::vector<std::vector<T>>& mat, const std::string& filler, float scale_factor = 1) const;
 
+    std::mutex d_mutex;
     std::ofstream d_has_file;
     std::string d_has_filename;
     std::string d_has_base_path;

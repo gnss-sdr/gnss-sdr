@@ -23,13 +23,15 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
 #include <algorithm>  // for std::find, std::count
-#include <bitset>
-#include <cstdint>
+#include <bitset>     // for std::bitset
+#include <cstdint>    // for uint8_t, ...
 #include <ctime>      // for tm
-#include <exception>  // for exception
-#include <iomanip>    // for std::setw
-#include <iostream>   // for cout, cerr
+#include <exception>  // for std::exception
+#include <iomanip>    // for std::setw, std::setprecision
+#include <iostream>   // for std::cout, std::cerr
+#include <mutex>      // for std::mutex
 #include <sstream>    // for std::stringstream
+
 
 Has_Simple_Printer::Has_Simple_Printer(const std::string& base_path, const std::string& filename, bool time_tag_name)
 {
@@ -116,8 +118,32 @@ Has_Simple_Printer::Has_Simple_Printer(const std::string& base_path, const std::
 }
 
 
+Has_Simple_Printer::~Has_Simple_Printer()
+{
+    DLOG(INFO) << "HAS Message printer destructor called.";
+    try
+        {
+            close_file();
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+    if (!d_data_printed)
+        {
+            errorlib::error_code ec;
+            if (!fs::remove(fs::path(d_has_filename), ec))
+                {
+                    LOG(INFO) << "Error deleting temporary HAS Message file.";
+                }
+        }
+}
+
+
 bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
 {
+    std::lock_guard<std::mutex> guard(d_mutex);
+
     d_data_printed = true;
     std::string indent = "    ";
 
@@ -125,6 +151,26 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
         {
             d_has_file << "HAS Message Type 1 Received.\n";
             d_has_file << "----------------------------\n";
+            d_has_file << "HAS mode:       ";
+            switch (has_data->has_status)
+                {
+                case 0:
+                    d_has_file << "Test\n";
+                    break;
+                case 1:
+                    d_has_file << "Operational\n";
+                    break;
+                case 2:
+                    d_has_file << "Reserved\n";
+                    break;
+                case 3:
+                    d_has_file << "Do not use HAS\n";
+                    break;
+                default:
+                    d_has_file << '\n';
+                }
+            d_has_file << "HAS message ID: " << static_cast<float>(has_data->message_id) << "\n\n";
+
             d_has_file << indent << "MT1 Header\n";
             d_has_file << indent << "----------\n";
             d_has_file << indent << indent << "TOH [s]:             " << static_cast<float>(has_data->header.toh) << '\n';
@@ -135,17 +181,26 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
             d_has_file << indent << indent << "Code Bias Flag:      " << static_cast<float>(has_data->header.code_bias_flag) << '\n';
             d_has_file << indent << indent << "Phase Bias Flag:     " << static_cast<float>(has_data->header.phase_bias_flag) << '\n';
             d_has_file << indent << indent << "Mask ID:             " << static_cast<float>(has_data->header.mask_id) << '\n';
-            d_has_file << indent << indent << "IOD Set ID:          " << static_cast<float>(has_data->header.iod_id) << '\n';
-            d_has_file << '\n';
+            d_has_file << indent << indent << "IOD Set ID:          " << static_cast<float>(has_data->header.iod_id) << "\n\n";
 
             d_has_file << indent << "MT1 Body\n";
             d_has_file << indent << "--------\n";
             d_has_file << indent << indent << "Mask Block\n";
             d_has_file << indent << indent << "----------\n";
             d_has_file << indent << indent << "Nsys:                        " << static_cast<float>(has_data->Nsys) << '\n';
-            d_has_file << indent << indent << "GNSS ID:                     " << print_vector(has_data->gnss_id_mask) << '\n';
-            d_has_file << indent << indent << "Satellite Mask:              " << print_vector_binary(has_data->satellite_mask, HAS_MSG_SATELLITE_MASK_LENGTH) << '\n';
-            d_has_file << indent << indent << "Signal Mask:                 " << print_vector_binary(has_data->signal_mask, HAS_MSG_SIGNAL_MASK_LENGTH) << '\n';
+            d_has_file << indent << indent << "GNSS ID:                     " << print_vector(has_data->gnss_id_mask) << "  (0: GPS, 2: Galileo)\n";
+
+            // compute Nsat
+            int Nsat = 0;
+            std::vector<int> num_sats_in_mask(has_data->Nsys);
+            for (uint8_t i = 0; i < has_data->Nsys; i++)
+                {
+                    std::string sat_mask = print_vector_binary(std::vector<uint64_t>(1, has_data->satellite_mask[i]), HAS_MSG_SATELLITE_MASK_LENGTH);
+                    Nsat += std::count(sat_mask.begin(), sat_mask.end(), '1');
+                }
+
+            d_has_file << indent << indent << "Satellite Mask:              " << print_vector_binary(has_data->satellite_mask, HAS_MSG_SATELLITE_MASK_LENGTH) << "  (Nsat = " << Nsat << ")\n";
+            d_has_file << indent << indent << "Signal Mask:                 " << print_vector_binary(has_data->signal_mask, HAS_MSG_SIGNAL_MASK_LENGTH) << "  (see Signal Mask table in HAS-SIS-ICD)\n";
             d_has_file << indent << indent << "Cell Mask Availability Flag: " << print_vector(has_data->cell_mask_availability_flag) << '\n';
             for (uint8_t i = 0; i < has_data->Nsys; i++)
                 {
@@ -154,7 +209,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     const std::string filler(indent.length() * 2 + text.length(), ' ');
                     d_has_file << print_matrix(has_data->cell_mask[i], filler);
                 }
-            d_has_file << indent << indent << "Nav message:                 " << print_vector(has_data->nav_message) << '\n';
+            d_has_file << indent << indent << "Nav message:                 " << print_vector(has_data->nav_message) << "  (0: GPS LNAV or Galileo I/NAV)\n";
 
             if (has_data->header.orbit_correction_flag == true)
                 {
@@ -188,7 +243,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "GNSS ID:                   " << print_vector(has_data->gnss_id_clock_subset) << '\n';
                     d_has_file << indent << indent << "Delta Clock C0 Multiplier: " << print_vector(has_data->delta_clock_c0_multiplier_clock_subset) << '\n';
                     d_has_file << indent << indent << "Satellite sub-mask:        ";
-
+                    int Nsatprime = 0;
                     for (uint8_t k = 0; k < has_data->Nsysprime; k++)
                         {
                             auto it = std::find(has_data->gnss_id_mask.begin(), has_data->gnss_id_mask.end(), has_data->gnss_id_clock_subset[k]);
@@ -197,8 +252,8 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                                     int index = it - has_data->gnss_id_mask.begin();
                                     std::string sat_mask = print_vector_binary(std::vector<uint64_t>(1, has_data->satellite_mask[index]), HAS_MSG_SATELLITE_MASK_LENGTH);
                                     int number_sats_satellite_mask = std::count(sat_mask.begin(), sat_mask.end(), '1');
-                                    uint64_t mask_value = has_data->satellite_mask[index];
-
+                                    uint64_t mask_value = has_data->satellite_submask[index];
+                                    // convert value into string
                                     std::string binary("");
                                     uint64_t mask = 1;
                                     for (int i = 0; i < number_sats_satellite_mask - 1; i++)
@@ -214,10 +269,13 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                                             mask <<= 1;
                                         }
                                     d_has_file << binary << " ";
+                                    Nsatprime += std::count(binary.begin(), binary.end(), '1');
                                 }
-                            d_has_file << '\n';
-                            d_has_file << indent << indent << "Delta Clock C0 [m]:        " << print_vector(has_data->delta_clock_c0_clock_subset[k], HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
                         }
+                    d_has_file << "  (Nsat in subset = " << Nsatprime << ")\n";
+                    const std::string text("Delta Clock C0 [m]:        ");
+                    const std::string filler(indent.length() * 2 + text.length(), ' ');
+                    d_has_file << indent << indent << text << print_matrix(has_data->delta_clock_c0_clock_subset, filler, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
                 }
 
             if (has_data->header.code_bias_flag == true)
@@ -237,12 +295,10 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "Phase Bias Block\n";
                     d_has_file << indent << indent << "----------------\n";
                     d_has_file << indent << indent << "Validity interval:             " << static_cast<float>(has_data->validity_interval_index_phase_bias_corrections) << '\n';
-                    const std::string text("Phase bias [cycles]:          ");
+                    const std::string text("Phase bias [cycles]:           ");
                     const std::string filler(indent.length() * 2 + text.length(), ' ');
                     d_has_file << indent << indent << text << print_matrix(has_data->phase_bias, filler, HAS_MSG_PHASE_BIAS_SCALE_FACTOR);
-                    const std::string text2("Phase discontinuity indicator: ");
-                    const std::string filler2(indent.length() * 2 + text2.length(), ' ');
-                    d_has_file << indent << indent << text2 << print_matrix(has_data->phase_discontinuity_indicator, filler2);
+                    d_has_file << indent << indent << "Phase discontinuity indicator: " << print_matrix(has_data->phase_discontinuity_indicator, filler);
                 }
 
             d_has_file << "\n\n";
@@ -263,28 +319,6 @@ bool Has_Simple_Printer::close_file()
 }
 
 
-Has_Simple_Printer::~Has_Simple_Printer()
-{
-    DLOG(INFO) << "KML printer destructor called.";
-    try
-        {
-            close_file();
-        }
-    catch (const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-    if (!d_data_printed)
-        {
-            errorlib::error_code ec;
-            if (!fs::remove(fs::path(d_has_filename), ec))
-                {
-                    LOG(INFO) << "Error deleting temporary HAS Message file";
-                }
-        }
-}
-
-
 template <class T>
 std::string Has_Simple_Printer::print_vector(const std::vector<T>& vec, float scale_factor) const
 {
@@ -292,7 +326,14 @@ std::string Has_Simple_Printer::print_vector(const std::vector<T>& vec, float sc
     std::stringstream ss;
     for (auto el : vec)
         {
-            ss << static_cast<float>(el) * scale_factor << " ";
+            if (scale_factor == 1)
+                {
+                    ss << static_cast<float>(el) << " ";
+                }
+            else
+                {
+                    ss << std::setw(9) << std::setprecision(6) << static_cast<float>(el) * scale_factor << " ";
+                }
         }
     msg += ss.str();
     return msg;
@@ -349,7 +390,7 @@ std::string Has_Simple_Printer::print_matrix(const std::vector<std::vector<T>>& 
                                 }
                             else
                                 {
-                                    ss << std::setw(6) << static_cast<float>(mat[row][col]) * scale_factor << " ";
+                                    ss << std::setw(9) << std::setprecision(6) << static_cast<float>(mat[row][col]) * scale_factor << " ";
                                 }
                         }
                     ss << '\n';

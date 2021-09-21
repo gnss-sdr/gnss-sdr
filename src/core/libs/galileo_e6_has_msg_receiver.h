@@ -102,6 +102,8 @@ private:
     std::vector<uint8_t> d_nsys_in_mask;
     std::vector<std::vector<uint8_t>> d_nav_message_mask;
 
+    uint8_t d_current_has_status{};
+    uint8_t d_current_message_id{};
     bool d_new_message{};
     bool d_enable_navdata_monitor{};
 };

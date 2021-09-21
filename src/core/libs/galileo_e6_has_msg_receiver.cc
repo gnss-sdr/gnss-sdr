@@ -113,7 +113,8 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
                                << "MID: " << static_cast<float>(HAS_data_page->message_id) << ", "
                                << "MS: " << static_cast<float>(HAS_data_page->message_size) << ", "
                                << "PID: " << static_cast<float>(HAS_data_page->message_page_id);
-
+                    d_current_has_status = HAS_data_page->has_status;
+                    d_current_message_id = HAS_data_page->message_id;
                     process_HAS_page(*HAS_data_page.get());
                 }
             else
@@ -129,6 +130,8 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
     //  Send the resulting decoded HAS data (if available) to PVT
     if (d_new_message == true)
         {
+            d_HAS_data.has_status = d_current_has_status;
+            d_HAS_data.message_id = d_current_message_id;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
             this->message_port_pub(pmt::mp("E6_HAS_to_PVT"), pmt::make_any(has_data_ptr));
             d_new_message = false;

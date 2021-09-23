@@ -86,6 +86,9 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_remove_dat = conf.remove_dat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_frame_type = frame_type;
+    d_nn = 2;
+    d_KK = 7;
+    d_mm = d_KK - 1;
     DLOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
 
     d_dump_crc_stats = conf.dump_crc_stats;
@@ -110,7 +113,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_preamble_period_symbols = GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS;
                 d_required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_samples_per_preamble;
                 // preamble bits to sampled symbols
-                d_preamble_samples.reserve(d_samples_per_preamble);
+                d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 d_codelength = static_cast<int32_t>(d_frame_length_symbols);
                 d_datalength = (d_codelength / d_nn) - d_mm;
@@ -130,7 +133,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_preamble_period_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE;
                 d_required_symbols = static_cast<uint32_t>(GALILEO_FNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
                 // preamble bits to sampled symbols
-                d_preamble_samples.reserve(d_samples_per_preamble);
+                d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 d_codelength = static_cast<int32_t>(d_frame_length_symbols);
                 d_datalength = (d_codelength / d_nn) - d_mm;
@@ -144,7 +147,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_samples_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
                 d_preamble_period_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE;
                 d_required_symbols = static_cast<uint32_t>(GALILEO_CNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
-                d_preamble_samples.reserve(d_samples_per_preamble);
+                d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
                 d_codelength = static_cast<int32_t>(d_frame_length_symbols);
                 d_datalength = (d_codelength / d_nn) - d_mm;
@@ -164,7 +167,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             std::cout << "Galileo unified telemetry decoder error: Unknown frame type\n";
         }
 
-    d_page_part_symbols.reserve(d_frame_length_symbols);
+    d_page_part_symbols = std::vector<float>(d_frame_length_symbols);
+
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
         {
             switch (d_frame_type)
@@ -229,10 +233,11 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     // vars for Viterbi decoder
     const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
     std::array<int32_t, 2> g_encoder{{121, 91}};                   // Polynomial G1 and G2
-    d_out0.reserve(max_states);
-    d_out1.reserve(max_states);
-    d_state0.reserve(max_states);
-    d_state1.reserve(max_states);
+
+    d_out0 = std::vector<int32_t>(max_states);
+    d_out1 = std::vector<int32_t>(max_states);
+    d_state0 = std::vector<int32_t>(max_states);
+    d_state1 = std::vector<int32_t>(max_states);
 
     d_inav_nav.init_PRN(d_satellite.get_PRN());
     d_first_eph_sent = false;

@@ -79,8 +79,8 @@ private:
 
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type);
 
-    const int32_t d_nn = 2;  // Coding rate 1/n
-    const int32_t d_KK = 7;  // Constraint Length
+    int32_t d_nn;  // Coding rate 1/n
+    int32_t d_KK;  // Constraint Length
 
     void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits);
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
@@ -117,7 +117,7 @@ private:
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
 
-    int32_t d_mm = d_KK - 1;
+    int32_t d_mm;
     int32_t d_codelength;
     int32_t d_datalength;
     int32_t d_frame_type;

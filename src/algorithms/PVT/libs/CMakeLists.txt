@@ -9,7 +9,6 @@ protobuf_generate_cpp(PROTO_SRCS2 PROTO_HDRS2 ${CMAKE_SOURCE_DIR}/docs/protobuf/
 protobuf_generate_cpp(PROTO_SRCS3 PROTO_HDRS3 ${CMAKE_SOURCE_DIR}/docs/protobuf/galileo_ephemeris.proto)
 
 set(PVT_LIB_SOURCES
-    pvt_conf.cc
     pvt_solution.cc
     geojson_printer.cc
     gpx_printer.cc

@@ -105,7 +105,10 @@ std::tuple<size_t, bool> TwoBitPackedFileSignalSource::itemTypeToSize()
 double TwoBitPackedFileSignalSource::packetsPerSample() const
 {
     auto packets = item_size() * 4.0;
-    if (is_complex()) packets /= 2;
+    if (is_complex())
+        {
+            packets /= 2;
+        }
     return packets;
 }
 

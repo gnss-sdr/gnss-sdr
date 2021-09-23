@@ -446,6 +446,7 @@ ReedSolomon::ReedSolomon(const std::string& gnss_signal)
     d_data_symbols_shortened = d_symbols_per_block - d_shortening;
 
     d_a0 = static_cast<uint8_t>(d_symbols_per_block);
+    d_genpoly_index = std::vector<uint8_t>(d_nroots + 1);
 
     init_log_tables();
     init_alpha_tables();
@@ -533,6 +534,8 @@ ReedSolomon::ReedSolomon(int nroots,
                     d_genmatrix = gen_matrix;
                 }
         }
+
+    d_genpoly_index = std::vector<uint8_t>(d_nroots + 1);
 
     init_log_tables();
     init_alpha_tables();
@@ -643,7 +646,6 @@ void ReedSolomon::init_alpha_tables()
     d_iprim = iprim / d_prim;
 
     // get indexes of generator polymonial coefficients
-    d_genpoly_index.reserve(d_nroots + 1);
     for (int i = 0; i <= d_nroots; i++)
         {
             d_genpoly_index[i] = d_index_of[d_genpoly_coeff[i]];

@@ -1,14 +1,14 @@
 /*!
  * \file galileo_has_data.h
- * \brief  Class for Galileo HAS message type 1 data storage
- * \author Carles Fernandez-Prades, 2020 cfernandez(at)cttc.es
+ * \brief Class for Galileo HAS message type 1 data storage
+ * \author Carles Fernandez-Prades, 2020-2021 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -19,6 +19,7 @@
 #define GNSS_SDR_GALILEO_HAS_DATA_H
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 /** \addtogroup Core
@@ -49,6 +50,10 @@ class Galileo_HAS_data
 {
 public:
     Galileo_HAS_data() = default;
+
+    std::vector<int> get_PRNs_in_mask(uint8_t nsys) const;
+    std::vector<int> get_PRNs_in_submask(uint8_t nsys) const;
+    std::vector<std::string> get_signals_in_mask(uint8_t nsys) const;
 
     mt1_header header;
     uint8_t has_status;

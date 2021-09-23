@@ -51,6 +51,8 @@ private:
     template <class T>
     std::string print_matrix(const std::vector<std::vector<T>>& mat, const std::string& filler, float scale_factor = 1) const;
 
+    std::string print_vector_string(const std::vector<std::string>& vec) const;
+
     bool close_file();
 
     std::mutex d_mutex;

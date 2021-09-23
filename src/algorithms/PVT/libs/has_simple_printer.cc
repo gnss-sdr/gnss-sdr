@@ -166,7 +166,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << "Do not use HAS\n";
                     break;
                 default:
-                    d_has_file << '\n';
+                    d_has_file << "Unknown\n";
                 }
             d_has_file << "HAS message ID: " << static_cast<float>(has_data->message_id) << "\n\n";
 
@@ -198,8 +198,39 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     Nsat += std::count(sat_mask.begin(), sat_mask.end(), '1');
                 }
 
-            d_has_file << indent << indent << "Satellite Mask:              " << print_vector_binary(has_data->satellite_mask, HAS_MSG_SATELLITE_MASK_LENGTH) << "  (Nsat = " << Nsat << ")\n";
-            d_has_file << indent << indent << "Signal Mask:                 " << print_vector_binary(has_data->signal_mask, HAS_MSG_SIGNAL_MASK_LENGTH) << "  (see Signal Mask table in HAS-SIS-ICD)\n";
+            d_has_file << indent << indent << "Satellite Mask:              " << print_vector_binary(has_data->satellite_mask, HAS_MSG_SATELLITE_MASK_LENGTH) << '\n';
+            d_has_file << indent << indent << "                             Nsat: " << Nsat << '\n';
+            for (uint8_t i = 0; i < has_data->Nsys; i++)
+                {
+                    std::string system("Reserved");
+                    if (has_data->gnss_id_mask[i] == 0)
+                        {
+                            system = "GPS";
+                        }
+                    if (has_data->gnss_id_mask[i] == 2)
+                        {
+                            system = "Galileo";
+                        }
+
+                    d_has_file << indent << indent << "                             PRN for " << system << ": " << print_vector(has_data->get_PRNs_in_mask(i)) << "  (" << has_data->get_PRNs_in_mask(i).size() << " satellites)\n";
+                }
+
+            d_has_file << indent << indent << "Signal Mask:                 " << print_vector_binary(has_data->signal_mask, HAS_MSG_SIGNAL_MASK_LENGTH) << '\n';
+            for (uint8_t i = 0; i < has_data->Nsys; i++)
+                {
+                    std::string system("Reserved");
+                    if (has_data->gnss_id_mask[i] == 0)
+                        {
+                            system = "GPS";
+                        }
+                    if (has_data->gnss_id_mask[i] == 2)
+                        {
+                            system = "Galileo";
+                        }
+
+                    d_has_file << indent << indent << "                             Bias corrections for " << system << " signals: " << print_vector_string(has_data->get_signals_in_mask(i)) << '\n';
+                }
+
             d_has_file << indent << indent << "Cell Mask Availability Flag: " << print_vector(has_data->cell_mask_availability_flag) << '\n';
             for (uint8_t i = 0; i < has_data->Nsys; i++)
                 {
@@ -271,7 +302,8 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                                     Nsatprime += std::count(binary.begin(), binary.end(), '1');
                                 }
                         }
-                    d_has_file << "  (Nsat in subset = " << Nsatprime << ")\n";
+                    d_has_file << '\n';
+                    d_has_file << "                           Nsat in subset = " << Nsatprime << '\n';
                     const std::string text("Delta Clock C0 [m]:        ");
                     const std::string filler(indent.length() * 2 + text.length(), ' ');
                     d_has_file << indent << indent << text << print_matrix(has_data->delta_clock_c0_clock_subset, filler, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
@@ -389,6 +421,26 @@ std::string Has_Simple_Printer::print_matrix(const std::vector<std::vector<T>>& 
             ss << '\n';
         }
     msg += ss.str();
+    return msg;
+}
+
+
+std::string Has_Simple_Printer::print_vector_string(const std::vector<std::string>& vec) const
+{
+    std::string msg;
+    bool first = true;
+    for (auto el : vec)
+        {
+            if (first == true)
+                {
+                    msg += el;
+                    first = false;
+                }
+            else
+                {
+                    msg += "  " + el;
+                }
+        }
     return msg;
 }
 

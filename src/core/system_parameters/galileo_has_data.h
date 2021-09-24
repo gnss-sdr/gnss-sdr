@@ -54,6 +54,7 @@ public:
     std::vector<int> get_PRNs_in_mask(uint8_t nsys) const;
     std::vector<int> get_PRNs_in_submask(uint8_t nsys) const;
     std::vector<std::string> get_signals_in_mask(uint8_t nsys) const;
+    uint8_t get_gnss_id(int nsat) const;
 
     mt1_header header;
     uint8_t has_status;

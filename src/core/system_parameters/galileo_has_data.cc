@@ -382,3 +382,20 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
         }
     return signals_in_mask;
 }
+
+
+uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
+{
+    uint8_t gnss_id_ = 0;
+    int number_sats = 0;
+    for (uint8_t i = 0; i < Nsys; i++)
+        {
+            number_sats += static_cast<int>(get_PRNs_in_mask(i).size());
+            if (nsat < number_sats)
+                {
+                    return gnss_id_mask[i];
+                }
+        }
+
+    return gnss_id_;
+}

@@ -19,20 +19,75 @@
 
 
 #include "galileo_e6_has_msg_receiver.h"
-#include "display.h"       // for colors in terminal
-#include <boost/any.hpp>   // for boost::any_cast
-#include <glog/logging.h>  // for DLOG
-#include <algorithm>       // for std::find, std::count
-#include <cstddef>         // for size_t
-#include <iterator>        // for std::back_inserter
-#include <sstream>         // for std::stringstream
-#include <stdexcept>       // for std::out_of_range
-#include <typeinfo>        // for typeid
+#include "display.h"                // for colors in terminal
+#include "galileo_has_page.h"       // for Galileo_HAS_page
+#include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
+#include "reed_solomon.h"           // for ReedSolomon
+#include <boost/any.hpp>            // for boost::any_cast
+#include <glog/logging.h>           // for DLOG
+#include <gnuradio/io_signature.h>  // for gr::io_signature::make
+#include <algorithm>                // for std::find, std::count
+#include <cstddef>                  // for size_t
+#include <iterator>                 // for std::back_inserter
+#include <sstream>                  // for std::stringstream
+#include <stdexcept>                // for std::out_of_range
+#include <typeinfo>                 // for typeid
+
+#if HAS_GENERIC_LAMBDA
+#else
+#include <boost/bind/bind.hpp>
+#endif
 
 
 galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 {
     return galileo_e6_has_msg_receiver_sptr(new galileo_e6_has_msg_receiver());
+}
+
+
+galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_e6_has_msg_receiver", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+{
+    // register Gal E6 HAS input message port from telemetry blocks
+    this->message_port_register_in(pmt::mp("E6_HAS_from_TLM"));
+    // register nav message monitor out
+    this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
+    this->set_msg_handler(pmt::mp("E6_HAS_from_TLM"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_galileo_e6_has(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has, this, boost::placeholders::_1));
+#else
+        boost::bind(&galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has, this, _1));
+#endif
+#endif
+
+    // register Gal E6 processed HAS async output message port towards PVT
+    this->message_port_register_out(pmt::mp("E6_HAS_to_PVT"));
+
+    // initialize Reed-Solomon decoder
+    d_rs = std::make_unique<ReedSolomon>();
+
+    // Reserve memory for decoding matrices and received PIDs
+    d_C_matrix = std::vector<std::vector<std::vector<uint8_t>>>(GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<std::vector<uint8_t>>(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)));  // 32 x 255 x 53
+    d_M_matrix = std::vector<std::vector<uint8_t>>(GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));                                                                                                 // HAS message matrix 32 x 53
+    d_received_pids = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MESSAGE_IDS, std::vector<uint8_t>());
+
+    // Reserve memory to store masks
+    d_nsat_in_mask_id = std::vector<int>(HAS_MSG_NUMBER_MASK_IDS);
+    d_gnss_id_in_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_satellite_mask = std::vector<std::vector<uint64_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint64_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_signal_mask = std::vector<std::vector<uint16_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint16_t>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_cell_mask_availability_flag = std::vector<std::vector<bool>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<bool>(HAS_MSG_NUMBER_GNSS_IDS));
+    d_cell_mask = std::vector<std::vector<std::vector<std::vector<bool>>>>(HAS_MSG_NUMBER_MASK_IDS, {HAS_MSG_NUMBER_GNSS_IDS, {HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS)}});
+    d_nsys_in_mask = std::vector<uint8_t>(HAS_MSG_NUMBER_MASK_IDS);
+    d_nav_message_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
+
+    // Initialize values for d_nav_msg_packet
+    d_nav_msg_packet.system = std::string("E");
+    d_nav_msg_packet.signal = std::string("E6");
+    d_nav_msg_packet.prn = 0;
+    d_nav_msg_packet.tow_at_current_symbol_ms = 0;
 }
 
 
@@ -429,12 +484,12 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             d_HAS_data.delta_cross_track = std::vector<int16_t>(Nsat);
             for (int i = 0; i < Nsat; i++)
                 {
-                    if (d_HAS_data.gnss_id_mask[i] == HAS_MSG_GPS_SYSTEM)
+                    if (d_HAS_data.get_gnss_id(i) == HAS_MSG_GPS_SYSTEM)
                         {
                             d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GPS_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_IOD_GPS_LENGTH, message.end());
                         }
-                    if (d_HAS_data.gnss_id_mask[i] == HAS_MSG_GALILEO_SYSTEM)
+                    if (d_HAS_data.get_gnss_id(i) == HAS_MSG_GALILEO_SYSTEM)
                         {
                             d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GAL_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_IOD_GAL_LENGTH, message.end());

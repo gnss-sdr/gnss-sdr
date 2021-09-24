@@ -28,6 +28,7 @@
 #include <ctime>      // for tm
 #include <exception>  // for std::exception
 #include <iomanip>    // for std::setw, std::setprecision
+#include <ios>        // for std::fixed
 #include <iostream>   // for std::cout, std::cerr
 #include <sstream>    // for std::stringstream
 
@@ -290,11 +291,11 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                                         {
                                             if ((mask & mask_value) >= 1)
                                                 {
-                                                    binary = "1" + binary;
+                                                    binary.insert(0, "1");
                                                 }
                                             else
                                                 {
-                                                    binary = "0" + binary;
+                                                    binary.insert(0, "0");
                                                 }
                                             mask <<= 1;
                                         }
@@ -352,7 +353,7 @@ std::string Has_Simple_Printer::print_vector(const std::vector<T>& vec, float sc
                 }
             else
                 {
-                    ss << std::setw(9) << std::setprecision(6) << static_cast<float>(el) * scale_factor << " ";
+                    ss << std::setw(9) << std::setprecision(4) << std::fixed << static_cast<float>(el) * scale_factor << " ";
                 }
         }
     msg += ss.str();
@@ -410,7 +411,7 @@ std::string Has_Simple_Printer::print_matrix(const std::vector<std::vector<T>>& 
                                 }
                             else
                                 {
-                                    ss << std::setw(9) << std::setprecision(6) << static_cast<float>(mat[row][col]) * scale_factor << " ";
+                                    ss << std::setw(9) << std::setprecision(2) << std::fixed << static_cast<float>(mat[row][col]) * scale_factor << " ";
                                 }
                         }
                     ss << '\n';
@@ -429,7 +430,7 @@ std::string Has_Simple_Printer::print_vector_string(const std::vector<std::strin
 {
     std::string msg;
     bool first = true;
-    for (auto el : vec)
+    for (const auto& el : vec)
         {
             if (first == true)
                 {

@@ -79,11 +79,11 @@ std::vector<int> Galileo_HAS_data::get_PRNs_in_submask(uint8_t nsys) const
                 {
                     if ((aux & sat_submask) >= 1)
                         {
-                            sat_submask_str = "1" + sat_submask_str;
+                            sat_submask_str.insert(0, "1");
                         }
                     else
                         {
-                            sat_submask_str = "0" + sat_submask_str;
+                            sat_submask_str.insert(0, "0");
                         }
                     aux <<= 1;
                 }

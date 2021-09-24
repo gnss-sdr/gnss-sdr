@@ -35,7 +35,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   file. At the end of the processing (or exiting with `q` + `[Enter]`), the CRC
   check success rate will be reported in a file.
 - The `UHD_Signal_Source` learned to dump data in folders that do not exist,
-  *e.g.*, if `SignalSource.dump=true`,
+  _e.g._, if `SignalSource.dump=true`,
   `SignalSource.dump_filename=./non-existing/data.dat`, and the `non-existing`
   folder does not exist, it will be created if the running user has writing
   permissions. This also works for absolute paths.

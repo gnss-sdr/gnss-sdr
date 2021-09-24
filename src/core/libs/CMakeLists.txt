@@ -85,18 +85,18 @@ target_link_libraries(core_libs
         Gnuradio::runtime
         Gnuradio::pmt
         protobuf::libprotobuf
+        algorithms_libs
         core_libs_supl
         core_system_parameters
         pvt_libs
     PRIVATE
-        algorithms_libs
         Boost::serialization
         Gflags::gflags
         Glog::glog
         Pugixml::pugixml
 )
 
-if(USE_GENERIC_LAMBDAS AND NOT GNURADIO_USES_STD_POINTERS)
+if(NOT USE_GENERIC_LAMBDAS)
     target_link_libraries(core_libs PUBLIC Boost::headers)
 else()
     target_link_libraries(core_libs PRIVATE Boost::headers)
@@ -117,20 +117,20 @@ if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
     target_compile_definitions(core_libs
-        PRIVATE
+        PUBLIC
             "$<$<COMPILE_FEATURES:cxx_generic_lambdas>:${has_generic_lambdas}>"
             "$<$<NOT:$<COMPILE_FEATURES:cxx_generic_lambdas>>:${no_has_generic_lambdas}>"
     )
 else()
     target_compile_definitions(core_libs
-        PRIVATE
+        PUBLIC
             -DHAS_GENERIC_LAMBDA=0
     )
 endif()
 
 if(USE_BOOST_BIND_PLACEHOLDERS)
     target_compile_definitions(core_libs
-        PRIVATE
+        PUBLIC
             -DUSE_BOOST_BIND_PLACEHOLDERS=1
     )
 endif()

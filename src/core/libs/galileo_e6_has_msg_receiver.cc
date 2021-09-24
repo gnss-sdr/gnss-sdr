@@ -19,75 +19,20 @@
 
 
 #include "galileo_e6_has_msg_receiver.h"
-#include "display.h"               // for colors in terminal
-#include "galileo_has_page.h"      // for Galileo_HAS_page
-#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
-#include "reed_solomon.h"          // for ReedSolomon
-#include <boost/any.hpp>
-#include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <algorithm>  // for std::find, std::count
-#include <cstddef>    // for size_t
-#include <iterator>   // for std::back_inserter
-#include <sstream>    // for std::stringstream
-#include <stdexcept>  // for std::out_of_range
-#include <typeinfo>   // for typeid
-
-#if HAS_GENERIC_LAMBDA
-#else
-#include <boost/bind/bind.hpp>
-#endif
+#include "display.h"       // for colors in terminal
+#include <boost/any.hpp>   // for boost::any_cast
+#include <glog/logging.h>  // for DLOG
+#include <algorithm>       // for std::find, std::count
+#include <cstddef>         // for size_t
+#include <iterator>        // for std::back_inserter
+#include <sstream>         // for std::stringstream
+#include <stdexcept>       // for std::out_of_range
+#include <typeinfo>        // for typeid
 
 
 galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 {
     return galileo_e6_has_msg_receiver_sptr(new galileo_e6_has_msg_receiver());
-}
-
-
-galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_e6_has_msg_receiver", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
-{
-    // register Gal E6 HAS input message port from telemetry blocks
-    this->message_port_register_in(pmt::mp("E6_HAS_from_TLM"));
-    // register nav message monitor out
-    this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
-    this->set_msg_handler(pmt::mp("E6_HAS_from_TLM"),
-#if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_galileo_e6_has(PH1); });
-#else
-#if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has, this, boost::placeholders::_1));
-#else
-        boost::bind(&galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has, this, _1));
-#endif
-#endif
-
-    // register Gal E6 processed HAS async output message port towards PVT
-    this->message_port_register_out(pmt::mp("E6_HAS_to_PVT"));
-
-    // initialize Reed-Solomon decoder
-    d_rs = std::make_unique<ReedSolomon>();
-
-    // Reserve memory for decoding matrices and received PIDs
-    d_C_matrix = std::vector<std::vector<std::vector<uint8_t>>>(GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<std::vector<uint8_t>>(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)));  // 32 x 255 x 53
-    d_M_matrix = std::vector<std::vector<uint8_t>>(GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));                                                                                                 // HAS message matrix 32 x 53
-    d_received_pids = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MESSAGE_IDS, std::vector<uint8_t>());
-
-    // Reserve memory to store masks
-    d_nsat_in_mask_id = std::vector<int>(HAS_MSG_NUMBER_MASK_IDS);
-    d_gnss_id_in_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
-    d_satellite_mask = std::vector<std::vector<uint64_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint64_t>(HAS_MSG_NUMBER_GNSS_IDS));
-    d_signal_mask = std::vector<std::vector<uint16_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint16_t>(HAS_MSG_NUMBER_GNSS_IDS));
-    d_cell_mask_availability_flag = std::vector<std::vector<bool>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<bool>(HAS_MSG_NUMBER_GNSS_IDS));
-    d_cell_mask = std::vector<std::vector<std::vector<std::vector<bool>>>>(HAS_MSG_NUMBER_MASK_IDS, {HAS_MSG_NUMBER_GNSS_IDS, {HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS)}});
-    d_nsys_in_mask = std::vector<uint8_t>(HAS_MSG_NUMBER_MASK_IDS);
-    d_nav_message_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
-
-    // Initialize values for d_nav_msg_packet
-    d_nav_msg_packet.system = std::string("E");
-    d_nav_msg_packet.signal = std::string("E6");
-    d_nav_msg_packet.prn = 0;
-    d_nav_msg_packet.tow_at_current_symbol_ms = 0;
 }
 
 
@@ -149,7 +94,7 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
                 {
                     if (has_page.message_type == 1)  // contains satellite corrections
                         {
-                            if (has_page.message_id < 32)  // MID range is from 0 to 31
+                            if (has_page.message_id < HAS_MSG_NUMBER_MESSAGE_IDS)  // MID range is from 0 to 31
                                 {
                                     if (std::find(d_received_pids[has_page.message_id].begin(), d_received_pids[has_page.message_id].end(), has_page.message_page_id) == d_received_pids[has_page.message_id].end())
                                         {
@@ -157,8 +102,9 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
                                             d_received_pids[has_page.message_id].push_back(has_page.message_page_id);
                                             for (int k = 0; k < GALILEO_CNAV_OCTETS_IN_SUBPAGE; k++)
                                                 {
-                                                    std::string bits8 = page_string.substr(k * 8, 8);
-                                                    std::bitset<8> bs(bits8);
+                                                    constexpr int bits_in_octet = 8;
+                                                    std::string bits8 = page_string.substr(k * bits_in_octet, bits_in_octet);
+                                                    std::bitset<bits_in_octet> bs(bits8);
                                                     d_C_matrix[has_page.message_id][has_page.message_page_id - 1][k] = static_cast<uint8_t>(bs.to_ulong());
                                                 }
                                         }
@@ -192,10 +138,11 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
 int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_t message_size)
 {
     DLOG(INFO) << "Start decoding of a HAS message";
+    constexpr int32_t max_erasure_positions = GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK - GALILEO_CNAV_INFORMATION_VECTOR_LENGTH;  // 223 Maximum erasure positions ( = number of parity symbols in a block)
 
     // Compute erasure positions
     std::vector<int> erasure_positions;
-    erasure_positions.reserve(223);  // Maximum erasure positions ( = number of parity symbols in a block)
+    erasure_positions.reserve(max_erasure_positions);
 
     for (uint8_t i = 1; i < message_size + 1; i++)  // we know that from message_size to 32, the value is 0
         {
@@ -204,7 +151,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
                     erasure_positions.push_back(i - 1);
                 }
         }
-    for (int i = 33; i < 256; i++)
+    for (int i = GALILEO_CNAV_INFORMATION_VECTOR_LENGTH + 1; i < GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK + 1; i++)  // from 33 to 255
         {
             if (std::find(d_received_pids[message_id].begin(), d_received_pids[message_id].end(), static_cast<uint8_t>(i)) == d_received_pids[message_id].end())
                 {
@@ -212,7 +159,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
                 }
         }
 
-    if (erasure_positions.size() > 223)
+    if (erasure_positions.size() > static_cast<size_t>(max_erasure_positions))
         {
             // This should not happen! Maybe message_size < PID < 33 ?
             // Don't even try to decode
@@ -587,11 +534,11 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                         {
                             if ((aux & mask_value) >= 1)
                                 {
-                                    binary = "1" + binary;
+                                    binary.insert(0, "1");
                                 }
                             else
                                 {
-                                    binary = "0" + binary;
+                                    binary.insert(0, "0");
                                 }
                             aux <<= 1;
                         }

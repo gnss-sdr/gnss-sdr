@@ -3,6 +3,7 @@
  * \brief Implementation of a Galileo unified INAV and FNAV message demodulator
  * block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
+ * \author Carles Fernandez, 2021. cfernandez(at)cttc.es
  *
  *
  * -----------------------------------------------------------------------------
@@ -18,32 +19,30 @@
 
 
 #include "galileo_telemetry_decoder_gs.h"
-#include "Galileo_E1.h"   // for GALILEO_E1_CODE_PERIOD_MS
-#include "Galileo_E5a.h"  // for GALILEO_E5A_CODE_PERIOD_MS
-#include "Galileo_E5b.h"  // for GALILEO_E5B_CODE_PERIOD_MS
-#include "Galileo_E6.h"   // for GALILEO_E6_CODE_PERIOD_MS
-#include "convolutional.h"
-#include "display.h"
+#include "Galileo_E1.h"              // for GALILEO_E1_CODE_PERIOD_MS
+#include "Galileo_E5a.h"             // for GALILEO_E5A_CODE_PERIOD_MS
+#include "Galileo_E5b.h"             // for GALILEO_E5B_CODE_PERIOD_MS
+#include "Galileo_E6.h"              // for GALILEO_E6_CODE_PERIOD_MS
+#include "display.h"                 // for colours in terminal: TEXT_BLUE, TEXT_RESET, ...
 #include "galileo_almanac_helper.h"  // for Galileo_Almanac_Helper
 #include "galileo_ephemeris.h"       // for Galileo_Ephemeris
 #include "galileo_has_page.h"        // For Galileo_HAS_page
 #include "galileo_iono.h"            // for Galileo_Iono
 #include "galileo_utc_model.h"       // for Galileo_Utc_Model
 #include "gnss_sdr_make_unique.h"    // for std::make_unique in C++11
-#include "gnss_synchro.h"
-#include "tlm_crc_stats.h"
-#include "tlm_utils.h"
-#include <glog/logging.h>
-#include <gnuradio/io_signature.h>
-#include <pmt/pmt.h>        // for make_any
-#include <pmt/pmt_sugar.h>  // for mp
-#include <array>
-#include <cmath>      // for fmod
-#include <cstddef>    // for size_t
-#include <cstdlib>    // for abs
-#include <exception>  // for exception
-#include <iostream>   // for cout
-#include <memory>     // for make_shared
+#include "gnss_synchro.h"            // for Gnss_Synchro
+#include "tlm_crc_stats.h"           // for Tlm_CRC_Stats
+#include "tlm_utils.h"               // for save_tlm_matfile, tlm_remove_file
+#include "viterbi_decoder.h"         // for Viterbi_Decoder
+#include <glog/logging.h>            // for LOG, DLOG
+#include <gnuradio/io_signature.h>   // for gr::io_signature::make
+#include <pmt/pmt.h>                 // for pmt::make_any
+#include <pmt/pmt_sugar.h>           // for pmt::mp
+#include <array>                     // for std::array
+#include <cmath>                     // for std::fmod, std::abs
+#include <cstddef>                   // for size_t
+#include <exception>                 // for std::exception
+#include <iostream>                  // for std::cout
 
 #define CRC_ERROR_LIMIT 6
 
@@ -86,9 +85,13 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_remove_dat = conf.remove_dat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_frame_type = frame_type;
-    d_nn = 2;
-    d_KK = 7;
-    d_mm = d_KK - 1;
+
+    // Viterbi decoder vars
+    const int32_t nn = 2;                               // Coding rate 1/n
+    const int32_t KK = 7;                               // Constraint Length
+    const std::array<int32_t, 2> g_encoder{{121, 91}};  // Polynomial G1 and G2
+    d_mm = KK - 1;
+
     DLOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
 
     d_dump_crc_stats = conf.dump_crc_stats;
@@ -116,7 +119,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
                 d_codelength = static_cast<int32_t>(d_frame_length_symbols);
-                d_datalength = (d_codelength / d_nn) - d_mm;
+                d_datalength = (d_codelength / nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  // rise alarm 60 seconds without valid tlm
                 if (conf.enable_reed_solomon == true)
                     {
@@ -136,7 +139,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
                 d_codelength = static_cast<int32_t>(d_frame_length_symbols);
-                d_datalength = (d_codelength / d_nn) - d_mm;
+                d_datalength = (d_codelength / nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
                 break;
             }
@@ -150,7 +153,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
                 d_frame_length_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
                 d_codelength = static_cast<int32_t>(d_frame_length_symbols);
-                d_datalength = (d_codelength / d_nn) - d_mm;
+                d_datalength = (d_codelength / nn) - d_mm;
                 d_max_symbols_without_valid_frame = GALILEO_CNAV_SYMBOLS_PER_PAGE * 60;
                 break;
             }
@@ -230,21 +233,20 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_cnav_dummy_page = false;
     d_print_cnav_page = true;
 
+    d_inav_nav.init_PRN(d_satellite.get_PRN());
+    d_first_eph_sent = false;
+
     // vars for Viterbi decoder
     const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
-    std::array<int32_t, 2> g_encoder{{121, 91}};                   // Polynomial G1 and G2
-
     d_out0 = std::vector<int32_t>(max_states);
     d_out1 = std::vector<int32_t>(max_states);
     d_state0 = std::vector<int32_t>(max_states);
     d_state1 = std::vector<int32_t>(max_states);
 
-    d_inav_nav.init_PRN(d_satellite.get_PRN());
-    d_first_eph_sent = false;
-
-    // create appropriate transition matrices
-    nsc_transit(d_out0.data(), d_state0.data(), 0, g_encoder.data(), d_KK, d_nn);
-    nsc_transit(d_out1.data(), d_state1.data(), 1, g_encoder.data(), d_KK, d_nn);
+    // create Vitrebi decoder and appropriate transition vectors
+    d_viterbi = std::make_unique<Viterbi_Decoder>(KK, nn, d_datalength, g_encoder);
+    d_viterbi->nsc_transit(d_out0, d_state0, 0);
+    d_viterbi->nsc_transit(d_out1, d_state1, 1);
 }
 
 
@@ -285,13 +287,6 @@ galileo_telemetry_decoder_gs::~galileo_telemetry_decoder_gs()
 }
 
 
-void galileo_telemetry_decoder_gs::viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits)
-{
-    Viterbi(page_part_bits, d_out0.data(), d_state0.data(), d_out1.data(), d_state1.data(),
-        page_part_symbols, d_KK, d_nn, d_datalength);
-}
-
-
 void galileo_telemetry_decoder_gs::deinterleaver(int32_t rows, int32_t cols, const float *in, float *out)
 {
     for (int32_t r = 0; r < rows; r++)
@@ -307,8 +302,8 @@ void galileo_telemetry_decoder_gs::deinterleaver(int32_t rows, int32_t cols, con
 void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    std::vector<float> page_part_symbols_deint(frame_length);
-    deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint.data());
+    std::vector<float> page_part_symbols_soft_value(frame_length);
+    deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_soft_value.data());
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -317,12 +312,12 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             if ((i + 1) % 2 == 0)
                 {
-                    page_part_symbols_deint[i] = -page_part_symbols_deint[i];
+                    page_part_symbols_soft_value[i] = -page_part_symbols_soft_value[i];
                 }
         }
     const int32_t decoded_length = frame_length / 2;
     std::vector<int32_t> page_part_bits(decoded_length);
-    viterbi_decoder(page_part_symbols_deint.data(), page_part_bits.data());
+    d_viterbi->decode(page_part_bits, d_out0, d_state0, d_out1, d_state1, page_part_symbols_soft_value);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -459,8 +454,8 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t frame_length)
 {
     // 1. De-interleave
-    std::vector<float> page_symbols_deint(frame_length);
-    deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint.data());
+    std::vector<float> page_symbols_soft_value(frame_length);
+    deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_soft_value.data());
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -469,13 +464,13 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
         {
             if ((i + 1) % 2 == 0)
                 {
-                    page_symbols_deint[i] = -page_symbols_deint[i];
+                    page_symbols_soft_value[i] = -page_symbols_soft_value[i];
                 }
         }
 
     const int32_t decoded_length = frame_length / 2;
     std::vector<int32_t> page_bits(decoded_length);
-    viterbi_decoder(page_symbols_deint.data(), page_bits.data());
+    d_viterbi->decode(page_bits, d_out0, d_state0, d_out1, d_state1, page_symbols_soft_value);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -533,8 +528,8 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t page_length)
 {
     // 1. De-interleave
-    std::vector<float> page_symbols_deint(page_length);
-    deinterleaver(GALILEO_CNAV_INTERLEAVER_ROWS, GALILEO_CNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint.data());
+    std::vector<float> page_symbols_soft_value(page_length);
+    deinterleaver(GALILEO_CNAV_INTERLEAVER_ROWS, GALILEO_CNAV_INTERLEAVER_COLS, page_symbols, page_symbols_soft_value.data());
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -543,12 +538,12 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
         {
             if ((i + 1) % 2 == 0)
                 {
-                    page_symbols_deint[i] = -page_symbols_deint[i];
+                    page_symbols_soft_value[i] = -page_symbols_soft_value[i];
                 }
         }
     const int32_t decoded_length = page_length / 2;
     std::vector<int32_t> page_bits(decoded_length);
-    viterbi_decoder(page_symbols_deint.data(), page_bits.data());
+    d_viterbi->decode(page_bits, d_out0, d_state0, d_out1, d_state1, page_symbols_soft_value);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -622,6 +617,13 @@ void galileo_telemetry_decoder_gs::reset()
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     d_stat = 0;
+    const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
+    d_out0 = std::vector<int32_t>(max_states);
+    d_out1 = std::vector<int32_t>(max_states);
+    d_state0 = std::vector<int32_t>(max_states);
+    d_state1 = std::vector<int32_t>(max_states);
+    d_viterbi->nsc_transit(d_out0, d_state0, 0);
+    d_viterbi->nsc_transit(d_out1, d_state1, 1);
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -732,7 +734,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         corr_value += d_preamble_samples[i];
                                     }
                             }
-                        if (abs(corr_value) >= d_samples_per_preamble)
+                        if (std::abs(corr_value) >= d_samples_per_preamble)
                             {
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite << " in channel " << this->d_channel;
@@ -760,11 +762,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         corr_value += d_preamble_samples[i];
                                     }
                             }
-                        if (abs(corr_value) >= d_samples_per_preamble)
+                        if (std::abs(corr_value) >= d_samples_per_preamble)
                             {
                                 // check preamble separation
                                 const auto preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
-                                if (abs(preamble_diff - d_preamble_period_symbols) == 0)
+                                if (std::abs(preamble_diff - d_preamble_period_symbols) == 0)
                                     {
                                         // try to decode frame
                                         DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;

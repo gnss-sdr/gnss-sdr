@@ -16,7 +16,7 @@
 
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "gnss_synchro.h"
-#include "viterbi_decoder.h"
+#include "viterbi_decoder_sbas.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
@@ -179,8 +179,8 @@ sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::Symbol_Aligner_And_Dec
     const int32_t nn = 2;
     std::array<int32_t, nn> g_encoder{121, 91};
 
-    d_vd1 = std::make_shared<Viterbi_Decoder>(g_encoder.data(), d_KK, nn);
-    d_vd2 = std::make_shared<Viterbi_Decoder>(g_encoder.data(), d_KK, nn);
+    d_vd1 = std::make_shared<Viterbi_Decoder_Sbas>(g_encoder.data(), d_KK, nn);
+    d_vd2 = std::make_shared<Viterbi_Decoder_Sbas>(g_encoder.data(), d_KK, nn);
     d_past_symbol = 0;
 }
 

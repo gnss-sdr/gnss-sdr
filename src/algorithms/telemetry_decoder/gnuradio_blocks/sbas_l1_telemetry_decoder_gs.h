@@ -37,7 +37,7 @@
  * \{ */
 
 
-class Viterbi_Decoder;
+class Viterbi_Decoder_Sbas;
 
 class sbas_l1_telemetry_decoder_gs;
 
@@ -128,8 +128,8 @@ private:
 
     private:
         int32_t d_KK;
-        std::shared_ptr<Viterbi_Decoder> d_vd1;
-        std::shared_ptr<Viterbi_Decoder> d_vd2;
+        std::shared_ptr<Viterbi_Decoder_Sbas> d_vd1;
+        std::shared_ptr<Viterbi_Decoder_Sbas> d_vd2;
         double d_past_symbol;
     } d_symbol_aligner_and_decoder;
 

@@ -19,6 +19,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fix setting of the signal source gain if the AGC is enabled when using the
   AD9361 front-end.
 
+### Improvements in Maintainability:
+
+- Rewritten Viterbi decoder for Galileo navigation messages: encapsulated in a
+  class instead of being implemented as free inline functions. This improves
+  memory management.
+
 ### Improvements in Usability:
 
 - Added a new monitor to extract the decoded data bits of the navigation

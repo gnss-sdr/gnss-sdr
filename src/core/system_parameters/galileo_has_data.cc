@@ -386,7 +386,6 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
 
 uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
 {
-    uint8_t gnss_id_ = 0;
     int number_sats = 0;
     for (uint8_t i = 0; i < Nsys; i++)
         {
@@ -397,5 +396,5 @@ uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
                 }
         }
 
-    return gnss_id_;
+    return HAS_MSG_WRONG_SYSTEM;
 }

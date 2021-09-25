@@ -79,7 +79,7 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
     d_satellite_mask = std::vector<std::vector<uint64_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint64_t>(HAS_MSG_NUMBER_GNSS_IDS));
     d_signal_mask = std::vector<std::vector<uint16_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint16_t>(HAS_MSG_NUMBER_GNSS_IDS));
     d_cell_mask_availability_flag = std::vector<std::vector<bool>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<bool>(HAS_MSG_NUMBER_GNSS_IDS));
-    d_cell_mask = std::vector<std::vector<std::vector<std::vector<bool>>>>(HAS_MSG_NUMBER_MASK_IDS, {HAS_MSG_NUMBER_GNSS_IDS, {HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS)}});
+    d_cell_mask = std::vector<std::vector<std::vector<std::vector<bool>>>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<std::vector<std::vector<bool>>>(HAS_MSG_NUMBER_GNSS_IDS, std::vector<std::vector<bool>>(HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS))));
     d_nsys_in_mask = std::vector<uint8_t>(HAS_MSG_NUMBER_MASK_IDS);
     d_nav_message_mask = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MASK_IDS, std::vector<uint8_t>(HAS_MSG_NUMBER_GNSS_IDS));
 
@@ -237,7 +237,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
     DLOG(INFO) << debug_print_matrix("C_matrix", d_C_matrix[message_id]);
 
     // Reset HAS decoded message matrix
-    d_M_matrix = {GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)};
+    d_M_matrix = std::vector<std::vector<uint8_t>>(GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));
 
     // Vertical decoding of d_C_matrix
     for (int col = 0; col < GALILEO_CNAV_OCTETS_IN_SUBPAGE; col++)
@@ -308,22 +308,22 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
         }
     catch (const std::out_of_range& oor)
         {
-            std::cerr << "Error when reading decoded HAS data. Wrong data formatting? The error was: " << oor.what() << '\n';
+            std::cerr << "Error when reading decoded HAS data. Wrong data format? The error was: " << oor.what() << '\n';
             return -1;
         }
     catch (const std::bad_alloc& e)
         {
-            std::cerr << "Error when reading decoded HAS data. Wrong data formatting? The error was: " << e.what() << '\n';
+            std::cerr << "Error when reading decoded HAS data. Wrong data format? The error was: " << e.what() << '\n';
             return -1;
         }
     catch (const std::exception& e)
         {
-            std::cerr << "Error when reading decoded HAS data. Wrong data formatting? The error was: " << e.what() << '\n';
+            std::cerr << "Error when reading decoded HAS data. Wrong data format? The error was: " << e.what() << '\n';
             return -1;
         }
     catch (...)
         {
-            std::cerr << "Error when reading decoded HAS data. Wrong data formatting?\n";
+            std::cerr << "Error when reading decoded HAS data. Wrong data format?\n";
             return -1;
         }
     return 0;
@@ -375,7 +375,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                 {
                     message = std::string(message.begin() + HAS_MSG_NSYS_LENGTH, message.end());
                     d_HAS_data.gnss_id_mask = std::vector<uint8_t>(d_HAS_data.Nsys);
-                    d_HAS_data.cell_mask = {d_HAS_data.Nsys, std::vector<std::vector<bool>>(40, std::vector<bool>(16))};
+                    d_HAS_data.cell_mask = std::vector<std::vector<std::vector<bool>>>(d_HAS_data.Nsys, std::vector<std::vector<bool>>(HAS_MSG_NUMBER_SATELLITE_IDS, std::vector<bool>(HAS_MSG_NUMBER_SIGNAL_MASKS)));
                     d_HAS_data.cell_mask_availability_flag = std::vector<bool>(d_HAS_data.Nsys);
                     d_HAS_data.nav_message = std::vector<uint8_t>(d_HAS_data.Nsys);
                     d_HAS_data.satellite_mask = std::vector<uint64_t>(d_HAS_data.Nsys);
@@ -489,19 +489,34 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                             d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GPS_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_IOD_GPS_LENGTH, message.end());
                         }
-                    if (d_HAS_data.get_gnss_id(i) == HAS_MSG_GALILEO_SYSTEM)
+                    else if (d_HAS_data.get_gnss_id(i) == HAS_MSG_GALILEO_SYSTEM)
                         {
                             d_HAS_data.gnss_iod[i] = read_has_message_body_uint16(message.substr(0, HAS_MSG_IOD_GAL_LENGTH));
                             message = std::string(message.begin() + HAS_MSG_IOD_GAL_LENGTH, message.end());
                         }
-                    d_HAS_data.delta_radial[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_RADIAL_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_RADIAL_LENGTH, message.end());
+                    else if (d_HAS_data.get_gnss_id(i) == HAS_MSG_WRONG_SYSTEM)
+                        {
+                            // wrong data format, aborting
+                            have_mask = false;
+                        }
+                    else
+                        {
+                            // reserved system, not defined what to do, aborting
+                            LOG(WARNING) << "Is the HAS message transmitting data belonging to a new system? System identifier was: " << std::to_string(d_HAS_data.get_gnss_id(i));
+                            have_mask = false;
+                        }
 
-                    d_HAS_data.delta_along_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_ALONG_TRACK_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_ALONG_TRACK_LENGTH, message.end());
+                    if (have_mask)
+                        {
+                            d_HAS_data.delta_radial[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_RADIAL_LENGTH));
+                            message = std::string(message.begin() + HAS_MSG_DELTA_RADIAL_LENGTH, message.end());
 
-                    d_HAS_data.delta_cross_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CROSS_TRACK_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CROSS_TRACK_LENGTH, message.end());
+                            d_HAS_data.delta_along_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_ALONG_TRACK_LENGTH));
+                            message = std::string(message.begin() + HAS_MSG_DELTA_ALONG_TRACK_LENGTH, message.end());
+
+                            d_HAS_data.delta_cross_track[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CROSS_TRACK_LENGTH));
+                            message = std::string(message.begin() + HAS_MSG_DELTA_CROSS_TRACK_LENGTH, message.end());
+                        }
                 }
 
             DLOG(INFO) << debug_print_vector("gnss_iod", d_HAS_data.gnss_iod);
@@ -548,7 +563,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
 
             if (d_HAS_data.Nsysprime == 0)
                 {
-                    // Wrong formatted data, aborting
+                    // wrong data format, aborting
                     have_mask = false;
                     d_nsat_in_mask_id[d_HAS_data.header.mask_id] = 0;
                 }
@@ -767,7 +782,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
     //         // read URA
     //         d_HAS_data.validity_interval_index_ura_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
     //         message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
-    //         d_HAS_data.ura.reserve(Nsat);
+    //         d_HAS_data.ura = std::vector<uint8_t>(Nsat);
     //         for (int i = 0; i < Nsat; i++)
     //             {
     //                 d_HAS_data.ura[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_URA_LENGTH));

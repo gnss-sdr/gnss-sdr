@@ -92,6 +92,7 @@ constexpr uint16_t HAS_MSG_NUMBER_MAX_TOH = 3599;
 
 constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // Table 8 ICD v1.2
 constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 8 ICD v1.2
+constexpr uint8_t HAS_MSG_WRONG_SYSTEM = 255;
 
 const std::pair<int32_t, int32_t> GALILEO_HAS_STATUS({1, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_RESERVED({3, 2});

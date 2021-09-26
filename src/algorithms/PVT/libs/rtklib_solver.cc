@@ -902,8 +902,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
                         }
 
-                    std::vector<double> azel;
-                    azel.reserve(used_sats * 2);
+                    std::vector<double> azel(used_sats * 2);
                     int index_aux = 0;
                     for (auto &i : rtk_.ssat)
                         {

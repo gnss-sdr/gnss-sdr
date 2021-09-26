@@ -43,7 +43,9 @@ void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int,
     const std::vector<int32_t>& state1,
     const std::vector<float>& input_c)
 {
-    int32_t i, t, state;
+    int32_t i;
+    int32_t t;
+    int32_t state;
     uint32_t max_index;
     float metric;
     float max_val;
@@ -120,8 +122,8 @@ void Viterbi_Decoder::nsc_transit(std::vector<int32_t>& output_p,
     int32_t input) const
 {
     int32_t nextstate;
-    int32_t state, states;
-    states = (1 << (d_KK - 1));  // The number of states: 2^d_mm
+    int32_t state;
+    const int32_t states = (1 << (d_KK - 1));  // The number of states: 2^d_mm
 
     // Determine the output and next state for each possible starting state
     for (state = 0; state < states; state++)
@@ -129,15 +131,14 @@ void Viterbi_Decoder::nsc_transit(std::vector<int32_t>& output_p,
             output_p[state] = nsc_enc_bit(&nextstate, input, state);
             trans_p[state] = nextstate;
         }
-    return;
 }
 
 
 float Viterbi_Decoder::Gamma(int32_t symbol) const
 {
     float rm = 0;
-    int32_t i;
     int32_t mask = 1;
+    int32_t i;
 
     for (i = 0; i < d_nn; i++)
         {
@@ -170,11 +171,11 @@ int32_t Viterbi_Decoder::nsc_enc_bit(int32_t* state_out_p,
     int32_t state_in) const
 {
     // declare variables
-    int32_t state, i;
+    int32_t i;
     int32_t out_ = 0;
 
     // create a word made up of state and new input
-    state = (input << (d_KK - 1)) ^ state_in;
+    const int32_t state = (input << (d_KK - 1)) ^ state_in;
 
     // AND the word with the generators
     for (i = 0; i < d_nn; i++)

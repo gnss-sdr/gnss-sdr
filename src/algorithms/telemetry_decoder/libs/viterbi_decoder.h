@@ -28,12 +28,15 @@
  * \{ */
 
 
+/*!
+ * \brief Class that implements a Viterbi decoder
+ */
 class Viterbi_Decoder
 {
 public:
     /*!
      * \brief Constructor of a Viterbi decoder
-     * \param[in] KK  Constraint Length
+     * \param[in] KK  Constraint length
      * \param[in] nn  Coding rate 1/n
      * \param[in] LL  Data length
      * \param[in] g   Polynomial G1 and G2
@@ -43,28 +46,24 @@ public:
     /*!
      * \brief Uses the Viterbi algorithm to perform hard-decision decoding of a convolutional code.
      * \param[out] output_u_int    Hard decisions on the data bits
-     * \param[in] out0    The output bits for each state if input is a 0.
-     * \param[in] state0  The next state if input is a 0.
-     * \param[in] out1    The output bits for each state if input is a 1.
-     * \param[in] state1  The next state if input is a 1.
      * \param[in] input_c The received signal in LLR-form. For BPSK, must be in form r = 2*a*y/(sigma^2).
      *
      */
-    void decode(std::vector<int32_t>& output_u_int,
-        const std::vector<int32_t>& out0,
-        const std::vector<int32_t>& state0,
-        const std::vector<int32_t>& out1,
-        const std::vector<int32_t>& state1,
-        const std::vector<float>& input_c);
+    void decode(std::vector<int32_t>& output_u_int, const std::vector<float>& input_c);
 
     /*!
-     * \brief Function that creates the transit and output vectors
+     * \brief Reset internal status
+     */
+    void reset();
+
+private:
+    /*
+     * Function that creates the transit and output vectors
      */
     void nsc_transit(std::vector<int32_t>& output_p,
         std::vector<int32_t>& trans_p,
         int32_t input) const;
 
-private:
     /*
      *  Computes the branch metric used for decoding.
      *  \return (returned float) The metric between the hypothetical symbol and the received vector
@@ -81,7 +80,7 @@ private:
      * \param[in] symbol  The integer-valued symbol
      * \param[in] length  The highest bit position in the symbol
      *
-     * This function is used by nsc_enc_bit(), rsc_enc_bit(), and rsc_tail()
+     * This function is used by nsc_enc_bit()
      */
     int32_t parity_counter(int32_t symbol, int32_t length) const;
 
@@ -89,10 +88,10 @@ private:
      * Convolutionally encodes a single bit using a rate 1/n encoder.
      * Takes in one input bit at a time, and produces a n-bit output.
      *
+     * \return (returned int): Computed output
+     *
      * \param[in]  input     The input data bit (i.e. a 0 or 1).
      * \param[in]  state_in  The starting state of the encoder (an int from 0 to 2^m-1).
-     * \param[in]  g         An n-element vector containing the code generators in binary form.
-     * \param[out] output_p[]     An n-element vector containing the encoded bits.
      * \param[out] state_out_p[]  An integer containing the final state of the encoder
      *                               (i.e. the state after encoding this bit)
      *
@@ -110,6 +109,11 @@ private:
     std::vector<int32_t> d_prev_bit{};
     std::vector<int32_t> d_prev_state{};
     std::array<int32_t, 2> d_g{};
+
+    std::vector<int32_t> d_out0;
+    std::vector<int32_t> d_out1;
+    std::vector<int32_t> d_state0;
+    std::vector<int32_t> d_state1;
 
     float d_MAXLOG = 1e7;  // Define infinity
     int32_t d_KK{};

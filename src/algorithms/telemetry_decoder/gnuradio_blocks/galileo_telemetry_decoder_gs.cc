@@ -236,17 +236,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_inav_nav.init_PRN(d_satellite.get_PRN());
     d_first_eph_sent = false;
 
-    // vars for Viterbi decoder
-    const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
-    d_out0 = std::vector<int32_t>(max_states);
-    d_out1 = std::vector<int32_t>(max_states);
-    d_state0 = std::vector<int32_t>(max_states);
-    d_state1 = std::vector<int32_t>(max_states);
-
-    // create Vitrebi decoder and appropriate transition vectors
+    // Instantiate the Viterbi decoder
     d_viterbi = std::make_unique<Viterbi_Decoder>(KK, nn, d_datalength, g_encoder);
-    d_viterbi->nsc_transit(d_out0, d_state0, 0);
-    d_viterbi->nsc_transit(d_out1, d_state1, 1);
 }
 
 
@@ -317,7 +308,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         }
     const int32_t decoded_length = frame_length / 2;
     std::vector<int32_t> page_part_bits(decoded_length);
-    d_viterbi->decode(page_part_bits, d_out0, d_state0, d_out1, d_state1, page_part_symbols_soft_value);
+    d_viterbi->decode(page_part_bits, page_part_symbols_soft_value);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -470,7 +461,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 
     const int32_t decoded_length = frame_length / 2;
     std::vector<int32_t> page_bits(decoded_length);
-    d_viterbi->decode(page_bits, d_out0, d_state0, d_out1, d_state1, page_symbols_soft_value);
+    d_viterbi->decode(page_bits, page_symbols_soft_value);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -543,7 +534,7 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
         }
     const int32_t decoded_length = page_length / 2;
     std::vector<int32_t> page_bits(decoded_length);
-    d_viterbi->decode(page_bits, d_out0, d_state0, d_out1, d_state1, page_symbols_soft_value);
+    d_viterbi->decode(page_bits, page_symbols_soft_value);
 
     // 3. Call the Galileo page decoder
     std::string page_String;
@@ -617,13 +608,7 @@ void galileo_telemetry_decoder_gs::reset()
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     d_stat = 0;
-    const int32_t max_states = 1U << static_cast<uint32_t>(d_mm);  // 2^d_mm
-    d_out0 = std::vector<int32_t>(max_states);
-    d_out1 = std::vector<int32_t>(max_states);
-    d_state0 = std::vector<int32_t>(max_states);
-    d_state1 = std::vector<int32_t>(max_states);
-    d_viterbi->nsc_transit(d_out0, d_state0, 0);
-    d_viterbi->nsc_transit(d_out1, d_state1, 1);
+    d_viterbi->reset();
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 

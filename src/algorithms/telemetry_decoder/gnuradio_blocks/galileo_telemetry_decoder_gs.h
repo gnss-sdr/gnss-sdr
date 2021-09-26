@@ -85,14 +85,9 @@ private:
     void decode_FNAV_word(float *page_symbols, int32_t frame_length);
     void decode_CNAV_word(float *page_symbols, int32_t page_length);
 
-    // data members for Viterbi decoder
     std::unique_ptr<Viterbi_Decoder> d_viterbi;
     std::vector<int32_t> d_preamble_samples;
     std::vector<float> d_page_part_symbols;
-    std::vector<int32_t> d_out0;
-    std::vector<int32_t> d_out1;
-    std::vector<int32_t> d_state0;
-    std::vector<int32_t> d_state1;
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;

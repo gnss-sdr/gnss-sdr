@@ -33,15 +33,16 @@ Viterbi_Decoder::Viterbi_Decoder(int32_t KK, int32_t nn, int32_t LL, const std::
     d_prev_bit = std::vector<int32_t>(d_states * (d_LL + d_mm));
     d_prev_state = std::vector<int32_t>(d_states * (d_LL + d_mm));
     d_g = g;
+    d_out0 = std::vector<int32_t>(d_states);
+    d_out1 = std::vector<int32_t>(d_states);
+    d_state0 = std::vector<int32_t>(d_states);
+    d_state1 = std::vector<int32_t>(d_states);
+    nsc_transit(d_out0, d_state0, 0);
+    nsc_transit(d_out1, d_state1, 1);
 }
 
 
-void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int,
-    const std::vector<int32_t>& out0,
-    const std::vector<int32_t>& state0,
-    const std::vector<int32_t>& out1,
-    const std::vector<int32_t>& state1,
-    const std::vector<float>& input_c)
+void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int, const std::vector<float>& input_c)
 {
     int32_t i;
     int32_t t;
@@ -67,25 +68,25 @@ void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int,
             for (state = 0; state < d_states; state++)
                 {
                     // hypothesis: info bit is a zero
-                    metric = d_prev_section[state] + d_metric_c[out0[state]];
+                    metric = d_prev_section[state] + d_metric_c[d_out0[state]];
 
                     // store new metric if more than metric in storage
-                    if (metric > d_next_section[state0[state]])
+                    if (metric > d_next_section[d_state0[state]])
                         {
-                            d_next_section[state0[state]] = metric;
-                            d_prev_state[t * d_states + state0[state]] = state;
-                            d_prev_bit[t * d_states + state0[state]] = 0;
+                            d_next_section[d_state0[state]] = metric;
+                            d_prev_state[t * d_states + d_state0[state]] = state;
+                            d_prev_bit[t * d_states + d_state0[state]] = 0;
                         }
 
                     // hypothesis: info bit is a one
-                    metric = d_prev_section[state] + d_metric_c[out1[state]];
+                    metric = d_prev_section[state] + d_metric_c[d_out1[state]];
 
                     // store new metric if more than metric in storage
-                    if (metric > d_next_section[state1[state]])
+                    if (metric > d_next_section[d_state1[state]])
                         {
-                            d_next_section[state1[state]] = metric;
-                            d_prev_state[t * d_states + state1[state]] = state;
-                            d_prev_bit[t * d_states + state1[state]] = 1;
+                            d_next_section[d_state1[state]] = metric;
+                            d_prev_state[t * d_states + d_state1[state]] = state;
+                            d_prev_bit[t * d_states + d_state1[state]] = 1;
                         }
                 }
 
@@ -114,6 +115,17 @@ void Viterbi_Decoder::decode(std::vector<int32_t>& output_u_int,
             output_u_int[t] = d_prev_bit[t * d_states + state];
             state = d_prev_state[t * d_states + state];
         }
+}
+
+
+void Viterbi_Decoder::reset()
+{
+    d_out0 = std::vector<int32_t>(d_states);
+    d_out1 = std::vector<int32_t>(d_states);
+    d_state0 = std::vector<int32_t>(d_states);
+    d_state1 = std::vector<int32_t>(d_states);
+    nsc_transit(d_out0, d_state0, 0);
+    nsc_transit(d_out1, d_state1, 1);
 }
 
 

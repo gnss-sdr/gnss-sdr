@@ -18,6 +18,7 @@
 
 #include "galileo_fnav_message.h"
 #include "galileo_inav_message.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "viterbi_decoder.h"
 #include <gtest/gtest.h>
 #include <algorithm>  // for copy
@@ -34,11 +35,8 @@ class Galileo_FNAV_INAV_test : public ::testing::Test
 public:
     Galileo_FNAV_INAV_test()
     {
-        // vars for Viterbi decoder
-        viterbi_inav->nsc_transit(i_out0, i_state0, 0);
-        viterbi_inav->nsc_transit(i_out1, i_state1, 1);
-        viterbi_fnav->nsc_transit(f_out0, f_state0, 0);
-        viterbi_fnav->nsc_transit(f_out1, f_state1, 1);
+        viterbi_fnav = std::make_unique<Viterbi_Decoder>(KK, nn, ((488 / nn) - mm), g_encoder);
+        viterbi_inav = std::make_unique<Viterbi_Decoder>(KK, nn, ((240 / nn) - mm), g_encoder);
         flag_even_word_arrived = 0;
     }
 
@@ -48,23 +46,11 @@ public:
     Galileo_Fnav_Message FNAV_decoder;
     const int32_t nn = 2;  // Coding rate 1/n
     const int32_t KK = 7;  // Constraint Length
-    int32_t mm = KK - 1;
-    int32_t flag_even_word_arrived;
+    const int32_t mm = KK - 1;
     const std::array<int32_t, 2> g_encoder{{121, 91}};
-    std::shared_ptr<Viterbi_Decoder> viterbi_fnav = std::make_shared<Viterbi_Decoder>(KK, nn, ((488 / nn) - mm), g_encoder);
-    std::shared_ptr<Viterbi_Decoder> viterbi_inav = std::make_shared<Viterbi_Decoder>(KK, nn, ((240 / nn) - mm), g_encoder);
-
-    int32_t max_states = 1 << mm;  // 2^mm
-
-    std::vector<int32_t> i_out0 = std::vector<int32_t>(max_states);
-    std::vector<int32_t> i_out1 = std::vector<int32_t>(max_states);
-    std::vector<int32_t> i_state0 = std::vector<int32_t>(max_states);
-    std::vector<int32_t> i_state1 = std::vector<int32_t>(max_states);
-
-    std::vector<int32_t> f_out0 = std::vector<int32_t>(max_states);
-    std::vector<int32_t> f_out1 = std::vector<int32_t>(max_states);
-    std::vector<int32_t> f_state0 = std::vector<int32_t>(max_states);
-    std::vector<int32_t> f_state1 = std::vector<int32_t>(max_states);
+    std::unique_ptr<Viterbi_Decoder> viterbi_fnav;
+    std::unique_ptr<Viterbi_Decoder> viterbi_inav;
+    int32_t flag_even_word_arrived;
 
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out)
     {
@@ -96,7 +82,7 @@ public:
             }
 
         std::vector<int32_t> page_part_bits = std::vector<int32_t>(frame_length / 2);
-        viterbi_inav->decode(page_part_bits, i_out0, i_state0, i_out1, i_state1, page_part_symbols_deint);
+        viterbi_inav->decode(page_part_bits, page_part_symbols_deint);
 
         // 3. Call the Galileo page decoder
         std::string page_String;
@@ -151,7 +137,7 @@ public:
             }
 
         std::vector<int32_t> page_bits = std::vector<int32_t>(frame_length);
-        viterbi_fnav->decode(page_bits, f_out0, f_state0, f_out1, f_state1, page_symbols_deint);
+        viterbi_fnav->decode(page_bits, page_symbols_deint);
 
         // 3. Call the Galileo page decoder
         std::string page_String;

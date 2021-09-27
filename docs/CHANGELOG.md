@@ -14,6 +14,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability:
+
+- Improved Time-To-First-Fix when using GPS L1 C/A signals, fixing a bug that
+  was making the receiver to drop the satellite if the PLL got locked at 180
+  degrees, and making some optimizations on bit transition detection.
+
 ### Improvements in Interoperability:
 
 - Fix setting of the signal source gain if the AGC is enabled when using the
@@ -24,6 +30,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Rewritten Viterbi decoder for Galileo navigation messages: encapsulated in a
   class instead of being implemented as free inline functions. This improves
   memory management.
+
+### Improvements in Reliability
+
+- Fixed some potential buffer overflows.
 
 ### Improvements in Usability:
 

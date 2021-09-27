@@ -131,9 +131,9 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
                     d_trk_parameters.y_intercept = 1.0;
                     // symbol integration: 20 trk symbols (20 ms) = 1 tlm bit
-                    // set the preamble in the secondary code acquisition to obtain tlm symbol synchronization
-                    d_secondary_code_length = static_cast<uint32_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
-                    d_secondary_code_string = GPS_CA_PREAMBLE_SYMBOLS_STR;
+                    // set the bit transition pattern in secondary code to obtain bit synchronization
+                    d_secondary_code_length = static_cast<uint32_t>(GPS_CA_BIT_TRANSITION_SYMBOLS_LENGTH_SYMBOLS);
+                    d_secondary_code_string = GPS_CA_BIT_TRANSITION_SYMBOLS_STR;
                     d_symbols_per_bit = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
                 }
             else if (d_signal_type == "2S")

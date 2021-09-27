@@ -477,8 +477,6 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             }
                         DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
                         d_prev_GPS_frame_4bytes = 0;
-
-                        std::cout << "Preamble detection " << corr_value << " for GPS L1 satellite " << this->d_satellite << "\n";
                         if (decode_subframe(d_flag_PLL_180_deg_phase_locked))
                             {
                                 d_CRC_error_counter = 0;

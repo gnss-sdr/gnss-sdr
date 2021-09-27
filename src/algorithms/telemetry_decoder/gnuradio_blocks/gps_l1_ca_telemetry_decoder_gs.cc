@@ -251,7 +251,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
-bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
+bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(bool flag_invert)
 {
     std::array<char, GPS_SUBFRAME_LENGTH> subframe{};
     int32_t frame_bit_index = 0;
@@ -262,11 +262,20 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe()
         {
             // ******* SYMBOL TO BIT *******
             // symbol to bit
-            if (subframe_symbol > 0)
+            if (flag_invert == false)
                 {
-                    GPS_frame_4bytes += 1;  // insert the telemetry bit in LSB
+                    if (subframe_symbol > 0)
+                        {
+                            GPS_frame_4bytes += 1;  // insert the telemetry bit in LSB
+                        }
                 }
-
+            else
+                {
+                    if (subframe_symbol < 0)
+                        {
+                            GPS_frame_4bytes += 1;  // insert the inverted telemetry bit in LSB
+                        }
+                }
             // ******* bits to words ******
             frame_bit_index++;
             if (frame_bit_index == 30)
@@ -467,7 +476,10 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                 d_flag_PLL_180_deg_phase_locked = false;
                             }
                         DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
-                        if (decode_subframe())
+                        d_prev_GPS_frame_4bytes = 0;
+
+                        std::cout << "Preamble detection " << corr_value << " for GPS L1 satellite " << this->d_satellite << "\n";
+                        if (decode_subframe(d_flag_PLL_180_deg_phase_locked))
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
@@ -493,7 +505,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         // 0. fetch the symbols into an array
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
 
-                        if (decode_subframe())
+                        if (decode_subframe(d_flag_PLL_180_deg_phase_locked))
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())

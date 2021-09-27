@@ -27,8 +27,9 @@
  * \{ */
 
 
-struct Pvt_Conf
+class Pvt_Conf
 {
+public:
     std::map<int, int> rtcm_msg_rate_ms;
 
     std::string rinex_name = std::string("-");

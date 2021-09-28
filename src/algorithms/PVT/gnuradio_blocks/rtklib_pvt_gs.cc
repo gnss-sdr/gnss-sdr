@@ -53,6 +53,7 @@
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
 #include <boost/any.hpp>                   // for any_cast, any
 #include <boost/archive/xml_iarchive.hpp>  // for xml_iarchive
@@ -537,6 +538,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_beidou_dnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code();
     d_beidou_dnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code();
     d_galileo_has_data_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
+
+    // set the RTKLIB trace (debug) level
+    tracelevel(conf_.rtk_trace_level);
 
     d_start = std::chrono::system_clock::now();
 }

@@ -55,6 +55,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   `SignalSource.dump_filename=./non-existing/data.dat`, and the `non-existing`
   folder does not exist, it will be created if the running user has writing
   permissions. This also works for absolute paths.
+- Added a new configuration parameter `PVT.rtk_trace_level` that sets the
+  logging verbosity level of the RTKLIB library.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

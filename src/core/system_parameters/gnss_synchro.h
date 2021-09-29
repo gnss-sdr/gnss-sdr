@@ -74,10 +74,11 @@ public:
     double interp_TOW_ms{};  //!< Set by Observables processing block
 
     // Flags
-    bool Flag_valid_acquisition{};    //!< Set by Acquisition processing block
-    bool Flag_valid_symbol_output{};  //!< Set by Tracking processing block
-    bool Flag_valid_word{};           //!< Set by Telemetry Decoder processing block
-    bool Flag_valid_pseudorange{};    //!< Set by Observables processing block
+    bool Flag_valid_acquisition{};         //!< Set by Acquisition processing block
+    bool Flag_valid_symbol_output{};       //!< Set by Tracking processing block
+    bool Flag_valid_word{};                //!< Set by Telemetry Decoder processing block
+    bool Flag_valid_pseudorange{};         //!< Set by Observables processing block
+    bool Flag_PLL_180_deg_phase_locked{};  //!< Set by Telemetry Decoder processing block
 
     /// Copy constructor
     Gnss_Synchro(const Gnss_Synchro& other) noexcept
@@ -118,6 +119,7 @@ public:
                 this->Flag_valid_symbol_output = rhs.Flag_valid_symbol_output;
                 this->Flag_valid_word = rhs.Flag_valid_word;
                 this->Flag_valid_pseudorange = rhs.Flag_valid_pseudorange;
+                this->Flag_PLL_180_deg_phase_locked = rhs.Flag_PLL_180_deg_phase_locked;
             }
         return *this;
     };
@@ -160,6 +162,7 @@ public:
                 this->Flag_valid_symbol_output = other.Flag_valid_symbol_output;
                 this->Flag_valid_word = other.Flag_valid_word;
                 this->Flag_valid_pseudorange = other.Flag_valid_pseudorange;
+                this->Flag_PLL_180_deg_phase_locked = other.Flag_PLL_180_deg_phase_locked;
             }
         return *this;
     };
@@ -206,6 +209,7 @@ public:
         ar& BOOST_SERIALIZATION_NVP(Flag_valid_symbol_output);
         ar& BOOST_SERIALIZATION_NVP(Flag_valid_word);
         ar& BOOST_SERIALIZATION_NVP(Flag_valid_pseudorange);
+        ar& BOOST_SERIALIZATION_NVP(Flag_PLL_180_deg_phase_locked);
     }
 };
 

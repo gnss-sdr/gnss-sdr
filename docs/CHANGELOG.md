@@ -57,6 +57,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   permissions. This also works for absolute paths.
 - Added a new configuration parameter `PVT.rtk_trace_level` that sets the
   logging verbosity level of the RTKLIB library.
+- Added a new output parameter `Flag_PLL_180_deg_phase_locked` in the monitor
+  output that indicates if the PLL got locked at 180 degrees, so the symbol sign
+  is reversed.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

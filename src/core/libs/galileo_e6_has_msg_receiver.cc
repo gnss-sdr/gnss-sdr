@@ -413,17 +413,20 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                             d_cell_mask_availability_flag[d_HAS_data.header.mask_id][i] = d_HAS_data.cell_mask_availability_flag[i];
                             message = std::string(message.begin() + 1, message.end());
 
-                            int size_cell = ones_in_satellite_mask * ones_in_signal_mask;
-                            int pos = 0;
-                            for (int s = 0; s < ones_in_satellite_mask; s++)
+                            if (d_HAS_data.cell_mask_availability_flag[i] == true)
                                 {
-                                    for (int sig = 0; sig < ones_in_signal_mask; sig++)
+                                    int size_cell = ones_in_satellite_mask * ones_in_signal_mask;
+                                    int pos = 0;
+                                    for (int s = 0; s < ones_in_satellite_mask; s++)
                                         {
-                                            d_HAS_data.cell_mask[i][s][sig] = (message[pos] == '1' ? true : false);
-                                            pos++;
+                                            for (int sig = 0; sig < ones_in_signal_mask; sig++)
+                                                {
+                                                    d_HAS_data.cell_mask[i][s][sig] = (message[pos] == '1' ? true : false);
+                                                    pos++;
+                                                }
                                         }
+                                    message = std::string(message.begin() + size_cell, message.end());
                                 }
-                            message = std::string(message.begin() + size_cell, message.end());
 
                             d_HAS_data.nav_message[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_NAV_MESSAGE_LENGTH));
                             d_nav_message_mask[d_HAS_data.header.mask_id][i] = d_HAS_data.nav_message[i];

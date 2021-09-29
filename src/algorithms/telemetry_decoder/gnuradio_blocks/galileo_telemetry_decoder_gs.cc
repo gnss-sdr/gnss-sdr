@@ -1032,6 +1032,11 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GNSS_PI;
+                    current_symbol.Flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    current_symbol.Flag_PLL_180_deg_phase_locked = false;
                 }
 
             if (d_dump == true)

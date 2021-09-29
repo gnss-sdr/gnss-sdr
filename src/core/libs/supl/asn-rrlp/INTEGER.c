@@ -1204,7 +1204,7 @@ int asn_long2INTEGER(INTEGER_t *st, int64_t value)
             return -1;
         }
 
-    buf = (uint8_t *)MALLOC(8);
+    buf = (uint8_t *)MALLOC(16);
     if (!buf)
         {
             return -1;

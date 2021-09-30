@@ -20,13 +20,13 @@
 
 #include "an_packet_printer.h"
 #include "rtklib_solver.h"  // for Rtklib_Solver
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>  // for DLOG
-#include <cmath>           // for std::sqrt, M_PI
-#include <fcntl.h>         // for fcntl
-#include <iostream>        // for std::cerr
-#include <termios.h>       // values for termios
-#include <unistd.h>        // for write(), read(), close()
+#include <glog/logging.h>   // for DLOG
+#include <cmath>            // for std::sqrt, M_PI
+#include <fcntl.h>          // for fcntl
+#include <iostream>         // for std::cerr
+#include <limits>           // std::numeric_limits
+#include <termios.h>        // values for termios
+#include <unistd.h>         // for write(), read(), close()
 
 
 An_Packet_Printer::An_Packet_Printer(const std::string& an_dump_devname)
@@ -82,6 +82,7 @@ void An_Packet_Printer::close_serial() const
         }
 }
 
+
 /*
  * @brief update_sdr_gnss_packet
  * @param  sdr_gnss_packet_t* Pointer to a structure that contains
@@ -91,12 +92,10 @@ void An_Packet_Printer::close_serial() const
  */
 void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const Rtklib_Solver* const pvt, const std::map<int, Gnss_Synchro>& gnss_observables_map) const
 {
-    const boost::posix_time::ptime time_origin(boost::gregorian::date(1970, 1, 1));
-    boost::date_time::time_duration unix_t = pvt->get_position_UTC_time() - time_origin;
-
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     uint8_t num_gps_sats = 0;
     uint8_t num_gal_sats = 0;
+    uint32_t microseconds = 0;
     int index = 0;
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
@@ -113,6 +112,23 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
                                 {
                                     _packet->sats[index].prn = static_cast<uint8_t>(gnss_observables_iter->second.PRN);
                                     _packet->sats[index].snr = static_cast<uint8_t>(gnss_observables_iter->second.CN0_dB_hz);
+                                    int16_t doppler = 0;
+                                    double Carrier_Doppler_hz = gnss_observables_iter->second.CN0_dB_hz;
+                                    if (Carrier_Doppler_hz > static_cast<double>(std::numeric_limits<int16_t>::max()))
+                                        {
+                                            doppler = std::numeric_limits<int16_t>::max();
+                                        }
+                                    else if (Carrier_Doppler_hz < static_cast<double>(std::numeric_limits<int16_t>::min()))
+                                        {
+                                            doppler = std::numeric_limits<int16_t>::min();
+                                        }
+                                    else
+                                        {
+                                            doppler = static_cast<int16_t>(Carrier_Doppler_hz);
+                                        }
+
+                                    _packet->sats[index].doppler = doppler;
+                                    microseconds = static_cast<uint32_t>(static_cast<double>(gnss_observables_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_observables_iter->second.fs)) * 1e6;
                                     index++;
                                 }
                             break;
@@ -122,6 +138,23 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
                                 {
                                     _packet->sats[index].prn = static_cast<uint8_t>(gnss_observables_iter->second.PRN) + 100;
                                     _packet->sats[index].snr = static_cast<uint8_t>(gnss_observables_iter->second.CN0_dB_hz);
+                                    int16_t doppler = 0;
+                                    double Carrier_Doppler_hz = gnss_observables_iter->second.CN0_dB_hz;
+                                    if (Carrier_Doppler_hz > static_cast<double>(std::numeric_limits<int16_t>::max()))
+                                        {
+                                            doppler = std::numeric_limits<int16_t>::max();
+                                        }
+                                    else if (Carrier_Doppler_hz < static_cast<double>(std::numeric_limits<int16_t>::min()))
+                                        {
+                                            doppler = std::numeric_limits<int16_t>::min();
+                                        }
+                                    else
+                                        {
+                                            doppler = static_cast<int16_t>(Carrier_Doppler_hz);
+                                        }
+
+                                    _packet->sats[index].doppler = doppler;
+                                    microseconds = static_cast<uint32_t>(static_cast<double>(gnss_observables_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_observables_iter->second.fs)) * 1e6;
                                     index++;
                                 }
                             break;
@@ -130,10 +163,11 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
                         }
                 }
         }
+
     _packet->nsvfix = static_cast<uint8_t>(pvt->get_num_valid_observations());
     _packet->gps_satellites = num_gps_sats;
     _packet->galileo_satellites = num_gal_sats;
-    _packet->microseconds = static_cast<uint32_t>(unix_t.total_microseconds());
+    _packet->microseconds = microseconds;
     _packet->latitude = static_cast<double>(pvt->get_latitude()) * (M_PI / 180.0);
     _packet->longitude = static_cast<double>(pvt->get_longitude()) * (M_PI / 180.0);
     _packet->height = static_cast<double>(pvt->get_height());
@@ -142,7 +176,12 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
     _packet->velocity[2] = static_cast<float>(-pvt->get_rx_vel()[2]);
 
     uint16_t status = 0;
-    // Clarify table
+    // Set 3D fix
+    status = status & 0b00000011;  // set bit 0 and 1
+    // Set Doppler velocity valid
+    status = status & 0b00000100;  // set bit 2
+    // Set Time valid
+    status = status & 0b00001000;  // set bit 3
     _packet->status = status;
 }
 
@@ -186,8 +225,10 @@ void An_Packet_Printer::encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packe
                     offset += 1;
                     LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->sats[i].snr), offset, _packet->data, sizeof(sdr_gnss_packet->sats[i].snr));
                     offset += 1;
+                    LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->sats[i].doppler), offset, _packet->data, sizeof(sdr_gnss_packet->sats[i].doppler));
+                    offset += 2;
                 }
-            offset += 16;
+            offset += 4;  // reserved
             LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->status), offset, _packet->data, sizeof(sdr_gnss_packet->status));
         }
     an_packet_encode(_packet);

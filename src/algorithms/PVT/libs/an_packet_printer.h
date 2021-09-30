@@ -39,7 +39,7 @@ typedef struct
     uint8_t nsvfix;              // number of sats used in PVT fix
     uint8_t gps_satellites;      // number of tracked GPS satellites
     uint8_t galileo_satellites;  // number of tracked Galileo satellites
-    uint32_t microseconds;       // ??
+    uint32_t microseconds;       // from start of receiver operation
     double latitude;             // in [rad]
     double longitude;            // in [rad]
     double height;               // in [m]
@@ -47,11 +47,12 @@ typedef struct
 
     struct
     {
-        uint8_t prn;  // Galileo sats expressed as PRN + 100
-        uint8_t snr;  // in [dB-Hz]
+        uint8_t prn;      // PRN ID. Galileo sats expressed as PRN + 100
+        uint8_t snr;      // in [dB-Hz]
+        int16_t doppler;  // in [Hz], saturates at +/- 32767 Hz
     } sats[6];
 
-    float reserved[4];
+    uint32_t reserved = 0;
     uint16_t status;
 
 } sdr_gnss_packet_t;

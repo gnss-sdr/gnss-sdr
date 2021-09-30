@@ -16,6 +16,7 @@
 
 #include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
+#include "an_packet_printer.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -410,6 +411,18 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     d_rx_time = 0.0;
     d_last_status_print_seg = 0;
+
+    // Initialize AN printer
+    d_an_printer_enabled = conf_.an_output_enabled;
+    d_an_rate_ms = conf_.an_rate_ms;
+    if (d_an_printer_enabled)
+        {
+            d_an_printer = std::make_unique<An_Packet_Printer>(conf_.an_dump_devname);
+        }
+    else
+        {
+            d_an_printer = nullptr;
+        }
 
     // PVT MONITOR
     d_flag_monitor_pvt_enabled = conf_.monitor_enabled;
@@ -2235,6 +2248,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 flag_write_RTCM_1020_output,
                                                 flag_write_RTCM_1045_output,
                                                 d_enable_rx_clock_correction);
+                                        }
+                                    if (d_an_printer_enabled)
+                                        {
+                                            if (current_RX_time_ms % d_an_rate_ms == 0)
+                                                {
+                                                    d_an_printer->print_packet(d_user_pvt_solver.get());
+                                                }
                                         }
                                 }
                         }

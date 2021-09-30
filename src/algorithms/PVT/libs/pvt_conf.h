@@ -37,6 +37,7 @@ public:
     std::string nmea_dump_filename;
     std::string nmea_dump_devname;
     std::string rtcm_dump_devname;
+    std::string an_dump_devname;
     std::string output_path = std::string(".");
     std::string rinex_output_path = std::string(".");
     std::string gpx_output_path = std::string(".");
@@ -59,6 +60,7 @@ public:
     int32_t nmea_rate_ms = 1000;
     int32_t rinex_version = 0;
     int32_t rinexobs_rate_ms = 0;
+    int32_t an_rate_ms = 1000;
     int32_t max_obs_block_rx_clock_offset_ms = 40;
     int udp_port = 0;
     int udp_eph_port = 0;
@@ -75,6 +77,7 @@ public:
     bool gpx_output_enabled = true;
     bool geojson_output_enabled = true;
     bool nmea_output_file_enabled = true;
+    bool an_output_enabled = false;
     bool kml_output_enabled = true;
     bool xml_output_enabled = true;
     bool rtcm_output_file_enabled = true;

@@ -262,7 +262,7 @@ int An_Packet_Printer::init_serial(const std::string& serial_device)
     // clang-format off
     struct termios options{};
     // clang-format on
-    const int64_t BAUD = B9600;  // BAUD  =  B38400;
+    const int64_t BAUD = B115200;
     const int64_t DATABITS = CS8;
     const int64_t STOPBITS = 0;
     const int64_t PARITYON = 0;

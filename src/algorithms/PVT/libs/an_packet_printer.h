@@ -21,8 +21,10 @@
 #ifndef GNSS_SDR_AN_PACKET_PRINTER_H
 #define GNSS_SDR_AN_PACKET_PRINTER_H
 
+#include "gnss_synchro.h"
 #include <array>
 #include <cstdint>
+#include <map>
 #include <string>
 
 /** \addtogroup PVT
@@ -34,26 +36,25 @@ class Rtklib_Solver;
 
 typedef struct
 {
-    uint32_t unix_time_stamp;
-    uint32_t microseconds;
-    double latitude;
-    double longitude;
-    double height;
-    float velocity[3];
-    float position_standard_deviation[3];
-    float reserved[4];
-    union
+    uint8_t nsvfix;              // number of sats used in PVT fix
+    uint8_t gps_satellites;      // number of tracked GPS satellites
+    uint8_t galileo_satellites;  // number of tracked Galileo satellites
+    uint32_t microseconds;       // ??
+    double latitude;             // in [rad]
+    double longitude;            // in [rad]
+    double height;               // in [m]
+    float velocity[3];           // North, East, Down, in [m/s]
+
+    struct
     {
-        uint16_t r;
-        struct
-        {
-            uint32_t fix_type : 3;
-            uint32_t velocity_valid : 1;
-            uint32_t time_valid : 1;
-            uint32_t external_gnss : 1;
-        } b;
-    } status;
-} raw_gnss_packet_t;
+        uint8_t prn;  // Galileo sats expressed as PRN + 100
+        uint8_t snr;  // in [dB-Hz]
+    } sats[6];
+
+    float reserved[4];
+    uint16_t status;
+
+} sdr_gnss_packet_t;
 
 
 typedef struct
@@ -85,7 +86,7 @@ public:
     /*!
      * \brief Print AN packet to the initialized device.
      */
-    bool print_packet(const Rtklib_Solver* const pvt_data);
+    bool print_packet(const Rtklib_Solver* const pvt_data, const std::map<int, Gnss_Synchro>& gnss_observables_map);
 
     /*!
      * \brief Close serial port. Also done in the destructor, this is only
@@ -108,15 +109,16 @@ private:
             0xfb1e, 0x8bf9, 0x9bd8, 0xabbb, 0xbb9a, 0x4a75, 0x5a54, 0x6a37, 0x7a16, 0x0af1, 0x1ad0, 0x2ab3, 0x3a92, 0xfd2e, 0xed0f, 0xdd6c, 0xcd4d, 0xbdaa, 0xad8b, 0x9de8, 0x8dc9, 0x7c26, 0x6c07, 0x5c64,
             0x4c45, 0x3ca2, 0x2c83, 0x1ce0, 0x0cc1, 0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8, 0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0};
 
-    const size_t RAW_GNSS_PACKET_LENGTH = sizeof(raw_gnss_packet_t{});
+    const size_t SDR_GNSS_PACKET_LENGTH = 73;
+    const uint8_t SDR_GNSS_PACKET_ID = 201;
 
     int init_serial(const std::string& serial_device);
-    void update_raw_gnss_packet(raw_gnss_packet_t* _packet, const Rtklib_Solver* const pvt) const;
-    void encode_gnss_cttc_packet(raw_gnss_packet_t* raw_packet, an_packet_t* _packet) const;
+    void update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const Rtklib_Solver* const pvt, const std::map<int, Gnss_Synchro>& gnss_observables_map) const;
+    void encode_gnss_cttc_packet(sdr_gnss_packet_t* sdr_gnss_packet, an_packet_t* _packet) const;
     uint16_t calculate_crc16(const void* data, uint16_t length) const;
     uint8_t calculate_header_lrc(const uint8_t* data) const;
     void an_packet_encode(an_packet_t* an_packet) const;
-    void encode_raw_gnss_packet(raw_gnss_packet_t* raw_packet, an_packet_t* _packet) const;
+    void encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packet, an_packet_t* _packet) const;
     void LSB_bytes_to_array(void* _in, int offset, uint8_t* _out, uint8_t var_size) const;
 
     std::string d_an_devname;

@@ -2253,7 +2253,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             if (current_RX_time_ms % d_an_rate_ms == 0)
                                                 {
-                                                    d_an_printer->print_packet(d_user_pvt_solver.get());
+                                                    d_an_printer->print_packet(d_user_pvt_solver.get(), d_gnss_observables_map);
                                                 }
                                         }
                                 }

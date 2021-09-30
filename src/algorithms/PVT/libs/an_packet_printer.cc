@@ -54,13 +54,13 @@ An_Packet_Printer::~An_Packet_Printer()
 }
 
 
-bool An_Packet_Printer::print_packet(const Rtklib_Solver* const pvt_data)
+bool An_Packet_Printer::print_packet(const Rtklib_Solver* const pvt_data, const std::map<int, Gnss_Synchro>& gnss_observables_map)
 {
     an_packet_t an_packet{};
-    raw_gnss_packet_t raw_packet{};
+    sdr_gnss_packet_t sdr_gnss_packet{};
 
-    update_raw_gnss_packet(&raw_packet, pvt_data);
-    encode_raw_gnss_packet(&raw_packet, &an_packet);
+    update_sdr_gnss_packet(&sdr_gnss_packet, pvt_data, gnss_observables_map);
+    encode_sdr_gnss_packet(&sdr_gnss_packet, &an_packet);
 
     if (d_an_dev_descriptor != -1)
         {
@@ -83,84 +83,112 @@ void An_Packet_Printer::close_serial() const
 }
 
 /*
- * @brief update_raw_gnss_packet
- * @param  raw_gnss_packet_t* Pointer to a structure that contains
+ * @brief update_sdr_gnss_packet
+ * @param  sdr_gnss_packet_t* Pointer to a structure that contains
  *         the output information.
  * @param  NavData_t* pointer to input packet with all the information
  * @reval  None
  */
-void An_Packet_Printer::update_raw_gnss_packet(raw_gnss_packet_t* _packet, const Rtklib_Solver* const pvt) const
+void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const Rtklib_Solver* const pvt, const std::map<int, Gnss_Synchro>& gnss_observables_map) const
 {
     const boost::posix_time::ptime time_origin(boost::gregorian::date(1970, 1, 1));
     boost::date_time::time_duration unix_t = pvt->get_position_UTC_time() - time_origin;
 
-    _packet->unix_time_stamp = unix_t.total_seconds();
-    _packet->microseconds = unix_t.total_microseconds() - unix_t.total_seconds() * 1e6;
-    _packet->latitude = static_cast<double>(pvt->get_latitude()) / 1.0e-7 * (M_PI / 180.0);
-    _packet->longitude = static_cast<double>(pvt->get_latitude()) / 1.0e-7 * (M_PI / 180.0);
-    _packet->height = static_cast<double>(pvt->get_height()) / 100.0;
-    _packet->velocity[0] = static_cast<float>(pvt->pvt_sol.rr[3]) / 100.0;
-    _packet->velocity[1] = static_cast<float>(pvt->pvt_sol.rr[4]) / 100.0;
-    _packet->velocity[2] = static_cast<float>(pvt->pvt_sol.rr[5]) / 100.0;
-    _packet->position_standard_deviation[0] = std::sqrt(static_cast<float>(pvt->pvt_sol.qr[0]));
-    _packet->position_standard_deviation[1] = std::sqrt(static_cast<float>(pvt->pvt_sol.qr[1]));
-    _packet->position_standard_deviation[2] = std::sqrt(static_cast<float>(pvt->pvt_sol.qr[2]));
+    std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
+    uint8_t num_gps_sats = 0;
+    uint8_t num_gal_sats = 0;
+    int index = 0;
 
-    _packet->status.b.fix_type = 2;  //!< 2: 3D fix
-    _packet->status.b.velocity_valid = 0;
-    _packet->status.b.time_valid = 0;
-    _packet->status.b.external_gnss = 0;
+    for (gnss_observables_iter = gnss_observables_map.cbegin();
+         gnss_observables_iter != gnss_observables_map.cend();
+         ++gnss_observables_iter)
+        {
+            if (gnss_observables_iter->second.Flag_valid_pseudorange)
+                {
+                    switch (gnss_observables_iter->second.System)
+                        {
+                        case 'G':
+                            num_gps_sats++;
+                            if (index < 6)
+                                {
+                                    _packet->sats[index].prn = static_cast<uint8_t>(gnss_observables_iter->second.PRN);
+                                    _packet->sats[index].snr = static_cast<uint8_t>(gnss_observables_iter->second.CN0_dB_hz);
+                                    index++;
+                                }
+                            break;
+                        case 'E':
+                            num_gal_sats++;
+                            if (index < 6)
+                                {
+                                    _packet->sats[index].prn = static_cast<uint8_t>(gnss_observables_iter->second.PRN) + 100;
+                                    _packet->sats[index].snr = static_cast<uint8_t>(gnss_observables_iter->second.CN0_dB_hz);
+                                    index++;
+                                }
+                            break;
+                        default:
+                            break;
+                        }
+                }
+        }
+    _packet->nsvfix = static_cast<uint8_t>(pvt->get_num_valid_observations());
+    _packet->gps_satellites = num_gps_sats;
+    _packet->galileo_satellites = num_gal_sats;
+    _packet->microseconds = static_cast<uint32_t>(unix_t.total_microseconds());
+    _packet->latitude = static_cast<double>(pvt->get_latitude()) * (M_PI / 180.0);
+    _packet->longitude = static_cast<double>(pvt->get_longitude()) * (M_PI / 180.0);
+    _packet->height = static_cast<double>(pvt->get_height());
+    _packet->velocity[0] = static_cast<float>(pvt->get_rx_vel()[1]);
+    _packet->velocity[1] = static_cast<float>(pvt->get_rx_vel()[0]);
+    _packet->velocity[2] = static_cast<float>(-pvt->get_rx_vel()[2]);
+
+    uint16_t status = 0;
+    // Clarify table
+    _packet->status = status;
 }
 
 
 /*
- * @brief encode_raw_gnss_packet
- * @param  raw_gnss_packet_t* Pointer to a  structure that contains
- *         the information.
+ * @brief encode_sdr_gnss_packet
+ * @param  sdr_gnss_packet_t* Pointer to a structure that contains the data.
  * @param  an_packet_t* pointer to output packet
  * @reval  None
  */
-void An_Packet_Printer::encode_raw_gnss_packet(raw_gnss_packet_t* raw_packet, an_packet_t* _packet) const
+void An_Packet_Printer::encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packet, an_packet_t* _packet) const
 {
-    _packet->id = 201;
-    _packet->length = RAW_GNSS_PACKET_LENGTH;
-    if (_packet != NULL)
+    _packet->id = SDR_GNSS_PACKET_ID;
+    _packet->length = SDR_GNSS_PACKET_LENGTH;
+    if (_packet != nullptr)
         {
             uint8_t offset = 0;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->unix_time_stamp), offset, _packet->data, sizeof(raw_packet->unix_time_stamp));
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->nsvfix), offset, _packet->data, sizeof(sdr_gnss_packet->nsvfix));
+            offset += 1;
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->gps_satellites), offset, _packet->data, sizeof(sdr_gnss_packet->gps_satellites));
+            offset += 1;
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->galileo_satellites), offset, _packet->data, sizeof(sdr_gnss_packet->galileo_satellites));
+            offset += 1;
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->microseconds), offset, _packet->data, sizeof(sdr_gnss_packet->microseconds));
             offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->microseconds), offset, _packet->data, sizeof(raw_packet->microseconds));
-            offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->latitude), offset, _packet->data, sizeof(raw_packet->latitude));
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->latitude), offset, _packet->data, sizeof(sdr_gnss_packet->latitude));
             offset += 8;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->longitude), offset, _packet->data, sizeof(raw_packet->longitude));
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->longitude), offset, _packet->data, sizeof(sdr_gnss_packet->longitude));
             offset += 8;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->height), offset, _packet->data, sizeof(raw_packet->height));
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->height), offset, _packet->data, sizeof(sdr_gnss_packet->height));
             offset += 8;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->velocity[0]), offset, _packet->data, sizeof(raw_packet->velocity[0]));
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->velocity[0]), offset, _packet->data, sizeof(sdr_gnss_packet->velocity[0]));
             offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->velocity[1]), offset, _packet->data, sizeof(raw_packet->velocity[1]));
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->velocity[1]), offset, _packet->data, sizeof(sdr_gnss_packet->velocity[1]));
             offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->velocity[2]), offset, _packet->data, sizeof(raw_packet->velocity[2]));
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->velocity[2]), offset, _packet->data, sizeof(sdr_gnss_packet->velocity[2]));
             offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->position_standard_deviation[0]), offset, _packet->data, sizeof(raw_packet->position_standard_deviation[0]));
-            offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->position_standard_deviation[1]), offset, _packet->data, sizeof(raw_packet->position_standard_deviation[1]));
-            offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->position_standard_deviation[2]), offset, _packet->data, sizeof(raw_packet->position_standard_deviation[2]));
-            offset += 4;
-            // This could be optimized to add just zeros
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->reserved[0]), offset, _packet->data, sizeof(raw_packet->reserved[0]));
-            offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->reserved[1]), offset, _packet->data, sizeof(raw_packet->reserved[1]));
-            offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->reserved[2]), offset, _packet->data, sizeof(raw_packet->reserved[2]));
-            offset += 4;
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->reserved[3]), offset, _packet->data, sizeof(raw_packet->reserved[3]));
-            offset += 4;
-
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&raw_packet->status.r), offset, _packet->data, sizeof(raw_packet->status));
-            offset += 2;
+            for (int i = 0; i < 6; i++)
+                {
+                    LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->sats[i].prn), offset, _packet->data, sizeof(sdr_gnss_packet->sats[i].prn));
+                    offset += 1;
+                    LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->sats[i].snr), offset, _packet->data, sizeof(sdr_gnss_packet->sats[i].snr));
+                    offset += 1;
+                }
+            offset += 16;
+            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->status), offset, _packet->data, sizeof(sdr_gnss_packet->status));
         }
     an_packet_encode(_packet);
 }
@@ -254,7 +282,7 @@ uint16_t An_Packet_Printer::calculate_crc16(const void* data, uint16_t length) c
 
 
 /*
- * Opens the serial device and sets the default baud rate for a NMEA transmission (9600,8,N,1)
+ * Opens the serial device and sets the default baud rate for a transmission (115200,8,N,1)
  */
 int An_Packet_Printer::init_serial(const std::string& serial_device)
 {

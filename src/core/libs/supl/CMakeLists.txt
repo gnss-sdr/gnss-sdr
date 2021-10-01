@@ -34,7 +34,7 @@ else()
     )
 endif()
 
-if(CMAKE_C_COMPILER_ID MATCHES "Clang" AND (CMAKE_VERSION VERSION_GREATER "3.3"))
+if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU" AND (CMAKE_VERSION VERSION_GREATER "3.3"))
     set(MY_C_FLAGS -Wno-unused-parameter)
     target_compile_options(core_libs_supl PUBLIC $<$<COMPILE_LANGUAGE:C>:${MY_C_FLAGS}>)
 endif()

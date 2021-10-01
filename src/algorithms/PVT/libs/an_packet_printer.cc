@@ -21,7 +21,7 @@
 #include "an_packet_printer.h"
 #include "rtklib_solver.h"  // for Rtklib_Solver
 #include <glog/logging.h>   // for DLOG
-#include <cmath>            // for std::sqrt, M_PI
+#include <cmath>            // for M_PI
 #include <fcntl.h>          // for fcntl
 #include <iostream>         // for std::cerr
 #include <limits>           // std::numeric_limits

@@ -434,8 +434,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             d_n_correlator_taps = 3;
         }
 
-    d_correlator_outs.reserve(d_n_correlator_taps);
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_correlator_outs = volk_gnsssdr::vector<gr_complex>(d_n_correlator_taps);
+    d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
     // map memory pointers of correlator outputs
     if (d_veml)
         {
@@ -504,13 +504,13 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.reserve(d_trk_parameters.cn0_samples);
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(d_trk_parameters.cn0_samples);
     d_carrier_lock_test = 1.0;
     d_CN0_SNV_dB_Hz = 0.0;
     d_carrier_lock_fail_counter = 0;
     d_code_lock_fail_counter = 0;
     d_carrier_lock_threshold = d_trk_parameters.carrier_lock_th;
-    d_Prompt_Data.reserve(1);
+    d_Prompt_Data = volk_gnsssdr::vector<gr_complex>(1);
     d_cn0_smoother = Exponential_Smoother();
     d_cn0_smoother.set_alpha(d_trk_parameters.cn0_smoother_alpha);
 

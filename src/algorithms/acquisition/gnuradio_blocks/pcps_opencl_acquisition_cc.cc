@@ -102,8 +102,8 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     d_cl_fft_batch_size = 1;
 
     d_in_buffer = std::vector<std::vector<gr_complex>>(d_max_dwells, std::vector<gr_complex>(d_fft_size));
-    d_magnitude.reserve(d_fft_size);
-    d_fft_codes.reserve(d_fft_size_pow2);
+    d_magnitude = std::vector<float>(d_fft_size);
+    d_fft_codes = std::vector<gr_complex>(_fft_size_pow2);
     d_zero_vector = std::vector<gr_complex>(d_fft_size_pow2 - d_fft_size, 0.0);
 
     d_opencl = init_opencl_environment("math_kernel.cl");

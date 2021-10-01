@@ -96,25 +96,25 @@ galileo_e5a_noncoherentIQ_acquisition_caf_cc::galileo_e5a_noncoherentIQ_acquisit
     d_CAF_window_hz = CAF_window_hz_;
     d_enable_monitor_output = enable_monitor_output;
 
-    d_inbuffer.reserve(d_fft_size);
-    d_fft_code_I_A.reserve(d_fft_size);
-    d_magnitudeIA.reserve(d_fft_size);
+    d_inbuffer = std::vector<gr_complex>(d_fft_size);
+    d_fft_code_I_A = std::vector<gr_complex>(d_fft_size);
+    d_magnitudeIA = std::vector<float>(d_fft_size);
 
     if (d_both_signal_components == true)
         {
-            d_fft_code_Q_A.reserve(d_fft_size);
-            d_magnitudeQA.reserve(d_fft_size);
+            d_fft_code_Q_A = std::vector<gr_complex>(d_fft_size);
+            d_magnitudeQA = std::vector<float>(d_fft_size);
         }
 
     // IF COHERENT INTEGRATION TIME > 1
     if (d_sampled_ms > 1)
         {
-            d_fft_code_I_B.reserve(d_fft_size);
-            d_magnitudeIB.reserve(d_fft_size);
+            d_fft_code_I_B = std::vector<gr_complex>(d_fft_size);
+            d_magnitudeIB = std::vector<float>(d_fft_size);
             if (d_both_signal_components == true)
                 {
-                    d_fft_code_Q_B.reserve(d_fft_size);
-                    d_magnitudeQB.reserve(d_fft_size);
+                    d_fft_code_Q_B = std::vector<gr_complex>(d_fft_size);
+                    d_magnitudeQB = std::vector<float>(d_fft_size);
                 }
         }
 
@@ -244,11 +244,11 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::init()
      * separately before non-coherent integration */
     if (d_CAF_window_hz > 0)
         {
-            d_CAF_vector.reserve(d_num_doppler_bins);
-            d_CAF_vector_I.reserve(d_num_doppler_bins);
+            d_CAF_vector = std::vector<float>(d_num_doppler_bins);
+            d_CAF_vector_I = std::vector<float>(d_num_doppler_bins);
             if (d_both_signal_components == true)
                 {
-                    d_CAF_vector_Q.reserve(d_num_doppler_bins);
+                    d_CAF_vector_Q = std::vector<float>(d_num_doppler_bins);
                 }
         }
 }

@@ -83,15 +83,14 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     // fft size is reduced.
     d_fft_size = (d_samples_per_code) / d_folding_factor;
 
-    d_fft_codes.reserve(d_fft_size);
-    d_magnitude.reserve(d_samples_per_code * d_folding_factor);
-    d_magnitude_folded.reserve(d_fft_size);
+    d_fft_codes = std::vector<gr_complex>(d_fft_size);
+    d_magnitude = std::vector<float>(d_samples_per_code * d_folding_factor);
+    d_magnitude_folded = std::vector<float>(d_fft_size);
+    d_possible_delay = std::vector<uint32_t>(d_folding_factor);
+    d_corr_output_f = std::vector<float>(d_folding_factor);
 
-    d_possible_delay.reserve(d_folding_factor);
-    d_corr_output_f.reserve(d_folding_factor);
-
-    /*Create the d_code signal , which would store the values of the code in its
-    original form to perform later correlation in time domain*/
+    // Create the d_code vector, which would store the values of the code in its
+    // original form to perform later correlation in time domain
     d_code = std::vector<gr_complex>(d_samples_per_code, lv_cmake(0.0F, 0.0F));
 
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
@@ -104,7 +103,8 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_enable_monitor_output = enable_monitor_output;
 
     d_code_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
-    d_signal_folded.reserve(d_fft_size);
+
+    d_signal_folded = std::vector<gr_complex>(d_fft_size);
     d_noise_floor_power = 0;
     d_doppler_resolution = 0;
     d_threshold = 0;

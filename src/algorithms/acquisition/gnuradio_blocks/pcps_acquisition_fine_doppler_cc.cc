@@ -55,9 +55,9 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
     d_max_dwells = conf_.max_dwells;
     d_gnuradio_forecast_samples = d_fft_size;
     d_state = 0;
-    d_fft_codes.reserve(d_fft_size);
-    d_magnitude.reserve(d_fft_size);
-    d_10_ms_buffer.reserve(50 * d_samples_per_ms);
+    d_fft_codes = volk_gnsssdr::vector<gr_complex>(d_fft_size);
+    d_magnitude = volk_gnsssdr::vector<float>(d_fft_size);
+    d_10_ms_buffer = volk_gnsssdr::vector<gr_complex>(50 * d_samples_per_ms);
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
 

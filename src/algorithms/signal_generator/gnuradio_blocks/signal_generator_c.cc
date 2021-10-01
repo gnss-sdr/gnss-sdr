@@ -87,7 +87,7 @@ void signal_generator_c::init()
 {
     work_counter_ = 0;
 
-    complex_phase_.reserve(vector_length_);
+    complex_phase_ = std::vector<gr_complex>(vector_length_);
     start_phase_rad_.reserve(num_sats_);
     current_data_bit_int_.reserve(num_sats_);
     ms_counter_.reserve(num_sats_);

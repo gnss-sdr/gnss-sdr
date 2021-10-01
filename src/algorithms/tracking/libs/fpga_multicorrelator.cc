@@ -61,13 +61,13 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     // instantiate variable length vectors
     if (d_track_pilot)
         {
-            d_initial_index.reserve(n_correlators + 1);
-            d_initial_interp_counter.reserve(n_correlators + 1);
+            d_initial_index = volk_gnsssdr::vector<uint32_t>(n_correlators + 1);
+            d_initial_interp_counter = volk_gnsssdr::vector<uint32_t>(n_correlators + 1);
         }
     else
         {
-            d_initial_index.reserve(n_correlators);
-            d_initial_interp_counter.reserve(n_correlators);
+            d_initial_index = volk_gnsssdr::vector<uint32_t>(n_correlators);
+            d_initial_interp_counter = volk_gnsssdr::vector<uint32_t>(n_correlators);
         }
     d_shifts_chips = nullptr;
     d_prompt_data_shift = nullptr;

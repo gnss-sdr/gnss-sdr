@@ -187,11 +187,7 @@ void FirFilter::init()
     // impulse response given a set of band edges, the desired response on
     // those bands, and the weight given to the error in those bands.
     const std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
-    taps_.reserve(taps_d.size());
-    for (const auto& it : taps_d)
-        {
-            taps_.push_back(static_cast<float>(it));
-        }
+    taps_ = std::vector<float>(taps_d.begin(), taps_d.end());
 }
 
 

@@ -41,10 +41,10 @@ Viterbi_Decoder_Sbas::Viterbi_Decoder_Sbas(const int g_encoder[], const int KK, 
     d_number_symbols = static_cast<int>(1U << d_nn); /* 2^nn */
 
     /* create appropriate transition matrices (trellis) */
-    d_out0.reserve(d_states);
-    d_out1.reserve(d_states);
-    d_state0.reserve(d_states);
-    d_state1.reserve(d_states);
+    d_out0 = std::vector<int>(d_states);
+    d_out1 = std::vector<int>(d_states);
+    d_state0 = std::vector<int>(d_states);
+    d_state1 = std::vector<int>(d_states);
 
     nsc_transit(d_out0.data(), d_state0.data(), 0, g_encoder, d_KK, d_nn);
     nsc_transit(d_out1.data(), d_state1.data(), 1, g_encoder, d_KK, d_nn);
@@ -124,10 +124,10 @@ void Viterbi_Decoder_Sbas::init_trellis_state()
         }
 
     // reserve new trellis state memory
-    d_pm_t.reserve(d_states);
+    d_pm_t = std::vector<float>(d_states);
     d_trellis_paths = std::deque<Prev>();
-    d_rec_array.reserve(d_nn);
-    d_metric_c.reserve(d_number_symbols);
+    d_rec_array = std::vector<float>(d_nn);
+    d_metric_c = std::vector<float>(d_number_symbols);
     d_trellis_state_is_initialised = true;
 
     /* initialize trellis */
@@ -429,13 +429,10 @@ Viterbi_Decoder_Sbas::Prev::Prev(int states, int t)
 {
     this->t = t;
     num_states = states;
-    state.reserve(num_states);
-    v_bit.reserve(num_states);
-    v_metric.reserve(num_states);
+    state = std::vector<int>(num_states);
+    v_bit = std::vector<int>(num_states);
+    v_metric = std::vector<float>(num_states);
     refcount = 1;
-    std::fill_n(state.begin(), num_states, 0);
-    std::fill_n(v_bit.begin(), num_states, 0);
-    std::fill_n(v_metric.begin(), num_states, 0.0F);
 }
 
 

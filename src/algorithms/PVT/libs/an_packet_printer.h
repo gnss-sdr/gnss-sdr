@@ -54,7 +54,6 @@ typedef struct
 
     uint32_t reserved = 0;
     uint16_t status;
-
 } sdr_gnss_packet_t;
 
 

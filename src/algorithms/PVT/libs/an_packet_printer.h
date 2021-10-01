@@ -23,6 +23,7 @@
 
 #include "gnss_synchro.h"
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -49,7 +50,7 @@ typedef struct
     {
         uint8_t prn;      // PRN ID. Galileo sats expressed as PRN + 100
         uint8_t snr;      // in [dB-Hz]
-        int16_t doppler;  // in [Hz], saturates at +/- 32767 Hz
+        int16_t doppler;  // in [Hz], saturates at +32767 / -32768 Hz
     } sats[6];
 
     uint32_t reserved = 0;

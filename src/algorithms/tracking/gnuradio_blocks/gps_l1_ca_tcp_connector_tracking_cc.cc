@@ -103,7 +103,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_Prompt = &d_correlator_outs[1];
     d_Late = &d_correlator_outs[2];
 
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_early_late_spc_chips;
     d_local_code_shift_chips[1] = 0.0;
@@ -133,7 +133,7 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;

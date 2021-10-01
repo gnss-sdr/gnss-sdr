@@ -116,7 +116,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     d_Late = &d_correlator_outs[3];
     d_Very_Late = &d_correlator_outs[4];
 
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
     // Set TAPs delay values [chips]
     d_local_code_shift_chips[0] = -d_very_early_late_spc_chips;
     d_local_code_shift_chips[1] = -d_early_late_spc_chips;
@@ -147,7 +147,7 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
 
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
-    d_Prompt_buffer.reserve(FLAGS_cn0_samples);
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
     d_carrier_lock_test = 1;
     d_CN0_SNV_dB_Hz = 0;
     d_carrier_lock_fail_counter = 0;

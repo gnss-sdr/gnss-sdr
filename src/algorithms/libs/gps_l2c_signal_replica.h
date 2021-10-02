@@ -24,7 +24,7 @@
 #include <span>
 namespace own = std;
 #else
-#include <gsl/gsl>
+#include <gsl/gsl-lite.hpp>
 namespace own = gsl;
 #endif
 

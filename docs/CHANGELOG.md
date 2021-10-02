@@ -30,6 +30,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Rewritten Viterbi decoder for Galileo navigation messages: encapsulated in a
   class instead of being implemented as free inline functions. This improves
   memory management.
+- Update GSL implementation to v0.39.0. See
+  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.39.0
 
 ### Improvements in Reliability
 

@@ -428,9 +428,9 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     current_symbol = in[0][0];
     if (d_symbol_history.empty())
         {
-            //Tracking synchronizes the tlm bit boundaries by acquiring the preamble
-            //inserting the preamble to the new tracked satellite (history empty) before the first synchronized symbol
-            //may speed up the tlm decoding by not discarding the first received frame
+            // Tracking synchronizes the tlm bit boundaries by acquiring the preamble
+            // inserting the preamble to the new tracked satellite (history empty) before the first synchronized symbol
+            // may speed up the tlm decoding by not discarding the first received frame
             for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
                 {
                     if (current_symbol.Flag_PLL_180_deg_phase_locked == true)

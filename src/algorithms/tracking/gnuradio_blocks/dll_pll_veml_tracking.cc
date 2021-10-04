@@ -142,8 +142,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_trk_parameters.y_intercept = 1.0;
                     // symbol integration: 20 trk symbols (20 ms) = 1 tlm bit
                     // set the bit transition pattern in secondary code to obtain bit synchronization
-                    d_secondary_code_length = static_cast<uint32_t>(GPS_CA_BIT_TRANSITION_SYMBOLS_LENGTH_SYMBOLS);
-                    d_secondary_code_string = GPS_CA_BIT_TRANSITION_SYMBOLS_STR;
+                    d_secondary_code_length = static_cast<uint32_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
+                    d_secondary_code_string = GPS_CA_PREAMBLE_SYMBOLS_STR;
                     d_symbols_per_bit = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
                 }
             else if (d_signal_type == "2S")
@@ -588,6 +588,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
         }
     d_corrected_doppler = false;
     d_acc_carrier_phase_initialized = false;
+    d_Flag_PLL_180_deg_phase_locked = false;
 }
 
 
@@ -928,6 +929,14 @@ bool dll_pll_veml_tracking::acquire_secondary()
 
     if (abs(corr_value) == static_cast<int32_t>(d_secondary_code_length))
         {
+            if (corr_value < 0)
+                {
+                    d_Flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    d_Flag_PLL_180_deg_phase_locked = false;
+                }
             return true;
         }
 
@@ -1989,6 +1998,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
+            current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
             *out[0] = current_synchro_data;
             return 1;
         }

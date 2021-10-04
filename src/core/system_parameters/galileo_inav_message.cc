@@ -725,19 +725,25 @@ std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_1(const 
     std::bitset<8> c1(decoded[1]);
     for (int i = 0; i < 8; i++)
         {
-            data_bits[6 + i] = c1[i];
+            data_bits[6 + i] = c1[8 - i - 1];
         }
-    data_bits[14] = c0[6];
-    data_bits[15] = c0[7];
+    data_bits[14] = c0[1];
+    data_bits[15] = c0[0];
     for (int k = 2; k < 16; k++)
         {
             std::bitset<8> octet(decoded[k]);
             for (int i = 0; i < 8; i++)
                 {
-                    data_bits[i + k * 8] = octet[i];
+                    data_bits[i + k * 8] = octet[8 - i - 1];
                 }
         }
-    return data_bits;
+
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits_reversed;
+    for (int i = 0; i < GALILEO_DATA_JK_BITS; i++)
+        {
+            data_bits_reversed[GALILEO_DATA_JK_BITS - i - 1] = data_bits[i];
+        }
+    return data_bits_reversed;
 }
 
 
@@ -751,17 +757,22 @@ std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_2(const 
 
     for (int i = 0; i < 10; i++)
         {
-            data_bits[6 + i] = iodnav[i];
+            data_bits[6 + i] = iodnav[10 - i - 1];
         }
     for (int k = 0; k < 14; k++)
         {
             std::bitset<8> octet(decoded[k + 16]);
             for (int i = 0; i < 8; i++)
                 {
-                    data_bits[16 + i + k * 8] = octet[i];
+                    data_bits[16 + i + k * 8] = octet[8 - i - 1];
                 }
         }
-    return data_bits;
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits_reversed;
+    for (int i = 0; i < GALILEO_DATA_JK_BITS; i++)
+        {
+            data_bits_reversed[GALILEO_DATA_JK_BITS - i - 1] = data_bits[i];
+        }
+    return data_bits_reversed;
 }
 
 
@@ -776,17 +787,22 @@ std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_3(const 
 
     for (int i = 0; i < 10; i++)
         {
-            data_bits[6 + i] = iodnav[i];
+            data_bits[6 + i] = iodnav[10 - i - 1];
         }
     for (int k = 0; k < 14; k++)
         {
             std::bitset<8> octet(decoded[k + 30]);
             for (int i = 0; i < 8; i++)
                 {
-                    data_bits[16 + i + k * 8] = octet[i];
+                    data_bits[16 + i + k * 8] = octet[8 - i - 1];
                 }
         }
-    return data_bits;
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits_reversed;
+    for (int i = 0; i < GALILEO_DATA_JK_BITS; i++)
+        {
+            data_bits_reversed[GALILEO_DATA_JK_BITS - i - 1] = data_bits[i];
+        }
+    return data_bits_reversed;
 }
 
 
@@ -800,17 +816,22 @@ std::bitset<GALILEO_DATA_JK_BITS> Galileo_Inav_Message::regenerate_page_4(const 
 
     for (int i = 0; i < 10; i++)
         {
-            data_bits[6 + i] = iodnav[i];
+            data_bits[6 + i] = iodnav[10 - i - 1];
         }
     for (int k = 0; k < 14; k++)
         {
             std::bitset<8> octet(decoded[k + 44]);
             for (int i = 0; i < 8; i++)
                 {
-                    data_bits[16 + i + k * 8] = octet[i];
+                    data_bits[16 + i + k * 8] = octet[8 - i - 1];
                 }
         }
-    return data_bits;
+    std::bitset<GALILEO_DATA_JK_BITS> data_bits_reversed;
+    for (int i = 0; i < GALILEO_DATA_JK_BITS; i++)
+        {
+            data_bits_reversed[GALILEO_DATA_JK_BITS - i - 1] = data_bits[i];
+        }
+    return data_bits_reversed;
 }
 
 

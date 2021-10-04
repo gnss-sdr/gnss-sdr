@@ -143,6 +143,7 @@ private:
     bool d_print_cnav_page;
     bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
+    bool d_enable_reed_solomon_inav;
 };
 
 

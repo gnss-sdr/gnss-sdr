@@ -248,6 +248,7 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                     flag_ephemeris_4 = false;  // clear the flag
                     flag_all_ephemeris = true;
                     IOD_ephemeris = IOD_nav_1;
+                    enable_rs = false;  // Do not retrieve reduced CED if we already have the full ephemeris set
                     DLOG(INFO) << "Batch number: " << IOD_ephemeris;
                     return true;
                 }
@@ -357,6 +358,7 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
                             flag_ephemeris_4 = false;  // clear the flag
                             flag_all_ephemeris = true;
                             IOD_ephemeris = IOD_nav_1;
+                            enable_rs = false;  // Retrieve reduced CED only once
                             DLOG(INFO) << "Batch number: " << IOD_ephemeris;
                             return true;
                         }

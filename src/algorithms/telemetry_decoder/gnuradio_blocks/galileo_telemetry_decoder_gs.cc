@@ -85,6 +85,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     d_remove_dat = conf.remove_dat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_frame_type = frame_type;
+    d_enable_reed_solomon_inav = false;
 
     // Viterbi decoder vars
     const int32_t nn = 2;                               // Coding rate 1/n
@@ -123,6 +124,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                 d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  // rise alarm 60 seconds without valid tlm
                 if (conf.enable_reed_solomon == true)
                     {
+                        d_enable_reed_solomon_inav = true;
                         d_inav_nav.enable_reed_solomon();
                     }
                 break;
@@ -609,6 +611,10 @@ void galileo_telemetry_decoder_gs::reset()
     d_sent_tlm_failed_msg = false;
     d_stat = 0;
     d_viterbi->reset();
+    if (d_enable_reed_solomon_inav == true)
+        {
+            d_inav_nav.enable_reed_solomon();
+        }
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 

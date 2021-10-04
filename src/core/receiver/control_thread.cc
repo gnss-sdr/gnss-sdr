@@ -369,7 +369,10 @@ int ControlThread::run()
     // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
     // start the keyboard_listener thread
-    keyboard_thread_ = std::thread(&ControlThread::keyboard_listener, this);
+    if (FLAGS_keyboard)
+        {
+            keyboard_thread_ = std::thread(&ControlThread::keyboard_listener, this);
+        }
     sysv_queue_thread_ = std::thread(&ControlThread::sysv_queue_listener, this);
 
     // start the telecommand listener thread
@@ -405,7 +408,7 @@ int ControlThread::run()
 #endif
 
     // Terminate keyboard thread
-    if (keyboard_thread_.joinable())
+    if (FLAGS_keyboard && keyboard_thread_.joinable())
         {
             pthread_t id = keyboard_thread_.native_handle();
             keyboard_thread_.detach();

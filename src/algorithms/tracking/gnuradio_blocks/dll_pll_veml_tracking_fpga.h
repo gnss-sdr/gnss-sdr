@@ -240,6 +240,7 @@ private:
     bool d_current_extended_correlation_in_fpga;
     bool d_stop_tracking;
     bool d_sc_demodulate_enabled;
+    bool d_Flag_PLL_180_deg_phase_locked;
 };
 
 

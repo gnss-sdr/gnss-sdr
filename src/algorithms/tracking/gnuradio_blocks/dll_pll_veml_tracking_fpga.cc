@@ -1493,6 +1493,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
+    bool loss_of_lock = false;
 
     while ((!current_synchro_data.Flag_valid_symbol_output) && (!d_stop_tracking))
         {
@@ -1616,10 +1617,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         if (!cn0_and_tracking_lock_status(d_code_period))
                             {
                                 clear_tracking_vars();
-                                d_state = 1;  // loss-of-lock detected
-
-                                // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                // current_synchro_data.Flag_valid_symbol_output=1;
+                                d_state = 1;                                         // loss-of-lock detected
+                                loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
+                                current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                             }
                         else
                             {
@@ -1818,10 +1818,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(d_trk_parameters.extend_correlation_symbols)))
                             {
                                 clear_tracking_vars();
-                                d_state = 1;  // loss-of-lock detected
-
-                                // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                // current_synchro_data.Flag_valid_symbol_output=1;
+                                d_state = 1;                                         // loss-of-lock detected
+                                loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
+                                current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                             }
                         else
                             {
@@ -1941,10 +1940,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(d_trk_parameters.extend_correlation_symbols)))
                             {
                                 clear_tracking_vars();
-                                d_state = 1;  // loss-of-lock detected
-
-                                // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                // current_synchro_data.Flag_valid_symbol_output=1;
+                                d_state = 1;                                         // loss-of-lock detected
+                                loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
+                                current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                             }
                         else
                             {
@@ -1999,10 +1997,11 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 }
         }
 
-    if (current_synchro_data.Flag_valid_symbol_output)
+    if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock)
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter_next;  // d_sample_counter;
+            current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             *out[0] = current_synchro_data;
             return 1;
         }

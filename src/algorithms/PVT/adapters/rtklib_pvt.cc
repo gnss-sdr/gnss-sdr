@@ -122,10 +122,35 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
         }
 
+    // Advanced Nativation Protocol Printer settings
+    pvt_output_parameters.an_output_enabled = configuration->property(role + ".an_output_enabled", pvt_output_parameters.an_output_enabled);
+    pvt_output_parameters.an_dump_devname = configuration->property(role + ".an_dump_devname", default_nmea_dump_devname);
+    if (pvt_output_parameters.an_output_enabled && pvt_output_parameters.flag_nmea_tty_port)
+        {
+            if (pvt_output_parameters.nmea_dump_devname == pvt_output_parameters.an_dump_devname)
+                {
+                    std::cerr << "Warning: NMEA an Advanced Nativation printers set to write to the same serial port.\n"
+                              << "Please make sure that PVT.an_dump_devname and PVT.an_dump_devname are different.\n"
+                              << "Shutting down the NMEA serial output.\n";
+                    pvt_output_parameters.flag_nmea_tty_port = false;
+                }
+        }
+    if (pvt_output_parameters.an_output_enabled && pvt_output_parameters.flag_rtcm_tty_port)
+        {
+            if (pvt_output_parameters.rtcm_dump_devname == pvt_output_parameters.an_dump_devname)
+                {
+                    std::cerr << "Warning: RTCM an Advanced Nativation printers set to write to the same serial port.\n"
+                              << "Please make sure that PVT.an_dump_devname and .rtcm_dump_devname are different.\n"
+                              << "Shutting down the RTCM serial output.\n";
+                    pvt_output_parameters.flag_rtcm_tty_port = false;
+                }
+        }
+
     pvt_output_parameters.kml_rate_ms = bc::lcm(configuration->property(role + ".kml_rate_ms", pvt_output_parameters.kml_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.gpx_rate_ms = bc::lcm(configuration->property(role + ".gpx_rate_ms", pvt_output_parameters.gpx_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.geojson_rate_ms = bc::lcm(configuration->property(role + ".geojson_rate_ms", pvt_output_parameters.geojson_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.nmea_rate_ms = bc::lcm(configuration->property(role + ".nmea_rate_ms", pvt_output_parameters.nmea_rate_ms), pvt_output_parameters.output_rate_ms);
+    pvt_output_parameters.an_rate_ms = bc::lcm(configuration->property(role + ".an_rate_ms", pvt_output_parameters.an_rate_ms), pvt_output_parameters.output_rate_ms);
 
     // Infer the type of receiver
     /*

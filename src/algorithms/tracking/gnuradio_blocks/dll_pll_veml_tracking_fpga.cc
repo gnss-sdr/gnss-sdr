@@ -132,8 +132,8 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                     d_trk_parameters.y_intercept = 1.0;
                     // symbol integration: 20 trk symbols (20 ms) = 1 tlm bit
                     // set the bit transition pattern in secondary code to obtain bit synchronization
-                    d_secondary_code_length = static_cast<uint32_t>(GPS_CA_BIT_TRANSITION_SYMBOLS_LENGTH_SYMBOLS);
-                    d_secondary_code_string = GPS_CA_BIT_TRANSITION_SYMBOLS_STR;
+                    d_secondary_code_length = static_cast<uint32_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
+                    d_secondary_code_string = GPS_CA_PREAMBLE_SYMBOLS_STR;
                     d_symbols_per_bit = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
                 }
             else if (d_signal_type == "2S")
@@ -466,6 +466,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
     d_stop_tracking = false;
 
     d_acc_carrier_phase_initialized = false;
+    d_Flag_PLL_180_deg_phase_locked = false;
 }
 
 
@@ -585,6 +586,14 @@ bool dll_pll_veml_tracking_fpga::acquire_secondary()
 
     if (abs(corr_value) == static_cast<int32_t>(d_secondary_code_length))
         {
+            if (corr_value < 0)
+                {
+                    d_Flag_PLL_180_deg_phase_locked = true;
+                }
+            else
+                {
+                    d_Flag_PLL_180_deg_phase_locked = false;
+                }
             return true;
         }
 
@@ -1493,6 +1502,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
     current_synchro_data.Flag_valid_symbol_output = false;
+    bool loss_of_lock = false;
 
     while ((!current_synchro_data.Flag_valid_symbol_output) && (!d_stop_tracking))
         {
@@ -1616,10 +1626,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         if (!cn0_and_tracking_lock_status(d_code_period))
                             {
                                 clear_tracking_vars();
-                                d_state = 1;  // loss-of-lock detected
-
-                                // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                // current_synchro_data.Flag_valid_symbol_output=1;
+                                d_state = 1;                                         // loss-of-lock detected
+                                loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
+                                current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                             }
                         else
                             {
@@ -1818,10 +1827,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(d_trk_parameters.extend_correlation_symbols)))
                             {
                                 clear_tracking_vars();
-                                d_state = 1;  // loss-of-lock detected
-
-                                // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                // current_synchro_data.Flag_valid_symbol_output=1;
+                                d_state = 1;                                         // loss-of-lock detected
+                                loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
+                                current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                             }
                         else
                             {
@@ -1941,10 +1949,9 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                         if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(d_trk_parameters.extend_correlation_symbols)))
                             {
                                 clear_tracking_vars();
-                                d_state = 1;  // loss-of-lock detected
-
-                                // send something to let the scheduler know that it has to keep on calling general work and to finish the loop
-                                // current_synchro_data.Flag_valid_symbol_output=1;
+                                d_state = 1;                                         // loss-of-lock detected
+                                loss_of_lock = true;                                 // Set the flag so that the negative indication can be generated
+                                current_synchro_data = *d_acquisition_gnss_synchro;  // Fill in the Gnss_Synchro object with basic info
                             }
                         else
                             {
@@ -1999,10 +2006,12 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 }
         }
 
-    if (current_synchro_data.Flag_valid_symbol_output)
+    if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock)
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter_next;  // d_sample_counter;
+            current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
+            current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
             *out[0] = current_synchro_data;
             return 1;
         }

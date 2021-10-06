@@ -70,7 +70,7 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     doppler_max = configuration->property(role + ".doppler_max", doppler_max);
-    sampled_ms = configuration->property(role + ".coherent_integration_time_ms", sampled_ms);
+    sampled_ms = configuration->property(role + ".coherent_integration_time_ms", ms_per_code);
     bit_transition_flag = configuration->property(role + ".bit_transition_flag", bit_transition_flag);
     max_dwells = configuration->property(role + ".max_dwells", max_dwells);
     dump = configuration->property(role + ".dump", dump);

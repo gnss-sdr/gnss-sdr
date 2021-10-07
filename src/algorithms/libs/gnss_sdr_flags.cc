@@ -60,7 +60,7 @@ DEFINE_string(RINEX_version, "-", "If defined, specifies the RINEX version (2.11
 
 DEFINE_string(RINEX_name, "-", "If defined, specifies the RINEX files base name");
 
-DEFINE_bool(keyboard, true, "If set to false, it disables the keyboard listener (so the receiver cannot be stopped with [Enter]+q)");
+DEFINE_bool(keyboard, true, "If set to false, it disables the keyboard listener (so the receiver cannot be stopped with q+[Enter])");
 
 #if GFLAGS_GREATER_2_0
 

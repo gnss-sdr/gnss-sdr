@@ -183,7 +183,7 @@ void RtlTcpSignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr RtlTcpSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
-    return gr::basic_block_sptr();
+    return {};
 }
 
 

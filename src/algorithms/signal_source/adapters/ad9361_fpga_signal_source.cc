@@ -626,7 +626,23 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
     int num_transferred_bytes;
 
     // Open DMA device
-    const int tx_fd = open("/dev/loop_tx", O_WRONLY);
+    int tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if (tx_fd < 0)
+        {
+            std::cerr << "Cannot open loop device\n";
+            // stop the receiver
+            queue->push(pmt::make_any(command_event_make(200, 0)));
+            return;
+        }
+    // note: a problem was identified with the DMA: when switching from tx to rx or rx to tx mode
+    // the DMA transmission may hang. This problem will be fixed soon.
+    // for the moment this problem can be avoided by closing and opening the DMA a second time
+    if (close(tx_fd) < 0)
+        {
+            std::cerr << "Error closing loop device " << '\n';
+        }
+    // open the DMA  a second time
+    tx_fd = open("/dev/loop_tx", O_WRONLY);
     if (tx_fd < 0)
         {
             std::cerr << "Cannot open loop device\n";

@@ -14,6 +14,7 @@
  */
 
 #include "nav_msg_udp_listener.h"
+#include <iostream>
 #include <sstream>
 
 Nav_Msg_Udp_Listener::Nav_Msg_Udp_Listener(unsigned short port)

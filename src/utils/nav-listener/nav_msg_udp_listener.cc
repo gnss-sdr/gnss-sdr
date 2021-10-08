@@ -16,6 +16,7 @@
 #include "nav_msg_udp_listener.h"
 #include <iostream>
 #include <sstream>
+#include <string>
 
 Nav_Msg_Udp_Listener::Nav_Msg_Udp_Listener(unsigned short port)
     : socket{io_service}, endpoint{boost::asio::ip::udp::v4(), port}

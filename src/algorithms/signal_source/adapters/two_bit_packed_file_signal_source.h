@@ -24,6 +24,9 @@
 #include "file_source_base.h"
 #include "unpack_2bit_samples.h"
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <cstddef>
+#include <string>
+#include <tuple>
 
 
 /** \addtogroup Signal_Source

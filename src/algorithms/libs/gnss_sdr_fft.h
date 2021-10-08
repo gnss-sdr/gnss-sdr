@@ -20,6 +20,8 @@
 
 #include "gnss_sdr_make_unique.h"
 #include <gnuradio/fft/fft.h>
+#include <memory>
+#include <utility>
 
 #if GNURADIO_FFT_USES_TEMPLATES
 using gnss_fft_complex_fwd = gr::fft::fft_complex_fwd;

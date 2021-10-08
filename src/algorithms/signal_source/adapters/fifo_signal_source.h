@@ -22,7 +22,8 @@
 #include "concurrent_queue.h"
 #include "signal_source_base.h"
 #include <pmt/pmt.h>
-
+#include <cstddef>
+#include <string>
 
 /** \addtogroup Signal_Source
  * \{ */

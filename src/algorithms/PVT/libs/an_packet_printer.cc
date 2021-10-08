@@ -22,6 +22,7 @@
 #include "rtklib_solver.h"  // for Rtklib_Solver
 #include <glog/logging.h>   // for DLOG
 #include <cmath>            // for M_PI
+#include <cstring>          // for memcpy
 #include <fcntl.h>          // for fcntl
 #include <iostream>         // for std::cerr
 #include <limits>           // std::numeric_limits

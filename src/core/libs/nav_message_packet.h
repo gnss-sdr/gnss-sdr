@@ -19,6 +19,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 /** \addtogroup Core
  * \{ */

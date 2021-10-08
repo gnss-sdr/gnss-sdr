@@ -28,6 +28,7 @@
 #include <bitset>
 #include <exception>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <utility>
 

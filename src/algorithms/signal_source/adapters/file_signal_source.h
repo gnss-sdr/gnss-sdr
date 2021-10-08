@@ -22,6 +22,7 @@
 #define GNSS_SDR_FILE_SIGNAL_SOURCE_H
 
 #include "file_source_base.h"
+#include <string>
 
 /** \addtogroup Signal_Source Signal Source
  * Classes for Signal Source management.

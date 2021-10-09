@@ -192,10 +192,10 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
  */
 void An_Packet_Printer::encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packet, an_packet_t* _packet) const
 {
-    _packet->id = SDR_GNSS_PACKET_ID;
-    _packet->length = SDR_GNSS_PACKET_LENGTH;
     if (_packet != nullptr)
         {
+            _packet->id = SDR_GNSS_PACKET_ID;
+            _packet->length = SDR_GNSS_PACKET_LENGTH;
             uint8_t offset = 0;
             LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->nsvfix), offset, _packet->data, sizeof(sdr_gnss_packet->nsvfix));
             offset += sizeof(sdr_gnss_packet->nsvfix);

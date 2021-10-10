@@ -97,7 +97,6 @@ private:
     {
     public:
         Sample_Aligner();
-        //~Sample_Aligner() = default;
         void reset();
         /*
          * samples length must be a multiple of two
@@ -119,7 +118,6 @@ private:
     {
     public:
         Symbol_Aligner_And_Decoder();
-        //~Symbol_Aligner_And_Decoder() = default;
         void reset();
         bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
 

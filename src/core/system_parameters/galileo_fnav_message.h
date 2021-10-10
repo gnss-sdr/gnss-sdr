@@ -162,15 +162,15 @@ private:
     double FNAV_ai0_1{};
     double FNAV_ai1_1{};
     double FNAV_ai2_1{};
+    double FNAV_BGD_1{};
+    int32_t FNAV_E5ahs_1{};
+    int32_t FNAV_WN_1{};
+    int32_t FNAV_TOW_1{};
     bool FNAV_region1_1{};
     bool FNAV_region2_1{};
     bool FNAV_region3_1{};
     bool FNAV_region4_1{};
     bool FNAV_region5_1{};
-    double FNAV_BGD_1{};
-    int32_t FNAV_E5ahs_1{};
-    int32_t FNAV_WN_1{};
-    int32_t FNAV_TOW_1{};
     bool FNAV_E5advs_1{};
 
     // WORD 2 Ephemeris (1/3) and GST

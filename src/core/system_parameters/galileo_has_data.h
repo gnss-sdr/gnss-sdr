@@ -56,12 +56,7 @@ public:
     std::vector<std::string> get_signals_in_mask(uint8_t nsys) const;
     uint8_t get_gnss_id(int nsat) const;
 
-    mt1_header header;
-    uint8_t has_status;
-    uint8_t message_id;
-
     // Mask
-    uint8_t Nsys;
     std::vector<uint8_t> gnss_id_mask;
     std::vector<uint64_t> satellite_mask;
     std::vector<uint16_t> signal_mask;
@@ -70,21 +65,17 @@ public:
     std::vector<uint8_t> nav_message;
 
     // Orbit corrections
-    uint8_t validity_interval_index_orbit_corrections;
     std::vector<uint16_t> gnss_iod;
     std::vector<int16_t> delta_radial;
     std::vector<int16_t> delta_along_track;
     std::vector<int16_t> delta_cross_track;
 
     // Clock full-set corrections
-    uint8_t validity_interval_index_clock_fullset_corrections;
     std::vector<uint8_t> delta_clock_c0_multiplier;
     std::vector<bool> iod_change_flag;
     std::vector<int16_t> delta_clock_c0;
 
     // Clock subset corrections
-    uint8_t validity_interval_index_clock_subset_corrections;
-    uint8_t Nsysprime;
     std::vector<uint8_t> gnss_id_clock_subset;
     std::vector<uint8_t> delta_clock_c0_multiplier_clock_subset;
     std::vector<uint64_t> satellite_submask;
@@ -92,17 +83,27 @@ public:
     std::vector<std::vector<int16_t>> delta_clock_c0_clock_subset;
 
     // Code bias
-    uint8_t validity_interval_index_code_bias_corrections;
     std::vector<std::vector<int16_t>> code_bias;
 
     // Phase bias
-    uint8_t validity_interval_index_phase_bias_corrections;
     std::vector<std::vector<int16_t>> phase_bias;
     std::vector<std::vector<uint8_t>> phase_discontinuity_indicator;
 
     // URA
-    uint8_t validity_interval_index_ura_corrections;
     std::vector<uint8_t> ura;
+
+    mt1_header header;
+    uint8_t has_status;
+    uint8_t message_id;
+
+    uint8_t Nsys;                                               // in Mask
+    uint8_t validity_interval_index_orbit_corrections;          // in Orbit corrections
+    uint8_t validity_interval_index_clock_fullset_corrections;  // in Clock full-set corrections
+    uint8_t validity_interval_index_clock_subset_corrections;   // in Clock subset corrections
+    uint8_t Nsysprime;                                          // in Clock subset corrections
+    uint8_t validity_interval_index_code_bias_corrections;      // in Code bias
+    uint8_t validity_interval_index_phase_bias_corrections;     // in Phase bias
+    uint8_t validity_interval_index_ura_corrections;            // in URA
 };
 
 

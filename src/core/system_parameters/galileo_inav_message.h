@@ -238,6 +238,10 @@ private:
 
     std::string page_Even{};
 
+    std::vector<uint8_t> rs_buffer;   // Reed-Solomon buffer
+    std::unique_ptr<ReedSolomon> rs;  // The Reed-Solomon decoder
+    std::vector<int> inav_rs_pages;   // Pages 1,2,3,4,17,18,19,20. Holds 1 if the page has arrived, 0 otherwise.
+
     int32_t Page_type_time_stamp{};
     int32_t IOD_ephemeris{};
 
@@ -257,13 +261,13 @@ private:
 
     // Word type 3: Ephemeris (3/4) and SISA
     int32_t IOD_nav_3{};   //
+    int32_t SISA_3{};
     double OMEGA_dot_3{};  // Rate of right ascension [semi-circles/sec]
     double delta_n_3{};    // Mean motion difference from computed value  [semi-circles/sec]
     double C_uc_3{};       // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
     double C_us_3{};       // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
     double C_rc_3{};       // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
     double C_rs_3{};       // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    int32_t SISA_3{};
 
     // Word type 4: Ephemeris (4/4) and Clock correction parameters*/
     int32_t IOD_nav_4{};    //
@@ -283,6 +287,10 @@ private:
     double ai0_5{};  // Effective Ionisation Level 1st order parameter [sfu]
     double ai1_5{};  // Effective Ionisation Level 2st order parameter [sfu/degree]
     double ai2_5{};  // Effective Ionisation Level 3st order parameter [sfu/degree]
+    double BGD_E1E5a_5{};   // E1-E5a Broadcast Group Delay [s]
+    double BGD_E1E5b_5{};   // E1-E5b Broadcast Group Delay [s]
+    int32_t E5b_HS_5{};  // E5b Signal Health Status
+    int32_t E1B_HS_5{};  // E1B Signal Health Status
 
     // Ionospheric disturbance flag
     bool Region1_flag_5{};  // Ionospheric Disturbance Flag for region 1
@@ -290,11 +298,6 @@ private:
     bool Region3_flag_5{};  // Ionospheric Disturbance Flag for region 3
     bool Region4_flag_5{};  // Ionospheric Disturbance Flag for region 4
     bool Region5_flag_5{};  // Ionospheric Disturbance Flag for region 5
-    double BGD_E1E5a_5{};   // E1-E5a Broadcast Group Delay [s]
-    double BGD_E1E5b_5{};   // E1-E5b Broadcast Group Delay [s]
-
-    int32_t E5b_HS_5{};  // E5b Signal Health Status
-    int32_t E1B_HS_5{};  // E1B Signal Health Status
     bool E5b_DVS_5{};    // E5b Data Validity Status
     bool E1B_DVS_5{};    // E1B Data Validity Status
 
@@ -329,11 +332,11 @@ private:
 
     // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)
     int32_t IOD_a_8{};
-    double af0_8{};
-    double af1_8{};
     int32_t E5b_HS_8{};
     int32_t E1B_HS_8{};
     int32_t SVID2_8{};
+    double af0_8{};
+    double af1_8{};
     double DELTA_A_8{};
     double e_8{};
     double omega_8{};
@@ -390,10 +393,6 @@ private:
     double Galileo_satClkDrift{};
 
     int32_t current_IODnav{};
-
-    std::vector<uint8_t> rs_buffer;   // Reed-Solomon buffer
-    std::unique_ptr<ReedSolomon> rs;  // The Reed-Solomon decoder
-    std::vector<int> inav_rs_pages;   // Pages 1,2,3,4,17,18,19,20. Holds 1 if the page has arrived, 0 otherwise.
 
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};

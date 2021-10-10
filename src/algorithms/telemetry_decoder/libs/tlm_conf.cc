@@ -17,16 +17,6 @@
 
 #include "tlm_conf.h"
 
-Tlm_Conf::Tlm_Conf()
-{
-    dump = false;
-    dump_mat = false;
-    remove_dat = false;
-    enable_reed_solomon = false;
-    dump_crc_stats = false;
-    enable_navdata_monitor = false;
-}
-
 
 void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role)

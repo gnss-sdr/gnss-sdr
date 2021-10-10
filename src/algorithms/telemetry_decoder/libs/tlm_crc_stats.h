@@ -32,7 +32,7 @@
 class Tlm_CRC_Stats
 {
 public:
-    Tlm_CRC_Stats();
+    Tlm_CRC_Stats() = default;
 
     ~Tlm_CRC_Stats();
 
@@ -52,13 +52,12 @@ public:
     void update_CRC_stats(bool CRC);
 
 private:
-    bool enable_crc_stats;
-    uint32_t num_crc_ok;
-    uint32_t num_crc_not_ok;
-    int32_t channel;
-
     std::ofstream d_dump_file;
     std::string d_dump_crc_stats_filename;
+    uint32_t num_crc_ok{0};
+    uint32_t num_crc_not_ok{0};
+    int32_t channel{0};
+    bool enable_crc_stats{false};
 };
 
 

@@ -55,7 +55,7 @@ gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
 class gps_l1_ca_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~gps_l1_ca_telemetry_decoder_gs();
+    ~gps_l1_ca_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
     void reset();
@@ -64,7 +64,7 @@ public:
      * \brief This is where all signal processing takes place
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
     friend gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
@@ -99,7 +99,6 @@ private:
     int32_t d_channel;
 
     uint32_t d_required_symbols;
-    uint32_t d_frame_length_symbols;
     uint32_t d_prev_GPS_frame_4bytes;
     uint32_t d_max_symbols_without_valid_frame;
     uint32_t d_stat;
@@ -107,7 +106,6 @@ private:
     uint32_t d_TOW_at_current_symbol_ms;
 
     bool d_flag_frame_sync;
-    bool d_flag_parity;
     bool d_flag_preamble;
     bool d_sent_tlm_failed_msg;
     bool d_flag_PLL_180_deg_phase_locked;

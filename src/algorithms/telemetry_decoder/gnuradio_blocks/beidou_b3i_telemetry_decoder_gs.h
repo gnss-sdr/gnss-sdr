@@ -54,7 +54,7 @@ beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
 class beidou_b3i_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~beidou_b3i_telemetry_decoder_gs();                   //!< Class destructor
+    ~beidou_b3i_telemetry_decoder_gs() override;          //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
     void reset();
@@ -64,7 +64,7 @@ public:
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items,
-        gr_vector_void_star &output_items);
+        gr_vector_void_star &output_items) override;
 
 private:
     friend beidou_b3i_telemetry_decoder_gs_sptr beidou_b3i_make_telemetry_decoder_gs(
@@ -112,12 +112,11 @@ private:
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
 
-    bool flag_SOW_set;       // Indicates when time of week is set
+    bool d_flag_SOW_set;     // Indicates when time of week is set
     bool d_flag_frame_sync;  // Indicate when a frame sync is achieved
     bool d_flag_preamble;    // Flag indicating when preamble was found
     bool d_flag_valid_word;
     bool d_sent_tlm_failed_msg;
-    bool Flag_valid_word;
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;

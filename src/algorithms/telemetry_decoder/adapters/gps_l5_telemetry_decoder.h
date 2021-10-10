@@ -49,8 +49,6 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    ~GpsL5TelemetryDecoder() = default;
-
     inline std::string role() override
     {
         return role_;
@@ -87,7 +85,6 @@ private:
     Tlm_Conf tlm_parameters_;
     std::string dump_filename_;
     std::string role_;
-    int channel_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

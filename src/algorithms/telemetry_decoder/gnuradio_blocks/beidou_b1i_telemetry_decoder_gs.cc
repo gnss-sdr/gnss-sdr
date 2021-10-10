@@ -45,11 +45,36 @@ beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_
     return beidou_b1i_telemetry_decoder_gs_sptr(new beidou_b1i_telemetry_decoder_gs(satellite, conf));
 }
 
+
 beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf) : gr::block("beidou_b1i_telemetry_decoder_gs",
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                            d_dump_filename(conf.dump_filename),
+                            d_sample_counter(0),
+                            d_preamble_index(0),
+                            d_channel(0),
+                            d_symbols_per_preamble(BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS),
+                            d_samples_per_preamble(BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS),
+                            d_preamble_period_samples(BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS),
+                            d_CRC_error_counter(0),
+                            d_required_symbols(BEIDOU_DNAV_SUBFRAME_SYMBOLS + BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS),
+                            d_stat(0),
+                            d_last_valid_preamble(0),
+                            d_symbol_duration_ms(BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT * BEIDOU_B1I_CODE_PERIOD_MS),
+                            d_TOW_at_Preamble_ms(0U),
+                            d_TOW_at_current_symbol_ms(0U),
+                            d_flag_SOW_set(false),
+                            d_flag_frame_sync(false),
+                            d_flag_preamble(false),
+                            d_flag_valid_word(false),
+                            d_sent_tlm_failed_msg(false),
+                            d_dump(conf.dump),
+                            d_dump_mat(conf.dump_mat),
+                            d_remove_dat(conf.remove_dat),
+                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
+                            d_dump_crc_stats(conf.dump_crc_stats)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -57,7 +82,7 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
-    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+
     if (d_enable_navdata_monitor)
         {
             // register nav message monitor out
@@ -66,18 +91,8 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
             d_nav_msg_packet.signal = std::string("B1");
         }
 
-    // initialize internal vars
-    d_dump_filename = conf.dump_filename;
-    d_dump = conf.dump;
-    d_dump_mat = conf.dump_mat;
-    d_remove_dat = conf.remove_dat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing BeiDou B1I Telemetry Decoding for satellite " << this->d_satellite;
-
-    d_symbol_duration_ms = BEIDOU_B1I_TELEMETRY_SYMBOLS_PER_BIT * BEIDOU_B1I_CODE_PERIOD_MS;
-    d_symbols_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
-    d_samples_per_preamble = BEIDOU_DNAV_PREAMBLE_LENGTH_SYMBOLS;
-    d_preamble_period_samples = BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS;
 
     // Setting samples of preamble code
     for (int32_t i = 0; i < d_symbols_per_preamble; i++)
@@ -92,26 +107,8 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
                 }
         }
 
-    d_required_symbols = BEIDOU_DNAV_SUBFRAME_SYMBOLS + d_samples_per_preamble;
     d_symbol_history.set_capacity(d_required_symbols);
 
-    d_last_valid_preamble = 0;
-    d_sent_tlm_failed_msg = false;
-    d_flag_valid_word = false;
-    // Generic settings
-    d_sample_counter = 0;
-    d_stat = 0;
-    d_preamble_index = 0;
-    d_flag_frame_sync = false;
-    d_TOW_at_current_symbol_ms = 0U;
-    d_TOW_at_Preamble_ms = 0U;
-    Flag_valid_word = false;
-    d_CRC_error_counter = 0;
-    d_flag_preamble = false;
-    d_channel = 0;
-    flag_SOW_set = false;
-    d_dump_crc_stats = conf.dump_crc_stats;
-    d_dump_crc_stats = conf.dump_crc_stats;
     if (d_dump_crc_stats)
         {
             // initialize the telemetry CRC statistics class
@@ -531,7 +528,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                                             DLOG(INFO) << "BeiDou DNAV frame sync lost for SAT " << this->d_satellite;
                                             d_flag_frame_sync = false;
                                             d_stat = 0;
-                                            flag_SOW_set = false;
+                                            d_flag_SOW_set = false;
                                         }
                                 }
                         }
@@ -588,7 +585,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                                     DLOG(INFO) << "BeiDou DNAV frame sync lost for SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
-                                    flag_SOW_set = false;
+                                    d_flag_SOW_set = false;
                                 }
                         }
                 }
@@ -604,7 +601,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
             const uint32_t last_d_TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // compute new TOW
             d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + d_required_symbols * d_symbol_duration_ms;
-            flag_SOW_set = true;
+            d_flag_SOW_set = true;
             d_nav.set_flag_new_SOW_available(false);
 
             if (last_d_TOW_at_current_symbol_ms != 0 && abs(static_cast<int64_t>(d_TOW_at_current_symbol_ms) - int64_t(last_d_TOW_at_current_symbol_ms)) > static_cast<int64_t>(d_symbol_duration_ms))

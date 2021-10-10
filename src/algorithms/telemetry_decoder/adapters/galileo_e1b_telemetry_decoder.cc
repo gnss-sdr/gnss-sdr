@@ -36,7 +36,7 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(
     // make telemetry decoder object
     telemetry_decoder_ = galileo_make_telemetry_decoder_gs(satellite_, tlm_parameters_, 1);  // unified galileo decoder set to INAV (frame_type=1)
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    channel_ = 0;
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";

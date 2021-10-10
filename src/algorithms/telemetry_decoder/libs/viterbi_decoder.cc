@@ -18,21 +18,23 @@
 #include <volk_gnsssdr/volk_gnsssdr.h>  // for volk_gnsssdr_32f_index_max_32u
 #include <algorithm>                    // for std::copy
 
-Viterbi_Decoder::Viterbi_Decoder(int32_t KK, int32_t nn, int32_t LL, const std::array<int32_t, 2>& g)
+Viterbi_Decoder::Viterbi_Decoder(int32_t KK,
+    int32_t nn,
+    int32_t LL,
+    const std::array<int32_t, 2>& g) : d_g(g),
+                                       d_KK(KK),
+                                       d_nn(nn),
+                                       d_LL(LL),
+                                       d_mm(KK - 1),
+                                       d_states(1 << d_mm),       //  2^d_mm
+                                       d_number_symbols(1 << nn)  //  2^d_nn
 {
-    d_KK = KK;
-    d_nn = nn;
-    d_LL = LL;
-    d_mm = d_KK - 1;
-    d_states = 1 << d_mm;          //  2^d_mm
-    d_number_symbols = 1 << d_nn;  //  2^d_nn
     d_prev_section = std::vector<float>(d_states, -d_MAXLOG);
     d_next_section = std::vector<float>(d_states, -d_MAXLOG);
     d_rec_array = std::vector<float>(d_nn);
     d_metric_c = std::vector<float>(d_number_symbols);
     d_prev_bit = std::vector<int32_t>(d_states * (d_LL + d_mm));
     d_prev_state = std::vector<int32_t>(d_states * (d_LL + d_mm));
-    d_g = g;
     d_out0 = std::vector<int32_t>(d_states);
     d_out1 = std::vector<int32_t>(d_states);
     d_state0 = std::vector<int32_t>(d_states);

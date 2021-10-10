@@ -20,16 +20,19 @@
 #include <glog/logging.h>
 
 BeidouB3iTelemetryDecoder::BeidouB3iTelemetryDecoder(
-    const ConfigurationInterface *configuration, const std::string &role,
-    unsigned int in_streams, unsigned int out_streams)
-    : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const ConfigurationInterface *configuration,
+    const std::string &role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
     tlm_parameters_.SetFromConfiguration(configuration, role);
     // make telemetry decoder object
     telemetry_decoder_ = beidou_b3i_make_telemetry_decoder_gs(satellite_, tlm_parameters_);
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
-    channel_ = 0;
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";

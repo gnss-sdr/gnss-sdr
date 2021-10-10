@@ -49,8 +49,6 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    ~GlonassL1CaTelemetryDecoder() = default;
-
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
     gr::basic_block_sptr get_left_block() override;
@@ -85,7 +83,6 @@ private:
     Gnss_Satellite satellite_;
     Tlm_Conf tlm_parameters_;
     std::string role_;
-    int channel_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

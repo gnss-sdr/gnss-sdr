@@ -47,7 +47,21 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf) : gr::block("gps_l2c_telemetry_decoder_gs",
                                 gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                            d_dump_filename(conf.dump_filename),
+                            d_TOW_at_current_symbol(0),
+                            d_TOW_at_Preamble(0),
+                            d_sample_counter(0),
+                            d_last_valid_preamble(0),
+                            d_channel(0),
+                            d_dump(conf.dump),
+                            d_sent_tlm_failed_msg(false),
+                            d_flag_PLL_180_deg_phase_locked(false),
+                            d_flag_valid_word(false),
+                            d_dump_mat(conf.dump_mat),
+                            d_remove_dat(conf.remove_dat),
+                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
+                            d_dump_crc_stats(conf.dump_crc_stats)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -55,7 +69,7 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
-    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+
     if (d_enable_navdata_monitor)
         {
             // register nav message monitor out
@@ -64,32 +78,14 @@ gps_l2c_telemetry_decoder_gs::gps_l2c_telemetry_decoder_gs(
             d_nav_msg_packet.signal = std::string("2S");
         }
 
-    d_last_valid_preamble = 0;
-    d_sent_tlm_failed_msg = false;
     d_max_symbols_without_valid_frame = GPS_L2_CNAV_DATA_PAGE_BITS * GPS_L2_SYMBOLS_PER_BIT * 5;  // rise alarm if 5 consecutive subframes have no valid CRC
 
-    // initialize internal vars
-    d_dump_filename = conf.dump_filename;
-    d_dump = conf.dump;
-    d_dump_mat = conf.dump_mat;
-    d_remove_dat = conf.remove_dat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "GPS L2C M TELEMETRY PROCESSING: satellite " << d_satellite;
-    // set_output_multiple (1);
-    d_channel = 0;
-    d_flag_valid_word = false;
-    d_TOW_at_current_symbol = 0;
-    d_TOW_at_Preamble = 0;
-    d_state = 0;  // initial state
-    d_crc_error_count = 0;
 
     // initialize the CNAV frame decoder (libswiftcnav)
     cnav_msg_decoder_init(&d_cnav_decoder);
 
-    d_sample_counter = 0;
-    d_flag_PLL_180_deg_phase_locked = false;
-
-    d_dump_crc_stats = conf.dump_crc_stats;
     if (d_dump_crc_stats)
         {
             // initialize the telemetry CRC statistics class

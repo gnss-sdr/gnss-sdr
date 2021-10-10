@@ -58,7 +58,33 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf,
     int frame_type) : gr::block("galileo_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                      d_dump_filename(conf.dump_filename),
+                      d_delta_t(0),
+                      d_sample_counter(0ULL),
+                      d_preamble_index(0ULL),
+                      d_last_valid_preamble(0),
+                      d_frame_type(frame_type),
+                      d_CRC_error_counter(0),
+                      d_channel(0),
+                      d_flag_even_word_arrived(0),
+                      d_stat(0),
+                      d_TOW_at_Preamble_ms(0),
+                      d_TOW_at_current_symbol_ms(0),
+                      d_band('1'),
+                      d_sent_tlm_failed_msg(false),
+                      d_flag_frame_sync(false),
+                      d_flag_PLL_180_deg_phase_locked(false),
+                      d_flag_preamble(false),
+                      d_dump(conf.dump),
+                      d_dump_mat(conf.dump_mat),
+                      d_remove_dat(conf.remove_dat),
+                      d_first_eph_sent(false),
+                      d_cnav_dummy_page(false),
+                      d_print_cnav_page(true),
+                      d_enable_navdata_monitor(conf.enable_navdata_monitor),
+                      d_dump_crc_stats(conf.dump_crc_stats),
+                      d_enable_reed_solomon_inav(false)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -68,24 +94,14 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
     // register Gal E6 messages HAS out
     this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
-    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+
     if (d_enable_navdata_monitor)
         {
             // register nav message monitor out
             this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
         }
-    d_last_valid_preamble = 0;
-    d_sent_tlm_failed_msg = false;
-    d_band = '1';
 
-    // initialize internal vars
-    d_dump_filename = conf.dump_filename;
-    d_dump = conf.dump;
-    d_dump_mat = conf.dump_mat;
-    d_remove_dat = conf.remove_dat;
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    d_frame_type = frame_type;
-    d_enable_reed_solomon_inav = false;
 
     // Viterbi decoder vars
     const int32_t nn = 2;                               // Coding rate 1/n
@@ -95,7 +111,6 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
 
     DLOG(INFO) << "Initializing GALILEO UNIFIED TELEMETRY DECODER";
 
-    d_dump_crc_stats = conf.dump_crc_stats;
     if (d_dump_crc_stats)
         {
             // initialize the telemetry CRC statistics class
@@ -106,6 +121,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
         {
             d_Tlm_CRC_Stats = nullptr;
         }
+
     switch (d_frame_type)
         {
         case 1:  // INAV
@@ -216,27 +232,10 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                     }
                 }
         }
-    d_sample_counter = 0ULL;
-    d_stat = 0;
-    d_preamble_index = 0ULL;
 
-    d_flag_frame_sync = false;
-
-    d_flag_parity = false;
-    d_TOW_at_current_symbol_ms = 0;
-    d_TOW_at_Preamble_ms = 0;
-    d_delta_t = 0;
-    d_CRC_error_counter = 0;
-    flag_even_word_arrived = 0;
-    d_flag_preamble = false;
-    d_channel = 0;
-    d_flag_PLL_180_deg_phase_locked = false;
     d_symbol_history.set_capacity(d_required_symbols + 1);
-    d_cnav_dummy_page = false;
-    d_print_cnav_page = true;
 
     d_inav_nav.init_PRN(d_satellite.get_PRN());
-    d_first_eph_sent = false;
 
     // Instantiate the Viterbi decoder
     d_viterbi = std::make_unique<Viterbi_Decoder>(KK, nn, d_datalength, g_encoder);
@@ -300,7 +299,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
-    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180º
     for (int32_t i = 0; i < frame_length; i++)
         {
             if ((i + 1) % 2 == 0)
@@ -335,7 +333,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     if (page_part_bits[0] == 1)
         {
             // DECODE COMPLETE WORD (even + odd) and TEST CRC
-            d_inav_nav.split_page(page_String, flag_even_word_arrived);
+            d_inav_nav.split_page(page_String, d_flag_even_word_arrived);
             if (d_inav_nav.get_flag_CRC_test() == true)
                 {
                     if (d_band == '1')
@@ -358,13 +356,13 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                             DLOG(INFO) << "Galileo E5b CRC error in channel " << d_channel << " from satellite " << d_satellite;
                         }
                 }
-            flag_even_word_arrived = 0;
+            d_flag_even_word_arrived = 0;
         }
     else
         {
             // STORE HALF WORD (even page)
-            d_inav_nav.split_page(page_String, flag_even_word_arrived);
-            flag_even_word_arrived = 1;
+            d_inav_nav.split_page(page_String, d_flag_even_word_arrived);
+            d_flag_even_word_arrived = 1;
         }
 
     // 4. Push the new navigation data to the queues
@@ -452,7 +450,6 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
-    // 2.2 Take into account the possible inversion of the polarity due to PLL lock at 180 degrees
     for (int32_t i = 0; i < frame_length; i++)
         {
             if ((i + 1) % 2 == 0)

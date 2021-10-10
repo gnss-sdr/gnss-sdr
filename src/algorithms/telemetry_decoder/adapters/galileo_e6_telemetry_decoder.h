@@ -49,8 +49,6 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    ~GalileoE6TelemetryDecoder() = default;
-
     /*!
      * \brief Returns "Galileo_E6_Telemetry_Decoder"
      */
@@ -103,7 +101,6 @@ private:
     Gnss_Satellite satellite_;
     Tlm_Conf tlm_parameters_;
     std::string role_;
-    int channel_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

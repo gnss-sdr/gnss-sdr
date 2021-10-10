@@ -34,8 +34,8 @@
 class Viterbi_Decoder_Sbas
 {
 public:
-    Viterbi_Decoder_Sbas(const int g_encoder[], const int KK, const int nn);
-    ~Viterbi_Decoder_Sbas() = default;
+    Viterbi_Decoder_Sbas(const int g_encoder[], int KK, int nn);
+
     void reset();
 
     /*!
@@ -46,10 +46,10 @@ public:
      *
      * \return  output_u_int[] Hard decisions on the data bits (without the mm zero-tail-bits)
      */
-    float decode_block(const double input_c[], int* output_u_int, const int LL);
+    float decode_block(const double input_c[], int* output_u_int, int LL);
 
-    float decode_continuous(const double sym[], const int traceback_depth, int bits[],
-        const int nbits_requested, int& nbits_decoded);
+    float decode_continuous(const double sym[], int traceback_depth, int bits[],
+        int nbits_requested, int& nbits_decoded);
 
 private:
     class Prev

@@ -61,16 +61,39 @@ gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_C
 gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf) : gr::block("gps_navigation_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                            d_dump_filename(conf.dump_filename),
+                            d_sample_counter(0ULL),
+                            d_preamble_index(0ULL),
+                            d_last_valid_preamble(0),
+                            d_bits_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
+                            d_samples_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
+                            d_preamble_period_symbols(GPS_SUBFRAME_BITS),
+                            d_CRC_error_counter(0),
+                            d_channel(0),
+                            d_required_symbols(GPS_SUBFRAME_BITS),
+                            d_prev_GPS_frame_4bytes(0),
+                            d_stat(0),
+                            d_TOW_at_Preamble_ms(0),
+                            d_TOW_at_current_symbol_ms(0),
+                            d_flag_frame_sync(false),
+                            d_flag_preamble(false),
+                            d_sent_tlm_failed_msg(false),
+                            d_flag_PLL_180_deg_phase_locked(false),
+                            d_flag_TOW_set(false),
+                            d_dump(conf.dump),
+                            d_dump_mat(conf.dump_mat),
+                            d_remove_dat(conf.remove_dat),
+                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
+                            d_dump_crc_stats(conf.dump_crc_stats)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
-
     // Ephemeris data port out
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
-    d_enable_navdata_monitor = conf.enable_navdata_monitor;
+
     if (d_enable_navdata_monitor)
         {
             // register nav message monitor out
@@ -79,25 +102,11 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
             d_nav_msg_packet.signal = std::string("1C");
         }
 
-    d_last_valid_preamble = 0;
-    d_sent_tlm_failed_msg = false;
-
-    // initialize internal vars
-    d_dump_filename = conf.dump_filename;
-    d_dump = conf.dump;
-    d_dump_mat = conf.dump_mat;
-    d_remove_dat = conf.remove_dat;
-
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     DLOG(INFO) << "Initializing GPS L1 TELEMETRY DECODER";
 
-    d_bits_per_preamble = GPS_CA_PREAMBLE_LENGTH_BITS;
-    d_samples_per_preamble = d_bits_per_preamble;
-    d_preamble_period_symbols = GPS_SUBFRAME_BITS;
     // set the preamble
-    d_required_symbols = GPS_SUBFRAME_BITS;
     // preamble bits to sampled symbols
-    d_frame_length_symbols = GPS_SUBFRAME_BITS * GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
     d_max_symbols_without_valid_frame = d_required_symbols * 20;  // rise alarm 120 segs without valid tlm
     int32_t n = 0;
     for (int32_t i = 0; i < d_bits_per_preamble; i++)
@@ -113,24 +122,9 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                     n++;
                 }
         }
-    d_sample_counter = 0ULL;
-    d_stat = 0;
-    d_preamble_index = 0ULL;
 
-    d_flag_frame_sync = false;
-
-    d_flag_parity = false;
-    d_TOW_at_current_symbol_ms = 0;
-    d_TOW_at_Preamble_ms = 0;
-    d_CRC_error_counter = 0;
-    d_flag_preamble = false;
-    d_channel = 0;
-    d_flag_TOW_set = false;
-    d_flag_PLL_180_deg_phase_locked = false;
-    d_prev_GPS_frame_4bytes = 0;
     d_symbol_history.set_capacity(d_required_symbols);
 
-    d_dump_crc_stats = conf.dump_crc_stats;
     if (d_dump_crc_stats)
         {
             // initialize the telemetry CRC statistics class

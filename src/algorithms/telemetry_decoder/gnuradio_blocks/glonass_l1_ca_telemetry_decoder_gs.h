@@ -59,18 +59,16 @@ glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
 class glonass_l1_ca_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~glonass_l1_ca_telemetry_decoder_gs();                //!< Class destructor
+    ~glonass_l1_ca_telemetry_decoder_gs() override;       //!< Class destructor
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
-    inline void reset()
-    {
-        return;
-    }
+    inline void reset() {};
+
     /*!
      * \brief This is where all signal processing takes place
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
     friend glonass_l1_ca_telemetry_decoder_gs_sptr glonass_l1_ca_make_telemetry_decoder_gs(
@@ -106,7 +104,6 @@ private:
 
     double d_preamble_time_samples;
     double d_TOW_at_current_symbol;
-    double delta_t;  // GPS-GLONASS time offset
 
     // Variables for internal functionality
     uint64_t d_sample_counter;  // Sample counter as an index (1,2,3,..etc) indicating number of samples processed
@@ -117,10 +114,7 @@ private:
     int32_t d_channel;
 
     bool d_flag_frame_sync;  // Indicate when a frame sync is achieved
-    bool d_flag_parity;      // Flag indicating when parity check was achieved (crc check)
     bool d_flag_preamble;    // Flag indicating when preamble was found
-    bool flag_TOW_set;       // Indicates when time of week is set
-    bool Flag_valid_word;
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;

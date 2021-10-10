@@ -59,17 +59,16 @@ galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
 class galileo_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~galileo_telemetry_decoder_gs();
+    ~galileo_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
     void reset();
-    int32_t flag_even_word_arrived;
 
     /*!
      * \brief This is where all signal processing takes place
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 
 private:
@@ -119,6 +118,7 @@ private:
     int32_t d_preamble_period_symbols;
     int32_t d_CRC_error_counter;
     int32_t d_channel;
+    int32_t d_flag_even_word_arrived;
 
     uint32_t d_PRN_code_period_ms;
     uint32_t d_required_symbols;
@@ -133,7 +133,6 @@ private:
     bool d_sent_tlm_failed_msg;
     bool d_flag_frame_sync;
     bool d_flag_PLL_180_deg_phase_locked;
-    bool d_flag_parity;
     bool d_flag_preamble;
     bool d_dump;
     bool d_dump_mat;

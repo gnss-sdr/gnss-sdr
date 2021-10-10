@@ -20,16 +20,7 @@
 #include <glog/logging.h>
 #include <iomanip>   // for std::setw()
 #include <iostream>  // for cerr, cout
-#include <utility>   // for atd::move
-
-
-Tlm_CRC_Stats::Tlm_CRC_Stats()
-{
-    enable_crc_stats = false;
-    num_crc_ok = 0;
-    num_crc_not_ok = 0;
-    channel = 0;
-}
+#include <utility>   // for std::move
 
 
 void Tlm_CRC_Stats::initialize(std::string dump_crc_stats_filename_)

@@ -30,16 +30,15 @@
 
 const float MAXLOG = 1e7; /* Define infinity */
 
-Viterbi_Decoder_Sbas::Viterbi_Decoder_Sbas(const int g_encoder[], const int KK, const int nn)
+Viterbi_Decoder_Sbas::Viterbi_Decoder_Sbas(const int g_encoder[],
+    int KK,
+    int nn) : d_KK(KK),  // Constraint Length
+              d_nn(nn),  // Coding rate 1/n
+              d_mm(KK - 1),
+              d_states(static_cast<int>(1U << (KK - 1))),    // 2^mm
+              d_number_symbols(static_cast<int>(1U << nn)),  // 2^nn
+              d_trellis_state_is_initialised(false)
 {
-    d_nn = nn;  // Coding rate 1/n
-    d_KK = KK;  // Constraint Length
-
-    // derived code properties
-    d_mm = d_KK - 1;
-    d_states = static_cast<int>(1U << d_mm);         /* 2^mm */
-    d_number_symbols = static_cast<int>(1U << d_nn); /* 2^nn */
-
     /* create appropriate transition matrices (trellis) */
     d_out0 = std::vector<int>(d_states);
     d_out1 = std::vector<int>(d_states);
@@ -50,7 +49,6 @@ Viterbi_Decoder_Sbas::Viterbi_Decoder_Sbas(const int g_encoder[], const int KK, 
     nsc_transit(d_out1.data(), d_state1.data(), 1, g_encoder, d_KK, d_nn);
 
     // initialise trellis state
-    d_trellis_state_is_initialised = false;
     Viterbi_Decoder_Sbas::init_trellis_state();
 }
 
@@ -69,7 +67,7 @@ void Viterbi_Decoder_Sbas::reset()
  Output parameters:
  output_u_int[]    Hard decisions on the data bits (without the mm zero-tail-bits)
  */
-float Viterbi_Decoder_Sbas::decode_block(const double input_c[], int output_u_int[], const int LL)
+float Viterbi_Decoder_Sbas::decode_block(const double input_c[], int output_u_int[], int LL)
 {
     VLOG(FLOW) << "decode_block(): LL=" << LL;
 
@@ -89,9 +87,9 @@ float Viterbi_Decoder_Sbas::decode_block(const double input_c[], int output_u_in
 
 
 float Viterbi_Decoder_Sbas::decode_continuous(const double sym[],
-    const int traceback_depth,
+    int traceback_depth,
     int bits[],
-    const int nbits_requested,
+    int nbits_requested,
     int& nbits_decoded)
 {
     VLOG(FLOW) << "decode_continuous(): nbits_requested=" << nbits_requested;
@@ -425,27 +423,25 @@ int Viterbi_Decoder_Sbas::parity_counter(int symbol, int length)
 
 
 // prev helper class
-Viterbi_Decoder_Sbas::Prev::Prev(int states, int t)
+Viterbi_Decoder_Sbas::Prev::Prev(int states, int t) : num_states(states),
+                                                      t(t),
+                                                      refcount(1)
 {
-    this->t = t;
-    num_states = states;
     state = std::vector<int>(num_states);
     v_bit = std::vector<int>(num_states);
     v_metric = std::vector<float>(num_states);
-    refcount = 1;
 }
 
 
 // copy constructor
-Viterbi_Decoder_Sbas::Prev::Prev(const Prev& prev)
+Viterbi_Decoder_Sbas::Prev::Prev(const Prev& prev) : num_states(prev.num_states),
+                                                     v_metric(prev.v_metric),
+                                                     state(prev.state),
+                                                     v_bit(prev.v_bit),
+                                                     t(prev.t),
+                                                     refcount(prev.refcount)
 {
-    refcount = prev.refcount;
     refcount++;
-    t = prev.t;
-    state = prev.state;
-    num_states = prev.num_states;
-    v_bit = prev.v_bit;
-    v_metric = prev.v_metric;
     VLOG(LMORE) << "Prev("
                 << "?"
                 << ", " << t << ")"

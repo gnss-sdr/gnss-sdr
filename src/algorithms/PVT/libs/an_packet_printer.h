@@ -35,7 +35,7 @@
 
 class Rtklib_Solver;
 
-typedef struct
+struct sdr_gnss_packet_t
 {
     uint8_t nsvfix;              // number of sats used in PVT fix
     uint8_t gps_satellites;      // number of tracked GPS satellites
@@ -53,18 +53,18 @@ typedef struct
         int16_t doppler;  // in [Hz], saturates at +32767 / -32768 Hz
     } sats[6];
 
-    uint32_t reserved = 0;
+    uint32_t reserved;
     uint16_t status;
-} sdr_gnss_packet_t;
+};
 
 
-typedef struct
+struct an_packet_t
 {
     uint8_t id;
     uint8_t length;
     uint8_t header[5];  // AN_PACKET_HEADER_SIZE
     uint8_t data[126];  // AN_MAXIMUM_PACKET_SIZE
-} an_packet_t;
+};
 
 
 /*!

@@ -33,10 +33,12 @@
 #include <sstream>    // for std::stringstream
 
 
-Has_Simple_Printer::Has_Simple_Printer(const std::string& base_path, const std::string& filename, bool time_tag_name)
+Has_Simple_Printer::Has_Simple_Printer(const std::string& base_path,
+    const std::string& filename,
+    bool time_tag_name) : d_has_base_path(base_path),
+                          d_data_printed(false)
+
 {
-    d_data_printed = false;
-    d_has_base_path = base_path;
     fs::path full_path(fs::current_path());
     const fs::path p(d_has_base_path);
     if (!fs::exists(p))

@@ -75,7 +75,7 @@
 class Rtklib_Solver : public Pvt_Solution
 {
 public:
-    Rtklib_Solver(const rtk_t& rtk, int nchannels, const std::string& dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat);
+    Rtklib_Solver(const rtk_t& rtk, const std::string& dump_filename, bool flag_dump_to_file, bool flag_dump_to_mat);
     ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
@@ -116,13 +116,12 @@ public:
 private:
     bool save_matfile() const;
 
-    std::array<obsd_t, MAXOBS> obs_data{};
-    std::array<double, 4> dop_{};
-    rtk_t rtk_{};
-    Monitor_Pvt monitor_pvt{};
+    std::array<obsd_t, MAXOBS> d_obs_data{};
+    std::array<double, 4> d_dop{};
+    rtk_t d_rtk{};
+    Monitor_Pvt d_monitor_pvt{};
     std::string d_dump_filename;
     std::ofstream d_dump_file;
-    int d_nchannels;  // Number of available channels for positioning
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
 };

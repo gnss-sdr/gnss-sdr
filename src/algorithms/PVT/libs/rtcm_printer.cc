@@ -38,12 +38,23 @@
 #include <unistd.h>   // for close, write
 
 
-Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump, bool flag_rtcm_server, bool flag_rtcm_tty_port, uint16_t rtcm_tcp_port, uint16_t rtcm_station_id, const std::string& rtcm_dump_devname, bool time_tag_name, const std::string& base_path)
+Rtcm_Printer::Rtcm_Printer(const std::string& filename,
+    bool flag_rtcm_file_dump,
+    bool flag_rtcm_server,
+    bool flag_rtcm_tty_port,
+    uint16_t rtcm_tcp_port,
+    uint16_t rtcm_station_id,
+    const std::string& rtcm_dump_devname,
+    bool time_tag_name,
+    const std::string& base_path) : rtcm_base_path(base_path),
+                                    rtcm_devname(rtcm_dump_devname),
+                                    port(rtcm_tcp_port),
+                                    station_id(rtcm_station_id),
+                                    d_rtcm_writing_started(false),
+                                    d_rtcm_file_dump(flag_rtcm_file_dump)
 {
     const boost::posix_time::ptime pt = boost::posix_time::second_clock::local_time();
     const tm timeinfo = boost::posix_time::to_tm(pt);
-    d_rtcm_file_dump = flag_rtcm_file_dump;
-    rtcm_base_path = base_path;
     if (d_rtcm_file_dump)
         {
             fs::path full_path(fs::current_path());
@@ -134,7 +145,6 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
                 }
         }
 
-    rtcm_devname = rtcm_dump_devname;
     if (flag_rtcm_tty_port == true)
         {
             rtcm_dev_descriptor = init_serial(rtcm_devname.c_str());
@@ -147,10 +157,6 @@ Rtcm_Printer::Rtcm_Printer(const std::string& filename, bool flag_rtcm_file_dump
         {
             rtcm_dev_descriptor = -1;
         }
-
-    port = rtcm_tcp_port;
-    station_id = rtcm_station_id;
-    d_rtcm_writing_started = false;
 
     rtcm = std::make_unique<Rtcm>(port);
 

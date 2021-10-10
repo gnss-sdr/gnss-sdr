@@ -118,7 +118,7 @@ private:
     int d_valid_observations;
 
     bool d_pre_2009_file;  // Flag to correct week rollover in post processing mode for signals older than 2009
-    bool b_valid_position;
+    bool d_valid_position;
     bool d_flag_averaging;
 };
 

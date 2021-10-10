@@ -595,7 +595,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
 }
 
 
-double Beidou_Dnav_Navigation_Message::utc_time(const double beidoutime_corrected) const
+double Beidou_Dnav_Navigation_Message::utc_time(double beidoutime_corrected) const
 {
     double t_utc;
     double t_utc_daytime;

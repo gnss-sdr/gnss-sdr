@@ -1382,7 +1382,7 @@ int GNSSFlowgraph::disconnect_signal_conditioners_from_channels()
                     return 1;
                 }
         }
-    DLOG(INFO) << "Signal conditioner(s) sucessfully disconnected from channels";
+    DLOG(INFO) << "Signal conditioner(s) successfully disconnected from channels";
     return 0;
 }
 

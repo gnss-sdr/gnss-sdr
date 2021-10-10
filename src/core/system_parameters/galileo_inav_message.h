@@ -260,7 +260,7 @@ private:
     double iDot_2{};      // Rate of inclination angle [semi-circles/sec]
 
     // Word type 3: Ephemeris (3/4) and SISA
-    int32_t IOD_nav_3{};   //
+    int32_t IOD_nav_3{};
     int32_t SISA_3{};
     double OMEGA_dot_3{};  // Rate of right ascension [semi-circles/sec]
     double delta_n_3{};    // Mean motion difference from computed value  [semi-circles/sec]
@@ -284,13 +284,13 @@ private:
 
     //  Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST*/
     // Ionospheric correction
-    double ai0_5{};  // Effective Ionisation Level 1st order parameter [sfu]
-    double ai1_5{};  // Effective Ionisation Level 2st order parameter [sfu/degree]
-    double ai2_5{};  // Effective Ionisation Level 3st order parameter [sfu/degree]
-    double BGD_E1E5a_5{};   // E1-E5a Broadcast Group Delay [s]
-    double BGD_E1E5b_5{};   // E1-E5b Broadcast Group Delay [s]
-    int32_t E5b_HS_5{};  // E5b Signal Health Status
-    int32_t E1B_HS_5{};  // E1B Signal Health Status
+    double ai0_5{};        // Effective Ionisation Level 1st order parameter [sfu]
+    double ai1_5{};        // Effective Ionisation Level 2st order parameter [sfu/degree]
+    double ai2_5{};        // Effective Ionisation Level 3st order parameter [sfu/degree]
+    double BGD_E1E5a_5{};  // E1-E5a Broadcast Group Delay [s]
+    double BGD_E1E5b_5{};  // E1-E5b Broadcast Group Delay [s]
+    int32_t E5b_HS_5{};    // E5b Signal Health Status
+    int32_t E1B_HS_5{};    // E1B Signal Health Status
 
     // Ionospheric disturbance flag
     bool Region1_flag_5{};  // Ionospheric Disturbance Flag for region 1
@@ -298,8 +298,8 @@ private:
     bool Region3_flag_5{};  // Ionospheric Disturbance Flag for region 3
     bool Region4_flag_5{};  // Ionospheric Disturbance Flag for region 4
     bool Region5_flag_5{};  // Ionospheric Disturbance Flag for region 5
-    bool E5b_DVS_5{};    // E5b Data Validity Status
-    bool E1B_DVS_5{};    // E1B Data Validity Status
+    bool E5b_DVS_5{};       // E5b Data Validity Status
+    bool E1B_DVS_5{};       // E1B Data Validity Status
 
     // GST
     int32_t WN_5{};

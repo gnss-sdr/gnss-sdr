@@ -25,9 +25,9 @@
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <memory>
 #include <string>
-#include <vector>
 
 /** \addtogroup Acquisition
  * \{ */
@@ -196,7 +196,7 @@ private:
 
     pcps_acquisition_fpga_sptr acquisition_fpga_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
-    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
+    volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     Gnss_Synchro* gnss_synchro_;
     std::string role_;
     int32_t doppler_center_;

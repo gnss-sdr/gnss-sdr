@@ -35,7 +35,11 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : gnss_synchro_(nullptr),
+                                role_(role),
+                                doppler_center_(0),
+                                channel_(0),
+                                doppler_step_(0),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -95,7 +99,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     auto fft_if = gnss_fft_fwd_make_unique(nsamples_total);          // Direct FFT
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);  // buffer for the local code
     volk_gnsssdr::vector<gr_complex> fft_codes_padded(nsamples_total);
-    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * GALILEO_E1_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * GALILEO_E1_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
     int32_t tmp;
@@ -171,10 +175,6 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     acq_parameters.total_block_exp = configuration->property(role + ".total_block_exp", 13);
 
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
-
-    channel_ = 0;
-    doppler_step_ = 0;
-    gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
         {

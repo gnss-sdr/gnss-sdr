@@ -51,28 +51,25 @@ Fpga_Acquisition::Fpga_Acquisition(std::string device_name,
     int64_t fs_in,
     uint32_t select_queue,
     uint32_t *all_fft_codes,
-    uint32_t excludelimit)
+    uint32_t excludelimit) : d_device_name(std::move(device_name)),
+                             d_fs_in(fs_in),
+                             d_fd(0),              // driver descriptor
+                             d_map_base(nullptr),  // driver memory map
+                             d_all_fft_codes(all_fft_codes),
+                             d_vector_length(nsamples_total),
+                             d_excludelimit(excludelimit),
+                             d_nsamples_total(nsamples_total),
+                             d_nsamples(nsamples),  // number of samples not including padding
+                             d_select_queue(select_queue),
+                             d_doppler_max(doppler_max),
+                             d_doppler_step(0),
+                             d_PRN(0)
 {
-    const uint32_t vector_length = nsamples_total;
-
-    // initial values
-    d_device_name = std::move(device_name);
-    d_fs_in = fs_in;
-    d_vector_length = vector_length;
-    d_excludelimit = excludelimit;
-    d_nsamples = nsamples;  // number of samples not including padding
-    d_select_queue = select_queue;
-    d_nsamples_total = nsamples_total;
-    d_doppler_max = doppler_max;
-    d_doppler_step = 0;
-    d_fd = 0;              // driver descriptor
-    d_map_base = nullptr;  // driver memory map
-    d_all_fft_codes = all_fft_codes;
     Fpga_Acquisition::open_device();
     Fpga_Acquisition::reset_acquisition();
     Fpga_Acquisition::fpga_acquisition_test_register();
     Fpga_Acquisition::close_device();
-    d_PRN = 0;
+
     DLOG(INFO) << "Acquisition FPGA class created";
 }
 
@@ -244,11 +241,13 @@ void Fpga_Acquisition::reset_acquisition()
                                         // the FPGA HW modules including the multicorrelators
 }
 
+
 void Fpga_Acquisition::stop_acquisition()
 {
     d_map_base[8] = STOP_ACQUISITION;  // setting bit 3 of d_map_base[8] stops the acquisition module. This stops all
                                        // the FPGA HW modules including the multicorrelators
 }
+
 
 // this function is only used for the unit tests
 void Fpga_Acquisition::read_fpga_total_scale_factor(uint32_t *total_scale_factor, uint32_t *fw_scale_factor)

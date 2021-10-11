@@ -19,7 +19,7 @@
 
 
 #include "pcps_acquisition_fpga.h"
-#include "gnss_sdr_make_unique.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
 #include <glog/logging.h>
 #include <cmath>     // for ceil
@@ -34,37 +34,31 @@ pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
 
 
 pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
+    : d_acq_parameters(std::move(conf_)),
+      d_gnss_synchro(nullptr),
+      d_sample_counter(0ULL),
+      d_threshold(0.0),
+      d_mag(0),
+      d_input_power(0.0),
+      d_test_statistics(0.0),
+      d_doppler_step2(d_acq_parameters.doppler_step2),
+      d_doppler_center_step_two(0.0),
+      d_doppler_center(0U),
+      d_state(0),
+      d_doppler_index(0U),
+      d_channel(0U),
+      d_doppler_step(0U),
+      d_doppler_max(d_acq_parameters.doppler_max),
+      d_fft_size(d_acq_parameters.samples_per_code),
+      d_num_doppler_bins(0U),
+      d_downsampling_factor(d_acq_parameters.downsampling_factor),
+      d_select_queue_Fpga(d_acq_parameters.select_queue_Fpga),
+      d_total_block_exp(d_acq_parameters.total_block_exp),
+      d_num_doppler_bins_step2(d_acq_parameters.num_doppler_bins_step2),
+      d_max_num_acqs(d_acq_parameters.max_num_acqs),
+      d_active(false),
+      d_make_2_steps(d_acq_parameters.make_2_steps)
 {
-    d_acq_parameters = std::move(conf_);
-    d_sample_counter = 0ULL;  // Sample Counter
-    d_active = false;
-    d_state = 0;
-    d_fft_size = d_acq_parameters.samples_per_code;
-    d_mag = 0;
-    d_input_power = 0.0;
-    d_num_doppler_bins = 0U;
-    d_threshold = 0.0;
-    d_doppler_step = 0U;
-    d_doppler_center = 0U;
-    d_doppler_index = 0U;
-    d_test_statistics = 0.0;
-    d_channel = 0U;
-    d_gnss_synchro = nullptr;
-
-    d_downsampling_factor = d_acq_parameters.downsampling_factor;
-    d_select_queue_Fpga = d_acq_parameters.select_queue_Fpga;
-
-    d_total_block_exp = d_acq_parameters.total_block_exp;
-
-    d_make_2_steps = d_acq_parameters.make_2_steps;
-    d_num_doppler_bins_step2 = d_acq_parameters.num_doppler_bins_step2;
-    d_doppler_step2 = d_acq_parameters.doppler_step2;
-    d_doppler_center_step_two = 0.0;
-
-    d_doppler_max = d_acq_parameters.doppler_max;
-
-    d_max_num_acqs = d_acq_parameters.max_num_acqs;
-
     d_acquisition_fpga = std::make_unique<Fpga_Acquisition>(d_acq_parameters.device_name, d_acq_parameters.code_length, d_acq_parameters.doppler_max, d_fft_size,
         d_acq_parameters.fs_in, d_acq_parameters.select_queue_Fpga, d_acq_parameters.all_fft_codes, d_acq_parameters.excludelimit);
 }
@@ -301,6 +295,7 @@ void pcps_acquisition_fpga::reset_acquisition()
     d_acquisition_fpga->reset_acquisition();
     d_acquisition_fpga->close_device();
 }
+
 
 void pcps_acquisition_fpga::stop_acquisition()
 {

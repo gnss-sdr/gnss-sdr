@@ -28,9 +28,9 @@
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
-#include <algorithm>  // for copy_n
-#include <cmath>      // for abs, pow, floor
-#include <complex>    // for complex
+#include <algorithm>              // for copy_n
+#include <cmath>                  // for abs, pow, floor
+#include <complex>                // for complex
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     const ConfigurationInterface* configuration,

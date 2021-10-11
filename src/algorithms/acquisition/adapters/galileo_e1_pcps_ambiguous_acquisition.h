@@ -23,8 +23,8 @@
 #include "complex_byte_to_float_x2.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
-#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <gnuradio/blocks/float_to_complex.h>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <memory>
 #include <string>
 

@@ -50,7 +50,6 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                              d_dump_filename(dump_filename),
                              d_flag_dump_enabled(flag_dump_to_file),
                              d_flag_dump_mat_enabled(flag_dump_to_mat)
-
 {
     this->set_averaging_flag(false);
 
@@ -1104,7 +1103,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     // AR ratio threshold for validation
                                     d_dump_file.write(reinterpret_cast<char *>(&pvt_sol.thres), sizeof(float));
 
-                                    // GDOP / PDOP/ HDOP/ VDOP
+                                    // GDOP / PDOP / HDOP / VDOP
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[0]), sizeof(double));
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[1]), sizeof(double));
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));

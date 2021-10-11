@@ -22,26 +22,6 @@
 #include <cstddef>
 
 
-Pvt_Solution::Pvt_Solution() : d_latitude_d(0.0),
-                               d_longitude_d(0.0),
-                               d_height_m(0.0),
-                               d_rx_dt_s(0.0),
-                               d_rx_clock_drift_ppm(0.0),
-                               d_speed_over_ground_m_s(0.0),
-                               d_course_over_ground_d(0.0),
-                               d_avg_latitude_d(0.0),
-                               d_avg_longitude_d(0.0),
-                               d_avg_height_m(0.0),
-                               d_averaging_depth(0),
-                               d_valid_observations(false),
-                               d_pre_2009_file(false),
-                               d_valid_position(false),
-                               d_flag_averaging(false)
-
-{
-}
-
-
 int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 {
     /* Conversion of Cartesian coordinates (X,Y,Z) to geographical

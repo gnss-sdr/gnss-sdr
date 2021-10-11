@@ -47,22 +47,22 @@ hybrid_observables_gs_sptr hybrid_observables_gs_make(const Obs_Conf &conf_)
 }
 
 
-hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_) : gr::block("hybrid_observables_gs",
-                                                                          gr::io_signature::make(conf_.nchannels_in, conf_.nchannels_in, sizeof(Gnss_Synchro)),
-                                                                          gr::io_signature::make(conf_.nchannels_out, conf_.nchannels_out, sizeof(Gnss_Synchro))),
-                                                                      d_conf(conf_),
-                                                                      d_dump_filename(conf_.dump_filename),
-                                                                      d_smooth_filter_M(static_cast<double>(conf_.smoothing_factor)),
-                                                                      d_T_rx_step_s(static_cast<double>(conf_.observable_interval_ms) / 1000.0),
-                                                                      d_T_rx_TOW_ms(0U),
-                                                                      d_T_rx_step_ms(conf_.observable_interval_ms),
-                                                                      d_T_status_report_timer_ms(0),
-                                                                      d_nchannels_in(conf_.nchannels_in),
-                                                                      d_nchannels_out(conf_.nchannels_out),
-                                                                      d_T_rx_TOW_set(false),
-                                                                      d_dump(conf_.dump),
-                                                                      d_dump_mat(conf_.dump_mat && d_dump)
-
+hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
+    : gr::block("hybrid_observables_gs",
+          gr::io_signature::make(conf_.nchannels_in, conf_.nchannels_in, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(conf_.nchannels_out, conf_.nchannels_out, sizeof(Gnss_Synchro))),
+      d_conf(conf_),
+      d_dump_filename(conf_.dump_filename),
+      d_smooth_filter_M(static_cast<double>(conf_.smoothing_factor)),
+      d_T_rx_step_s(static_cast<double>(conf_.observable_interval_ms) / 1000.0),
+      d_T_rx_TOW_ms(0U),
+      d_T_rx_step_ms(conf_.observable_interval_ms),
+      d_T_status_report_timer_ms(0),
+      d_nchannels_in(conf_.nchannels_in),
+      d_nchannels_out(conf_.nchannels_out),
+      d_T_rx_TOW_set(false),
+      d_dump(conf_.dump),
+      d_dump_mat(conf_.dump_mat && d_dump)
 {
     // PVT input message port
     this->message_port_register_in(pmt::mp("pvt_to_observables"));

@@ -52,7 +52,6 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                              d_flag_dump_mat_enabled(flag_dump_to_mat)
 
 {
-    // init empty ephemeris for all the available GNSS channels
     this->set_averaging_flag(false);
 
     // ############# ENABLE DATA FILE LOG #################

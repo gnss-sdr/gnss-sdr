@@ -21,55 +21,15 @@
 #include <glog/logging.h>
 
 
-Dll_Pll_Conf::Dll_Pll_Conf()
+Dll_Pll_Conf::Dll_Pll_Conf() : carrier_lock_th(FLAGS_carrier_lock_th),
+                               cn0_samples(FLAGS_cn0_samples),
+                               cn0_min(FLAGS_cn0_min),
+                               max_code_lock_fail(FLAGS_max_lock_fail),
+                               max_carrier_lock_fail(FLAGS_max_carrier_lock_fail)
 {
-    /* DLL/PLL tracking configuration */
-    high_dyn = false;
-    smoother_length = 10;
-    fs_in = 2000000.0;
-    vector_length = 0U;
-    dump = false;
-    dump_mat = true;
-    dump_filename = std::string("./dll_pll_dump.dat");
-    enable_fll_pull_in = false;
-    enable_fll_steady_state = false;
-    pull_in_time_s = 10;
-    bit_synchronization_time_limit_s = pull_in_time_s + 10;
-    fll_filter_order = 1;
-    pll_filter_order = 3;
-    dll_filter_order = 2;
-    fll_bw_hz = 35.0;
-    pll_pull_in_bw_hz = 50.0;
-    dll_pull_in_bw_hz = 3.0;
-    pll_bw_hz = 35.0;
-    dll_bw_hz = 2.0;
-    pll_bw_narrow_hz = 5.0;
-    dll_bw_narrow_hz = 0.75;
-    early_late_space_chips = 0.25;
-    very_early_late_space_chips = 0.5;
-    early_late_space_narrow_chips = 0.15;
-    very_early_late_space_narrow_chips = 0.5;
-    slope = 1.0;
-    spc = 0.5;
-    y_intercept = 1.0;
-    carrier_aiding = true;
-    extend_correlation_symbols = 1;
-    cn0_samples = FLAGS_cn0_samples;
-    cn0_smoother_samples = 200;
-    cn0_smoother_alpha = 0.002;
-    carrier_lock_test_smoother_alpha = 0.002;
-    carrier_lock_test_smoother_samples = 25;
-    cn0_min = FLAGS_cn0_min;
-    max_carrier_lock_fail = FLAGS_max_carrier_lock_fail;
-    max_code_lock_fail = FLAGS_max_lock_fail;
-    carrier_lock_th = FLAGS_carrier_lock_th;
-    track_pilot = true;
-    enable_doppler_correction = false;
-    system = 'G';
     signal[0] = '1';
     signal[1] = 'C';
     signal[2] = '\0';
-    item_type = std::string("gr_complex");
 }
 
 

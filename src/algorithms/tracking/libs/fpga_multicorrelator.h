@@ -221,7 +221,6 @@ private:
     float d_phase_step_rad;
     float d_carrier_phase_rate_step_rad;
 
-    uint32_t d_code_length_chips;
     uint32_t d_code_length_samples;
     uint32_t d_n_correlators;  // number of correlators
 
@@ -231,7 +230,6 @@ private:
 
     // configuration data received from the interface
     uint32_t d_correlator_length_samples;
-    uint32_t d_code_samples_per_chip;
 
     uint32_t d_code_phase_step_chips_num;
     uint32_t d_code_phase_rate_step_chips_num;

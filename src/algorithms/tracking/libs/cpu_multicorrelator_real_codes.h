@@ -37,7 +37,7 @@
 class Cpu_Multicorrelator_Real_Codes
 {
 public:
-    Cpu_Multicorrelator_Real_Codes();
+    Cpu_Multicorrelator_Real_Codes() = default;
     void set_high_dynamics_resampler(bool use_high_dynamics_resampler);
     ~Cpu_Multicorrelator_Real_Codes();
     bool init(int max_signal_length_samples, int n_correlators);
@@ -50,14 +50,14 @@ public:
 
 private:
     // Allocate the device input vectors
-    const std::complex<float> *d_sig_in;
-    const float *d_local_code_in;
-    std::complex<float> *d_corr_out;
-    float **d_local_codes_resampled;
-    float *d_shifts_chips;
-    int d_code_length_chips;
-    int d_n_correlators;
-    bool d_use_high_dynamics_resampler;
+    const std::complex<float> *d_sig_in{nullptr};
+    const float *d_local_code_in{nullptr};
+    std::complex<float> *d_corr_out{nullptr};
+    float **d_local_codes_resampled{nullptr};
+    float *d_shifts_chips{nullptr};
+    int d_code_length_chips{0};
+    int d_n_correlators{0};
+    bool d_use_high_dynamics_resampler{true};
 };
 
 

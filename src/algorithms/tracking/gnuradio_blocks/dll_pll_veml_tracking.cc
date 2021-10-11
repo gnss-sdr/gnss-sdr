@@ -72,12 +72,55 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 }
 
 
-dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                                                              gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
+    : gr::block("dll_pll_veml_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_trk_parameters(conf_),
+      d_acquisition_gnss_synchro(nullptr),
+      d_code_chip_rate(0.0),
+      d_acq_code_phase_samples(0.0),
+      d_acq_carrier_doppler_hz(0.0),
+      d_current_correlation_time_s(0.0),
+      d_carrier_doppler_hz(0.0),
+      d_acc_carrier_phase_rad(0.0),
+      d_rem_code_phase_chips(0.0),
+      d_T_chip_seconds(0.0),
+      d_T_prn_seconds(0.0),
+      d_T_prn_samples(0.0),
+      d_K_blk_samples(0.0),
+      d_carrier_lock_test(1.0),
+      d_CN0_SNV_dB_Hz(0.0),
+      d_carrier_lock_threshold(d_trk_parameters.carrier_lock_th),
+      d_carrier_phase_step_rad(0.0),
+      d_carrier_phase_rate_step_rad(0.0),
+      d_code_phase_step_chips(0.0),
+      d_code_phase_rate_step_chips(0.0),
+      d_rem_code_phase_samples(0.0),  // Residual code phase (in chips)
+      d_sample_counter(0ULL),
+      d_acq_sample_stamp(0ULL),
+      d_rem_carr_phase_rad(0.0),  // Residual carrier phase
+      d_state(0),                 // initial state: standby
+      d_current_prn_length_samples(static_cast<int32_t>(d_trk_parameters.vector_length)),
+      d_extend_correlation_symbols_count(0),
+      d_cn0_estimation_counter(0),
+      d_carrier_lock_fail_counter(0),
+      d_code_lock_fail_counter(0),
+      d_channel(0),
+      d_secondary_code_length(0U),
+      d_data_secondary_code_length(0U),
+      d_pull_in_transitory(true),
+      d_corrected_doppler(false),
+      d_interchange_iq(false),
+      d_veml(false),
+      d_cloop(true),
+      d_dump(d_trk_parameters.dump),
+      d_dump_mat(d_trk_parameters.dump_mat && d_dump),
+      d_acc_carrier_phase_initialized(false),
+      d_Flag_PLL_180_deg_phase_locked(false)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
-    d_trk_parameters = conf_;
+
     // Telemetry bit synchronization message port input
     this->message_port_register_out(pmt::mp("events"));
     this->set_relative_rate(1.0 / static_cast<double>(d_trk_parameters.vector_length));
@@ -98,14 +141,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
 
     // initialize internal vars
     d_dll_filt_history.set_capacity(1000);
-    d_veml = false;
-    d_cloop = true;
-    d_pull_in_transitory = true;
-    d_code_chip_rate = 0.0;
-    d_secondary_code_length = 0U;
-    d_data_secondary_code_length = 0U;
-    d_preamble_length_symbols = 0;
-    d_interchange_iq = false;
     d_signal_type = std::string(d_trk_parameters.signal);
 
     std::map<std::string, std::string> map_signal_pretty_name;
@@ -410,10 +445,9 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             d_code_samples_per_chip = 0U;
             d_symbols_per_bit = 0;
         }
-    d_T_chip_seconds = 0.0;
-    d_T_prn_seconds = 0.0;
-    d_T_prn_samples = 0.0;
-    d_K_blk_samples = 0.0;
+
+    // Initial code frequency basis of NCO
+    d_code_freq_chips = d_code_chip_rate;
 
     // Initialize tracking  ==========================================
     d_code_loop_filter = Tracking_loop_filter(static_cast<float>(d_code_period), d_trk_parameters.dll_bw_hz, d_trk_parameters.dll_filter_order, false);
@@ -488,28 +522,9 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     // --- Initializations ---
     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
     d_multicorrelator_cpu.set_high_dynamics_resampler(d_trk_parameters.high_dyn);
-    // Initial code frequency basis of NCO
-    d_code_freq_chips = d_code_chip_rate;
-    // Residual code phase (in chips)
-    d_rem_code_phase_samples = 0.0;
-    // Residual carrier phase
-    d_rem_carr_phase_rad = 0.0;
-
-    // sample synchronization
-    d_sample_counter = 0ULL;
-    d_acq_sample_stamp = 0ULL;
-
-    d_current_prn_length_samples = static_cast<int32_t>(d_trk_parameters.vector_length);
-    d_current_correlation_time_s = 0.0;
 
     // CN0 estimation and lock detector buffers
-    d_cn0_estimation_counter = 0;
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(d_trk_parameters.cn0_samples);
-    d_carrier_lock_test = 1.0;
-    d_CN0_SNV_dB_Hz = 0.0;
-    d_carrier_lock_fail_counter = 0;
-    d_code_lock_fail_counter = 0;
-    d_carrier_lock_threshold = d_trk_parameters.carrier_lock_th;
     d_Prompt_Data = volk_gnsssdr::vector<gr_complex>(1);
     d_cn0_smoother = Exponential_Smoother();
     d_cn0_smoother.set_alpha(d_trk_parameters.cn0_smoother_alpha);
@@ -525,21 +540,8 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
     d_carrier_lock_test_smoother.set_offset(0.0);
     d_carrier_lock_test_smoother.set_samples_for_initialization(d_trk_parameters.carrier_lock_test_smoother_samples);
 
-    d_acquisition_gnss_synchro = nullptr;
-    d_channel = 0;
-    d_acq_code_phase_samples = 0.0;
-    d_acq_carrier_doppler_hz = 0.0;
-    d_carrier_doppler_hz = 0.0;
-    d_acc_carrier_phase_rad = 0.0;
-
-    d_extend_correlation_symbols_count = 0;
-    d_code_phase_step_chips = 0.0;
-    d_code_phase_rate_step_chips = 0.0;
-    d_carrier_phase_step_rad = 0.0;
-    d_carrier_phase_rate_step_rad = 0.0;
-    d_rem_code_phase_chips = 0.0;
-    d_state = 0;  // initial state: standby
     clear_tracking_vars();
+
     if (d_trk_parameters.smoother_length > 0)
         {
             d_carr_ph_history.set_capacity(d_trk_parameters.smoother_length * 2);
@@ -551,8 +553,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
             d_code_ph_history.set_capacity(1);
         }
 
-    d_dump = d_trk_parameters.dump;
-    d_dump_mat = d_trk_parameters.dump_mat and d_dump;
     if (d_dump)
         {
             d_dump_filename = d_trk_parameters.dump_filename;
@@ -586,9 +586,6 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_) : gr::bl
                     d_dump = false;
                 }
         }
-    d_corrected_doppler = false;
-    d_acc_carrier_phase_initialized = false;
-    d_Flag_PLL_180_deg_phase_locked = false;
 }
 
 

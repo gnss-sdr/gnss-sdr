@@ -5733,3 +5733,323 @@ int32_t Rtcm::set_DF420(const Gnss_Synchro& gnss_synchro __attribute__((unused))
     DF420 = std::bitset<1>(half_cycle_ambiguity_indicator);
     return 0;
 }
+
+
+// IGS State Space Representation (SSR) data fields
+// see https://files.igs.org/pub/data/format/igs_ssr_v1.pdf
+
+void Rtcm::set_IDF001(uint8_t version)
+{
+    const uint8_t max_value = 7;
+    uint8_t igm_version = version;
+    if (igm_version > max_value)  // not defined
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad IGM/IM Version";
+            igm_version = 0;
+        }
+    IDF001 = std::bitset<3>(igm_version);
+}
+
+
+void Rtcm::set_IDF002(uint8_t igs_message_number)
+{
+    IDF002 = std::bitset<8>(igs_message_number);
+}
+
+
+void Rtcm::set_IDF003(uint32_t tow)
+{
+    const uint32_t max_value = 604799;
+    uint32_t ssr_epoch_time = tow;
+    if (ssr_epoch_time > max_value)
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad SSR Epoch Time";
+            ssr_epoch_time = 0;
+        }
+    IDF003 = std::bitset<20>(ssr_epoch_time);
+}
+
+
+void Rtcm::set_IDF004(uint8_t ssr_update_interval)
+{
+    const uint8_t max_value = 15;
+    uint8_t update_interval = ssr_update_interval;
+    if (update_interval > max_value)
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad SSR Update Interval";
+            update_interval = 0;
+        }
+    IDF004 = std::bitset<4>(update_interval);
+}
+
+
+void Rtcm::set_IDF005(bool ssr_multiple_message_indicator)
+{
+    IDF005 = std::bitset<1>(ssr_multiple_message_indicator);
+}
+
+
+void Rtcm::set_IDF006(bool regional_indicator)
+{
+    IDF006 = std::bitset<1>(regional_indicator);
+}
+
+
+void Rtcm::set_IDF007(uint8_t ssr_iod)
+{
+    const uint8_t max_value = 15;
+    uint8_t iod = ssr_iod;
+    if (iod > max_value)
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad IOD SSR";
+            iod = 0;
+        }
+    IDF007 = std::bitset<4>(iod);
+}
+
+
+void Rtcm::set_IDF008(uint16_t ssr_provider_id)
+{
+    IDF008 = std::bitset<16>(ssr_provider_id);
+}
+
+
+void Rtcm::set_IDF009(uint8_t ssr_solution_id)
+{
+    const uint8_t max_value = 15;
+    uint8_t sol_id = ssr_solution_id;
+    if (sol_id > max_value)
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad SSR Solution ID";
+            sol_id = 0;
+        }
+    IDF009 = std::bitset<4>(sol_id);
+}
+
+
+void Rtcm::set_IDF010(uint8_t num_satellites)
+{
+    const uint8_t max_value = 63;
+    uint8_t num_sats = num_satellites;
+    if (num_sats > max_value)
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad number of satellites";
+            num_sats = 0;
+        }
+    IDF010 = std::bitset<6>(num_sats);
+}
+
+
+void Rtcm::set_IDF011(uint8_t gnss_satellite_id)
+{
+    const uint8_t max_value = 63;
+    uint8_t sat_id = gnss_satellite_id;
+    if (sat_id > max_value)
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad GNSS Satellite ID";
+            sat_id = 0;
+        }
+    IDF011 = std::bitset<6>(sat_id);
+}
+
+
+void Rtcm::set_IDF012(uint8_t gnss_iod)
+{
+    IDF012 = std::bitset<8>(gnss_iod);
+}
+
+
+void Rtcm::set_IDF013(float delta_orbit_radial_m)
+{
+    const float scale = 1.0e4;
+    const int32_t max_value = 2097151;
+    auto delta_orbit_radial = static_cast<int32_t>((delta_orbit_radial_m * scale));
+    if (delta_orbit_radial > max_value)
+        {
+            delta_orbit_radial = max_value;
+        }
+    if (delta_orbit_radial < -max_value)
+        {
+            delta_orbit_radial = -max_value;
+        }
+    IDF013 = std::bitset<22>(delta_orbit_radial);
+}
+
+
+void Rtcm::set_IDF014(float delta_orbit_along_track_m)
+{
+    const float scale = 2500.0;
+    const int32_t max_value = 524287;
+    auto delta_orbit_along_track = static_cast<int32_t>((delta_orbit_along_track_m * scale));
+    if (delta_orbit_along_track > max_value)
+        {
+            delta_orbit_along_track = max_value;
+        }
+    if (delta_orbit_along_track < -max_value)
+        {
+            delta_orbit_along_track = -max_value;
+        }
+    IDF014 = std::bitset<20>(delta_orbit_along_track);
+}
+
+
+void Rtcm::set_IDF015(float delta_orbit_cross_track_m)
+{
+    const float scale = 2500.0;
+    const int32_t max_value = 524287;
+    auto delta_orbit_cross_track = static_cast<int32_t>((delta_orbit_cross_track_m * scale));
+    if (delta_orbit_cross_track > max_value)
+        {
+            delta_orbit_cross_track = max_value;
+        }
+    if (delta_orbit_cross_track < -max_value)
+        {
+            delta_orbit_cross_track = -max_value;
+        }
+    IDF015 = std::bitset<20>(delta_orbit_cross_track);
+}
+
+
+void Rtcm::set_IDF016(float dot_orbit_delta_track_m_s)
+{
+    const float scale = 1.0e6;
+    const int32_t max_value = 1048575;
+    auto dot_orbit_delta_track = static_cast<int32_t>((dot_orbit_delta_track_m_s * scale));
+    if (dot_orbit_delta_track > max_value)
+        {
+            dot_orbit_delta_track = max_value;
+        }
+    if (dot_orbit_delta_track < -max_value)
+        {
+            dot_orbit_delta_track = -max_value;
+        }
+    IDF016 = std::bitset<21>(dot_orbit_delta_track);
+}
+
+
+void Rtcm::set_IDF017(float dot_orbit_delta_along_track_m_s)
+{
+    const float scale = 250000.0;
+    const int32_t max_value = 262143;
+    auto dot_orbit_delta_along_track = static_cast<int32_t>((dot_orbit_delta_along_track_m_s * scale));
+    if (dot_orbit_delta_along_track > max_value)
+        {
+            dot_orbit_delta_along_track = max_value;
+        }
+    if (dot_orbit_delta_along_track < -max_value)
+        {
+            dot_orbit_delta_along_track = -max_value;
+        }
+    IDF017 = std::bitset<19>(dot_orbit_delta_along_track);
+}
+
+
+void Rtcm::set_IDF018(float dot_orbit_delta_cross_track_m_s)
+{
+    const float scale = 250000.0;
+    const int32_t max_value = 262143;
+    auto dot_orbit_delta_cross_track = static_cast<int32_t>((dot_orbit_delta_cross_track_m_s * scale));
+    if (dot_orbit_delta_cross_track > max_value)
+        {
+            dot_orbit_delta_cross_track = max_value;
+        }
+    if (dot_orbit_delta_cross_track < -max_value)
+        {
+            dot_orbit_delta_cross_track = -max_value;
+        }
+    IDF018 = std::bitset<19>(dot_orbit_delta_cross_track);
+}
+
+
+void Rtcm::set_IDF019(float delta_clock_c0_m)
+{
+    const float scale = 1.0e4;
+    const int32_t max_value = 2097151;
+    auto delta_clock_c0 = static_cast<int32_t>((delta_clock_c0_m * scale));
+    if (delta_clock_c0 > max_value)
+        {
+            delta_clock_c0 = max_value;
+        }
+    if (delta_clock_c0 < -max_value)
+        {
+            delta_clock_c0 = -max_value;
+        }
+    IDF019 = std::bitset<22>(delta_clock_c0);
+}
+
+
+void Rtcm::set_IDF020(float delta_clock_c1_m_s)
+{
+    const float scale = 1.0e6;
+    const int32_t max_value = 1048575;
+    auto delta_clock_c1 = static_cast<int32_t>((delta_clock_c1_m_s * scale));
+    if (delta_clock_c1 > max_value)
+        {
+            delta_clock_c1 = max_value;
+        }
+    if (delta_clock_c1 < -max_value)
+        {
+            delta_clock_c1 = -max_value;
+        }
+    IDF020 = std::bitset<21>(delta_clock_c1);
+}
+
+
+void Rtcm::set_IDF021(float delta_clock_c2_m_s2)
+{
+    const float scale = 5.0e8;
+    const int32_t max_value = 67108863;
+    auto delta_clock_c2 = static_cast<int32_t>((delta_clock_c2_m_s2 * scale));
+    if (delta_clock_c2 > max_value)
+        {
+            delta_clock_c2 = max_value;
+        }
+    if (delta_clock_c2 < -max_value)
+        {
+            delta_clock_c2 = -max_value;
+        }
+    IDF021 = std::bitset<27>(delta_clock_c2);
+}
+
+
+void Rtcm::set_IDF023(uint8_t num_bias_processed)
+{
+    const uint8_t max_value = 31;
+    uint8_t num_bias = num_bias_processed;
+    if (num_bias > max_value)
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad number of biases processed";
+            num_bias = 0;
+        }
+    IDF023 = std::bitset<5>(num_bias);
+}
+
+
+void Rtcm::set_IDF024(uint8_t gnss_signal_tracking_mode_id)
+{
+    const uint8_t max_value = 31;
+    uint8_t tracking_mode = gnss_signal_tracking_mode_id;
+    if (tracking_mode > max_value)  // error
+        {
+            LOG(WARNING) << "RTCM SSR messages are probably wrong: bad GNSS Signal and Tracking Mode Identifier";
+            tracking_mode = 0;
+        }
+    IDF024 = std::bitset<5>(tracking_mode);
+}
+
+
+void Rtcm::set_IDF025(float code_bias_m)
+{
+    const float scale = 100.0;
+    const int16_t max_value = 8191;
+    auto code_bias = static_cast<int16_t>((code_bias_m * scale));
+    if (code_bias > max_value)
+        {
+            code_bias = max_value;
+        }
+    if (code_bias < -max_value)
+        {
+            code_bias = -max_value;
+        }
+    IDF025 = std::bitset<14>(code_bias);
+}

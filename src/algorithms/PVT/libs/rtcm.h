@@ -1467,6 +1467,80 @@ private:
 
     std::bitset<1> DF420;
     int32_t set_DF420(const Gnss_Synchro& gnss_synchro);
+
+    // IGS State Space Representation (SSR) data fields
+    // see https://files.igs.org/pub/data/format/igs_ssr_v1.pdf
+    std::bitset<3> IDF001;
+    void set_IDF001(uint8_t version);
+
+    std::bitset<8> IDF002;
+    void set_IDF002(uint8_t igs_message_number);
+
+    std::bitset<20> IDF003;
+    void set_IDF003(uint32_t tow);
+
+    std::bitset<4> IDF004;
+    void set_IDF004(uint8_t ssr_update_interval);
+
+    std::bitset<1> IDF005;
+    void set_IDF005(bool ssr_multiple_message_indicator);
+
+    std::bitset<1> IDF006;
+    void set_IDF006(bool regional_indicator);
+
+    std::bitset<4> IDF007;
+    void set_IDF007(uint8_t ssr_iod);
+
+    std::bitset<16> IDF008;
+    void set_IDF008(uint16_t ssr_provider_id);
+
+    std::bitset<4> IDF009;
+    void set_IDF009(uint8_t ssr_solution_id);
+
+    std::bitset<6> IDF010;
+    void set_IDF010(uint8_t num_satellites);
+
+    std::bitset<6> IDF011;
+    void set_IDF011(uint8_t gnss_satellite_id);
+
+    std::bitset<8> IDF012;
+    void set_IDF012(uint8_t gnss_iod);
+
+    std::bitset<22> IDF013;
+    void set_IDF013(float delta_orbit_radial_m);
+
+    std::bitset<20> IDF014;
+    void set_IDF014(float delta_orbit_along_track_m);
+
+    std::bitset<20> IDF015;
+    void set_IDF015(float delta_orbit_cross_track_m);
+
+    std::bitset<21> IDF016;
+    void set_IDF016(float dot_orbit_delta_track_m_s);
+
+    std::bitset<19> IDF017;
+    void set_IDF017(float dot_orbit_delta_along_track_m_s);
+
+    std::bitset<19> IDF018;
+    void set_IDF018(float dot_orbit_delta_cross_track_m_s);
+
+    std::bitset<22> IDF019;
+    void set_IDF019(float delta_clock_c0_m);
+
+    std::bitset<21> IDF020;
+    void set_IDF020(float delta_clock_c1_m_s);
+
+    std::bitset<27> IDF021;
+    void set_IDF021(float delta_clock_c2_m_s2);
+
+    std::bitset<5> IDF023;
+    void set_IDF023(uint8_t num_bias_processed);
+
+    std::bitset<5> IDF024;
+    void set_IDF024(uint8_t gnss_signal_tracking_mode_id);
+
+    std::bitset<14> IDF025;
+    void set_IDF025(float code_bias_m);
 };
 
 

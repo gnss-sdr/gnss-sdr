@@ -39,6 +39,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     unsigned int in_streams,
     unsigned int out_streams) : gnss_synchro_(nullptr),
                                 role_(role),
+                                threshold_(0),
                                 channel_(0),
                                 doppler_step_(0),
                                 in_streams_(in_streams),

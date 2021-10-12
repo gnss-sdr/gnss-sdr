@@ -39,6 +39,7 @@ GalileoE6PcpsAcquisition::GalileoE6PcpsAcquisition(
     unsigned int out_streams) : gnss_synchro_(nullptr),
                                 configuration_(configuration),
                                 role_(role),
+                                threshold_(0),
                                 doppler_center_(0),
                                 channel_(0),
                                 doppler_step_(0),

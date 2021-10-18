@@ -37,6 +37,7 @@
 #include <iostream>   // for cout, cerr
 #include <termios.h>  // for tcgetattr
 #include <unistd.h>   // for close, write
+#include <vector>     // for std::vector
 
 
 Rtcm_Printer::Rtcm_Printer(const std::string& filename,

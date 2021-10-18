@@ -164,10 +164,10 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
         {
         case 0:
             /*
-                 * PHASE 0.
-                 * Check that the set of tags associated with given structure
-                 * perfectly fits our expectations.
-                 */
+             * PHASE 0.
+             * Check that the set of tags associated with given structure
+             * perfectly fits our expectations.
+             */
 
             if (tag_mode || td->tags_count)
                 {
@@ -200,8 +200,8 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
             /* Fall through */
         case 1:
             /*
-                 * Fetch the T from TLV.
-                 */
+             * Fetch the T from TLV.
+             */
             tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
             ASN_DEBUG("In %s CHOICE tag length %d", td->name, (int)tag_len);
             switch (tag_len)
@@ -228,8 +228,8 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     if (t2m)
                         {
                             /*
-                                 * Found the element corresponding to the tag.
-                                 */
+                             * Found the element corresponding to the tag.
+                             */
                             NEXT_PHASE(ctx);
                             ctx->step = t2m->el_no;
                             break;
@@ -275,9 +275,9 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 
         case 2:
             /*
-                 * PHASE 2.
-                 * Read in the element.
-                 */
+             * PHASE 2.
+             * Read in the element.
+             */
             do
                 {
                     asn_TYPE_member_t *elm; /* CHOICE's element */
@@ -287,10 +287,10 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     elm = &elements[ctx->step];
 
                     /*
-                         * Compute the position of the member inside a
-                         * structure, and also a type of containment (it may be
-                         * contained as pointer or using inline inclusion).
-                         */
+                     * Compute the position of the member inside a
+                     * structure, and also a type of containment (it may be
+                     * contained as pointer or using inline inclusion).
+                     */
                     if (elm->flags & ATF_POINTER)
                         {
                             /* Member is a pointer to another structure */
@@ -300,20 +300,20 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     else
                         {
                             /*
-                                 * A pointer to a pointer
-                                 * holding the start of the structure
-                                 */
+                             * A pointer to a pointer
+                             * holding the start of the structure
+                             */
                             memb_ptr = (char *)st + elm->memb_offset;
                             memb_ptr2 = &memb_ptr;
                         }
                     /* Set presence to be able to free it properly at any
-                         * time */
+                     * time */
                     set_present_idx(st, specs->pres_offset,
                         specs->pres_size, ctx->step + 1);
                     /*
-                         * Invoke the member fetch routine according to member's
-                         * type
-                         */
+                     * Invoke the member fetch routine according to member's
+                     * type
+                     */
                     rval = elm->type->ber_decoder(opt_codec_ctx, elm->type,
                         memb_ptr2, ptr, LEFT,
                         elm->tag_mode);
@@ -347,27 +347,27 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
             if (ctx->left > 0)
                 {
                     /*
-                         * The type must be fully decoded
-                         * by the CHOICE member-specific decoder.
-                         */
+                     * The type must be fully decoded
+                     * by the CHOICE member-specific decoder.
+                     */
                     RETURN(RC_FAIL);
                 }
 
             if (ctx->left == -1 && !(tag_mode || td->tags_count))
                 {
                     /*
-                         * This is an untagged CHOICE.
-                         * It doesn't contain nothing
-                         * except for the member itself, including all its tags.
-                         * The decoding is completed.
-                         */
+                     * This is an untagged CHOICE.
+                     * It doesn't contain nothing
+                     * except for the member itself, including all its tags.
+                     * The decoding is completed.
+                     */
                     NEXT_PHASE(ctx);
                     break;
                 }
 
             /*
-                 * Read in the "end of data chunks"'s.
-                 */
+             * Read in the "end of data chunks"'s.
+             */
             while (ctx->left < 0)
                 {
                     ssize_t tl;
@@ -386,8 +386,8 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * Expected <0><0>...
-                         */
+                     * Expected <0><0>...
+                     */
                     if (((const uint8_t *)ptr)[0] == 0)
                         {
                             if (LEFT < 2)
@@ -404,8 +404,8 @@ asn_dec_rval_t CHOICE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             else if (((const uint8_t *)ptr)[1] == 0)
                                 {
                                     /*
-                                         * Correctly finished with <0><0>.
-                                         */
+                                     * Correctly finished with <0><0>.
+                                     */
                                     ADVANCE(2);
                                     ctx->left++;
                                     continue;
@@ -852,8 +852,8 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * Search which inner member corresponds to this tag.
-                         */
+                     * Search which inner member corresponds to this tag.
+                     */
                     for (edx = 0; edx < td->elements_count; edx++)
                         {
                             elm = &td->elements[edx];
@@ -864,8 +864,8 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                                 case XCT_BOTH:
                                 case XCT_OPENING:
                                     /*
-                                             * Process this member.
-                                             */
+                                     * Process this member.
+                                     */
                                     ctx->step = edx;
                                     ctx->phase = 2;
                                     break;
@@ -888,10 +888,10 @@ asn_dec_rval_t CHOICE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                         {
                             ASN_DEBUG("Got anticipated extension");
                             /*
-                                 * Check for (XCT_BOTH or XCT_UNKNOWN_BO)
-                                 * By using a mask. Only record a pure
-                                 * <opening> tags.
-                                 */
+                             * Check for (XCT_BOTH or XCT_UNKNOWN_BO)
+                             * By using a mask. Only record a pure
+                             * <opening> tags.
+                             */
                             if (tcv & XCT_CLOSING)
                                 {
                                     /* Found </extension> without body */

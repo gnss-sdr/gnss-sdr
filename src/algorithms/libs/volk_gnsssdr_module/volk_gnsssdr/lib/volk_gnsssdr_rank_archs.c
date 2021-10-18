@@ -32,7 +32,7 @@ int volk_gnsssdr_get_index(
     // TODO return -1;
     // something terrible should happen here
     fprintf(stderr, "VOLK_GNSSSDR warning: no arch found, returning generic impl\n");
-    return volk_gnsssdr_get_index(impl_names, n_impls, "generic");  //but we'll fake it for now
+    return volk_gnsssdr_get_index(impl_names, n_impls, "generic");  // but we'll fake it for now
 }
 
 
@@ -66,7 +66,7 @@ int volk_gnsssdr_rank_archs(
     // now look for the function name in the prefs list
     for (i = 0; i < n_arch_prefs; i++)
         {
-            if (!strncmp(kern_name, volk_gnsssdr_arch_prefs[i].name, sizeof(volk_gnsssdr_arch_prefs[i].name)))  //found it
+            if (!strncmp(kern_name, volk_gnsssdr_arch_prefs[i].name, sizeof(volk_gnsssdr_arch_prefs[i].name)))  // found it
                 {
                     const char *impl_name = align ? volk_gnsssdr_arch_prefs[i].impl_a : volk_gnsssdr_arch_prefs[i].impl_u;
                     return volk_gnsssdr_get_index(impl_names, n_impls, impl_name);

@@ -549,8 +549,8 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *st, int *frac_value,
         case 0x2C:
         case 0x2E: /* (.|,) */
             /*
-                 * Process fractions of seconds.
-                 */
+             * Process fractions of seconds.
+             */
             for (buf++; buf < end; buf++)
                 {
                     int v = *buf;

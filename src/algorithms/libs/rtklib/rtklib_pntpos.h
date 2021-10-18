@@ -60,30 +60,30 @@ double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     int iter, const prcopt_t *opt, double *var);
 
 /* ionospheric correction ------------------------------------------------------
-* compute ionospheric correction
-* args   : gtime_t time     I   time
-*          nav_t  *nav      I   navigation data
-*          int    sat       I   satellite number
-*          double *pos      I   receiver position {lat,lon,h} (rad|m)
-*          double *azel     I   azimuth/elevation angle {az,el} (rad)
-*          int    ionoopt   I   ionospheric correction option (IONOOPT_???)
-*          double *ion      O   ionospheric delay (L1) (m)
-*          double *var      O   ionospheric delay (L1) variance (m^2)
-* return : status(1:ok,0:error)
-*-----------------------------------------------------------------------------*/
+ * compute ionospheric correction
+ * args   : gtime_t time     I   time
+ *          nav_t  *nav      I   navigation data
+ *          int    sat       I   satellite number
+ *          double *pos      I   receiver position {lat,lon,h} (rad|m)
+ *          double *azel     I   azimuth/elevation angle {az,el} (rad)
+ *          int    ionoopt   I   ionospheric correction option (IONOOPT_???)
+ *          double *ion      O   ionospheric delay (L1) (m)
+ *          double *var      O   ionospheric delay (L1) variance (m^2)
+ * return : status(1:ok,0:error)
+ *-----------------------------------------------------------------------------*/
 int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
     const double *azel, int ionoopt, double *ion, double *var);
 /* tropospheric correction -----------------------------------------------------
-* compute tropospheric correction
-* args   : gtime_t time     I   time
-*          nav_t  *nav      I   navigation data
-*          double *pos      I   receiver position {lat,lon,h} (rad|m)
-*          double *azel     I   azimuth/elevation angle {az,el} (rad)
-*          int    tropopt   I   tropospheric correction option (TROPOPT_???)
-*          double *trp      O   tropospheric delay (m)
-*          double *var      O   tropospheric delay variance (m^2)
-* return : status(1:ok,0:error)
-*-----------------------------------------------------------------------------*/
+ * compute tropospheric correction
+ * args   : gtime_t time     I   time
+ *          nav_t  *nav      I   navigation data
+ *          double *pos      I   receiver position {lat,lon,h} (rad|m)
+ *          double *azel     I   azimuth/elevation angle {az,el} (rad)
+ *          int    tropopt   I   tropospheric correction option (TROPOPT_???)
+ *          double *trp      O   tropospheric delay (m)
+ *          double *var      O   tropospheric delay variance (m^2)
+ * return : status(1:ok,0:error)
+ *-----------------------------------------------------------------------------*/
 int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
     const double *azel, int tropopt, double *trp, double *var);
 
@@ -122,22 +122,22 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *azel, const int *vsat);
 
 /*!
-* \brief single-point positioning
-* compute receiver position, velocity, clock bias by single-point positioning
-* with pseudorange and doppler observables
-* args   : obsd_t *obs      I   observation data
-*          int    n         I   number of observation data
-*          nav_t  *nav      I   navigation data
-*          prcopt_t *opt    I   processing options
-*          sol_t  *sol      IO  solution
-*          double *azel     IO  azimuth/elevation angle (rad) (NULL: no output)
-*          ssat_t *ssat     IO  satellite status              (NULL: no output)
-*          char   *msg      O   error message for error exit
-* return : status(1:ok,0:error)
-* notes  : assuming sbas-gps, galileo-gps, qzss-gps, compass-gps time offset and
-*          receiver bias are negligible (only involving glonass-gps time offset
-*          and receiver bias)
-*/
+ * \brief single-point positioning
+ * compute receiver position, velocity, clock bias by single-point positioning
+ * with pseudorange and doppler observables
+ * args   : obsd_t *obs      I   observation data
+ *          int    n         I   number of observation data
+ *          nav_t  *nav      I   navigation data
+ *          prcopt_t *opt    I   processing options
+ *          sol_t  *sol      IO  solution
+ *          double *azel     IO  azimuth/elevation angle (rad) (NULL: no output)
+ *          ssat_t *ssat     IO  satellite status              (NULL: no output)
+ *          char   *msg      O   error message for error exit
+ * return : status(1:ok,0:error)
+ * notes  : assuming sbas-gps, galileo-gps, qzss-gps, compass-gps time offset and
+ *          receiver bias are negligible (only involving glonass-gps time offset
+ *          and receiver bias)
+ */
 int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
     char *msg);

@@ -33,9 +33,9 @@
 class ConfigurationInterface;
 
 /*!
-* \brief This class generates synthesized GNSS signal.
-*
-*/
+ * \brief This class generates synthesized GNSS signal.
+ *
+ */
 class SignalGenerator : public GNSSBlockInterface
 {
 public:

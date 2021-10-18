@@ -178,10 +178,10 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
         {
         case 0:
             /*
-                 * PHASE 0.
-                 * Check that the set of tags associated with given structure
-                 * perfectly fits our expectations.
-                 */
+             * PHASE 0.
+             * Check that the set of tags associated with given structure
+             * perfectly fits our expectations.
+             */
 
             rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
                 tag_mode, 1, &ctx->left, 0);
@@ -206,15 +206,15 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
             /* Fall through */
         case 1:
             /*
-                 * PHASE 1.
-                 * From the place where we've left it previously,
-                 * try to decode the next member from the list of
-                 * this structure's elements.
-                 * (ctx->step) stores the member being processed
-                 * between invocations and the microphase {0,1} of parsing
-                 * that member:
-                 *     step = (<member_number> * 2 + <microphase>).
-                 */
+             * PHASE 1.
+             * From the place where we've left it previously,
+             * try to decode the next member from the list of
+             * this structure's elements.
+             * (ctx->step) stores the member being processed
+             * between invocations and the microphase {0,1} of parsing
+             * that member:
+             *     step = (<member_number> * 2 + <microphase>).
+             */
             for (edx = (ctx->step >> 1); edx < td->elements_count;
                  edx++, ctx->step = (ctx->step & ~1) + 2)
                 {
@@ -231,8 +231,8 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * MICROPHASE 1: Synchronize decoding.
-                         */
+                     * MICROPHASE 1: Synchronize decoding.
+                     */
                     ASN_DEBUG(
                         "In %s SEQUENCE left %d, edx=%d flags=%d"
                         " opt=%d ec=%d",
@@ -251,15 +251,15 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         {
                             ASN_DEBUG("End of SEQUENCE %s", td->name);
                             /*
-                                 * Found the legitimate end of the structure.
-                                 */
+                             * Found the legitimate end of the structure.
+                             */
                             PHASE_OUT(ctx);
                             RETURN(RC_OK);
                         }
 
                     /*
-                         * Fetch the T from TLV.
-                         */
+                     * Fetch the T from TLV.
+                     */
                     tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
                     ASN_DEBUG(
                         "Current tag in %s SEQUENCE for element %d "
@@ -304,23 +304,23 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                                                 td->elements_count))
                                         {
                                             /*
-                                                 * Yeah, baby! Found the
-                                                 * terminator of the indefinite
-                                                 * length structure.
-                                                 */
+                                             * Yeah, baby! Found the
+                                             * terminator of the indefinite
+                                             * length structure.
+                                             */
                                             /*
-                                                 * Proceed to the canonical
-                                                 * finalization function.
-                                                 * No advancing is necessary.
-                                                 */
+                                             * Proceed to the canonical
+                                             * finalization function.
+                                             * No advancing is necessary.
+                                             */
                                             goto phase3;
                                         }
                                 }
                         }
 
                     /*
-                         * Find the next available type with this tag.
-                         */
+                     * Find the next available type with this tag.
+                     */
                     use_bsearch = 0;
                     opt_edx_end = edx + elements[edx].optional + 1;
                     if (opt_edx_end > td->elements_count)
@@ -339,10 +339,10 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             if (BER_TAGS_EQUAL(tlv_tag, elements[n].tag))
                                 {
                                     /*
-                                         * Found element corresponding to the
-                                         * tag being looked at. Reposition over
-                                         * the right element.
-                                         */
+                                     * Found element corresponding to the
+                                     * tag being looked at. Reposition over
+                                     * the right element.
+                                     */
                                     edx = n;
                                     ctx->step = 1 + 2 * edx; /* Remember! */
                                     goto microphase2;
@@ -350,9 +350,9 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             else if (elements[n].flags & ATF_OPEN_TYPE)
                                 {
                                     /*
-                                         * This is the ANY type, which may bear
-                                         * any flag whatsoever.
-                                         */
+                                     * This is the ANY type, which may bear
+                                     * any flag whatsoever.
+                                     */
                                     edx = n;
                                     ctx->step = 1 + 2 * edx; /* Remember! */
                                     goto microphase2;
@@ -366,9 +366,9 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     if (use_bsearch)
                         {
                             /*
-                                 * Resort to a binary search over
-                                 * sorted array of tags.
-                                 */
+                             * Resort to a binary search over
+                             * sorted array of tags.
+                             */
                             asn_TYPE_tag2member_t *t2m;
                             asn_TYPE_tag2member_t key;
                             key.el_tag = tlv_tag;
@@ -384,10 +384,10 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                                     int edx_max =
                                         edx + elements[edx].optional;
                                     /*
-                                         * Rewind to the first element with that
-                                         * tag, `cause bsearch() does not
-                                         * guarantee order.
-                                         */
+                                     * Rewind to the first element with that
+                                     * tag, `cause bsearch() does not
+                                     * guarantee order.
+                                     */
                                     t2m_f = t2m + t2m->toff_first;
                                     t2m_l = t2m + t2m->toff_last;
                                     for (t2m = t2m_f; t2m <= t2m_l; t2m++)
@@ -414,11 +414,11 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     if (n == opt_edx_end)
                         {
                             /*
-                                 * If tag is unknown, it may be either
-                                 * an unknown (thus, incorrect) tag,
-                                 * or an extension (...),
-                                 * or an end of the indefinite-length structure.
-                                 */
+                             * If tag is unknown, it may be either
+                             * an unknown (thus, incorrect) tag,
+                             * or an extension (...),
+                             * or an end of the indefinite-length structure.
+                             */
                             if (!IN_EXTENSION_GROUP(
                                     specs, edx + elements[edx].optional))
                                 {
@@ -466,22 +466,22 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                                     ctx->step -= 2;
                                     edx--;
                                     continue; /* Try again with the next tag
-                                                   */
+                                               */
                                 }
                         }
 
                     /*
-                         * MICROPHASE 2: Invoke the member-specific decoder.
-                         */
+                     * MICROPHASE 2: Invoke the member-specific decoder.
+                     */
                     ctx->step |= 1; /* Confirm entering next microphase */
                 microphase2:
                     ASN_DEBUG("Inside SEQUENCE %s MF2", td->name);
 
                     /*
-                         * Compute the position of the member inside a
-                         * structure, and also a type of containment (it may be
-                         * contained as pointer or using inline inclusion).
-                         */
+                     * Compute the position of the member inside a
+                     * structure, and also a type of containment (it may be
+                     * contained as pointer or using inline inclusion).
+                     */
                     if (elements[edx].flags & ATF_POINTER)
                         {
                             /* Member is a pointer to another structure */
@@ -492,17 +492,17 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                     else
                         {
                             /*
-                                 * A pointer to a pointer
-                                 * holding the start of the structure
-                                 */
+                             * A pointer to a pointer
+                             * holding the start of the structure
+                             */
                             memb_ptr =
                                 (char *)st + elements[edx].memb_offset;
                             memb_ptr2 = &memb_ptr;
                         }
                     /*
-                         * Invoke the member fetch routine according to member's
-                         * type
-                         */
+                     * Invoke the member fetch routine according to member's
+                     * type
+                     */
                     rval = elements[edx].type->ber_decoder(
                         opt_codec_ctx, elements[edx].type, memb_ptr2, ptr,
                         LEFT, elements[edx].tag_mode);
@@ -541,8 +541,8 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                 (long)ctx->left, (long)size);
 
             /*
-                 * Skip everything until the end of the SEQUENCE.
-                 */
+             * Skip everything until the end of the SEQUENCE.
+             */
             while (ctx->left)
                 {
                     ssize_t tl;
@@ -562,8 +562,8 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * If expected <0><0>...
-                         */
+                     * If expected <0><0>...
+                     */
                     if (ctx->left < 0 && ((const uint8_t *)ptr)[0] == 0)
                         {
                             if (LEFT < 2)
@@ -580,8 +580,8 @@ asn_dec_rval_t SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             else if (((const uint8_t *)ptr)[1] == 0)
                                 {
                                     /*
-                                         * Correctly finished with <0><0>.
-                                         */
+                                     * Correctly finished with <0><0>.
+                                     */
                                     ADVANCE(2);
                                     ctx->left++;
                                     ctx->phase = 4;
@@ -724,8 +724,8 @@ asn_enc_rval_t SEQUENCE_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
     if (computed_size != 0)
         {
             /*
-         * Encoded size is not equal to the computed size.
-         */
+             * Encoded size is not equal to the computed size.
+             */
             _ASN_ENCODE_FAILED;
         }
 
@@ -902,7 +902,7 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                         {
                             if (edx >= td->elements_count ||
                                 /* Explicit OPTIONAL specs reaches the end
-                                     */
+                                 */
                                 (edx + elements[edx].optional ==
                                     td->elements_count) ||
                                 /* All extensions are optional */
@@ -942,8 +942,8 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                     if (edx < td->elements_count)
                         {
                             /*
-                                 * Search which member corresponds to this tag.
-                                 */
+                             * Search which member corresponds to this tag.
+                             */
                             edx_end = edx + elements[edx].optional + 1;
                             if (edx_end > td->elements_count)
                                 {
@@ -959,8 +959,8 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                                         case XCT_BOTH:
                                         case XCT_OPENING:
                                             /*
-                                                     * Process this member.
-                                                     */
+                                             * Process this member.
+                                             */
                                             ctx->step = edx = n;
                                             ctx->phase = 2;
                                             break;
@@ -993,10 +993,10 @@ asn_dec_rval_t SEQUENCE_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                             ASN_DEBUG("Got anticipated extension at %d",
                                 edx);
                             /*
-                                 * Check for (XCT_BOTH or XCT_UNKNOWN_BO)
-                                 * By using a mask. Only record a pure
-                                 * <opening> tags.
-                                 */
+                             * Check for (XCT_BOTH or XCT_UNKNOWN_BO)
+                             * By using a mask. Only record a pure
+                             * <opening> tags.
+                             */
                             if (tcv & XCT_CLOSING)
                                 {
                                     /* Found </extension> without body */

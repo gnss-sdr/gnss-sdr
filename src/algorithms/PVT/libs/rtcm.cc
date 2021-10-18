@@ -3250,12 +3250,40 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
 }
 
 
-std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys)
+std::vector<std::string> Rtcm::print_IGM01(const Galileo_HAS_data& has_data)
+{
+    std::vector<std::string> msgs;
+    const uint8_t nsys = has_data.Nsys;
+    bool ssr_multiple_msg_indicator = true;
+    for (uint8_t sys = 0; sys < nsys; sys++)
+        {
+            if (sys == nsys - 1)
+                {
+                    ssr_multiple_msg_indicator = false;  // last message of a sequence
+                }
+            const std::string header = Rtcm::get_IGM01_header(has_data, sys, ssr_multiple_msg_indicator);
+            const std::string sat_data = Rtcm::get_IGM01_content_sat(has_data, sys);
+            std::string message = build_message(header + sat_data);
+            if (server_is_running)
+                {
+                    rtcm_message_queue->push(message);
+                }
+            msgs.push_back(message);
+        }
+    return msgs;
+}
+
+
+std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator)
 {
     std::string header;
-    uint32_t tow = 0;
-    uint16_t ssr_provider_id = 0;  // ?
-    uint8_t igm_version = 0;
+
+    uint32_t tow = 0;                            // TODO
+    uint16_t ssr_provider_id = 0;                // ?
+    uint8_t igm_version = 0;                     // ?
+    uint8_t ssr_solution_id = 0;                 // ?
+    auto iod_ssr = has_data.header.iod_id % 15;  // ?? HAS IOD is 0-31
+    bool regional_indicator = false;             // ?
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3266,10 +3294,6 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
         {
             subtype_msg_number = 61;
         }
-
-    uint8_t ssr_solution_id = 0;  // ?
-    bool ssr_multiple_msg_indicator = false;
-    bool regional_indicator = false;
 
     uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
     uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
@@ -3342,7 +3366,6 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
                 }
         }
 
-    auto iod_ssr = has_data.header.iod_id % 15;  // ?? HAS IOD is 0-31
     uint8_t Nsat = has_data.get_num_satellites()[nsys];
 
     Rtcm::set_DF002(4076);  // Always “4076” for IGS Proprietary Messages

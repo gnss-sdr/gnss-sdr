@@ -40,6 +40,7 @@ class Gps_CNAV_Ephemeris;
 class Gps_Ephemeris;
 class Rtcm;
 class Rtklib_Solver;
+class Galileo_HAS_data;
 
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages
@@ -177,6 +178,8 @@ private:
         int32_t smooth_int,
         bool divergence_free,
         bool more_messages);
+
+    bool Print_Rtcm_IGM01(const Galileo_HAS_data& has_data);  // SSR Orbit Corrections
 
     int32_t init_serial(const std::string& serial_device);  // serial port control
     void close_serial() const;

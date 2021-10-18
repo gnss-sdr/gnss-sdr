@@ -19,6 +19,7 @@
 
 #include "rtcm_printer.h"
 #include "galileo_ephemeris.h"
+#include "galileo_has_data.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
 #include "gnss_sdr_filesystem.h"
@@ -1595,6 +1596,21 @@ bool Rtcm_Printer::Print_Rtcm_MSM(uint32_t msm_number, const Gps_Ephemeris& gps_
         }
 
     Rtcm_Printer::Print_Message(msm);
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_Rtcm_IGM01(const Galileo_HAS_data& has_data)
+{
+    const std::vector<std::string> msgs = rtcm->print_IGM01(has_data);
+    if (msgs.empty())
+        {
+            return false;
+        }
+    for (const auto& s : msgs)
+        {
+            Rtcm_Printer::Print_Message(s);
+        }
     return true;
 }
 

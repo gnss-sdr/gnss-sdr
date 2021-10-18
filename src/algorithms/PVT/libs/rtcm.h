@@ -337,6 +337,11 @@ public:
         bool divergence_free,
         bool more_messages);
 
+    /*!
+     * \brief Prints messages of type IGM01 (SSR Orbit Correction)
+     */
+    std::vector<std::string> print_IGM01(const Galileo_HAS_data& has_data);
+
     uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which GPS L1 signals have been continually tracked.
     uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which GPS L2 signals have been continually tracked.
     uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //!< Returns the time period in which Galileo signals have been continually tracked.
@@ -477,7 +482,7 @@ private:
     std::string get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
     std::string get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV, const Gps_CNAV_Ephemeris& ephCNAV, const Galileo_Ephemeris& ephFNAV, const Glonass_Gnav_Ephemeris& ephGNAV, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables);
 
-    std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys);
+    std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
 
 

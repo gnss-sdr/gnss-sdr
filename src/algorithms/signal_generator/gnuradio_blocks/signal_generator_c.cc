@@ -35,9 +35,9 @@
 
 
 /*
-* Create a new instance of signal_generator_c and return
-* a boost shared_ptr. This is effectively the public constructor.
-*/
+ * Create a new instance of signal_generator_c and return
+ * a boost shared_ptr. This is effectively the public constructor.
+ */
 signal_generator_c_sptr
 signal_make_generator_c(const std::vector<std::string> &signal1, const std::vector<std::string> &system, const std::vector<unsigned int> &PRN,
     const std::vector<float> &CN0_dB, const std::vector<float> &doppler_Hz,
@@ -50,8 +50,8 @@ signal_make_generator_c(const std::vector<std::string> &signal1, const std::vect
 
 
 /*
-* The private constructor
-*/
+ * The private constructor
+ */
 signal_generator_c::signal_generator_c(std::vector<std::string> signal1,
     std::vector<std::string> system,
     const std::vector<unsigned int> &PRN,

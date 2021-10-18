@@ -1,22 +1,22 @@
 /*!
-* \file gps_l1_ca_telemetry_decoder_gs.cc
-* \brief Implementation of a NAV message demodulator block based on
-* Kay Borre book MATLAB-based GPS receiver
-* \author Javier Arribas, 2011. jarribas(at)cttc.es
-*
-* -----------------------------------------------------------------------------
-*
-* Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
-*
-* GNSS-SDR is a software defined Global Navigation
-*          Satellite Systems receiver
-*
-* This file is part of GNSS-SDR.
-*
-* SPDX-License-Identifier: GPL-3.0-or-later
-*
-* -----------------------------------------------------------------------------
-*/
+ * \file gps_l1_ca_telemetry_decoder_gs.cc
+ * \brief Implementation of a NAV message demodulator block based on
+ * Kay Borre book MATLAB-based GPS receiver
+ * \author Javier Arribas, 2011. jarribas(at)cttc.es
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
+ * This file is part of GNSS-SDR.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
 
 #include "gps_l1_ca_telemetry_decoder_gs.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11

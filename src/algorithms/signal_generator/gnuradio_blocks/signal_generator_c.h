@@ -29,12 +29,12 @@ class signal_generator_c;
 using signal_generator_c_sptr = gnss_shared_ptr<signal_generator_c>;
 
 /*!
-* \brief Return a shared_ptr to a new instance of gen_source.
-*
-* To avoid accidental use of raw pointers, gen_source's
-* constructor is private. signal_make_generator_c is the public
-* interface for creating new instances.
-*/
+ * \brief Return a shared_ptr to a new instance of gen_source.
+ *
+ * To avoid accidental use of raw pointers, gen_source's
+ * constructor is private. signal_make_generator_c is the public
+ * interface for creating new instances.
+ */
 signal_generator_c_sptr signal_make_generator_c(
     const std::vector<std::string> &signal1,
     const std::vector<std::string> &system,
@@ -50,11 +50,11 @@ signal_generator_c_sptr signal_make_generator_c(
     float BW_BB);
 
 /*!
-* \brief This class generates synthesized GNSS signal.
-* \ingroup block
-*
-* \sa gen_source for a version that subclasses gr_block.
-*/
+ * \brief This class generates synthesized GNSS signal.
+ * \ingroup block
+ *
+ * \sa gen_source for a version that subclasses gr_block.
+ */
 class signal_generator_c : public gr::block
 {
 public:

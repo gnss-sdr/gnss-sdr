@@ -37,18 +37,18 @@ public:
     ~Tlm_CRC_Stats();
 
     /*!
-	 * \brief Initialize the telemetry CRC statistics
-	 */
+     * \brief Initialize the telemetry CRC statistics
+     */
     void initialize(std::string dump_crc_stats_filename_);
 
     /*!
-	 * \brief Initialize the channel number and output file
-	 */
+     * \brief Initialize the channel number and output file
+     */
     bool set_channel(int32_t channel_);
 
     /*!
-	 * \brief Update the CRC statistics
-	 */
+     * \brief Update the CRC statistics
+     */
     void update_CRC_stats(bool CRC);
 
 private:

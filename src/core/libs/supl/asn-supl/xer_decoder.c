@@ -292,12 +292,12 @@ asn_dec_rval_t xer_decode_general(
                             if (ctx->phase == 0)
                                 {
                                     /*
-                                             * We have to ignore whitespace
-                                             * here, but in order to be forward
-                                             * compatible with EXTENDED-XER
-                                             * (EMBED-VALUES, #25) any text is
-                                             * just ignored here.
-                                             */
+                                     * We have to ignore whitespace
+                                     * here, but in order to be forward
+                                     * compatible with EXTENDED-XER
+                                     * (EMBED-VALUES, #25) any text is
+                                     * just ignored here.
+                                     */
                                 }
                             else
                                 {
@@ -351,8 +351,8 @@ asn_dec_rval_t xer_decode_general(
                     RETURN(RC_OK);
                 case XCT_UNKNOWN_BO:
                     /*
-                         * Certain tags in the body may be expected.
-                         */
+                     * Certain tags in the body may be expected.
+                     */
                     if (opt_unexpected_tag_decoder &&
                         opt_unexpected_tag_decoder(struct_key, buf_ptr,
                             ch_size) >= 0)
@@ -362,7 +362,7 @@ asn_dec_rval_t xer_decode_general(
                             if (!ctx->phase)
                                 {
                                     /* We are not expecting
-                                         * the closing tag anymore. */
+                                     * the closing tag anymore. */
                                     ctx->phase = 2; /* Phase out */
                                     RETURN(RC_OK);
                                 }
@@ -390,11 +390,11 @@ int xer_is_whitespace(const void *chunk_buf, size_t chunk_size)
             switch (*p)
                 {
                 /* X.693, #8.1.4
-                     * HORISONTAL TAB (9)
-                     * LINE FEED (10)
-                     * CARRIAGE RETURN (13)
-                     * SPACE (32)
-                     */
+                 * HORISONTAL TAB (9)
+                 * LINE FEED (10)
+                 * CARRIAGE RETURN (13)
+                 * SPACE (32)
+                 */
                 case 0x09:
                 case 0x0a:
                 case 0x0d:

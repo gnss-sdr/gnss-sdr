@@ -192,46 +192,19 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
             d_has_file << indent << indent << "Nsys:                        " << static_cast<float>(has_data->Nsys) << '\n';
             d_has_file << indent << indent << "GNSS ID:                     " << print_vector(has_data->gnss_id_mask) << "  (0: GPS, 2: Galileo)\n";
 
-            // compute Nsat
-            int Nsat = 0;
-            std::vector<int> num_sats_in_mask(has_data->Nsys);
-            for (uint8_t i = 0; i < has_data->Nsys; i++)
-                {
-                    std::string sat_mask = print_vector_binary(std::vector<uint64_t>(1, has_data->satellite_mask[i]), HAS_MSG_SATELLITE_MASK_LENGTH);
-                    Nsat += std::count(sat_mask.begin(), sat_mask.end(), '1');
-                }
-
+            int Nsat = has_data->get_nsat();
             d_has_file << indent << indent << "Satellite Mask:              " << print_vector_binary(has_data->satellite_mask, HAS_MSG_SATELLITE_MASK_LENGTH) << '\n';
             d_has_file << indent << indent << "                             Nsat: " << Nsat << '\n';
+            std::vector<std::string> system_strings = has_data->get_systems_string();
             for (uint8_t i = 0; i < has_data->Nsys; i++)
                 {
-                    std::string system("Reserved");
-                    if (has_data->gnss_id_mask[i] == 0)
-                        {
-                            system = "GPS";
-                        }
-                    if (has_data->gnss_id_mask[i] == 2)
-                        {
-                            system = "Galileo";
-                        }
-
-                    d_has_file << indent << indent << "                             PRN for " << system << ": " << print_vector(has_data->get_PRNs_in_mask(i)) << "  (" << has_data->get_PRNs_in_mask(i).size() << " satellites)\n";
+                    d_has_file << indent << indent << "                             PRN for " << system_strings[i] << ": " << print_vector(has_data->get_PRNs_in_mask(i)) << "  (" << has_data->get_PRNs_in_mask(i).size() << " satellites)\n";
                 }
 
             d_has_file << indent << indent << "Signal Mask:                 " << print_vector_binary(has_data->signal_mask, HAS_MSG_SIGNAL_MASK_LENGTH) << '\n';
             for (uint8_t i = 0; i < has_data->Nsys; i++)
                 {
-                    std::string system("Reserved");
-                    if (has_data->gnss_id_mask[i] == 0)
-                        {
-                            system = "GPS";
-                        }
-                    if (has_data->gnss_id_mask[i] == 2)
-                        {
-                            system = "Galileo";
-                        }
-
-                    d_has_file << indent << indent << "                             Bias corrections for " << system << " signals: " << print_vector_string(has_data->get_signals_in_mask(i)) << '\n';
+                    d_has_file << indent << indent << "                             Bias corrections for " << system_strings[i] << " signals: " << print_vector_string(has_data->get_signals_in_mask(i)) << '\n';
                 }
 
             d_has_file << indent << indent << "Cell Mask Availability Flag: " << print_vector(has_data->cell_mask_availability_flag) << '\n';

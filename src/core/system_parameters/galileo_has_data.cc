@@ -18,6 +18,8 @@
 #include "Galileo_CNAV.h"
 #include <algorithm>
 #include <bitset>
+#include <numeric>
+#include <sstream>
 
 
 std::vector<int> Galileo_HAS_data::get_PRNs_in_mask(uint8_t nsys) const
@@ -397,4 +399,369 @@ uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
         }
 
     return HAS_MSG_WRONG_SYSTEM;
+}
+
+
+uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_index) const
+{
+    uint16_t validity_interval;
+    switch (validity_interval_index)
+        {
+        case 0:
+            validity_interval = 5;
+            break;
+        case 1:
+            validity_interval = 10;
+            break;
+        case 2:
+            validity_interval = 15;
+            break;
+        case 3:
+            validity_interval = 20;
+            break;
+        case 4:
+            validity_interval = 30;
+            break;
+        case 5:
+            validity_interval = 60;
+            break;
+        case 6:
+            validity_interval = 90;
+            break;
+        case 7:
+            validity_interval = 120;
+            break;
+        case 8:
+            validity_interval = 180;
+            break;
+        case 9:
+            validity_interval = 240;
+            break;
+        case 10:
+            validity_interval = 300;
+            break;
+        case 11:
+            validity_interval = 600;
+            break;
+        case 12:
+            validity_interval = 900;
+            break;
+        case 13:
+            validity_interval = 1800;
+            break;
+        case 14:
+            validity_interval = 3600;
+            break;
+        default:  // reserved
+            validity_interval = 0;
+        }
+    return validity_interval;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_radial_m() const
+{
+    std::vector<float> delta_radial_m;
+    delta_radial_m.reserve(this->delta_radial.size());
+    for (const auto& d : this->delta_radial)
+        {
+            delta_radial_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_RADIAL_SCALE_FACTOR);
+        }
+    return delta_radial_m;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_radial_m(uint8_t nsys) const
+{
+    std::vector<float> delta_orbit_radial_m = this->get_delta_radial_m();
+    if (nsys >= this->Nsys)
+        {
+            return delta_orbit_radial_m;
+        }
+    std::vector<float> delta_orbit_radial_m_aux;
+    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    delta_orbit_radial_m_aux.reserve(num_sats_in_this_system);
+
+    size_t index = 0;
+    for (uint8_t sys = 0; sys <= nsys; sys++)
+        {
+            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            if (sys != nsys)
+                {
+                    index += num_sats_in_system;
+                }
+            else
+                {
+                    for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
+                        {
+                            delta_orbit_radial_m_aux.push_back(delta_orbit_radial_m[index]);
+                            index++;
+                        }
+                }
+        }
+    return delta_orbit_radial_m_aux;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_along_track_m() const
+{
+    std::vector<float> delta_along_track_m;
+    delta_along_track_m.reserve(this->delta_along_track.size());
+    for (const auto& d : this->delta_along_track)
+        {
+            delta_along_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_ALONG_TRACK_SCALE_FACTOR);
+        }
+    return delta_along_track_m;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_along_track_m(uint8_t nsys) const
+{
+    std::vector<float> delta_along_track_m = this->get_delta_along_track_m();
+    if (nsys >= this->Nsys)
+        {
+            return delta_along_track_m;
+        }
+    std::vector<float> delta_along_track_m_aux;
+    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    delta_along_track_m_aux.reserve(num_sats_in_this_system);
+
+    size_t index = 0;
+    for (uint8_t sys = 0; sys <= nsys; sys++)
+        {
+            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            if (sys != nsys)
+                {
+                    index += num_sats_in_system;
+                }
+            else
+                {
+                    for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
+                        {
+                            delta_along_track_m_aux.push_back(delta_along_track_m[index]);
+                            index++;
+                        }
+                }
+        }
+    return delta_along_track_m_aux;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_cross_track_m() const
+{
+    std::vector<float> delta_cross_track_m;
+    delta_cross_track_m.reserve(this->delta_cross_track.size());
+    for (const auto& d : this->delta_along_track)
+        {
+            delta_cross_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR);
+        }
+    return delta_cross_track_m;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_cross_track_m(uint8_t nsys) const
+{
+    std::vector<float> delta_cross_track_m = this->get_delta_cross_track_m();
+    if (nsys >= this->Nsys)
+        {
+            return delta_cross_track_m;
+        }
+    std::vector<float> delta_cross_track_m_aux;
+    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    delta_cross_track_m_aux.reserve(num_sats_in_this_system);
+
+    size_t index = 0;
+    for (uint8_t sys = 0; sys <= nsys; sys++)
+        {
+            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            if (sys != nsys)
+                {
+                    index += num_sats_in_system;
+                }
+            else
+                {
+                    for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
+                        {
+                            delta_cross_track_m_aux.push_back(delta_cross_track_m[index]);
+                            index++;
+                        }
+                }
+        }
+    return delta_cross_track_m_aux;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m() const
+{
+    std::vector<float> delta_clock_c0_m;
+    delta_clock_c0_m.reserve(this->delta_clock_c0.size());
+    for (const auto& d : this->delta_clock_c0)
+        {
+            delta_clock_c0_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
+        }
+    return delta_clock_c0_m;
+}
+
+
+std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m(uint8_t nsys) const
+{
+    std::vector<float> delta_clock_c0_m = this->get_delta_clock_c0_m();
+    if (nsys >= this->Nsys)
+        {
+            return delta_clock_c0_m;
+        }
+    std::vector<float> delta_clock_c0_m_aux;
+    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    delta_clock_c0_m_aux.reserve(num_sats_in_this_system);
+
+    size_t index = 0;
+    for (uint8_t sys = 0; sys <= nsys; sys++)
+        {
+            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            if (sys != nsys)
+                {
+                    index += num_sats_in_system;
+                }
+            else
+                {
+                    for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
+                        {
+                            delta_clock_c0_m_aux.push_back(delta_clock_c0_m[index]);
+                            index++;
+                        }
+                }
+        }
+    return delta_clock_c0_m_aux;
+}
+
+
+std::vector<std::vector<float>> Galileo_HAS_data::get_code_bias_m() const
+{
+    std::vector<std::vector<float>> code_bias_m;
+    const size_t outer_size = this->code_bias.size();
+    if (outer_size == 0)
+        {
+            return code_bias_m;
+        }
+    const size_t inner_size = this->code_bias[0].size();
+    code_bias_m = std::vector<std::vector<float>>(outer_size, std::vector<float>(inner_size));
+    for (size_t i = 0; i < outer_size; i++)
+        {
+            for (size_t j = 0; j < inner_size; j++)
+                {
+                    code_bias_m[i][j] = static_cast<float>(this->code_bias[i][j]) * HAS_MSG_CODE_BIAS_SCALE_FACTOR;
+                }
+        }
+    return code_bias_m;
+}
+
+
+std::vector<std::vector<float>> Galileo_HAS_data::get_phase_bias_cycle() const
+{
+    std::vector<std::vector<float>> phase_bias_cycle;
+    const size_t outer_size = this->phase_bias.size();
+    if (outer_size == 0)
+        {
+            return phase_bias_cycle;
+        }
+    const size_t inner_size = this->phase_bias[0].size();
+    phase_bias_cycle = std::vector<std::vector<float>>(outer_size, std::vector<float>(inner_size));
+    for (size_t i = 0; i < outer_size; i++)
+        {
+            for (size_t j = 0; j < inner_size; j++)
+                {
+                    phase_bias_cycle[i][j] = static_cast<float>(this->phase_bias[i][j]) * HAS_MSG_PHASE_BIAS_SCALE_FACTOR;
+                }
+        }
+    return phase_bias_cycle;
+}
+
+
+std::vector<uint8_t> Galileo_HAS_data::get_num_satellites() const
+{
+    std::vector<uint8_t> num_satellites;
+    if (this->Nsys == 0)
+        {
+            return num_satellites;
+        }
+    num_satellites.reserve(this->Nsys);
+    for (uint8_t i = 0; i < this->Nsys; i++)
+        {
+            std::stringstream ss;
+            std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> bits(this->satellite_mask[i]);
+            ss << bits.to_string();
+            std::string sat_mask = ss.str();
+            num_satellites.push_back(static_cast<int8_t>(std::count(sat_mask.begin(), sat_mask.end(), '1')));
+        }
+
+    return num_satellites;
+}
+
+
+std::vector<uint16_t> Galileo_HAS_data::get_gnss_iod(uint8_t nsys) const
+{
+    std::vector<uint16_t> gnss_iod_v = this->gnss_iod;
+
+    if (nsys >= this->Nsys)
+        {
+            return gnss_iod_v;
+        }
+    std::vector<uint16_t> gnss_iod_aux;
+    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    gnss_iod_aux.reserve(num_sats_in_this_system);
+
+    size_t index = 0;
+    for (uint8_t sys = 0; sys <= nsys; sys++)
+        {
+            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            if (sys != nsys)
+                {
+                    index += num_sats_in_system;
+                }
+            else
+                {
+                    for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
+                        {
+                            gnss_iod_aux.push_back(gnss_iod_v[index]);
+                            index++;
+                        }
+                }
+        }
+    return gnss_iod_aux;
+}
+
+
+uint16_t Galileo_HAS_data::get_nsat() const
+{
+    std::vector<uint8_t> num_satellites = this->get_num_satellites();
+    uint16_t total_number_of_sats = std::accumulate(num_satellites.begin(), num_satellites.end(), 0);
+    return total_number_of_sats;
+}
+
+
+std::vector<std::string> Galileo_HAS_data::get_systems_string() const
+{
+    const size_t nsys = this->gnss_id_mask.size();
+    std::vector<std::string> systems(nsys, std::string(""));
+    for (uint8_t i = 0; i < this->Nsys; i++)
+        {
+            std::string system("Reserved");
+            if (this->gnss_id_mask[i] == 0)
+                {
+                    system = "GPS";
+                }
+            if (this->gnss_id_mask[i] == 2)
+                {
+                    system = "Galileo";
+                }
+            systems[i] = system;
+        }
+    return systems;
+}
+
+
+uint16_t Galileo_HAS_data::get_nsatprime() const
+{
+    auto Nsatprime = static_cast<uint16_t>(this->delta_clock_c0_clock_subset.size());
+    return Nsatprime;
 }

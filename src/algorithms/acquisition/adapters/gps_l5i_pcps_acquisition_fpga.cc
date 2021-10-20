@@ -37,7 +37,11 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : gnss_synchro_(nullptr),
+                                role_(role),
+                                doppler_center_(0),
+                                channel_(0),
+                                doppler_step_(0),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -92,7 +96,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     auto fft_if = gnss_fft_fwd_make_unique(nsamples_total);  // Direct FFT
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
-    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
     int32_t tmp;
@@ -152,10 +156,6 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
     acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
-
-    channel_ = 0;
-    doppler_step_ = 0;
-    gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
         {

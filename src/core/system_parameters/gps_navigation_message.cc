@@ -357,7 +357,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(char* subframe)
 }
 
 
-double Gps_Navigation_Message::utc_time(const double gpstime_corrected) const
+double Gps_Navigation_Message::utc_time(double gpstime_corrected) const
 {
     double t_utc;
     double t_utc_daytime;

@@ -9,15 +9,19 @@ add_subdirectory(libswiftcnav)
 
 set(TELEMETRY_DECODER_LIB_SOURCES
     tlm_conf.cc
+    tlm_crc_stats.cc
     tlm_utils.cc
     viterbi_decoder.cc
+    viterbi_decoder_sbas.cc
 )
 
 set(TELEMETRY_DECODER_LIB_HEADERS
+
     tlm_conf.h
-    viterbi_decoder.h
-    convolutional.h
+    tlm_crc_stats.h
     tlm_utils.h
+    viterbi_decoder.h
+    viterbi_decoder_sbas.h
 )
 
 list(SORT TELEMETRY_DECODER_LIB_HEADERS)
@@ -40,9 +44,8 @@ else()
 endif()
 
 target_link_libraries(telemetry_decoder_libs
-    PUBLIC
-        Volkgnsssdr::volkgnsssdr
     PRIVATE
+        Volkgnsssdr::volkgnsssdr
         algorithms_libs
         Gflags::gflags
         Glog::glog

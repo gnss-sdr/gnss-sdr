@@ -49,9 +49,8 @@ public:
         // google::protobuf::ShutdownProtobufLibrary();
     }
 
-    inline Serdes_Galileo_Eph(const Serdes_Galileo_Eph& other) noexcept  //!< Copy constructor
+    inline Serdes_Galileo_Eph(const Serdes_Galileo_Eph& other) noexcept : monitor_(other.monitor_)  //!< Copy constructor
     {
-        this->monitor_ = other.monitor_;
     }
 
     inline Serdes_Galileo_Eph& operator=(const Serdes_Galileo_Eph& rhs) noexcept  //!< Copy assignment operator
@@ -60,9 +59,8 @@ public:
         return *this;
     }
 
-    inline Serdes_Galileo_Eph(Serdes_Galileo_Eph&& other) noexcept  //!< Move constructor
+    inline Serdes_Galileo_Eph(Serdes_Galileo_Eph&& other) noexcept : monitor_(std::move(other.monitor_))  //!< Move constructor
     {
-        this->monitor_ = std::move(other.monitor_);
     }
 
     inline Serdes_Galileo_Eph& operator=(Serdes_Galileo_Eph&& other) noexcept  //!< Move assignment operator

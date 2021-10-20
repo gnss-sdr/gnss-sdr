@@ -191,12 +191,12 @@ public:
     int32_t read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph) const;
 
     /*!
-    * \brief Prints message type 1020 (GLONASS Ephemeris).
-    * \note Code added as part of GSoC 2017 program
-    * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
-    * \param glonass_gnav_utc_model GLONASS GNAV Clock Information
-    * \return Returns message type as a string type
-    */
+     * \brief Prints message type 1020 (GLONASS Ephemeris).
+     * \note Code added as part of GSoC 2017 program
+     * \param glonass_gnav_eph GLONASS GNAV Broadcast Ephemeris
+     * \param glonass_gnav_utc_model GLONASS GNAV Clock Information
+     * \return Returns message type as a string type
+     */
     std::string print_MT1020(const Glonass_Gnav_Ephemeris& glonass_gnav_eph, const Glonass_Gnav_Utc_Model& glonass_gnav_utc_model);
 
     /*!
@@ -481,8 +481,8 @@ private:
     //
     static std::map<std::string, int> galileo_signal_map;
     static std::map<std::string, int> gps_signal_map;
-    std::vector<std::pair<int32_t, Gnss_Synchro> > sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const;
-    std::vector<std::pair<int32_t, Gnss_Synchro> > sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const;
+    std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
+    std::vector<std::pair<int32_t, Gnss_Synchro>> sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const;
     boost::posix_time::ptime compute_GPS_time(const Gps_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_GPS_time(const Gps_CNAV_Ephemeris& eph, double obs_time) const;
     boost::posix_time::ptime compute_Galileo_time(const Galileo_Ephemeris& eph, double obs_time) const;
@@ -630,7 +630,7 @@ private:
         }
 
     private:
-        std::set<std::shared_ptr<RtcmListener> > participants_;
+        std::set<std::shared_ptr<RtcmListener>> participants_;
         enum
         {
             max_recent_msgs = 1
@@ -840,7 +840,7 @@ private:
     class Queue_Reader
     {
     public:
-        Queue_Reader(b_io_context& io_context, std::shared_ptr<Concurrent_Queue<std::string> >& queue, int32_t port) : queue_(queue)
+        Queue_Reader(b_io_context& io_context, std::shared_ptr<Concurrent_Queue<std::string>>& queue, int32_t port) : queue_(queue)
         {
             boost::asio::ip::tcp::resolver resolver(io_context);
             std::string host("localhost");
@@ -871,7 +871,7 @@ private:
 
     private:
         std::shared_ptr<Tcp_Internal_Client> c;
-        std::shared_ptr<Concurrent_Queue<std::string> >& queue_;
+        std::shared_ptr<Concurrent_Queue<std::string>>& queue_;
     };
 
 
@@ -946,7 +946,7 @@ private:
     };
 
     b_io_context io_context;
-    std::shared_ptr<Concurrent_Queue<std::string> > rtcm_message_queue;
+    std::shared_ptr<Concurrent_Queue<std::string>> rtcm_message_queue;
     std::thread t;
     std::thread tq;
     std::list<Rtcm::Tcp_Server> servers;

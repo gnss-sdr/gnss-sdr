@@ -7,7 +7,7 @@
  *
  */
 
-#include "volk_gnsssdr/volk_gnsssdr_malloc.h"
+#include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +34,19 @@
 
 void *volk_gnsssdr_malloc(size_t size, size_t alignment)
 {
+    if ((size == 0) || (alignment == 0))
+        {
+            fprintf(stderr, "VOLK_GNSSSDR: Error allocating memory: either size or alignment is 0");
+            return NULL;
+        }
+    // Tweak size to satisfy ASAN (the GCC address sanitizer).
+    // Calling 'volk_gnsssdr_malloc' might therefor result in the allocation of more memory than
+    // requested for correct alignment. Any allocation size change here will in general not
+    // impact the end result since initial size alignment is required either way.
+    if (size % alignment)
+        {
+            size += alignment - (size % alignment);
+        }
 #if HAVE_POSIX_MEMALIGN
     // quoting posix_memalign() man page:
     // "alignment must be a power of two and a multiple of sizeof(void *)"
@@ -52,7 +65,7 @@ void *volk_gnsssdr_malloc(size_t size, size_t alignment)
                 "(posix_memalign: error %d: %s)\n",
                 err, strerror(err));
         }
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) || defined(__MINGW32__)
     void *ptr = _aligned_malloc(size, alignment);
 #else
     void *ptr = aligned_alloc(alignment, size);
@@ -66,7 +79,7 @@ void *volk_gnsssdr_malloc(size_t size, size_t alignment)
 
 void volk_gnsssdr_free(void *ptr)
 {
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     _aligned_free(ptr);
 #else
     free(ptr);

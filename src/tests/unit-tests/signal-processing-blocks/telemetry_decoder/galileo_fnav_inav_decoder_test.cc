@@ -16,13 +16,16 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "convolutional.h"
 #include "galileo_fnav_message.h"
 #include "galileo_inav_message.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
+#include "viterbi_decoder.h"
 #include <gtest/gtest.h>
-#include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>  // for copy
+#include <array>
 #include <chrono>
 #include <exception>
+#include <iterator>  // for std::back_inserter
 #include <string>
 #include <unistd.h>
 
@@ -30,21 +33,24 @@
 class Galileo_FNAV_INAV_test : public ::testing::Test
 {
 public:
-    Galileo_Inav_Message INAV_decoder;
-    Galileo_Fnav_Message FNAV_decoder;
-    // vars for Viterbi decoder
-    int32_t *out0, *out1, *state0, *state1;
-    int32_t g_encoder[2];
-    const int32_t nn = 2;  // Coding rate 1/n
-    const int32_t KK = 7;  // Constraint Length
-    int32_t mm = KK - 1;
-    int32_t flag_even_word_arrived;
-    void viterbi_decoder(float *page_part_symbols, int32_t *page_part_bits, int32_t _datalength)
+    Galileo_FNAV_INAV_test()
     {
-        Viterbi(page_part_bits, out0, state0, out1, state1,
-            page_part_symbols, KK, nn, _datalength);
+        viterbi_fnav = std::make_unique<Viterbi_Decoder>(KK, nn, ((488 / nn) - mm), g_encoder);
+        viterbi_inav = std::make_unique<Viterbi_Decoder>(KK, nn, ((240 / nn) - mm), g_encoder);
+        flag_even_word_arrived = 0;
     }
 
+    ~Galileo_FNAV_INAV_test() = default;
+
+    Galileo_Inav_Message INAV_decoder;
+    Galileo_Fnav_Message FNAV_decoder;
+    const int32_t nn = 2;  // Coding rate 1/n
+    const int32_t KK = 7;  // Constraint Length
+    const int32_t mm = KK - 1;
+    const std::array<int32_t, 2> g_encoder{{121, 91}};
+    std::unique_ptr<Viterbi_Decoder> viterbi_fnav;
+    std::unique_ptr<Viterbi_Decoder> viterbi_inav;
+    int32_t flag_even_word_arrived;
 
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out)
     {
@@ -57,12 +63,12 @@ public:
             }
     }
 
-
     bool decode_INAV_word(float *page_part_symbols, int32_t frame_length)
     {
         // 1. De-interleave
-        auto *page_part_symbols_deint = static_cast<float *>(volk_gnsssdr_malloc(frame_length * sizeof(float), volk_gnsssdr_get_alignment()));
-        deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint);
+        std::vector<float> page_part_symbols_deint = std::vector<float>(frame_length / 2);
+        std::copy(&page_part_symbols[0], &page_part_symbols[frame_length / 2], std::back_inserter(page_part_symbols_deint));
+        deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_deint.data());
 
         // 2. Viterbi decoder
         // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -75,12 +81,8 @@ public:
                     }
             }
 
-        auto *page_part_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-
-        const int32_t CodeLength = 240;
-        int32_t DataLength = (CodeLength / nn) - mm;
-        viterbi_decoder(page_part_symbols_deint, page_part_bits, DataLength);
-        volk_gnsssdr_free(page_part_symbols_deint);
+        std::vector<int32_t> page_part_bits = std::vector<int32_t>(frame_length / 2);
+        viterbi_inav->decode(page_part_bits, page_part_symbols_deint);
 
         // 3. Call the Galileo page decoder
         std::string page_String;
@@ -103,8 +105,6 @@ public:
                 INAV_decoder.split_page(page_String, flag_even_word_arrived);
                 if (INAV_decoder.get_flag_CRC_test() == true)
                     {
-                        std::cout << "Galileo E1 INAV PAGE CRC correct \n";
-                        // std::cout << "Galileo E1 CRC correct on channel " << d_channel << " from satellite " << d_satellite << '\n';
                         crc_ok = true;
                     }
                 flag_even_word_arrived = 0;
@@ -115,15 +115,15 @@ public:
                 INAV_decoder.split_page(page_String.c_str(), flag_even_word_arrived);
                 flag_even_word_arrived = 1;
             }
-        volk_gnsssdr_free(page_part_bits);
         return crc_ok;
     }
 
     bool decode_FNAV_word(float *page_symbols, int32_t frame_length)
     {
         // 1. De-interleave
-        auto *page_symbols_deint = static_cast<float *>(volk_gnsssdr_malloc(frame_length * sizeof(float), volk_gnsssdr_get_alignment()));
-        deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint);
+        std::vector<float> page_symbols_deint = std::vector<float>(frame_length);
+        std::copy(&page_symbols[0], &page_symbols[frame_length / 2], std::back_inserter(page_symbols_deint));
+        deinterleaver(GALILEO_FNAV_INTERLEAVER_ROWS, GALILEO_FNAV_INTERLEAVER_COLS, page_symbols, page_symbols_deint.data());
 
         // 2. Viterbi decoder
         // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
@@ -135,13 +135,9 @@ public:
                         page_symbols_deint[i] = -page_symbols_deint[i];
                     }
             }
-        auto *page_bits = static_cast<int32_t *>(volk_gnsssdr_malloc((frame_length / 2) * sizeof(int32_t), volk_gnsssdr_get_alignment()));
 
-        const int32_t CodeLength = 488;
-        int32_t DataLength = (CodeLength / nn) - mm;
-        viterbi_decoder(page_symbols_deint, page_bits, DataLength);
-
-        volk_gnsssdr_free(page_symbols_deint);
+        std::vector<int32_t> page_bits = std::vector<int32_t>(frame_length);
+        viterbi_fnav->decode(page_bits, page_symbols_deint);
 
         // 3. Call the Galileo page decoder
         std::string page_String;
@@ -156,42 +152,17 @@ public:
                         page_String.push_back('0');
                     }
             }
-        volk_gnsssdr_free(page_bits);
 
         // DECODE COMPLETE WORD (even + odd) and TEST CRC
         FNAV_decoder.split_page(page_String);
         if (FNAV_decoder.get_flag_CRC_test() == true)
             {
-                std::cout << "Galileo E5a FNAV PAGE CRC correct \n";
                 return true;
             }
         return false;
     }
-
-    Galileo_FNAV_INAV_test()
-    {
-        // vars for Viterbi decoder
-        int32_t max_states = 1 << mm;  // 2^mm
-        g_encoder[0] = 121;            // Polynomial G1
-        g_encoder[1] = 91;             // Polynomial G2
-        out0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-        out1 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-        state0 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-        state1 = static_cast<int32_t *>(volk_gnsssdr_malloc(max_states * sizeof(int32_t), volk_gnsssdr_get_alignment()));
-        // create appropriate transition matrices
-        nsc_transit(out0, state0, 0, g_encoder, KK, nn);
-        nsc_transit(out1, state1, 1, g_encoder, KK, nn);
-        flag_even_word_arrived = 0;
-    }
-
-    ~Galileo_FNAV_INAV_test()
-    {
-        volk_gnsssdr_free(out0);
-        volk_gnsssdr_free(out1);
-        volk_gnsssdr_free(state0);
-        volk_gnsssdr_free(state1);
-    }
 };
+
 
 TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
 {
@@ -266,5 +237,5 @@ TEST_F(Galileo_FNAV_INAV_test, ValidationOfResults)
     }) << "Exception during INAV frame decoding";
     end = std::chrono::system_clock::now();
     elapsed_seconds = end - start;
-    std::cout << "Galileo FNAV/INAV Test completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
+    std::cout << "Galileo INAV/FNAV CRC and Viterbi decoder test completed in " << elapsed_seconds.count() * 1e6 << " microseconds\n";
 }

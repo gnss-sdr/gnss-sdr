@@ -30,64 +30,65 @@
 class Pvt_Conf
 {
 public:
-    Pvt_Conf();
-
     std::map<int, int> rtcm_msg_rate_ms;
 
-    std::string rinex_name;
+    std::string rinex_name = std::string("-");
     std::string dump_filename;
     std::string nmea_dump_filename;
     std::string nmea_dump_devname;
     std::string rtcm_dump_devname;
-    std::string output_path;
-    std::string rinex_output_path;
-    std::string gpx_output_path;
-    std::string geojson_output_path;
-    std::string nmea_output_file_path;
-    std::string kml_output_path;
-    std::string xml_output_path;
-    std::string rtcm_output_file_path;
+    std::string an_dump_devname;
+    std::string output_path = std::string(".");
+    std::string rinex_output_path = std::string(".");
+    std::string gpx_output_path = std::string(".");
+    std::string geojson_output_path = std::string(".");
+    std::string nmea_output_file_path = std::string(".");
+    std::string kml_output_path = std::string(".");
+    std::string xml_output_path = std::string(".");
+    std::string rtcm_output_file_path = std::string(".");
     std::string udp_addresses;
     std::string udp_eph_addresses;
 
-    uint32_t type_of_receiver;
-    uint32_t observable_interval_ms;
+    uint32_t type_of_receiver = 0;
+    uint32_t observable_interval_ms = 20;
 
-    int32_t output_rate_ms;
-    int32_t display_rate_ms;
-    int32_t kml_rate_ms;
-    int32_t gpx_rate_ms;
-    int32_t geojson_rate_ms;
-    int32_t nmea_rate_ms;
-    int32_t rinex_version;
-    int32_t rinexobs_rate_ms;
-    int32_t max_obs_block_rx_clock_offset_ms;
-    int udp_port;
-    int udp_eph_port;
+    int32_t output_rate_ms = 0;
+    int32_t display_rate_ms = 0;
+    int32_t kml_rate_ms = 1000;
+    int32_t gpx_rate_ms = 1000;
+    int32_t geojson_rate_ms = 1000;
+    int32_t nmea_rate_ms = 1000;
+    int32_t rinex_version = 0;
+    int32_t rinexobs_rate_ms = 0;
+    int32_t an_rate_ms = 1000;
+    int32_t max_obs_block_rx_clock_offset_ms = 40;
+    int udp_port = 0;
+    int udp_eph_port = 0;
+    int rtk_trace_level = 0;
 
-    uint16_t rtcm_tcp_port;
-    uint16_t rtcm_station_id;
+    uint16_t rtcm_tcp_port = 0;
+    uint16_t rtcm_station_id = 0;
 
-    bool flag_nmea_tty_port;
-    bool flag_rtcm_server;
-    bool flag_rtcm_tty_port;
-    bool output_enabled;
-    bool rinex_output_enabled;
-    bool gpx_output_enabled;
-    bool geojson_output_enabled;
-    bool nmea_output_file_enabled;
-    bool kml_output_enabled;
-    bool xml_output_enabled;
-    bool rtcm_output_file_enabled;
-    bool monitor_enabled;
-    bool monitor_ephemeris_enabled;
-    bool protobuf_enabled;
-    bool enable_rx_clock_correction;
-    bool show_local_time_zone;
-    bool pre_2009_file;
-    bool dump;
-    bool dump_mat;
-
+    bool flag_nmea_tty_port = false;
+    bool flag_rtcm_server = false;
+    bool flag_rtcm_tty_port = false;
+    bool output_enabled = true;
+    bool rinex_output_enabled = true;
+    bool gpx_output_enabled = true;
+    bool geojson_output_enabled = true;
+    bool nmea_output_file_enabled = true;
+    bool an_output_enabled = false;
+    bool kml_output_enabled = true;
+    bool xml_output_enabled = true;
+    bool rtcm_output_file_enabled = true;
+    bool monitor_enabled = false;
+    bool monitor_ephemeris_enabled = false;
+    bool protobuf_enabled = true;
+    bool enable_rx_clock_correction = true;
+    bool show_local_time_zone = false;
+    bool pre_2009_file = false;
+    bool dump = false;
+    bool dump_mat = true;
     bool log_source_timetag;
     std::string log_source_timetag_file;
 };

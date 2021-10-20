@@ -21,6 +21,7 @@
 #include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>
 #include <fstream>  // std::ifstream
+#include <string>
 
 /** \addtogroup Signal_Source
  * \{ */

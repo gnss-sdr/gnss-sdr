@@ -37,7 +37,11 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : gnss_synchro_(nullptr),
+                                role_(role),
+                                threshold_(0),
+                                channel_(0),
+                                doppler_step_(0),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -89,7 +93,7 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     // allocate memory to compute all the PRNs and compute all the possible codes
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
-    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
 
     float max;  // temporary maxima search
     int32_t tmp;

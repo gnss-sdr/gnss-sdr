@@ -103,9 +103,9 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                 {
                 case ST_TEXT:
                     /*
-                         * Initial state: we're in the middle of some text,
-                         * or just have started.
-                         */
+                     * Initial state: we're in the middle of some text,
+                     * or just have started.
+                     */
                     if (C == LANGLE)
                         { /* We're now in the tag, probably */
                             TOKEN_CB(PXML_TEXT, ST_TAG_START, 0);
@@ -138,10 +138,10 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                             break;
                         case LANGLE:
                             /*
-                                     * The previous tag wasn't completed, but
-                                     * still recognized as valid.
-                                     * (Mozilla-compatible)
-                                     */
+                             * The previous tag wasn't completed, but
+                             * still recognized as valid.
+                             * (Mozilla-compatible)
+                             */
                             TOKEN_CB_FINAL(PXML_TAG, ST_TAG_START, 0);
                             break;
                         case CEQUAL:
@@ -151,8 +151,8 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                     break;
                 case ST_TAG_QUOTE_WAIT:
                     /*
-                         * State after the equal sign ("=") in the tag.
-                         */
+                     * State after the equal sign ("=") in the tag.
+                     */
                     switch (C)
                         {
                         case CQUOTE:
@@ -172,8 +172,8 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                     break;
                 case ST_TAG_QUOTED_STRING:
                     /*
-                         * Tag attribute's string value in quotes.
-                         */
+                     * Tag attribute's string value in quotes.
+                     */
                     if (C == CQUOTE)
                         {
                             /* Return back to the tag state */
@@ -240,7 +240,7 @@ ssize_t pxml_parse(int *stateContext, const void *xmlbuf, size_t size,
                     else if (C == CDASH)
                         {
                             /* Maintain current state, still waiting for '>'
-                                 */
+                             */
                         }
                     else
                         {

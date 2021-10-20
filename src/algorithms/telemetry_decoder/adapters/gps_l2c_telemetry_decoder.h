@@ -49,8 +49,6 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    ~GpsL2CTelemetryDecoder() = default;
-
     inline std::string role() override
     {
         return role_;
@@ -86,7 +84,6 @@ private:
     Gnss_Satellite satellite_;
     Tlm_Conf tlm_parameters_;
     std::string role_;
-    int channel_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

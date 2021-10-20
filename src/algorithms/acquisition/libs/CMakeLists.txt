@@ -33,6 +33,8 @@ else()
 endif()
 
 target_link_libraries(acquisition_libs
+    INTERFACE
+        Gnuradio::runtime
     PRIVATE
         Gflags::gflags
         Glog::glog

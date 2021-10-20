@@ -24,8 +24,8 @@
 #include <utility>  // for move(), forward<>(), swap()
 
 #define gsl_lite_MAJOR 0
-#define gsl_lite_MINOR 38
-#define gsl_lite_PATCH 1
+#define gsl_lite_MINOR 39
+#define gsl_lite_PATCH 0
 
 #define gsl_lite_VERSION gsl_STRINGIFY(gsl_lite_MAJOR) "." gsl_STRINGIFY(gsl_lite_MINOR) "." gsl_STRINGIFY(gsl_lite_PATCH)
 
@@ -459,7 +459,8 @@
 // AppleClang 11.0.0  __apple_build_version__ == 11000033  gsl_COMPILER_APPLECLANG_VERSION == 1100  (Xcode 11.1, 11.2, 11.3, 11.3.1) (LLVM  8.0.0)
 // AppleClang 11.0.3  __apple_build_version__ == 11030032  gsl_COMPILER_APPLECLANG_VERSION == 1103  (Xcode 11.4, 11.4.1, 11.5, 11.6) (LLVM  9.0.0)
 // AppleClang 12.0.0  __apple_build_version__ == 12000032  gsl_COMPILER_APPLECLANG_VERSION == 1200  (Xcode 12.0–12.4)                (LLVM 10.0.0)
-// AppleClang 12.0.5  __apple_build_version__ == 12050022  gsl_COMPILER_APPLECLANG_VERSION == 1205  (Xcode 12.5)                     (LLVM 10.0.0)
+// AppleClang 12.0.5  __apple_build_version__ == 12050022  gsl_COMPILER_APPLECLANG_VERSION == 1205  (Xcode 12.5)                     (LLVM 11.1.0)
+// AppleClang 13.0.0  __apple_build_version__ == 13000029  gsl_COMPILER_APPLECLANG_VERSION == 1300  (Xcode 13.0)                     (LLVM 12.0.0)
 
 #if defined(__apple_build_version__)
 #define gsl_COMPILER_APPLECLANG_VERSION gsl_COMPILER_VERSION(__clang_major__, __clang_minor__, __clang_patchlevel__)
@@ -472,7 +473,7 @@
 #define gsl_COMPILER_CLANG_VERSION 0
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__NVCOMPILER)
 #define gsl_COMPILER_GNUC_VERSION gsl_COMPILER_VERSION(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__)
 #else
 #define gsl_COMPILER_GNUC_VERSION 0
@@ -482,6 +483,13 @@
 #define gsl_COMPILER_NVCC_VERSION (__CUDACC_VER_MAJOR__ * 10 + __CUDACC_VER_MINOR__)
 #else
 #define gsl_COMPILER_NVCC_VERSION 0
+#endif
+
+// NVHPC 21.2  gsl_COMPILER_NVHPC_VERSION == 2120
+#if defined(__NVCOMPILER)
+#define gsl_COMPILER_NVHPC_VERSION gsl_COMPILER_VERSION(__NVCOMPILER_MAJOR__, __NVCOMPILER_MINOR__, __NVCOMPILER_PATCHLEVEL__)
+#else
+#define gsl_COMPILER_NVHPC_VERSION 0
 #endif
 
 #if defined(__ARMCC_VERSION)
@@ -544,8 +552,8 @@
 #define gsl_HAVE_EXCEPTIONS 0
 #endif
 #endif
-#elif gsl_COMPILER_GNUC_VERSION
-#if gsl_BETWEEN(gsl_COMPILER_GNUC_VERSION, 1, 500)
+#elif defined(__GNUC__)
+#if __GNUC__ < 5
 #ifdef __EXCEPTIONS
 #define gsl_HAVE_EXCEPTIONS 1
 #else
@@ -557,7 +565,7 @@
 #else
 #define gsl_HAVE_EXCEPTIONS 0
 #endif  // __cpp_exceptions
-#endif  // gsl_BETWEEN(gsl_COMPILER_GNUC_VERSION, 1, 500)
+#endif  // __GNUC__ < 5
 #elif gsl_COMPILER_MSVC_VERSION
 #ifdef _CPPUNWIND
 #define gsl_HAVE_EXCEPTIONS 1
@@ -833,7 +841,7 @@
 #define gsl_NORETURN [[noreturn]]
 #elif defined(_MSC_VER)
 #define gsl_NORETURN __declspec(noreturn)
-#elif gsl_COMPILER_GNUC_VERSION || gsl_COMPILER_CLANG_VERSION || gsl_COMPILER_APPLECLANG_VERSION || gsl_COMPILER_ARMCC_VERSION
+#elif defined(__GNUC__) || gsl_COMPILER_ARMCC_VERSION
 #define gsl_NORETURN __attribute__((noreturn))
 #else
 #define gsl_NORETURN
@@ -1036,7 +1044,7 @@
 #include <intrin.h>
 #endif
 
-#if gsl_HAVE(ENUM_CLASS) && gsl_COMPILER_ARMCC_VERSION
+#if gsl_HAVE(ENUM_CLASS) && (gsl_COMPILER_ARMCC_VERSION || gsl_COMPILER_NVHPC_VERSION) && !defined(_WIN32)
 #include <endian.h>
 #endif
 
@@ -1062,7 +1070,7 @@ namespace detail
 extern "C" char *__cdecl _getptd();
 }
 }  // namespace gsl
-#elif gsl_COMPILER_CLANG_VERSION || gsl_COMPILER_GNUC_VERSION || gsl_COMPILER_APPLECLANG_VERSION
+#elif gsl_COMPILER_CLANG_VERSION || gsl_COMPILER_GNUC_VERSION || gsl_COMPILER_APPLECLANG_VERSION || gsl_COMPILER_NVHPC_VERSION
 #if defined(__GLIBCXX__) || defined(__GLIBCPP__)  // libstdc++: prototype from cxxabi.h
 #include <cxxabi.h>
 #elif !defined(BOOST_CORE_UNCAUGHT_EXCEPTIONS_HPP_INCLUDED_)  // libc++: prototype from Boost?
@@ -1138,7 +1146,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 
     // C++98 emulation:
 
-    namespace std98
+    namespace detail
     {
     // We implement `equal()` and `lexicographical_compare()` here to avoid having to pull in the <algorithm> header.
     template <class InputIt1, class InputIt2>
@@ -1163,7 +1171,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         return first1 == last1 && first2 != last2;
     }
 
-    }  // namespace std98
+    }  // namespace detail
 
     // C++11 emulation:
 
@@ -1320,6 +1328,9 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     gsl_NODISCARD std::unique_ptr<T>
     make_unique(Args &&...args)
     {
+#if gsl_HAVE(TYPE_TRAITS)
+        static_assert(!std::is_array<T>::value, "make_unique<T[]>() is not part of C++14");
+#endif
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
 
@@ -1492,7 +1503,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         little = __ORDER_LITTLE_ENDIAN__,
         big = __ORDER_BIG_ENDIAN__,
         native = __BYTE_ORDER__
-#elif gsl_COMPILER_ARMCC_VERSION
+#elif gsl_COMPILER_ARMCC_VERSION || gsl_COMPILER_NVHPC_VERSION
         // from <endian.h> header file
         little = __LITTLE_ENDIAN,
         big = __BIG_ENDIAN,
@@ -1707,12 +1718,8 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 // GSL.owner: ownership pointers
 //
 #if gsl_HAVE(SHARED_PTR)
-    using std::make_shared;
     using std::shared_ptr;
     using std::unique_ptr;
-#if gsl_HAVE(MAKE_UNIQUE) || gsl_HAVE(VARIADIC_TEMPLATE)
-    using std14::make_unique;
-#endif
 #endif
 
 #if gsl_HAVE(ALIAS_TEMPLATE)
@@ -1806,6 +1813,15 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #endif
 #endif  // defined( gsl_CONFIG_CONTRACT_VIOLATION_TRAPS )
 
+#if gsl_COMPILER_NVHPC_VERSION
+// Suppress "controlling expression is constant" warning when using gsl_Expects,
+// gsl_Ensures, gsl_Assert, gsl_FailFast and so on.
+#define gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ _Pragma("diag_suppress 236")
+#define gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ _Pragma("diag_default 236")
+#else
+#define gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
+#define gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
+#endif
 #if defined(gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER)
 #define gsl_CONTRACT_CHECK_(str, x) ((x) ? static_cast<void>(0) : ::gsl::fail_fast_assert_handler(#x, str, __FILE__, __LINE__))
 #if defined(__CUDACC__) && defined(__CUDA_ARCH__)
@@ -1821,9 +1837,9 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #endif
 #define gsl_FAILFAST_() (__trap())
 #elif defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS)
-#define gsl_CONTRACT_CHECK_(str, x) assert(str && (x))
+#define gsl_CONTRACT_CHECK_(str, x) gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ assert(str && (x)) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
 #if !defined(NDEBUG)
-#define gsl_FAILFAST_() (assert(!"GSL: failure"), ::gsl::detail::fail_fast_terminate())
+#define gsl_FAILFAST_() (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ assert(!"GSL: failure") gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_, ::gsl::detail::fail_fast_terminate())
 #else
 #define gsl_FAILFAST_() (::gsl::detail::fail_fast_terminate())
 #endif
@@ -1835,10 +1851,10 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #define gsl_FAILFAST_() (gsl_TRAP_())
 #endif
 #elif defined(gsl_CONFIG_CONTRACT_VIOLATION_THROWS)
-#define gsl_CONTRACT_CHECK_(str, x) ((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_throw(str ": '" #x "' at " __FILE__ ":" gsl_STRINGIFY(__LINE__)))
+#define gsl_CONTRACT_CHECK_(str, x) gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_throw(str ": '" #x "' at " __FILE__ ":" gsl_STRINGIFY(__LINE__))) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
 #define gsl_FAILFAST_() (::gsl::detail::fail_fast_throw("GSL: failure at " __FILE__ ":" gsl_STRINGIFY(__LINE__)))
 #else  // defined( gsl_CONFIG_CONTRACT_VIOLATION_TERMINATES ) [default]
-#define gsl_CONTRACT_CHECK_(str, x) ((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_terminate())
+#define gsl_CONTRACT_CHECK_(str, x) gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_terminate()) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
 #define gsl_FAILFAST_() (::gsl::detail::fail_fast_terminate())
 #endif
 
@@ -1965,7 +1981,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         return static_cast<unsigned char>(*reinterpret_cast<unsigned const *>(detail::_getptd() + (sizeof(void *) == 8 ? 0x100 : 0x90)));
     }
 
-#elif gsl_COMPILER_CLANG_VERSION || gsl_COMPILER_GNUC_VERSION || gsl_COMPILER_APPLECLANG_VERSION
+#elif gsl_COMPILER_CLANG_VERSION || gsl_COMPILER_GNUC_VERSION || gsl_COMPILER_APPLECLANG_VERSION || gsl_COMPILER_NVHPC_VERSION
 
     inline unsigned char uncaught_exceptions() gsl_noexcept
     {
@@ -2271,7 +2287,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     {
     };
 
-#if gsl_COMPILER_NVCC_VERSION
+#if gsl_COMPILER_NVCC_VERSION || gsl_COMPILER_NVHPC_VERSION
     // We do this to circumvent NVCC warnings about pointless unsigned comparisons with 0.
     template <class T>
     gsl_constexpr gsl_api bool is_negative(T value, std::true_type /*isSigned*/) gsl_noexcept
@@ -2293,7 +2309,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     {
         return detail::is_negative(t, std::is_signed<T>()) == detail::is_negative(u, std::is_signed<U>());
     }
-#endif  // gsl_COMPILER_NVCC_VERSION
+#endif  // gsl_COMPILER_NVCC_VERSION || gsl_COMPILER_NVHPC_VERSION
 
     }  // namespace detail
 
@@ -2326,14 +2342,24 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
             }
 
 #if gsl_HAVE(TYPE_TRAITS)
-#if gsl_COMPILER_NVCC_VERSION
+#if gsl_COMPILER_NVCC_VERSION || gsl_COMPILER_NVHPC_VERSION
         if (!detail::have_same_sign(t, u, detail::is_same_signedness<T, U>()))
 #else
         gsl_SUPPRESS_MSVC_WARNING(4127, "conditional expression is constant") if (!detail::is_same_signedness<T, U>::value && (t < T()) != (u < U()))
 #endif
 #else
         // Don't assume T() works:
-        gsl_SUPPRESS_MSVC_WARNING(4127, "conditional expression is constant") if ((t < 0) != (u < 0))
+        gsl_SUPPRESS_MSVC_WARNING(4127, "conditional expression is constant")
+#if gsl_COMPILER_NVHPC_VERSION
+        // Suppress: pointless comparison of unsigned integer with zero.
+#pragma diag_suppress 186
+#endif
+            if ((t < 0) != (u < 0))
+#if gsl_COMPILER_NVHPC_VERSION
+        // Restore: pointless comparison of unsigned integer with zero.
+#pragma diag_default 186
+#endif
+
 #endif
             {
 #if gsl_HAVE(EXCEPTIONS) && (gsl_CONFIG(NARROW_THROWS_ON_TRUNCATION) || defined(gsl_CONFIG_CONTRACT_VIOLATION_THROWS))
@@ -2355,7 +2381,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_Expects(static_cast<U>(t) == u);
 
 #if gsl_HAVE(TYPE_TRAITS)
-#if gsl_COMPILER_NVCC_VERSION
+#if gsl_COMPILER_NVCC_VERSION || gsl_COMPILER_NVHPC_VERSION
         gsl_Expects(::gsl::detail::have_same_sign(t, u, ::gsl::detail::is_same_signedness<T, U>()));
 #else
         gsl_SUPPRESS_MSVC_WARNING(4127, "conditional expression is constant")
@@ -2364,7 +2390,15 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #else
         // Don't assume T() works:
         gsl_SUPPRESS_MSVC_WARNING(4127, "conditional expression is constant")
+#if gsl_COMPILER_NVHPC_VERSION
+        // Suppress: pointless comparison of unsigned integer with zero.
+#pragma diag_suppress 186
+#endif
             gsl_Expects((t < 0) == (u < 0));
+#if gsl_COMPILER_NVHPC_VERSION
+        // Restore: pointless comparison of unsigned integer with zero.
+#pragma diag_default 186
+#endif
 #endif
 
         return t;
@@ -2723,26 +2757,23 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD gsl_api gsl_constexpr14 element_type *
         get() const
         {
-            element_type *result = data_.ptr_.get();
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return data_.ptr_.get();
         }
 #else
 #if gsl_CONFIG(NOT_NULL_GET_BY_CONST_REF)
         gsl_NODISCARD gsl_api gsl_constexpr14 T const &
         get() const
         {
-            T const &result = data_.ptr_;
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return data_.ptr_;
         }
 #else
         gsl_NODISCARD gsl_api gsl_constexpr14 T
         get() const
         {
-            T result = data_.ptr_;
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return data_.ptr_;
         }
 #endif
 #endif
@@ -2789,9 +2820,8 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
             &
 #endif
         {
-            U result(data_.ptr_);
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return U(data_.ptr_);
         }
 #if gsl_HAVE(FUNCTION_REF_QUALIFIER)
         template <class U
@@ -2801,9 +2831,8 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD gsl_api gsl_constexpr14 explicit
         operator U() &&
         {
-            U result(std::move(data_.ptr_));
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return U(std::move(data_.ptr_));
         }
 #endif
 
@@ -2818,9 +2847,8 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
             &
 #endif
         {
-            U result(data_.ptr_);
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return data_.ptr_;
         }
 #if gsl_HAVE(FUNCTION_REF_QUALIFIER)
         template <class U
@@ -2830,9 +2858,8 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD gsl_api gsl_constexpr14
         operator U() &&
         {
-            U result(std::move(data_.ptr_));
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return std::move(data_.ptr_);
         }
 #endif
 #else   // a.k.a. #if !( gsl_HAVE( MOVE_FORWARD ) && gsl_HAVE( TYPE_TRAITS ) && gsl_HAVE( DEFAULT_FUNCTION_TEMPLATE_ARG ) && gsl_HAVE( EXPLICIT ) )
@@ -2840,24 +2867,22 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD gsl_api gsl_constexpr14
         operator U() const
         {
-            U result(data_.ptr_);
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return U(data_.ptr_);
         }
 #endif  // gsl_HAVE( MOVE_FORWARD ) && gsl_HAVE( TYPE_TRAITS ) && gsl_HAVE( DEFAULT_FUNCTION_TEMPLATE_ARG ) && gsl_HAVE( EXPLICIT )
 
         gsl_NODISCARD gsl_api gsl_constexpr14 T const &
         operator->() const
         {
-            T const &result(data_.ptr_);
-            gsl_Ensures(result != gsl_nullptr);
-            return result;
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
+            return data_.ptr_;
         }
 
         gsl_NODISCARD gsl_api gsl_constexpr14 element_type &
         operator*() const
         {
-            gsl_Expects(data_.ptr_ != gsl_nullptr);
+            gsl_Assert(data_.ptr_ != gsl_nullptr);
             return *data_.ptr_;
         }
 
@@ -3379,6 +3404,36 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     {
         return os << p.operator->();
     }
+
+
+#if gsl_HAVE(VARIADIC_TEMPLATE)
+#if gsl_HAVE(UNIQUE_PTR)
+    template <class T, class... Args>
+    gsl_NODISCARD not_null<std::unique_ptr<T>>
+    make_unique(Args && ...args)
+    {
+#if gsl_HAVE(TYPE_TRAITS)
+        static_assert(!std::is_array<T>::value,
+            "gsl::make_unique<T>() returns `gsl::not_null<std::unique_ptr<T>>`, which is not "
+            "defined for array types because the Core Guidelines advise against pointer arithmetic, cf. \"Bounds safety profile\".");
+#endif
+        return not_null<std::unique_ptr<T>>(new T(std::forward<Args>(args)...));
+    }
+#endif  // gsl_HAVE( UNIQUE_PTR )
+#if gsl_HAVE(SHARED_PTR)
+    template <class T, class... Args>
+    gsl_NODISCARD not_null<std::shared_ptr<T>>
+    make_shared(Args && ...args)
+    {
+#if gsl_HAVE(TYPE_TRAITS)
+        static_assert(!std::is_array<T>::value,
+            "gsl::make_shared<T>() returns `gsl::not_null<std::shared_ptr<T>>`, which is not "
+            "defined for array types because the Core Guidelines advise against pointer arithmetic, cf. \"Bounds safety profile\".");
+#endif
+        return not_null<std::shared_ptr<T>>(std::make_shared<T>(std::forward<Args>(args)...));
+    }
+#endif  // gsl_HAVE( SHARED_PTR )
+#endif  // gsl_HAVE( VARIADIC_TEMPLATE )
 
 
 //
@@ -4069,7 +4124,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD inline gsl_constexpr bool
         operator==(span<T> const &l, span<U> const &r)
     {
-        return l.size() == r.size() && (l.begin() == r.begin() || std98::equal(l.begin(), l.end(), r.begin()));
+        return l.size() == r.size() && (l.begin() == r.begin() || detail::equal(l.begin(), l.end(), r.begin()));
     }
 
     template <class T, class U>
@@ -4077,7 +4132,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD inline gsl_constexpr bool
         operator<(span<T> const &l, span<U> const &r)
     {
-        return std98::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
+        return detail::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
     }
 
 #else   // a.k.a. !gsl_CONFIG( ALLOWS_NONSTRICT_SPAN_COMPARISON )
@@ -4087,7 +4142,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD inline gsl_constexpr bool
         operator==(span<T> const &l, span<T> const &r)
     {
-        return l.size() == r.size() && (l.begin() == r.begin() || std98::equal(l.begin(), l.end(), r.begin()));
+        return l.size() == r.size() && (l.begin() == r.begin() || detail::equal(l.begin(), l.end(), r.begin()));
     }
 
     template <class T>
@@ -4095,7 +4150,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD inline gsl_constexpr bool
         operator<(span<T> const &l, span<T> const &r)
     {
-        return std98::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
+        return detail::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
     }
 #endif  // gsl_CONFIG( ALLOWS_NONSTRICT_SPAN_COMPARISON )
 
@@ -4728,7 +4783,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     {
         const basic_string_span<typename std11::add_const<T>::type> r(u);
 
-        return l.size() == r.size() && std98::equal(l.begin(), l.end(), r.begin());
+        return l.size() == r.size() && detail::equal(l.begin(), l.end(), r.begin());
     }
 
     template <class T, class U>
@@ -4738,7 +4793,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     {
         const basic_string_span<typename std11::add_const<T>::type> r(u);
 
-        return std98::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
+        return detail::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
     }
 
 #if gsl_HAVE(DEFAULT_FUNCTION_TEMPLATE_ARG)
@@ -4751,7 +4806,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     {
         const basic_string_span<typename std11::add_const<T>::type> l(u);
 
-        return l.size() == r.size() && std98::equal(l.begin(), l.end(), r.begin());
+        return l.size() == r.size() && detail::equal(l.begin(), l.end(), r.begin());
     }
 
     template <class T, class U
@@ -4762,7 +4817,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     {
         const basic_string_span<typename std11::add_const<T>::type> l(u);
 
-        return std98::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
+        return detail::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
     }
 #endif
 
@@ -4773,7 +4828,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator==(basic_string_span<T> const &l, basic_string_span<T> const &r) gsl_noexcept
     {
-        return l.size() == r.size() && std98::equal(l.begin(), l.end(), r.begin());
+        return l.size() == r.size() && detail::equal(l.begin(), l.end(), r.begin());
     }
 
     template <class T>
@@ -4781,7 +4836,7 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
         gsl_NODISCARD inline gsl_constexpr14 bool
         operator<(basic_string_span<T> const &l, basic_string_span<T> const &r) gsl_noexcept
     {
-        return std98::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
+        return detail::lexicographical_compare(l.begin(), l.end(), r.begin(), r.end());
     }
 
 #endif  // gsl_CONFIG( ALLOWS_NONSTRICT_SPAN_COMPARISON )
@@ -5247,16 +5302,19 @@ namespace std17 = ::gsl::std17;
 namespace std20 = ::gsl::std20;
 
 using namespace std11;
-using namespace std14;
+//using namespace std14;  // contains only make_unique<>(), which is superseded by `gsl::make_unique<>()`
 using namespace std17;
 using namespace std20;
 
 using namespace ::gsl::detail::no_adl;
 
-#if gsl_HAVE(SHARED_PTR)
-using std::make_shared;
+#if gsl_HAVE(UNIQUE_PTR) && gsl_HAVE(SHARED_PTR)
 using std::shared_ptr;
 using std::unique_ptr;
+#if gsl_HAVE(VARIADIC_TEMPLATE)
+using ::gsl::make_shared;
+using ::gsl::make_unique;
+#endif
 #endif
 
 using ::gsl::diff;

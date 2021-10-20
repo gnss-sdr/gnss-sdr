@@ -77,13 +77,13 @@ pcps_cccwsr_acquisition_cc::pcps_cccwsr_acquisition_cc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
 
-    d_fft_code_data.reserve(d_fft_size);
-    d_fft_code_pilot.reserve(d_fft_size);
-    d_data_correlation.reserve(d_fft_size);
-    d_pilot_correlation.reserve(d_fft_size);
-    d_correlation_plus.reserve(d_fft_size);
-    d_correlation_minus.reserve(d_fft_size);
-    d_magnitude.reserve(d_fft_size);
+    d_fft_code_data = std::vector<gr_complex>(d_fft_size);
+    d_fft_code_pilot = std::vector<gr_complex>(d_fft_size);
+    d_data_correlation = std::vector<gr_complex>(d_fft_size);
+    d_pilot_correlation = std::vector<gr_complex>(d_fft_size);
+    d_correlation_plus = std::vector<gr_complex>(d_fft_size);
+    d_correlation_minus = std::vector<gr_complex>(d_fft_size);
+    d_magnitude = std::vector<float>(d_fft_size);
 
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);

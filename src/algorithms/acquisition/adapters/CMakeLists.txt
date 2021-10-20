@@ -100,6 +100,7 @@ target_link_libraries(acquisition_adapters
     PUBLIC
         acquisition_gr_blocks
         Gnuradio::blocks
+        Volkgnsssdr::volkgnsssdr
     PRIVATE
         gnss_sdr_flags
         Boost::headers
@@ -124,7 +125,6 @@ if(ENABLE_FPGA)
             algorithms_libs
             core_libs
             Volk::volk
-            Volkgnsssdr::volkgnsssdr
     )
 endif()
 

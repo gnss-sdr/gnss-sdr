@@ -28,11 +28,10 @@
 #include <sstream>    // for stringstream
 
 
-Gpx_Printer::Gpx_Printer(const std::string& base_path)
+Gpx_Printer::Gpx_Printer(const std::string& base_path) : indent("  "),
+                                                         gpx_base_path(base_path),
+                                                         positions_printed(false)
 {
-    positions_printed = false;
-    indent = "  ";
-    gpx_base_path = base_path;
     fs::path full_path(fs::current_path());
     const fs::path p(gpx_base_path);
     if (!fs::exists(p))

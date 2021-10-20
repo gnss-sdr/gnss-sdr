@@ -570,9 +570,9 @@ static enum xer_pbd_rval INTEGER__xer_body_decode(asn_TYPE_descriptor_t *td,
                     else if (state == ST_DIGITS)
                         {
                             /* The colon here means that we have
-                                 * decoded the first two hexadecimal
-                                 * places as a decimal value.
-                                 * Switch decoding mode. */
+                             * decoded the first two hexadecimal
+                             * places as a decimal value.
+                             * Switch decoding mode. */
                             ASN_DEBUG("INTEGER re-evaluate as hex form");
                             if (INTEGER_st_prealloc(st,
                                     (chunk_size / 3) + 1))
@@ -1204,7 +1204,7 @@ int asn_long2INTEGER(INTEGER_t *st, int64_t value)
             return -1;
         }
 
-    buf = (uint8_t *)MALLOC(8);
+    buf = (uint8_t *)MALLOC(16);
     if (!buf)
         {
             return -1;

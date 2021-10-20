@@ -36,6 +36,7 @@
 #include "gnss_satellite.h"
 #include "gnss_sdr_make_unique.h"
 #include "gnss_synchro_monitor.h"
+#include "nav_message_monitor.h"
 #include "signal_source_interface.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
@@ -72,6 +73,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
 {
     connected_ = false;
     running_ = false;
+    enable_e6_has_rx_ = false;
     configuration_ = std::move(configuration);
     queue_ = std::move(queue);
     multiband_ = GNSSFlowgraph::is_multiband();
@@ -99,7 +101,15 @@ void GNSSFlowgraph::init()
 
     channels_status_ = channel_status_msg_receiver_make();
 
-    gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+    if (configuration_->property("Channels_E6.count", 0) > 0)
+        {
+            enable_e6_has_rx_ = true;
+            gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+        }
+    else
+        {
+            gal_e6_has_rx_ = nullptr;
+        }
 
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     int sources_count_deprecated = configuration_->property("Receiver.sources_count", 1);
@@ -235,6 +245,20 @@ void GNSSFlowgraph::init()
                 configuration_->property("TrackingMonitor.decimation_factor", 1),
                 configuration_->property("TrackingMonitor.udp_port", 1236),
                 udp_addr_vec, enable_protobuf);
+        }
+
+    /*
+     * Instantiate the receiver av message monitor block, if required
+     */
+    enable_navdata_monitor_ = configuration_->property("NavDataMonitor.enable_monitor", false);
+    if (enable_navdata_monitor_)
+        {
+            // Retrieve monitor properties
+            std::string address_string = configuration_->property("NavDataMonitor.client_addresses", std::string("127.0.0.1"));
+            std::vector<std::string> udp_addr_vec = split_string(address_string, '_');
+            std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
+            udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
+            NavDataMonitor_ = nav_message_monitor_make(udp_addr_vec, configuration_->property("NavDataMonitor.port", 1237));
         }
 }
 
@@ -445,11 +469,13 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
             return 1;
         }
 
-    if (connect_gal_e6_has() != 0)
+    if (enable_e6_has_rx_)
         {
-            return 1;
+            if (connect_gal_e6_has() != 0)
+                {
+                    return 1;
+                }
         }
-
     // Activate acquisition in enabled channels
     for (int i = 0; i < channels_count_; i++)
         {
@@ -785,6 +811,15 @@ int GNSSFlowgraph::disconnect_signal_conditioners()
 
 int GNSSFlowgraph::connect_channels()
 {
+    if (channels_count_ <= 0)
+        {
+            LOG(ERROR) << "No channels have been assigned.";
+            help_hint_ += " * No channels have been assigned, check your configuration file.\n";
+            help_hint_ += "   At least one of the Channels_XX.count must be > 0.\n";
+            help_hint_ += "   Channels documentation at https://gnss-sdr.org/docs/sp-blocks/channels/\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
     for (int i = 0; i < channels_count_; i++)
         {
             if (channels_.at(i) != nullptr)
@@ -1347,7 +1382,7 @@ int GNSSFlowgraph::disconnect_signal_conditioners_from_channels()
                     return 1;
                 }
         }
-    DLOG(INFO) << "Signal conditioner(s) sucessfully disconnected from channels";
+    DLOG(INFO) << "Signal conditioner(s) successfully disconnected from channels";
     return 0;
 }
 
@@ -1514,6 +1549,31 @@ int GNSSFlowgraph::connect_tracking_monitor()
 }
 
 
+int GNSSFlowgraph::connect_navdata_monitor()
+{
+    try
+        {
+            for (int i = 0; i < channels_count_; i++)
+                {
+                    top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                }
+            if (enable_e6_has_rx_)
+                {
+                    gal_e6_has_rx_->set_enable_navdata_monitor(true);
+                    top_block_->msg_connect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(ERROR) << "Can't connect TlM outputs to Monitor block: " << e.what();
+            top_block_->disconnect_all();
+            return 1;
+        }
+    DLOG(INFO) << "navdata monitor successfully connected to Channel blocks";
+    return 0;
+}
+
+
 int GNSSFlowgraph::connect_monitors()
 {
     // GNSS SYNCHRO MONITOR
@@ -1543,8 +1603,17 @@ int GNSSFlowgraph::connect_monitors()
                 }
         }
 
+    // NAVIGATION DATA MONITOR
+    if (enable_navdata_monitor_)
+        {
+            if (connect_navdata_monitor() != 0)
+                {
+                    return 1;
+                }
+        }
     return 0;
 }
+
 
 int GNSSFlowgraph::connect_gal_e6_has()
 {
@@ -1554,8 +1623,6 @@ int GNSSFlowgraph::connect_gal_e6_has()
             for (int i = 0; i < channels_count_; i++)
                 {
                     const std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();
-                    std::string gnss_system;
-                    Gnss_Signal signal_value;
                     switch (mapStringValues_[gnss_signal])
                         {
                         case evGAL_E6:
@@ -1583,6 +1650,7 @@ int GNSSFlowgraph::connect_gal_e6_has()
     return 0;
 }
 
+
 int GNSSFlowgraph::disconnect_monitors()
 {
     try
@@ -1600,6 +1668,14 @@ int GNSSFlowgraph::disconnect_monitors()
                     if (enable_tracking_monitor_)
                         {
                             top_block_->disconnect(channels_.at(i)->get_right_block_trk(), 0, GnssSynchroTrackingMonitor_, i);
+                        }
+                    if (enable_navdata_monitor_)
+                        {
+                            top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                            if (enable_e6_has_rx_)
+                                {
+                                    top_block_->msg_disconnect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
+                                }
                         }
                 }
         }

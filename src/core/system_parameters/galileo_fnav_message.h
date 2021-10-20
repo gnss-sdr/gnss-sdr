@@ -138,7 +138,7 @@ public:
     }
 
 private:
-    bool _CRC_test(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, uint32_t checksum) const;
+    bool CRC_test(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, uint32_t checksum) const;
     void decode_page(const std::string& data);
     uint64_t read_navigation_unsigned(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
     int64_t read_navigation_signed(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const;
@@ -162,15 +162,15 @@ private:
     double FNAV_ai0_1{};
     double FNAV_ai1_1{};
     double FNAV_ai2_1{};
+    double FNAV_BGD_1{};
+    int32_t FNAV_E5ahs_1{};
+    int32_t FNAV_WN_1{};
+    int32_t FNAV_TOW_1{};
     bool FNAV_region1_1{};
     bool FNAV_region2_1{};
     bool FNAV_region3_1{};
     bool FNAV_region4_1{};
     bool FNAV_region5_1{};
-    double FNAV_BGD_1{};
-    int32_t FNAV_E5ahs_1{};
-    int32_t FNAV_WN_1{};
-    int32_t FNAV_TOW_1{};
     bool FNAV_E5advs_1{};
 
     // WORD 2 Ephemeris (1/3) and GST

@@ -49,9 +49,8 @@ public:
         // google::protobuf::ShutdownProtobufLibrary();
     }
 
-    inline Serdes_Monitor_Pvt(const Serdes_Monitor_Pvt& other) noexcept  //!< Copy constructor
+    inline Serdes_Monitor_Pvt(const Serdes_Monitor_Pvt& other) noexcept : monitor_(other.monitor_)  //!< Copy constructor
     {
-        this->monitor_ = other.monitor_;
     }
 
     inline Serdes_Monitor_Pvt& operator=(const Serdes_Monitor_Pvt& rhs) noexcept  //!< Copy assignment operator
@@ -60,9 +59,8 @@ public:
         return *this;
     }
 
-    inline Serdes_Monitor_Pvt(Serdes_Monitor_Pvt&& other) noexcept  //!< Move constructor
+    inline Serdes_Monitor_Pvt(Serdes_Monitor_Pvt&& other) noexcept : monitor_(std::move(other.monitor_))  //!< Move constructor
     {
-        this->monitor_ = std::move(other.monitor_);
     }
 
     inline Serdes_Monitor_Pvt& operator=(Serdes_Monitor_Pvt&& other) noexcept  //!< Move assignment operator

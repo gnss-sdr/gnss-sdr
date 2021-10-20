@@ -352,10 +352,10 @@ size_t FileSourceBase::computeSamplesInFile() const
             auto to_skip = samplesToSkip();
 
             /*!
-	     * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
-	     * A possible solution is to compute the file length in samples using file size, excluding at least
-	     * the last 2 milliseconds, and enable always the valve block
-	     */
+             * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
+             * A possible solution is to compute the file length in samples using file size, excluding at least
+             * the last 2 milliseconds, and enable always the valve block
+             */
             auto tail = static_cast<size_t>(std::ceil(0.002 * sampling_frequency()));
 
             DLOG(INFO) << "Total samples in the file= " << n_samples;

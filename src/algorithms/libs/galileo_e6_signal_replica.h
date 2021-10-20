@@ -27,7 +27,7 @@
 #include <span>
 namespace own = std;
 #else
-#include <gsl/gsl>
+#include <gsl/gsl-lite.hpp>
 namespace own = gsl;
 #endif
 
@@ -38,8 +38,8 @@ namespace own = gsl;
 
 
 /*!
-  * \brief Generates Galileo E6B code at 1 sample/chip
-  */
+ * \brief Generates Galileo E6B code at 1 sample/chip
+ */
 void galileo_e6_b_code_gen_complex_primary(own::span<std::complex<float>> dest,
     int32_t prn);
 
@@ -51,9 +51,9 @@ void galileo_e6_b_code_gen_float_primary(own::span<float> dest, int32_t prn);
 
 
 /*!
-  * \brief Generates Galileo E6B complex code, shifted to the desired chip and
-  * sampled at a frequency sampling_freq
-  */
+ * \brief Generates Galileo E6B complex code, shifted to the desired chip and
+ * sampled at a frequency sampling_freq
+ */
 void galileo_e6_b_code_gen_complex_sampled(own::span<std::complex<float>> dest,
     uint32_t prn,
     int32_t sampling_freq,

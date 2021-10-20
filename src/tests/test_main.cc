@@ -97,7 +97,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/tracking/bayesian_estimation_test.cc"
 #if ARMADILLO_HAVE_MVNRND
 #include "unit-tests/signal-processing-blocks/tracking/cubature_filter_test.cc"
-#include "unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc"
+// #include "unit-tests/signal-processing-blocks/tracking/unscented_filter_test.cc"
 #endif
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_real_codes_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/cpu_multicorrelator_test.cc"

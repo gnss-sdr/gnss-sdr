@@ -28,10 +28,9 @@
 #include <sstream>    // for stringstream
 
 
-GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path)
+GeoJSON_Printer::GeoJSON_Printer(const std::string& base_path) : geojson_base_path(base_path),
+                                                                 first_pos(true)
 {
-    first_pos = true;
-    geojson_base_path = base_path;
     fs::path full_path(fs::current_path());
     const fs::path p(geojson_base_path);
     if (!fs::exists(p))

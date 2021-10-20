@@ -90,11 +90,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
 
             const int grid_density = configuration->property(role_ + ".grid_density", default_grid_density);
             const std::vector<double> taps_d = gr::filter::pm_remez(number_of_taps - 1, bands, ampl, error_w, filter_type, grid_density);
-            taps_.reserve(taps_d.size());
-            for (const auto& it : taps_d)
-                {
-                    taps_.push_back(static_cast<float>(it));
-                }
+            taps_ = std::vector<float>(taps_d.begin(), taps_d.end());
         }
     else
         {

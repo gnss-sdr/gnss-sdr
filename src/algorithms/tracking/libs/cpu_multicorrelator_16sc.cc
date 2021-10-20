@@ -91,18 +91,6 @@ bool Cpu_Multicorrelator_16sc::Carrier_wipeoff_multicorrelator_resampler(
 }
 
 
-Cpu_Multicorrelator_16sc::Cpu_Multicorrelator_16sc()
-{
-    d_sig_in = nullptr;
-    d_local_code_in = nullptr;
-    d_shifts_chips = nullptr;
-    d_corr_out = nullptr;
-    d_local_codes_resampled = nullptr;
-    d_code_length_chips = 0;
-    d_n_correlators = 0;
-}
-
-
 Cpu_Multicorrelator_16sc::~Cpu_Multicorrelator_16sc()
 {
     if (d_local_codes_resampled != nullptr)

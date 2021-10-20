@@ -23,9 +23,9 @@
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <memory>
 #include <string>
-#include <vector>
 
 /** \addtogroup Acquisition
  * \{ */
@@ -198,7 +198,7 @@ private:
     static const uint32_t shl_code_bits = 65536;              // shift left by 10 bits
 
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
+    volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     std::weak_ptr<ChannelFsm> channel_fsm_;
 
     Gnss_Synchro* gnss_synchro_;

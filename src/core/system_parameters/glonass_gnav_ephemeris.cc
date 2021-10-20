@@ -53,7 +53,7 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(double off
 }
 
 
-boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(const double offset_time, const double glot2utc_corr) const
+boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(double offset_time, double glot2utc_corr) const
 {
     const double glot2utc = 3 * 3600;
     int J = 0;

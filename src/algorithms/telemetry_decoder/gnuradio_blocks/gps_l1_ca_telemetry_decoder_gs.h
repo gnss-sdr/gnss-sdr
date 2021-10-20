@@ -22,13 +22,16 @@
 #include "gnss_synchro.h"
 #include "gnss_time.h"  //for timetags produced by Tracking
 #include "gps_navigation_message.h"
+#include "nav_message_packet.h"
 #include "tlm_conf.h"
+#include "tlm_crc_stats.h"
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <array>             // for array
 #include <cstdint>           // for int32_t
 #include <fstream>           // for ofstream
+#include <memory>            // for std::unique_ptr
 #include <string>            // for string
 
 /** \addtogroup Telemetry_Decoder
@@ -52,7 +55,7 @@ gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
 class gps_l1_ca_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~gps_l1_ca_telemetry_decoder_gs();
+    ~gps_l1_ca_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int channel);                        //!< Set receiver's channel
     void reset();
@@ -61,7 +64,7 @@ public:
      * \brief This is where all signal processing takes place
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
     friend gps_l1_ca_telemetry_decoder_gs_sptr gps_l1_ca_make_telemetry_decoder_gs(
@@ -71,10 +74,12 @@ private:
     gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
     bool gps_word_parityCheck(uint32_t gpsword);
-    bool decode_subframe();
+    bool decode_subframe(bool flag_invert);
 
     Gps_Navigation_Message d_nav;
     Gnss_Satellite d_satellite;
+    Nav_Message_Packet d_nav_msg_packet;
+    std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
 
     std::array<int32_t, GPS_CA_PREAMBLE_LENGTH_BITS> d_preamble_samples{};
 
@@ -94,7 +99,6 @@ private:
     int32_t d_channel;
 
     uint32_t d_required_symbols;
-    uint32_t d_frame_length_symbols;
     uint32_t d_prev_GPS_frame_4bytes;
     uint32_t d_max_symbols_without_valid_frame;
     uint32_t d_stat;
@@ -102,7 +106,6 @@ private:
     uint32_t d_TOW_at_current_symbol_ms;
 
     bool d_flag_frame_sync;
-    bool d_flag_parity;
     bool d_flag_preamble;
     bool d_sent_tlm_failed_msg;
     bool d_flag_PLL_180_deg_phase_locked;
@@ -110,6 +113,8 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_navdata_monitor;
+    bool d_dump_crc_stats;
 };
 
 

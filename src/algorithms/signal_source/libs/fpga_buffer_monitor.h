@@ -26,7 +26,8 @@
 #define GNSS_SDR_FPGA_BUFFER_MONITOR_H
 
 #include <cstdint>  // for int32_t
-#include <fstream>  // for string, ofstream
+#include <fstream>  // for std::ofstream
+#include <string>   // for std::string
 
 /** \addtogroup Signal_Source
  * \{ */

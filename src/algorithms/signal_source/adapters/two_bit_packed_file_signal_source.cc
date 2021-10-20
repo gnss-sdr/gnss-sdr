@@ -99,9 +99,19 @@ std::tuple<size_t, bool> TwoBitPackedFileSignalSource::itemTypeToSize()
     return std::make_tuple(item_size, is_complex_t);
 }
 
-// Each sample is 2 bits; if the item_type() is char, then the size is 8/2 = 4 packets per sample
-// If the item_type() is short, then the size is 16/2 = 8 packets per sample
-double TwoBitPackedFileSignalSource::packetsPerSample() const { return item_size() / 2.0; }
+// item_size() reports in bytes. Each sample is 2 bits, so the size is 8/2 = 4 packets per
+// byte times the size of each item. A complex file has I and Q interleaved, so there are
+// half as many (complex) samples as float
+double TwoBitPackedFileSignalSource::packetsPerSample() const
+{
+    auto packets = item_size() * 4.0;
+    if (is_complex())
+        {
+            packets /= 2;
+        }
+    return packets;
+}
+
 gnss_shared_ptr<gr::block> TwoBitPackedFileSignalSource::source() const { return char_to_float_; }
 
 void TwoBitPackedFileSignalSource::create_file_source_hook()

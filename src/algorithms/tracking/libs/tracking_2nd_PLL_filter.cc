@@ -63,19 +63,15 @@ float Tracking_2nd_PLL_filter::get_carrier_nco(float PLL_discriminator)
 }
 
 
-Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter(float pdi_carr)
+Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter(float pdi_carr) : d_pdi_carr(pdi_carr),
+                                                                   d_plldampingratio(0.7)
 {
-    // PLL variables
-    d_pdi_carr = pdi_carr;  // Summation interval for carrier
-    d_plldampingratio = 0.7;
 }
 
 
-Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter()
+Tracking_2nd_PLL_filter::Tracking_2nd_PLL_filter() : d_pdi_carr(0.001),
+                                                     d_plldampingratio(0.7)
 {
-    // PLL variables
-    d_pdi_carr = 0.001;  // Summation interval for carrier
-    d_plldampingratio = 0.7;
 }
 
 

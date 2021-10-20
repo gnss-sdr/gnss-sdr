@@ -64,7 +64,7 @@
 #include <span>
 namespace own = std;
 #else
-#include <gsl/gsl>
+#include <gsl/gsl-lite.hpp>
 namespace own = gsl;
 #endif
 
@@ -92,7 +92,7 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
 class pcps_acquisition : public gr::block
 {
 public:
-    ~pcps_acquisition() = default;
+    ~pcps_acquisition() override = default;
 
     /*!
      * \brief Initializes acquisition algorithm and reserves memory.
@@ -212,7 +212,7 @@ public:
      */
     int general_work(int noutput_items, gr_vector_int& ninput_items,
         gr_vector_const_void_star& input_items,
-        gr_vector_void_star& output_items);
+        gr_vector_void_star& output_items) override;
 
 private:
     friend pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_);
@@ -226,7 +226,7 @@ private:
     void send_positive_acquisition();
     void dump_results(int32_t effective_fft_size);
     bool is_fdma();
-    bool start();
+    bool start() override;
     void calculate_threshold(void);
     float first_vs_second_peak_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);
     float max_to_input_power_statistic(uint32_t& indext, int32_t& doppler, uint32_t num_doppler_bins, int32_t doppler_max, int32_t doppler_step);

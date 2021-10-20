@@ -35,7 +35,7 @@
 class Pvt_Solution
 {
 public:
-    Pvt_Solution();
+    Pvt_Solution() = default;
     virtual ~Pvt_Solution() = default;
 
     void set_rx_pos(const std::array<double, 3> &pos);  //!< Set position: X, Y, Z in Cartesian ECEF coordinates [m]
@@ -102,24 +102,24 @@ private:
     std::deque<double> d_hist_longitude_d;
     std::deque<double> d_hist_height_m;
 
-    double d_latitude_d;             // RX position Latitude WGS84 [deg]
-    double d_longitude_d;            // RX position Longitude WGS84 [deg]
-    double d_height_m;               // RX position height WGS84 [m]
-    double d_rx_dt_s;                // RX time offset [s]
-    double d_rx_clock_drift_ppm;     // RX clock drift [ppm]
-    double d_speed_over_ground_m_s;  // RX speed over ground [m/s]
-    double d_course_over_ground_d;   // RX course over ground [deg]
+    double d_latitude_d{0.0};             // RX position Latitude WGS84 [deg]
+    double d_longitude_d{0.0};            // RX position Longitude WGS84 [deg]
+    double d_height_m{0.0};               // RX position height WGS84 [m]
+    double d_rx_dt_s{0.0};                // RX time offset [s]
+    double d_rx_clock_drift_ppm{0.0};     // RX clock drift [ppm]
+    double d_speed_over_ground_m_s{0.0};  // RX speed over ground [m/s]
+    double d_course_over_ground_d{0.0};   // RX course over ground [deg]
 
-    double d_avg_latitude_d;   // Averaged latitude in degrees
-    double d_avg_longitude_d;  // Averaged longitude in degrees
-    double d_avg_height_m;     // Averaged height [m]
+    double d_avg_latitude_d{0.0};   // Averaged latitude in degrees
+    double d_avg_longitude_d{0.0};  // Averaged longitude in degrees
+    double d_avg_height_m{0.0};     // Averaged height [m]
 
-    int d_averaging_depth;  // Length of averaging window
-    int d_valid_observations;
+    int d_averaging_depth{0};     // Length of averaging window
+    int d_valid_observations{0};  // Number of valid observations in this epoch
 
-    bool d_pre_2009_file;  // Flag to correct week rollover in post processing mode for signals older than 2009
-    bool b_valid_position;
-    bool d_flag_averaging;
+    bool d_pre_2009_file{false};  // Flag to correct week rollover in post processing mode for signals older than 2009
+    bool d_valid_position{false};
+    bool d_flag_averaging{false};
 };
 
 

@@ -4,6 +4,7 @@
 #include "cpuinfo_ppc.h"
 #include "internal/bit_utils.h"
 #include "internal/filesystem.h"
+#include "internal/hwcaps.h"
 #include "internal/stack_line_reader.h"
 #include "internal/string_view.h"
 #include <assert.h>
@@ -117,9 +118,9 @@ static const PPCInfo kEmptyPPCInfo;
 PPCInfo GetPPCInfo(void)
 {
     /*
-   * On Power feature flags aren't currently in cpuinfo so we only look at
-   * the auxilary vector.
-   */
+     * On Power feature flags aren't currently in cpuinfo so we only look at
+     * the auxilary vector.
+     */
     PPCInfo info = kEmptyPPCInfo;
     const HardwareCapabilities hwcaps = CpuFeatures_GetHardwareCapabilities();
     for (size_t i = 0; i < PPC_LAST_; ++i)

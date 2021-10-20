@@ -209,7 +209,7 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_MINOR_VERSION 0)
-set(VERSION_INFO_MAINT_VERSION 14.git)
+set(VERSION_INFO_MAINT_VERSION 15)
 include(VolkGnsssdrVersion) # setup version info
 
 
@@ -278,10 +278,10 @@ if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
     set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
     set(BUILD_SHARED_LIBS OFF)
     if(NOT ENABLE_OWN_CPUFEATURES)
-        find_package(CpuFeatures QUIET)
+        find_package(CPUFEATURES QUIET)
     endif()
-    if(CpuFeatures_FOUND)
-        message(STATUS "Found CpuFeatures: (found version ${CpuFeatures_VERSION})")
+    if(CPUFEATURES_FOUND)
+        message(STATUS "Found CpuFeatures: (found version ${CPUFEATURES_VERSION})")
     else()
         add_subdirectory(cpu_features)
     endif()

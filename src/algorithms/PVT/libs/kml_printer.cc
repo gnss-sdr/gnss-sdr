@@ -30,11 +30,10 @@
 #include <sys/types.h>  // for mode_t
 
 
-Kml_Printer::Kml_Printer(const std::string& base_path)
+Kml_Printer::Kml_Printer(const std::string& base_path) : kml_base_path(base_path),
+                                                         indent("  "),
+                                                         positions_printed(false)
 {
-    positions_printed = false;
-    indent = "  ";
-    kml_base_path = base_path;
     fs::path full_path(fs::current_path());
     const fs::path p(kml_base_path);
     if (!fs::exists(p))

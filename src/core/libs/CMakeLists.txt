@@ -4,6 +4,8 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/nav_message.proto)
+
 add_subdirectory(supl)
 
 set(CORE_LIBS_SOURCES
@@ -16,6 +18,8 @@ set(CORE_LIBS_SOURCES
     channel_event.cc
     command_event.cc
     galileo_e6_has_msg_receiver.cc
+    nav_message_monitor.cc
+    nav_message_udp_sink.cc
 )
 
 set(CORE_LIBS_HEADERS
@@ -27,6 +31,10 @@ set(CORE_LIBS_HEADERS
     channel_status_msg_receiver.h
     channel_event.h
     command_event.h
+    nav_message_packet.h
+    nav_message_udp_sink.h
+    serdes_nav_message.h
+    nav_message_monitor.h
 )
 
 if(ENABLE_FPGA)
@@ -61,12 +69,14 @@ if(USE_CMAKE_TARGET_SOURCES)
     target_sources(core_libs
         PRIVATE
             ${CORE_LIBS_SOURCES}
+            ${PROTO_SRCS}
+            ${PROTO_HDRS}
         PUBLIC
             ${CORE_LIBS_HEADERS}
     )
 else()
-    source_group(Headers FILES ${CORE_LIBS_HEADERS})
-    add_library(core_libs ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS})
+    source_group(Headers FILES ${CORE_LIBS_HEADERS} ${PROTO_HDRS})
+    add_library(core_libs ${CORE_LIBS_SOURCES} ${CORE_LIBS_HEADERS} ${PROTO_SRCS} ${PROTO_HDRS})
 endif()
 
 target_link_libraries(core_libs
@@ -74,11 +84,13 @@ target_link_libraries(core_libs
         Gnuradio::blocks
         Gnuradio::runtime
         Gnuradio::pmt
+        protobuf::libprotobuf
         core_libs_supl
         core_system_parameters
         pvt_libs
         algorithms_libs
     PRIVATE
+        algorithms_libs
         Boost::serialization
         Gflags::gflags
         Glog::glog
@@ -124,9 +136,19 @@ if(USE_BOOST_BIND_PLACEHOLDERS)
     )
 endif()
 
-if(ENABLE_FPGA OR ENABLE_AD9361)
-    target_link_libraries(core_libs PRIVATE algorithms_libs)
+if(USE_BOOST_ASIO_IO_CONTEXT)
+    target_compile_definitions(core_libs
+        PUBLIC
+            -DUSE_BOOST_ASIO_IO_CONTEXT=1
+    )
 endif()
+
+# Do not apply clang-tidy fixes to protobuf generated headers
+get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
+target_include_directories(core_libs
+    SYSTEM PUBLIC
+        ${PROTO_INCLUDE_HEADERS_DIR}
+)
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

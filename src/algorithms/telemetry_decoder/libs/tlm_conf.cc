@@ -17,14 +17,6 @@
 
 #include "tlm_conf.h"
 
-Tlm_Conf::Tlm_Conf()
-{
-    dump = false;
-    dump_mat = false;
-    remove_dat = false;
-    enable_reed_solomon = false;
-}
-
 
 void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role)
@@ -34,4 +26,8 @@ void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     dump = configuration->property(role + ".dump", false);
     dump_mat = configuration->property(role + ".dump_mat", dump);
     remove_dat = configuration->property(role + ".remove_dat", false);
+    dump_crc_stats = configuration->property(role + ".dump_crc_stats", false);
+    const std::string default_crc_stats_dumpname("telemetry_crc_stats");
+    dump_crc_stats_filename = configuration->property(role + ".dump_crc_stats_filename", default_crc_stats_dumpname);
+    enable_navdata_monitor = configuration->property("NavDataMonitor.enable_monitor", false);
 }

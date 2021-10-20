@@ -22,16 +22,16 @@ struct VOLK_CPU volk_gnsssdr_cpu;
 
 #if defined(VOLK_CPU_x86)
 
-//implement get cpuid for gcc compilers using a system or local copy of cpuid.h
+// implement get cpuid for gcc compilers using a system or local copy of cpuid.h
 #if defined(__GNUC__)
 #include <cpuid.h>
 #define cpuid_x86(op, r) __get_cpuid(op, (unsigned int *)r + 0, (unsigned int *)r + 1, (unsigned int *)r + 2, (unsigned int *)r + 3)
 #define cpuid_x86_count(op, count, regs) __cpuid_count(op, count, *((unsigned int *)regs), *((unsigned int *)regs + 1), *((unsigned int *)regs + 2), *((unsigned int *)regs + 3))
 
 /* Return Intel AVX extended CPU capabilities register.
-     * This function will bomb on non-AVX-capable machines, so
-     * check for AVX capability before executing.
-     */
+ * This function will bomb on non-AVX-capable machines, so
+ * check for AVX capability before executing.
+ */
 #if ((__GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 2) || (__clang_major__ >= 3)) && defined(HAVE_XGETBV)
 static inline unsigned long long _xgetbv(unsigned int index)
 {
@@ -46,7 +46,7 @@ static inline unsigned long long _xgetbv(unsigned int index)
 #define __xgetbv() 0
 #endif
 
-//implement get cpuid for MSVC compilers using __cpuid intrinsic
+// implement get cpuid for MSVC compilers using __cpuid intrinsic
 #elif defined(_MSC_VER) && defined(HAVE_INTRIN_H)
 #include <intrin.h>
 #define cpuid_x86(op, r) __cpuid(((int *)r), op)
@@ -60,9 +60,9 @@ static inline unsigned long long _xgetbv(unsigned int index)
 
 #else
 #error "A get cpuid for volk_gnsssdr is not available on this compiler..."
-#endif  //defined(__GNUC__)
+#endif  // defined(__GNUC__)
 
-#endif  //defined(VOLK_CPU_x86)
+#endif  // defined(VOLK_CPU_x86)
 
 static inline unsigned int cpuid_count_x86_bit(unsigned int level, unsigned int count, unsigned int reg, unsigned int bit)
 {
@@ -120,13 +120,13 @@ static inline unsigned int get_avx2_enabled(void)
 static inline unsigned int get_avx512_enabled(void)
 {
 #if defined(VOLK_CPU_x86)
-    return __xgetbv() & 0xE6;  //check for zmm, xmm and ymm regs
+    return __xgetbv() & 0xE6;  // check for zmm, xmm and ymm regs
 #else
     return 0;
 #endif
 }
 
-//neon detection is linux specific
+// neon detection is linux specific
 #if defined(__arm__) && defined(__linux__)
 #include <asm/hwcap.h>
 #include <linux/auxvec.h>
@@ -144,8 +144,8 @@ static int has_neonv7(void)
     if (!auxvec_f) return 0;
 
     size_t r = 1;
-    //so auxv is basically 32b of ID and 32b of value
-    //so it goes like this
+    // so auxv is basically 32b of ID and 32b of value
+    // so it goes like this
     while (!found_neon && r)
         {
             r = fread(auxvec, sizeof(unsigned long), 2, auxvec_f);
@@ -161,7 +161,7 @@ static int has_neonv7(void)
 }
 
 //\todo: Fix this to really check for neon on aarch64
-//neon detection is linux specific
+// neon detection is linux specific
 #if defined(__aarch64__) && defined(__linux__)
 #include <asm/hwcap.h>
 #include <linux/auxvec.h>
@@ -179,8 +179,8 @@ static int has_neonv8(void)
     if (!auxvec_f) return 0;
 
     size_t r = 1;
-    //so auxv is basically 32b of ID and 32b of value
-    //so it goes like this
+    // so auxv is basically 32b of ID and 32b of value
+    // so it goes like this
     while (!found_neon && r)
         {
             r = fread(auxvec, sizeof(unsigned long), 2, auxvec_f);
@@ -225,7 +225,7 @@ static int i_can_has_${arch.name} (void) {
         }
     #else
         static inline void set_float_rounding(void){
-            //do nothing
+            // do nothing
         }
     #endif
 #elif defined(_MSC_VER)
@@ -237,7 +237,7 @@ static int i_can_has_${arch.name} (void) {
     }
 #else
     static inline void set_float_rounding(void){
-        //do nothing
+        // do nothing
     }
 #endif
 

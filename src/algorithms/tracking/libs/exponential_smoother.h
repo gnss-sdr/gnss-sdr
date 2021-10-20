@@ -55,14 +55,14 @@ public:
 
 private:
     std::vector<float> init_buffer_;
-    float alpha_;  // takes value 0.0001 if not set
-    float one_minus_alpha_;
-    float old_value_;
-    float min_value_;
-    float offset_;
-    int samples_for_initialization_;
-    int init_counter_;
-    bool initializing_;
+    float alpha_{0.001};
+    float one_minus_alpha_{0.999};
+    float old_value_{0.0};
+    float min_value_{25.0};
+    float offset_{12.0};
+    int samples_for_initialization_{200};
+    int init_counter_{0};
+    bool initializing_{true};
 };
 
 

@@ -52,43 +52,39 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
     uint32_t code_length_chips,
     bool track_pilot,
     uint32_t code_samples_per_chip)
+    : d_initial_sample_counter(0),
+      d_corr_out(nullptr),
+      d_Prompt_Data(nullptr),
+      d_shifts_chips(nullptr),
+      d_prompt_data_shift(nullptr),
+      d_rem_code_phase_chips(0),
+      d_code_phase_step_chips(0),
+      d_rem_carrier_phase_in_rad(0),
+      d_phase_step_rad(0),
+      d_code_length_samples(code_length_chips * code_samples_per_chip),
+      d_n_correlators(n_correlators),
+      d_device_descriptor(0),
+      d_map_base(nullptr),
+      d_correlator_length_samples(0),
+      d_code_phase_step_chips_num(0),
+      d_rem_carr_phase_rad_int(0),
+      d_phase_step_rad_int(0),
+      d_ca_codes(ca_codes),
+      d_data_codes(data_codes),
+      d_track_pilot(track_pilot),
+      d_secondary_code_enabled(false)
 {
-    d_n_correlators = n_correlators;
-    d_track_pilot = track_pilot;
-    d_device_descriptor = 0;
-    d_map_base = nullptr;
-
     // instantiate variable length vectors
     if (d_track_pilot)
         {
-            d_initial_index.reserve(n_correlators + 1);
-            d_initial_interp_counter.reserve(n_correlators + 1);
+            d_initial_index = volk_gnsssdr::vector<uint32_t>(n_correlators + 1);
+            d_initial_interp_counter = volk_gnsssdr::vector<uint32_t>(n_correlators + 1);
         }
     else
         {
-            d_initial_index.reserve(n_correlators);
-            d_initial_interp_counter.reserve(n_correlators);
+            d_initial_index = volk_gnsssdr::vector<uint32_t>(n_correlators);
+            d_initial_interp_counter = volk_gnsssdr::vector<uint32_t>(n_correlators);
         }
-    d_shifts_chips = nullptr;
-    d_prompt_data_shift = nullptr;
-    d_Prompt_Data = nullptr;
-    d_corr_out = nullptr;
-    d_code_length_chips = 0;
-    d_rem_code_phase_chips = 0;
-    d_code_phase_step_chips = 0;
-    d_rem_carrier_phase_in_rad = 0;
-    d_phase_step_rad = 0;
-    d_rem_carr_phase_rad_int = 0;
-    d_phase_step_rad_int = 0;
-    d_initial_sample_counter = 0;
-    d_correlator_length_samples = 0;
-    d_code_phase_step_chips_num = 0;
-    d_code_length_chips = code_length_chips;
-    d_ca_codes = ca_codes;
-    d_data_codes = data_codes;
-    d_code_samples_per_chip = code_samples_per_chip;
-    d_code_length_samples = d_code_length_chips * d_code_samples_per_chip;
-    d_secondary_code_enabled = false;
 
     DLOG(INFO) << "TRACKING FPGA CLASS CREATED";
 }

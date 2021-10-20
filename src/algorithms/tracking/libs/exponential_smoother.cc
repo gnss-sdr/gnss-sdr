@@ -22,14 +22,6 @@
 
 Exponential_Smoother::Exponential_Smoother()
 {
-    alpha_ = 0.001;
-    old_value_ = 0.0;
-    one_minus_alpha_ = 1.0F - alpha_;
-    samples_for_initialization_ = 200;
-    initializing_ = true;
-    init_counter_ = 0;
-    min_value_ = 25.0;
-    offset_ = 12.0;
     init_buffer_.reserve(samples_for_initialization_);
 }
 

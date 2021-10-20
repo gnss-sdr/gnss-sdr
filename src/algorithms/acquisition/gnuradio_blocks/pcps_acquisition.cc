@@ -47,20 +47,41 @@ pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
 }
 
 
-pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acquisition",
-                                                                gr::io_signature::make(1, 1, conf_.it_size),
-                                                                gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
+    : gr::block("pcps_acquisition",
+          gr::io_signature::make(1, 1, conf_.it_size),
+          gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
+      d_acq_parameters(conf_),
+      d_gnss_synchro(nullptr),
+      d_dump_filename(conf_.dump_filename),
+      d_dump_number(0LL),
+      d_sample_counter(0ULL),
+      d_threshold(0.0),
+      d_mag(0),
+      d_input_power(0.0),
+      d_test_statistics(0.0),
+      d_doppler_center_step_two(0.0),
+      d_state(0),
+      d_positive_acq(0),
+      d_doppler_center(0U),
+      d_doppler_bias(0),
+      d_channel(0U),
+      d_samplesPerChip(conf_.samples_per_chip),
+      d_doppler_step(conf_.doppler_step),
+      d_num_noncoherent_integrations_counter(0U),
+      d_consumed_samples(conf_.sampled_ms * conf_.samples_per_ms * (conf_.bit_transition_flag ? 2.0 : 1.0)),
+      d_num_doppler_bins(0U),
+      d_num_doppler_bins_step2(conf_.num_doppler_bins_step2),
+      d_dump_channel(conf_.dump_channel),
+      d_buffer_count(0U),
+      d_active(false),
+      d_worker_active(false),
+      d_step_two(false),
+      d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
+      d_dump(conf_.dump)
 {
     this->message_port_register_out(pmt::mp("events"));
 
-    d_acq_parameters = conf_;
-    d_sample_counter = 0ULL;  // SAMPLE COUNTER
-    d_active = false;
-    d_positive_acq = 0;
-    d_state = 0;
-    d_doppler_bias = 0;
-    d_num_noncoherent_integrations_counter = 0U;
-    d_consumed_samples = d_acq_parameters.sampled_ms * d_acq_parameters.samples_per_ms * (d_acq_parameters.bit_transition_flag ? 2.0 : 1.0);
     if (d_acq_parameters.sampled_ms == d_acq_parameters.ms_per_code)
         {
             d_fft_size = d_consumed_samples;
@@ -70,23 +91,6 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
             d_fft_size = d_consumed_samples * 2;
         }
     // d_fft_size = next power of two?  ////
-    d_mag = 0;
-    d_input_power = 0.0;
-    d_num_doppler_bins = 0U;
-    d_threshold = 0.0;
-    d_doppler_step = d_acq_parameters.doppler_step;
-    d_doppler_center = 0U;
-    d_doppler_center_step_two = 0.0;
-    d_test_statistics = 0.0;
-    d_channel = 0U;
-    if (conf_.it_size == sizeof(gr_complex))
-        {
-            d_cshort = false;
-        }
-    else
-        {
-            d_cshort = true;
-        }
 
     // COD:
     // Experimenting with the overlap/save technique for handling bit trannsitions
@@ -110,25 +114,24 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_) : gr::block("pcps_acqu
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
 
-    d_gnss_synchro = nullptr;
-    d_worker_active = false;
+    d_grid = arma::fmat();
+    d_narrow_grid = arma::fmat();
+
+    if (conf_.it_size == sizeof(gr_complex))
+        {
+            d_cshort = false;
+        }
+    else
+        {
+            d_cshort = true;
+        }
+
     d_data_buffer = volk_gnsssdr::vector<std::complex<float>>(d_consumed_samples);
     if (d_cshort)
         {
             d_data_buffer_sc = volk_gnsssdr::vector<lv_16sc_t>(d_consumed_samples);
         }
-    d_grid = arma::fmat();
-    d_narrow_grid = arma::fmat();
-    d_step_two = false;
-    d_num_doppler_bins_step2 = d_acq_parameters.num_doppler_bins_step2;
 
-    d_samplesPerChip = d_acq_parameters.samples_per_chip;
-    d_buffer_count = 0U;
-    d_use_CFAR_algorithm_flag = d_acq_parameters.use_CFAR_algorithm_flag;
-    d_dump_number = 0LL;
-    d_dump_channel = d_acq_parameters.dump_channel;
-    d_dump = d_acq_parameters.dump;
-    d_dump_filename = d_acq_parameters.dump_filename;
     if (d_dump)
         {
             std::string dump_path;

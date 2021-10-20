@@ -59,17 +59,15 @@ float Tracking_2nd_DLL_filter::get_code_nco(float DLL_discriminator)
 }
 
 
-Tracking_2nd_DLL_filter::Tracking_2nd_DLL_filter(float pdi_code)
+Tracking_2nd_DLL_filter::Tracking_2nd_DLL_filter(float pdi_code) : d_pdi_code(pdi_code),
+                                                                   d_dlldampingratio(0.7)
 {
-    d_pdi_code = pdi_code;  // Summation interval for code
-    d_dlldampingratio = 0.7;
 }
 
 
-Tracking_2nd_DLL_filter::Tracking_2nd_DLL_filter()
+Tracking_2nd_DLL_filter::Tracking_2nd_DLL_filter() : d_pdi_code(0.001),
+                                                     d_dlldampingratio(0.7)
 {
-    d_pdi_code = 0.001;  // Summation interval for code
-    d_dlldampingratio = 0.7;
 }
 
 

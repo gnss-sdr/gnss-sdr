@@ -37,7 +37,7 @@
 class Cpu_Multicorrelator
 {
 public:
-    Cpu_Multicorrelator();
+    Cpu_Multicorrelator() = default;
     ~Cpu_Multicorrelator();
     bool init(int max_signal_length_samples, int n_correlators);
     bool set_local_code_and_taps(int code_length_chips, const std::complex<float> *local_code_in, float *shifts_chips);
@@ -48,13 +48,13 @@ public:
 
 private:
     // Allocate the device input vectors
-    const std::complex<float> *d_sig_in;
-    const std::complex<float> *d_local_code_in;
-    std::complex<float> **d_local_codes_resampled;
-    std::complex<float> *d_corr_out;
-    float *d_shifts_chips;
-    int d_code_length_chips;
-    int d_n_correlators;
+    const std::complex<float> *d_sig_in{nullptr};
+    const std::complex<float> *d_local_code_in{nullptr};
+    std::complex<float> **d_local_codes_resampled{nullptr};
+    std::complex<float> *d_corr_out{nullptr};
+    float *d_shifts_chips{nullptr};
+    int d_code_length_chips{0};
+    int d_n_correlators{0};
 };
 
 

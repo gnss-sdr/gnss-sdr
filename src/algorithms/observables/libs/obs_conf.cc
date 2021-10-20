@@ -18,14 +18,6 @@
 #include "obs_conf.h"
 #include "gnss_sdr_flags.h"
 
-Obs_Conf::Obs_Conf()
+Obs_Conf::Obs_Conf() : smoothing_factor(FLAGS_carrier_smoothing_factor)
 {
-    dump_filename = std::string("obs_dump.dat");
-    smoothing_factor = FLAGS_carrier_smoothing_factor;
-    nchannels_in = 0U;
-    nchannels_out = 0U;
-    observable_interval_ms = 20U;
-    enable_carrier_smoothing = false;
-    dump = false;
-    dump_mat = false;
 }

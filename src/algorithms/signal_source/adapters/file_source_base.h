@@ -20,16 +20,18 @@
 
 #include "concurrent_queue.h"
 #include "signal_source_base.h"
+#include <gnuradio/blocks/file_sink.h>  // for dump
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/throttle.h>
 #include <pmt/pmt.h>
-#include <tuple>
-
-// for dump
-#include <gnuradio/blocks/file_sink.h>
 #include <cstddef>
 #include <string>
+#include <tuple>
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_adapters
+ * \{ */
 
 class ConfigurationInterface;
 
@@ -61,8 +63,6 @@ class ConfigurationInterface;
 //!   .dump     - whether to archive input data
 //!
 //!   .dump_filename - if dumping, path to file for output
-
-
 class FileSourceBase : public SignalSourceBase
 {
 public:
@@ -182,5 +182,6 @@ private:
     gr::blocks::file_sink::sptr sink_;
 };
 
-
-#endif
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_FILE_SOURCE_BASE_H

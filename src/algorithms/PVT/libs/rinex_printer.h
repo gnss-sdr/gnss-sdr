@@ -222,8 +222,8 @@ public:
     }
 
     /*!
-      * \brief Returns name of RINEX observation file
-      */
+     * \brief Returns name of RINEX observation file
+     */
     inline std::string get_obsfilename() const
     {
         return obsfilename;

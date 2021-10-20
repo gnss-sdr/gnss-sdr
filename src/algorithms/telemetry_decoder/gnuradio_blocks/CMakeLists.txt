@@ -53,6 +53,7 @@ target_link_libraries(telemetry_decoder_gr_blocks
         telemetry_decoder_libswiftcnav
         telemetry_decoder_libs
         algorithms_libs
+        core_libs
         core_system_parameters
         Gnuradio::runtime
         Boost::headers
@@ -70,6 +71,11 @@ endif()
 target_include_directories(telemetry_decoder_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
+)
+
+target_include_directories(telemetry_decoder_gr_blocks
+    PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique.h
 )
 
 if(has_rotl)

@@ -58,7 +58,7 @@ dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_)
 class dll_pll_veml_tracking : public gr::block
 {
 public:
-    ~dll_pll_veml_tracking();
+    ~dll_pll_veml_tracking() override;
 
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
@@ -66,9 +66,9 @@ public:
     void stop_tracking();
 
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
 
 private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
@@ -175,7 +175,6 @@ private:
     float d_rem_carr_phase_rad;
 
     int32_t d_symbols_per_bit;
-    int32_t d_preamble_length_symbols;
     int32_t d_state;
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
@@ -203,6 +202,7 @@ private:
     bool d_dump_mat;
     bool d_acc_carrier_phase_initialized;
     bool d_enable_extended_integration;
+    bool d_Flag_PLL_180_deg_phase_locked;
 };
 
 

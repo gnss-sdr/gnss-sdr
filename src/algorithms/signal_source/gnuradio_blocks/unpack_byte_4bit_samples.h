@@ -21,6 +21,7 @@
 #define GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
 
 #include <gnuradio/sync_interpolator.h>
+#include <memory>
 
 /** \addtogroup Signal_Source
  * \{ */

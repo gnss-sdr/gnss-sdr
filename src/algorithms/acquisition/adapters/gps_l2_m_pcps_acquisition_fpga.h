@@ -23,10 +23,10 @@
 #include "channel_fsm.h"
 #include "pcps_acquisition_fpga.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
-#include <cstddef>                   // for size_t
-#include <memory>                    // for weak_ptr
-#include <string>                    // for string
-#include <vector>
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
+#include <cstddef>  // for size_t
+#include <memory>   // for weak_ptr
+#include <string>   // for string
 
 /** \addtogroup Acquisition
  * \{ */
@@ -158,7 +158,7 @@ private:
     static const uint32_t SHL_CODE_BITS = 65536;              // shift left by 10 bits
 
     pcps_acquisition_fpga_sptr acquisition_fpga_;
-    std::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
+    volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     std::weak_ptr<ChannelFsm> channel_fsm_;
     Gnss_Synchro* gnss_synchro_;
     std::string item_type_;

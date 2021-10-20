@@ -28,6 +28,7 @@
 #include <bitset>
 #include <exception>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <utility>
 
@@ -114,7 +115,7 @@ std::string labsat23_source::generate_filename()
                 {
                     return d_signal_file_basename;
                 }
-            return std::string("donotexist");  // just to stop processing
+            return {"donotexist"};  // just to stop processing
         }
     if (d_signal_file_basename.substr(d_signal_file_basename.length() - 5, 5) == ".ls3w" or d_signal_file_basename.substr(d_signal_file_basename.length() - 5, 5) == ".LS3W")
         {

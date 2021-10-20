@@ -29,30 +29,6 @@
 /** \addtogroup System_Parameters
  * \{ */
 
-
-// Galileo HAS message field lengths
-constexpr size_t HAS_MSG_NSYS_LENGTH = 4;
-constexpr size_t HAS_MSG_ID_MASK_LENGTH = 4;
-constexpr size_t HAS_MSG_SATELLITE_MASK_LENGTH = 40;
-constexpr size_t HAS_MSG_SIGNAL_MASK_LENGTH = 16;
-constexpr size_t HAS_MSG_NAV_MESSAGE_LENGTH = 3;
-constexpr size_t HAS_MSG_VALIDITY_INDEX_LENGTH = 4;
-constexpr size_t HAS_MSG_IOD_GPS_LENGTH = 8;
-constexpr size_t HAS_MSG_IOD_GAL_LENGTH = 10;
-constexpr size_t HAS_MSG_DELTA_RADIAL_LENGTH = 14;
-constexpr size_t HAS_MSG_DELTA_ALONG_TRACK_LENGTH = 12;
-constexpr size_t HAS_MSG_DELTA_CROSS_TRACK_LENGTH = 12;
-constexpr size_t HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH = 2;
-constexpr size_t HAS_MSG_DELTA_CLOCK_C0_LENGTH = 14;
-constexpr size_t HAS_MSG_NSYSPRIME_LENGTH = 4;
-constexpr size_t HAS_MSG_ID_CLOCK_SUBSET_LENGTH = 4;
-constexpr size_t HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH = 2;
-constexpr size_t HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH = 14;
-constexpr size_t HAS_MSG_CODE_BIAS_LENGTH = 11;
-constexpr size_t HAS_MSG_PHASE_BIAS_LENGTH = 11;
-constexpr size_t HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH = 2;
-constexpr size_t HAS_MSG_URA_LENGTH = 2;
-
 // Galileo CNAV message structure
 constexpr int32_t GALILEO_CNAV_SYMBOLS_PER_PAGE = 1000;  //!< Total numer of symbols per HAS page including the sync pattern
 constexpr int32_t GALILEO_CNAV_PREAMBLE_PERIOD_SYMBOLS = 1000;
@@ -73,13 +49,50 @@ constexpr int32_t GALILEO_CNAV_MT1_HEADER_BITS = 32;
 constexpr int32_t GALILEO_CNAV_OCTETS_IN_SUBPAGE = 53;
 constexpr int32_t GALILEO_CNAV_INFORMATION_VECTOR_LENGTH = 32;
 
-constexpr int32_t HAS_MSG_MAX_SATS = 40;
-constexpr int32_t HAS_MSG_MAX_SIGNALS = 16;
+constexpr char GALILEO_CNAV_PREAMBLE[17] = "1011011101110000";
+
+// Galileo HAS message field lengths
+constexpr size_t HAS_MSG_NSYS_LENGTH = 4;
+constexpr size_t HAS_MSG_ID_MASK_LENGTH = 4;
+constexpr size_t HAS_MSG_SATELLITE_MASK_LENGTH = 40;
+constexpr size_t HAS_MSG_SIGNAL_MASK_LENGTH = 16;
+constexpr size_t HAS_MSG_NAV_MESSAGE_LENGTH = 3;
+constexpr size_t HAS_MSG_MASK_RESERVED_LENGTH = 6;
+constexpr size_t HAS_MSG_VALIDITY_INDEX_LENGTH = 4;
+constexpr size_t HAS_MSG_IOD_GPS_LENGTH = 8;
+constexpr size_t HAS_MSG_IOD_GAL_LENGTH = 10;
+constexpr size_t HAS_MSG_DELTA_RADIAL_LENGTH = 14;
+constexpr size_t HAS_MSG_DELTA_ALONG_TRACK_LENGTH = 12;
+constexpr size_t HAS_MSG_DELTA_CROSS_TRACK_LENGTH = 12;
+constexpr size_t HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH = 2;
+constexpr size_t HAS_MSG_DELTA_CLOCK_C0_LENGTH = 14;
+constexpr size_t HAS_MSG_NSYSPRIME_LENGTH = 4;
+constexpr size_t HAS_MSG_ID_CLOCK_SUBSET_LENGTH = 4;
+constexpr size_t HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH = 2;
+constexpr size_t HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH = 13;
+constexpr size_t HAS_MSG_CODE_BIAS_LENGTH = 11;
+constexpr size_t HAS_MSG_PHASE_BIAS_LENGTH = 11;
+constexpr size_t HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH = 2;
+constexpr size_t HAS_MSG_URA_LENGTH = 2;
+
+constexpr int32_t HAS_MSG_NUMBER_MASK_IDS = 32;
+constexpr int32_t HAS_MSG_NUMBER_GNSS_IDS = 16;
+constexpr int32_t HAS_MSG_NUMBER_MESSAGE_IDS = 32;
+constexpr int32_t HAS_MSG_NUMBER_SATELLITE_IDS = 40;
+constexpr int32_t HAS_MSG_NUMBER_SIGNAL_MASKS = 16;
+
+constexpr float HAS_MSG_DELTA_RADIAL_SCALE_FACTOR = 0.0025;
+constexpr float HAS_MSG_DELTA_ALONG_TRACK_SCALE_FACTOR = 0.008;
+constexpr float HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR = 0.008;
+constexpr float HAS_MSG_DELTA_CLOCK_SCALE_FACTOR = 0.0025;
+constexpr float HAS_MSG_CODE_BIAS_SCALE_FACTOR = 0.02;
+constexpr float HAS_MSG_PHASE_BIAS_SCALE_FACTOR = 0.01;
+
+constexpr uint16_t HAS_MSG_NUMBER_MAX_TOH = 3599;
 
 constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // Table 8 ICD v1.2
 constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 8 ICD v1.2
-
-constexpr char GALILEO_CNAV_PREAMBLE[17] = "1011011101110000";
+constexpr uint8_t HAS_MSG_WRONG_SYSTEM = 255;
 
 const std::pair<int32_t, int32_t> GALILEO_HAS_STATUS({1, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_RESERVED({3, 2});

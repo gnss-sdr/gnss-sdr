@@ -20,6 +20,7 @@
 #include "glonass_gnav_almanac.h"
 #include "glonass_gnav_ephemeris.h"
 #include "glonass_gnav_utc_model.h"
+#include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "tlm_utils.h"
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
@@ -45,7 +46,22 @@ glonass_l2_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const T
 glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf) : gr::block("glonass_l2_ca_telemetry_decoder_gs", gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                            d_dump_filename(conf.dump_filename),
+                            d_preamble_time_samples(0),
+                            d_TOW_at_current_symbol(0),
+                            d_sample_counter(0ULL),
+                            d_preamble_index(0ULL),
+                            d_stat(0),
+                            d_CRC_error_counter(0),
+                            d_channel(0),
+                            d_flag_frame_sync(false),
+                            d_flag_preamble(false),
+                            d_dump(conf.dump),
+                            d_dump_mat(conf.dump_mat),
+                            d_remove_dat(conf.remove_dat),
+                            d_enable_navdata_monitor(conf.enable_navdata_monitor),
+                            d_dump_crc_stats(conf.dump_crc_stats)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -53,11 +69,15 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
-    // initialize internal vars
-    d_dump_filename = conf.dump_filename;
-    d_dump = conf.dump;
-    d_dump_mat = conf.dump_mat;
-    d_remove_dat = conf.remove_dat;
+
+    if (d_enable_navdata_monitor)
+        {
+            // register nav message monitor out
+            this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
+            d_nav_msg_packet.system = std::string("R");
+            d_nav_msg_packet.signal = std::string("2G");
+        }
+
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     LOG(INFO) << "Initializing GLONASS L2 CA TELEMETRY DECODING";
 
@@ -80,19 +100,17 @@ glonass_l2_ca_telemetry_decoder_gs::glonass_l2_ca_telemetry_decoder_gs(
         }
 
     d_symbol_history.set_capacity(GLONASS_GNAV_STRING_SYMBOLS);
-    d_sample_counter = 0ULL;
-    d_stat = 0;
-    d_preamble_index = 0ULL;
-    d_flag_frame_sync = false;
-    d_flag_parity = false;
-    d_TOW_at_current_symbol = 0;
-    Flag_valid_word = false;
-    delta_t = 0;
-    d_CRC_error_counter = 0;
-    d_flag_preamble = false;
-    d_channel = 0;
-    flag_TOW_set = false;
-    d_preamble_time_samples = 0;
+
+    if (d_dump_crc_stats)
+        {
+            // initialize the telemetry CRC statistics class
+            d_Tlm_CRC_Stats = std::make_unique<Tlm_CRC_Stats>();
+            d_Tlm_CRC_Stats->initialize(conf.dump_crc_stats_filename);
+        }
+    else
+        {
+            d_Tlm_CRC_Stats = nullptr;
+        }
 }
 
 
@@ -187,11 +205,17 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             data_bits.push_back(((relative_code[i - 1] - '0') ^ (relative_code[i] - '0')) + '0');
         }
 
+    if (d_enable_navdata_monitor)
+        {
+            d_nav_msg_packet.nav_message = data_bits;
+        }
+
     // 2. Call the GLONASS GNAV string decoder
     d_nav.string_decoder(data_bits);
 
     // 3. Check operation executed correctly
-    if (d_nav.get_flag_CRC_test() == true)
+    bool crc_ok = d_nav.get_flag_CRC_test();
+    if (crc_ok)
         {
             LOG(INFO) << "GLONASS GNAV CRC correct in channel " << d_channel << " from satellite " << d_satellite;
         }
@@ -199,6 +223,12 @@ void glonass_l2_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
         {
             LOG(INFO) << "GLONASS GNAV CRC error in channel " << d_channel << " from satellite " << d_satellite;
         }
+    if (d_dump_crc_stats)
+        {
+            // update CRC statistics
+            d_Tlm_CRC_Stats->update_CRC_stats(crc_ok);
+        }
+
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
@@ -266,6 +296,12 @@ void glonass_l2_ca_telemetry_decoder_gs::set_channel(int32_t channel)
                             LOG(WARNING) << "channel " << d_channel << ": exception opening Glonass TLM dump file. " << e.what();
                         }
                 }
+        }
+    if (d_dump_crc_stats)
+        {
+            // set the channel number for the telemetry CRC statistics
+            // disable the telemetry CRC statistics if there is a problem opening the output file
+            d_dump_crc_stats = d_Tlm_CRC_Stats->set_channel(d_channel);
         }
 }
 
@@ -395,7 +431,7 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
 
     // UPDATE GNSS SYNCHRO DATA
     // 2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true and d_nav.get_flag_TOW_new() == true)
+    if (this->d_flag_preamble == true && d_nav.get_flag_TOW_new() == true)
         // update TOW at the preamble instant
         {
             d_TOW_at_current_symbol = floor((d_nav.get_ephemeris().d_TOW - GLONASS_GNAV_PREAMBLE_DURATION_S) * 1000) / 1000;
@@ -406,24 +442,37 @@ int glonass_l2_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
             d_TOW_at_current_symbol = d_TOW_at_current_symbol + GLONASS_L2_CA_CODE_PERIOD_S;
         }
 
-    // if (d_flag_frame_sync == true and d_nav.flag_TOW_set==true and d_nav.get_flag_CRC_test() == true)
+    // if (d_flag_frame_sync == true && d_nav.flag_TOW_set==true && d_nav.get_flag_CRC_test() == true)
 
-    // if(d_nav.flag_GGTO_1 == true  and  d_nav.flag_GGTO_2 == true and  d_nav.flag_GGTO_3 == true and  d_nav.flag_GGTO_4 == true) // all GGTO parameters arrived
+    // if(d_nav.flag_GGTO_1 == true  &&  d_nav.flag_GGTO_2 == true &&  d_nav.flag_GGTO_3 == true &&  d_nav.flag_GGTO_4 == true) // all GGTO parameters arrived
     //     {
     //         delta_t = d_nav.A_0G + d_nav.A_1G * (d_TOW_at_current_symbol - d_nav.t_0G + 604800.0 * (fmod((d_nav.WN_0 - d_nav.WN_0G), 64)));
     //     }
 
-    if (d_flag_frame_sync == true and d_nav.is_flag_TOW_set() == true)
+    current_symbol.PRN = this->d_satellite.get_PRN();
+    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
+
+    if (d_flag_frame_sync == true && d_nav.is_flag_TOW_set() == true)
         {
             current_symbol.Flag_valid_word = true;
+            if (d_flag_frame_sync == true && d_nav.is_flag_TOW_set() == true)
+                {
+                    current_symbol.Flag_valid_word = true;
+                    if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                        {
+                            d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                            d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(current_symbol.TOW_at_current_symbol_ms);
+                            const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                            this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                            d_nav_msg_packet.nav_message = "";
+                        }
+                }
         }
     else
         {
             current_symbol.Flag_valid_word = false;
         }
 
-    current_symbol.PRN = this->d_satellite.get_PRN();
-    current_symbol.TOW_at_current_symbol_ms = round(d_TOW_at_current_symbol * 1000.0);
     // todo: glonass time to gps time should be done in observables block
     // current_symbol.TOW_at_current_symbol_ms -= static_cast<uint32_t>(delta_t) * 1000;
 

@@ -56,65 +56,15 @@
 #include <vector>
 
 
-Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path, const std::string& base_name)
+Rinex_Printer::Rinex_Printer(int32_t conf_version,
+    const std::string& base_path,
+    const std::string& base_name) : d_fake_cnav_iode(1),
+                                    d_numberTypesObservations(4),
+                                    d_rinex_header_updated(false),
+                                    d_rinex_header_written(false),
+                                    d_pre_2009_file(false)
+
 {
-    d_pre_2009_file = false;
-    d_rinex_header_updated = false;
-    d_rinex_header_written = false;
-    std::string base_rinex_path = base_path;
-    fs::path full_path(fs::current_path());
-    const fs::path p(base_rinex_path);
-    if (!fs::exists(p))
-        {
-            std::string new_folder;
-            for (const auto& folder : fs::path(base_rinex_path))
-                {
-                    new_folder += folder.string();
-                    errorlib::error_code ec;
-                    if (!fs::exists(new_folder))
-                        {
-                            if (!fs::create_directory(new_folder, ec))
-                                {
-                                    std::cout << "Could not create the " << new_folder << " folder.\n";
-                                    base_rinex_path = full_path.string();
-                                }
-                        }
-                    new_folder += fs::path::preferred_separator;
-                }
-        }
-    else
-        {
-            base_rinex_path = p.string();
-        }
-    if (base_rinex_path != ".")
-        {
-            std::cout << "RINEX files will be stored at " << base_rinex_path << '\n';
-        }
-
-    navfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV", base_name);
-    obsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS", base_name);
-    sbsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_SBAS", base_name);
-    navGalfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GAL_NAV", base_name);
-    navMixfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_MIXED_NAV", base_name);
-    navGlofilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GLO_NAV", base_name);
-    navBdsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_BDS_NAV", base_name);
-
-    Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::in | std::ios::app);
-    Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::in | std::ios::app);
-    Rinex_Printer::sbsFile.open(sbsfilename, std::ios::out | std::ios::app);
-    Rinex_Printer::navGalFile.open(navGalfilename, std::ios::out | std::ios::in | std::ios::app);
-    Rinex_Printer::navMixFile.open(navMixfilename, std::ios::out | std::ios::in | std::ios::app);
-    Rinex_Printer::navGloFile.open(navGlofilename, std::ios::out | std::ios::in | std::ios::app);
-    Rinex_Printer::navBdsFile.open(navBdsfilename, std::ios::out | std::ios::in | std::ios::app);
-
-
-    if (!Rinex_Printer::navFile.is_open() or !Rinex_Printer::obsFile.is_open() or
-        !Rinex_Printer::sbsFile.is_open() or !Rinex_Printer::navGalFile.is_open() or
-        !Rinex_Printer::navMixFile.is_open() or !Rinex_Printer::navGloFile.is_open())
-        {
-            std::cout << "RINEX files cannot be saved. Wrong permissions?\n";
-        }
-
     // RINEX v3.02 codes
     satelliteSystem["GPS"] = "G";
     satelliteSystem["GLONASS"] = "R";
@@ -199,6 +149,59 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path,
     observationCode["GPS_L1_CA_v2"] = "1";
     observationCode["GLONASS_G1_CA_v2"] = "1";
 
+    std::string base_rinex_path = base_path;
+    fs::path full_path(fs::current_path());
+    const fs::path p(base_rinex_path);
+    if (!fs::exists(p))
+        {
+            std::string new_folder;
+            for (const auto& folder : fs::path(base_rinex_path))
+                {
+                    new_folder += folder.string();
+                    errorlib::error_code ec;
+                    if (!fs::exists(new_folder))
+                        {
+                            if (!fs::create_directory(new_folder, ec))
+                                {
+                                    std::cout << "Could not create the " << new_folder << " folder.\n";
+                                    base_rinex_path = full_path.string();
+                                }
+                        }
+                    new_folder += fs::path::preferred_separator;
+                }
+        }
+    else
+        {
+            base_rinex_path = p.string();
+        }
+    if (base_rinex_path != ".")
+        {
+            std::cout << "RINEX files will be stored at " << base_rinex_path << '\n';
+        }
+
+    navfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GPS_NAV", base_name);
+    obsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_OBS", base_name);
+    sbsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_SBAS", base_name);
+    navGalfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GAL_NAV", base_name);
+    navMixfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_MIXED_NAV", base_name);
+    navGlofilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_GLO_NAV", base_name);
+    navBdsfilename = base_rinex_path + fs::path::preferred_separator + Rinex_Printer::createFilename("RINEX_FILE_TYPE_BDS_NAV", base_name);
+
+    Rinex_Printer::navFile.open(navfilename, std::ios::out | std::ios::in | std::ios::app);
+    Rinex_Printer::obsFile.open(obsfilename, std::ios::out | std::ios::in | std::ios::app);
+    Rinex_Printer::sbsFile.open(sbsfilename, std::ios::out | std::ios::app);
+    Rinex_Printer::navGalFile.open(navGalfilename, std::ios::out | std::ios::in | std::ios::app);
+    Rinex_Printer::navMixFile.open(navMixfilename, std::ios::out | std::ios::in | std::ios::app);
+    Rinex_Printer::navGloFile.open(navGlofilename, std::ios::out | std::ios::in | std::ios::app);
+    Rinex_Printer::navBdsFile.open(navBdsfilename, std::ios::out | std::ios::in | std::ios::app);
+
+    if (!Rinex_Printer::navFile.is_open() or !Rinex_Printer::obsFile.is_open() or
+        !Rinex_Printer::sbsFile.is_open() or !Rinex_Printer::navGalFile.is_open() or
+        !Rinex_Printer::navMixFile.is_open() or !Rinex_Printer::navGloFile.is_open())
+        {
+            std::cout << "RINEX files cannot be saved. Wrong permissions?\n";
+        }
+
     if (conf_version == 2)
         {
             d_version = 2;
@@ -209,9 +212,6 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version, const std::string& base_path,
             d_version = 3;
             d_stringVersion = "3.02";
         }
-
-    d_numberTypesObservations = 4;  // Number of available types of observable in the system
-    d_fake_cnav_iode = 1;
 }
 
 

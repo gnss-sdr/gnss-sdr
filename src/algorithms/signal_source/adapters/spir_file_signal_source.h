@@ -20,6 +20,9 @@
 
 #include "file_source_base.h"
 #include "unpack_intspir_1bit_samples.h"
+#include <cstddef>
+#include <string>
+#include <tuple>
 
 
 /** \addtogroup Signal_Source

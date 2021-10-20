@@ -15,7 +15,7 @@ if(${DARWIN_VERSION} VERSION_GREATER "19")
         string(REGEX REPLACE ".$" "" macOS_NAME ${macOS_NAME})
         execute_process(COMMAND sw_vers -productVersion OUTPUT_VARIABLE macOS_VERSION)
         string(REGEX REPLACE "\n$" "" macOS_VERSION ${macOS_VERSION})
-        set(MACOS_DISTRIBUTION "macOS ${macOS_NAME} ${macOS_VERSION}")
+        set(MACOS_DISTRIBUTION "macOS ${macOS_NAME} ${macOS_VERSION} (${CMAKE_SYSTEM_PROCESSOR})")
     endif()
 endif()
 

@@ -37,7 +37,7 @@ void Galileo_Fnav_Message::split_page(const std::string& page_string)
     const std::string CRC_data = page_string.substr(214, 24);
     const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS> Word_for_CRC_bits(message_word);
     const std::bitset<24> checksum(CRC_data);
-    if (_CRC_test(Word_for_CRC_bits, checksum.to_ulong()) == true)
+    if (CRC_test(Word_for_CRC_bits, checksum.to_ulong()) == true)
         {
             flag_CRC_test = true;
             // CRC correct: Decode word
@@ -50,7 +50,7 @@ void Galileo_Fnav_Message::split_page(const std::string& page_string)
 }
 
 
-bool Galileo_Fnav_Message::_CRC_test(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, uint32_t checksum) const
+bool Galileo_Fnav_Message::CRC_test(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, uint32_t checksum) const
 {
     CRC_Galileo_FNAV_type CRC_Galileo;
 

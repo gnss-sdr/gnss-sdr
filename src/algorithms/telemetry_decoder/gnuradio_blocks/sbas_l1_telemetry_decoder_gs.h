@@ -37,7 +37,7 @@
  * \{ */
 
 
-class Viterbi_Decoder;
+class Viterbi_Decoder_Sbas;
 
 class sbas_l1_telemetry_decoder_gs;
 
@@ -54,19 +54,16 @@ sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
 class sbas_l1_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~sbas_l1_telemetry_decoder_gs();
+    ~sbas_l1_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
-    inline void reset()
-    {
-        return;
-    }
+    inline void reset(){};
 
     /*!
      * \brief This is where all signal processing takes place
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
     friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
@@ -100,7 +97,6 @@ private:
     {
     public:
         Sample_Aligner();
-        ~Sample_Aligner() = default;
         void reset();
         /*
          * samples length must be a multiple of two
@@ -109,8 +105,8 @@ private:
         bool get_symbols(const std::vector<double> &samples, std::vector<double> &symbols);
 
     private:
-        int32_t d_n_smpls_in_history;
-        double d_iir_par;
+        int32_t d_n_smpls_in_history{3};
+        double d_iir_par{0.05};
         double d_corr_paired{};
         double d_corr_shifted{};
         bool d_aligned{};
@@ -122,15 +118,14 @@ private:
     {
     public:
         Symbol_Aligner_And_Decoder();
-        ~Symbol_Aligner_And_Decoder() = default;
         void reset();
         bool get_bits(const std::vector<double> &symbols, std::vector<int32_t> &bits);
 
     private:
-        int32_t d_KK;
-        std::shared_ptr<Viterbi_Decoder> d_vd1;
-        std::shared_ptr<Viterbi_Decoder> d_vd2;
-        double d_past_symbol;
+        int32_t d_KK{7};
+        std::shared_ptr<Viterbi_Decoder_Sbas> d_vd1;
+        std::shared_ptr<Viterbi_Decoder_Sbas> d_vd2;
+        double d_past_symbol{0};
     } d_symbol_aligner_and_decoder;
 
 

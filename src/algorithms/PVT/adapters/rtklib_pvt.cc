@@ -16,17 +16,18 @@
 
 
 #include "rtklib_pvt.h"
-#include "MATH_CONSTANTS.h"           // for D2R
-#include "configuration_interface.h"  // for ConfigurationInterface
-#include "galileo_almanac.h"          // for Galileo_Almanac
-#include "galileo_ephemeris.h"        // for Galileo_Ephemeris
-#include "gnss_sdr_flags.h"           // for FLAGS_RINEX_version
-#include "gps_almanac.h"              // for Gps_Almanac
-#include "gps_ephemeris.h"            // for Gps_Ephemeris
-#include "pvt_conf.h"                 // for Pvt_Conf
-#include "rtklib_rtkpos.h"            // for rtkfree, rtkinit
-#include <glog/logging.h>             // for LOG
-#include <iostream>                   // for operator<<
+#include "MATH_CONSTANTS.h"            // for D2R
+#include "configuration_interface.h"   // for ConfigurationInterface
+#include "galileo_almanac.h"           // for Galileo_Almanac
+#include "galileo_ephemeris.h"         // for Galileo_Ephemeris
+#include "gnss_sdr_flags.h"            // for FLAGS_RINEX_version
+#include "gnss_sdr_string_literals.h"  // for std::string_literals
+#include "gps_almanac.h"               // for Gps_Almanac
+#include "gps_ephemeris.h"             // for Gps_Ephemeris
+#include "pvt_conf.h"                  // for Pvt_Conf
+#include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
+#include <glog/logging.h>              // for LOG
+#include <iostream>                    // for std::cout
 #if USE_OLD_BOOST_MATH_COMMON_FACTOR
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
@@ -35,6 +36,7 @@ namespace bc = boost::math;
 namespace bc = boost::integer;
 #endif
 
+using namespace std::string_literals;
 
 Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const std::string& role,
@@ -53,6 +55,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.dump = configuration->property(role + ".dump", false);
     pvt_output_parameters.dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
     pvt_output_parameters.dump_mat = configuration->property(role + ".dump_mat", true);
+
+    pvt_output_parameters.rtk_trace_level = configuration->property(role + ".rtk_trace_level"s, 0);
 
     // Flag to postprocess old gnss records (older than 2009) and avoid wrong week rollover
     pvt_output_parameters.pre_2009_file = configuration->property("GNSS-SDR.pre_2009_file", false);
@@ -118,10 +122,35 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
             pvt_output_parameters.rtcm_msg_rate_ms[k] = rtcm_MT1097_rate_ms;
         }
 
+    // Advanced Nativation Protocol Printer settings
+    pvt_output_parameters.an_output_enabled = configuration->property(role + ".an_output_enabled", pvt_output_parameters.an_output_enabled);
+    pvt_output_parameters.an_dump_devname = configuration->property(role + ".an_dump_devname", default_nmea_dump_devname);
+    if (pvt_output_parameters.an_output_enabled && pvt_output_parameters.flag_nmea_tty_port)
+        {
+            if (pvt_output_parameters.nmea_dump_devname == pvt_output_parameters.an_dump_devname)
+                {
+                    std::cerr << "Warning: NMEA an Advanced Nativation printers set to write to the same serial port.\n"
+                              << "Please make sure that PVT.an_dump_devname and PVT.an_dump_devname are different.\n"
+                              << "Shutting down the NMEA serial output.\n";
+                    pvt_output_parameters.flag_nmea_tty_port = false;
+                }
+        }
+    if (pvt_output_parameters.an_output_enabled && pvt_output_parameters.flag_rtcm_tty_port)
+        {
+            if (pvt_output_parameters.rtcm_dump_devname == pvt_output_parameters.an_dump_devname)
+                {
+                    std::cerr << "Warning: RTCM an Advanced Nativation printers set to write to the same serial port.\n"
+                              << "Please make sure that PVT.an_dump_devname and .rtcm_dump_devname are different.\n"
+                              << "Shutting down the RTCM serial output.\n";
+                    pvt_output_parameters.flag_rtcm_tty_port = false;
+                }
+        }
+
     pvt_output_parameters.kml_rate_ms = bc::lcm(configuration->property(role + ".kml_rate_ms", pvt_output_parameters.kml_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.gpx_rate_ms = bc::lcm(configuration->property(role + ".gpx_rate_ms", pvt_output_parameters.gpx_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.geojson_rate_ms = bc::lcm(configuration->property(role + ".geojson_rate_ms", pvt_output_parameters.geojson_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.nmea_rate_ms = bc::lcm(configuration->property(role + ".nmea_rate_ms", pvt_output_parameters.nmea_rate_ms), pvt_output_parameters.output_rate_ms);
+    pvt_output_parameters.an_rate_ms = bc::lcm(configuration->property(role + ".an_rate_ms", pvt_output_parameters.an_rate_ms), pvt_output_parameters.output_rate_ms);
 
     // Infer the type of receiver
     /*
@@ -442,10 +471,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if (positioning_mode == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of positioning mode.\n";
-            std::cout << "positioning_mode possible values: Single / Static / Kinematic / PPP_Static / PPP_Kinematic\n";
-            std::cout << "positioning_mode specified value: " << positioning_mode_str << '\n';
-            std::cout << "Setting positioning_mode to Single\n";
+            std::cout << "WARNING: Bad specification of positioning mode.\n"
+                      << "positioning_mode possible values: Single / Static / Kinematic / PPP_Static / PPP_Kinematic\n"
+                      << "positioning_mode specified value: " << positioning_mode_str << "\n"
+                      << "Setting positioning_mode to Single\n"
+                      << std::flush;
             positioning_mode = PMODE_SINGLE;
         }
 
@@ -529,10 +559,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if (iono_model == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of ionospheric model.\n";
-            std::cout << "iono_model possible values: OFF / Broadcast / SBAS / Iono-Free-LC / Estimate_STEC / IONEX\n";
-            std::cout << "iono_model specified value: " << iono_model_str << '\n';
-            std::cout << "Setting iono_model to OFF\n";
+            std::cout << "WARNING: Bad specification of ionospheric model.\n"
+                      << "iono_model possible values: OFF / Broadcast / SBAS / Iono-Free-LC / Estimate_STEC / IONEX\n"
+                      << "iono_model specified value: " << iono_model_str << "\n"
+                      << "Setting iono_model to OFF\n"
+                      << std::flush;
             iono_model = IONOOPT_OFF; /* 0: ionosphere option: correction off */
         }
 
@@ -562,10 +593,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if (trop_model == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of tropospheric model.\n";
-            std::cout << "trop_model possible values: OFF / Saastamoinen / SBAS / Estimate_ZTD / Estimate_ZTD_Grad\n";
-            std::cout << "trop_model specified value: " << trop_model_str << '\n';
-            std::cout << "Setting trop_model to OFF\n";
+            std::cout << "WARNING: Bad specification of tropospheric model.\n"
+                      << "trop_model possible values: OFF / Saastamoinen / SBAS / Estimate_ZTD / Estimate_ZTD_Grad\n"
+                      << "trop_model specified value: " << trop_model_str << "\n"
+                      << "Setting trop_model to OFF\n"
+                      << std::flush;
             trop_model = TROPOPT_OFF;
         }
 
@@ -640,10 +672,11 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if (integer_ambiguity_resolution_gps == -1)
         {
             // warn user and set the default
-            std::cout << "WARNING: Bad specification of GPS ambiguity resolution method.\n";
-            std::cout << "AR_GPS possible values: OFF / Continuous / Instantaneous / Fix-and-Hold / PPP-AR\n";
-            std::cout << "AR_GPS specified value: " << integer_ambiguity_resolution_gps_str << '\n';
-            std::cout << "Setting AR_GPS to OFF\n";
+            std::cout << "WARNING: Bad specification of GPS ambiguity resolution method.\n"
+                      << "AR_GPS possible values: OFF / Continuous / Instantaneous / Fix-and-Hold / PPP-AR\n"
+                      << "AR_GPS specified value: " << integer_ambiguity_resolution_gps_str << "\n"
+                      << "Setting AR_GPS to OFF\n"
+                      << std::flush;
             integer_ambiguity_resolution_gps = ARMODE_OFF;
         }
 

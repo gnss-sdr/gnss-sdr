@@ -124,10 +124,10 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
         {
         case 0:
             /*
-                 * PHASE 0.
-                 * Check that the set of tags associated with given structure
-                 * perfectly fits our expectations.
-                 */
+             * PHASE 0.
+             * Check that the set of tags associated with given structure
+             * perfectly fits our expectations.
+             */
 
             rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
                 tag_mode, 1, &ctx->left, 0);
@@ -153,10 +153,10 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
             /* Fall through */
         case 1:
             /*
-                 * PHASE 1.
-                 * From the place where we've left it previously,
-                 * try to decode the next item.
-                 */
+             * PHASE 1.
+             * From the place where we've left it previously,
+             * try to decode the next item.
+             */
             for (;; ctx->step = 0)
                 {
                     ssize_t tag_len; /* Length of TLV's T */
@@ -167,23 +167,23 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * MICROPHASE 1: Synchronize decoding.
-                         */
+                     * MICROPHASE 1: Synchronize decoding.
+                     */
 
                     if (ctx->left == 0)
                         {
                             ASN_DEBUG("End of SET OF %s", td->name);
                             /*
-                                 * No more things to decode.
-                                 * Exit out of here.
-                                 */
+                             * No more things to decode.
+                             * Exit out of here.
+                             */
                             PHASE_OUT(ctx);
                             RETURN(RC_OK);
                         }
 
                     /*
-                         * Fetch the T from TLV.
-                         */
+                     * Fetch the T from TLV.
+                     */
                     tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
                     switch (tag_len)
                         {
@@ -213,23 +213,23 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                             else if (((const uint8_t *)ptr)[1] == 0)
                                 {
                                     /*
-                                         * Found the terminator of the
-                                         * indefinite length structure.
-                                         */
+                                     * Found the terminator of the
+                                     * indefinite length structure.
+                                     */
                                     break;
                                 }
                         }
 
                     /* Outmost tag may be unknown and cannot be
-                         * fetched/compared */
+                     * fetched/compared */
                     if (elm->tag != (ber_tlv_tag_t)-1)
                         {
                             if (BER_TAGS_EQUAL(tlv_tag, elm->tag))
                                 {
                                     /*
-                                         * The new list member of expected type
-                                         * has arrived.
-                                         */
+                                     * The new list member of expected type
+                                     * has arrived.
+                                     */
                                 }
                             else
                                 {
@@ -245,15 +245,15 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * MICROPHASE 2: Invoke the member-specific decoder.
-                         */
+                     * MICROPHASE 2: Invoke the member-specific decoder.
+                     */
                     ctx->step |= 1; /* Confirm entering next microphase */
                 microphase2:
 
                     /*
-                         * Invoke the member fetch routine according to member's
-                         * type
-                         */
+                     * Invoke the member fetch routine according to member's
+                     * type
+                     */
                     rval = elm->type->ber_decoder(opt_codec_ctx, elm->type,
                         &ctx->ptr, ptr, LEFT, 0);
                     ASN_DEBUG("In %s SET OF %s code %d consumed %d",
@@ -294,8 +294,8 @@ asn_dec_rval_t SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
             NEXT_PHASE(ctx);
         case 2:
             /*
-                 * Read in all "end of content" TLVs.
-                 */
+             * Read in all "end of content" TLVs.
+             */
             while (ctx->left < 0)
                 {
                     if (LEFT < 2)
@@ -726,8 +726,8 @@ asn_dec_rval_t SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx,
                     if (ctx->phase == 1)
                         {
                             /*
-                                 * Process a single possible member.
-                                 */
+                             * Process a single possible member.
+                             */
                             ctx->phase = 2;
                             continue;
                         }

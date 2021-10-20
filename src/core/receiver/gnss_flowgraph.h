@@ -181,6 +181,7 @@ private:
     int connect_gnss_synchro_monitor();
     int connect_acquisition_monitor();
     int connect_tracking_monitor();
+    int connect_navdata_monitor();
 
     int disconnect_desktop_flowgraph();
 
@@ -245,6 +246,7 @@ private:
     gr::basic_block_sptr GnssSynchroMonitor_;
     gr::basic_block_sptr GnssSynchroAcquisitionMonitor_;
     gr::basic_block_sptr GnssSynchroTrackingMonitor_;
+    gr::basic_block_sptr NavDataMonitor_;
     channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
     galileo_e6_has_msg_receiver_sptr gal_e6_has_rx_;
 
@@ -301,7 +303,9 @@ private:
     bool enable_monitor_;
     bool enable_acquisition_monitor_;
     bool enable_tracking_monitor_;
+    bool enable_navdata_monitor_;
     bool enable_fpga_offloading_;
+    bool enable_e6_has_rx_;
 };
 
 

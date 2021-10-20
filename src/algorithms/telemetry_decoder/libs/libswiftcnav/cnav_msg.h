@@ -76,14 +76,14 @@ typedef struct
     /**< Decode buffer */
     size_t n_decoded;   /**< Number of bits in the decode buffer */
     bool preamble_seen; /**< When true, the decode buffer is aligned on
-     *   preamble. */
+                         *   preamble. */
     bool invert;        /**< When true, indicates the bits are inverted */
     bool message_lock;  /**< When true, indicates the message boundary
-     *   is found. */
+                         *   is found. */
     bool crc_ok;        /**< Flag that the last message had good CRC */
     size_t n_crc_fail;  /**< Counter for CRC failures */
     bool init;          /**< Initial state flag. When true, initial bits
-     *   do not produce output. */
+                         *   do not produce output. */
 } cnav_v27_part_t;
 
 /**

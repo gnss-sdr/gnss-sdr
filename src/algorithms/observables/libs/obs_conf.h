@@ -32,14 +32,14 @@ class Obs_Conf
 public:
     Obs_Conf();
 
-    std::string dump_filename;
-    int32_t smoothing_factor;
-    uint32_t nchannels_in;
-    uint32_t nchannels_out;
-    uint32_t observable_interval_ms;
-    bool enable_carrier_smoothing;
-    bool dump;
-    bool dump_mat;
+    std::string dump_filename{"obs_dump.dat"};
+    int32_t smoothing_factor{0};
+    uint32_t nchannels_in{0U};
+    uint32_t nchannels_out{0U};
+    uint32_t observable_interval_ms{20U};
+    bool enable_carrier_smoothing{false};
+    bool dump{false};
+    bool dump_mat{false};
 };
 
 /** \} */

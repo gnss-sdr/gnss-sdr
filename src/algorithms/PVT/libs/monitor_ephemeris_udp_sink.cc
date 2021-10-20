@@ -21,15 +21,16 @@
 #include <sstream>
 
 
-Monitor_Ephemeris_Udp_Sink::Monitor_Ephemeris_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool protobuf_enabled) : socket{io_context}
+Monitor_Ephemeris_Udp_Sink::Monitor_Ephemeris_Udp_Sink(const std::vector<std::string>& addresses,
+    const uint16_t& port,
+    bool protobuf_enabled) : socket{io_context},
+                             use_protobuf(protobuf_enabled)
 {
     for (const auto& address : addresses)
         {
             boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
             endpoints.push_back(endpoint);
         }
-
-    use_protobuf = protobuf_enabled;
     if (use_protobuf)
         {
             serdes_gal = Serdes_Galileo_Eph();

@@ -47,8 +47,6 @@ public:
         unsigned int in_streams,
         unsigned int out_streams);
 
-    ~SbasL1TelemetryDecoder() = default;
-
     inline std::string role() override
     {
         return role_;
@@ -86,7 +84,6 @@ private:
     Gnss_Satellite satellite_;
     std::string dump_filename_;
     std::string role_;
-    int channel_;
     unsigned int in_streams_;
     unsigned int out_streams_;
     bool dump_;

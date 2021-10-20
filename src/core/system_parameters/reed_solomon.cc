@@ -446,6 +446,7 @@ ReedSolomon::ReedSolomon(const std::string& gnss_signal)
     d_data_symbols_shortened = d_symbols_per_block - d_shortening;
 
     d_a0 = static_cast<uint8_t>(d_symbols_per_block);
+    d_genpoly_index = std::vector<uint8_t>(d_nroots + 1);
 
     init_log_tables();
     init_alpha_tables();
@@ -533,6 +534,8 @@ ReedSolomon::ReedSolomon(int nroots,
                     d_genmatrix = gen_matrix;
                 }
         }
+
+    d_genpoly_index = std::vector<uint8_t>(d_nroots + 1);
 
     init_log_tables();
     init_alpha_tables();
@@ -643,7 +646,6 @@ void ReedSolomon::init_alpha_tables()
     d_iprim = iprim / d_prim;
 
     // get indexes of generator polymonial coefficients
-    d_genpoly_index.reserve(d_nroots + 1);
     for (int i = 0; i <= d_nroots; i++)
         {
             d_genpoly_index[i] = d_index_of[d_genpoly_coeff[i]];
@@ -794,14 +796,14 @@ int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras) co
     uint8_t den;
     uint8_t discr_r;
 
-    uint8_t lambda[d_nroots + 1];  // Err+Eras Locator poly
-    uint8_t s[d_nroots];           // syndrome poly
-    uint8_t b[d_nroots + 1];
-    uint8_t t[d_nroots + 1];
-    uint8_t omega[d_nroots + 1];
-    uint8_t root[d_nroots];
-    uint8_t reg[d_nroots + 1];
-    uint8_t loc[d_nroots];
+    std::vector<uint8_t> lambda(d_nroots + 1);  // Err+Eras Locator poly
+    std::vector<uint8_t> s(d_nroots);           // syndrome poly
+    std::vector<uint8_t> b(d_nroots + 1);
+    std::vector<uint8_t> t(d_nroots + 1);
+    std::vector<uint8_t> omega(d_nroots + 1);
+    std::vector<uint8_t> root(d_nroots);
+    std::vector<uint8_t> reg(d_nroots + 1);
+    std::vector<uint8_t> loc(d_nroots);
 
     // Syndrome computation
     // form the syndromes; i.e., evaluate data(x) at roots of g(x)
@@ -840,7 +842,6 @@ int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras) co
             return 0;
         }
 
-    memset(&lambda[1], 0, d_nroots * sizeof(lambda[0]));
     lambda[0] = 1;
 
     if (no_eras > 0)
@@ -884,9 +885,8 @@ int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras) co
             discr_r = d_index_of[discr_r];  // Index form
             if (discr_r == d_a0)
                 {
-                    // 2 lines below: B(x) <-- x*B(x)
-                    memmove(&b[1], b, d_nroots * sizeof(b[0]));
-                    b[0] = d_a0;
+                    // line below: B(x) <-- x*B(x)
+                    b.insert(b.begin(), d_a0);
                 }
             else
                 {
@@ -914,11 +914,10 @@ int ReedSolomon::decode_rs_8(uint8_t* data, const int* eras_pos, int no_eras) co
                         }
                     else
                         {
-                            // 2 lines below: B(x) <-- x*B(x)
-                            memmove(&b[1], b, d_nroots * sizeof(b[0]));
-                            b[0] = d_a0;
+                            // line below: B(x) <-- x*B(x)
+                            b.insert(b.begin(), d_a0);
                         }
-                    memcpy(lambda, t, (d_nroots + 1) * sizeof(t[0]));
+                    memcpy(&lambda[0], t.data(), (d_nroots + 1) * sizeof(t[0]));
                 }
         }
 

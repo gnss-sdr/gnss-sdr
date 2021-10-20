@@ -23,18 +23,6 @@
 #include <cmath>
 
 
-Cpu_Multicorrelator::Cpu_Multicorrelator()
-{
-    d_sig_in = nullptr;
-    d_local_code_in = nullptr;
-    d_shifts_chips = nullptr;
-    d_corr_out = nullptr;
-    d_local_codes_resampled = nullptr;
-    d_code_length_chips = 0;
-    d_n_correlators = 0;
-}
-
-
 Cpu_Multicorrelator::~Cpu_Multicorrelator()
 {
     if (d_local_codes_resampled != nullptr)

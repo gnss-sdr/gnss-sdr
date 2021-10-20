@@ -23,9 +23,9 @@
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition.h"
+#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <memory>
 #include <string>
-#include <vector>
 
 /** \addtogroup Acquisition
  * \{ */
@@ -181,7 +181,7 @@ public:
 private:
     pcps_acquisition_sptr acquisition_;
 
-    std::vector<std::complex<float>> code_;
+    volk_gnsssdr::vector<std::complex<float>> code_;
     std::weak_ptr<ChannelFsm> channel_fsm_;
 
     Gnss_Synchro* gnss_synchro_;

@@ -8,6 +8,7 @@ docs/latex
 docs/GNSS-SDR_manual.pdf
 src/tests/data/output.dat
 thirdparty/
+src/utils/nav-listener/build
 .settings
 .project
 .cproject

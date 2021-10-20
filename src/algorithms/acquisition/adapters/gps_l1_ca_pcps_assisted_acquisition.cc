@@ -57,7 +57,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     // --- Find number of samples per spreading code -------------------------
     vector_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
-    code_.reserve(vector_length_);
+    code_ = std::vector<std::complex<float>>(vector_length_);
 
     if (item_type_ == "gr_complex")
         {

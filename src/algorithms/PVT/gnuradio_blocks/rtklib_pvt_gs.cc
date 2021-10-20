@@ -16,6 +16,7 @@
 
 #include "rtklib_pvt_gs.h"
 #include "MATH_CONSTANTS.h"
+#include "an_packet_printer.h"
 #include "beidou_dnav_almanac.h"
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
@@ -44,6 +45,7 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "gpx_printer.h"
+#include "has_simple_printer.h"
 #include "kml_printer.h"
 #include "monitor_ephemeris_udp_sink.h"
 #include "monitor_pvt.h"
@@ -52,6 +54,7 @@
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
+#include "rtklib_rtkcmn.h"
 #include "rtklib_solver.h"
 #include "trackingcmd.h"
 #include <boost/any.hpp>                   // for any_cast, any
@@ -105,9 +108,60 @@ rtklib_pvt_gs_sptr rtklib_make_pvt_gs(uint32_t nchannels,
 
 rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     const Pvt_Conf& conf_,
-    const rtk_t& rtk) : gr::sync_block("rtklib_pvt_gs",
-                            gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
-                            gr::io_signature::make(0, 0, 0))
+    const rtk_t& rtk)
+    : gr::sync_block("rtklib_pvt_gs",
+          gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(0, 0, 0)),
+      d_dump_filename(conf_.dump_filename),
+      d_gps_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Ephemeris>).hash_code()),
+      d_gps_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Iono>).hash_code()),
+      d_gps_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Utc_Model>).hash_code()),
+      d_gps_cnav_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Ephemeris>).hash_code()),
+      d_gps_cnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Iono>).hash_code()),
+      d_gps_cnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code()),
+      d_gps_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Almanac>).hash_code()),
+      d_galileo_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Ephemeris>).hash_code()),
+      d_galileo_iono_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Iono>).hash_code()),
+      d_galileo_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Utc_Model>).hash_code()),
+      d_galileo_almanac_helper_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Almanac_Helper>).hash_code()),
+      d_galileo_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_Almanac>).hash_code()),
+      d_glonass_gnav_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>).hash_code()),
+      d_glonass_gnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>).hash_code()),
+      d_glonass_gnav_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Glonass_Gnav_Almanac>).hash_code()),
+      d_beidou_dnav_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>).hash_code()),
+      d_beidou_dnav_iono_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code()),
+      d_beidou_dnav_utc_model_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code()),
+      d_beidou_dnav_almanac_sptr_type_hash_code(typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code()),
+      d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
+      d_rinex_version(conf_.rinex_version),
+      d_rx_time(0.0),
+      d_rinexobs_rate_ms(conf_.rinexobs_rate_ms),
+      d_kml_rate_ms(conf_.kml_rate_ms),
+      d_gpx_rate_ms(conf_.gpx_rate_ms),
+      d_geojson_rate_ms(conf_.geojson_rate_ms),
+      d_nmea_rate_ms(conf_.nmea_rate_ms),
+      d_an_rate_ms(conf_.an_rate_ms),
+      d_output_rate_ms(conf_.output_rate_ms),
+      d_display_rate_ms(conf_.display_rate_ms),
+      d_report_rate_ms(1000),
+      d_max_obs_block_rx_clock_offset_ms(conf_.max_obs_block_rx_clock_offset_ms),
+      d_nchannels(nchannels),
+      d_type_of_rx(conf_.type_of_receiver),
+      d_observable_interval_ms(conf_.observable_interval_ms),
+      d_dump(conf_.dump),
+      d_dump_mat(conf_.dump_mat && conf_.dump),
+      d_rinex_output_enabled(conf_.rinex_output_enabled),
+      d_geojson_output_enabled(conf_.geojson_output_enabled),
+      d_gpx_output_enabled(conf_.gpx_output_enabled),
+      d_kml_output_enabled(conf_.kml_output_enabled),
+      d_nmea_output_file_enabled(conf_.nmea_output_file_enabled || conf_.flag_nmea_tty_port),
+      d_xml_storage(conf_.xml_output_enabled),
+      d_flag_monitor_pvt_enabled(conf_.monitor_enabled),
+      d_flag_monitor_ephemeris_enabled(conf_.monitor_ephemeris_enabled),
+      d_show_local_time_zone(conf_.show_local_time_zone),
+      d_waiting_obs_block_rx_clock_offset_correction_msg(false),
+      d_enable_rx_clock_correction(conf_.enable_rx_clock_correction),
+      d_an_printer_enabled(conf_.an_output_enabled)
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
@@ -116,31 +170,37 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // Send PVT status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
 
-    d_mapStringValues["1C"] = evGPS_1C;
-    d_mapStringValues["2S"] = evGPS_2S;
-    d_mapStringValues["L5"] = evGPS_L5;
-    d_mapStringValues["1B"] = evGAL_1B;
-    d_mapStringValues["5X"] = evGAL_5X;
-    d_mapStringValues["E6"] = evGAL_E6;
-    d_mapStringValues["7X"] = evGAL_7X;
-    d_mapStringValues["1G"] = evGLO_1G;
-    d_mapStringValues["2G"] = evGLO_2G;
-    d_mapStringValues["B1"] = evBDS_B1;
-    d_mapStringValues["B2"] = evBDS_B2;
-    d_mapStringValues["B3"] = evBDS_B3;
+    // GPS Ephemeris data message port in
+    this->message_port_register_in(pmt::mp("telemetry"));
+    this->set_msg_handler(pmt::mp("telemetry"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_telemetry(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, boost::placeholders::_1));
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
+#endif
+#endif
+
+    // Galileo E6 HAS messages port in
+    this->message_port_register_in(pmt::mp("E6_HAS_to_PVT"));
+    this->set_msg_handler(pmt::mp("E6_HAS_to_PVT"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_has_data(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, boost::placeholders::_1));
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, _1));
+#endif
+#endif
 
     d_initial_carrier_phase_offset_estimation_rads = std::vector<double>(nchannels, 0.0);
     d_channel_initialized = std::vector<bool>(nchannels, false);
 
-    d_max_obs_block_rx_clock_offset_ms = conf_.max_obs_block_rx_clock_offset_ms;
-
-    d_output_rate_ms = conf_.output_rate_ms;
-    d_display_rate_ms = conf_.display_rate_ms;
-    d_report_rate_ms = 1000;  // report every second PVT to gnss_synchro
-    d_dump = conf_.dump;
-    d_dump_mat = conf_.dump_mat && d_dump;
-    d_dump_filename = conf_.dump_filename;
     std::string dump_ls_pvt_filename = conf_.dump_filename;
+
     if (d_dump)
         {
             std::string dump_path;
@@ -174,41 +234,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 }
         }
 
-    d_nchannels = nchannels;
-
-    d_type_of_rx = conf_.type_of_receiver;
-    d_observable_interval_ms = conf_.observable_interval_ms;
-
-    // GPS Ephemeris data message port in
-    this->message_port_register_in(pmt::mp("telemetry"));
-    this->set_msg_handler(pmt::mp("telemetry"),
-#if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_telemetry(PH1); });
-#else
-#if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, boost::placeholders::_1));
-#else
-        boost::bind(&rtklib_pvt_gs::msg_handler_telemetry, this, _1));
-#endif
-#endif
-
-    // Galileo E6 HAS messages port in
-    this->message_port_register_in(pmt::mp("E6_HAS_to_PVT"));
-    this->set_msg_handler(pmt::mp("E6_HAS_to_PVT"),
-#if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_has_data(PH1); });
-#else
-#if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, boost::placeholders::_1));
-#else
-        boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, _1));
-#endif
-#endif
-
     // initialize kml_printer
     const std::string kml_dump_filename = d_dump_filename;
-    d_kml_output_enabled = conf_.kml_output_enabled;
-    d_kml_rate_ms = conf_.kml_rate_ms;
     if (d_kml_rate_ms == 0)
         {
             d_kml_output_enabled = false;
@@ -225,8 +252,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     // initialize gpx_printer
     const std::string gpx_dump_filename = d_dump_filename;
-    d_gpx_output_enabled = conf_.gpx_output_enabled;
-    d_gpx_rate_ms = conf_.gpx_rate_ms;
     if (d_gpx_rate_ms == 0)
         {
             d_gpx_output_enabled = false;
@@ -243,8 +268,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 
     // initialize geojson_printer
     const std::string geojson_dump_filename = d_dump_filename;
-    d_geojson_output_enabled = conf_.geojson_output_enabled;
-    d_geojson_rate_ms = conf_.geojson_rate_ms;
     if (d_geojson_rate_ms == 0)
         {
             d_geojson_output_enabled = false;
@@ -260,8 +283,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // initialize nmea_printer
-    d_nmea_output_file_enabled = (conf_.nmea_output_file_enabled || conf_.flag_nmea_tty_port);
-    d_nmea_rate_ms = conf_.nmea_rate_ms;
     if (d_nmea_rate_ms == 0)
         {
             d_nmea_output_file_enabled = false;
@@ -348,8 +369,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // initialize RINEX printer
-    d_rinex_output_enabled = conf_.rinex_output_enabled;
-    d_rinex_version = conf_.rinex_version;
     if (d_rinex_output_enabled)
         {
             d_rp = std::make_unique<Rinex_Printer>(d_rinex_version, conf_.rinex_output_path, conf_.rinex_name);
@@ -359,10 +378,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             d_rp = nullptr;
         }
-    d_rinexobs_rate_ms = conf_.rinexobs_rate_ms;
 
     // XML printer
-    d_xml_storage = conf_.xml_output_enabled;
     if (d_xml_storage)
         {
             d_xml_base_path = conf_.xml_output_path;
@@ -398,11 +415,28 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_xml_base_path = d_xml_base_path + fs::path::preferred_separator;
         }
 
-    d_rx_time = 0.0;
-    d_last_status_print_seg = 0;
+    // Initialize HAS simple printer
+    d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 107)) && (conf_.output_enabled));
+    if (d_enable_has_messages)
+        {
+            d_has_simple_printer = std::make_unique<Has_Simple_Printer>();
+        }
+    else
+        {
+            d_has_simple_printer = nullptr;
+        }
+
+    // Initialize AN printer
+    if (d_an_printer_enabled)
+        {
+            d_an_printer = std::make_unique<An_Packet_Printer>(conf_.an_dump_devname);
+        }
+    else
+        {
+            d_an_printer = nullptr;
+        }
 
     // PVT MONITOR
-    d_flag_monitor_pvt_enabled = conf_.monitor_enabled;
     if (d_flag_monitor_pvt_enabled)
         {
             std::string address_string = conf_.udp_addresses;
@@ -418,7 +452,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // EPHEMERIS MONITOR
-    d_flag_monitor_ephemeris_enabled = conf_.monitor_ephemeris_enabled;
     if (d_flag_monitor_ephemeris_enabled)
         {
             std::string address_string = conf_.udp_eph_addresses;
@@ -444,7 +477,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // Display time in local time zone
-    d_show_local_time_zone = conf_.show_local_time_zone;
     std::ostringstream os;
 #ifdef HAS_PUT_TIME
     time_t when = std::time(nullptr);
@@ -480,55 +512,45 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_local_time_str = std::string(" ") + time_zone_abrv + " (UTC " + utc_diff_str.substr(0, 3) + ":" + utc_diff_str.substr(3, 2) + ")";
         }
 
-    d_waiting_obs_block_rx_clock_offset_correction_msg = false;
-
-    d_enable_rx_clock_correction = conf_.enable_rx_clock_correction;
-
     if (d_enable_rx_clock_correction == true)
         {
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
-            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat);
+            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_dump, d_dump_mat);
             d_user_pvt_solver->set_averaging_depth(1);
             d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, static_cast<int32_t>(nchannels), dump_ls_pvt_filename, false, false);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, dump_ls_pvt_filename, false, false);
             d_internal_pvt_solver->set_averaging_depth(1);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
             // only one solver, customized by the user options
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, static_cast<int32_t>(nchannels), dump_ls_pvt_filename, d_dump, d_dump_mat);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_dump, d_dump_mat);
             d_internal_pvt_solver->set_averaging_depth(1);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
 
-    d_gps_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Ephemeris>).hash_code();
-    d_gps_iono_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Iono>).hash_code();
-    d_gps_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Utc_Model>).hash_code();
-    d_gps_cnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Gps_CNAV_Ephemeris>).hash_code();
-    d_gps_cnav_iono_sptr_type_hash_code = typeid(std::shared_ptr<Gps_CNAV_Iono>).hash_code();
-    d_gps_cnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Gps_CNAV_Utc_Model>).hash_code();
-    d_gps_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Gps_Almanac>).hash_code();
-    d_galileo_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Ephemeris>).hash_code();
-    d_galileo_iono_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Iono>).hash_code();
-    d_galileo_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Utc_Model>).hash_code();
-    d_galileo_almanac_helper_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac_Helper>).hash_code();
-    d_galileo_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_Almanac>).hash_code();
-    d_galileo_has_message_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
-    d_glonass_gnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Ephemeris>).hash_code();
-    d_glonass_gnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Utc_Model>).hash_code();
-    d_glonass_gnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Glonass_Gnav_Almanac>).hash_code();
-    d_beidou_dnav_ephemeris_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Ephemeris>).hash_code();
-    d_beidou_dnav_iono_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Iono>).hash_code();
-    d_beidou_dnav_utc_model_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Utc_Model>).hash_code();
-    d_beidou_dnav_almanac_sptr_type_hash_code = typeid(std::shared_ptr<Beidou_Dnav_Almanac>).hash_code();
-    d_galileo_has_data_sptr_type_hash_code = typeid(std::shared_ptr<Galileo_HAS_data>).hash_code();
+    d_mapStringValues["1C"] = evGPS_1C;
+    d_mapStringValues["2S"] = evGPS_2S;
+    d_mapStringValues["L5"] = evGPS_L5;
+    d_mapStringValues["1B"] = evGAL_1B;
+    d_mapStringValues["5X"] = evGAL_5X;
+    d_mapStringValues["E6"] = evGAL_E6;
+    d_mapStringValues["7X"] = evGAL_7X;
+    d_mapStringValues["1G"] = evGLO_1G;
+    d_mapStringValues["2G"] = evGLO_2G;
+    d_mapStringValues["B1"] = evBDS_B1;
+    d_mapStringValues["B2"] = evBDS_B2;
+    d_mapStringValues["B3"] = evBDS_B3;
+
+    // set the RTKLIB trace (debug) level
+    tracelevel(conf_.rtk_trace_level);
 
     //timetag
     d_log_timetag = conf_.log_source_timetag;
@@ -1366,10 +1388,6 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                             d_user_pvt_solver->galileo_almanac_map[galileo_alm->PRN] = *galileo_alm;
                         }
                 }
-            else if (msg_type_hash_code == d_galileo_has_message_sptr_type_hash_code)
-                {
-                    // Store HAS message and print its content
-                }
 
             // **************** GLONASS GNAV Telemetry *************************
             else if (msg_type_hash_code == d_glonass_gnav_ephemeris_sptr_type_hash_code)
@@ -1531,9 +1549,11 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg) const
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
             if (msg_type_hash_code == d_galileo_has_data_sptr_type_hash_code)
                 {
-                    const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
-                    // TODO: Dump HAS message
-                    // std::cout << "HAS data received at PVT block.\n";
+                    if (d_enable_has_messages)
+                        {
+                            const auto has_data = boost::any_cast<std::shared_ptr<Galileo_HAS_data>>(pmt::any_ref(msg));
+                            d_has_simple_printer->print_message(has_data.get());
+                        }
                 }
         }
     catch (const boost::bad_any_cast& e)
@@ -2321,6 +2341,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 flag_write_RTCM_1020_output,
                                                 flag_write_RTCM_1045_output,
                                                 d_enable_rx_clock_correction);
+                                        }
+                                    if (d_an_printer_enabled)
+                                        {
+                                            if (current_RX_time_ms % d_an_rate_ms == 0)
+                                                {
+                                                    d_an_printer->print_packet(d_user_pvt_solver.get(), d_gnss_observables_map);
+                                                }
                                         }
                                 }
                         }

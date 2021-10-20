@@ -29,7 +29,7 @@
 #include <span>
 namespace own = std;
 #else
-#include <gsl/gsl>
+#include <gsl/gsl-lite.hpp>
 namespace own = gsl;
 #endif
 
@@ -37,7 +37,12 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : gnss_synchro_(nullptr),
+                                role_(role),
+                                threshold_(0.0),
+                                doppler_center_(0),
+                                channel_(0),
+                                doppler_step_(0),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -65,17 +70,12 @@ GalileoE5aPcpsAcquisition::GalileoE5aPcpsAcquisition(
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E5A_CODE_CHIP_RATE_CPS / GALILEO_E5A_CODE_LENGTH_CHIPS)));
     vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
-    code_ = std::vector<std::complex<float>>(vector_length_);
+    code_ = volk_gnsssdr::vector<std::complex<float>>(vector_length_);
 
     sampled_ms_ = acq_parameters_.sampled_ms;
 
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
-
-    channel_ = 0;
-    threshold_ = 0.0;
-    doppler_center_ = 0;
-    gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
         {
@@ -145,7 +145,7 @@ void GalileoE5aPcpsAcquisition::init()
 
 void GalileoE5aPcpsAcquisition::set_local_code()
 {
-    std::vector<std::complex<float>> code(code_length_);
+    volk_gnsssdr::vector<std::complex<float>> code(code_length_);
     std::array<char, 3> signal_{};
     signal_[0] = '5';
     signal_[2] = '\0';

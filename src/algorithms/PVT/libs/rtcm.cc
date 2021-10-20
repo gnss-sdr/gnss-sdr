@@ -35,15 +35,13 @@
 #include <sstream>    // for std::stringstream
 
 
-Rtcm::Rtcm(uint16_t port)
+Rtcm::Rtcm(uint16_t port) : RTCM_port(port), server_is_running(false)
 {
-    RTCM_port = port;
     preamble = std::bitset<8>("11010011");
     reserved_field = std::bitset<6>("000000");
-    rtcm_message_queue = std::make_shared<Concurrent_Queue<std::string> >();
+    rtcm_message_queue = std::make_shared<Concurrent_Queue<std::string>>();
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), RTCM_port);
     servers.emplace_back(io_context, endpoint);
-    server_is_running = false;
 }
 
 
@@ -175,8 +173,7 @@ std::string Rtcm::bin_to_binary_data(const std::string& s) const
 {
     std::string s_aux;
     const auto remainder = static_cast<int32_t>(std::fmod(s.length(), 8));
-    std::vector<uint8_t> c;
-    c.reserve(s.length());
+    std::vector<uint8_t> c(s.length());
 
     uint32_t k = 0;
     if (remainder != 0)
@@ -628,8 +625,8 @@ std::string Rtcm::print_MT1003(const Gps_Ephemeris& ephL1, const Gps_CNAV_Epheme
         }
 
     // Get common observables
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>> common_observables;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>>::const_iterator common_observables_iter;
     std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.cbegin();
@@ -737,8 +734,8 @@ std::string Rtcm::print_MT1004(const Gps_Ephemeris& ephL1, const Gps_CNAV_Epheme
         }
 
     // Get common observables
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>> common_observables;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>>::const_iterator common_observables_iter;
     std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.cbegin();
@@ -1310,8 +1307,8 @@ std::string Rtcm::print_MT1011(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
         }
 
     // Get common observables
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>> common_observables;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>>::const_iterator common_observables_iter;
     std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.begin();
@@ -1421,8 +1418,8 @@ std::string Rtcm::print_MT1012(const Glonass_Gnav_Ephemeris& ephL1, const Glonas
         }
 
     // Get common observables
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> > common_observables;
-    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro> >::const_iterator common_observables_iter;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>> common_observables;
+    std::vector<std::pair<Gnss_Synchro, Gnss_Synchro>>::const_iterator common_observables_iter;
     std::map<int32_t, Gnss_Synchro> observablesL1_with_L2;
 
     for (observables_iter = observablesL1.begin();
@@ -2382,10 +2379,11 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int32_t, Gnss_Synchr
     const uint32_t num_satellites = DF394.count();
     const uint32_t numobs = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
+
     observables_vector.reserve(numobs);
     std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    std::vector<uint32_t> pos;
+    auto pos = std::vector<uint32_t>();
     pos.reserve(numobs);
     std::vector<uint32_t>::iterator it;
 
@@ -2401,7 +2399,7 @@ std::string Rtcm::get_MSM_1_content_sat_data(const std::map<int32_t, Gnss_Synchr
                 }
         }
 
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
     for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
         {
@@ -2418,7 +2416,7 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int32_t, Gnss_Syn
     std::string signal_data;
     const uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(Ncells);
     std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
@@ -2429,9 +2427,9 @@ std::string Rtcm::get_MSM_1_content_signal_data(const std::map<int32_t, Gnss_Syn
             observables_vector.emplace_back(*map_iter);
         }
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
@@ -2527,7 +2525,7 @@ std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris& ephNAV,
 
     const uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(Ncells);
     std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
@@ -2538,9 +2536,9 @@ std::string Rtcm::get_MSM_2_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.emplace_back(*map_iter);
         }
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
@@ -2642,7 +2640,7 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris& ephNAV,
 
     const uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(Ncells);
     std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
@@ -2653,9 +2651,9 @@ std::string Rtcm::get_MSM_3_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.emplace_back(*map_iter);
         }
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
@@ -2754,10 +2752,10 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int32_t, Gnss_Synchr
     const uint32_t num_satellites = DF394.count();
     const uint32_t numobs = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(numobs);
     std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    std::vector<uint32_t> pos;
+    auto pos = std::vector<uint32_t>();
     pos.reserve(numobs);
     std::vector<uint32_t>::iterator it;
 
@@ -2773,7 +2771,7 @@ std::string Rtcm::get_MSM_4_content_sat_data(const std::map<int32_t, Gnss_Synchr
                 }
         }
 
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
     for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
         {
@@ -2803,7 +2801,7 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris& ephNAV,
 
     const uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(Ncells);
     std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
@@ -2814,9 +2812,9 @@ std::string Rtcm::get_MSM_4_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.emplace_back(*map_iter);
         }
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
@@ -2919,10 +2917,10 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchr
     const uint32_t num_satellites = DF394.count();
     const uint32_t numobs = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(numobs);
     std::map<int32_t, Gnss_Synchro>::const_iterator gnss_synchro_iter;
-    std::vector<uint32_t> pos;
+    auto pos = std::vector<uint32_t>();
     pos.reserve(numobs);
     std::vector<uint32_t>::iterator it;
 
@@ -2938,7 +2936,7 @@ std::string Rtcm::get_MSM_5_content_sat_data(const std::map<int32_t, Gnss_Synchr
                 }
         }
 
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(observables_vector);
 
     for (uint32_t nsat = 0; nsat < num_satellites; nsat++)
         {
@@ -2973,7 +2971,7 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV,
 
     const uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(Ncells);
     std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
@@ -2984,9 +2982,9 @@ std::string Rtcm::get_MSM_5_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.emplace_back(*map_iter);
         }
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
@@ -3095,7 +3093,7 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV,
 
     const uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(Ncells);
     std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
@@ -3106,9 +3104,9 @@ std::string Rtcm::get_MSM_6_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.emplace_back(*map_iter);
         }
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
@@ -3216,7 +3214,7 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
 
     const uint32_t Ncells = observables.size();
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > observables_vector;
+    auto observables_vector = std::vector<std::pair<int32_t, Gnss_Synchro>>();
     observables_vector.reserve(Ncells);
     std::map<int32_t, Gnss_Synchro>::const_iterator map_iter;
 
@@ -3227,9 +3225,9 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
             observables_vector.emplace_back(*map_iter);
         }
 
-    std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
+    std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_signal = Rtcm::sort_by_signal(observables_vector);
     std::reverse(ordered_by_signal.begin(), ordered_by_signal.end());
-    const std::vector<std::pair<int32_t, Gnss_Synchro> > ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
+    const std::vector<std::pair<int32_t, Gnss_Synchro>> ordered_by_PRN_pos = Rtcm::sort_by_PRN_mask(ordered_by_signal);
 
     for (uint32_t cell = 0; cell < Ncells; cell++)
         {
@@ -3256,10 +3254,10 @@ std::string Rtcm::get_MSM_7_content_signal_data(const Gps_Ephemeris& ephNAV,
 // Some utilities
 // *****************************************************************************************************
 
-std::vector<std::pair<int32_t, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const
+std::vector<std::pair<int32_t, Gnss_Synchro>> Rtcm::sort_by_PRN_mask(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const
 {
-    std::vector<std::pair<int32_t, Gnss_Synchro> >::const_iterator synchro_map_iter;
-    std::vector<std::pair<int32_t, Gnss_Synchro> > my_vec;
+    std::vector<std::pair<int32_t, Gnss_Synchro>>::const_iterator synchro_map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro>> my_vec;
     struct
     {
         bool operator()(const std::pair<int32_t, Gnss_Synchro>& a, const std::pair<int32_t, Gnss_Synchro>& b)
@@ -3285,10 +3283,10 @@ std::vector<std::pair<int32_t, Gnss_Synchro> > Rtcm::sort_by_PRN_mask(const std:
 }
 
 
-std::vector<std::pair<int32_t, Gnss_Synchro> > Rtcm::sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro> >& synchro_map) const
+std::vector<std::pair<int32_t, Gnss_Synchro>> Rtcm::sort_by_signal(const std::vector<std::pair<int32_t, Gnss_Synchro>>& synchro_map) const
 {
-    std::vector<std::pair<int32_t, Gnss_Synchro> >::const_iterator synchro_map_iter;
-    std::vector<std::pair<int32_t, Gnss_Synchro> > my_vec;
+    std::vector<std::pair<int32_t, Gnss_Synchro>>::const_iterator synchro_map_iter;
+    std::vector<std::pair<int32_t, Gnss_Synchro>> my_vec;
 
     struct
     {
@@ -5152,7 +5150,7 @@ std::string Rtcm::set_DF396(const std::map<int32_t, Gnss_Synchro>& observables)
             std::string s("");
             return s;
         }
-    std::vector<std::vector<bool> > matrix(num_signals, std::vector<bool>());
+    std::vector<std::vector<bool>> matrix(num_signals, std::vector<bool>());
 
     std::string sig;
     std::vector<uint32_t> list_of_sats;

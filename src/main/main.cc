@@ -18,7 +18,7 @@
  */
 
 #ifndef GNSS_SDR_VERSION
-#define GNSS_SDR_VERSION "0.0.14"
+#define GNSS_SDR_VERSION "0.0.15"
 #endif
 
 #ifndef GOOGLE_STRIP_LOG
@@ -55,9 +55,9 @@ using namespace google;
 #endif
 
 /*
-* Concurrent queues that communicates the Telemetry Decoder
-* to the Observables modules
-*/
+ * Concurrent queues that communicates the Telemetry Decoder
+ * to the Observables modules
+ */
 
 // For GPS NAVIGATION (L1)
 Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;

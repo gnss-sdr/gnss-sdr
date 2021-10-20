@@ -16,17 +16,82 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Availability:
 
+- Improved Time-To-First-Fix when using GPS L1 C/A signals, fixing a bug that
+  was making the receiver to drop the satellite if the PLL got locked at 180
+  degrees, and making some optimizations on bit transition detection.
+
+### Improvements in Interoperability:
+
+- Fixed setting of the signal source gain if the AGC is enabled when using the
+  AD9361 front-end.
+- Fixed the regeneration of Galileo ephemeris from the reduced clock and
+  ephemeris data (CED) defined in the Galileo E1B INAV message introduced in
+  Galileo OS SIS ICD Issue 2.0.
+
+### Improvements in Maintainability:
+
+- Rewritten Viterbi decoder for Galileo navigation messages: encapsulated in a
+  class instead of being implemented as free inline functions. This improves
+  memory management and source code readability.
+- Updated GSL implementation to v0.39.0. See
+  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.39.0
+- CI - `cpplint` job on GitHub: Added the `build/include_what_you_use` filter
+  for early detection of missing includes.
+- CI - `clang-tidy` job on GitHub: More robust detection of LLVM paths installed
+  by homebrew.
+
+### Improvements in Reliability
+
+- Fixed some potential buffer overflows.
+
+### Improvements in Usability:
+
+- Added a new monitor to extract the decoded data bits of the navigation
+  messages and send them elsewhere via UDP. Activated by setting
+  `NavDataMonitor.enable_monitor=true`,
+  `NavDataMonitor.client_addresses=127.0.0.1` and `NavDataMonitor.port=1237` in
+  the configuration file. Format described in the `nav_message.proto` file. A
+  simple listener application written in C++ is included in
+  `src/utils/nav-listener` as an example.
+- Extract successful rate of the CRC check in the decoding of navigation
+  messages. This can be enabled by setting
+  `TelemetryDecoder_XX.dump_crc_stats=true` and, optionally,
+  `TelemetryDecoder_XX.dump_crc_stats_filename=./crc_stats` in the configuration
+  file. At the end of the processing (or exiting with `q` + `[Enter]`), the CRC
+  check success rate will be reported in a file.
+- The `UHD_Signal_Source` learned to dump data in folders that do not exist,
+  _e.g._, if `SignalSource.dump=true`,
+  `SignalSource.dump_filename=./non-existing/data.dat`, and the `non-existing`
+  folder does not exist, it will be created if the running user has writing
+  permissions. This also works for absolute paths.
+- Added a new configuration parameter `PVT.rtk_trace_level` that sets the
+  logging verbosity level of the RTKLIB library.
+- Added a new output parameter `Flag_PLL_180_deg_phase_locked` in the monitor
+  output that indicates if the PLL got locked at 180 degrees, so the symbol sign
+  is reversed.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
+## [GNSS-SDR v0.0.15](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.15) - 2021-08-23
+
+### Improvements in Availability:
+
 - Added the reading of reduced clock and ephemeris data (CED) in the Galileo E1B
   INAV message introduced in Galileo OS SIS ICD Issue 2.0. If the reduced CED is
   available before the full ephemeris set, it is used for PVT computation until
   the full set has not yet been received. This can contribute to shortening the
-  Time-To-First-Fix.
+  Time-To-First-Fix. Still experimental.
 - Added the exploitation of the FEC2 Erasure Correction in the Galileo E1B INAV
   message introduced in Galileo OS SIS ICD Issue 2.0. This can contribute to
   shortening the Time-To-First-Fix. Since the added computational cost could
   break some real-time configurations, this feature is disabled by default. It
   can be activated from the configuration file by adding
   `TelemetryDecoder_1B.enable_reed_solomon=true`.
+- Reduction of the TTFF in GPS L1 and Galileo E1 by improving the frame
+  synchronization mechanism.
 
 ### Improvements in Maintainability:
 
@@ -37,7 +102,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   a manifestation that contributors have the right to submit their work under
   the open source license indicated in the contributed file(s) (instead of
   asking them to sign the CLA document).
-- Improved handling of change in GNU Radio 3.9 FFT API.
+- Improved handling of changes in GNU Radio 3.9 FFT API.
 - Improved handling of the filesystem library.
 - Added an abstract class `SignalSourceInterface` and a common base class
   `SignalSourceBase`, which allow removing a lot of duplicated code in Signal
@@ -74,9 +139,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added support for Apple M1 AArch64 architecture processor and for FreeBSD on
   x86, improved AMD microarchitecture detection.
 - CMake now selects the C++23 standard if the environment allows for it.
+- Improved detection of Gnuplot and `gnss_sim` when cross-compiling.
+- NEON kernel implementations of the `volk_gnsssdr` library are now enabled in
+  aarch64 architectures.
 
 ### Improvements in Reliability
 
+- Bug fix in the Galileo E1/E5 telemetry decoder that produced incorrect timing
+  information if a satellite is lost and then readquired.
 - Check satellites' health status. If a satellite is marked as not healthy in
   its navigation message, the corresponding observables are not used for
   navigation.

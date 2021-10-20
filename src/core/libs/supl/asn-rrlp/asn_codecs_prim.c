@@ -289,26 +289,26 @@ asn_dec_rval_t xer_decode_primitive(
                         "Primitive body is not recognized, "
                         "supplying empty one");
                     /*
-                         * Decoding opportunity has come and gone.
-                         * Where's the result?
-                         * Try to feed with empty body, see if it eats it.
-                         */
+                     * Decoding opportunity has come and gone.
+                     * Where's the result?
+                     * Try to feed with empty body, see if it eats it.
+                     */
                     if (prim_body_decoder(s_arg.type_descriptor,
                             s_arg.struct_key, &ch,
                             0) != XPBD_BODY_CONSUMED)
                         {
                             /*
-                                 * This decoder does not like empty stuff.
-                                 */
+                             * This decoder does not like empty stuff.
+                             */
                             _ASN_DECODE_FAILED;
                         }
                 }
             break;
         case RC_WMORE:
             /*
-                 * Redo the whole thing later.
-                 * We don't have a context to save intermediate parsing state.
-                 */
+             * Redo the whole thing later.
+             * We don't have a context to save intermediate parsing state.
+             */
             rc.consumed = 0;
             break;
         case RC_FAIL:

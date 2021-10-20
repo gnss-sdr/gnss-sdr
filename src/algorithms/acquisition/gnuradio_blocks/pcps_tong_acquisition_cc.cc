@@ -98,8 +98,8 @@ pcps_tong_acquisition_cc::pcps_tong_acquisition_cc(
     d_input_power = 0.0;
     d_num_doppler_bins = 0;
 
-    d_fft_codes.reserve(d_fft_size);
-    d_magnitude.reserve(d_fft_size);
+    d_fft_codes = std::vector<gr_complex>(d_fft_size);
+    d_magnitude = std::vector<float>(d_fft_size);
 
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);

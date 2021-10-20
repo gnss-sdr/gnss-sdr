@@ -60,7 +60,7 @@ const int32_t DEFAULT_CARRIER_SMOOTHING_FACTOR = 200;
 // Declare flags for PVT
 DECLARE_string(RINEX_version);  //!< If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.
 DECLARE_string(RINEX_name);     //!< If defined, specifies the RINEX files base name
-
+DECLARE_bool(keyboard);         //!< If set to false, disables the keyboard listener. Only for debug purposes (e.g. ASAN mode termination)
 
 /** \} */
 /** \} */

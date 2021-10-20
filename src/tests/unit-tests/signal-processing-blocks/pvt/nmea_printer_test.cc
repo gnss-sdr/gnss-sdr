@@ -143,7 +143,7 @@ void NmeaPrinterTest::conf()
 TEST_F(NmeaPrinterTest, PrintLine)
 {
     std::string filename("nmea_test.nmea");
-    std::shared_ptr<Rtklib_Solver> pvt_solution = std::make_shared<Rtklib_Solver>(rtk, 12, "filename", false, false);
+    std::shared_ptr<Rtklib_Solver> pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", false, false);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));

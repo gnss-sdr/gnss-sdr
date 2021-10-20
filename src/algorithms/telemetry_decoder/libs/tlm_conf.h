@@ -30,15 +30,18 @@
 class Tlm_Conf
 {
 public:
-    Tlm_Conf();
+    Tlm_Conf() = default;
 
     void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role);
 
     std::string dump_filename;
-    bool dump;
-    bool dump_mat;
-    bool remove_dat;
-    bool enable_reed_solomon;  // for INAV message in Galileo E1B
+    std::string dump_crc_stats_filename;
+    bool dump{false};
+    bool dump_mat{false};
+    bool remove_dat{false};
+    bool enable_reed_solomon{false};  // for INAV message in Galileo E1B
+    bool dump_crc_stats{false};       // telemetry CRC statistics
+    bool enable_navdata_monitor{false};
 };
 
 

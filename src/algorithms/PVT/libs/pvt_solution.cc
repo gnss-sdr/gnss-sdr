@@ -22,26 +22,6 @@
 #include <cstddef>
 
 
-Pvt_Solution::Pvt_Solution()
-{
-    d_latitude_d = 0.0;
-    d_longitude_d = 0.0;
-    d_height_m = 0.0;
-    d_speed_over_ground_m_s = 0.0;
-    d_course_over_ground_d = 0.0;
-    d_avg_latitude_d = 0.0;
-    d_avg_longitude_d = 0.0;
-    d_avg_height_m = 0.0;
-    d_flag_averaging = false;
-    b_valid_position = false;
-    d_averaging_depth = 0;
-    d_valid_observations = 0;
-    d_rx_dt_s = 0.0;
-    d_rx_clock_drift_ppm = 0.0;
-    d_pre_2009_file = false;  // disabled by default
-}
-
-
 int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 {
     /* Conversion of Cartesian coordinates (X,Y,Z) to geographical
@@ -130,7 +110,7 @@ void Pvt_Solution::perform_pos_averaging()
                     d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
                     d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
                     d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
-                    b_valid_position = true;
+                    d_valid_position = true;
                 }
             else
                 {
@@ -143,12 +123,12 @@ void Pvt_Solution::perform_pos_averaging()
                     d_avg_latitude_d = d_latitude_d;
                     d_avg_longitude_d = d_longitude_d;
                     d_avg_height_m = d_height_m;
-                    b_valid_position = false;
+                    d_valid_position = false;
                 }
         }
     else
         {
-            b_valid_position = true;
+            d_valid_position = true;
         }
 }
 
@@ -245,13 +225,13 @@ bool Pvt_Solution::is_averaging() const
 
 bool Pvt_Solution::is_valid_position() const
 {
-    return b_valid_position;
+    return d_valid_position;
 }
 
 
 void Pvt_Solution::set_valid_position(bool is_valid)
 {
-    b_valid_position = is_valid;
+    d_valid_position = is_valid;
 }
 
 

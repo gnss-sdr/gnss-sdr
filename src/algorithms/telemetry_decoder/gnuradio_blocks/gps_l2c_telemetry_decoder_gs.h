@@ -21,11 +21,14 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gps_cnav_navigation_message.h"
+#include "nav_message_packet.h"
 #include "tlm_conf.h"
+#include "tlm_crc_stats.h"
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
 #include <cstdint>
 #include <fstream>
+#include <memory>  // for std::unique_ptr
 #include <string>
 
 extern "C"
@@ -53,7 +56,7 @@ gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
 class gps_l2c_telemetry_decoder_gs : public gr::block
 {
 public:
-    ~gps_l2c_telemetry_decoder_gs();
+    ~gps_l2c_telemetry_decoder_gs() override;
     void set_satellite(const Gnss_Satellite &satellite);  //!< Set satellite PRN
     void set_channel(int32_t channel);                    //!< Set receiver's channel
     void reset();
@@ -62,7 +65,7 @@ public:
      * \brief This is where all signal processing takes place
      */
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
 private:
     friend gps_l2c_telemetry_decoder_gs_sptr gps_l2c_make_telemetry_decoder_gs(
@@ -77,6 +80,9 @@ private:
 
     Gps_CNAV_Navigation_Message d_CNAV_Message;
 
+    Nav_Message_Packet d_nav_msg_packet;
+    std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
+
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
@@ -87,8 +93,6 @@ private:
     uint64_t d_last_valid_preamble;
 
     int32_t d_channel;
-    int32_t d_state;
-    int32_t d_crc_error_count;
 
     uint32_t d_max_symbols_without_valid_frame;
 
@@ -98,6 +102,8 @@ private:
     bool d_flag_valid_word;
     bool d_dump_mat;
     bool d_remove_dat;
+    bool d_enable_navdata_monitor;
+    bool d_dump_crc_stats;
 };
 
 

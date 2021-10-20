@@ -248,21 +248,21 @@ if(has_std_plus_void)
     add_definitions(-DCOMPILER_HAS_STD_PLUS_VOID=1)
 endif()
 
-find_package(Gnuplot)
+find_package(GNUPLOT)
 if(GNUPLOT_FOUND)
     add_definitions(-DGNUPLOT_EXECUTABLE="${GNUPLOT_EXECUTABLE}")
 endif()
-set_package_properties(Gnuplot PROPERTIES
+set_package_properties(GNUPLOT PROPERTIES
     URL "http://www.gnuplot.info"
     PURPOSE "Used to generate plots in some tests."
     TYPE OPTIONAL
 )
 if(GNUPLOT_FOUND AND GNUPLOT_VERSION_STRING)
-    set_package_properties(Gnuplot PROPERTIES
+    set_package_properties(GNUPLOT PROPERTIES
         DESCRIPTION "A portable command-line driven graphing utility (found: v${GNUPLOT_VERSION_STRING})"
     )
 else()
-    set_package_properties(Gnuplot PROPERTIES
+    set_package_properties(GNUPLOT PROPERTIES
         DESCRIPTION "A portable command-line driven graphing utility"
     )
 endif()
@@ -287,6 +287,12 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     endif()
     find_package(GNSSSIMULATOR QUIET)
     if(GNSSSIMULATOR_FOUND OR NOT ENABLE_GNSS_SIM_INSTALL)
+        if(NOT GNSSSIMULATOR_FOUND)
+            message(STATUS "Warning: gnss_sim has not been found, you can install it later.")
+            message(STATUS "  See https://bitbucket.org/jarribas/gnss-simulator")
+            message(STATUS "  It is expected at /usr/bin/gnss_sim")
+            set(SW_GENERATOR_BIN "/usr/bin/gnss_sim")
+        endif()
         add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
         add_definitions(-DDEFAULT_RINEX_NAV="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/brdc3540.14n")
         add_definitions(-DDEFAULT_POSITION_FILE="${CMAKE_INSTALL_PREFIX}/share/gnss-sim/circle.csv")

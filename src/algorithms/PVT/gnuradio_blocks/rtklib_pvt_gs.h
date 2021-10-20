@@ -59,6 +59,8 @@ class Nmea_Printer;
 class Pvt_Conf;
 class Rinex_Printer;
 class Rtcm_Printer;
+class An_Packet_Printer;
+class Has_Simple_Printer;
 class Rtklib_Solver;
 class rtklib_pvt_gs;
 
@@ -179,6 +181,8 @@ private:
     std::unique_ptr<Rtcm_Printer> d_rtcm_printer;
     std::unique_ptr<Monitor_Pvt_Udp_Sink> d_udp_sink_ptr;
     std::unique_ptr<Monitor_Ephemeris_Udp_Sink> d_eph_udp_sink_ptr;
+    std::unique_ptr<Has_Simple_Printer> d_has_simple_printer;
+    std::unique_ptr<An_Packet_Printer> d_an_printer;
 
     std::chrono::time_point<std::chrono::system_clock> d_start;
     std::chrono::time_point<std::chrono::system_clock> d_end;
@@ -227,7 +231,6 @@ private:
     size_t d_galileo_utc_model_sptr_type_hash_code;
     size_t d_galileo_almanac_helper_sptr_type_hash_code;
     size_t d_galileo_almanac_sptr_type_hash_code;
-    size_t d_galileo_has_message_sptr_type_hash_code;
     size_t d_glonass_gnav_ephemeris_sptr_type_hash_code;
     size_t d_glonass_gnav_utc_model_sptr_type_hash_code;
     size_t d_glonass_gnav_almanac_sptr_type_hash_code;
@@ -255,7 +258,7 @@ private:
     int32_t d_gpx_rate_ms;
     int32_t d_geojson_rate_ms;
     int32_t d_nmea_rate_ms;
-    int32_t d_last_status_print_seg;  // for status printer
+    int32_t d_an_rate_ms;
     int32_t d_output_rate_ms;
     int32_t d_display_rate_ms;
     int32_t d_report_rate_ms;
@@ -280,6 +283,8 @@ private:
     bool d_show_local_time_zone;
     bool d_waiting_obs_block_rx_clock_offset_correction_msg;
     bool d_enable_rx_clock_correction;
+    bool d_enable_has_messages;
+    bool d_an_printer_enabled;
 };
 
 

@@ -17,6 +17,8 @@
 #include "uhd_signal_source.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_create_directory.h"
+#include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
@@ -66,8 +68,21 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
         {
             // Single RF channel UHD operation (backward compatible config file format)
             samples_.push_back(configuration->property(role + ".samples", 0));
-            dump_.push_back(configuration->property(role + ".dump", false));
-            dump_filename_.push_back(configuration->property(role + ".dump_filename", default_dump_file));
+            bool dump_source = configuration->property(role + ".dump", false);
+            dump_.push_back(dump_source);
+            std::string dump_source_filename = configuration->property(role + ".dump_filename", default_dump_file);
+            dump_filename_.push_back(dump_source_filename);
+            if (dump_source)
+                {
+                    std::string::size_type pos = dump_source_filename.find_last_of(fs::path::preferred_separator);
+                    if (pos != std::string::npos)
+                        {
+                            if (!gnss_sdr_create_directory(dump_source_filename.substr(0, pos)))
+                                {
+                                    std::cerr << "GNSS-SDR cannot create the " << dump_source_filename.substr(0, pos) << " folder. Wrong permissions?\n";
+                                }
+                        }
+                }
 
             freq_.push_back(configuration->property(role + ".freq", GPS_L1_FREQ_HZ));
             gain_.push_back(configuration->property(role + ".gain", 50.0));
@@ -81,8 +96,21 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
                 {
                     // Single RF channel UHD operation (backward compatible config file format)
                     samples_.push_back(configuration->property(role + ".samples" + std::to_string(i), 0));
-                    dump_.push_back(configuration->property(role + ".dump" + std::to_string(i), false));
-                    dump_filename_.push_back(configuration->property(role + ".dump_filename" + std::to_string(i), default_dump_file));
+                    bool dump_source = configuration->property(role + ".dump" + std::to_string(i), false);
+                    dump_.push_back(dump_source);
+                    std::string dump_source_filename = configuration->property(role + ".dump_filename" + std::to_string(i), std::to_string(i) + "_"s + default_dump_file);
+                    dump_filename_.push_back(dump_source_filename);
+                    if (dump_source)
+                        {
+                            std::string::size_type pos = dump_source_filename.find_last_of(fs::path::preferred_separator);
+                            if (pos != std::string::npos)
+                                {
+                                    if (!gnss_sdr_create_directory(dump_source_filename.substr(0, pos)))
+                                        {
+                                            std::cerr << "GNSS-SDR cannot create the " << dump_source_filename.substr(0, pos) << " folder. Wrong permissions?\n";
+                                        }
+                                }
+                        }
 
                     freq_.push_back(configuration->property(role + ".freq" + std::to_string(i), GPS_L1_FREQ_HZ));
                     gain_.push_back(configuration->property(role + ".gain" + std::to_string(i), 50.0));

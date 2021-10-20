@@ -33,10 +33,13 @@
 #include <utility>
 
 
-Nmea_Printer::Nmea_Printer(const std::string& filename, bool flag_nmea_output_file, bool flag_nmea_tty_port, std::string nmea_dump_devname, const std::string& base_path)
+Nmea_Printer::Nmea_Printer(const std::string& filename,
+    bool flag_nmea_output_file,
+    bool flag_nmea_tty_port,
+    std::string nmea_dump_devname,
+    const std::string& base_path) : nmea_base_path(base_path),
+                                    d_flag_nmea_output_file(flag_nmea_output_file)
 {
-    nmea_base_path = base_path;
-    d_flag_nmea_output_file = flag_nmea_output_file;
     if (d_flag_nmea_output_file == true)
         {
             fs::path full_path(fs::current_path());

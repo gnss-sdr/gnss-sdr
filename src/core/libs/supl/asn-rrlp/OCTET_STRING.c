@@ -224,8 +224,8 @@ asn_dec_rval_t OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
         {
         case 0:
             /*
-                 * Check tags.
-                 */
+             * Check tags.
+             */
             rval = ber_check_tags(opt_codec_ctx, td, ctx, buf_ptr, size,
                 tag_mode, -1, &ctx->left, &tlv_constr);
             if (rval.code != RC_OK)
@@ -236,8 +236,8 @@ asn_dec_rval_t OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
             if (tlv_constr)
                 {
                     /*
-                         * Complex operation, requires stack of expectations.
-                         */
+                     * Complex operation, requires stack of expectations.
+                     */
                     ctx->ptr = new_stack();
                     if (ctx->ptr)
                         {
@@ -251,8 +251,8 @@ asn_dec_rval_t OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
             else
                 {
                     /*
-                         * Jump into stackless primitive decoding.
-                         */
+                     * Jump into stackless primitive decoding.
+                     */
                     _CH_PHASE(ctx, 3);
                     if (type_variant == ASN_OSUBV_ANY && tag_mode != 1)
                         {
@@ -267,8 +267,8 @@ asn_dec_rval_t OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
         case 1:
         phase1:
             /*
-                 * Fill the stack with expectations.
-                 */
+             * Fill the stack with expectations.
+             */
             stck = (struct stack *)ctx->ptr;
             sel = stck->cur_ptr;
             do
@@ -383,9 +383,9 @@ asn_dec_rval_t OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * Set up expected tags,
-                         * depending on ASN.1 type being decoded.
-                         */
+                     * Set up expected tags,
+                     * depending on ASN.1 type being decoded.
+                     */
                     switch (type_variant)
                         {
                         case ASN_OSUBV_BIT:
@@ -444,8 +444,8 @@ asn_dec_rval_t OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
                         }
 
                     /*
-                         * Append a new expectation.
-                         */
+                     * Append a new expectation.
+                     */
                     sel = OS__add_stack_el(stck);
                     if (!sel)
                         {
@@ -548,8 +548,8 @@ asn_dec_rval_t OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
         case 3:
         phase3:
             /*
-                 * Primitive form, no stack required.
-                 */
+             * Primitive form, no stack required.
+             */
             assert(ctx->left >= 0);
 
             if (size < (size_t)ctx->left)
@@ -1513,8 +1513,8 @@ static int OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
                 {
                     return 1;
                 } /* FATAL: can't have constrained
-                           * UniversalString with more than
-                           * 16 million code points */
+                   * UniversalString with more than
+                   * 16 million code points */
             for (; buf < end; buf += bpc)
                 {
                     int value;

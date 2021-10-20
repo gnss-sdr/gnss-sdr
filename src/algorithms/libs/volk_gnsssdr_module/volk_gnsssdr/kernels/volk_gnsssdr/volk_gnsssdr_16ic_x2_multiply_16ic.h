@@ -278,7 +278,7 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_a_avx2(lv_16sc_t* out, con
 #endif /* LV_HAVE_AVX2  */
 
 
-#ifdef LV_HAVE_NEONV7
+#ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
 static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const lv_16sc_t* in_a, const lv_16sc_t* in_b, unsigned int num_points)
@@ -324,6 +324,6 @@ static inline void volk_gnsssdr_16ic_x2_multiply_16ic_neon(lv_16sc_t* out, const
             *out++ = (*a_ptr++) * (*b_ptr++);
         }
 }
-#endif /* LV_HAVE_NEONV7*/
+#endif /* LV_HAVE_NEON*/
 
 #endif /* INCLUDED_volk_gnsssdr_16ic_x2_multiply_16ic_H */

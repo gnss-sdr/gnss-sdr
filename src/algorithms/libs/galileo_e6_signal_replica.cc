@@ -20,7 +20,7 @@
 #include "galileo_e6_signal_replica.h"
 #include "Galileo_E6.h"
 #include "gnss_signal_replica.h"
-#include <iostream>
+#include <utility>
 #include <vector>
 
 void galileo_e6_b_code_gen_complex_primary(own::span<std::complex<float>> dest,

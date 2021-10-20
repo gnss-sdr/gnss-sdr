@@ -18,42 +18,7 @@
 #include "acq_conf.h"
 #include "item_type_helpers.h"
 #include <glog/logging.h>
-#include <gnuradio/gr_complex.h>
 #include <cmath>
-
-Acq_Conf::Acq_Conf()
-{
-    /* PCPS acquisition configuration */
-    sampled_ms = 1U;
-    ms_per_code = 1U;
-    max_dwells = 1U;
-    samples_per_chip = 2U;
-    chips_per_second = 1023000;
-    doppler_max = 5000;
-    doppler_min = -5000;
-    doppler_step = 250.0;
-    num_doppler_bins_step2 = 4U;
-    doppler_step2 = 125.0;
-    pfa = 0.0;
-    pfa2 = 0.0;
-    fs_in = 4000000;
-    samples_per_ms = 0.0;
-    samples_per_code = 0.0;
-    bit_transition_flag = false;
-    use_CFAR_algorithm_flag = true;
-    dump = false;
-    blocking = true;
-    make_2_steps = false;
-    dump_channel = 0U;
-    it_size = sizeof(gr_complex);
-    item_type = std::string("gr_complex");
-    blocking_on_standby = false;
-    use_automatic_resampler = false;
-    resampler_ratio = 1.0;
-    resampled_fs = 0LL;
-    resampler_latency_samples = 0U;
-    enable_monitor_output = false;
-}
 
 
 void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,

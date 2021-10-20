@@ -28,16 +28,19 @@
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
-#include <volk_gnsssdr/volk_gnsssdr_alloc.h>
-#include <algorithm>  // for copy_n
-#include <cmath>      // for abs, pow, floor
-#include <complex>    // for complex
+#include <algorithm>              // for copy_n
+#include <cmath>                  // for abs, pow, floor
+#include <complex>                // for complex
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : gnss_synchro_(nullptr),
+                                role_(role),
+                                doppler_center_(0),
+                                channel_(0),
+                                doppler_step_(0),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -89,7 +92,7 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     // allocate memory to compute all the PRNs and compute all the possible codes
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
-    d_all_fft_codes_ = std::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
+    d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * NUM_PRNs);  // memory containing all the possible fft codes for PRN 0 to 32
     float max;
     int32_t tmp;
     int32_t tmp2;
@@ -150,10 +153,6 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
     acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
-
-    channel_ = 0;
-    doppler_step_ = 0;
-    gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
         {

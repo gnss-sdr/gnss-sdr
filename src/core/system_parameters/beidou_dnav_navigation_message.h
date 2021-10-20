@@ -80,7 +80,7 @@ public:
      * \brief Computes the Coordinated Universal Time (UTC) and
      * returns it in [s]
      */
-    double utc_time(const double beidoutime_corrected) const;
+    double utc_time(double beidoutime_corrected) const;
 
     bool satellite_validation();
 

@@ -29,7 +29,7 @@
 #include <span>
 namespace own = std;
 #else
-#include <gsl/gsl>
+#include <gsl/gsl-lite.hpp>
 namespace own = gsl;
 #endif
 
@@ -37,7 +37,11 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
+    unsigned int out_streams) : gnss_synchro_(nullptr),
+                                role_(role),
+                                threshold_(0),
+                                channel_(0),
+                                doppler_step_(0),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
@@ -58,7 +62,7 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GLONASS_L2_CA_CODE_RATE_CPS / GLONASS_L2_CA_CODE_LENGTH_CHIPS)));
     vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));
-    code_ = std::vector<std::complex<float>>(vector_length_);
+    code_ = volk_gnsssdr::vector<std::complex<float>>(vector_length_);
 
     sampled_ms_ = acq_parameters_.sampled_ms;
 
@@ -70,11 +74,6 @@ GlonassL2CaPcpsAcquisition::GlonassL2CaPcpsAcquisition(
             cbyte_to_float_x2_ = make_complex_byte_to_float_x2();
             float_to_complex_ = gr::blocks::float_to_complex::make();
         }
-
-    channel_ = 0;
-    threshold_ = 0.0;
-    doppler_step_ = 0;
-    gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
         {
@@ -141,7 +140,7 @@ void GlonassL2CaPcpsAcquisition::init()
 
 void GlonassL2CaPcpsAcquisition::set_local_code()
 {
-    std::vector<std::complex<float>> code(code_length_);
+    volk_gnsssdr::vector<std::complex<float>> code(code_length_);
 
     glonass_l2_ca_code_gen_complex_sampled(code, fs_in_, 0);
 

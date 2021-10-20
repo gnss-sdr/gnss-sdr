@@ -79,7 +79,6 @@ if(ENABLE_LIMESDR)
 endif()
 
 
-
 if(ENABLE_UHD)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} uhd_signal_source.h)
@@ -139,6 +138,10 @@ else()
         ${SIGNAL_SOURCE_ADAPTER_SOURCES}
         ${SIGNAL_SOURCE_ADAPTER_HEADERS}
     )
+endif()
+
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(signal_source_adapters PUBLIC -DGR_GREATER_38=1)
 endif()
 
 target_include_directories(signal_source_adapters

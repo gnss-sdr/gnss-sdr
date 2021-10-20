@@ -78,7 +78,12 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
             try
                 {
 #ifdef LimeSDR_PPS
+
+#ifdef GR_GREATER_38
+                    limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, false, PPS_mode_);
+#else
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, PPS_mode_);
+#endif
                     if (ext_clock_MHz_ != 0.0)
                         {
                             if (limesdr_source_->set_ext_clk(ext_clock_MHz_))
@@ -95,7 +100,13 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
                             limesdr_source_->disable_ext_clk();
                         }
 #else
+
+#ifdef GR_GREATER_38
+                    limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, false);
+#else
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_);
+#endif
+
 #endif
                 }
             catch (const boost::exception& e)
@@ -114,6 +125,8 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
              */
 
             limesdr_source_->set_antenna(antenna_, channel_);
+            std::cout << "LimeSDR RX antenna set to " << antenna_ << " for channel " << channel_ << "\n";
+            LOG(INFO) << "LimeSDR RX antenna set to " << antenna_ << " for channel " << channel_;
             // 2 set sampling rate
             double actual_sample_rate = limesdr_source_->set_sample_rate(sample_rate_);
             std::cout << "Actual RX Rate: " << actual_sample_rate << " [SPS]...\n";
@@ -133,23 +146,14 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
             // TODO: gr-limesdr does not report PLL tune frequency error...
 
             // 4. set rx gain
-            //todo: gr-limesdr does not expose AGC controls..
-            //            if (AGC_enabled_ == true)
-            //                {
-            //                    osmosdr_source_->set_gain_mode(true);
-            //                    std::cout << "AGC enabled\n";
-            //                    LOG(INFO) << "AGC enabled";
-            //                }
-            //            else
-            //                {
             double actual_gain = limesdr_source_->set_gain(gain_, channel_);
             std::cout << "Actual RX Gain: " << actual_gain << " [dB]...\n";
             LOG(INFO) << "Actual RX Gain: " << actual_gain << " [dB]...";
 
             // Set analog bandwidth
-            double actual_analog_bw = limesdr_source_->set_bandwidth(analog_bw_hz_, channel_);
-            std::cout << "Actual Analog Bandwidth: " << actual_analog_bw << " [Hz]...\n";
-            LOG(INFO) << "Actual Analog Bandwidth: : " << actual_analog_bw << " [Hz]...";
+            double current_analog_bw = limesdr_source_->set_bandwidth(analog_bw_hz_, channel_);
+            std::cout << "Actual Analog Bandwidth: " << current_analog_bw << " [Hz]...\n";
+            LOG(INFO) << "Actual Analog Bandwidth: : " << current_analog_bw << " [Hz]...";
 
             // Set digital bandwidth
             limesdr_source_->set_digital_filter(digital_bw_hz_, channel_);

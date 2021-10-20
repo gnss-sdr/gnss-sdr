@@ -2030,6 +2030,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 {
                     std::cout << "msg Bad any_cast: " << e.what();
                 }
+            catch (std::exception &ex)
+                {
+                    LOG(WARNING) << "Bad any_cast: " << ex.what();
+                }
         }
 
     //************* end time tags **************

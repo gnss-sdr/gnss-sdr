@@ -119,6 +119,7 @@ private:
     uint32_t d_nchannels_out;
 
     bool d_T_rx_TOW_set;  // rx time follow GPST
+    bool d_always_output_gs;
     bool d_dump;
     bool d_dump_mat;
 };

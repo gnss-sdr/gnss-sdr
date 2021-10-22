@@ -40,6 +40,7 @@ HybridObservables::HybridObservables(const ConfigurationInterface* configuration
     conf.nchannels_out = out_streams_;
     conf.observable_interval_ms = configuration->property("GNSS-SDR.observable_interval_ms", conf.observable_interval_ms);
     conf.enable_carrier_smoothing = configuration->property(role + ".enable_carrier_smoothing", conf.enable_carrier_smoothing);
+    conf.always_output_gs = configuration->property("PVT.an_output_enabled", conf.always_output_gs) || configuration->property(role + ".always_output_gs", conf.always_output_gs);
 
     if (FLAGS_carrier_smoothing_factor == DEFAULT_CARRIER_SMOOTHING_FACTOR)
         {

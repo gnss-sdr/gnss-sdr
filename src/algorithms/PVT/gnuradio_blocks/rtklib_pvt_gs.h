@@ -233,6 +233,7 @@ private:
 
     double d_rinex_version;
     double d_rx_time;
+    uint64_t d_local_counter_ms;
 
     key_t d_sysv_msg_key;
     int d_sysv_msqid;

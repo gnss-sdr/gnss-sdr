@@ -134,6 +134,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_galileo_has_data_sptr_type_hash_code(typeid(std::shared_ptr<Galileo_HAS_data>).hash_code()),
       d_rinex_version(conf_.rinex_version),
       d_rx_time(0.0),
+      d_local_counter_ms(0ULL),
       d_rinexobs_rate_ms(conf_.rinexobs_rate_ms),
       d_kml_rate_ms(conf_.kml_rate_ms),
       d_gpx_rate_ms(conf_.gpx_rate_ms),
@@ -1901,6 +1902,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             bool flag_write_RTCM_1045_output = false;
             bool flag_write_RTCM_MSM_output = false;
             bool flag_write_RINEX_obs_output = false;
+            d_local_counter_ms += static_cast<uint64_t>(d_observable_interval_ms);
 
             d_gnss_observables_map.clear();
             const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);  // Get the input buffer pointer
@@ -2244,13 +2246,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 flag_write_RTCM_1045_output,
                                                 d_enable_rx_clock_correction);
                                         }
-                                    if (d_an_printer_enabled)
-                                        {
-                                            if (current_RX_time_ms % d_an_rate_ms == 0)
-                                                {
-                                                    d_an_printer->print_packet(d_user_pvt_solver.get(), d_gnss_observables_map);
-                                                }
-                                        }
                                 }
                         }
 
@@ -2324,6 +2319,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 {
                                     d_udp_sink_ptr->write_monitor_pvt(monitor_pvt.get());
                                 }
+                        }
+                }
+            if (d_an_printer_enabled)
+                {
+                    if (d_local_counter_ms % static_cast<uint64_t>(d_an_rate_ms) == 0)
+                        {
+                            d_an_printer->print_packet(d_user_pvt_solver.get(), d_gnss_observables_map);
                         }
                 }
         }

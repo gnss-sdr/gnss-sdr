@@ -61,10 +61,8 @@ struct sdr_gnss_packet_t
 
 struct an_packet_t
 {
-    uint8_t id;
-    uint8_t length;
-    uint8_t header[5];  // AN_PACKET_HEADER_SIZE
-    uint8_t data[126];  // AN_MAXIMUM_PACKET_SIZE
+    uint8_t header[4];
+    uint8_t data[73];  // SDR_GNSS_PACKET_LENGTH
 };
 
 

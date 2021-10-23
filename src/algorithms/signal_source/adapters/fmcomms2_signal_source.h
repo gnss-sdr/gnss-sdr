@@ -62,7 +62,11 @@ public:
 
 private:
 #if GNURADIO_API_IIO
+#if GR_IIO_TEMPLATIZED_API
+    gr::iio::fmcomms2_source<gr_complex>::sptr fmcomms2_source_f32c_;
+#else
     gr::iio::fmcomms2_source::sptr fmcomms2_source_f32c_;
+#endif
 #else
     gr::iio::fmcomms2_source_f32c::sptr fmcomms2_source_f32c_;
 #endif

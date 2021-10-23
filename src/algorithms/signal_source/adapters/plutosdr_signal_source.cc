@@ -126,11 +126,17 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
     std::cout << "item type: " << item_type_ << '\n';
 
 #if GNURADIO_API_IIO
+#if GR_IIO_TEMPLATIZED_API
+    plutosdr_source_ = gr::iio::fmcomms2_source<gr_complex>::make(uri_, {true}, buffer_size_);
+    plutosdr_source_->set_gain_mode(0, gain_mode_);
+    plutosdr_source_->set_gain(0, rf_gain_);
+#else
     plutosdr_source_ = gr::iio::pluto_source::make(uri_, buffer_size_);
-    plutosdr_source_->set_frequency(freq_);
-    plutosdr_source_->set_samplerate(sample_rate_);
     plutosdr_source_->set_gain_mode(gain_mode_);
     plutosdr_source_->set_gain(rf_gain_);
+#endif
+    plutosdr_source_->set_frequency(freq_);
+    plutosdr_source_->set_samplerate(sample_rate_);
     plutosdr_source_->set_quadrature(quadrature_);
     plutosdr_source_->set_rfdc(rf_dc_);
     plutosdr_source_->set_bbdc(bb_dc_);

@@ -332,7 +332,7 @@ set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.21")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11.4")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.18.0")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.19.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.6")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
@@ -564,10 +564,23 @@ endif()
 
 
 ################################################################################
+# VOLK - Vector-Optimized Library of Kernels
+################################################################################
+find_package(VOLK)
+if(NOT VOLK_FOUND)
+    message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
+endif()
+set_package_properties(VOLK PROPERTIES
+    PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
+    TYPE REQUIRED
+)
+
+
+
+################################################################################
 # GNU Radio - https://www.gnuradio.org
 ################################################################################
 set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
-
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
     PURPOSE "Used for communication with front-ends of the USRP family."
@@ -971,20 +984,6 @@ if(CMAKE_CXX_STANDARD VERSION_GREATER 14)
         has_transform_reduce_with_execution_policy
     )
 endif()
-
-
-
-################################################################################
-# VOLK - Vector-Optimized Library of Kernels
-################################################################################
-find_package(VOLK)
-if(NOT VOLK_FOUND)
-    message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
-endif()
-set_package_properties(VOLK PROPERTIES
-    PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
-    TYPE REQUIRED
-)
 
 
 

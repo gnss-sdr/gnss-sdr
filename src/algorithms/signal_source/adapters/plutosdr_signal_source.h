@@ -66,11 +66,11 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    #if GR_IIO_TEMPLATIZED_API
-        gr::iio::fmcomms2_source<gr_complex>::sptr plutosdr_source_;
-    #else
-        gr::iio::pluto_source::sptr plutosdr_source_;
-    #endif
+#if GR_IIO_TEMPLATIZED_API
+    gr::iio::fmcomms2_source<gr_complex>::sptr plutosdr_source_;
+#else
+    gr::iio::pluto_source::sptr plutosdr_source_;
+#endif
 
     gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;

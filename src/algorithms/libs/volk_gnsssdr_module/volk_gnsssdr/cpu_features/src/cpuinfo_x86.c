@@ -201,7 +201,6 @@ static bool HasYmmOsXSave(uint32_t xcr0_eax)
     return HasMask(xcr0_eax, MASK_XMM | MASK_YMM);
 }
 
-#if !defined(CPU_FEATURES_OS_DARWIN)
 // Checks that operating system saves and restores zmm registers during context
 // switches.
 static bool HasZmmOsXSave(uint32_t xcr0_eax)
@@ -209,7 +208,6 @@ static bool HasZmmOsXSave(uint32_t xcr0_eax)
     return HasMask(xcr0_eax, MASK_XMM | MASK_YMM | MASK_MASKREG | MASK_ZMM0_15 |
                                  MASK_ZMM16_31);
 }
-#endif
 
 // Checks that operating system saves and restores AMX/TMUL state during context
 // switches.
@@ -265,6 +263,11 @@ static int IsVendor(const Leaf leaf, const char* const name)
     const uint32_t edx = *(const uint32_t*)(name + 4);
     const uint32_t ecx = *(const uint32_t*)(name + 8);
     return leaf.ebx == ebx && leaf.ecx == ecx && leaf.edx == edx;
+}
+
+static int IsVendorByX86Info(const X86Info* info, const char* const name)
+{
+    return memcmp(info->vendor, name, sizeof(info->vendor)) == 0;
 }
 
 static const CacheLevelInfo kEmptyCacheLevelInfo;
@@ -1159,12 +1162,15 @@ static void ParseLeaf2(const int max_cpuid_leaf, CacheInfo* info)
         }
 }
 
-static void ParseLeaf4(const int max_cpuid_leaf, CacheInfo* info)
+// For newer Intel CPUs uses "CPUID, eax=0x00000004".
+// For newer AMD CPUs uses "CPUID, eax=0x8000001D"
+static void ParseCacheInfo(const int max_cpuid_leaf, uint32_t leaf_id,
+    CacheInfo* info)
 {
     info->size = 0;
     for (int cache_id = 0; cache_id < CPU_FEATURES_MAX_CACHE_LEVEL; cache_id++)
         {
-            const Leaf leaf = SafeCpuIdEx(max_cpuid_leaf, 4, cache_id);
+            const Leaf leaf = SafeCpuIdEx(max_cpuid_leaf, leaf_id, cache_id);
             CacheType cache_type = ExtractBitRange(leaf.eax, 4, 0);
             if (cache_type == CPU_FEATURE_CACHE_NULL)
                 {
@@ -1439,11 +1445,15 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
 
 // Reference
 // https://en.wikipedia.org/wiki/CPUID#EAX=80000000h:_Get_Highest_Extended_Function_Implemented.
+static Leaf GetLeafByIdAMD(uint32_t leaf_id)
+{
+    uint32_t max_extended = CpuId(0x80000000).eax;
+    return SafeCpuId(max_extended, leaf_id);
+}
+
 static void ParseExtraAMDCpuId(X86Info* info, OsPreserves os_preserves)
 {
-    const Leaf leaf_80000000 = CpuId(0x80000000);
-    const uint32_t max_extended_cpuid_leaf = leaf_80000000.eax;
-    const Leaf leaf_80000001 = SafeCpuId(max_extended_cpuid_leaf, 0x80000001);
+    const Leaf leaf_80000001 = GetLeafByIdAMD(0x80000001);
 
     X86Features* const features = &info->features;
 
@@ -1466,9 +1476,9 @@ X86Info GetX86Info(void)
 {
     X86Info info = kEmptyX86Info;
     const Leaf leaf_0 = CpuId(0);
-    const bool is_intel = IsVendor(leaf_0, "GenuineIntel");
-    const bool is_amd = IsVendor(leaf_0, "AuthenticAMD");
-    const bool is_hygon = IsVendor(leaf_0, "HygonGenuine");
+    const bool is_intel = IsVendor(leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL);
+    const bool is_amd = IsVendor(leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
+    const bool is_hygon = IsVendor(leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE);
     SetVendor(leaf_0, info.vendor);
     if (is_intel || is_amd || is_hygon)
         {
@@ -1487,11 +1497,24 @@ CacheInfo GetX86CacheInfo(void)
 {
     CacheInfo info = kEmptyCacheInfo;
     const Leaf leaf_0 = CpuId(0);
-    const uint32_t max_cpuid_leaf = leaf_0.eax;
-    if (IsVendor(leaf_0, "GenuineIntel"))
+    if (IsVendor(leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL))
         {
-            ParseLeaf2(max_cpuid_leaf, &info);
-            ParseLeaf4(max_cpuid_leaf, &info);
+            ParseLeaf2(leaf_0.eax, &info);
+            ParseCacheInfo(leaf_0.eax, 4, &info);
+        }
+    else if (IsVendor(leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD) ||
+             IsVendor(leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE))
+        {
+            const uint32_t max_ext = CpuId(0x80000000).eax;
+            const uint32_t cpuid_ext = SafeCpuId(max_ext, 0x80000001).ecx;
+
+            // If CPUID Fn8000_0001_ECX[TopologyExtensions]==0
+            // then CPUID Fn8000_0001_E[D,C,B,A]X is reserved.
+            // https://www.amd.com/system/files/TechDocs/25481.pdf
+            if (IsBitSet(cpuid_ext, 22))
+                {
+                    ParseCacheInfo(max_ext, 0x8000001D, &info);
+                }
         }
     return info;
 }
@@ -1500,7 +1523,7 @@ CacheInfo GetX86CacheInfo(void)
 
 X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
 {
-    if (memcmp(info->vendor, "GenuineIntel", sizeof(info->vendor)) == 0)
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_GENUINE_INTEL))
         {
             switch (CPUID(info->family, info->model))
                 {
@@ -1605,7 +1628,7 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                     return X86_UNKNOWN;
                 }
         }
-    if (memcmp(info->vendor, "AuthenticAMD", sizeof(info->vendor)) == 0)
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_AUTHENTIC_AMD))
         {
             switch (CPUID(info->family, info->model))
                 {
@@ -1715,7 +1738,7 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                     return X86_UNKNOWN;
                 }
         }
-    if (memcmp(info->vendor, "HygonGenuine", sizeof(info->vendor)) == 0)
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_HYGON_GENUINE))
         {
             switch (CPUID(info->family, info->model))
                 {

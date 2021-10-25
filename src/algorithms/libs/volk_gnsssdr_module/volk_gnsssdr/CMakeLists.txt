@@ -270,10 +270,6 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
 endif()
 
 if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
-    set(BUILD_PIC ON CACHE BOOL
-        "Build cpu_features with Position Independent Code (PIC)."
-        FORCE
-    )
     set(USE_CPU_FEATURES ON)
     set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
     set(BUILD_SHARED_LIBS OFF)

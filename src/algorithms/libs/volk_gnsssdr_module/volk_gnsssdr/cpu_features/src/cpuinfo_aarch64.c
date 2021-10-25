@@ -107,8 +107,8 @@ static bool HandleAarch64Line(const LineResult result,
                 {
                     for (size_t i = 0; i < AARCH64_LAST_; ++i)
                         {
-                            kSetters[i](&info->features,
-                                CpuFeatures_StringView_HasWord(value, kCpuInfoFlags[i]));
+                            kSetters[i](&info->features, CpuFeatures_StringView_HasWord(
+                                                             value, kCpuInfoFlags[i], ' '));
                         }
                 }
             else if (CpuFeatures_StringView_IsEquals(key, str("CPU implementer")))

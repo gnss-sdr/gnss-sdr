@@ -22,7 +22,11 @@
 #include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>
 #if GRIIO_INCLUDE_HAS_GNURADIO
+#if GR_IIO_TEMPLATIZED_API
+#include <gnuradio/iio/fmcomms2_source.h>
+#else
 #include <gnuradio/iio/pluto_source.h>
+#endif
 #else
 #include <iio/pluto_source.h>
 #endif
@@ -62,7 +66,11 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+#if GR_IIO_TEMPLATIZED_API
+    gr::iio::fmcomms2_source<gr_complex>::sptr plutosdr_source_;
+#else
     gr::iio::pluto_source::sptr plutosdr_source_;
+#endif
 
     gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;

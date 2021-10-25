@@ -61,6 +61,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
       d_nchannels_in(conf_.nchannels_in),
       d_nchannels_out(conf_.nchannels_out),
       d_T_rx_TOW_set(false),
+      d_always_output_gs(conf_.always_output_gs),
       d_dump(conf_.dump),
       d_dump_mat(conf_.dump_mat && d_dump)
 {
@@ -903,6 +904,15 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     // old_time_debug = out[0][0].RX_time * 1000.0;
                     return 1;
                 }
+        }
+    if (d_always_output_gs)
+        {
+            Gnss_Synchro empty_gs{};
+            for (uint32_t n = 0; n < d_nchannels_out; n++)
+                {
+                    out[n][0] = empty_gs;
+                }
+            return 1;
         }
     return 0;
 }

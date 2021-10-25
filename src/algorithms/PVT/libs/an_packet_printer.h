@@ -23,6 +23,7 @@
 
 #include "gnss_synchro.h"
 #include <array>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <map>
@@ -60,10 +61,8 @@ struct sdr_gnss_packet_t
 
 struct an_packet_t
 {
-    uint8_t id;
-    uint8_t length;
-    uint8_t header[5];  // AN_PACKET_HEADER_SIZE
-    uint8_t data[126];  // AN_MAXIMUM_PACKET_SIZE
+    uint8_t header[4];
+    uint8_t data[73];  // SDR_GNSS_PACKET_LENGTH
 };
 
 
@@ -121,6 +120,7 @@ private:
     void encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packet, an_packet_t* _packet) const;
     void LSB_bytes_to_array(void* _in, int offset, uint8_t* _out, uint8_t var_size) const;
 
+    std::chrono::time_point<std::chrono::system_clock> d_start;
     std::string d_an_devname;
     int d_an_dev_descriptor;  // serial device descriptor (i.e. COM port)
 };

@@ -369,6 +369,11 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
                 INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
             )
         endif()
+
+        # check templatized API
+        if(NOT EXISTS "${GNURADIO_IIO_INCLUDE_DIRS}/gnuradio/iio/pluto_source.h")
+            set(GR_IIO_TEMPLATIZED_API TRUE)
+        endif()
     endif()
 endif()
 

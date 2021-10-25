@@ -262,6 +262,11 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
                 Gnuradio::analog
         )
     endif()
+    if(GR_IIO_TEMPLATIZED_API)
+        target_compile_definitions(signal_source_adapters
+            PUBLIC -DGR_IIO_TEMPLATIZED_API=1
+        )
+    endif()
 endif()
 
  if(GRLIMESDR_PPS)

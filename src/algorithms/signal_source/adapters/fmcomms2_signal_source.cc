@@ -185,7 +185,11 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                         {
 #if GNURADIO_API_IIO
                             std::vector<bool> enable_channels{rx1_en_, rx2_en_};
+#if GR_IIO_TEMPLATIZED_API
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source<gr_complex>::make(uri_, enable_channels, buffer_size_);
+#else
                             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source::make(uri_, enable_channels, buffer_size_);
+#endif
                             fmcomms2_source_f32c_->set_frequency(freq_);
                             fmcomms2_source_f32c_->set_samplerate(sample_rate_);
                             if (rx1_en_)
@@ -261,7 +265,11 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                         {
 #if GNURADIO_API_IIO
                             std::vector<bool> enable_channels{rx1_en_, rx2_en_};
+#if GR_IIO_TEMPLATIZED_API
+                            fmcomms2_source_f32c_ = gr::iio::fmcomms2_source<gr_complex>::make(uri_, enable_channels, buffer_size_);
+#else
                             fmcomms2_source_f32c_ = gr::iio::fmcomms2_source::make(uri_, enable_channels, buffer_size_);
+#endif
                             fmcomms2_source_f32c_->set_frequency(freq_);
                             fmcomms2_source_f32c_->set_samplerate(sample_rate_);
                             fmcomms2_source_f32c_->set_gain_mode(0, gain_mode_rx1_);

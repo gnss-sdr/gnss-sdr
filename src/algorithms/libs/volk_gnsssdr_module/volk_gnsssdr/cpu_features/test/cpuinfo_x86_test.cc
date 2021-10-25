@@ -76,26 +76,32 @@ private:
     uint32_t xcr0_eax_;
 };
 
-FakeCpu* g_fake_cpu = nullptr;
+static FakeCpu* g_fake_cpu_instance = nullptr;
+
+static FakeCpu& cpu()
+{
+    assert(g_fake_cpu_instance != nullptr);
+    return *g_fake_cpu_instance;
+}
 
 extern "C" Leaf GetCpuidLeaf(uint32_t leaf_id, int ecx)
 {
-    return g_fake_cpu->GetCpuidLeaf(leaf_id, ecx);
+    return cpu().GetCpuidLeaf(leaf_id, ecx);
 }
 
-extern "C" uint32_t GetXCR0Eax(void) { return g_fake_cpu->GetXCR0Eax(); }
+extern "C" uint32_t GetXCR0Eax(void) { return cpu().GetXCR0Eax(); }
 
 #if defined(CPU_FEATURES_OS_DARWIN)
 extern "C" bool GetDarwinSysCtlByName(const char* name)
 {
-    return g_fake_cpu->GetDarwinSysCtlByName(name);
+    return cpu().GetDarwinSysCtlByName(name);
 }
 #endif  // CPU_FEATURES_OS_DARWIN
 
 #if defined(CPU_FEATURES_OS_WINDOWS)
 extern "C" bool GetWindowsIsProcessorFeaturePresent(DWORD ProcessorFeature)
 {
-    return g_fake_cpu->GetWindowsIsProcessorFeaturePresent(ProcessorFeature);
+    return cpu().GetWindowsIsProcessorFeaturePresent(ProcessorFeature);
 }
 #endif  // CPU_FEATURES_OS_WINDOWS
 
@@ -104,14 +110,22 @@ namespace
 class CpuidX86Test : public ::testing::Test
 {
 protected:
-    void SetUp() override { g_fake_cpu = new FakeCpu(); }
-    void TearDown() override { delete g_fake_cpu; }
+    void SetUp() override
+    {
+        assert(g_fake_cpu_instance == nullptr);
+        g_fake_cpu_instance = new FakeCpu();
+    }
+    void TearDown() override
+    {
+        delete g_fake_cpu_instance;
+        g_fake_cpu_instance = nullptr;
+    }
 };
 
 TEST_F(CpuidX86Test, SandyBridge)
 {
-    g_fake_cpu->SetOsBackupsExtendedRegisters(true);
-    g_fake_cpu->SetLeaves({
+    cpu().SetOsBackupsExtendedRegisters(true);
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x000206A6, 0x00100800, 0x1F9AE3BF, 0xBFEBFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x00000000, 0x00000000, 0x00000000}},
@@ -158,23 +172,23 @@ const int MiB = 1024 * KiB;
 
 TEST_F(CpuidX86Test, SandyBridgeTestOsSupport)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x000206A6, 0x00100800, 0x1F9AE3BF, 0xBFEBFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x00000000, 0x00000000, 0x00000000}},
     });
     // avx is disabled if os does not support backing up ymm registers.
-    g_fake_cpu->SetOsBackupsExtendedRegisters(false);
+    cpu().SetOsBackupsExtendedRegisters(false);
     EXPECT_FALSE(GetX86Info().features.avx);
     // avx is disabled if os does not support backing up ymm registers.
-    g_fake_cpu->SetOsBackupsExtendedRegisters(true);
+    cpu().SetOsBackupsExtendedRegisters(true);
     EXPECT_TRUE(GetX86Info().features.avx);
 }
 
 TEST_F(CpuidX86Test, SkyLake)
 {
-    g_fake_cpu->SetOsBackupsExtendedRegisters(true);
-    g_fake_cpu->SetLeaves({
+    cpu().SetOsBackupsExtendedRegisters(true);
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000016, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x000406E3, 0x00100800, 0x7FFAFBBF, 0xBFEBFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x029C67AF, 0x00000000, 0x00000000}},
@@ -189,7 +203,7 @@ TEST_F(CpuidX86Test, SkyLake)
 
 TEST_F(CpuidX86Test, Branding)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000016, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x000406E3, 0x00100800, 0x7FFAFBBF, 0xBFEBFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x029C67AF, 0x00000000, 0x00000000}},
@@ -206,7 +220,7 @@ TEST_F(CpuidX86Test, Branding)
 
 TEST_F(CpuidX86Test, KabyLakeCache)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000016, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x000406E3, 0x00100800, 0x7FFAFBBF, 0xBFEBFBFF}},
         {{0x00000004, 0}, Leaf{0x1C004121, 0x01C0003F, 0x0000003F, 0x00000000}},
@@ -256,7 +270,7 @@ TEST_F(CpuidX86Test, KabyLakeCache)
 
 TEST_F(CpuidX86Test, HSWCache)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000016, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x000406E3, 0x00100800, 0x7FFAFBBF, 0xBFEBFBFF}},
         {{0x00000004, 0}, Leaf{0x1C004121, 0x01C0003F, 0x0000003F, 0x00000000}},
@@ -307,7 +321,7 @@ TEST_F(CpuidX86Test, HSWCache)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0200F30_K11_Griffin_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K11_GRIFFIN)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000001, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00200F30, 0x00020800, 0x00002001, 0x178BFBFF}},
         {{0x80000000, 0}, Leaf{0x8000001A, 0x68747541, 0x444D4163, 0x69746E65}},
@@ -324,7 +338,7 @@ TEST_F(CpuidX86Test, AMD_K11_GRIFFIN)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0300F10_K12_Llano_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K12_LLANO)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000006, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00300F10, 0x00040800, 0x00802009, 0x178BFBFF}},
         {{0x80000000, 0}, Leaf{0x8000001B, 0x68747541, 0x444D4163, 0x69746E65}},
@@ -341,7 +355,7 @@ TEST_F(CpuidX86Test, AMD_K12_LLANO)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0500F01_K14_Bobcat_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K14_BOBCAT_AMD0500F01)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000006, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00500F01, 0x00020800, 0x00802209, 0x178BFBFF}},
         {{0x80000000, 0}, Leaf{0x8000001B, 0x68747541, 0x444D4163, 0x69746E65}},
@@ -358,7 +372,7 @@ TEST_F(CpuidX86Test, AMD_K14_BOBCAT_AMD0500F01)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0500F10_K14_Bobcat_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K14_BOBCAT_AMD0500F10)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000006, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00500F10, 0x00020800, 0x00802209, 0x178BFBFF}},
         {{0x00000002, 0}, Leaf{0x00000000, 0x00000000, 0x00000000, 0x00000000}},
@@ -383,7 +397,7 @@ TEST_F(CpuidX86Test, AMD_K14_BOBCAT_AMD0500F10)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0500F20_K14_Bobcat_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K14_BOBCAT_AMD0500F20)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000006, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00500F20, 0x00020800, 0x00802209, 0x178BFBFF}},
         {{0x80000000, 0}, Leaf{0x8000001B, 0x68747541, 0x444D4163, 0x69746E65}},
@@ -400,7 +414,7 @@ TEST_F(CpuidX86Test, AMD_K14_BOBCAT_AMD0500F20)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0670F00_K15_StoneyRidge_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K15_EXCAVATOR_STONEY_RIDGE)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00670F00, 0x00020800, 0x7ED8320B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x000001A9, 0x00000000, 0x00000000}},
@@ -426,7 +440,7 @@ TEST_F(CpuidX86Test, AMD_K15_EXCAVATOR_STONEY_RIDGE)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0600F20_K15_AbuDhabi_CPUID0.txt
 TEST_F(CpuidX86Test, AMD_K15_PILEDRIVER_ABU_DHABI)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00600F20, 0x00100800, 0x3E98320B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x00000008, 0x00000000, 0x00000000}},
@@ -452,7 +466,7 @@ TEST_F(CpuidX86Test, AMD_K15_PILEDRIVER_ABU_DHABI)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0600F20_K15_AbuDhabi_CPUID0.txt
 TEST_F(CpuidX86Test, AMD_K15_PILEDRIVER_ABU_DHABI_CACHE_INFO)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00600F20, 0x00100800, 0x3E98320B, 0x178BFBFF}},
         {{0x80000000, 0}, Leaf{0x8000001E, 0x68747541, 0x444D4163, 0x69746E65}},
@@ -501,7 +515,7 @@ TEST_F(CpuidX86Test, AMD_K15_PILEDRIVER_ABU_DHABI_CACHE_INFO)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0600F12_K15_Interlagos_CPUID3.txt
 TEST_F(CpuidX86Test, AMD_K15_BULLDOZER_INTERLAGOS)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00600F12, 0x000C0800, 0x1E98220B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x00000000, 0x00000000, 0x00000000}},
@@ -527,7 +541,7 @@ TEST_F(CpuidX86Test, AMD_K15_BULLDOZER_INTERLAGOS)
 // http://users.atw.hu/instlatx64/AuthenticAMD0630F81_K15_Godavari_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K15_STREAMROLLER_GODAVARI)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00630F81, 0x00040800, 0x3E98320B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x00000000, 0x00000000, 0x00000000}},
@@ -555,7 +569,7 @@ TEST_F(CpuidX86Test, AMD_K15_STREAMROLLER_GODAVARI)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0700F01_K16_Kabini_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K16_JAGUAR_KABINI)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00700F01, 0x00040800, 0x3ED8220B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x00000008, 0x00000000, 0x00000000}},
@@ -580,7 +594,7 @@ TEST_F(CpuidX86Test, AMD_K16_JAGUAR_KABINI)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0730F01_K16_Beema_CPUID2.txt
 TEST_F(CpuidX86Test, AMD_K16_PUMA_BEEMA)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00730F01, 0x00040800, 0x7ED8220B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x00000008, 0x00000000, 0x00000000}},
@@ -605,7 +619,7 @@ TEST_F(CpuidX86Test, AMD_K16_PUMA_BEEMA)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0820F01_K17_Dali_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K17_ZEN_DALI)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00820F01, 0x00020800, 0x7ED8320B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x209C01A9, 0x00000000, 0x00000000}},
@@ -630,7 +644,7 @@ TEST_F(CpuidX86Test, AMD_K17_ZEN_DALI)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0800F82_K17_ZenP_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K17_ZEN_PLUS_PINNACLE_RIDGE)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00800F82, 0x00100800, 0x7ED8320B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x209C01A9, 0x00000000, 0x00000000}},
@@ -655,7 +669,7 @@ TEST_F(CpuidX86Test, AMD_K17_ZEN_PLUS_PINNACLE_RIDGE)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0840F70_K17_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K17_ZEN2_XBOX_SERIES_X)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000010, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00840F70, 0x00100800, 0x7ED8320B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x219C91A9, 0x00400004, 0x00000000}},
@@ -680,7 +694,7 @@ TEST_F(CpuidX86Test, AMD_K17_ZEN2_XBOX_SERIES_X)
 // http://users.atw.hu/instlatx64/HygonGenuine/HygonGenuine0900F02_Hygon_CPUID3.txt
 TEST_F(CpuidX86Test, AMD_K18_ZEN_DHYANA)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x6F677948, 0x656E6975, 0x6E65476E}},
         {{0x00000001, 0}, Leaf{0x00900F02, 0x00100800, 0x74D83209, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x009C01A9, 0x0040068C, 0x00000000}},
@@ -705,7 +719,7 @@ TEST_F(CpuidX86Test, AMD_K18_ZEN_DHYANA)
 // http://users.atw.hu/instlatx64/HygonGenuine/HygonGenuine0900F02_Hygon_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K18_ZEN_DHYANA_CACHE_INFO)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000D, 0x6F677948, 0x656E6975, 0x6E65476E}},
         {{0x00000001, 0}, Leaf{0x00900F02, 0x00100800, 0x74D83209, 0x178BFBFF}},
         {{0x80000000, 0}, Leaf{0x8000001F, 0x6F677948, 0x656E6975, 0x6E65476E}},
@@ -754,7 +768,7 @@ TEST_F(CpuidX86Test, AMD_K18_ZEN_DHYANA_CACHE_INFO)
 // http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0A20F10_K19_Vermeer2_CPUID.txt
 TEST_F(CpuidX86Test, AMD_K19_ZEN3_VERMEER)
 {
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000010, 0x68747541, 0x444D4163, 0x69746E65}},
         {{0x00000001, 0}, Leaf{0x00A20F10, 0x01180800, 0x7ED8320B, 0x178BFBFF}},
         {{0x00000007, 0}, Leaf{0x00000000, 0x219C97A9, 0x0040068C, 0x00000000}},
@@ -780,21 +794,18 @@ TEST_F(CpuidX86Test, AMD_K19_ZEN3_VERMEER)
 TEST_F(CpuidX86Test, Nehalem)
 {
     // Pre AVX cpus don't have xsave
-    g_fake_cpu->SetOsBackupsExtendedRegisters(false);
+    cpu().SetOsBackupsExtendedRegisters(false);
 #if defined(CPU_FEATURES_OS_WINDOWS)
-    g_fake_cpu->SetWindowsIsProcessorFeaturePresent(
-        PF_XMMI_INSTRUCTIONS_AVAILABLE);
-    g_fake_cpu->SetWindowsIsProcessorFeaturePresent(
-        PF_XMMI64_INSTRUCTIONS_AVAILABLE);
-    g_fake_cpu->SetWindowsIsProcessorFeaturePresent(
-        PF_SSE3_INSTRUCTIONS_AVAILABLE);
+    cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
+    cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE);
+    cpu().SetWindowsIsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE);
 #elif defined(CPU_FEATURES_OS_DARWIN)
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse2");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse3");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.supplementalsse3");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse4_1");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse4_2");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse2");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse3");
+    cpu().SetDarwinSysCtlByName("hw.optional.supplementalsse3");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse4_1");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse4_2");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/var/run/dmesg.boot", R"(
@@ -811,7 +822,7 @@ real memory  = 2147418112 (2047 MB)
 flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
 )");
 #endif
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000B, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x000106A2, 0x00100800, 0x00BCE3BD, 0xBFEBFBFF}},
         {{0x00000002, 0}, Leaf{0x55035A01, 0x00F0B0E3, 0x00000000, 0x09CA212C}},
@@ -866,21 +877,18 @@ flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
 TEST_F(CpuidX86Test, Atom)
 {
     // Pre AVX cpus don't have xsave
-    g_fake_cpu->SetOsBackupsExtendedRegisters(false);
+    cpu().SetOsBackupsExtendedRegisters(false);
 #if defined(CPU_FEATURES_OS_WINDOWS)
-    g_fake_cpu->SetWindowsIsProcessorFeaturePresent(
-        PF_XMMI_INSTRUCTIONS_AVAILABLE);
-    g_fake_cpu->SetWindowsIsProcessorFeaturePresent(
-        PF_XMMI64_INSTRUCTIONS_AVAILABLE);
-    g_fake_cpu->SetWindowsIsProcessorFeaturePresent(
-        PF_SSE3_INSTRUCTIONS_AVAILABLE);
+    cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
+    cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE);
+    cpu().SetWindowsIsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE);
 #elif defined(CPU_FEATURES_OS_DARWIN)
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse2");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse3");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.supplementalsse3");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse4_1");
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse4_2");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse2");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse3");
+    cpu().SetDarwinSysCtlByName("hw.optional.supplementalsse3");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse4_1");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse4_2");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/var/run/dmesg.boot", R"(
@@ -897,7 +905,7 @@ real memory  = 2147418112 (2047 MB)
 flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
 )");
 #endif
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x0000000B, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x00030673, 0x00100800, 0x41D8E3BF, 0xBFEBFBFF}},
         {{0x00000002, 0}, Leaf{0x61B3A001, 0x0000FFC2, 0x00000000, 0x00000000}},
@@ -952,12 +960,11 @@ flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
 TEST_F(CpuidX86Test, P3)
 {
     // Pre AVX cpus don't have xsave
-    g_fake_cpu->SetOsBackupsExtendedRegisters(false);
+    cpu().SetOsBackupsExtendedRegisters(false);
 #if defined(CPU_FEATURES_OS_WINDOWS)
-    g_fake_cpu->SetWindowsIsProcessorFeaturePresent(
-        PF_XMMI_INSTRUCTIONS_AVAILABLE);
+    cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
 #elif defined(CPU_FEATURES_OS_DARWIN)
-    g_fake_cpu->SetDarwinSysCtlByName("hw.optional.sse");
+    cpu().SetDarwinSysCtlByName("hw.optional.sse");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/var/run/dmesg.boot", R"(
@@ -973,7 +980,7 @@ real memory  = 2147418112 (2047 MB)
 flags           : fpu mmx sse
 )");
 #endif
-    g_fake_cpu->SetLeaves({
+    cpu().SetLeaves({
         {{0x00000000, 0}, Leaf{0x00000003, 0x756E6547, 0x6C65746E, 0x49656E69}},
         {{0x00000001, 0}, Leaf{0x00000673, 0x00000000, 0x00000000, 0x0387FBFF}},
         {{0x00000002, 0}, Leaf{0x03020101, 0x00000000, 0x00000000, 0x0C040843}},

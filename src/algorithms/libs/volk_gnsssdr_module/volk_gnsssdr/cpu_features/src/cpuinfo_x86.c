@@ -1749,6 +1749,8 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
 
 void FillX86BrandString(char brand_string[49])
 {
+    const Leaf leaf_ext_0 = CpuId(0x80000000);
+    const uint32_t max_cpuid_leaf_ext = leaf_ext_0.eax;
     const Leaf leaves[3] = {
         SafeCpuId(max_cpuid_leaf_ext, 0x80000002),
         SafeCpuId(max_cpuid_leaf_ext, 0x80000003),

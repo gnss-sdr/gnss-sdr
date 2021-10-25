@@ -28,8 +28,8 @@ static bool HandleMipsLine(const LineResult result,
                 {
                     for (size_t i = 0; i < MIPS_LAST_; ++i)
                         {
-                            kSetters[i](features,
-                                CpuFeatures_StringView_HasWord(value, kCpuInfoFlags[i]));
+                            kSetters[i](features, CpuFeatures_StringView_HasWord(
+                                                      value, kCpuInfoFlags[i], ' '));
                         }
                 }
         }

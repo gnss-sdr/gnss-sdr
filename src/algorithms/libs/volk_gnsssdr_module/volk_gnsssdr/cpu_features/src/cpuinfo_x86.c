@@ -201,6 +201,7 @@ static bool HasYmmOsXSave(uint32_t xcr0_eax)
     return HasMask(xcr0_eax, MASK_XMM | MASK_YMM);
 }
 
+#if !defined(CPU_FEATURES_OS_DARWIN)
 // Checks that operating system saves and restores zmm registers during context
 // switches.
 static bool HasZmmOsXSave(uint32_t xcr0_eax)
@@ -208,6 +209,7 @@ static bool HasZmmOsXSave(uint32_t xcr0_eax)
     return HasMask(xcr0_eax, MASK_XMM | MASK_YMM | MASK_MASKREG | MASK_ZMM0_15 |
                                  MASK_ZMM16_31);
 }
+#endif
 
 // Checks that operating system saves and restores AMX/TMUL state during context
 // switches.

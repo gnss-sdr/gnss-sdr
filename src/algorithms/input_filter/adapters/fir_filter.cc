@@ -23,12 +23,18 @@
 #include <utility>
 
 
-FirFilter::FirFilter(const ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
+FirFilter::FirFilter(const ConfigurationInterface* configuration,
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams)
+    : config_(configuration),
+      role_(std::move(role)),
+      item_size_(0),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
-    config_ = configuration;
     (*this).init();
-    item_size_ = 0;
+    DLOG(INFO) << "role " << role_;
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {
             item_size_ = sizeof(gr_complex);
@@ -133,23 +139,24 @@ void FirFilter::init()
     const std::string default_output_item_type("gr_complex");
     const std::string default_taps_item_type("float");
     const std::string default_dump_filename("../data/input_filter.dat");
-    const int default_number_of_taps = 6;
-    const unsigned int default_number_of_bands = 2;
+    const std::string default_filter_type("bandpass");
     const std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
     const std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};
     const std::vector<double> default_error_w = {1.0, 1.0};
-    const std::string default_filter_type("bandpass");
     const int default_grid_density = 16;
+    const int default_number_of_taps = 6;
+    const unsigned int default_number_of_bands = 2;
 
-    DLOG(INFO) << "role " << role_;
+    const int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
+    const unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
+    const std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
+    const int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
 
     input_item_type_ = config_->property(role_ + ".input_item_type", default_input_item_type);
     output_item_type_ = config_->property(role_ + ".output_item_type", default_output_item_type);
     taps_item_type_ = config_->property(role_ + ".taps_item_type", default_taps_item_type);
     dump_ = config_->property(role_ + ".dump", false);
     dump_filename_ = config_->property(role_ + ".dump_filename", default_dump_filename);
-    const int number_of_taps = config_->property(role_ + ".number_of_taps", default_number_of_taps);
-    const unsigned int number_of_bands = config_->property(role_ + ".number_of_bands", default_number_of_bands);
 
     std::vector<double> bands;
     std::vector<double> ampl;
@@ -178,9 +185,6 @@ void FirFilter::init()
             option_value = config_->property(role_ + option, default_bands[i]);
             error_w.push_back(option_value);
         }
-
-    const std::string filter_type = config_->property(role_ + ".filter_type", default_filter_type);
-    const int grid_density = config_->property(role_ + ".grid_density", default_grid_density);
 
     // pm_remez implements the Parks-McClellan FIR filter design.
     // It calculates the optimal (in the Chebyshev/minimax sense) FIR filter

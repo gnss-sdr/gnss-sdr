@@ -22,25 +22,33 @@
 #include <glog/logging.h>
 
 
-NotchFilter::NotchFilter(const ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+NotchFilter::NotchFilter(const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams)
+    : role_(role),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
+    const std::string default_item_type("gr_complex");
+    const std::string default_dump_file("./data/input_filter.dat");
     const float default_pfa = 0.001;
     const float default_p_c_factor = 0.9;
     const int default_length_ = 32;
     const int default_n_segments_est = 12500;
     const int default_n_segments_reset = 5000000;
-    const std::string default_item_type("gr_complex");
-    const std::string default_dump_file("./data/input_filter.dat");
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
-    DLOG(INFO) << "dump_ is " << dump_;
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
+
     const float pfa = configuration->property(role + ".pfa", default_pfa);
     const float p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
     const int length_ = configuration->property(role + ".length", default_length_);
     const int n_segments_est = configuration->property(role + ".segments_est", default_n_segments_est);
     const int n_segments_reset = configuration->property(role + ".segments_reset", default_n_segments_reset);
+
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    dump_ = configuration->property(role + ".dump", false);
+
+    DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);

@@ -34,28 +34,29 @@ Notch::Notch(float pfa,
     float p_c_factor,
     int32_t length,
     int32_t n_segments_est,
-    int32_t n_segments_reset) : gr::block("Notch",
-                                    gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                    gr::io_signature::make(1, 1, sizeof(gr_complex)))
+    int32_t n_segments_reset)
+    : gr::block("Notch",
+          gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(gr_complex))),
+      last_out_(gr_complex(0.0, 0.0)),
+      z_0_(gr_complex(0.0, 0.0)),
+      p_c_factor_(gr_complex(p_c_factor, 0.0)),
+      pfa_(pfa),
+      noise_pow_est_(0.0),
+      length_(length),          // Set the number of samples per segment
+      n_deg_fred_(2 * length),  // Number of dregrees of freedom,
+      n_segments_(0),
+      n_segments_est_(n_segments_est),      // Set the number of segments for noise power estimation
+      n_segments_reset_(n_segments_reset),  // Set the period (in segments) when the noise power is estimated
+      filter_state_(false)
 {
     const int32_t alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
     set_alignment(std::max(1, alignment_multiple));
-    pfa_ = pfa;
-    noise_pow_est_ = 0.0;
-    p_c_factor_ = gr_complex(p_c_factor, 0.0);
-    length_ = length;           // Set the number of samples per segment
-    filter_state_ = false;      // Initial state of the filter
-    n_deg_fred_ = 2 * length_;  // Number of dregrees of freedom
-    n_segments_ = 0;
-    n_segments_est_ = n_segments_est;      // Set the number of segments for noise power estimation
-    n_segments_reset_ = n_segments_reset;  // Set the period (in segments) when the noise power is estimated
-    z_0_ = gr_complex(0.0, 0.0);
     boost::math::chi_squared_distribution<float> my_dist_(n_deg_fred_);
     thres_ = boost::math::quantile(boost::math::complement(my_dist_, pfa_));
     c_samples_ = volk_gnsssdr::vector<gr_complex>(length_);
     angle_ = volk_gnsssdr::vector<float>(length_);
     power_spect_ = volk_gnsssdr::vector<float>(length_);
-    last_out_ = gr_complex(0.0, 0.0);
     d_fft_ = gnss_fft_fwd_make_unique(length_);
 }
 

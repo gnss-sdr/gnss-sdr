@@ -30,9 +30,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Maintainability:
 
-- Rewritten Viterbi decoder for Galileo navigation messages: encapsulated in a
+- Rewritten Viterbi decoder for Galileo navigation messages. Encapsulated in a
   class instead of being implemented as free inline functions. This improves
   memory management and source code readability.
+- Prefer initialization to assignment in constructors. This improves the
+  readability of the code, could potentially increase performance, and allows
+  for easier detection of unused data members (see
+  https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize).
+- Non-functional change: Fixed formatting defects detected by clang-format 13.0.
 - Updated GSL implementation to v0.39.0. See
   https://github.com/gsl-lite/gsl-lite/releases/tag/v0.39.0
 - CI - `cpplint` job on GitHub: Added the `build/include_what_you_use` filter
@@ -40,7 +45,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 - CI - `clang-tidy` job on GitHub: More robust detection of LLVM paths installed
   by homebrew.
 
-### Improvements in Reliability
+### Improvements in Portability:
+
+- Fixed building against the new API in the gr-iio component present in GNU
+  Radio's `master` branch (currently v3.10.0.git).
+- Fixed building against current GNU Radio's `master` branch, which does not
+  support the C++20 standard.
+- Updated `cpu_features` library for improved processor detection.
+
+### Improvements in Reliability:
 
 - Fixed some potential buffer overflows.
 

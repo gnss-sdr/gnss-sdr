@@ -22,6 +22,7 @@ instructions) at runtime.
 - [Android NDK's drop in replacement](#ndk)
 - [License](#license)
 - [Build with cmake](#cmake)
+- [Community Bindings](#bindings)
 
 <a name="rationale"></a>
 
@@ -186,8 +187,8 @@ flags           : aes,avx,cx16,smx,sse4_1,sse4_2,ssse3
 
 [cpu_features](https://github.com/google/cpu_features) is now officially
 supporting Android and offers a drop in replacement of for the NDK's
-[cpu-features.h](https://android.googlesource.com/platform/ndk/+/master/sources/android/cpufeatures/cpu-features.h)
-, see [ndk_compat](ndk_compat) folder for details.
+[cpu-features.h](https://android.googlesource.com/platform/ndk/+/master/sources/android/cpufeatures/cpu-features.h),
+see [ndk_compat](ndk_compat) folder for details.
 
 <a name="license"></a>
 
@@ -204,20 +205,40 @@ Please check the [CMake build instructions](cmake/README.md).
 
 <a name="quickstart"></a>
 
-### Quickstart with `Ninja`
+### Quickstart
 
-- build `list_cpu_features`
+- Run `list_cpu_features`
 
+```sh
+cmake -S. -Bbuild -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release -j
+./build/list_cpu_features --json
 ```
-    cmake -B/tmp/cpu_features -H. -GNinja -DCMAKE_BUILD_TYPE=Release
-    ninja -C/tmp/cpu_features
-    /tmp/cpu_features/list_cpu_features --json
-```
+
+_Note_: Use `--target ALL_BUILD` on the second line for `Visual Studio` and
+`XCode`.
 
 - run tests
 
+```sh
+cmake -S. -Bbuild -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --config Debug -j
+cmake --build build --config Debug --target test
 ```
-    cmake -B/tmp/cpu_features -H. -GNinja -DBUILD_TESTING=ON
-    ninja -C/tmp/cpu_features
-    ninja -C/tmp/cpu_features test
-```
+
+_Note_: Use `--target RUN_TESTS` on the last line for `Visual Studio` and
+`--target RUN_TEST` for `XCode`.
+
+<a name="bindings"></a>
+
+## Community bindings
+
+Links provided here are not affiliated with Google but are kindly provided by
+the OSS Community.
+
+- .Net
+  - https://github.com/toor1245/cpu_features.NET
+- Python
+  - https://github.com/Narasimha1997/py_cpu
+
+_Send PR to showcase your wrapper here_

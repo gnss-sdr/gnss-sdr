@@ -72,7 +72,6 @@ private:
     std::string item_type_;
     std::string dump_filename_;
     size_t item_size_;
-    uint64_t samples_;
     unsigned int in_stream_;
     unsigned int out_stream_;
     bool dump_;

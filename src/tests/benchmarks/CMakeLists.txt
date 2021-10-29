@@ -71,7 +71,8 @@ if(NOT benchmark_FOUND)
             IMPORTED_LOCATION_RELEASE ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/Release/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELWITHDEBINFO ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_MINSIZEREL ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}
-            INTERFACE_LINK_LIBRARIES "${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>benchmark${CMAKE_STATIC_LIBRARY_SUFFIX};${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>benchmark_main${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            INTERFACE_LINK_LIBRARIES "${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>benchmark${CMAKE_STATIC_LIBRARY_SUFFIX};
+                ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>benchmark_main${CMAKE_STATIC_LIBRARY_SUFFIX}"
         )
     endif()
     set_target_properties(benchmark::benchmark PROPERTIES

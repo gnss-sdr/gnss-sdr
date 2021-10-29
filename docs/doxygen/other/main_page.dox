@@ -566,12 +566,23 @@ The GPL implies that:
 \li The licensed material may be analyzed or modified.
 \li Modified material may be distributed under the same licensing terms but <b>do not</b> have to be distributed.
 
-That means that modifications only have to be made available to the public if distribution happens. So it is perfectly fine to take the GNSS-SDR source code, modify it heavily and use it in a not distributed application / library. This is how companies like Google can run their own patched versions of Linux for example.
+That means that modifications only have to be made available to the public if
+distribution happens. So it is perfectly fine to take the GNSS-SDR source code,
+modify it heavily and use it in a not distributed application / library. This is
+how companies like Google can run their own patched versions of Linux for
+example.
 
-But what this also means is that non-GPL code cannot use GPL code. This means that you cannot modify / use GNSS-SDR, blend it with non-GPL code, and make money with the resulting software. You cannot distribute the resulting software under a non-disclosure agreement or contract. Distributors under the GPL also grant a license for any of their patents practiced by the software, to practice those patents in GPL software. You can sell a device that runs with GNSS-SDR, but if you distribute the code, it has to remain under GPL.
+But what this also means is that non-GPL code cannot use GPL code. This means
+that you cannot modify / use GNSS-SDR, blend it with non-GPL code, and make
+money with the resulting software. You cannot distribute the resulting software
+under a non-disclosure agreement or contract. Distributors under the GPL also
+grant a license for any of their patents practiced by the software, to practice
+those patents in GPL software. You can sell a device that runs with GNSS-SDR,
+but if you distribute the code, it has to remain under GPL.
 
 \section publications Publications and Credits
-If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate if you reference any of these articles to credit the GNSS-SDR project:
+If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate
+if you reference any of these articles to credit the GNSS-SDR project:
 
 \li \anchor Navitec2012 C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, <a href="http://www.cttc.es/publication/an-open-source-galileo-e1-software-receiver/" target="_blank"><i>An Open Source Galileo E1 Software Receiver</i></a>, in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
 \li J. Arribas, <a href="https://theses.eurasip.org/theses/449/gnss-array-based-acquisition-theory-and/" target="_blank"><i>GNSS Array-based Acquisition: Theory and Implementation</i></a>, PhD Thesis, Universitat Polit&egrave;cnica de Catalunya, Barcelona, Spain, June 2012.

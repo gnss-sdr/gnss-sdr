@@ -61,13 +61,38 @@ China Satellite Navigation Office, December 2016.
 
 \subsection sbas Satellite Based Augmentation Systems (SBAS)
 
-\li <b>Minimum Operational Performance Standards for Global Positioning System/Wide Area Augmentation System Airborne Equipment, DO-229D</b>, RTCA, Washington, DC, Dec. 13, 2006. The 'RTCA MOPS DO229D - appendix A' is the reference standard for WAAS/EGNOS application development. RTCA is an advisory committee of the US federal government, and issues standards for civil airborne equipment, among other duties. One such standard is MOPS 229D (Minimum Operational Performance Standards for Global Positioning System/Wide Area Augmentation System Airborne Equipment version D), which describes the implementation of satellite-based augmentation services (SBAS) for receivers designed for civil aviation use. An annex to DO229D contains the specifications for the SBAS signal and message. The RTCA provides regular updates to these standards. MOPS 229D is available for a fee from the <a href="https://my.rtca.org/nc__store?search=229D" target="_blank">RTCA website</a>.
+\li <b>Minimum Operational Performance Standards for Global Positioning System/Wide Area Augmentation System Airborne Equipment, DO-229D</b>, RTCA, Washington, DC, Dec. 13, 2006.
+The 'RTCA MOPS DO229D - appendix A' is the reference standard for WAAS/EGNOS
+application development. RTCA is an advisory committee of the US federal
+government, and issues standards for civil airborne equipment, among other
+duties. One such standard is MOPS 229D (Minimum Operational Performance
+Standards for Global Positioning System/Wide Area Augmentation System Airborne
+Equipment version D), which describes the implementation of satellite-based
+augmentation services (SBAS) for receivers designed for civil aviation use. An
+annex to DO229D contains the specifications for the SBAS signal and message. The
+RTCA provides regular updates to these standards. MOPS 229D is available for a
+fee from the <a href="https://my.rtca.org/nc__store?search=229D"
+target="_blank">RTCA website</a>.
 
-\li  <a href="https://www.gps.gov/technical/ps/2008-WAAS-performance-standard.pdf" target="_blank"><b>Global Positioning System Wide Area Augmentation System (WAAS) Performance Standard, 1st Edition</b></a>, Department of Transportation and Federal Aviation Administration, Oct. 31, 2008. This document defines the levels of performance the U.S. Government makes available to users of the GPS SPS augmented by the Wide Area Augmentation System.
+\li  <a href="https://www.gps.gov/technical/ps/2008-WAAS-performance-standard.pdf" target="_blank"><b>Global Positioning System Wide Area Augmentation System (WAAS) Performance Standard, 1st Edition</b></a>,
+Department of Transportation and Federal Aviation Administration, Oct. 31, 2008.
+This document defines the levels of performance the U.S. Government makes available to users of the GPS SPS augmented by the Wide Area Augmentation System.
 
-\li  <a href="https://egnos-user-support.essp-sas.eu/new_egnos_ops/documents/egnos-sdd/egnos-data-access-service-sdd" target="_blank"><b>EGNOS Data Access Service (EDAS) Service Definition Document. Revision 2.2</b></a>, European GNSS Agency (GSA), June, 2019. This is a complementary document to the RTCA DO229D, mentioned above. It describes the scope of services provided by the EGNOS EDAS Service to be used by end-users or Application Specific Service Providers. It details the general conditions relating to the use of the EGNOS service, a technical description of the Signal-in-Space (SIS), the reference receiver, environmental conditions, the service performance achieved and aspects relating to service provision.
+\li  <a href="https://egnos-user-support.essp-sas.eu/new_egnos_ops/documents/egnos-sdd/egnos-data-access-service-sdd" target="_blank"><b>EGNOS Data Access Service (EDAS) Service Definition Document. Revision 2.2</b></a>, European GNSS Agency (GSA), June, 2019.
+This is a complementary document to the RTCA DO229D, mentioned above. It
+describes the scope of services provided by the EGNOS EDAS Service to be used by
+end-users or Application Specific Service Providers. It details the general
+conditions relating to the use of the EGNOS service, a technical description of
+the Signal-in-Space (SIS), the reference receiver, environmental conditions, the
+service performance achieved and aspects relating to service provision.
 
-\li  <a href="https://egnos-user-support.essp-sas.eu/new_egnos_ops/documents/egnos-sdd/egnos-safety-life-service-sdd" target="_blank"><b>EGNOS Safety of Life Service Definition Document. Revision 3.3</b></a>, European GNSS Agency (GSA), Mar, 2019. The EGNOS Safety of Life (SoL) Service is provided openly and is freely accessible without any direct charge and is tailored to safety-critical transport applications in various domains, in particular for aviation applications. The service is thus compliant with the aviation APV-I (Approach with Vertical Guidance) requirements, as defined by ICAO in Annex 10, but may support also applications in other SoL domains.
+\li  <a href="https://egnos-user-support.essp-sas.eu/new_egnos_ops/documents/egnos-sdd/egnos-safety-life-service-sdd" target="_blank"><b>EGNOS Safety of Life Service Definition Document. Revision 3.3</b></a>, European GNSS Agency (GSA), Mar, 2019.
+The EGNOS Safety of Life (SoL) Service is provided openly and is freely
+accessible without any direct charge and is tailored to safety-critical
+transport applications in various domains, in particular for aviation
+applications. The service is thus compliant with the aviation APV-I (Approach
+with Vertical Guidance) requirements, as defined by ICAO in Annex 10, but may
+support also applications in other SoL domains.
 
 \li <a href="https://egnos-user-support.essp-sas.eu/new_egnos_ops/documents/egnos-sdd/egnos-open-service-sdd" target="_blank"><b>EGNOS Open Service Service Definition Document. Revision 2.3</b></a>, European GNSS Agency (GSA), Sep., 2017.
 
@@ -75,13 +100,19 @@ More information about EGNOS can be found through the <a href="https://egnos-use
 \section standards Other Standards
 
 \subsection rinex RINEX
-The final output of a navigation receiver is usually its position, speed or other related physical quantities. However, the calculation of those quantities
-are based on a series of measurements from one or more satellite constellations. Although receivers calculate positions in real time, in many cases it is
-interesting to store intermediate measures for later post-processing. RINEX is the standard format that allows the management and disposal of the measures
-generated by a receiver, as well as their off-line processing by a multitude of applications.
+The final output of a navigation receiver is usually its position, speed or
+other related physical quantities. However, the calculation of those quantities
+are based on a series of measurements from one or more satellite constellations.
+Although receivers calculate positions in real time, in many cases it is
+interesting to store intermediate measures for later post-processing. RINEX is
+the standard format that allows the management and disposal of the measures
+generated by a receiver, as well as their off-line processing by a multitude of
+applications.
 
-\li The most common version at present is <a href="hftp://igs.org/pub/data/format/rinex212.txt" target="_blank"><b>RINEX: The Receiver Independent Exchange Format Version 2.12</b></a>, which enables storage of measurements from pseudorange, carrier-phase and Doppler systems for GPS, GLONASS, Galileo
-along with data from EGNOS and WAAS satellite based augmentation systems (SBAS).
+\li  The most common version at present is <a href="hftp://igs.org/pub/data/format/rinex212.txt" target="_blank"><b>RINEX: The Receiver Independent Exchange Format Version 2.12</b></a>,
+which enables storage of measurements from pseudorange, carrier-phase and Doppler systems for GPS,
+GLONASS, Galileo along with data from EGNOS and WAAS satellite based
+augmentation systems (SBAS).
 
 \li The most recent version is <a href="ftp://igs.org/pub/data/format/rinex303.pdf" target="_blank"><b>RINEX: The Receiver Independent Exchange Format Version 3.03</b></a> published in July, 2015.
 It includes Galileo and improves the handling of multi-constellation data files.
@@ -90,34 +121,80 @@ It includes Galileo and improves the handling of multi-constellation data files.
 
 \subsection nmea NMEA
 
-The <a href="https://www.nmea.org/" target="_blank">National Marine Electronics Association </a> released the NMEA 0183 Interface Standard, which defines electrical signal requirements, data transmission protocol and time,
-and specific sentence formats for a 4800-baud serial data bus. The standard is <a href="https://www.nmea.org/content/STANDARDS/NMEA_0183_Standard" target="_blank">available for purchase</a>.
+The <a href="https://www.nmea.org/" target="_blank">National Marine Electronics Association</a>
+released the NMEA 0183 Interface Standard, which defines electrical signal requirements, data transmission protocol and time,
+and specific sentence formats for a 4800-baud serial data bus.
+The standard is <a href="https://www.nmea.org/content/STANDARDS/NMEA_0183_Standard" target="_blank">available for purchase</a>.
 
 \subsection kml KML
 
-KML is an XML language focused on geographic visualization, including annotation of maps and images. Geographic visualization includes not only the presentation of graphical data on the globe, but also the control of the user's navigation in the sense of where to go and where to look.
-Google submitted KML (formerly Keyhole Markup Language) to the Open Geospatial Consortium (OGC) to be evolved within the OGC consensus process with the following goal: KML Version 2.2 has been adopted as an OGC implementation standard.
+KML is an XML language focused on geographic visualization, including annotation
+of maps and images. Geographic visualization includes not only the presentation
+of graphical data on the globe, but also the control of the user's navigation in
+the sense of where to go and where to look. Google submitted KML (formerly
+Keyhole Markup Language) to the Open Geospatial Consortium (OGC) to be evolved
+within the OGC consensus process with the following goal: KML Version 2.2 has
+been adopted as an OGC implementation standard.
 
 \li Open Geospatial Consortium, Inc., <a href="https://portal.opengeospatial.org/files/?artifact_id=27810" target="_blank"><b>OGC KML Version 2.2.0</b></a>, April 2008.
 
 
 \subsection cxx C++ Standards
 
-The C++ programming language is standardized by the International Organization for Standardization (ISO), with the latest standard version ratified and published by ISO in December 2017 as ISO/IEC 14882:2017 (informally known as C++17). The list of supported C++ standards (the highest available is automatically selected by the CMake script):
+The C++ programming language is standardized by the International Organization
+for Standardization (ISO), with the latest standard version ratified and
+published by ISO in December 2017 as ISO/IEC 14882:2017 (informally known as
+C++17). The list of supported C++ standards (the highest available is
+automatically selected by the CMake script):
+
 <ul>
       <li><strong>Draft C++23</strong>: Check the <a href="https://github.com/cplusplus/draft" target="_blank">C++ standard draft sources at GitHub</a>.</li>
-      <li><strong>C++20</strong>: The current ISO C++ standard is officially known as <em>ISO International Standard ISO/IEC 14882:2020(E) – Programming languages – C++</em>. You can get it from <a href="https://www.iso.org/standard/79358.html" target="_blank">ISO</a>, <a href="https://webstore.iec.ch/publication/68285" target="_blank">IEC</a> or <a href="https://webstore.ansi.org/Standards/ISO/ISOIEC148822020" target="_blank">ANSI</a>. The closest free working document available is <a href="https://github.com/cplusplus/draft/releases/download/n4868/n4868.pdf" target="_blank">N4868</a>.</li>
-      <li><strong>C++17</strong>: A former ISO C++ standard was officially known as <em>ISO International Standard ISO/IEC 14882:2017 – Programming languages – C++</em>. You can get it from <a href="https://www.iso.org/standard/68564.html" target="_blank">ISO</a>, <a href="https://webstore.iec.ch/publication/62162" target="_blank">IEC</a> or <a href="https://webstore.ansi.org/Standards/ISO/ISOIEC148822017" target="_blank">ANSI</a>. The closest free working document available is <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4659.pdf" target="_blank">N4659</a>.</li>
-      <li><strong>C++14</strong>: A former ISO C++ standard was officially known as <em>ISO International Standard ISO/IEC 14882:2014 – Programming languages – C++</em>. You can get it from <a href="https://www.iso.org/standard/64029.html" target="_blank">ISO</a> or <a href="https://webstore.ansi.org/RecordDetail.aspx?sku=INCITS/ISO/IEC+14882:2014+(2016)" target="_blank">ANSI</a>. The closest free working document available is <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4296.pdf" target="_blank">N4296</a>.</li>
-      <li><strong>C++11</strong>: An older ISO C++ standard was ISO/IEC 14882:2011. You can get it from <a href="https://www.iso.org/standard/50372.html" target="_blank">ISO</a>. The closest free working document available is <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3337.pdf" target="_blank">N3337</a>.</li>
+      <li><strong>C++20</strong>: The current ISO C++ standard is officially known as <em>ISO International Standard ISO/IEC 14882:2020(E) – Programming languages – C++</em>.
+      You can get it from <a href="https://www.iso.org/standard/79358.html"
+      target="_blank">ISO</a>, <a
+      href="https://webstore.iec.ch/publication/68285" target="_blank">IEC</a>
+      or <a href="https://webstore.ansi.org/Standards/ISO/ISOIEC148822020"
+      target="_blank">ANSI</a>. The closest free working document available is
+      <a
+      href="https://github.com/cplusplus/draft/releases/download/n4868/n4868.pdf"
+      target="_blank">N4868</a>.</li>
+      <li><strong>C++17</strong>: A former ISO C++ standard was officially known as <em>ISO International Standard ISO/IEC 14882:2017 – Programming languages – C++</em>.
+      You can get it from <a href="https://www.iso.org/standard/68564.html"
+      target="_blank">ISO</a>, <a
+      href="https://webstore.iec.ch/publication/62162" target="_blank">IEC</a>
+      or <a href="https://webstore.ansi.org/Standards/ISO/ISOIEC148822017"
+      target="_blank">ANSI</a>. The closest free working document available is
+      <a
+      href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4659.pdf"
+      target="_blank">N4659</a>.</li>
+      <li><strong>C++14</strong>: A former ISO C++ standard was officially known as <em>ISO International Standard ISO/IEC 14882:2014 – Programming languages – C++</em>.
+      You can get it from <a href="https://www.iso.org/standard/64029.html"
+      target="_blank">ISO</a> or <a
+      href="https://webstore.ansi.org/RecordDetail.aspx?sku=INCITS/ISO/IEC+14882:2014+(2016)"
+      target="_blank">ANSI</a>. The closest free working document available is
+      <a
+      href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4296.pdf"
+      target="_blank">N4296</a>.</li>
+      <li><strong>C++11</strong>: An older ISO C++ standard was ISO/IEC 14882:2011.
+      You can get it from <a href="https://www.iso.org/standard/50372.html"
+      target="_blank">ISO</a>. The closest free working document available is <a
+      href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3337.pdf"
+      target="_blank">N3337</a>.</li>
 </ul>
 
 \subsection protocols Positioning protocols in wireless communication networks
-Cellular industry location standards first appeared in the late 1990s, with the <a href="https://www.3gpp.org/index.php" target="_blank">3rd generation partnership project (3GPP)</a> radio resource location services protocol (RRLP) technical specification 44.031 positioning protocol for GSM networks.
-Today, RRLP is the de facto standardized protocol to carry GNSS assistance data to GNSS-enabled mobile devices, and the term "3GPP specification" now covers all GSM (including GPRS and EDGE),
-W-CDMA and LTE (including LTE-A) specifications. Precisely, the label "LTE-A" is applied to networks compliant with LTE Release 10 and beyond, which fulfill the requirements issued by
-the <a href="https://www.itu.int/en/ITU-R/Pages/default.aspx target="_blank">International Telecommunication Union Radiocommunication Sector (ITU-R)</a> in the global standard for international mobile telecommunications (IMT Advanced, also referred to as 4G)
-access technologies.
+Cellular industry location standards first appeared in the late 1990s, with the
+<a href="https://www.3gpp.org/index.php" target="_blank">3rd generation partnership project (3GPP)</a>
+radio resource location services protocol (RRLP)
+technical specification 44.031 positioning protocol for GSM networks. Today,
+RRLP is the de facto standardized protocol to carry GNSS assistance data to
+GNSS-enabled mobile devices, and the term "3GPP specification" now covers all
+GSM (including GPRS and EDGE), W-CDMA and LTE (including LTE-A) specifications.
+Precisely, the label "LTE-A" is applied to networks compliant with LTE Release
+10 and beyond, which fulfill the requirements issued by the
+<a href="https://www.itu.int/en/ITU-R/Pages/default.aspx target="_blank">International Telecommunication Union Radiocommunication Sector (ITU-R)</a>
+in the global standard for international mobile telecommunications
+(IMT Advanced, also referred to as 4G) access technologies.
 
 Control plane protocols:
 
@@ -132,9 +209,12 @@ User plane protocols:
 LTE Release 9 introduced extension hooks in LPP messages, so that the bodies external to 3GPP could extend the LPP feature set. OMA LPP extensions (LPPe), supported in SUPL 3.0, build on top of the 3GPP LPP reusing its procedures and data types.
 Check the <a href="http://openmobilealliance.org/wp/index.html" target="_blank">OMA Specifications webpage</a> for updated information about LPP Extensions (LPPe) Specification.
 
-\li The <a href="http://member.openmobilealliance.org/ftp/Public_documents/loc/Permanent_documents/OMA-TS-MLP-V3_5-20181119-D.zip" target="_blank"><b>OMA Mobile Location Protocol (MLP) V3.5</b></a> is an application-level protocol for getting the position of mobile stations (mobile phones, wireless personal digital assistants, etc.) independent
-of underlying network technology. The MLP serves as the interface between a Location Server and a Location Services (LCS) Client.
-This specification defines the core set of operations that a Location Server should be able to perform.
+\li The <a href="http://member.openmobilealliance.org/ftp/Public_documents/loc/Permanent_documents/OMA-TS-MLP-V3_5-20181119-D.zip" target="_blank"><b>OMA Mobile Location Protocol (MLP) V3.5</b></a>
+is an application-level protocol for getting the position of mobile stations
+(mobile phones, wireless personal digital assistants, etc.) independent of
+underlying network technology. The MLP serves as the interface between a
+Location Server and a Location Services (LCS) Client. This specification defines
+the core set of operations that a Location Server should be able to perform.
 
 
 */

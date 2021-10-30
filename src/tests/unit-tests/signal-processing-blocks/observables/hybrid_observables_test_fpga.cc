@@ -63,22 +63,30 @@
 #include <gpstk/RinexUtilities.hpp>
 #include <gtest/gtest.h>
 #include <matio.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <cmath>
 #include <exception>
 #include <pthread.h>
 #include <unistd.h>
 #include <utility>
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
 #endif
+
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
 #else
 #include <gnuradio/filter/fir_filter_ccf.h>
 #endif
 
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
 
 class HybridObservablesTest_msg_rx_Fpga;
 
@@ -112,7 +120,7 @@ void HybridObservablesTest_msg_rx_Fpga::msg_handler_channel_events(const pmt::pm
             int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;
@@ -175,7 +183,7 @@ void HybridObservablesTest_tlm_msg_rx_Fpga::msg_handler_channel_events(const pmt
             int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;

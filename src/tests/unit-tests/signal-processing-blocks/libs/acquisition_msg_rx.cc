@@ -26,6 +26,14 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
+
 Acquisition_msg_rx_sptr Acquisition_msg_rx_make()
 {
     return Acquisition_msg_rx_sptr(new Acquisition_msg_rx());
@@ -40,7 +48,7 @@ void Acquisition_msg_rx::msg_handler_channel_events(const pmt::pmt_t& msg)
             rx_message = message;
             top_block->stop();  // stop the flowgraph
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_acquisition Bad cast!\n";
             rx_message = 0;

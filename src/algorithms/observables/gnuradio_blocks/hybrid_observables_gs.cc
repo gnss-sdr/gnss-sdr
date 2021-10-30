@@ -35,6 +35,14 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
@@ -195,7 +203,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
         {
             if (pmt::any_ref(msg).type().hash_code() == d_double_type_hash_code)
                 {
-                    const auto new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
+                    const auto new_rx_clock_offset_s = wht::any_cast<double>(pmt::any_ref(msg));
                     d_T_rx_TOW_ms = d_T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
                     // align the receiver clock to integer multiple of d_T_rx_step_ms
                     if (d_T_rx_TOW_ms % d_T_rx_step_ms)
@@ -211,7 +219,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
         }
-    catch (const boost::bad_any_cast &e)
+    catch (const wht::bad_any_cast &e)
         {
             LOG(WARNING) << "msg_handler_pvt_to_observables Bad any_cast: " << e.what();
         }

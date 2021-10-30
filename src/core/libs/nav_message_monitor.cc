@@ -17,7 +17,6 @@
 
 #include "nav_message_monitor.h"
 #include "gnss_sdr_make_unique.h"
-#include <boost/any.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <cstddef>   // size_t
@@ -28,6 +27,13 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
 
 nav_message_monitor_sptr nav_message_monitor_make(const std::vector<std::string>& addresses, uint16_t port)
 {
@@ -62,7 +68,7 @@ void nav_message_monitor::msg_handler_nav_message(const pmt::pmt_t& msg)
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
             if (msg_type_hash_code == typeid(std::shared_ptr<Nav_Message_Packet>).hash_code())
                 {
-                    const auto nav_message_packet = boost::any_cast<std::shared_ptr<Nav_Message_Packet>>(pmt::any_ref(msg));
+                    const auto nav_message_packet = wht::any_cast<std::shared_ptr<Nav_Message_Packet>>(pmt::any_ref(msg));
                     nav_message_udp_sink_->write_nav_message(nav_message_packet);
                 }
             else
@@ -70,7 +76,7 @@ void nav_message_monitor::msg_handler_nav_message(const pmt::pmt_t& msg)
                     LOG(WARNING) << "nav_message_monitor received an unknown object type!";
                 }
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "nav_message_monitor Bad any_cast: " << e.what();
         }

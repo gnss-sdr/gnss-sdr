@@ -542,6 +542,11 @@ if(ENABLE_UNIT_TESTING)
             PRIVATE -DGNURADIO_USES_STD_POINTERS=1
         )
     endif()
+    if(PMT_USES_BOOST_ANY)
+        target_compile_definitions(run_tests
+            PRIVATE -DPMT_USES_BOOST_ANY=1
+        )
+    endif()
     if(ENABLE_UNIT_TESTING_EXTRA)
         target_link_libraries(run_tests PRIVATE Gpstk::gpstk)
         if(GPSTK_OLDER_THAN_8)
@@ -1002,6 +1007,12 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         INTERFACE
             ${CMAKE_SOURCE_DIR}/src/tests/common-files
     )
+    if(PMT_USES_BOOST_ANY)
+        target_compile_definitions(acq_test
+            PRIVATE
+                -DPMT_USES_BOOST_ANY=1
+        )
+    endif()
     add_test(acq_test acq_test)
 
     if(USE_GENERIC_LAMBDAS)
@@ -1089,6 +1100,12 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_compile_definitions(trk_test
             PRIVATE
                 -DUSE_BOOST_BIND_PLACEHOLDERS=1
+        )
+    endif()
+    if(PMT_USES_BOOST_ANY)
+        target_compile_definitions(trk_test
+            PRIVATE
+                -DPMT_USES_BOOST_ANY=1
         )
     endif()
 

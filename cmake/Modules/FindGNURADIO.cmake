@@ -377,6 +377,20 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
     endif()
 endif()
 
+# Check if PMT uses boost::any or std::any
+if(GNURADIO_PMT_INCLUDE_DIRS)
+    file(STRINGS ${GNURADIO_PMT_INCLUDE_DIRS}/pmt/pmt.h _pmt_content)
+    set(_uses_boost TRUE)
+    foreach(_loop_var IN LISTS _pmt_content)
+        string(STRIP "${_loop_var}" _file_line)
+        if("#include <any>" STREQUAL "${_file_line}")
+            set(_uses_boost FALSE)
+        endif()
+    endforeach()
+    if(${_uses_boost})
+        set(PMT_USES_BOOST_ANY TRUE)
+    endif()
+endif()
 
 set_package_properties(GNURADIO PROPERTIES
     URL "https://www.gnuradio.org/"

@@ -29,11 +29,17 @@
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <utility>
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
+#endif
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
 #endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
@@ -67,7 +73,7 @@ void GlonassL1CaDllPllCAidTrackingTest_msg_rx::msg_handler_channel_events(const 
             int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;

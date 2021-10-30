@@ -647,6 +647,11 @@ if(ENABLE_FPGA)
                 -DUSE_BOOST_BIND_PLACEHOLDERS=1
         )
     endif()
+    if(PMT_USES_BOOST_ANY)
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga
+            PRIVATE -DPMT_USES_BOOST_ANY=1
+        )
+    endif()
 
     target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga
         PRIVATE

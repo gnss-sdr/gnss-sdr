@@ -34,7 +34,15 @@ int main(int argc, char *argv[])
 
             while (true)
                 {
-                    udp_listener.print_content();
+                    gnss_sdr::navMsg message;
+                    if (udp_listener.read_nav_message(message))
+                        {
+                            udp_listener.print_message(message);
+                        }
+                    else
+                        {
+                            std::cout << "Error: the message cannot be parsed.\n";
+                        }
                 }
         }
     catch (std::exception &e)

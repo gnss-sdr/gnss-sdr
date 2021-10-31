@@ -25,44 +25,40 @@ Nav_Msg_Udp_Listener::Nav_Msg_Udp_Listener(unsigned short port)
     socket.bind(endpoint, error);             // Bind the socket to the given local endpoint.
 }
 
-
+/**
+ * !\brief blocking call to read nav_message from UDP port
+ * \param[out] message navigation message class to contain parsed output
+ * \return true if message parsed succesfully, false ow
+ */
 bool Nav_Msg_Udp_Listener::read_nav_message(gnss_sdr::navMsg &message)
 {
     char buff[8192];  // Buffer for storing the received data.
 
-    message_ = message;
     // This call will block until one or more bytes of data has been received.
     int bytes = socket.receive(boost::asio::buffer(buff));
 
     std::string data(&buff[0], bytes);
     // Deserialize a stock of Nav_Msg objects from the binary string.
-    return message_.ParseFromString(data);
+    return message.ParseFromString(data);
 }
 
-
-bool Nav_Msg_Udp_Listener::print_content()
+/*
+ * !\brief prints navigation message content
+ * \param[in] message nav message to be printed
+ */
+void Nav_Msg_Udp_Listener::print_message(gnss_sdr::navMsg &message) const
 {
-    if (read_nav_message(message_))
-        {
-            std::string system = message_.system();
-            std::string signal = message_.signal();
-            int prn = message_.prn();
-            int tow_at_current_symbol_ms = message_.tow_at_current_symbol_ms();
-            std::string nav_message = message_.nav_message();
+    std::string system = message.system();
+    std::string signal = message.signal();
+    int prn = message.prn();
+    int tow_at_current_symbol_ms = message.tow_at_current_symbol_ms();
+    std::string nav_message = message.nav_message();
 
-            std::cout << "\nNew Data received:\n";
-            std::cout << "System: " << system << '\n';
-            std::cout << "Signal: " << signal << '\n';
-            std::cout << "PRN: " << prn << '\n';
-            std::cout << "TOW of last symbol [ms]: "
-                      << tow_at_current_symbol_ms << '\n';
-            std::cout << "Nav message: " << nav_message << "\n\n";
-        }
-    else
-        {
-            std::cout << "Error: the message cannot be parsed.\n";
-            return false;
-        }
-
-    return true;
+    std::cout << "\nNew Data received:\n";
+    std::cout << "System: " << system << '\n';
+    std::cout << "Signal: " << signal << '\n';
+    std::cout << "PRN: " << prn << '\n';
+    std::cout << "TOW of last symbol [ms]: "
+              << tow_at_current_symbol_ms << '\n';
+    std::cout << "Nav message: " << nav_message << "\n\n";
 }

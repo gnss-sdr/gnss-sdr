@@ -24,7 +24,7 @@ class Nav_Msg_Udp_Listener
 public:
     explicit Nav_Msg_Udp_Listener(unsigned short port);
     void print_message(gnss_sdr::navMsg &message) const;
-    bool read_nav_message(gnss_sdr::navMsg &message);
+    bool receive_and_parse_nav_message(gnss_sdr::navMsg &message);
 
 private:
     boost::asio::io_service io_service;

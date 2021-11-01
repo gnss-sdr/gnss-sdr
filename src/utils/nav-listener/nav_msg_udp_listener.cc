@@ -30,7 +30,7 @@ Nav_Msg_Udp_Listener::Nav_Msg_Udp_Listener(unsigned short port)
  * \param[out] message navigation message class to contain parsed output
  * \return true if message parsed succesfully, false ow
  */
-bool Nav_Msg_Udp_Listener::read_nav_message(gnss_sdr::navMsg &message)
+bool Nav_Msg_Udp_Listener::receive_and_parse_nav_message(gnss_sdr::navMsg &message)
 {
     char buff[8192];  // Buffer for storing the received data.
 

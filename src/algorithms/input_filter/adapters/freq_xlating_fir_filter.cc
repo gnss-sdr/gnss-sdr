@@ -25,8 +25,13 @@
 #include <utility>
 
 
-FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
+FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configuration,
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams)
+    : role_(std::move(role)),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
     const std::string default_input_item_type("gr_complex");
     const std::string default_output_item_type("gr_complex");
@@ -43,19 +48,18 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
     const int default_grid_density = 16;
     const int default_decimation_factor = 1;
 
-    DLOG(INFO) << "role " << role_;
-
-    input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
-    output_item_type_ = configuration->property(role_ + ".output_item_type", default_output_item_type);
-    taps_item_type_ = configuration->property(role_ + ".taps_item_type", default_taps_item_type);
-    dump_ = configuration->property(role_ + ".dump", false);
-    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
-    intermediate_freq_ = configuration->property(role_ + ".IF", default_intermediate_freq);
-    sampling_freq_ = configuration->property(role_ + ".sampling_frequency", default_sampling_freq);
     const int number_of_taps = configuration->property(role_ + ".number_of_taps", default_number_of_taps);
     const unsigned int number_of_bands = configuration->property(role_ + ".number_of_bands", default_number_of_bands);
     const std::string filter_type = configuration->property(role_ + ".filter_type", default_filter_type);
+
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
+    input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
+    output_item_type_ = configuration->property(role_ + ".output_item_type", default_output_item_type);
+    taps_item_type_ = configuration->property(role_ + ".taps_item_type", default_taps_item_type);
+    intermediate_freq_ = configuration->property(role_ + ".IF", default_intermediate_freq);
+    sampling_freq_ = configuration->property(role_ + ".sampling_frequency", default_sampling_freq);
     decimation_factor_ = configuration->property(role_ + ".decimation_factor", default_decimation_factor);
+    dump_ = configuration->property(role_ + ".dump", false);
 
     if (filter_type != "lowpass")
         {
@@ -102,6 +106,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
         }
 
     size_t item_size;
+    DLOG(INFO) << "role " << role_;
     LOG(INFO) << "Created freq_xlating_fir_filter with " << taps_.size() << " taps";
     if ((taps_item_type_ == "float") && (input_item_type_ == "gr_complex") && (output_item_type_ == "gr_complex"))
         {

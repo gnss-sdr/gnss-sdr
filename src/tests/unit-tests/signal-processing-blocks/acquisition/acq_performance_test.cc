@@ -49,6 +49,11 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
 
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
 DEFINE_string(acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");
@@ -119,7 +124,7 @@ void AcqPerfTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;
@@ -540,7 +545,8 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
                     config->set_property("Acquisition.dump", "false");
                 }
 
-            std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);
+            // std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);
+            std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(static_cast<int>(cn0)) + "_" + std::to_string(iter) + "_" + std::to_string(static_cast<int>(pfa * 1.0e5));
             config->set_property("Acquisition.dump_filename", dump_file);
             config->set_property("Acquisition.dump_channel", std::to_string(dump_channel));
             config->set_property("Acquisition.blocking_on_standby", "true");
@@ -719,7 +725,7 @@ void AcquisitionPerformanceTest::plot_results()
                                     for (int k = 0; k < num_thresholds; k++)
                                         {
                                             Pd_i.push_back(Pd[i][k]);
-                                            Pfa_i.push_back(Pfa[i][k]);
+                                            Pfa_i.push_back(pfa_vector[k]);
                                         }
                                     g1.plot_xy(Pfa_i, Pd_i, "CN0 = " + std::to_string(static_cast<int>(cn0_vector[i])) + " dBHz");
                                 }
@@ -755,7 +761,7 @@ void AcquisitionPerformanceTest::plot_results()
                                     for (int k = 0; k < num_thresholds; k++)
                                         {
                                             Pd_i_correct.push_back(Pd_correct[i][k]);
-                                            Pfa_i.push_back(Pfa[i][k]);
+                                            Pfa_i.push_back(pfa_vector[k]);
                                         }
                                     g2.plot_xy(Pfa_i, Pd_i_correct, "CN0 = " + std::to_string(static_cast<int>(cn0_vector[i])) + " dBHz");
                                 }
@@ -778,6 +784,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
 
     if (fs::exists(path_str))
         {
+            std::cout << "Deleting old files at " << path_str << " ...\n";
             fs::remove_all(path_str);
         }
     errorlib::error_code ec;
@@ -840,7 +847,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                     run_receiver();
 
                                     // count executions
-                                    std::string basename = path_str + std::string("/acquisition_") + std::to_string(it) + "_" + std::to_string(iter) + "_" + std::to_string(pfa_vector[pfa_iter]) + "_" + gnss_synchro.System + "_" + signal_id;
+                                    std::string basename = path_str + std::string("/acquisition_") + std::to_string(static_cast<int>(it)) + "_" + std::to_string(iter) + "_" + std::to_string(static_cast<int>(pfa_vector[pfa_iter] * 1e-5)) + "_" + gnss_synchro.System + "_" + signal_id;
                                     int num_executions = count_executions(basename, observed_satellite);
 
                                     // Read measured data
@@ -983,7 +990,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                                 {
                                                     meas_Pd_.push_back(0.0);
                                                 }
-                                            std::cout << TEXT_BOLD_BLACK << "Probability of detection for channel=" << ch << ", CN0=" << it << " dBHz"
+                                            std::cout << TEXT_BOLD_BLUE << "Probability of detection for channel=" << ch << ", CN0=" << it << " dBHz"
                                                       << ": " << (num_executions > 0 ? computed_Pd : 0.0) << TEXT_RESET << '\n';
                                         }
                                     if (num_clean_executions > 0)
@@ -1000,7 +1007,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                                 }
                                             double computed_Pd_correct = correctly_detected / static_cast<double>(num_clean_executions);
                                             meas_Pd_correct_.push_back(computed_Pd_correct);
-                                            std::cout << TEXT_BOLD_BLACK << "Probability of correct detection for channel=" << ch << ", CN0=" << it << " dBHz"
+                                            std::cout << TEXT_BOLD_BLUE << "Probability of correct detection for channel=" << ch << ", CN0=" << it << " dBHz"
                                                       << ": " << computed_Pd_correct << TEXT_RESET << '\n';
                                         }
                                     else
@@ -1018,7 +1025,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                                         {
                                                             meas_Pfa_.push_back(0.0);
                                                         }
-                                                    std::cout << TEXT_BOLD_BLACK << "Probability of false alarm for channel=" << ch << ", CN0=" << it << " dBHz"
+                                                    std::cout << TEXT_BOLD_BLUE << "Probability of false alarm for channel=" << ch << ", CN0=" << it << " dBHz"
                                                               << ": " << (num_executions > 0 ? computed_Pfa : 0.0) << TEXT_RESET << '\n';
                                                 }
                                         }

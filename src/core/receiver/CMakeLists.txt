@@ -191,6 +191,13 @@ else()
     )
 endif()
 
+if(PMT_USES_BOOST_ANY)
+    target_compile_definitions(core_receiver
+        PRIVATE
+            -DPMT_USES_BOOST_ANY=1
+    )
+endif()
+
 # Fix for Boost Asio < 1.70
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") AND (Boost_VERSION_STRING VERSION_LESS 1.70.0))

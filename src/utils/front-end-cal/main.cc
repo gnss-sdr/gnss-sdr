@@ -74,6 +74,12 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
+
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
@@ -129,7 +135,7 @@ void FrontEndCal_msg_rx::msg_handler_channel_events(const pmt::pmt_t& msg)
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_telemetry Bad any cast!\n";
             rx_message = 0;

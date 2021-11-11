@@ -69,6 +69,12 @@
 #include <boost/chrono.hpp>  // for steady_clock
 #endif
 
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
+
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
@@ -280,7 +286,7 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                 {
                     if (receiver_on_standby_ == false)
                         {
-                            const auto new_event = boost::any_cast<channel_event_sptr>(pmt::any_ref(msg));
+                            const auto new_event = wht::any_cast<channel_event_sptr>(pmt::any_ref(msg));
                             DLOG(INFO) << "New channel event rx from ch id: " << new_event->channel_id
                                        << " what: " << new_event->event_type;
                             flowgraph_->apply_action(new_event->channel_id, new_event->event_type);
@@ -288,7 +294,7 @@ void ControlThread::event_dispatcher(bool &valid_event, pmt::pmt_t &msg)
                 }
             else if (msg_type_hash_code == command_event_type_hash_code_)
                 {
-                    const auto new_event = boost::any_cast<command_event_sptr>(pmt::any_ref(msg));
+                    const auto new_event = wht::any_cast<command_event_sptr>(pmt::any_ref(msg));
                     DLOG(INFO) << "New command event rx from ch id: " << new_event->command_id
                                << " what: " << new_event->event_type;
 

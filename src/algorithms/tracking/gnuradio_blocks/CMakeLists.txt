@@ -152,6 +152,17 @@ if(has_span)
     )
 endif()
 
+if(PMT_USES_BOOST_ANY)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DPMT_USES_BOOST_ANY=1
+    )
+    target_link_libraries(tracking_gr_blocks
+        PRIVATE
+            Boost::headers
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(tracking_gr_blocks

@@ -37,6 +37,7 @@
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <matio.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <unistd.h>
 #include <utility>
@@ -53,6 +54,11 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CADllPllTrackingTest_msg_rx;
@@ -88,7 +94,7 @@ void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_channel_events(const pmt::pmt
             rx_message = message;  // 3 -> loss of lock
             // std::cout << "Received trk message: " << rx_message << '\n';
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;

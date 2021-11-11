@@ -88,7 +88,6 @@
     defined(CPU_FEATURES_OS_FREEBSD)
 #include "internal/filesystem.h"         // Needed to parse /proc/cpuinfo
 #include "internal/stack_line_reader.h"  // Needed to parse /proc/cpuinfo
-#include "internal/string_view.h"        // Needed to parse /proc/cpuinfo
 #elif defined(CPU_FEATURES_OS_DARWIN)
 #if !defined(HAVE_SYSCTLBYNAME)
 #error "Darwin needs support for sysctlbyname"
@@ -97,6 +96,8 @@
 #else
 #error "Unsupported OS"
 #endif  // CPU_FEATURES_OS
+
+#include "internal/string_view.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Definitions for CpuId and GetXCR0Eax.
@@ -265,6 +266,11 @@ static int IsVendor(const Leaf leaf, const char* const name)
     const uint32_t edx = *(const uint32_t*)(name + 4);
     const uint32_t ecx = *(const uint32_t*)(name + 8);
     return leaf.ebx == ebx && leaf.ecx == ecx && leaf.edx == edx;
+}
+
+static int IsVendorByX86Info(const X86Info* info, const char* const name)
+{
+    return memcmp(info->vendor, name, sizeof(info->vendor)) == 0;
 }
 
 static const CacheLevelInfo kEmptyCacheLevelInfo;
@@ -1129,63 +1135,77 @@ static CacheLevelInfo GetCacheLevelInfo(const uint32_t reg)
         }
 }
 
-static void GetByteArrayFromRegister(uint32_t result[4], const uint32_t reg)
-{
-    for (int i = 0; i < 4; ++i)
-        {
-            result[i] = ExtractBitRange(reg, (i + 1) * 8, i * 8);
-        }
-}
-
+// From https://www.felixcloutier.com/x86/cpuid#tbl-3-12
 static void ParseLeaf2(const int max_cpuid_leaf, CacheInfo* info)
 {
     Leaf leaf = SafeCpuId(max_cpuid_leaf, 2);
-    uint32_t registers[] = {leaf.eax, leaf.ebx, leaf.ecx, leaf.edx};
-    for (int i = 0; i < 4; ++i)
+    // The least-significant byte in register EAX (register AL) will always return
+    // 01H. Software should ignore this value and not interpret it as an
+    // informational descriptor.
+    leaf.eax &= 0xFFFFFF00;  // Zeroing out AL. 0 is the empty descriptor.
+    // The most significant bit (bit 31) of each register indicates whether the
+    // register contains valid information (set to 0) or is reserved (set to 1).
+    if (IsBitSet(leaf.eax, 31)) leaf.eax = 0;
+    if (IsBitSet(leaf.ebx, 31)) leaf.ebx = 0;
+    if (IsBitSet(leaf.ecx, 31)) leaf.ecx = 0;
+    if (IsBitSet(leaf.edx, 31)) leaf.edx = 0;
+
+    uint8_t data[16];
+#if __STDC_VERSION__ >= 201112L
+    _Static_assert(sizeof(Leaf) == sizeof(data), "Leaf must be 16 bytes");
+#endif
+    memcpy(&data, &leaf, sizeof(data));
+    for (size_t i = 0; i < sizeof(data); ++i)
         {
-            if (registers[i] & (1U << 31))
-                {
-                    continue;  // register does not contains valid information
-                }
-            uint32_t bytes[4];
-            GetByteArrayFromRegister(bytes, registers[i]);
-            for (int j = 0; j < 4; ++j)
-                {
-                    if (bytes[j] == 0xFF)
-                        break;  // leaf 4 should be used to fetch cache information
-                    info->levels[info->size] = GetCacheLevelInfo(bytes[j]);
-                }
+            const uint8_t descriptor = data[i];
+            if (descriptor == 0) continue;
+            info->levels[info->size] = GetCacheLevelInfo(descriptor);
             info->size++;
         }
 }
 
-static void ParseLeaf4(const int max_cpuid_leaf, CacheInfo* info)
+static const CacheInfo kEmptyCacheInfo;
+
+// For newer Intel CPUs uses "CPUID, eax=0x00000004".
+// https://www.felixcloutier.com/x86/cpuid#input-eax-=-04h--returns-deterministic-cache-parameters-for-each-level
+// For newer AMD CPUs uses "CPUID, eax=0x8000001D"
+static void ParseCacheInfo(const int max_cpuid_leaf, uint32_t leaf_id,
+    CacheInfo* old_info)
 {
-    info->size = 0;
-    for (int cache_id = 0; cache_id < CPU_FEATURES_MAX_CACHE_LEVEL; cache_id++)
+    CacheInfo info = kEmptyCacheInfo;
+    for (int index = 0; info.size < CPU_FEATURES_MAX_CACHE_LEVEL; ++index)
         {
-            const Leaf leaf = SafeCpuIdEx(max_cpuid_leaf, 4, cache_id);
-            CacheType cache_type = ExtractBitRange(leaf.eax, 4, 0);
-            if (cache_type == CPU_FEATURE_CACHE_NULL)
-                {
-                    info->levels[cache_id] = kEmptyCacheLevelInfo;
-                    continue;
-                }
+            const Leaf leaf = SafeCpuIdEx(max_cpuid_leaf, leaf_id, index);
+            int cache_type_field = ExtractBitRange(leaf.eax, 4, 0);
+            CacheType cache_type;
+            if (cache_type_field == 0)
+                break;
+            else if (cache_type_field == 1)
+                cache_type = CPU_FEATURE_CACHE_DATA;
+            else if (cache_type_field == 2)
+                cache_type = CPU_FEATURE_CACHE_INSTRUCTION;
+            else if (cache_type_field == 3)
+                cache_type = CPU_FEATURE_CACHE_UNIFIED;
+            else
+                break;  // Should not occur as per documentation.
             int level = ExtractBitRange(leaf.eax, 7, 5);
             int line_size = ExtractBitRange(leaf.ebx, 11, 0) + 1;
             int partitioning = ExtractBitRange(leaf.ebx, 21, 12) + 1;
             int ways = ExtractBitRange(leaf.ebx, 31, 22) + 1;
             int tlb_entries = leaf.ecx + 1;
-            int cache_size = (ways * partitioning * line_size * (tlb_entries));
-            info->levels[cache_id] = (CacheLevelInfo){.level = level,
+            int cache_size = ways * partitioning * line_size * tlb_entries;
+            info.levels[info.size] = (CacheLevelInfo){.level = level,
                 .cache_type = cache_type,
                 .cache_size = cache_size,
                 .ways = ways,
                 .line_size = line_size,
                 .tlb_entries = tlb_entries,
                 .partitioning = partitioning};
-            info->size++;
+            ++info.size;
         }
+    // Override CacheInfo if we successfully extracted Deterministic Cache
+    // Parameters.
+    if (info.size > 0) *old_info = info;
 }
 
 #if defined(CPU_FEATURES_OS_DARWIN)
@@ -1371,41 +1391,33 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
                 {
                     StackLineReader reader;
                     StackLineReader_Initialize(&reader, fd);
-                    for (;;)
+                    for (bool stop = false; !stop;)
                         {
                             const LineResult result = StackLineReader_NextLine(&reader);
+                            if (result.eof) stop = true;
                             const StringView line = result.line;
-                            const bool is_feature =
-                                CpuFeatures_StringView_StartsWith(line, str("  Features="));
-                            const bool is_feature2 =
-                                CpuFeatures_StringView_StartsWith(line, str("  Features2="));
-                            if (is_feature || is_feature2)
-                                {
-                                    // Lines of interests are of the following form:
-                                    // "  Features=0x1783fbff<PSE36,MMX,FXSR,SSE,SSE2,HTT>"
-                                    // We replace '<', '>' and ',' with space so we can search by
-                                    // whitespace separated word.
-                                    // TODO: Fix CpuFeatures_StringView_HasWord to allow for different
-                                    // separators.
-                                    for (size_t i = 0; i < line.size; ++i)
-                                        {
-                                            char* c = (char*)(&(line.ptr[i]));
-                                            if (*c == '<' || *c == '>' || *c == ',') *c = ' ';
-                                        }
-                                    if (is_feature)
-                                        {
-                                            features->sse = CpuFeatures_StringView_HasWord(line, "SSE");
-                                            features->sse2 = CpuFeatures_StringView_HasWord(line, "SSE2");
-                                        }
-                                    if (is_feature2)
-                                        {
-                                            features->sse3 = CpuFeatures_StringView_HasWord(line, "SSE3");
-                                            features->ssse3 = CpuFeatures_StringView_HasWord(line, "SSSE3");
-                                            features->sse4_1 = CpuFeatures_StringView_HasWord(line, "SSE4.1");
-                                            features->sse4_2 = CpuFeatures_StringView_HasWord(line, "SSE4.2");
-                                        }
-                                }
-                            if (result.eof) break;
+                            if (!CpuFeatures_StringView_StartsWith(line, str("  Features")))
+                                continue;
+                            // Lines of interests are of the following form:
+                            // "  Features=0x1783fbff<PSE36,MMX,FXSR,SSE,SSE2,HTT>"
+                            // We first extract the comma separated values between angle brackets.
+                            StringView csv = result.line;
+                            int index = CpuFeatures_StringView_IndexOfChar(csv, '<');
+                            if (index >= 0) csv = CpuFeatures_StringView_PopFront(csv, index + 1);
+                            if (csv.size > 0 && CpuFeatures_StringView_Back(csv) == '>')
+                                csv = CpuFeatures_StringView_PopBack(csv, 1);
+                            if (CpuFeatures_StringView_HasWord(csv, "SSE", ','))
+                                features->sse = true;
+                            if (CpuFeatures_StringView_HasWord(csv, "SSE2", ','))
+                                features->sse2 = true;
+                            if (CpuFeatures_StringView_HasWord(csv, "SSE3", ','))
+                                features->sse3 = true;
+                            if (CpuFeatures_StringView_HasWord(csv, "SSSE3", ','))
+                                features->ssse3 = true;
+                            if (CpuFeatures_StringView_HasWord(csv, "SSE4.1", ','))
+                                features->sse4_1 = true;
+                            if (CpuFeatures_StringView_HasWord(csv, "SSE4.2", ','))
+                                features->sse4_2 = true;
                         }
                     CpuFeatures_CloseFile(fd);
                 }
@@ -1416,25 +1428,22 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
                 {
                     StackLineReader reader;
                     StackLineReader_Initialize(&reader, fd);
-                    for (;;)
+                    for (bool stop = false; !stop;)
                         {
                             const LineResult result = StackLineReader_NextLine(&reader);
+                            if (result.eof) stop = true;
                             const StringView line = result.line;
                             StringView key, value;
-                            if (CpuFeatures_StringView_GetAttributeKeyValue(line, &key, &value))
-                                {
-                                    if (CpuFeatures_StringView_IsEquals(key, str("flags")))
-                                        {
-                                            features->sse = CpuFeatures_StringView_HasWord(value, "sse");
-                                            features->sse2 = CpuFeatures_StringView_HasWord(value, "sse2");
-                                            features->sse3 = CpuFeatures_StringView_HasWord(value, "sse3");
-                                            features->ssse3 = CpuFeatures_StringView_HasWord(value, "ssse3");
-                                            features->sse4_1 = CpuFeatures_StringView_HasWord(value, "sse4_1");
-                                            features->sse4_2 = CpuFeatures_StringView_HasWord(value, "sse4_2");
-                                            break;
-                                        }
-                                }
-                            if (result.eof) break;
+                            if (!CpuFeatures_StringView_GetAttributeKeyValue(line, &key, &value))
+                                continue;
+                            if (!CpuFeatures_StringView_IsEquals(key, str("flags"))) continue;
+                            features->sse = CpuFeatures_StringView_HasWord(value, "sse", ' ');
+                            features->sse2 = CpuFeatures_StringView_HasWord(value, "sse2", ' ');
+                            features->sse3 = CpuFeatures_StringView_HasWord(value, "sse3", ' ');
+                            features->ssse3 = CpuFeatures_StringView_HasWord(value, "ssse3", ' ');
+                            features->sse4_1 = CpuFeatures_StringView_HasWord(value, "sse4_1", ' ');
+                            features->sse4_2 = CpuFeatures_StringView_HasWord(value, "sse4_2", ' ');
+                            break;
                         }
                     CpuFeatures_CloseFile(fd);
                 }
@@ -1450,11 +1459,15 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
 
 // Reference
 // https://en.wikipedia.org/wiki/CPUID#EAX=80000000h:_Get_Highest_Extended_Function_Implemented.
+static Leaf GetLeafByIdAMD(uint32_t leaf_id)
+{
+    uint32_t max_extended = CpuId(0x80000000).eax;
+    return SafeCpuId(max_extended, leaf_id);
+}
+
 static void ParseExtraAMDCpuId(X86Info* info, OsPreserves os_preserves)
 {
-    const Leaf leaf_80000000 = CpuId(0x80000000);
-    const uint32_t max_extended_cpuid_leaf = leaf_80000000.eax;
-    const Leaf leaf_80000001 = SafeCpuId(max_extended_cpuid_leaf, 0x80000001);
+    const Leaf leaf_80000001 = GetLeafByIdAMD(0x80000001);
 
     X86Features* const features = &info->features;
 
@@ -1470,16 +1483,15 @@ static void ParseExtraAMDCpuId(X86Info* info, OsPreserves os_preserves)
 }
 
 static const X86Info kEmptyX86Info;
-static const CacheInfo kEmptyCacheInfo;
 static const OsPreserves kEmptyOsPreserves;
 
 X86Info GetX86Info(void)
 {
     X86Info info = kEmptyX86Info;
     const Leaf leaf_0 = CpuId(0);
-    const bool is_intel = IsVendor(leaf_0, "GenuineIntel");
-    const bool is_amd = IsVendor(leaf_0, "AuthenticAMD");
-    const bool is_hygon = IsVendor(leaf_0, "HygonGenuine");
+    const bool is_intel = IsVendor(leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL);
+    const bool is_amd = IsVendor(leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
+    const bool is_hygon = IsVendor(leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE);
     SetVendor(leaf_0, info.vendor);
     if (is_intel || is_amd || is_hygon)
         {
@@ -1498,11 +1510,24 @@ CacheInfo GetX86CacheInfo(void)
 {
     CacheInfo info = kEmptyCacheInfo;
     const Leaf leaf_0 = CpuId(0);
-    const uint32_t max_cpuid_leaf = leaf_0.eax;
-    if (IsVendor(leaf_0, "GenuineIntel"))
+    if (IsVendor(leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL))
         {
-            ParseLeaf2(max_cpuid_leaf, &info);
-            ParseLeaf4(max_cpuid_leaf, &info);
+            ParseLeaf2(leaf_0.eax, &info);
+            ParseCacheInfo(leaf_0.eax, 4, &info);
+        }
+    else if (IsVendor(leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD) ||
+             IsVendor(leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE))
+        {
+            const uint32_t max_ext = CpuId(0x80000000).eax;
+            const uint32_t cpuid_ext = SafeCpuId(max_ext, 0x80000001).ecx;
+
+            // If CPUID Fn8000_0001_ECX[TopologyExtensions]==0
+            // then CPUID Fn8000_0001_E[D,C,B,A]X is reserved.
+            // https://www.amd.com/system/files/TechDocs/25481.pdf
+            if (IsBitSet(cpuid_ext, 22))
+                {
+                    ParseCacheInfo(max_ext, 0x8000001D, &info);
+                }
         }
     return info;
 }
@@ -1511,7 +1536,7 @@ CacheInfo GetX86CacheInfo(void)
 
 X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
 {
-    if (memcmp(info->vendor, "GenuineIntel", sizeof(info->vendor)) == 0)
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_GENUINE_INTEL))
         {
             switch (CPUID(info->family, info->model))
                 {
@@ -1616,7 +1641,7 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                     return X86_UNKNOWN;
                 }
         }
-    if (memcmp(info->vendor, "AuthenticAMD", sizeof(info->vendor)) == 0)
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_AUTHENTIC_AMD))
         {
             switch (CPUID(info->family, info->model))
                 {
@@ -1726,7 +1751,7 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                     return X86_UNKNOWN;
                 }
         }
-    if (memcmp(info->vendor, "HygonGenuine", sizeof(info->vendor)) == 0)
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_HYGON_GENUINE))
         {
             switch (CPUID(info->family, info->model))
                 {
@@ -1737,23 +1762,20 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
     return X86_UNKNOWN;
 }
 
-static void SetString(const uint32_t max_cpuid_ext_leaf, const uint32_t leaf_id,
-    char* buffer)
-{
-    const Leaf leaf = SafeCpuId(max_cpuid_ext_leaf, leaf_id);
-    // We allow calling memcpy from SetString which is only called when requesting
-    // X86BrandString.
-    memcpy(buffer, &leaf, sizeof(Leaf));
-}
-
 void FillX86BrandString(char brand_string[49])
 {
     const Leaf leaf_ext_0 = CpuId(0x80000000);
     const uint32_t max_cpuid_leaf_ext = leaf_ext_0.eax;
-    SetString(max_cpuid_leaf_ext, 0x80000002, brand_string);
-    SetString(max_cpuid_leaf_ext, 0x80000003, brand_string + 16);
-    SetString(max_cpuid_leaf_ext, 0x80000004, brand_string + 32);
-    brand_string[48] = '\0';
+    const Leaf leaves[3] = {
+        SafeCpuId(max_cpuid_leaf_ext, 0x80000002),
+        SafeCpuId(max_cpuid_leaf_ext, 0x80000003),
+        SafeCpuId(max_cpuid_leaf_ext, 0x80000004),
+    };
+#if __STDC_VERSION__ >= 201112L
+    _Static_assert(sizeof(leaves) == 48, "Leaves must be packed");
+#endif
+    CpuFeatures_StringView_CopyString(view((const char*)leaves, sizeof(leaves)),
+        brand_string, 49);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

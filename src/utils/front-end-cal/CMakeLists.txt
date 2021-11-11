@@ -95,6 +95,13 @@ if(USE_BOOST_BIND_PLACEHOLDERS)
     )
 endif()
 
+if(PMT_USES_BOOST_ANY)
+    target_compile_definitions(front-end-cal
+        PRIVATE
+            -DPMT_USES_BOOST_ANY=1
+    )
+endif()
+
 if(ENABLE_STRIP)
     set_target_properties(front-end-cal PROPERTIES LINK_FLAGS "-s")
 endif()

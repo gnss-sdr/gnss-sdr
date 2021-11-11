@@ -23,7 +23,6 @@
 #include "galileo_has_page.h"       // for Galileo_HAS_page
 #include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
 #include "reed_solomon.h"           // for ReedSolomon
-#include <boost/any.hpp>            // for boost::any_cast
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>                // for std::find, std::count
@@ -38,6 +37,13 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
 
 galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make()
 {
@@ -106,7 +112,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
             if (msg_type_hash_code == typeid(std::shared_ptr<Galileo_HAS_page>).hash_code())
                 {
-                    const auto HAS_data_page = boost::any_cast<std::shared_ptr<Galileo_HAS_page>>(pmt::any_ref(msg));
+                    const auto HAS_data_page = wht::any_cast<std::shared_ptr<Galileo_HAS_page>>(pmt::any_ref(msg));
                     DLOG(INFO) << "New HAS page received:  "
                                << "Status: " << static_cast<float>(HAS_data_page->has_status) << ", "
                                << "MT: " << static_cast<float>(HAS_data_page->message_type) << ", "
@@ -122,7 +128,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
                     LOG(WARNING) << "galileo_e6_has_msg_receiver received an unknown object type!";
                 }
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "galileo_e6_has_msg_receiver Bad any_cast: " << e.what();
         }

@@ -50,7 +50,6 @@ target_link_libraries(core_monitor
         core_system_parameters
     PRIVATE
         Boost::serialization
-        Gnuradio::pmt
 )
 
 get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)

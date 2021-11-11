@@ -42,6 +42,11 @@
 #else
 #include <gnuradio/analog/sig_source_c.h>
 #endif
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx;
@@ -79,7 +84,7 @@ void GalileoE1PcpsAmbiguousAcquisitionGSoC2013Test_msg_rx::msg_handler_channel_e
             rx_message = message;
             channel_internal_queue.push(rx_message);
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;

@@ -71,8 +71,8 @@ static bool HandleArmLine(const LineResult result, ArmInfo* const info,
                 {
                     for (size_t i = 0; i < ARM_LAST_; ++i)
                         {
-                            kSetters[i](&info->features,
-                                CpuFeatures_StringView_HasWord(value, kCpuInfoFlags[i]));
+                            kSetters[i](&info->features, CpuFeatures_StringView_HasWord(
+                                                             value, kCpuInfoFlags[i], ' '));
                         }
                 }
             else if (CpuFeatures_StringView_IsEquals(key, str("CPU implementer")))

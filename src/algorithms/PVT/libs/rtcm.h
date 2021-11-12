@@ -342,6 +342,11 @@ public:
      */
     std::vector<std::string> print_IGM01(const Galileo_HAS_data& has_data);
 
+    /*!
+     * \brief Prints messages of type IGM02 (SSR Clock Correction)
+     */
+    std::vector<std::string> print_IGM02(const Galileo_HAS_data& has_data);
+
     uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which GPS L1 signals have been continually tracked.
     uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which GPS L2 signals have been continually tracked.
     uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //!< Returns the time period in which Galileo signals have been continually tracked.
@@ -484,7 +489,8 @@ private:
 
     std::string get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
-
+    std::string get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
 
     //
     // Utilities
@@ -506,6 +512,8 @@ private:
     uint32_t lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_lock_time_indicator(uint32_t lock_time_period_s);
     uint32_t msm_extended_lock_time_indicator(uint32_t lock_time_period_s);
+    // SSR utilities
+    uint8_t ssr_update_interval(uint16_t validity_seconds) const;
 
     //
     // Classes for TCP communication

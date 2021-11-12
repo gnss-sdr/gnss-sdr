@@ -352,6 +352,11 @@ public:
      */
     std::vector<std::string> print_IGM03(const Galileo_HAS_data& has_data);
 
+    /*!
+     * \brief Prints messages of type IGM05 (SSR Bias Correction)
+     */
+    std::vector<std::string> print_IGM05(const Galileo_HAS_data& has_data);
+
     uint32_t lock_time(const Gps_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);       //!< Returns the time period in which GPS L1 signals have been continually tracked.
     uint32_t lock_time(const Gps_CNAV_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);  //!< Returns the time period in which GPS L2 signals have been continually tracked.
     uint32_t lock_time(const Galileo_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);   //!< Returns the time period in which Galileo signals have been continually tracked.
@@ -498,6 +503,8 @@ private:
     std::string get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
     std::string get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
     std::string get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
+    std::string get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator);
+    std::string get_IGM05_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index);
 
     //
     // Utilities

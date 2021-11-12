@@ -58,6 +58,13 @@ else()
     )
 endif()
 
+if(PMT_USES_BOOST_ANY)
+    target_compile_definitions(pvt_gr_blocks
+        PRIVATE
+            -DPMT_USES_BOOST_ANY=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(pvt_gr_blocks

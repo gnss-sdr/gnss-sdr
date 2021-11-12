@@ -30,8 +30,10 @@
 #include <unistd.h>         // for write(), read(), close()
 
 
-An_Packet_Printer::An_Packet_Printer(const std::string& an_dump_devname) : d_an_devname(an_dump_devname),
-                                                                           d_an_dev_descriptor(init_serial(d_an_devname))
+An_Packet_Printer::An_Packet_Printer(const std::string& an_dump_devname)
+    : d_start(std::chrono::system_clock::now()),
+      d_an_devname(an_dump_devname),
+      d_an_dev_descriptor(init_serial(d_an_devname))
 {
     if (d_an_dev_descriptor != -1)
         {
@@ -91,11 +93,12 @@ void An_Packet_Printer::close_serial() const
  */
 void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const Rtklib_Solver* const pvt, const std::map<int, Gnss_Synchro>& gnss_observables_map) const
 {
+    std::chrono::time_point<std::chrono::system_clock> this_epoch;
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     uint8_t num_gps_sats = 0;
     uint8_t num_gal_sats = 0;
-    uint32_t microseconds = 0;
     int index = 0;
+    bool fix_3d = pvt->is_valid_position();
     const int max_reported_sats = *(&_packet->sats + 1) - _packet->sats;
 
     for (gnss_observables_iter = gnss_observables_map.cbegin();
@@ -128,7 +131,6 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
                                         }
 
                                     _packet->sats[index].doppler = doppler;
-                                    microseconds = static_cast<uint32_t>(static_cast<double>(gnss_observables_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_observables_iter->second.fs)) * 1e6;
                                     index++;
                                 }
                             break;
@@ -154,7 +156,6 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
                                         }
 
                                     _packet->sats[index].doppler = doppler;
-                                    microseconds = static_cast<uint32_t>(static_cast<double>(gnss_observables_iter->second.Tracking_sample_counter) / static_cast<double>(gnss_observables_iter->second.fs)) * 1e6;
                                     index++;
                                 }
                             break;
@@ -164,10 +165,12 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
                 }
         }
 
+    this_epoch = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = this_epoch - d_start;
     _packet->nsvfix = static_cast<uint8_t>(pvt->get_num_valid_observations());
     _packet->gps_satellites = num_gps_sats;
     _packet->galileo_satellites = num_gal_sats;
-    _packet->microseconds = microseconds;
+    _packet->microseconds = static_cast<uint32_t>(elapsed_seconds.count() * 1.0e6);
     _packet->latitude = static_cast<double>(pvt->get_latitude()) * (M_PI / 180.0);
     _packet->longitude = static_cast<double>(pvt->get_longitude()) * (M_PI / 180.0);
     _packet->height = static_cast<double>(pvt->get_height());
@@ -176,8 +179,10 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
     _packet->velocity[2] = static_cast<float>(-pvt->get_rx_vel()[2]);
 
     uint16_t status = 0;
-    // Set 3D fix (bit 0 and 1) / Set Doppler velocity valid (bit 2) / Set Time valid (bit 3)
-    status = status & 0b00001111;
+    if (fix_3d)
+        {
+            status = 15;  // Set 3D fix (bit 0 and 1) / Set Doppler velocity valid (bit 2) / Set Time valid (bit 3)
+        }
     _packet->status = status;
 }
 
@@ -190,8 +195,6 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
  */
 void An_Packet_Printer::encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packet, an_packet_t* _packet) const
 {
-    _packet->id = SDR_GNSS_PACKET_ID;
-    _packet->length = SDR_GNSS_PACKET_LENGTH;
     uint8_t offset = 0;
     LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->nsvfix), offset, _packet->data, sizeof(sdr_gnss_packet->nsvfix));
     offset += sizeof(sdr_gnss_packet->nsvfix);
@@ -236,10 +239,9 @@ void An_Packet_Printer::encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packe
 void An_Packet_Printer::an_packet_encode(an_packet_t* an_packet) const
 {
     uint16_t crc;
-    an_packet->header[1] = an_packet->id;
-    an_packet->header[2] = an_packet->length;
-    crc = calculate_crc16(an_packet->data, an_packet->length);
-    memcpy(&an_packet->header[3], &crc, sizeof(uint16_t));
+    an_packet->header[1] = SDR_GNSS_PACKET_ID;
+    crc = calculate_crc16(an_packet->data, SDR_GNSS_PACKET_LENGTH);
+    memcpy(&an_packet->header[2], &crc, sizeof(uint16_t));
     an_packet->header[0] = calculate_header_lrc(&an_packet->header[1]);
 }
 
@@ -249,7 +251,7 @@ void An_Packet_Printer::an_packet_encode(an_packet_t* an_packet) const
  */
 uint8_t An_Packet_Printer::calculate_header_lrc(const uint8_t* data) const
 {
-    return ((data[0] + data[1] + data[2] + data[3]) ^ 0xFF) + 1;
+    return ((data[0] + data[1] + data[2]) ^ 0xFF) + 1;
 }
 
 

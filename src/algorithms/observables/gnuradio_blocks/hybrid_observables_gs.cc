@@ -35,6 +35,14 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for move
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
@@ -61,6 +69,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
       d_nchannels_in(conf_.nchannels_in),
       d_nchannels_out(conf_.nchannels_out),
       d_T_rx_TOW_set(false),
+      d_always_output_gs(conf_.always_output_gs),
       d_dump(conf_.dump),
       d_dump_mat(conf_.dump_mat && d_dump)
 {
@@ -194,7 +203,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
         {
             if (pmt::any_ref(msg).type().hash_code() == d_double_type_hash_code)
                 {
-                    const auto new_rx_clock_offset_s = boost::any_cast<double>(pmt::any_ref(msg));
+                    const auto new_rx_clock_offset_s = wht::any_cast<double>(pmt::any_ref(msg));
                     d_T_rx_TOW_ms = d_T_rx_TOW_ms - static_cast<int>(round(new_rx_clock_offset_s * 1000.0));
                     // align the receiver clock to integer multiple of d_T_rx_step_ms
                     if (d_T_rx_TOW_ms % d_T_rx_step_ms)
@@ -210,7 +219,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
         }
-    catch (const boost::bad_any_cast &e)
+    catch (const wht::bad_any_cast &e)
         {
             LOG(WARNING) << "msg_handler_pvt_to_observables Bad any_cast: " << e.what();
         }
@@ -748,6 +757,15 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     // old_time_debug = out[0][0].RX_time * 1000.0;
                     return 1;
                 }
+        }
+    if (d_always_output_gs)
+        {
+            Gnss_Synchro empty_gs{};
+            for (uint32_t n = 0; n < d_nchannels_out; n++)
+                {
+                    out[n][0] = empty_gs;
+                }
+            return 1;
         }
     return 0;
 }

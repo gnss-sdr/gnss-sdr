@@ -17,12 +17,19 @@
 
 
 #include "channel_msg_receiver_cc.h"
-#include <boost/any.hpp>
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <cstdint>
 #include <utility>
+
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -85,7 +92,7 @@ void channel_msg_receiver_cc::msg_handler_channel_events(const pmt::pmt_t& msg)
                     break;
                 }
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any cast: " << e.what();
         }

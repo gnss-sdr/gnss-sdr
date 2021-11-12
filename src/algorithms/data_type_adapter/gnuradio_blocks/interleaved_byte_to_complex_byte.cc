@@ -27,10 +27,11 @@ interleaved_byte_to_complex_byte_sptr make_interleaved_byte_to_complex_byte()
 }
 
 
-interleaved_byte_to_complex_byte::interleaved_byte_to_complex_byte() : sync_decimator("interleaved_byte_to_complex_byte",
-                                                                           gr::io_signature::make(1, 1, sizeof(int8_t)),
-                                                                           gr::io_signature::make(1, 1, sizeof(lv_8sc_t)),  // lv_8sc_t is a Volk's typedef for std::complex<signed char>
-                                                                           2)
+interleaved_byte_to_complex_byte::interleaved_byte_to_complex_byte()
+    : sync_decimator("interleaved_byte_to_complex_byte",
+          gr::io_signature::make(1, 1, sizeof(int8_t)),
+          gr::io_signature::make(1, 1, sizeof(lv_8sc_t)),  // lv_8sc_t is a Volk's typedef for std::complex<signed char>
+          2)
 {
     const auto alignment_multiple = static_cast<int>(volk_get_alignment() / sizeof(lv_8sc_t));
     set_alignment(std::max(1, alignment_multiple));

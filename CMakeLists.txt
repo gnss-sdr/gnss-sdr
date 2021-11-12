@@ -332,8 +332,8 @@ set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.21")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11.4")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.18.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.5.6")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.19.0")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.6.0")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 if(CMAKE_VERSION VERSION_LESS "3.3")
@@ -564,10 +564,23 @@ endif()
 
 
 ################################################################################
+# VOLK - Vector-Optimized Library of Kernels
+################################################################################
+find_package(VOLK)
+if(NOT VOLK_FOUND)
+    message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
+endif()
+set_package_properties(VOLK PROPERTIES
+    PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
+    TYPE REQUIRED
+)
+
+
+
+################################################################################
 # GNU Radio - https://www.gnuradio.org
 ################################################################################
 set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
-
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
     PURPOSE "Used for communication with front-ends of the USRP family."
@@ -632,13 +645,14 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
         if(FILESYSTEM_FOUND)
             set(CMAKE_CXX_STANDARD 17)
             if(CMAKE_VERSION VERSION_GREATER 3.13)
-                # UHD 4.0.0.0 still does not support C++20
-                if((NOT UHD_FOUND) OR (UHD_FOUND AND ("${UHD_VERSION}" VERSION_LESS 3.99)))
-                    set(CMAKE_CXX_STANDARD 20)
+                # UHD 3.15.0.0-5 does not support C++20
+                # GNU Radio 3.10.0.git does not support C++20
+                if(((NOT UHD_FOUND) OR (UHD_FOUND AND ("${UHD_VERSION}" VERSION_LESS 3.14.99))) AND (GNURADIO_VERSION VERSION_LESS 3.9.99))
+                    # set(CMAKE_CXX_STANDARD 20)
                     if(CMAKE_VERSION VERSION_GREATER 3.20.99)
                         if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")) OR
                             ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12.0")))
-                            set(CMAKE_CXX_STANDARD 23)
+                            # set(CMAKE_CXX_STANDARD 23)
                         endif()
                     endif()
                 endif()
@@ -647,7 +661,9 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
         endif()
     endif()
 endif()
-
+if((NOT PMT_USES_BOOST_ANY) AND (CMAKE_CXX_STANDARD VERSION_LESS 17))
+    message(FATAL_ERROR "GNU Radio v${GNURADIO_VERSION} requires C++17. Please update your environment.")
+endif()
 
 
 ################################################################################
@@ -971,20 +987,6 @@ if(CMAKE_CXX_STANDARD VERSION_GREATER 14)
         has_transform_reduce_with_execution_policy
     )
 endif()
-
-
-
-################################################################################
-# VOLK - Vector-Optimized Library of Kernels
-################################################################################
-find_package(VOLK)
-if(NOT VOLK_FOUND)
-    message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
-endif()
-set_package_properties(VOLK PROPERTIES
-    PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
-    TYPE REQUIRED
-)
 
 
 

@@ -150,7 +150,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.gpx_rate_ms = bc::lcm(configuration->property(role + ".gpx_rate_ms", pvt_output_parameters.gpx_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.geojson_rate_ms = bc::lcm(configuration->property(role + ".geojson_rate_ms", pvt_output_parameters.geojson_rate_ms), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.nmea_rate_ms = bc::lcm(configuration->property(role + ".nmea_rate_ms", pvt_output_parameters.nmea_rate_ms), pvt_output_parameters.output_rate_ms);
-    pvt_output_parameters.an_rate_ms = bc::lcm(configuration->property(role + ".an_rate_ms", pvt_output_parameters.an_rate_ms), pvt_output_parameters.output_rate_ms);
+    pvt_output_parameters.an_rate_ms = configuration->property(role + ".an_rate_ms", pvt_output_parameters.an_rate_ms);
 
     // Infer the type of receiver
     /*

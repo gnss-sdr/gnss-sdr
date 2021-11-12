@@ -76,6 +76,16 @@ if(USE_BOOST_BIND_PLACEHOLDERS)
     )
 endif()
 
+if(PMT_USES_BOOST_ANY)
+    target_compile_definitions(channel_libs
+        PRIVATE -DPMT_USES_BOOST_ANY=1
+    )
+    target_link_libraries(channel_libs
+        PRIVATE
+            Boost::headers
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(channel_libs

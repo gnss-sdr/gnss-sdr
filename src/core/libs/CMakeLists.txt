@@ -142,6 +142,13 @@ if(USE_BOOST_ASIO_IO_CONTEXT)
     )
 endif()
 
+if(PMT_USES_BOOST_ANY)
+    target_compile_definitions(core_libs
+        PRIVATE
+            -DPMT_USES_BOOST_ANY=1
+    )
+endif()
+
 # Do not apply clang-tidy fixes to protobuf generated headers
 get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 target_include_directories(core_libs

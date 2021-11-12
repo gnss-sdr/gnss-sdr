@@ -71,7 +71,7 @@ static bool HandlePPCLine(const LineResult result,
     StringView key, value;
     if (CpuFeatures_StringView_GetAttributeKeyValue(line, &key, &value))
         {
-            if (CpuFeatures_StringView_HasWord(key, "platform"))
+            if (CpuFeatures_StringView_HasWord(key, "platform", ' '))
                 {
                     CpuFeatures_StringView_CopyString(value, strings->platform,
                         sizeof(strings->platform));

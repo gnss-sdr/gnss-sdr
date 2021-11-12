@@ -68,6 +68,11 @@
 #include <gnuradio/filter/fir_filter_ccf.h>
 #endif
 
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
 
 // ######## GNURADIO TRACKING BLOCK MESSAGE RECEVER #########
 class TrackingPullInTest_msg_rx;
@@ -103,7 +108,7 @@ void TrackingPullInTest_msg_rx::msg_handler_channel_events(const pmt::pmt_t msg)
             rx_message = message;  // 3 -> loss of lock
             // std::cout << "Received trk message: " << rx_message << '\n';
         }
-    catch (const boost::bad_any_cast& e)
+    catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_tracking Bad cast!";
             rx_message = 0;

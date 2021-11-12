@@ -36,6 +36,7 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
+#include <pmt/pmt.h>
 #include <chrono>
 #include <utility>
 
@@ -50,6 +51,11 @@
 #include <gnuradio/analog/sig_source_c.h>
 #endif
 
+#if PMT_USES_BOOST_ANY
+namespace wht = boost;
+#else
+namespace wht = std;
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL2MPcpsAcquisitionTest_msg_rx;
@@ -82,7 +88,7 @@ void GpsL2MPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt::pmt
             int64_t message = pmt::to_long(std::move(msg));
             rx_message = message;
         }
-    catch (const boost::bad_any_cast &e)
+    catch (const wht::bad_any_cast &e)
         {
             LOG(WARNING) << "msg_handler_channel_events Bad any_cast: " << e.what();
             rx_message = 0;

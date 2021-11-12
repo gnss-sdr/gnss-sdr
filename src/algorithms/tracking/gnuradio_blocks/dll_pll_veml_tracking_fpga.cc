@@ -54,6 +54,13 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
 
 dll_pll_veml_tracking_fpga_sptr dll_pll_veml_make_tracking_fpga(const Dll_Pll_Conf_Fpga &conf_)
 {
@@ -469,7 +476,7 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
         {
             if (pmt::any_ref(msg).type().hash_code() == int_type_hash_code)
                 {
-                    const int tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
+                    const int tlm_event = wht::any_cast<int>(pmt::any_ref(msg));
                     if (tlm_event == 1)
                         {
                             DLOG(INFO) << "Telemetry fault received in ch " << this->d_channel;
@@ -478,7 +485,7 @@ void dll_pll_veml_tracking_fpga::msg_handler_telemetry_to_trk(const pmt::pmt_t &
                         }
                 }
         }
-    catch (const boost::bad_any_cast &e)
+    catch (const wht::bad_any_cast &e)
         {
             LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any_cast: " << e.what();
         }

@@ -56,6 +56,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Reliability:
 
 - Fixed some potential buffer overflows.
+- Avoid source code lines longer than 512 characters. This was a warning raised
+  by Lintian (very-long-line-length-in-source-file). Long lines in source code
+  could be used to obfuscate the source code and to hide stuff like backdoors or
+  security problems.
 
 ### Improvements in Usability:
 

@@ -3373,6 +3373,30 @@ std::vector<std::string> Rtcm::print_IGM02(const Galileo_HAS_data& has_data)
 }
 
 
+std::vector<std::string> Rtcm::print_IGM03(const Galileo_HAS_data& has_data)
+{
+    std::vector<std::string> msgs;
+    const uint8_t nsys = has_data.Nsys;
+    bool ssr_multiple_msg_indicator = true;
+    for (uint8_t sys = 0; sys < nsys; sys++)
+        {
+            if (sys == nsys - 1)
+                {
+                    ssr_multiple_msg_indicator = false;  // last message of a sequence
+                }
+            const std::string header = Rtcm::get_IGM03_header(has_data, sys, ssr_multiple_msg_indicator);
+            const std::string sat_data = Rtcm::get_IGM03_content_sat(has_data, sys);
+            std::string message = build_message(header + sat_data);
+            if (server_is_running)
+                {
+                    rtcm_message_queue->push(message);
+                }
+            msgs.push_back(message);
+        }
+    return msgs;
+}
+
+
 std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator)
 {
     std::string header;
@@ -3515,6 +3539,91 @@ std::string Rtcm::get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_
 
             content += IDF011.to_string() + IDF019.to_string() + IDF020.to_string() +
                        IDF021.to_string();
+        }
+
+    return content;
+}
+
+
+std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsys, bool ssr_multiple_msg_indicator)
+{
+    std::string header;
+
+    uint32_t tow = 0;                            // TODO
+    uint16_t ssr_provider_id = 0;                // ?
+    uint8_t igm_version = 0;                     // ?
+    uint8_t ssr_solution_id = 0;                 // ?
+    auto iod_ssr = has_data.header.iod_id % 15;  // ?? HAS IOD is 0-31
+    bool regional_indicator = false;             // ?
+
+    uint8_t subtype_msg_number = 0;
+    if (has_data.gnss_id_mask[nsys] == 0)  // GPS
+        {
+            subtype_msg_number = 23;
+        }
+    else if (has_data.gnss_id_mask[nsys] == 2)  // Galileo
+        {
+            subtype_msg_number = 63;
+        }
+
+    uint8_t validity_index = has_data.validity_interval_index_orbit_corrections;
+    uint16_t validity_seconds = has_data.get_validity_interval_s(validity_index);
+    uint8_t ssr_update_interval_ = ssr_update_interval(validity_seconds);
+    uint8_t Nsat = has_data.get_num_satellites()[nsys];
+
+    Rtcm::set_DF002(4076);  // Always “4076” for IGS Proprietary Messages
+    Rtcm::set_IDF001(igm_version);
+    Rtcm::set_IDF002(subtype_msg_number);
+    Rtcm::set_IDF003(tow);
+    Rtcm::set_IDF004(ssr_update_interval_);
+    Rtcm::set_IDF005(ssr_multiple_msg_indicator);
+    Rtcm::set_IDF007(iod_ssr);
+    Rtcm::set_IDF008(ssr_provider_id);
+    Rtcm::set_IDF009(ssr_solution_id);
+    Rtcm::set_IDF006(regional_indicator);
+    Rtcm::set_IDF010(Nsat);
+
+    header += DF002.to_string() + IDF001.to_string() + IDF002.to_string() +
+              IDF003.to_string() + IDF004.to_string() + IDF005.to_string() +
+              IDF007.to_string() + IDF008.to_string() + IDF009.to_string() +
+              IDF006.to_string() + IDF010.to_string();
+    return header;
+}
+
+
+std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_t nsys_index)
+{
+    std::string content;
+
+    const uint8_t num_sats_in_this_system = has_data.get_num_satellites()[nsys_index];
+
+    std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
+    std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
+    std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
+    std::vector<float> delta_orbit_along_track_m = has_data.get_delta_along_track_m(nsys_index);
+    std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
+    std::vector<float> delta_clock_c0 = has_data.get_delta_clock_c0_m(nsys_index);
+    std::vector<float> delta_clock_c1(num_sats_in_this_system);
+    std::vector<float> delta_clock_c2(num_sats_in_this_system);
+
+    for (uint8_t sat = 0; sat < num_sats_in_this_system; sat++)
+        {
+            Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
+            Rtcm::set_IDF012(static_cast<uint8_t>(gnss_iod[sat] % 255));  // 8 LSBs
+            Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
+            Rtcm::set_IDF014(delta_orbit_along_track_m[sat]);
+            Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
+            Rtcm::set_IDF016(0.0);  //  dot_orbit_delta_track_m_s
+            Rtcm::set_IDF017(0.0);  // dot_orbit_delta_along_track_m_s
+            Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
+            Rtcm::set_IDF019(delta_clock_c0[sat]);
+            Rtcm::set_IDF020(delta_clock_c1[sat]);
+            Rtcm::set_IDF021(delta_clock_c2[sat]);
+
+            content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
+                       IDF014.to_string() + IDF015.to_string() + IDF016.to_string() +
+                       IDF017.to_string() + IDF018.to_string() + DF019.to_string() +
+                       IDF020.to_string() + IDF021.to_string();
         }
 
     return content;

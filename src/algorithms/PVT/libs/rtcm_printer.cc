@@ -1462,6 +1462,40 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
 }
 
 
+void Rtcm_Printer::Print_IGM_Messages(const Galileo_HAS_data& has_data)
+{
+    try
+        {
+            if (has_data.header.orbit_correction_flag && has_data.header.clock_fullset_flag)
+                {
+                    Print_IGM03(has_data);
+                }
+            if (has_data.header.orbit_correction_flag && !has_data.header.clock_fullset_flag)
+                {
+                    Print_IGM01(has_data);
+                }
+            if (!has_data.header.orbit_correction_flag && has_data.header.clock_fullset_flag)
+                {
+                    Print_IGM02(has_data);
+                }
+            if (has_data.header.code_bias_flag)
+                {
+                    Print_IGM05(has_data);
+                }
+        }
+    catch (const boost::exception& ex)
+        {
+            std::cout << "RTCM boost exception: " << boost::diagnostic_information(ex) << '\n';
+            LOG(ERROR) << "RTCM boost exception: " << boost::diagnostic_information(ex);
+        }
+    catch (const std::exception& ex)
+        {
+            std::cout << "RTCM std exception: " << ex.what() << '\n';
+            LOG(ERROR) << "RTCM std exception: " << ex.what();
+        }
+}
+
+
 bool Rtcm_Printer::Print_Rtcm_MT1001(const Gps_Ephemeris& gps_eph, double obs_time, const std::map<int32_t, Gnss_Synchro>& observables)
 {
     const std::string m1001 = rtcm->print_MT1001(gps_eph, obs_time, observables, station_id);
@@ -1601,9 +1635,54 @@ bool Rtcm_Printer::Print_Rtcm_MSM(uint32_t msm_number, const Gps_Ephemeris& gps_
 }
 
 
-bool Rtcm_Printer::Print_Rtcm_IGM01(const Galileo_HAS_data& has_data)
+bool Rtcm_Printer::Print_IGM01(const Galileo_HAS_data& has_data)
 {
     const std::vector<std::string> msgs = rtcm->print_IGM01(has_data);
+    if (msgs.empty())
+        {
+            return false;
+        }
+    for (const auto& s : msgs)
+        {
+            Rtcm_Printer::Print_Message(s);
+        }
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_IGM02(const Galileo_HAS_data& has_data)
+{
+    const std::vector<std::string> msgs = rtcm->print_IGM02(has_data);
+    if (msgs.empty())
+        {
+            return false;
+        }
+    for (const auto& s : msgs)
+        {
+            Rtcm_Printer::Print_Message(s);
+        }
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_IGM03(const Galileo_HAS_data& has_data)
+{
+    const std::vector<std::string> msgs = rtcm->print_IGM03(has_data);
+    if (msgs.empty())
+        {
+            return false;
+        }
+    for (const auto& s : msgs)
+        {
+            Rtcm_Printer::Print_Message(s);
+        }
+    return true;
+}
+
+
+bool Rtcm_Printer::Print_IGM05(const Galileo_HAS_data& has_data)
+{
+    const std::vector<std::string> msgs = rtcm->print_IGM05(has_data);
     if (msgs.empty())
         {
             return false;

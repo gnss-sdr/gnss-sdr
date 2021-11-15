@@ -23,15 +23,14 @@ class Nav_Msg_Udp_Listener
 {
 public:
     explicit Nav_Msg_Udp_Listener(unsigned short port);
-    bool print_content();
+    void print_message(gnss_sdr::navMsg &message) const;
+    bool receive_and_parse_nav_message(gnss_sdr::navMsg &message);
 
 private:
-    bool read_nav_message(gnss_sdr::navMsg &message);
     boost::asio::io_service io_service;
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     boost::asio::ip::udp::endpoint endpoint;
-    gnss_sdr::navMsg message_;
 };
 
 #endif

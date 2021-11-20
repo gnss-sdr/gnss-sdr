@@ -59,6 +59,12 @@ Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(const std::string &device
     shift_out_bits_band1 = shift_out_bits_default;
     shift_out_bits_band2 = shift_out_bits_default;
 
+    // init bit selection corresopnding to frequency band 1
+    d_map_base1[0] = shift_out_bits_band1;
+
+    // init bit selection corresponding to frequency band 2
+    d_map_base2[0] = shift_out_bits_band2;
+
     DLOG(INFO) << "Dynamic bit selection FPGA class created";
 }
 

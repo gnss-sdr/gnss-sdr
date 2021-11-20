@@ -503,28 +503,28 @@ std::vector<float> Galileo_HAS_data::get_delta_radial_m(uint8_t nsys) const
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_along_track_m() const
+std::vector<float> Galileo_HAS_data::get_delta_in_track_m() const
 {
-    std::vector<float> delta_along_track_m;
-    delta_along_track_m.reserve(this->delta_along_track.size());
-    for (const auto& d : this->delta_along_track)
+    std::vector<float> delta_in_track_m;
+    delta_in_track_m.reserve(this->delta_in_track.size());
+    for (const auto& d : this->delta_in_track)
         {
-            delta_along_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_ALONG_TRACK_SCALE_FACTOR);
+            delta_in_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_IN_TRACK_SCALE_FACTOR);
         }
-    return delta_along_track_m;
+    return delta_in_track_m;
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_along_track_m(uint8_t nsys) const
+std::vector<float> Galileo_HAS_data::get_delta_in_track_m(uint8_t nsys) const
 {
-    std::vector<float> delta_along_track_m = this->get_delta_along_track_m();
+    std::vector<float> delta_in_track_m = this->get_delta_in_track_m();
     if (nsys >= this->Nsys)
         {
-            return delta_along_track_m;
+            return delta_in_track_m;
         }
-    std::vector<float> delta_along_track_m_aux;
+    std::vector<float> delta_in_track_m_aux;
     uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
-    delta_along_track_m_aux.reserve(num_sats_in_this_system);
+    delta_in_track_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
@@ -538,12 +538,12 @@ std::vector<float> Galileo_HAS_data::get_delta_along_track_m(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_along_track_m_aux.push_back(delta_along_track_m[index]);
+                            delta_in_track_m_aux.push_back(delta_in_track_m[index]);
                             index++;
                         }
                 }
         }
-    return delta_along_track_m_aux;
+    return delta_in_track_m_aux;
 }
 
 
@@ -551,7 +551,7 @@ std::vector<float> Galileo_HAS_data::get_delta_cross_track_m() const
 {
     std::vector<float> delta_cross_track_m;
     delta_cross_track_m.reserve(this->delta_cross_track.size());
-    for (const auto& d : this->delta_along_track)
+    for (const auto& d : this->delta_cross_track)
         {
             delta_cross_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR);
         }

@@ -1542,7 +1542,7 @@ private:
     void set_IDF013(float delta_orbit_radial_m);
 
     std::bitset<20> IDF014;
-    void set_IDF014(float delta_orbit_along_track_m);
+    void set_IDF014(float delta_orbit_in_track_m);
 
     std::bitset<20> IDF015;
     void set_IDF015(float delta_orbit_cross_track_m);
@@ -1551,7 +1551,7 @@ private:
     void set_IDF016(float dot_orbit_delta_track_m_s);
 
     std::bitset<19> IDF017;
-    void set_IDF017(float dot_orbit_delta_along_track_m_s);
+    void set_IDF017(float dot_orbit_delta_in_track_m_s);
 
     std::bitset<19> IDF018;
     void set_IDF018(float dot_orbit_delta_cross_track_m_s);

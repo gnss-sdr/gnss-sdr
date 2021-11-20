@@ -57,7 +57,7 @@ class galileo_e6_has_msg_receiver : public gr::block
 public:
     ~galileo_e6_has_msg_receiver() = default;  //!< Default destructor
     void set_enable_navdata_monitor(bool enable);
-    std::shared_ptr<Galileo_HAS_data> process_test_page(const pmt::pmt_t& msg); //!< For testing purposes only
+    std::shared_ptr<Galileo_HAS_data> process_test_page(const pmt::pmt_t& msg);  //!< For testing purposes only
 
 private:
     friend galileo_e6_has_msg_receiver_sptr galileo_e6_has_msg_receiver_make();

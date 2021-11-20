@@ -225,12 +225,12 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
             if (res == 0)
                 {
                     // Successful decoding, we have a valid HAS message stored at d_HAS_data
-                    std::cout << TEXT_MAGENTA << "New Galileo HAS message type " << std::to_string(has_page.message_id)
-                              << " received and successfully decoded" << TEXT_RESET << '\n';
                     if (d_nsat_in_mask_id[d_HAS_data.header.mask_id] != 0)
                         {
                             // if we have the mask for that message, it's ready to be sent to PVT
                             d_new_message = true;
+                            std::cout << TEXT_MAGENTA << "New Galileo HAS message ID " << std::to_string(has_page.message_id)
+                                      << " received and successfully decoded" << TEXT_RESET << '\n';
                         }
                 }
         }

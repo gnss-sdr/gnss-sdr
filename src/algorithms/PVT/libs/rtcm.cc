@@ -3428,12 +3428,12 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                            // TODO
-    uint16_t ssr_provider_id = 0;                // ?
-    uint8_t igm_version = 0;                     // ?
-    uint8_t ssr_solution_id = 0;                 // ?
-    auto iod_ssr = has_data.header.iod_id % 15;  // ?? HAS IOD is 0-31
-    bool regional_indicator = false;             // ?
+    uint32_t tow = 0;                                // TODO
+    uint16_t ssr_provider_id = 0;                    // ?
+    uint8_t igm_version = 0;                         // ?
+    uint8_t ssr_solution_id = 0;                     // ?
+    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
+    bool regional_indicator = false;                 // ?
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3477,7 +3477,7 @@ std::string Rtcm::get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_
     std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
     std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
     std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
-    std::vector<float> delta_orbit_along_track_m = has_data.get_delta_along_track_m(nsys_index);
+    std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
     std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
 
     const uint8_t num_sats_in_this_system = has_data.get_num_satellites()[nsys_index];
@@ -3486,10 +3486,10 @@ std::string Rtcm::get_IGM01_content_sat(const Galileo_HAS_data& has_data, uint8_
             Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
             Rtcm::set_IDF012(static_cast<uint8_t>(gnss_iod[sat] % 255));  // 8 LSBs
             Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
-            Rtcm::set_IDF014(delta_orbit_along_track_m[sat]);
+            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
             Rtcm::set_IDF016(0.0);  //  dot_orbit_delta_track_m_s
             Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
-            Rtcm::set_IDF017(0.0);  // dot_orbit_delta_along_track_m_s
+            Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
             Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
 
             content += IDF011.to_string() + IDF012.to_string() + IDF013.to_string() +
@@ -3505,11 +3505,11 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                            // TODO
-    uint16_t ssr_provider_id = 0;                // ?
-    uint8_t igm_version = 0;                     // ?
-    uint8_t ssr_solution_id = 0;                 // ?
-    auto iod_ssr = has_data.header.iod_id % 15;  // ?? HAS IOD is 0-31
+    uint32_t tow = 0;                                // TODO
+    uint16_t ssr_provider_id = 0;                    // ?
+    uint8_t igm_version = 0;                         // ?
+    uint8_t ssr_solution_id = 0;                     // ?
+    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3576,12 +3576,12 @@ std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                            // TODO
-    uint16_t ssr_provider_id = 0;                // ?
-    uint8_t igm_version = 0;                     // ?
-    uint8_t ssr_solution_id = 0;                 // ?
-    auto iod_ssr = has_data.header.iod_id % 15;  // ?? HAS IOD is 0-31
-    bool regional_indicator = false;             // ?
+    uint32_t tow = 0;                                // TODO
+    uint16_t ssr_provider_id = 0;                    // ?
+    uint8_t igm_version = 0;                         // ?
+    uint8_t ssr_solution_id = 0;                     // ?
+    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
+    bool regional_indicator = false;                 // ?
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -3627,7 +3627,7 @@ std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_
     std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
     std::vector<uint16_t> gnss_iod = has_data.get_gnss_iod(nsys_index);
     std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
-    std::vector<float> delta_orbit_along_track_m = has_data.get_delta_along_track_m(nsys_index);
+    std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
     std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
     std::vector<float> delta_clock_c0 = has_data.get_delta_clock_c0_m(nsys_index);
     std::vector<float> delta_clock_c1(num_sats_in_this_system);
@@ -3638,10 +3638,10 @@ std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_
             Rtcm::set_IDF011(static_cast<uint8_t>(prn[sat]));
             Rtcm::set_IDF012(static_cast<uint8_t>(gnss_iod[sat] % 255));  // 8 LSBs
             Rtcm::set_IDF013(delta_orbit_radial_m[sat]);
-            Rtcm::set_IDF014(delta_orbit_along_track_m[sat]);
+            Rtcm::set_IDF014(delta_orbit_in_track_m[sat]);
             Rtcm::set_IDF015(delta_orbit_cross_track_m[sat]);
-            Rtcm::set_IDF016(0.0);  //  dot_orbit_delta_track_m_s
-            Rtcm::set_IDF017(0.0);  // dot_orbit_delta_along_track_m_s
+            Rtcm::set_IDF016(0.0);  // dot_orbit_delta_track_m_s
+            Rtcm::set_IDF017(0.0);  // dot_orbit_delta_in_track_m_s
             Rtcm::set_IDF018(0.0);  // dot_orbit_delta_cross_track_m_s
             Rtcm::set_IDF019(delta_clock_c0[sat]);
             Rtcm::set_IDF020(delta_clock_c1[sat]);
@@ -3661,11 +3661,11 @@ std::string Rtcm::get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                            // TODO
-    uint16_t ssr_provider_id = 0;                // ?
-    uint8_t igm_version = 0;                     // ?
-    uint8_t ssr_solution_id = 0;                 // ?
-    auto iod_ssr = has_data.header.iod_id % 15;  // ?? HAS IOD is 0-31
+    uint32_t tow = 0;                                // TODO
+    uint16_t ssr_provider_id = 0;                    // ?
+    uint8_t igm_version = 0;                         // ?
+    uint8_t ssr_solution_id = 0;                     // ?
+    auto iod_ssr = has_data.header.iod_set_id % 15;  // ?? HAS IOD is 0-31
 
     uint8_t subtype_msg_number = 0;
     if (has_data.gnss_id_mask[nsys] == 0)  // GPS
@@ -6489,20 +6489,20 @@ void Rtcm::set_IDF013(float delta_orbit_radial_m)
 }
 
 
-void Rtcm::set_IDF014(float delta_orbit_along_track_m)
+void Rtcm::set_IDF014(float delta_orbit_in_track_m)
 {
     const float scale = 2500.0;
     const int32_t max_value = 524287;
-    auto delta_orbit_along_track = static_cast<int32_t>((delta_orbit_along_track_m * scale));
-    if (delta_orbit_along_track > max_value)
+    auto delta_orbit_in_track = static_cast<int32_t>((delta_orbit_in_track_m * scale));
+    if (delta_orbit_in_track > max_value)
         {
-            delta_orbit_along_track = max_value;
+            delta_orbit_in_track = max_value;
         }
-    if (delta_orbit_along_track < -max_value)
+    if (delta_orbit_in_track < -max_value)
         {
-            delta_orbit_along_track = -max_value;
+            delta_orbit_in_track = -max_value;
         }
-    IDF014 = std::bitset<20>(delta_orbit_along_track);
+    IDF014 = std::bitset<20>(delta_orbit_in_track);
 }
 
 
@@ -6540,20 +6540,20 @@ void Rtcm::set_IDF016(float dot_orbit_delta_track_m_s)
 }
 
 
-void Rtcm::set_IDF017(float dot_orbit_delta_along_track_m_s)
+void Rtcm::set_IDF017(float dot_orbit_delta_in_track_m_s)
 {
     const float scale = 250000.0;
     const int32_t max_value = 262143;
-    auto dot_orbit_delta_along_track = static_cast<int32_t>((dot_orbit_delta_along_track_m_s * scale));
-    if (dot_orbit_delta_along_track > max_value)
+    auto dot_orbit_delta_in_track = static_cast<int32_t>((dot_orbit_delta_in_track_m_s * scale));
+    if (dot_orbit_delta_in_track > max_value)
         {
-            dot_orbit_delta_along_track = max_value;
+            dot_orbit_delta_in_track = max_value;
         }
-    if (dot_orbit_delta_along_track < -max_value)
+    if (dot_orbit_delta_in_track < -max_value)
         {
-            dot_orbit_delta_along_track = -max_value;
+            dot_orbit_delta_in_track = -max_value;
         }
-    IDF017 = std::bitset<19>(dot_orbit_delta_along_track);
+    IDF017 = std::bitset<19>(dot_orbit_delta_in_track);
 }
 
 

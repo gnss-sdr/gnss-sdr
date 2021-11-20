@@ -38,6 +38,7 @@ public:
     Galileo_HAS_page() = default;
 
     std::string has_message_string;  //!< HAS message content
+    uint64_t time_stamp{};           //!< HAS page time stamp, in [s]
 
     // HAS page header
     uint8_t has_status{};       //!< HAS status

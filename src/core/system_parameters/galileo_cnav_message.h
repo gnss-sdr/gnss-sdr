@@ -69,6 +69,11 @@ public:
         return d_flag_CRC_test;
     }
 
+    inline void set_time_stamp(uint64_t time_stamp)
+    {
+        has_page.time_stamp = time_stamp;
+    }
+
 private:
     uint8_t read_has_page_header_parameter(const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS>& bits, const std::pair<int32_t, int32_t>& parameter) const;
     bool CRC_test(const std::bitset<GALILEO_CNAV_BITS_FOR_CRC>& bits, uint32_t checksum) const;

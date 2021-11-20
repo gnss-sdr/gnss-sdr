@@ -515,7 +515,7 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
 }
 
 
-void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t page_length)
+void galileo_telemetry_decoder_gs::decode_CNAV_word(uint64_t time_stamp, float *page_symbols, int32_t page_length)
 {
     // 1. De-interleave
     std::vector<float> page_symbols_soft_value(page_length);
@@ -549,7 +549,7 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(float *page_symbols, int32_t
                 }
         }
     d_cnav_nav.read_HAS_page(page_String);
-
+    d_cnav_nav.set_time_stamp(time_stamp);
     // 4. If we have a new HAS page, read it
     if (d_cnav_nav.have_new_HAS_page() == true)
         {
@@ -810,7 +810,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             case 3:  // CNAV
-                                decode_CNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
+                                decode_CNAV_word(current_symbol.Tracking_sample_counter / static_cast<uint64_t>(current_symbol.fs), d_page_part_symbols.data(), d_frame_length_symbols);
                                 break;
                             default:
                                 return -1;

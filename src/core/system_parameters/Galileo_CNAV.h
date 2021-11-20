@@ -74,6 +74,8 @@ constexpr size_t HAS_MSG_CODE_BIAS_LENGTH = 11;
 constexpr size_t HAS_MSG_PHASE_BIAS_LENGTH = 11;
 constexpr size_t HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH = 2;
 
+constexpr uint64_t MAX_SECONDS_REMEMBERING_MID = 100;
+
 constexpr int32_t HAS_MSG_NUMBER_MASK_IDS = 32;
 constexpr int32_t HAS_MSG_NUMBER_GNSS_IDS = 16;
 constexpr int32_t HAS_MSG_NUMBER_MESSAGE_IDS = 32;

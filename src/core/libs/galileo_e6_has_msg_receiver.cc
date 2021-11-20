@@ -28,6 +28,7 @@
 #include <algorithm>                // for std::find, std::count
 #include <cstddef>                  // for size_t
 #include <iterator>                 // for std::back_inserter
+#include <limits>                   // for std::numeric_limits
 #include <sstream>                  // for std::stringstream
 #include <stdexcept>                // for std::out_of_range
 #include <typeinfo>                 // for typeid
@@ -78,6 +79,10 @@ galileo_e6_has_msg_receiver::galileo_e6_has_msg_receiver() : gr::block("galileo_
     d_C_matrix = std::vector<std::vector<std::vector<uint8_t>>>(GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<std::vector<uint8_t>>(GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)));  // 32 x 255 x 53
     d_M_matrix = std::vector<std::vector<uint8_t>>(GALILEO_CNAV_INFORMATION_VECTOR_LENGTH, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE));                                                                                                 // HAS message matrix 32 x 53
     d_received_pids = std::vector<std::vector<uint8_t>>(HAS_MSG_NUMBER_MESSAGE_IDS, std::vector<uint8_t>());
+    d_received_timestamps = std::vector<std::vector<uint64_t>>(HAS_MSG_NUMBER_MESSAGE_IDS, std::vector<uint64_t>());
+    d_printed_timestamps = std::vector<uint64_t>(HAS_MSG_NUMBER_MESSAGE_IDS, std::numeric_limits<uint64_t>::max());
+    d_printed_mids = std::vector<bool>(HAS_MSG_NUMBER_MESSAGE_IDS);
+
 
     // Reserve memory to store masks
     d_nsat_in_mask_id = std::vector<int>(HAS_MSG_NUMBER_MASK_IDS);
@@ -105,6 +110,7 @@ void galileo_e6_has_msg_receiver::set_enable_navdata_monitor(bool enable)
 
 std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page(const pmt::pmt_t& msg)
 {
+    int64_t timestamp = std::numeric_limits<uint64_t>::max();
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -119,7 +125,11 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
                                << "PID: " << static_cast<float>(HAS_data_page->message_page_id);
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
-                    process_HAS_page(*HAS_data_page.get());
+                    timestamp = HAS_data_page->time_stamp;
+                    if (d_printed_mids[d_current_message_id] == false)
+                        {
+                            process_HAS_page(*HAS_data_page.get());
+                        }
                 }
             else
                 {
@@ -138,6 +148,8 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
             d_HAS_data.message_id = d_current_message_id;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
             d_new_message = false;
+            d_printed_mids[d_current_message_id] = true;
+            d_printed_timestamps[d_current_message_id] = timestamp;
             return has_data_ptr;
         }
     return nullptr;
@@ -147,7 +159,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
 void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& msg)
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_galileo_e6_has function called by the scheduler
-
+    int64_t timestamp = std::numeric_limits<uint64_t>::max();
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -162,7 +174,11 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
                                << "PID: " << static_cast<float>(HAS_data_page->message_page_id);
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
-                    process_HAS_page(*HAS_data_page.get());
+                    timestamp = HAS_data_page->time_stamp;
+                    if (d_printed_mids[d_current_message_id] == false)
+                        {
+                            process_HAS_page(*HAS_data_page.get());
+                        }
                 }
             else
                 {
@@ -179,6 +195,8 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
         {
             d_HAS_data.has_status = d_current_has_status;
             d_HAS_data.message_id = d_current_message_id;
+            d_printed_mids[d_current_message_id] = true;
+            d_printed_timestamps[d_current_message_id] = timestamp;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
             this->message_port_pub(pmt::mp("E6_HAS_to_PVT"), pmt::make_any(has_data_ptr));
             d_new_message = false;
@@ -196,12 +214,14 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
                 {
                     if (has_page.message_type == 1)  // contains satellite corrections
                         {
+                            delete_outdated_data(has_page);
                             if (has_page.message_id < HAS_MSG_NUMBER_MESSAGE_IDS)  // MID range is from 0 to 31
                                 {
                                     if (std::find(d_received_pids[has_page.message_id].begin(), d_received_pids[has_page.message_id].end(), has_page.message_page_id) == d_received_pids[has_page.message_id].end())
                                         {
                                             // New pid! Annotate it.
                                             d_received_pids[has_page.message_id].push_back(has_page.message_page_id);
+                                            d_received_timestamps[has_page.message_id].push_back(has_page.time_stamp);
                                             for (int k = 0; k < GALILEO_CNAV_OCTETS_IN_SUBPAGE; k++)
                                                 {
                                                     constexpr int bits_in_octet = 8;
@@ -232,6 +252,39 @@ void galileo_e6_has_msg_receiver::process_HAS_page(const Galileo_HAS_page& has_p
                             std::cout << TEXT_MAGENTA << "New Galileo HAS message ID " << std::to_string(has_page.message_id)
                                       << " received and successfully decoded" << TEXT_RESET << '\n';
                         }
+                }
+        }
+}
+
+
+void galileo_e6_has_msg_receiver::delete_outdated_data(const Galileo_HAS_page& has_page)
+{
+    const uint64_t current_time_stamp = has_page.time_stamp;
+    for (size_t i = 0; i < d_received_pids.size(); i++)
+        {
+            uint64_t oldest_time_stamp = std::numeric_limits<uint64_t>::max();
+            for (size_t j = 0; j < d_received_pids[i].size(); j++)
+                {
+                    uint64_t timestamp = d_received_timestamps[i][j];
+                    if (timestamp > 0 && timestamp < oldest_time_stamp)
+                        {
+                            oldest_time_stamp = timestamp;
+                        }
+                }
+            if (current_time_stamp > oldest_time_stamp && current_time_stamp - oldest_time_stamp > MAX_SECONDS_REMEMBERING_MID)
+                {
+                    DLOG(INFO) << "Deleting data for message ID " << i << " because it is too old: " << oldest_time_stamp << " vs " << current_time_stamp;
+                    d_received_pids[i].clear();
+                    d_received_timestamps[i].clear();
+                    d_C_matrix[i] = {GALILEO_CNAV_MAX_NUMBER_SYMBOLS_ENCODED_BLOCK, std::vector<uint8_t>(GALILEO_CNAV_OCTETS_IN_SUBPAGE)};
+                }
+        }
+    for (size_t mid = 0; mid < HAS_MSG_NUMBER_MESSAGE_IDS; mid++)
+        {
+            if (d_printed_mids[mid] == true && current_time_stamp > d_printed_timestamps[mid] && current_time_stamp - d_printed_timestamps[mid] > MAX_SECONDS_REMEMBERING_MID)
+                {
+                    d_printed_timestamps[mid] = std::numeric_limits<uint64_t>::max();
+                    d_printed_mids[mid] = false;
                 }
         }
 }

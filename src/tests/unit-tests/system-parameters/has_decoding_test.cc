@@ -31,7 +31,12 @@
 #include <string>
 #include <vector>
 
+
+// Usage:
+// ./run_tests --gtest_filter=HAS_Test.Decoder
+// ./run_tests --gtest_filter=HAS_Test.Decoder --has_data_test_file=../data/HAS_Messages_sample/encoded/Sample_HAS_Pages_Encoded_20210713_08.txt --start_page_test_file=70
 DEFINE_string(has_data_test_file, std::string(""), "File containing encoded HAS pages (format: [time sat_id HAS_page_in_hex] in each line)");
+DEFINE_int32(start_page_test_file, 0, "Starting page in case of reading HAS pages from a file");
 
 #if PMT_USES_BOOST_ANY
 namespace wht = boost;
@@ -53,7 +58,7 @@ private:
     HasDecoderTester();
 
 public:
-    std::shared_ptr<Galileo_HAS_page> generate_has_page(const std::string& page);
+    std::shared_ptr<Galileo_HAS_page> generate_has_page(const std::string& page, int rx_time);
     ~HasDecoderTester();  //!< Default destructor
 };
 
@@ -64,7 +69,7 @@ HasDecoderTester_sptr HasDecoderTester_make()
 }
 
 
-std::shared_ptr<Galileo_HAS_page> HasDecoderTester::generate_has_page(const std::string& page)
+std::shared_ptr<Galileo_HAS_page> HasDecoderTester::generate_has_page(const std::string& page, int rx_time)
 {
     auto gh = std::make_shared<Galileo_HAS_page>();
 
@@ -84,6 +89,7 @@ std::shared_ptr<Galileo_HAS_page> HasDecoderTester::generate_has_page(const std:
         {
             gh->has_message_string = bits.substr(24, 424);
         }
+    gh->time_stamp = rx_time;
 
     std::bitset<2> b_has_status(bits.substr(0, 2));
     gh->has_status = b_has_status.to_ulong();
@@ -165,6 +171,7 @@ public:
                     "07AC8553C81674CA989EE3B762BFE9F7113F9458A5FD2749D0B685A4F49012532088C872254C881194C7641762A7B9495A02BCD6686CE17F",
                     "07AC987E7D3A9854AA56BCCD7170CB6939966DA4F2199A0C6C5F9CAB5B24539786CCB299DA69DE4EEE9698EEDD2D7BD409565C27674B4268",
                     "07ACAB286D5CA9F01FEC5F5105132F0A41EFCFB5E970C06395B3FE72C3D3B476BADF27DC9CA50ED9EC997AB8BED648DF1424EE56FFAD35B1"};
+                rx_time = {690883223, 690883223, 690883223, 690883223, 690883223, 690883224, 690883224, 690883224, 690883224, 690883224, 690883224, 690883224};
                 known_test_data = true;
                 return true;
             }
@@ -206,21 +213,30 @@ TEST(HAS_Test, Decoder)
 {
     Read_Encoded_Pages read_pages{};
     EXPECT_TRUE(read_pages.read_data(FLAGS_has_data_test_file));
-    galileo_e6_has_msg_receiver_sptr gal_e6_has_rx_;
-    gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
-    HasDecoderTester_sptr has_tester;
-    has_tester = HasDecoderTester_make();
-    std::unique_ptr<Has_Simple_Printer> has_simple_printer;
+    auto gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+    auto has_tester = HasDecoderTester_make();
+    std::unique_ptr<Has_Simple_Printer> has_simple_printer = nullptr;
 
     auto pages = read_pages.get_pages();
+    auto rx_time = read_pages.get_time();
     bool known_data = read_pages.is_known_data();
+    int init = 0;
     if (!known_data)
         {
             has_simple_printer = std::make_unique<Has_Simple_Printer>();
+            if (static_cast<size_t>(FLAGS_start_page_test_file) < read_pages.get_number_pages())
+                {
+                    init = FLAGS_start_page_test_file;
+                }
+            else
+                {
+                    std::cerr << "The flag --start_page_test_file is set beyond the total number of pages in the file (" << read_pages.get_number_pages() << "), ignoring it.\n";
+                }
         }
-    for (size_t p = 0; p < read_pages.get_number_pages(); p++)
+
+    for (size_t p = init; p < read_pages.get_number_pages(); p++)
         {
-            auto has_page = has_tester->generate_has_page(pages[p]);
+            auto has_page = has_tester->generate_has_page(pages[p], rx_time[p]);
             if (!has_page->has_message_string.empty())  // if not dummy
                 {
                     auto has_message = gal_e6_has_rx_->process_test_page(pmt::make_any(has_page));

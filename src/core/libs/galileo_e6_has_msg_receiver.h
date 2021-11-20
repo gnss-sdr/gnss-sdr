@@ -67,6 +67,7 @@ private:
     void process_HAS_page(const Galileo_HAS_page& has_page);
     void read_MT1_header(const std::string& message_header);
     void read_MT1_body(const std::string& message_body);
+    void delete_outdated_data(const Galileo_HAS_page& has_page);
 
     int decode_message_type1(uint8_t message_id, uint8_t message_size);
 
@@ -90,9 +91,12 @@ private:
     Nav_Message_Packet d_nav_msg_packet;
 
     // Store decoding matrices and received PIDs
+    std::vector<std::vector<uint64_t>> d_received_timestamps;
     std::vector<std::vector<std::vector<uint8_t>>> d_C_matrix;
     std::vector<std::vector<uint8_t>> d_M_matrix;
     std::vector<std::vector<uint8_t>> d_received_pids;
+    std::vector<uint64_t> d_printed_timestamps;
+    std::vector<bool> d_printed_mids;
 
     // Store masks
     std::vector<int> d_nsat_in_mask_id;

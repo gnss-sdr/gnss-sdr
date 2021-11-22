@@ -38,8 +38,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   for easier detection of unused data members (see
   https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize).
 - Non-functional change: Fixed formatting defects detected by clang-format 13.0.
-- Updated GSL implementation to v0.39.0. See
-  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.39.0
+- Updated GSL implementation to v0.40.0. See
+  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.40.0
 - CI - `cpplint` job on GitHub: Added the `build/include_what_you_use` filter
   for early detection of missing includes.
 - CI - `clang-tidy` job on GitHub: More robust detection of LLVM paths installed

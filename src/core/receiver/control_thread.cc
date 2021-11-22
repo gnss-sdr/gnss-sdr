@@ -421,7 +421,7 @@ int ControlThread::run()
 #ifndef ANDROID
             pthread_cancel(id);
 #else
-            //todo: find alternative
+            // todo: find alternative
 #endif
         }
 
@@ -430,12 +430,12 @@ int ControlThread::run()
         {
             pthread_t id2 = cmd_interface_thread_.native_handle();
             cmd_interface_thread_.detach();
-#ifndef ANDROID 
+#ifndef ANDROID
             pthread_cancel(id2);
 #else
-            //todo: find alternative
-#endif 
-       }
+            // todo: find alternative
+#endif
+        }
 
     LOG(INFO) << "Flowgraph stopped";
 

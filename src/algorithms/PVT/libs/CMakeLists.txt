@@ -78,7 +78,7 @@ endif()
 
 if(CMAKE_ANDROID_ARCH_ABI)
         target_compile_definitions(pvt_libs PUBLIC -DANDROID=1)
-endif(CMAKE_ANDROID_ARCH_ABI)
+endif()
 
 target_link_libraries(pvt_libs
     PUBLIC

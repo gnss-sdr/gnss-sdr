@@ -64,7 +64,7 @@ endif()
 
 if(CMAKE_ANDROID_ARCH_ABI)
         target_compile_definitions(core_receiver PUBLIC -DANDROID=1)
-endif(CMAKE_ANDROID_ARCH_ABI)
+endif()
 
 if(ENABLE_FPGA)
     target_compile_definitions(core_receiver PUBLIC -DENABLE_FPGA=1)

@@ -418,7 +418,11 @@ int ControlThread::run()
         {
             pthread_t id = keyboard_thread_.native_handle();
             keyboard_thread_.detach();
+#ifndef ANDROID
             pthread_cancel(id);
+#else
+            //todo: find alternative
+#endif
         }
 
     // Terminate telecommand thread
@@ -426,8 +430,12 @@ int ControlThread::run()
         {
             pthread_t id2 = cmd_interface_thread_.native_handle();
             cmd_interface_thread_.detach();
+#ifndef ANDROID 
             pthread_cancel(id2);
-        }
+#else
+            //todo: find alternative
+#endif 
+       }
 
     LOG(INFO) << "Flowgraph stopped";
 

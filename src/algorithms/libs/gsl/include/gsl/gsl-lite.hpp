@@ -14,6 +14,7 @@
 #define GSL_GSL_LITE_HPP_INCLUDED
 
 #include <cstddef>    // for size_t, ptrdiff_t, nullptr_t
+#include <cstdlib>    // for abort()
 #include <exception>  // for exception, terminate(), uncaught_exceptions()
 #include <ios>        // for ios_base, streamsize
 #include <iosfwd>     // for basic_ostream<>
@@ -24,7 +25,7 @@
 #include <utility>  // for move(), forward<>(), swap()
 
 #define gsl_lite_MAJOR 0
-#define gsl_lite_MINOR 39
+#define gsl_lite_MINOR 40
 #define gsl_lite_PATCH 0
 
 #define gsl_lite_VERSION gsl_STRINGIFY(gsl_lite_MAJOR) "." gsl_STRINGIFY(gsl_lite_MINOR) "." gsl_STRINGIFY(gsl_lite_PATCH)
@@ -324,6 +325,21 @@
 #pragma message("invalid configuration value gsl_CONFIG_CONTRACT_CHECKING_OFF=" gsl_STRINGIFY(gsl_CONFIG_CONTRACT_CHECKING_OFF) "; macro must be defined without value")
 #endif
 #endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT) "; macro must be defined without value")
+#endif
+#endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON) "; macro must be defined without value")
+#endif
+#endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF) "; macro must be defined without value")
+#endif
+#endif
 #if defined(gsl_CONFIG_CONTRACT_VIOLATION_THROWS)
 #if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_CONTRACT_VIOLATION_THROWS)
 #pragma message("invalid configuration value gsl_CONFIG_CONTRACT_VIOLATION_THROWS=" gsl_STRINGIFY(gsl_CONFIG_CONTRACT_VIOLATION_THROWS) "; macro must be defined without value")
@@ -349,6 +365,21 @@
 #pragma message("invalid configuration value gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER=" gsl_STRINGIFY(gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER) "; macro must be defined without value")
 #endif
 #endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS) "; macro must be defined without value")
+#endif
+#endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS) "; macro must be defined without value")
+#endif
+#endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER) "; macro must be defined without value")
+#endif
+#endif
 #if defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME)
 #if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME)
 #pragma message("invalid configuration value gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME=" gsl_STRINGIFY(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME) "; macro must be defined without value")
@@ -359,28 +390,82 @@
 #pragma message("invalid configuration value gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE=" gsl_STRINGIFY(gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE) "; macro must be defined without value")
 #endif
 #endif
+#if defined(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME) "; macro must be defined without value")
+#endif
+#endif
+#if defined(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE)
+#if !gsl_CHECK_CFG_NO_VALUE_(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE)
+#pragma message("invalid configuration value gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE=" gsl_STRINGIFY(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE) "; macro must be defined without value")
+#endif
+#endif
+
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_THROWS)
+#error cannot use gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_THROWS because exceptions are not supported in device code; use gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS or gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS
+#endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TERMINATES)
+#error gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TERMINATES is not supported; use gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS or gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS
+#endif
 
 #if 1 < defined(gsl_CONFIG_CONTRACT_CHECKING_AUDIT) + defined(gsl_CONFIG_CONTRACT_CHECKING_ON) + defined(gsl_CONFIG_CONTRACT_CHECKING_OFF)
 #error only one of gsl_CONFIG_CONTRACT_CHECKING_AUDIT, gsl_CONFIG_CONTRACT_CHECKING_ON, and gsl_CONFIG_CONTRACT_CHECKING_OFF may be defined
 #endif
+#if 1 < defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT) + defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON) + defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF)
+#error only one of gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT, gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON, and gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF may be defined
+#endif
 #if 1 < defined(gsl_CONFIG_CONTRACT_VIOLATION_THROWS) + defined(gsl_CONFIG_CONTRACT_VIOLATION_TERMINATES) + defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS) + defined(gsl_CONFIG_CONTRACT_VIOLATION_TRAPS) + defined(gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER)
 #error only one of gsl_CONFIG_CONTRACT_VIOLATION_THROWS, gsl_CONFIG_CONTRACT_VIOLATION_TERMINATES, gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS, gsl_CONFIG_CONTRACT_VIOLATION_TRAPS, and gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER may be defined
 #endif
+#if 1 < defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS) + defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS) + defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER)
+#error only one of gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS, gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS, and gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER may be defined
+#endif
 #if 1 < defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME) + defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE)
 #error only one of gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME and gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE may be defined
+#endif
+#if 1 < defined(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME) + defined(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE)
+#error only one of gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME and gsl_CONFIG_UNENFORCED_DEVICE_CONTRACTS_ELIDE may be defined
 #endif
 
 #if 0 == defined(gsl_CONFIG_CONTRACT_CHECKING_AUDIT) + defined(gsl_CONFIG_CONTRACT_CHECKING_ON) + defined(gsl_CONFIG_CONTRACT_CHECKING_OFF)
 // select default
 #define gsl_CONFIG_CONTRACT_CHECKING_ON
 #endif
+#if 0 == defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT) + defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON) + defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF)
+// select default
+#if defined(gsl_CONFIG_CONTRACT_CHECKING_AUDIT)
+#define gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT
+#elif defined(gsl_CONFIG_CONTRACT_CHECKING_OFF)
+#define gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF
+#else
+#define gsl_CONFIG_DEVICE_CONTRACT_CHECKING_ON
+#endif
+#endif
 #if 0 == defined(gsl_CONFIG_CONTRACT_VIOLATION_THROWS) + defined(gsl_CONFIG_CONTRACT_VIOLATION_TERMINATES) + defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS) + defined(gsl_CONFIG_CONTRACT_VIOLATION_TRAPS) + defined(gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER)
 // select default
 #define gsl_CONFIG_CONTRACT_VIOLATION_TERMINATES
 #endif
+#if 0 == defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS) + defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS) + defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER)
+// select default
+#if defined(gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER)
+#define gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER
+#elif defined(gsl_CONFIG_CONTRACT_VIOLATION_TRAPS)
+#define gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS
+#else
+#define gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS
+#endif
+#endif
 #if 0 == defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME) + defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE)
 // select default
 #define gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE
+#endif
+#if 0 == defined(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME) + defined(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE)
+// select default
+#if defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME)
+#define gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME
+#else
+#define gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE
+#endif
 #endif
 
 // C++ language version detection (C++20 is speculative):
@@ -526,6 +611,15 @@
 #define gsl_HAVE_WCHAR 1
 #endif
 #define gsl_HAVE_WCHAR_() gsl_HAVE_WCHAR
+
+// Compiling device code:
+
+#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+#define gsl_DEVICE_CODE 1
+#else
+#define gsl_DEVICE_CODE 0
+#endif
+
 
 // Presence of language & library features:
 
@@ -1036,7 +1130,7 @@
 #include <initializer_list>
 #endif
 
-#if defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS)
+#if defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS) || gsl_DEVICE_CODE
 #include <cassert>
 #endif
 
@@ -1762,16 +1856,30 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #endif
 #define gsl_NO_OP_() (static_cast<void>(0))
 
-#if defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME)
-#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+#if gsl_COMPILER_NVHPC_VERSION
+// Suppress "controlling expression is constant" warning when using `gsl_Expects()`, `gsl_Ensures()`, `gsl_Assert()`, etc.
+#define gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ _Pragma("diag_suppress 236")
+#define gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ _Pragma("diag_default 236")
+#else
+#define gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
+#define gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
+#endif
+
+#if gsl_DEVICE_CODE
+#if defined(gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME)
 #if gsl_COMPILER_NVCC_VERSION >= 113
 #define gsl_ASSUME_(x) ((x) ? static_cast<void>(0) : __builtin_unreachable())
 #define gsl_ASSUME_UNREACHABLE_() __builtin_unreachable()
-#else
-#define gsl_ASSUME_(x) gsl_ELIDE_(x)           /* there is no assume intrinsic in CUDA device code */
-#define gsl_ASSUME_UNREACHABLE_() gsl_NO_OP_() /* there is no assume intrinsic in CUDA device code */
+#else  // unknown device compiler
+#error gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ASSUME: gsl-lite does not know how to generate UB optimization hints in device code for this compiler; use gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE instead
 #endif
-#elif gsl_COMPILER_MSVC_VERSION >= 140
+#define gsl_CONTRACT_UNENFORCED_(x) gsl_ASSUME_(x)
+#else  // defined( gsl_CONFIG_DEVICE_UNENFORCED_CONTRACTS_ELIDE ) [default]
+#define gsl_CONTRACT_UNENFORCED_(x) gsl_ELIDE_(x)
+#endif
+#else  // host code
+#if defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME)
+#if gsl_COMPILER_MSVC_VERSION >= 140
 #define gsl_ASSUME_(x) __assume(x)
 #define gsl_ASSUME_UNREACHABLE_() __assume(0)
 #elif gsl_COMPILER_GNUC_VERSION
@@ -1787,19 +1895,42 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #else
 #error gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME: gsl-lite does not know how to generate UB optimization hints for this compiler; use gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE instead
 #endif
-#endif  // defined( gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME )
-
-#if defined(gsl_CONFIG_UNENFORCED_CONTRACTS_ASSUME)
 #define gsl_CONTRACT_UNENFORCED_(x) gsl_ASSUME_(x)
 #else  // defined( gsl_CONFIG_UNENFORCED_CONTRACTS_ELIDE ) [default]
 #define gsl_CONTRACT_UNENFORCED_(x) gsl_ELIDE_(x)
 #endif
+#endif  // gsl_DEVICE_CODE
 
-#if defined(gsl_CONFIG_CONTRACT_VIOLATION_TRAPS)
-#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
+#if gsl_DEVICE_CODE
+#if gsl_COMPILER_NVCC_VERSION
 #define gsl_TRAP_() __trap()
-#elif gsl_COMPILER_MSVC_VERSION >= 110  // __fastfail() supported by VS 2012 and later
-#define gsl_TRAP_() __fastfail(0)       /* legacy failure code for buffer-overrun errors, cf. winnt.h, "Fast fail failure codes" */
+#elif defined(__has_builtin)
+#if __has_builtin(__builtin_trap)
+#define gsl_TRAP_() __builtin_trap()
+#else
+#error gsl-lite does not know how to generate a trap instruction for this device compiler
+#endif
+#else
+#error gsl-lite does not know how to generate a trap instruction for this device compiler
+#endif
+#if defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_TRAPS)
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_(x) ? static_cast<void>(0) : gsl_TRAP_() gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
+#define gsl_FAILFAST_() (gsl_TRAP_())
+#elif defined(gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_CALLS_HANDLER)
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_(x) ? static_cast<void>(0) : ::gsl::fail_fast_assert_handler(#x, str, __FILE__, __LINE__) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
+#define gsl_FAILFAST_() (::gsl::fail_fast_assert_handler("", "GSL: failure", __FILE__, __LINE__), gsl_TRAP_()) /* do not let the custom assertion handler continue execution */
+#else                                                                                                          // defined( gsl_CONFIG_DEVICE_CONTRACT_VIOLATION_ASSERTS ) [default]
+#if !defined(NDEBUG)
+#define gsl_CONTRACT_CHECK_(str, x) assert(str && (x))
+#else
+#define gsl_CONTRACT_CHECK_(str, x) ((x) ? static_cast<void>(0) : gsl_TRAP_())
+#endif
+#define gsl_FAILFAST_() (gsl_TRAP_())
+#endif
+#else  // host code
+#if defined(gsl_CONFIG_CONTRACT_VIOLATION_TRAPS)
+#if gsl_COMPILER_MSVC_VERSION >= 110  // __fastfail() supported by VS 2012 and later
+#define gsl_TRAP_() __fastfail(0)     /* legacy failure code for buffer-overrun errors, cf. winnt.h, "Fast fail failure codes" */
 #elif gsl_COMPILER_GNUC_VERSION
 #define gsl_TRAP_() __builtin_trap()
 #elif defined(__has_builtin)
@@ -1811,89 +1942,105 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
 #else
 #error gsl_CONFIG_CONTRACT_VIOLATION_TRAPS: gsl-lite does not know how to generate a trap instruction for this compiler; use gsl_CONFIG_CONTRACT_VIOLATION_TERMINATES instead
 #endif
-#endif  // defined( gsl_CONFIG_CONTRACT_VIOLATION_TRAPS )
-
-#if gsl_COMPILER_NVHPC_VERSION
-// Suppress "controlling expression is constant" warning when using gsl_Expects,
-// gsl_Ensures, gsl_Assert, gsl_FailFast and so on.
-#define gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ _Pragma("diag_suppress 236")
-#define gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ _Pragma("diag_default 236")
-#else
-#define gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
-#define gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
-#endif
-#if defined(gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER)
-#define gsl_CONTRACT_CHECK_(str, x) ((x) ? static_cast<void>(0) : ::gsl::fail_fast_assert_handler(#x, str, __FILE__, __LINE__))
-#if defined(__CUDACC__) && defined(__CUDA_ARCH__)
-#define gsl_FAILFAST_() (::gsl::fail_fast_assert_handler("", "GSL: failure", __FILE__, __LINE__), gsl_TRAP_()) /* do not let the custom assertion handler continue execution */
-#else
-#define gsl_FAILFAST_() (::gsl::fail_fast_assert_handler("", "GSL: failure", __FILE__, __LINE__), ::gsl::detail::fail_fast_terminate()) /* do not let the custom assertion handler continue execution */
-#endif
-#elif defined(__CUDACC__) && defined(__CUDA_ARCH__)
-#if defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS) || !defined(NDEBUG)
-#define gsl_CONTRACT_CHECK_(str, x) assert(str && (x))
-#else
-#define gsl_CONTRACT_CHECK_(str, x) ((x) ? static_cast<void>(0) : __trap())
-#endif
-#define gsl_FAILFAST_() (__trap())
-#elif defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS)
-#define gsl_CONTRACT_CHECK_(str, x) gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ assert(str && (x)) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
-#if !defined(NDEBUG)
-#define gsl_FAILFAST_() (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ assert(!"GSL: failure") gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_, ::gsl::detail::fail_fast_terminate())
-#else
-#define gsl_FAILFAST_() (::gsl::detail::fail_fast_terminate())
-#endif
-#elif defined(gsl_CONFIG_CONTRACT_VIOLATION_TRAPS)
-#define gsl_CONTRACT_CHECK_(str, x) ((x) ? static_cast<void>(0) : gsl_TRAP_())
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_(x) ? static_cast<void>(0) : gsl_TRAP_() gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
 #if gsl_COMPILER_MSVC_VERSION
 #define gsl_FAILFAST_() (gsl_TRAP_(), ::gsl::detail::fail_fast_terminate())
 #else
 #define gsl_FAILFAST_() (gsl_TRAP_())
 #endif
+#elif defined(gsl_CONFIG_CONTRACT_VIOLATION_CALLS_HANDLER)
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_(x) ? static_cast<void>(0) : ::gsl::fail_fast_assert_handler(#x, str, __FILE__, __LINE__) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
+#define gsl_FAILFAST_() (::gsl::fail_fast_assert_handler("", "GSL: failure", __FILE__, __LINE__), ::gsl::detail::fail_fast_terminate()) /* do not let the custom assertion handler continue execution */
+#elif defined(gsl_CONFIG_CONTRACT_VIOLATION_ASSERTS)
+#if !defined(NDEBUG)
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ assert(str && (x)) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
+#define gsl_FAILFAST_() (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_ assert(!"GSL: failure") gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_, ::gsl::detail::fail_fast_abort())
+#else
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_(x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_abort() gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
+#define gsl_FAILFAST_() (::gsl::detail::fail_fast_abort())
+#endif
 #elif defined(gsl_CONFIG_CONTRACT_VIOLATION_THROWS)
-#define gsl_CONTRACT_CHECK_(str, x) gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_throw(str ": '" #x "' at " __FILE__ ":" gsl_STRINGIFY(__LINE__))) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_throw(str ": '" #x "' at " __FILE__ ":" gsl_STRINGIFY(__LINE__))) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
 #define gsl_FAILFAST_() (::gsl::detail::fail_fast_throw("GSL: failure at " __FILE__ ":" gsl_STRINGIFY(__LINE__)))
 #else  // defined( gsl_CONFIG_CONTRACT_VIOLATION_TERMINATES ) [default]
-#define gsl_CONTRACT_CHECK_(str, x) gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_terminate()) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_
+#define gsl_CONTRACT_CHECK_(str, x) (gsl_SUPPRESS_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_((x) ? static_cast<void>(0) : ::gsl::detail::fail_fast_terminate()) gsl_RESTORE_NVHPC_CONTROLLING_EXPRESSION_IS_CONSTANT_)
 #define gsl_FAILFAST_() (::gsl::detail::fail_fast_terminate())
 #endif
+#endif  // gsl_DEVICE_CODE
 
-#if defined(gsl_CONFIG_CONTRACT_CHECKING_OFF) || defined(gsl_CONFIG_CONTRACT_CHECKING_EXPECTS_OFF)
-#define gsl_Expects(x) gsl_CONTRACT_UNENFORCED_(x)
-#else
+#if (!gsl_DEVICE_CODE && defined(gsl_CONFIG_CONTRACT_CHECKING_OFF)) || (gsl_DEVICE_CODE && defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_OFF))
+#define gsl_CHECK_CONTRACTS_ 0
+#define gsl_CHECK_DEBUG_CONTRACTS_ 0
+#define gsl_CHECK_AUDIT_CONTRACTS_ 0
+#elif (!gsl_DEVICE_CODE && defined(gsl_CONFIG_CONTRACT_CHECKING_AUDIT)) || (gsl_DEVICE_CODE && defined(gsl_CONFIG_DEVICE_CONTRACT_CHECKING_AUDIT))
+#define gsl_CHECK_CONTRACTS_ 1
+#define gsl_CHECK_DEBUG_CONTRACTS_ 1
+#define gsl_CHECK_AUDIT_CONTRACTS_ 1
+#else  // gsl_CONFIG_[DEVICE_]CONTRACT_CHECKING_ON [default]
+#define gsl_CHECK_CONTRACTS_ 1
+#if !defined(NDEBUG)
+#define gsl_CHECK_DEBUG_CONTRACTS_ 1
+#else  // defined( NDEBUG )
+#define gsl_CHECK_DEBUG_CONTRACTS_ 0
+#endif
+#define gsl_CHECK_AUDIT_CONTRACTS_ 0
+#endif
+
+#if gsl_CHECK_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_EXPECTS_OFF)
 #define gsl_Expects(x) gsl_CONTRACT_CHECK_("GSL: Precondition failure", x)
+#else
+#define gsl_Expects(x) gsl_CONTRACT_UNENFORCED_(x)
 #endif
 #define Expects(x) gsl_Expects(x)
-#if !defined(gsl_CONFIG_CONTRACT_CHECKING_AUDIT) || defined(gsl_CONFIG_CONTRACT_CHECKING_EXPECTS_OFF)
-#define gsl_ExpectsAudit(x) gsl_ELIDE_(x)
+#if gsl_CHECK_DEBUG_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_EXPECTS_OFF)
+#define gsl_ExpectsDebug(x) gsl_CONTRACT_CHECK_("GSL: Precondition failure (debug)", x)
 #else
+#define gsl_ExpectsDebug(x) gsl_ELIDE_(x)
+#endif
+#if gsl_CHECK_AUDIT_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_EXPECTS_OFF)
 #define gsl_ExpectsAudit(x) gsl_CONTRACT_CHECK_("GSL: Precondition failure (audit)", x)
+#else
+#define gsl_ExpectsAudit(x) gsl_ELIDE_(x)
 #endif
 
-#if defined(gsl_CONFIG_CONTRACT_CHECKING_OFF) || defined(gsl_CONFIG_CONTRACT_CHECKING_ENSURES_OFF)
-#define gsl_Ensures(x) gsl_CONTRACT_UNENFORCED_(x)
-#else
+#if gsl_CHECK_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_ENSURES_OFF)
 #define gsl_Ensures(x) gsl_CONTRACT_CHECK_("GSL: Postcondition failure", x)
+#else
+#define gsl_Ensures(x) gsl_CONTRACT_UNENFORCED_(x)
 #endif
 #define Ensures(x) gsl_Ensures(x)
-#if !defined(gsl_CONFIG_CONTRACT_CHECKING_AUDIT) || defined(gsl_CONFIG_CONTRACT_CHECKING_ENSURES_OFF)
-#define gsl_EnsuresAudit(x) gsl_ELIDE_(x)
+#if gsl_CHECK_DEBUG_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_ENSURES_OFF)
+#define gsl_EnsuresDebug(x) gsl_CONTRACT_CHECK_("GSL: Postcondition failure (debug)", x)
 #else
+#define gsl_EnsuresDebug(x) gsl_ELIDE_(x)
+#endif
+#if gsl_CHECK_AUDIT_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_ENSURES_OFF)
 #define gsl_EnsuresAudit(x) gsl_CONTRACT_CHECK_("GSL: Postcondition failure (audit)", x)
+#else
+#define gsl_EnsuresAudit(x) gsl_ELIDE_(x)
 #endif
 
-#if defined(gsl_CONFIG_CONTRACT_CHECKING_OFF) || defined(gsl_CONFIG_CONTRACT_CHECKING_ASSERT_OFF)
-#define gsl_Assert(x) gsl_CONTRACT_UNENFORCED_(x)
-#else
+#if gsl_CHECK_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_ASSERT_OFF)
 #define gsl_Assert(x) gsl_CONTRACT_CHECK_("GSL: Assertion failure", x)
-#endif
-#if !defined(gsl_CONFIG_CONTRACT_CHECKING_AUDIT) || defined(gsl_CONFIG_CONTRACT_CHECKING_ASSERT_OFF)
-#define gsl_AssertAudit(x) gsl_ELIDE_(x)
 #else
+#define gsl_Assert(x) gsl_CONTRACT_UNENFORCED_(x)
+#endif
+#if gsl_CHECK_DEBUG_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_ASSERT_OFF)
+#define gsl_AssertDebug(x) gsl_CONTRACT_CHECK_("GSL: Assertion failure (debug)", x)
+#else
+#define gsl_AssertDebug(x) gsl_ELIDE_(x)
+#endif
+#if gsl_CHECK_AUDIT_CONTRACTS_ && !defined(gsl_CONFIG_CONTRACT_CHECKING_ASSERT_OFF)
 #define gsl_AssertAudit(x) gsl_CONTRACT_CHECK_("GSL: Assertion failure (audit)", x)
+#else
+#define gsl_AssertAudit(x) gsl_ELIDE_(x)
 #endif
 
 #define gsl_FailFast() gsl_FAILFAST_()
+
+#undef gsl_CHECK_CONTRACTS_
+#undef gsl_CHECK_DEBUG_CONTRACTS_
+#undef gsl_CHECK_AUDIT_CONTRACTS_
 
 
     struct fail_fast : public std::logic_error
@@ -1913,6 +2060,10 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     gsl_NORETURN inline void fail_fast_terminate() gsl_noexcept
     {
         std::terminate();
+    }
+    gsl_NORETURN inline void fail_fast_abort() gsl_noexcept
+    {
+        std::abort();
     }
 
     }  // namespace detail
@@ -3197,16 +3348,31 @@ gsl_DISABLE_MSVC_WARNINGS(26432 26410 26415 26418 26472 26439 26440 26455 26473 
     }
 #endif  // gsl_HAVE( MOVE_FORWARD )
     template <class T>
-    gsl_NODISCARD gsl_api gsl_constexpr14 T const &as_nullable(not_null<T> const &p)
+    gsl_NODISCARD gsl_api gsl_constexpr14 T const &
+    as_nullable(not_null<T> const &p)
     {
         T const &result = detail::not_null_accessor<T>::get(p);
         gsl_Expects(result != gsl_nullptr);
         return result;
     }
     template <class T>
-    gsl_NODISCARD gsl_api gsl_constexpr T *as_nullable(not_null<T *> p) gsl_noexcept
+    gsl_NODISCARD gsl_api gsl_constexpr T *
+    as_nullable(not_null<T *> p) gsl_noexcept
     {
         return detail::not_null_accessor<T *>::get(p);
+    }
+
+    template <class T>
+    gsl_NODISCARD gsl_api gsl_constexpr bool
+    is_valid(not_null<T> const &p)
+    {
+        return detail::not_null_accessor<T>::get(p) != gsl_nullptr;
+    }
+    template <class T>
+    gsl_NODISCARD gsl_api gsl_constexpr bool
+    is_valid(not_null<T *> const &)
+    {
+        return true;
     }
 
     }  // namespace no_adl

@@ -46,8 +46,14 @@ target_link_libraries(input_filter_gr_blocks
         algorithms_libs
     PRIVATE
         Volk::volk
-        Log4cpp::log4cpp
 )
+
+if(LOG4CPP_FOUND)
+    target_link_libraries(input_filter_gr_blocks
+        PRIVATE
+            Log4cpp::log4cpp
+    )
+endif()
 
 target_include_directories(input_filter_gr_blocks
     PUBLIC

@@ -392,6 +392,23 @@ if(GNURADIO_PMT_INCLUDE_DIRS)
     endif()
 endif()
 
+# Check if GNU Radio uses log4cpp or spdlog
+if(GNURADIO_RUNTIME_INCLUDE_DIRS)
+    if(EXISTS "${GNURADIO_RUNTIME_INCLUDE_DIRS}/gnuradio/logger.h")
+        file(STRINGS ${GNURADIO_RUNTIME_INCLUDE_DIRS}/gnuradio/logger.h _logger_content)
+        set(_uses_log4cpp FALSE)
+        foreach(_loop_var IN LISTS _logger_content)
+            string(STRIP "${_loop_var}" _file_line)
+            if("#include <log4cpp/Category.hh>" STREQUAL "${_file_line}")
+                set(_uses_log4cpp TRUE)
+            endif()
+        endforeach()
+        if(${_uses_log4cpp})
+            set(GNURADIO_USES_LOG4CPP TRUE)
+        endif()
+    endif()
+endif()
+
 set_package_properties(GNURADIO PROPERTIES
     URL "https://www.gnuradio.org/"
 )

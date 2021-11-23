@@ -21,12 +21,12 @@
 #include "INIReader.h"
 #include "command_event.h"
 #include "gnss_sdr_make_unique.h"
-#include <boost/any.hpp>
 #include <gnuradio/io_signature.h>
 #include <algorithm>
 #include <array>
 #include <bitset>
 #include <exception>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <sstream>

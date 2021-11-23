@@ -53,6 +53,14 @@ target_include_directories(signal_processing_testing_lib
         ${CMAKE_SOURCE_DIR}/src/tests/common-files
 )
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(signal_processing_testing_lib
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)

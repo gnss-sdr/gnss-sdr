@@ -36,6 +36,14 @@ target_link_libraries(obs_gr_blocks
         Matio::matio
 )
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(obs_gr_blocks
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 target_include_directories(obs_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces

@@ -50,6 +50,14 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(NOT GNURADIO_USES_LOG4CPP)
+    target_link_libraries(resampler_gr_blocks
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 target_include_directories(resampler_gr_blocks
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces

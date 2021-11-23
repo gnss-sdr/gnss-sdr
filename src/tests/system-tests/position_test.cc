@@ -36,6 +36,8 @@
 #include "test_flags.h"
 #include "tracking_tests_flags.h"  // acquisition resampler
 #include <armadillo>
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception/exception.hpp>
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <matio.h>

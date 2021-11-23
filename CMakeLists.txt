@@ -609,13 +609,38 @@ endif()
 ################################################################################
 # Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
-find_package(LOG4CPP)
-set_package_properties(LOG4CPP PROPERTIES
-    PURPOSE "Required by GNU Radio."
-    TYPE REQUIRED
-)
-if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
+if(GNURADIO_USES_LOG4CPP)
+    find_package(LOG4CPP)
+    set_package_properties(LOG4CPP PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
+endif()
+
+
+
+################################################################################
+# spdlog - https://github.com/gabime/spdlog
+################################################################################
+if(GNURADIO_USES_SPDLOG)
+    find_package(SPDLOG REQUIRED)
+    set_package_properties(SPDLOG PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
+endif()
+
+
+
+################################################################################
+# fmt - https://github.com/fmtlib/fmt
+################################################################################
+if(GNURADIO_USES_SPDLOG)
+    find_package(FMT REQUIRED)
+    set_package_properties(FMT PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
 endif()
 
 
@@ -630,7 +655,7 @@ if(NOT ENABLE_OWN_GPSTK)
         PURPOSE "Used in some Extra Tests."
     )
 endif()
-if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
+if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURADIO_USES_SPDLOG))
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
         if(NOT GPSTK_FOUND OR NOT (GPSTK_FOUND AND GPSTK_OLDER_THAN_8))  # Fix for GPSTk < 8.0.0
@@ -664,6 +689,7 @@ endif()
 if((NOT PMT_USES_BOOST_ANY) AND (CMAKE_CXX_STANDARD VERSION_LESS 17))
     message(FATAL_ERROR "GNU Radio v${GNURADIO_VERSION} requires C++17. Please update your environment.")
 endif()
+
 
 
 ################################################################################

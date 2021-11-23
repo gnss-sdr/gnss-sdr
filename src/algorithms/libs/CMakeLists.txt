@@ -117,6 +117,14 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(algorithms_libs
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 if(FILESYSTEM_FOUND)
     target_compile_definitions(algorithms_libs PUBLIC -DHAS_STD_FILESYSTEM=1)
     if(find_experimental)

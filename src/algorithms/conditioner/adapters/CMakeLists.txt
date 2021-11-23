@@ -42,6 +42,14 @@ target_link_libraries(conditioner_adapters
         Glog::glog
 )
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(conditioner_adapters
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 target_include_directories(conditioner_adapters
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces

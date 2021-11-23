@@ -55,6 +55,14 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(data_type_gr_blocks
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 set_property(TARGET data_type_gr_blocks
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

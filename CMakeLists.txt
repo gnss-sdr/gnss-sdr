@@ -613,7 +613,33 @@ if(GNURADIO_USES_LOG4CPP)
     find_package(LOG4CPP)
     set_package_properties(LOG4CPP PROPERTIES
         PURPOSE "Required by GNU Radio."
-        TYPE OPTIONAL
+        TYPE REQUIRED
+    )
+endif()
+
+
+
+################################################################################
+# spdlog - https://github.com/gabime/spdlog
+################################################################################
+if(GNURADIO_USES_SPDLOG)
+    find_package(SPDLOG REQUIRED)
+    set_package_properties(SPDLOG PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
+endif()
+
+
+
+################################################################################
+# fmt - https://github.com/fmtlib/fmt
+################################################################################
+if(GNURADIO_USES_SPDLOG)
+    find_package(FMT REQUIRED)
+    set_package_properties(FMT PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
     )
 endif()
 
@@ -663,6 +689,7 @@ endif()
 if((NOT PMT_USES_BOOST_ANY) AND (CMAKE_CXX_STANDARD VERSION_LESS 17))
     message(FATAL_ERROR "GNU Radio v${GNURADIO_VERSION} requires C++17. Please update your environment.")
 endif()
+
 
 
 ################################################################################

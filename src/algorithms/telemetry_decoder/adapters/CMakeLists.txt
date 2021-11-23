@@ -64,6 +64,14 @@ target_link_libraries(telemetry_decoder_adapters
         Gnuradio::runtime
 )
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(telemetry_decoder_adapters
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 target_include_directories(telemetry_decoder_adapters
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/interfaces

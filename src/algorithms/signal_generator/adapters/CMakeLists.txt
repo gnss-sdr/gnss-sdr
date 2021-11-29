@@ -44,6 +44,14 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(signal_generator_adapters
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_generator_adapters

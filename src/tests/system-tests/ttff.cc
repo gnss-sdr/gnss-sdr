@@ -24,6 +24,8 @@
 #include "gps_acq_assist.h"
 #include "in_memory_configuration.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/exception/diagnostic_information.hpp>
+#include <boost/exception/exception.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 #include <gtest/gtest.h>

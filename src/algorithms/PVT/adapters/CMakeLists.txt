@@ -39,6 +39,14 @@ if(USE_OLD_BOOST_MATH_COMMON_FACTOR)
     )
 endif()
 
+if(GNURADIO_USES_SPDLOG)
+    target_link_libraries(pvt_adapters
+        PUBLIC
+            fmt::fmt
+            spdlog::spdlog
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(pvt_adapters

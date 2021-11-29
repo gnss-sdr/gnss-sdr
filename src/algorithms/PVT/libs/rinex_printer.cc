@@ -1511,6 +1511,9 @@ std::string Rinex_Printer::getLocalTime() const
     line += std::string("GNSS-SDR");
     line += std::string(12, ' ');
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
     const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
@@ -1521,6 +1524,8 @@ std::string Rinex_Printer::getLocalTime() const
         {
             username = "UNKNOWN USER";
         }
+#endif
+
     line += Rinex_Printer::leftJustify(username, 20);
     const boost::gregorian::date today = boost::gregorian::day_clock::local_day();
 
@@ -3527,8 +3532,11 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out) const
     line.clear();
     line += Rinex_Printer::leftJustify("GNSS-SDR", 20);
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -3537,6 +3545,7 @@ void Rinex_Printer::rinex_sbs_header(std::fstream& out) const
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += Rinex_Printer::leftJustify(username, 20);
     // Date of file creation (dd-mmm-yy hhmm)
     const boost::local_time::time_zone_ptr zone(new boost::local_time::posix_time_zone("UTC"));
@@ -6001,8 +6010,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -6011,6 +6023,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -6327,8 +6340,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -6337,6 +6353,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -6682,8 +6699,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -6692,6 +6712,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -6991,8 +7012,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -7001,6 +7025,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -7314,8 +7339,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -7324,6 +7352,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -7571,8 +7600,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -7581,6 +7613,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -7822,8 +7855,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -7832,6 +7868,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -8103,8 +8140,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -8113,6 +8153,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -8449,8 +8490,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -8459,6 +8503,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -8767,8 +8812,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -8777,6 +8825,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -9034,8 +9083,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -9044,6 +9096,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);
@@ -9316,8 +9369,11 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
     // -------- Line OBSERVER / AGENCY
     line.clear();
     std::string username;
+#if ANDROID
+    username = "ANDROID USER";
+#else
     std::array<char, 20> c_username{};
-    int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
+    const int32_t nGet = getlogin_r(c_username.data(), c_username.size() - 1);
     if (nGet == 0)
         {
             username = c_username.data();
@@ -9326,6 +9382,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
         {
             username = "UNKNOWN USER";
         }
+#endif
     line += leftJustify(username, 20);
     line += Rinex_Printer::leftJustify("CTTC", 40);  // add flag and property
     line += Rinex_Printer::leftJustify("OBSERVER / AGENCY", 20);

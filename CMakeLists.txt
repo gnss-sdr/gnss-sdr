@@ -611,13 +611,38 @@ endif()
 ################################################################################
 # Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
-find_package(LOG4CPP)
-set_package_properties(LOG4CPP PROPERTIES
-    PURPOSE "Required by GNU Radio."
-    TYPE REQUIRED
-)
-if(NOT LOG4CPP_FOUND)
-    message(FATAL_ERROR "*** Log4cpp is required to build gnss-sdr")
+if(GNURADIO_USES_LOG4CPP)
+    find_package(LOG4CPP)
+    set_package_properties(LOG4CPP PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
+endif()
+
+
+
+################################################################################
+# spdlog - https://github.com/gabime/spdlog
+################################################################################
+if(GNURADIO_USES_SPDLOG)
+    find_package(SPDLOG REQUIRED)
+    set_package_properties(SPDLOG PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
+endif()
+
+
+
+################################################################################
+# fmt - https://github.com/fmtlib/fmt
+################################################################################
+if(GNURADIO_USES_SPDLOG)
+    find_package(FMT REQUIRED)
+    set_package_properties(FMT PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
 endif()
 
 
@@ -632,7 +657,7 @@ if(NOT ENABLE_OWN_GPSTK)
         PURPOSE "Used in some Extra Tests."
     )
 endif()
-if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND LOG4CPP_READY_FOR_CXX17)
+if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURADIO_USES_SPDLOG))
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
         if(NOT GPSTK_FOUND OR NOT (GPSTK_FOUND AND GPSTK_OLDER_THAN_8))  # Fix for GPSTk < 8.0.0
@@ -668,6 +693,7 @@ if((NOT PMT_USES_BOOST_ANY) AND (CMAKE_CXX_STANDARD VERSION_LESS 17))
 endif()
 
 
+
 ################################################################################
 # Boost - https://www.boost.org
 ################################################################################
@@ -685,7 +711,9 @@ set(Boost_ADDITIONAL_VERSIONS
     "1.70.0" "1.70" "1.71.0" "1.71"
 )
 set(Boost_USE_MULTITHREAD ON)
-set(Boost_USE_STATIC_LIBS OFF)
+#set(Boost_USE_STATIC_LIBS OFF)
+option(Boost_USE_STATIC_LIBS "Use Boost static libs" OFF)
+
 set(BOOST_COMPONENTS atomic chrono date_time serialization system thread)
 if(NOT ${FILESYSTEM_FOUND})
     set(BOOST_COMPONENTS ${BOOST_COMPONENTS} filesystem)

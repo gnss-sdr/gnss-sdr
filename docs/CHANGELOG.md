@@ -19,6 +19,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved Time-To-First-Fix when using GPS L1 C/A signals, fixing a bug that
   was making the receiver to drop the satellite if the PLL got locked at 180
   degrees, and making some optimizations on bit transition detection.
+- Fixed a bug that prevented from obtaining PVT fixes with Galileo E1 OS signals
+  if the I/NAV subframe type 0 was the first decoded subframe.
 
 ### Improvements in Interoperability:
 
@@ -38,8 +40,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   for easier detection of unused data members (see
   https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize).
 - Non-functional change: Fixed formatting defects detected by clang-format 13.0.
-- Updated GSL implementation to v0.39.0. See
-  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.39.0
+- Updated GSL implementation to v0.40.0. See
+  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.40.0
 - CI - `cpplint` job on GitHub: Added the `build/include_what_you_use` filter
   for early detection of missing includes.
 - CI - `clang-tidy` job on GitHub: More robust detection of LLVM paths installed
@@ -48,14 +50,22 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Portability:
 
 - Fixed building against the new API in the gr-iio component present in GNU
-  Radio's `master` branch (currently v3.10.0.git).
-- Fixed building against current GNU Radio's `master` branch, which does not
-  support the C++20 standard.
+  Radio v3.10.0.0-rc1.
+- Fixed building against GNU Radio v3.10.0.0-rc1, which does not support the
+  C++20 standard.
+- Fixed building against GNU Radio v3.10.0.0-rc1, which replaced
+  [log4cpp](http://log4cpp.sourceforge.net/) by
+  [spdlog](https://github.com/gabime/spdlog) and
+  [fmt](https://github.com/fmtlib/fmt) libraries.
 - Updated `cpu_features` library for improved processor detection.
 
 ### Improvements in Reliability:
 
 - Fixed some potential buffer overflows.
+- Avoid source code lines longer than 512 characters. This was a warning raised
+  by Lintian (very-long-line-length-in-source-file). Long lines in source code
+  could be used to obfuscate the source code and to hide stuff like backdoors or
+  security problems.
 
 ### Improvements in Usability:
 

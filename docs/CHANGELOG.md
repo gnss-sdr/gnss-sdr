@@ -48,9 +48,13 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Portability:
 
 - Fixed building against the new API in the gr-iio component present in GNU
-  Radio's `master` branch (currently v3.10.0.git).
-- Fixed building against current GNU Radio's `master` branch, which does not
-  support the C++20 standard.
+  Radio v3.10.0.0-rc1.
+- Fixed building against GNU Radio v3.10.0.0-rc1, which does not support the
+  C++20 standard.
+- Fixed building against GNU Radio v3.10.0.0-rc1, which replaced
+  [log4cpp](http://log4cpp.sourceforge.net/) by
+  [spdlog](https://github.com/gabime/spdlog) and
+  [fmt](https://github.com/fmtlib/fmt) libraries.
 - Updated `cpu_features` library for improved processor detection.
 
 ### Improvements in Reliability:

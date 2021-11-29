@@ -19,6 +19,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved Time-To-First-Fix when using GPS L1 C/A signals, fixing a bug that
   was making the receiver to drop the satellite if the PLL got locked at 180
   degrees, and making some optimizations on bit transition detection.
+- Fixed a bug that prevented from obtaining PVT fixes with Galileo E1 OS signals
+  if the I/NAV subframe type 0 was the first decoded subframe.
 
 ### Improvements in Interoperability:
 

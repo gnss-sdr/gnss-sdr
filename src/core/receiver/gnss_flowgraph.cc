@@ -1437,15 +1437,17 @@ int GNSSFlowgraph::connect_observables_to_pvt()
                 {
                     top_block_->connect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
                     top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
-                    // experimental VTL
-                    // TODO: It is currently implemented only in dll_pll_veml_tracking, other configs will silently fail!
-                    try
+                    // experimental Vector Tracking Loop (VTL) messages from PVT to Tracking blocks
+                    // not supported by all tracking algorithms
+                    pmt::pmt_t ports_in = channels_.at(i)->get_left_block_trk()->message_ports_in();
+                    for (size_t n = 0; n < pmt::length(ports_in); n++)
                         {
-                            top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_trk"), channels_.at(i)->get_left_block_trk(), pmt::mp("pvt_to_trk"));
-                        }
-                    catch (std::exception& ex)
-                        {
-                            LOG(WARNING) << "pvt_to_trk message not implemented in " << channels_.at(i)->implementation();
+                            //std::cout << "pmt: " << pmt::symbol_to_string(pmt::vector_ref(ports_in, n)) << "\n";
+                            if (pmt::symbol_to_string(pmt::vector_ref(ports_in, n)) == "pvt_to_trk")
+                                {
+                                    top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_trk"), channels_.at(i)->get_left_block_trk(), pmt::mp("pvt_to_trk"));
+                                    LOG(INFO) << "pvt_to_trk message port connected in " << channels_.at(i)->implementation();
+                                }
                         }
                 }
 

@@ -65,15 +65,15 @@ public:
     bool dump;
     bool dump_mat;
 
-    //KF statistics
-    //states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
-    //Measurement covariances (R)
+    // KF statistics
+    // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
+    // Measurement covariances (R)
     double expected_cn0_dbhz;
 
     double code_disc_sd_chips;
     double carrier_disc_sd_rads;
 
-    //System covariances (Q)
+    // System covariances (Q)
     double code_phase_sd_chips;
     double code_rate_sd_chips_s;
 
@@ -81,7 +81,7 @@ public:
     double carrier_freq_sd_hz;
     double carrier_freq_rate_sd_hz_s;
 
-    //System covariances (narrow) (Q)
+    // System covariances (narrow) (Q)
     double narrow_code_phase_sd_chips;
     double narrow_code_rate_sd_chips_s;
 
@@ -89,7 +89,7 @@ public:
     double narrow_carrier_freq_sd_hz;
     double narrow_carrier_freq_rate_sd_hz_s;
 
-    //initial Kalman covariance matrix (P)
+    // initial Kalman covariance matrix (P)
     double init_code_phase_sd_chips;
     double init_code_rate_sd_chips_s;
 

@@ -269,11 +269,10 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     endif()
 endif()
 
- if(GRLIMESDR_PPS)
-	target_compile_definitions(signal_source_adapters PUBLIC -DLimeSDR_PPS=1)
- endif()
-	 
-	 
+if(GRLIMESDR_PPS)
+    target_compile_definitions(signal_source_adapters PUBLIC -DLimeSDR_PPS=1)
+endif()
+ 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_adapters

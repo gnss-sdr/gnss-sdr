@@ -132,20 +132,16 @@ if(GRLIMESDR_FOUND AND NOT TARGET Gnuradio::limesdr)
         INTERFACE_LINK_LIBRARIES "${GRLIMESDR_LIBRARIES}"
     )
 
-	#check for PPS custom version
-	file(READ ${GRLIMESDR_INCLUDE_DIR}/limesdr/source.h TMPTXT)
-
-	string(FIND "${TMPTXT}" "enable_PPS_mode" matchres)
-
-	message(STATUS ${matchres})
-
-	if(${matchres} EQUAL -1)
-	     message("Using standard gr-limesdr library ")
-	else()
-	     set(GRLIMESDR_PPS True)
+        #check for PPS custom version
+        file(READ ${GRLIMESDR_INCLUDE_DIR}/limesdr/source.h TMPTXT)
+        string(FIND "${TMPTXT}" "enable_PPS_mode" matchres)
+        message(STATUS ${matchres})
+        if(${matchres} EQUAL -1)
+             message("Using standard gr-limesdr library ")
+        else()
+             set(GRLIMESDR_PPS True)
              message("Using custom gr-limesdr library with PPS support ")
-	endif ()
-
+        endif()
 endif()
 
 mark_as_advanced(GRLIMESDR_LIBRARIES GRLIMESDR_INCLUDE_DIR)

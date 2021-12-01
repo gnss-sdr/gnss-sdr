@@ -23,7 +23,10 @@
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cmath>            // for round
 #include <iostream>         // for operator<<
-#include <string>           // for string
+#include <memory>
+#include <string>  // for string
+#include <vector>
+
 
 gnss_sdr_sample_counter::gnss_sdr_sample_counter(
     double _fs,
@@ -49,7 +52,7 @@ gnss_sdr_sample_counter::gnss_sdr_sample_counter(
     flag_m = false;
     flag_h = false;
     flag_days = false;
-    set_tag_propagation_policy(TPP_DONT);  //no tag propagation, the time tag will be adjusted and regenerated in work()
+    set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
 }
 
 
@@ -140,7 +143,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
 
     //**************** time tags ****************
     std::vector<gr::tag_t> tags_vec;
-    //notice that nitems_read is updated in decimation blocks after leaving work() with return 1, equivalent to call consume_each
+    // notice that nitems_read is updated in decimation blocks after leaving work() with return 1, equivalent to call consume_each
     this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + samples_per_output);
     for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
         {
@@ -148,7 +151,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                 {
                     if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                         {
-                            //recompute timestamp to match the last sample in the consumed samples in this batch
+                            // recompute timestamp to match the last sample in the consumed samples in this batch
                             int64_t diff_samplecount = uint64diff(out[0].Tracking_sample_counter, it->offset);
                             const std::shared_ptr<GnssTime> last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
                             double intpart;
@@ -157,9 +160,9 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                             last_timetag->tow_ms = last_timetag->tow_ms + static_cast<int>(intpart);
                             last_timetag->rx_time = static_cast<double>(out[0].Tracking_sample_counter) / fs;
                             add_item_tag(0, this->nitems_written(0) + 1, pmt::mp("timetag"), pmt::make_any(last_timetag));
-                            //std::cout << "COUNTER TAG: this->nitems_read(0):" << this->nitems_read(0) << " sample_counter:" << sample_counter
+                            // std::cout << "COUNTER TAG: this->nitems_read(0):" << this->nitems_read(0) << " sample_counter:" << sample_counter
                             //          << " it->offset:" << it->offset << " diff:" << diff_samplecount << "\n";
-                            //getchar();
+                            // getchar();
                         }
                     else
                         {

@@ -64,13 +64,13 @@ Kf_Conf::Kf_Conf()
     item_type = "gr_complex";
 
     expected_cn0_dbhz = 0;
-    //System covariances (Q)
+    // System covariances (Q)
     code_phase_sd_chips = 0;
     code_rate_sd_chips_s = 0;
     carrier_phase_sd_rad = 0;
     carrier_freq_sd_hz = 0;
     carrier_freq_rate_sd_hz_s = 0;
-    //initial Kalman covariance matrix (P)
+    // initial Kalman covariance matrix (P)
     init_code_phase_sd_chips = 0;
     init_code_rate_sd_chips_s = 0;
     init_carrier_phase_sd_rad = 0;
@@ -128,7 +128,7 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
 
     // Kalman filter covariances
 
-    //Measurement covariances (R)
+    // Measurement covariances (R)
     expected_cn0_dbhz = configuration->property(role + ".expected_cn0_dbhz", 42.0);
 
     code_disc_sd_chips = configuration->property(role + ".code_disc_sd_chips", 0.01);
@@ -137,7 +137,7 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     enable_dynamic_measurement_covariance = configuration->property(role + ".enable_dynamic_measurement_covariance", false);
     use_estimated_cn0 = configuration->property(role + ".use_estimated_cn0", false);
 
-    //System covariances (Q)
+    // System covariances (Q)
     code_phase_sd_chips = configuration->property(role + ".code_phase_sd_chips", 0.001);
     code_rate_sd_chips_s = configuration->property(role + ".code_rate_sd_chips_s", 0.001);
 
@@ -145,7 +145,7 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     carrier_freq_sd_hz = configuration->property(role + ".carrier_freq_sd_hz", 0.1);
     carrier_freq_rate_sd_hz_s = configuration->property(role + ".carrier_freq_rate_sd_hz_s", 1);
 
-    //System covariances (narrow) (Q)
+    // System covariances (narrow) (Q)
     narrow_code_phase_sd_chips = configuration->property(role + ".narrow_code_phase_sd_chips", 0.001);
     narrow_code_rate_sd_chips_s = configuration->property(role + ".narrow_code_rate_sd_chips_s", 0.001);
 
@@ -154,7 +154,7 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     narrow_carrier_freq_rate_sd_hz_s = configuration->property(role + ".narrow_carrier_freq_rate_sd_hz_s", 1);
 
 
-    //initial Kalman covariance matrix (P)
+    // initial Kalman covariance matrix (P)
     init_code_phase_sd_chips = configuration->property(role + ".init_code_phase_sd_chips", 1);
     init_code_rate_sd_chips_s = configuration->property(role + ".init_code_rate_sd_chips_s", 100);
 

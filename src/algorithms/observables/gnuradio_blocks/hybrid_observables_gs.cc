@@ -622,47 +622,10 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
         }
 }
 
-void hybrid_observables_gs::check_tag_timestamp(const std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
+void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
 {
-    //    std::vector<Gnss_Synchro>::const_iterator it;
-    //    for (it = data.begin(); it != data.end(); it++)
-    //        {
-    //            if (!d_SourceTagTimestamps[it->Channel_ID].empty() and it->Flag_valid_pseudorange == true)
-    //                {
-    //                    //std::cout << "RX Time: " << (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) << "s\n";
-    //                    double delta_rxtime_to_tag;
-    //                    GnssTime current_tag;
-    //                    do
-    //                        {
-    //                            current_tag = d_SourceTagTimestamps[it->Channel_ID].front();
-    //                            delta_rxtime_to_tag = (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) - current_tag.rx_time;
-    //                            //                            std::cout << "[ch:" << it->Channel_ID << "][" << delta_rxtime_to_tag << "]\n";
-    //                            d_SourceTagTimestamps[it->Channel_ID].pop();
-    //                        }
-    //                    while (fabs(delta_rxtime_to_tag) >= 0.2 and !d_SourceTagTimestamps[it->Channel_ID].empty());
-    //
-    //                    if (fabs(delta_rxtime_to_tag) <= 0.2)
-    //                        {
-    //                            std::cout << "[ch:" << it->Channel_ID << "][" << delta_rxtime_to_tag
-    //                                      << "] OBS RX TimeTag Week: " << current_tag.week
-    //                                      << ", TOW: " << current_tag.tow_ms
-    //                                      << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
-    //                                      << " [ms], DELTA TLM TOW: " << last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
-    //
-    //                            const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
-    //                            *tmp_obj = current_tag;
-    //                            tmp_obj->week = current_tag.week;
-    //                            double intpart;
-    //                            tmp_obj->tow_ms_fraction = modf(delta_rxtime_to_tag * 1000.0, &intpart);
-    //                            tmp_obj->tow_ms = current_tag.tow_ms + static_cast<int>(intpart);
-    //                            tmp_obj->rx_time = static_cast<double>(rx_clock) / static_cast<double>(it->fs);
-    //                            add_item_tag(it->Channel_ID, this->nitems_written(it->Channel_ID) + 1, pmt::mp("timetag"), pmt::make_any(tmp_obj));
-    //                        }
-    //                }
-    //        }
-
-    //std::cout << "RX Time: " << (static_cast<double>(rx_clock) / static_cast<double>(it->fs)) << "s\n";
-
+    // it transforms the HW sample tag timestamp from a relative samplestamp (from receiver start)
+    // to an absolute GPS TOW samplestamp associated with the current set of pseudoranges
     if (!d_TimeChannelTagTimestamps.empty())
         {
             double fs = 0;
@@ -676,12 +639,12 @@ void hybrid_observables_gs::check_tag_timestamp(const std::vector<Gnss_Synchro> 
                         }
                 }
 
-            double delta_rxtime_to_tag = 100;
+            double delta_rxtime_to_tag;
             GnssTime current_tag;
             do
                 {
                     current_tag = d_TimeChannelTagTimestamps.front();
-                    delta_rxtime_to_tag = (static_cast<double>(rx_clock) / fs) - current_tag.rx_time;
+                    delta_rxtime_to_tag = (static_cast<double>(rx_clock) / fs) - current_tag.rx_time;  //delta time relative to receiver's start time
                     if (delta_rxtime_to_tag >= 0)
                         {
                             d_TimeChannelTagTimestamps.pop();
@@ -697,23 +660,16 @@ void hybrid_observables_gs::check_tag_timestamp(const std::vector<Gnss_Synchro> 
                     //                              << ", TOW: " << current_tag.tow_ms
                     //                              << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
                     //                              << " [ms], DELTA TLM TOW: " << last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
-
                     const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
                     *tmp_obj = current_tag;
                     double intpart;
                     tmp_obj->tow_ms_fraction = tmp_obj->tow_ms_fraction + modf(delta_rxtime_to_tag * 1000.0, &intpart);
                     tmp_obj->tow_ms = current_tag.tow_ms + static_cast<int>(intpart);
-                    tmp_obj->rx_time = static_cast<double>(d_T_rx_TOW_ms);  //static_cast<double>(rx_clock) / static_cast<double>(data.begin()->fs);
+                    tmp_obj->rx_time = static_cast<double>(d_T_rx_TOW_ms);  // new TAG samplestamp in absolute RX time (GPS TOW frame) same as the pseudorange set
                     add_item_tag(0, this->nitems_written(0) + 1, pmt::mp("timetag"), pmt::make_any(tmp_obj));
-                    delta_rxtime_to_tag = 100;
                 }
-            //            else
-            //                {
-            //                    std::cout << "Delta: " << delta_rxtime_to_tag << "\n";
-            //                }
         }
 }
-
 
 int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -847,7 +803,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             if (n_valid > 0)
                 {
                     compute_pranges(epoch_data);
-                    check_tag_timestamp(epoch_data, d_Rx_clock_buffer.front());
+                    set_tag_timestamp_in_sdr_timeframe(epoch_data, d_Rx_clock_buffer.front());
                 }
 
             // Carrier smoothing (optional)

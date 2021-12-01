@@ -78,7 +78,7 @@ private:
     void compute_pranges(std::vector<Gnss_Synchro>& data) const;
     void smooth_pseudoranges(std::vector<Gnss_Synchro>& data);
 
-    void check_tag_timestamp(const std::vector<Gnss_Synchro>& data, uint64_t rx_clock);
+    void set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro>& data, uint64_t rx_clock);
     int32_t save_matfile() const;
 
     Obs_Conf d_conf;

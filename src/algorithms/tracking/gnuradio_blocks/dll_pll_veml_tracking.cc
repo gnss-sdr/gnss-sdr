@@ -2055,27 +2055,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
             *out[0] = current_synchro_data;
-
-            //generate new tag associated with gnss-synchro object
-
-            //            if (d_timetag_waiting == true)
-            //                {
-            //                    int64_t diff_samplecount = uint64diff(current_synchro_data.Tracking_sample_counter, d_last_timetag_samplecounter);
-            //
-            //                    double intpart;
-            //                    d_last_timetag.tow_ms_fraction = modf(1000.0 * static_cast<double>(diff_samplecount) / d_trk_parameters.fs_in, &intpart);
-            //
-            //                    const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
-            //                    tmp_obj->week = d_last_timetag.week;
-            //                    tmp_obj->tow_ms = d_last_timetag.tow_ms + static_cast<int>(intpart);
-            //                    tmp_obj->tow_ms_fraction = d_last_timetag.tow_ms_fraction;
-            //                    tmp_obj->rx_time = static_cast<double>(current_synchro_data.Tracking_sample_counter) / d_trk_parameters.fs_in;
-            //                    add_item_tag(0, this->nitems_written(0) + 1, pmt::mp("timetag"), pmt::make_any(tmp_obj));
-            //
-            //                    //std::cout << "[" << this->nitems_written(0) + 1 << "][diff_time: " << 1000.0 * static_cast<double>(diff_samplecount) / d_trk_parameters.fs_in << "] Sent TimeTag Week: " << d_last_timetag.week << ", TOW: " << d_last_timetag.tow_ms << " [ms], TOW fraction: " << d_last_timetag.tow_ms_fraction << " [ms] \n";
-            //                    d_timetag_waiting = false;
-            //                }
-
             return 1;
         }
     return 0;

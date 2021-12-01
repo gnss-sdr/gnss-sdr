@@ -2090,7 +2090,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 
                             //**************** time tags ****************
-                            if (d_enable_rx_clock_correction == false)  //todo: currently only works if clock correction is disabled
+                            if (d_enable_rx_clock_correction == false)  //todo: currently only works if clock correction is disabled (computed clock offset is applied here)
                                 {
                                     //************ Source TimeTag comparison with GNSS computed TOW *************
 
@@ -2098,6 +2098,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             double delta_rxtime_to_tag_ms;
                                             GnssTime current_tag;
+                                            //1. Find the nearest timetag to the current rx_time (it is relative to the receiver's start operation)
                                             do
                                                 {
                                                     current_tag = d_TimeChannelTagTimestamps.front();
@@ -2107,20 +2108,20 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             while (fabs(delta_rxtime_to_tag_ms) >= 100 and !d_TimeChannelTagTimestamps.empty());
 
 
+                                            //2. If both timestamps (relative to the receiver's start) are closer than 100 ms (the granularituy of the PVT)
                                             if (fabs(delta_rxtime_to_tag_ms) <= 100)  //[ms]
                                                 {
+                                                    std::cout << "GNSS-SDR RX TIME: " << d_rx_time << " TAG RX TIME: " << current_tag.rx_time / 1000.0 << " [s]\n";
                                                     if (d_log_timetag == true)
                                                         {
                                                             double current_corrected_RX_clock_ns = (d_rx_time - Rx_clock_offset_s) * 1e9;
                                                             double TAG_time_ns = (static_cast<double>(current_tag.tow_ms) + current_tag.tow_ms_fraction + delta_rxtime_to_tag_ms) * 1e6;
                                                             log_source_timetag_info(current_corrected_RX_clock_ns, TAG_time_ns);
-
-                                                            //                                                    double timestamp_tow_error_ns = 1000000.0 * (Rx_clock_offset_s * 1000.0 + delta_rxtime_to_tag + static_cast<double>(current_tag.tow_ms) - d_rx_time * 1000.0 + current_tag.tow_ms_fraction);
-                                                            double timestamp_tow_error_ns = TAG_time_ns - current_corrected_RX_clock_ns;
+                                                            double tow_error_ns = current_corrected_RX_clock_ns - TAG_time_ns;
                                                             std::cout << "[Time ch] RX TimeTag Week: " << current_tag.week
                                                                       << ", TOW: " << current_tag.tow_ms
                                                                       << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
-                                                                      << " [ms], GNSS-SDR OBS CORRECTED TOW - EXTERNAL TIMETAG TOW: " << timestamp_tow_error_ns << " [ns] \n";
+                                                                      << " [ms], GNSS-SDR OBS CORRECTED TOW - EXTERNAL TIMETAG TOW: " << tow_error_ns << " [ns] \n";
                                                         }
                                                 }
                                         }

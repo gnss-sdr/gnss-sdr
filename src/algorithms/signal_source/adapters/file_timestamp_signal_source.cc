@@ -24,7 +24,9 @@ using namespace std::string_literals;
 FileTimestampSignalSource::FileTimestampSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-    : FileSourceBase(configuration, role, "File_Timestamp_Signal_Source"s, queue, "byte"s), timestamp_file_(configuration->property(role + ".timestamp_filename"s, "../data/example_capture_timestamp.dat"s))
+    : FileSourceBase(configuration, role, "File_Timestamp_Signal_Source"s, queue, "byte"s),
+      timestamp_file_(configuration->property(role + ".timestamp_filename"s, "../data/example_capture_timestamp.dat"s)),
+      timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0))
 {
     if (in_streams > 0)
         {
@@ -50,7 +52,8 @@ void FileTimestampSignalSource::create_file_source_hook()
 {
     timestamp_block_ = gnss_sdr_make_Timestamp(
         std::get<0>(itemTypeToSize()),
-        timestamp_file_);
+        timestamp_file_,
+        timestamp_clock_offset_ms_);
     DLOG(INFO) << "timestamp_block_(" << timestamp_block_->unique_id() << ")";
 }
 

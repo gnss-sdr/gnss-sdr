@@ -52,6 +52,7 @@ protected:
 private:
     gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
     std::string timestamp_file_;
+    double timestamp_clock_offset_ms_;
 };
 
 

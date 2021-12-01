@@ -152,7 +152,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                             int64_t diff_samplecount = uint64diff(out[0].Tracking_sample_counter, it->offset);
                             const std::shared_ptr<GnssTime> last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
                             double intpart;
-                            last_timetag->tow_ms_fraction = modf(1000.0 * static_cast<double>(diff_samplecount) / fs, &intpart);
+                            last_timetag->tow_ms_fraction += modf(1000.0 * static_cast<double>(diff_samplecount) / fs, &intpart);
 
                             last_timetag->tow_ms = last_timetag->tow_ms + static_cast<int>(intpart);
                             last_timetag->rx_time = static_cast<double>(out[0].Tracking_sample_counter) / fs;

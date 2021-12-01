@@ -38,7 +38,8 @@ class Gnss_Sdr_Timestamp;
 
 gnss_shared_ptr<Gnss_Sdr_Timestamp> gnss_sdr_make_Timestamp(
     size_t sizeof_stream_item,
-    std::string timestamp_file);
+    std::string timestamp_file,
+    double clock_offset_ms);
 
 
 class Gnss_Sdr_Timestamp : public gr::sync_block
@@ -52,16 +53,19 @@ public:
 private:
     friend gnss_shared_ptr<Gnss_Sdr_Timestamp> gnss_sdr_make_Timestamp(
         size_t sizeof_stream_item,
-        std::string timestamp_file);
+        std::string timestamp_file,
+        double clock_offset_ms);
 
     Gnss_Sdr_Timestamp(size_t sizeof_stream_item,
-        std::string timestamp_file);
+        std::string timestamp_file,
+        double clock_offset_ms);
 
     int64_t uint64diff(uint64_t first, uint64_t second);
     bool read_next_timetag();
     std::string d_timefile;
     std::fstream d_timefilestream;
     GnssTime next_timetag;
+    double d_clock_offset_ms;
     uint64_t next_timetag_samplecount;
     bool get_next_timetag;
 };

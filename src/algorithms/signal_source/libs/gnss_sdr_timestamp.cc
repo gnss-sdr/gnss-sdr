@@ -26,19 +26,20 @@
 #include <cstring>  // for memcpy
 
 Gnss_Sdr_Timestamp::Gnss_Sdr_Timestamp(size_t sizeof_stream_item,
-    std::string timestamp_file) : gr::sync_block("Timestamp",
-                                      gr::io_signature::make(1, 20, sizeof_stream_item),
-                                      gr::io_signature::make(1, 20, sizeof_stream_item)),
-                                  d_timefile(timestamp_file)
+    std::string timestamp_file, double clock_offset_ms) : gr::sync_block("Timestamp",
+                                                              gr::io_signature::make(1, 20, sizeof_stream_item),
+                                                              gr::io_signature::make(1, 20, sizeof_stream_item)),
+                                                          d_timefile(timestamp_file),
+                                                          d_clock_offset_ms(clock_offset_ms)
 {
     get_next_timetag = true;
     next_timetag_samplecount = 0;
 }
 
 
-gnss_shared_ptr<Gnss_Sdr_Timestamp> gnss_sdr_make_Timestamp(size_t sizeof_stream_item, std::string timestamp_file)
+gnss_shared_ptr<Gnss_Sdr_Timestamp> gnss_sdr_make_Timestamp(size_t sizeof_stream_item, std::string timestamp_file, double clock_offset_ms)
 {
-    gnss_shared_ptr<Gnss_Sdr_Timestamp> Timestamp_(new Gnss_Sdr_Timestamp(sizeof_stream_item, timestamp_file));
+    gnss_shared_ptr<Gnss_Sdr_Timestamp> Timestamp_(new Gnss_Sdr_Timestamp(sizeof_stream_item, timestamp_file, clock_offset_ms));
     return Timestamp_;
 }
 
@@ -110,7 +111,7 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
                     const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
                     tmp_obj->tow_ms = next_timetag.tow_ms;
                     tmp_obj->week = next_timetag.week;
-                    tmp_obj->tow_ms_fraction = 0;
+                    tmp_obj->tow_ms_fraction = d_clock_offset_ms;  //optional clockoffset parameter to convert UTC timestamps to GPS time in some receiver's configuration
                     tmp_obj->rx_time = 0;
                     add_item_tag(ch, this->nitems_written(ch) - diff_samplecount, pmt::mp("timetag"), pmt::make_any(tmp_obj));
                     //std::cout << "[" << this->nitems_written(ch) - diff_samplecount << "] Sent TimeTag SC: " << next_timetag_samplecount * bytes_to_samples << ", Week: " << next_timetag.week << ", TOW: " << next_timetag.tow_ms << " [ms] \n";

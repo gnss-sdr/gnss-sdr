@@ -114,7 +114,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 
     d_SourceTagTimestamps = std::vector<std::queue<GnssTime>>(d_nchannels_out);
     last_rx_clock_round20ms_error = 0;
-    set_tag_propagation_policy(TPP_DONT);  //no tag propagation, the time tag will be adjusted and regenerated in work()
+    set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump)
@@ -644,7 +644,7 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
             do
                 {
                     current_tag = d_TimeChannelTagTimestamps.front();
-                    delta_rxtime_to_tag = (static_cast<double>(rx_clock) / fs) - current_tag.rx_time;  //delta time relative to receiver's start time
+                    delta_rxtime_to_tag = (static_cast<double>(rx_clock) / fs) - current_tag.rx_time;  // delta time relative to receiver's start time
                     if (delta_rxtime_to_tag >= 0)
                         {
                             d_TimeChannelTagTimestamps.pop();
@@ -694,7 +694,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
                                     const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
-                                    //std::cout << "[Time ch ] timetag: " << timetag->rx_time << "\n";
+                                    // std::cout << "[Time ch ] timetag: " << timetag->rx_time << "\n";
                                     d_TimeChannelTagTimestamps.push(*timetag);
                                 }
                             else

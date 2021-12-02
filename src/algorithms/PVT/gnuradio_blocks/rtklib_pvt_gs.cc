@@ -559,7 +559,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // set the RTKLIB trace (debug) level
     tracelevel(conf_.rtk_trace_level);
 
-    //timetag
+    // timetag
     d_log_timetag = conf_.log_source_timetag;
     if (d_log_timetag)
         {
@@ -1922,10 +1922,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
     gr_vector_void_star& output_items __attribute__((unused)))
 {
     //**************** time tags ****************
-    if (d_enable_rx_clock_correction == false)  //todo: currently only works if clock correction is disabled
+    if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled
         {
             std::vector<gr::tag_t> tags_vec;
-            //time tag from obs to pvt is always propagated in channel 0
+            // time tag from obs to pvt is always propagated in channel 0
             this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items);
             for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
                 {
@@ -1934,7 +1934,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
                                     const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
-                                    //std::cout << "PVT timetag: " << timetag->rx_time << "\n";
+                                    // std::cout << "PVT timetag: " << timetag->rx_time << "\n";
                                     d_TimeChannelTagTimestamps.push(*timetag);
                                 }
                             else
@@ -2090,7 +2090,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 
                             //**************** time tags ****************
-                            if (d_enable_rx_clock_correction == false)  //todo: currently only works if clock correction is disabled (computed clock offset is applied here)
+                            if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled (computed clock offset is applied here)
                                 {
                                     //************ Source TimeTag comparison with GNSS computed TOW *************
 
@@ -2098,7 +2098,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             double delta_rxtime_to_tag_ms;
                                             GnssTime current_tag;
-                                            //1. Find the nearest timetag to the current rx_time (it is relative to the receiver's start operation)
+                                            // 1. Find the nearest timetag to the current rx_time (it is relative to the receiver's start operation)
                                             do
                                                 {
                                                     current_tag = d_TimeChannelTagTimestamps.front();
@@ -2108,8 +2108,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             while (fabs(delta_rxtime_to_tag_ms) >= 100 and !d_TimeChannelTagTimestamps.empty());
 
 
-                                            //2. If both timestamps (relative to the receiver's start) are closer than 100 ms (the granularituy of the PVT)
-                                            if (fabs(delta_rxtime_to_tag_ms) <= 100)  //[ms]
+                                            // 2. If both timestamps (relative to the receiver's start) are closer than 100 ms (the granularituy of the PVT)
+                                            if (fabs(delta_rxtime_to_tag_ms) <= 100)  // [ms]
                                                 {
                                                     std::cout << "GNSS-SDR RX TIME: " << d_rx_time << " TAG RX TIME: " << current_tag.rx_time / 1000.0 << " [s]\n";
                                                     if (d_log_timetag == true)
@@ -2177,7 +2177,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 {
                                                     flag_compute_pvt_output = true;
                                                     // std::cout.precision(17);
-                                                    //std::cout << "current_RX_time: " << current_RX_time_ms << " map time: " << d_gnss_observables_map.begin()->second.RX_time << '\n';
+                                                    // std::cout << "current_RX_time: " << current_RX_time_ms << " map time: " << d_gnss_observables_map.begin()->second.RX_time << '\n';
                                                 }
                                             flag_pvt_valid = true;
                                         }
@@ -2198,7 +2198,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                     if (flag_pvt_valid == true)
                         {
-                            //experimental VTL tests
+                            // experimental VTL tests
                             // send tracking command
                             //                            const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
                             //                            trk_cmd_test->carrier_freq_hz = 12345.4;

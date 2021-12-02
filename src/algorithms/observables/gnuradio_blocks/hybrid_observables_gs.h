@@ -21,7 +21,7 @@
 #define GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 
 #include "gnss_block_interface.h"
-#include "gnss_time.h"  //for timetags produced by Tracking
+#include "gnss_time.h"  // for timetags produced by Tracking
 #include "obs_conf.h"
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <gnuradio/block.h>           // for block

@@ -32,6 +32,7 @@ Gnss_Sdr_Timestamp::Gnss_Sdr_Timestamp(size_t sizeof_stream_item,
                                                           d_timefile(timestamp_file),
                                                           d_clock_offset_ms(clock_offset_ms)
 {
+    d_fraction_ms_offset = modf(d_clock_offset_ms, &d_integer_ms_offset);  // optional clockoffset parameter to convert UTC timestamps to GPS time in some receiver's configuration
     get_next_timetag = true;
     next_timetag_samplecount = 0;
 }
@@ -95,26 +96,26 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
         {
             if (read_next_timetag() == false)
                 {
-                    //std::cout << "End of TimeTag file reached!\n";
-                    //return 0;  //todo: find why return -1 does not stop gnss-sdr!
+                    // std::cout << "End of TimeTag file reached!\n";
+                    // return 0;  // todo: find why return -1 does not stop gnss-sdr!
                 }
             get_next_timetag = false;
         }
     for (size_t ch = 0; ch < output_items.size(); ch++)
         {
             std::memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
-            uint64_t bytes_to_samples = 2;  //todo: improve this.. hardcoded 2 bytes -> 1 complex sample!
+            uint64_t bytes_to_samples = 2;  // todo: improve this.. hardcoded 2 bytes -> 1 complex sample!
             int64_t diff_samplecount = uint64diff(this->nitems_written(ch), next_timetag_samplecount * bytes_to_samples);
-            //std::cout << "diff_samplecount: " << diff_samplecount << ", noutput_items: " << noutput_items << "\n";
+            // std::cout << "diff_samplecount: " << diff_samplecount << ", noutput_items: " << noutput_items << "\n";
             if (diff_samplecount <= noutput_items and std::labs(diff_samplecount) <= noutput_items)
                 {
                     const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
-                    tmp_obj->tow_ms = next_timetag.tow_ms;
+                    tmp_obj->tow_ms = next_timetag.tow_ms + static_cast<int>(d_integer_ms_offset);
                     tmp_obj->week = next_timetag.week;
-                    tmp_obj->tow_ms_fraction = d_clock_offset_ms;  //optional clockoffset parameter to convert UTC timestamps to GPS time in some receiver's configuration
+                    tmp_obj->tow_ms_fraction = d_fraction_ms_offset;
                     tmp_obj->rx_time = 0;
                     add_item_tag(ch, this->nitems_written(ch) - diff_samplecount, pmt::mp("timetag"), pmt::make_any(tmp_obj));
-                    //std::cout << "[" << this->nitems_written(ch) - diff_samplecount << "] Sent TimeTag SC: " << next_timetag_samplecount * bytes_to_samples << ", Week: " << next_timetag.week << ", TOW: " << next_timetag.tow_ms << " [ms] \n";
+                    // std::cout << "[" << this->nitems_written(ch) - diff_samplecount << "] Sent TimeTag SC: " << next_timetag_samplecount * bytes_to_samples << ", Week: " << next_timetag.week << ", TOW: " << next_timetag.tow_ms << " [ms] \n";
                     get_next_timetag = true;
                 }
         }

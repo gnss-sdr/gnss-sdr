@@ -26,6 +26,7 @@
 #include "galileo_inav_message.h"     // for Galileo_Inav_Message
 #include "gnss_block_interface.h"     // for gnss_shared_ptr (adapts smart pointer type to GNU Radio version)
 #include "gnss_satellite.h"           // for Gnss_Satellite
+#include "gnss_time.h"                // for GnssTime
 #include "nav_message_packet.h"       // for Nav_Message_Packet
 #include "tlm_conf.h"                 // for Tlm_Conf
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
@@ -143,6 +144,8 @@ private:
     bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
     bool d_enable_reed_solomon_inav;
+    bool d_valid_timetag;
+    GnssTime d_current_timetag;
 };
 
 

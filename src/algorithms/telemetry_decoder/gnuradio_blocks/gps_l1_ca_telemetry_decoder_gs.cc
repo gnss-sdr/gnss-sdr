@@ -35,6 +35,7 @@
 #include <exception>        // for exception
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr
+#include <vector>
 
 #ifdef COMPILER_HAS_ROTL
 #include <bit>
@@ -125,7 +126,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
 
     d_symbol_history.set_capacity(d_required_symbols);
 
-    set_tag_propagation_policy(TPP_DONT);  //no tag propagation, the time tag will be adjusted and regenerated in work()
+    set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
 
     if (d_dump_crc_stats)
         {

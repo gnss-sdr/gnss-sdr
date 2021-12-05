@@ -22,7 +22,7 @@
 #include "dll_pll_conf.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
-#include "gnss_time.h"                //for timetags produced by File_Timestamp_Signal_Source
+#include "gnss_time.h"                // for timetags produced by File_Timestamp_Signal_Source
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
 #include <boost/circular_buffer.hpp>
@@ -165,7 +165,7 @@ private:
 
     std::ofstream d_dump_file;
 
-    //uint64_t d_sample_counter;
+    // uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
     GnssTime d_last_timetag;
     uint64_t d_last_timetag_samplecounter;

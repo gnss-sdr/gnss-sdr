@@ -922,7 +922,7 @@ void kf_vtl_tracking::update_kf_narrow_intgration_time()
       << 0 << 0 << 0 << 1 << 0 << arma::endr
       << 0 << 0 << 0 << 0 << 1 << arma::endr;
 
-    double B = d_code_chip_rate / d_signal_carrier_freq;  //carrier to code rate factor
+    double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
     H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
       << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
@@ -950,7 +950,7 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
 {
     // Kalman Filter class variables
     double Ti = d_correlation_length_ms * 0.001;
-    double B = d_code_chip_rate / d_signal_carrier_freq;  //carrier to code rate factor
+    double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
     H = arma::mat(2, 5);
     H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
@@ -1211,7 +1211,7 @@ void kf_vtl_tracking::run_Kf()
     //        {
     //            if (d_pull_in_transitory == false and d_corrected_doppler == false)
     //                {
-    //            	//todo
+    // todo: alforithm here...
     //                }
     //        }
 

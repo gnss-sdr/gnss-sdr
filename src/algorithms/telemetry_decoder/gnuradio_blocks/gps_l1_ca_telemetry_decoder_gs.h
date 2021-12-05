@@ -20,7 +20,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
 #include "gnss_synchro.h"
-#include "gnss_time.h"  //for timetags produced by Tracking
+#include "gnss_time.h"  // for timetags produced by Tracking
 #include "gps_navigation_message.h"
 #include "nav_message_packet.h"
 #include "tlm_conf.h"

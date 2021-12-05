@@ -23,7 +23,7 @@
 #include "cpu_multicorrelator_real_codes.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
-#include "gnss_time.h"  //for timetags produced by File_Timestamp_Signal_Source
+#include "gnss_time.h"  // for timetags produced by File_Timestamp_Signal_Source
 #include "kf_conf.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
@@ -37,9 +37,10 @@
 #include <cstddef>                            // for size_t
 #include <cstdint>                            // for int32_t
 #include <fstream>                            // for ofstream
-#include <string>                             // for string
-#include <typeinfo>                           // for typeid
-#include <utility>                            // for pair
+#include <memory>
+#include <string>    // for string
+#include <typeinfo>  // for typeid
+#include <utility>   // for pair
 
 class Gnss_Synchro;
 class kf_vtl_tracking;
@@ -110,7 +111,7 @@ private:
     volk_gnsssdr::vector<gr_complex> d_Prompt_Data;
     volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
 
-    //boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
+    // boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
 
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
 

@@ -57,6 +57,7 @@
 #include <exception>  // for exception
 #include <iostream>   // for cout, cerr
 #include <map>
+#include <memory>
 #include <numeric>
 #include <vector>
 
@@ -594,7 +595,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
         }
     d_last_timetag_samplecounter = 0;
     d_timetag_waiting = false;
-    set_tag_propagation_policy(TPP_DONT);  //no tag propagation, the time tag will be adjusted and regenerated in work()
+    set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
 }
 
 
@@ -1721,7 +1722,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
     if (d_pull_in_transitory == true)
         {
-            //if (d_trk_parameters.pull_in_time_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+            // if (d_trk_parameters.pull_in_time_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
             if (d_trk_parameters.pull_in_time_s < (this->nitems_read(0) - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                 {
                     d_pull_in_transitory = false;
@@ -1733,7 +1734,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         {
         case 0:  // Standby - Consume samples at full throttle, do nothing
             {
-                //d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
+                // d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
                 consume_each(ninput_items[0]);
                 return 0;
                 break;
@@ -1741,7 +1742,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
         case 1:  // Pull-in
             {
                 // Signal alignment (skip samples until the incoming signal is aligned with local replica)
-                //const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
+                // const int64_t acq_trk_diff_samples = static_cast<int64_t>(d_sample_counter) - static_cast<int64_t>(d_acq_sample_stamp);
                 const int64_t acq_trk_diff_samples = static_cast<int64_t>(this->nitems_read(0)) - static_cast<int64_t>(d_acq_sample_stamp);
                 const double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / d_trk_parameters.fs_in;
                 const double delta_trk_to_acq_prn_start_samples = static_cast<double>(acq_trk_diff_samples) - d_acq_code_phase_samples;
@@ -1759,7 +1760,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 const int32_t samples_offset = round(d_acq_code_phase_samples);
                 d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(samples_offset);
                 d_state = 2;
-                //d_sample_counter += samples_offset;  // count for the processed samples
+                // d_sample_counter += samples_offset;  // count for the processed samples
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
 
@@ -1790,7 +1791,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 //    }
 
                 // fail-safe: check if the secondary code or bit synchronization has not succeeded in a limited time period
-                //if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
+                // if (d_trk_parameters.bit_synchronization_time_limit_s < (d_sample_counter - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                 if (d_trk_parameters.bit_synchronization_time_limit_s < (this->nitems_read(0) - d_acq_sample_stamp) / static_cast<int>(d_trk_parameters.fs_in))
                     {
                         d_carrier_lock_fail_counter = 300000;  // force loss-of-lock condition
@@ -2047,7 +2048,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
 
 
     consume_each(d_current_prn_length_samples);
-    //d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);
+    // d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);
     if (current_synchro_data.Flag_valid_symbol_output || loss_of_lock)
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);

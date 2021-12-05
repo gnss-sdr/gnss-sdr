@@ -1442,7 +1442,7 @@ int GNSSFlowgraph::connect_observables_to_pvt()
                     pmt::pmt_t ports_in = channels_.at(i)->get_left_block_trk()->message_ports_in();
                     for (size_t n = 0; n < pmt::length(ports_in); n++)
                         {
-                            //std::cout << "pmt: " << pmt::symbol_to_string(pmt::vector_ref(ports_in, n)) << "\n";
+                            // std::cout << "pmt: " << pmt::symbol_to_string(pmt::vector_ref(ports_in, n)) << "\n";
                             if (pmt::symbol_to_string(pmt::vector_ref(ports_in, n)) == "pvt_to_trk")
                                 {
                                     top_block_->msg_connect(pvt_->get_left_block(), pmt::mp("pvt_to_trk"), channels_.at(i)->get_left_block_trk(), pmt::mp("pvt_to_trk"));

@@ -24,6 +24,7 @@
 #include <algorithm>                // for min
 #include <cmath>
 #include <cstring>  // for memcpy
+#include <memory>
 
 Gnss_Sdr_Timestamp::Gnss_Sdr_Timestamp(size_t sizeof_stream_item,
     std::string timestamp_file, double clock_offset_ms) : gr::sync_block("Timestamp",

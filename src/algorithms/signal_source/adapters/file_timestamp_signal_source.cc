@@ -18,6 +18,7 @@
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_timestamp.h"
 #include <glog/logging.h>
+#include <string>
 
 using namespace std::string_literals;
 

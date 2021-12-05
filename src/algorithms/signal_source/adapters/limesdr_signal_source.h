@@ -87,7 +87,6 @@ private:
     int limechannel_mode_;
 
     bool PPS_mode_;
-    //bool AGC_enabled_;
     bool dump_;
 };
 

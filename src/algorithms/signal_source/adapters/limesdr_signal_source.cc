@@ -42,20 +42,19 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
 
     // Driver parameters
     channel_ = configuration->property(role + ".channel", 0);
-    //AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
     freq_ = configuration->property(role + ".freq", 1575420000);
     gain_ = configuration->property(role + ".gain", 40.0);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
-    //todo: check aif bw is within limits
-    analog_bw_hz_ = configuration->property(role + ".analog_bw", sample_rate_ / 2);  //LPF analog filters in I,Q branches
-    digital_bw_hz_ = configuration->property(role + ".digital_bw", 0);               //disable by default
+    // todo: check if bw is within limits
+    analog_bw_hz_ = configuration->property(role + ".analog_bw", sample_rate_ / 2);  // LPF analog filters in I,Q branches
+    digital_bw_hz_ = configuration->property(role + ".digital_bw", 0);               // disable by default
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     limesdr_serial_ = configuration->property(role + ".limesdr_serial", std::string());
     limesdr_file_ = configuration->property(role + ".limesdr_file", std::string());
     antenna_ = configuration->property(role + ".antenna", 255);
 
     PPS_mode_ = configuration->property(role + ".PPS_mode", false);
-    ext_clock_MHz_ = configuration->property(role + ".ext_clock_MHz", 0.0);  //external clock: 0.0 MHz will enable the internal clock
+    ext_clock_MHz_ = configuration->property(role + ".ext_clock_MHz", 0.0);  // external clock: 0.0 MHz will enable the internal clock
     limechannel_mode_ = configuration->property(role + ".limechannel_mode", 0);
     if (limechannel_mode_ < 0 && limechannel_mode_ > 2)
         {
@@ -73,7 +72,7 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
     else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            //1. Make the driver instance
+            // 1. Make the driver instance
 
             try
                 {

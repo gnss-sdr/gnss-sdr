@@ -21,6 +21,7 @@
 #include "configuration_interface.h"
 #include "file_source_base.h"
 #include "gnss_sdr_timestamp.h"
+#include <string>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -42,8 +43,8 @@ public:
     ~FileTimestampSignalSource() = default;
 
 protected:
-    //std::tuple<size_t, bool> itemTypeToSize() override;
-    //double packetsPerSample() const override;
+    // std::tuple<size_t, bool> itemTypeToSize() override;
+    // double packetsPerSample() const override;
     gnss_shared_ptr<gr::block> source() const override;
     void create_file_source_hook() override;
     void pre_connect_hook(gr::top_block_sptr top_block) override;

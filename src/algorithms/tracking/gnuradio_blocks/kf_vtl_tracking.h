@@ -22,7 +22,12 @@
 
 #include "cpu_multicorrelator_real_codes.h"
 #include "exponential_smoother.h"
+#include "gnss_block_interface.h"
+#include "gnss_time.h"  //for timetags produced by File_Timestamp_Signal_Source
 #include "kf_conf.h"
+#include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
+#include "tracking_loop_filter.h"     // for DLL filter
+#include <armadillo>
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>                   // for block
 #include <gnuradio/gr_complex.h>              // for gr_complex
@@ -35,13 +40,6 @@
 #include <string>                             // for string
 #include <typeinfo>                           // for typeid
 #include <utility>                            // for pair
-#if GNURADIO_USES_STD_POINTERS
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif
-
-#include <armadillo>
 
 class Gnss_Synchro;
 class kf_vtl_tracking;
@@ -118,7 +116,7 @@ private:
 
     const size_t int_type_hash_code = typeid(int).hash_code();
 
-    //Kalman Filter class variables
+    // Kalman Filter class variables
     arma::mat F;
     arma::mat H;
     arma::mat R;
@@ -130,26 +128,26 @@ private:
     arma::vec x_new_old;
     arma::vec x_new_new;
 
-    //nominal signal parameters
+    // nominal signal parameters
     double d_signal_carrier_freq;
     double d_code_period;
     double d_code_chip_rate;
 
-    //acquisition
+    // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     double d_current_correlation_time_s;
 
-    //carrier and code discriminators output
+    // carrier and code discriminators output
     double d_carr_phase_error_disc_hz;
     double d_carr_freq_error_disc_hz;
     double d_code_error_disc_chips;
 
-    //estimated parameters
-    //code
+    // estimated parameters
+    // code
     double d_code_error_kf_chips;
     double d_code_freq_kf_chips_s;
-    //carrier
+    // carrier
     double d_carrier_phase_kf_rad;
     double d_carrier_doppler_kf_hz;
     double d_carrier_doppler_rate_kf_hz_s;
@@ -165,12 +163,11 @@ private:
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
 
-    //carrier NCO
-
+    // carrier NCO
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
 
-    //code NCO
+    // code NCO
     double d_code_phase_step_chips;
     double d_code_phase_rate_step_chips;
     double d_rem_code_phase_chips;

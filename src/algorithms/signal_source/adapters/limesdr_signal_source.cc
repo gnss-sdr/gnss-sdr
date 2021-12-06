@@ -26,10 +26,13 @@
 using namespace std::string_literals;
 
 LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_stream, unsigned int out_stream,
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue)
-    : SignalSourceBase(configuration, role, "Limesdr_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
-
+    : SignalSourceBase(configuration, role, "Limesdr_Signal_Source"s),
+      in_stream_(in_stream),
+      out_stream_(out_stream)
 {
     // DUMP PARAMETERS
     const std::string empty;
@@ -37,8 +40,7 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
     const std::string default_item_type("gr_complex");
     samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));
     dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename",
-        default_dump_file);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     // Driver parameters
     channel_ = configuration->property(role + ".channel", 0);
@@ -58,9 +60,7 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
     limechannel_mode_ = configuration->property(role + ".limechannel_mode", 0);
     if ((limechannel_mode_ < 0) || (limechannel_mode_ > 2))
         {
-            std::cout
-                << "ERROR: source_impl::source_impl(): ChannelMode must be A(0), B(1) or (A+B) MIMO(2)"
-                << std::endl;
+            std::cerr << "ERROR: source_impl::source_impl(): ChannelMode must be A(0), B(1) or (A+B) MIMO(2)\n";
             exit(0);
         }
 
@@ -72,12 +72,10 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
         {
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
-
             try
                 {
 #ifdef LimeSDR_PPS
-
-#ifdef GR_GREATER_38
+#ifdef GR_LIMESDR_IS_G38_BRANCH
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, false, PPS_mode_);
 #else
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, PPS_mode_);
@@ -97,15 +95,13 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
                         {
                             limesdr_source_->disable_ext_clk();
                         }
-#else
-
+#else  // LimeSDR_PPS
 #ifdef GR_LIMESDR_IS_G38_BRANCH
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, false);
 #else
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_);
 #endif
-
-#endif
+#endif  // LimeSDR_PPS
                 }
             catch (const boost::exception& e)
                 {
@@ -126,7 +122,7 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
             std::cout << "LimeSDR RX antenna set to " << antenna_ << " for channel " << channel_ << '\n';
             LOG(INFO) << "LimeSDR RX antenna set to " << antenna_ << " for channel " << channel_;
 
-            // 2 set sampling rate
+            // 2. set sampling rate
             double actual_sample_rate = limesdr_source_->set_sample_rate(sample_rate_);
             std::cout << "Actual RX Rate: " << actual_sample_rate << " [SPS]...\n";
             LOG(INFO) << "Actual RX Rate: " << actual_sample_rate << " [SPS]...";
@@ -177,6 +173,7 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
             file_sink_ = gr::blocks::file_sink::make(item_size_, dump_filename_.c_str());
             DLOG(INFO) << "file_sink(" << file_sink_->unique_id() << ")";
         }
+
     if (in_stream_ > 0)
         {
             LOG(ERROR) << "A signal source does not have an input stream";

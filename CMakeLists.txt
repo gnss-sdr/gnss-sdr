@@ -2986,7 +2986,7 @@ endif()
 # https://github.com/myriadrf/gr-limesdr
 ##########################################
 find_package(GRLIMESDR)
-set_package_properties(limesdr PROPERTIES
+set_package_properties(GRLIMESDR PROPERTIES
     PURPOSE "Used for communication with LimeSDR."
     TYPE OPTIONAL
 )

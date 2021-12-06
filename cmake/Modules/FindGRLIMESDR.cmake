@@ -35,7 +35,7 @@ if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
 
-pkg_check_modules(GRLIMESDR_PKG gnuradio-limesdr)
+pkg_check_modules(GRLIMESDR_PKG QUIET gnuradio-limesdr)
 
 if(NOT GRLIMESDR_ROOT)
     set(GRLIMESDR_ROOT_USER_DEFINED /usr)
@@ -115,11 +115,11 @@ set_package_properties(GRLIMESDR PROPERTIES
 
 if(GRLIMESDR_FOUND AND GRLIMESDR_VERSION)
     set_package_properties(GRLIMESDR PROPERTIES
-        DESCRIPTION "limesdr GNU Radio blocks (found: v${GRLIMESDR_VERSION})"
+        DESCRIPTION "LimeSDR GNU Radio blocks (found: v${GRLIMESDR_VERSION})"
     )
 else()
     set_package_properties(GRLIMESDR PROPERTIES
-        DESCRIPTION "limesdr GNU Radio blocks"
+        DESCRIPTION "LimeSDR GNU Radio blocks"
     )
 endif()
 
@@ -132,16 +132,30 @@ if(GRLIMESDR_FOUND AND NOT TARGET Gnuradio::limesdr)
         INTERFACE_LINK_LIBRARIES "${GRLIMESDR_LIBRARIES}"
     )
 
-        #check for PPS custom version
-        file(READ ${GRLIMESDR_INCLUDE_DIR}/limesdr/source.h TMPTXT)
-        string(FIND "${TMPTXT}" "enable_PPS_mode" matchres)
-        message(STATUS ${matchres})
-        if(${matchres} EQUAL -1)
-          message("Using standard gr-limesdr library ")
-        else()
-          set(GRLIMESDR_PPS True)
-          message("Using custom gr-limesdr library with PPS support ")
+    message(STATUS "The (optional) gr-limesdr module has been found.")
+
+    # check for PPS custom version
+    file(READ ${GRLIMESDR_INCLUDE_DIR}/limesdr/source.h TMPTXT)
+    string(FIND "${TMPTXT}" "enable_PPS_mode" matchres)
+    if(${matchres} EQUAL -1)
+        message(STATUS " Using standard gr-limesdr library.")
+    else()
+        set(GRLIMESDR_PPS TRUE)
+        message(STATUS " Using custom gr-limesdr library with PPS support.")
+    endif()
+
+    # check gr-limesdr branch
+    set(_g38_branch TRUE)
+    file(STRINGS ${GRLIMESDR_INCLUDE_DIR}/limesdr/source.h _limesdr_header_content)
+    foreach(_loop_var IN LISTS _limesdr_header_content)
+        string(STRIP "${_loop_var}" _file_line)
+        if("static sptr make(std::string serial, int channel_mode, const std::string& filename);" STREQUAL "${_file_line}")
+            set(_g38_branch FALSE)
         endif()
+    endforeach()
+    if(${_g38_branch})
+        set(GR_LIMESDR_IS_G38_BRANCH TRUE)
+    endif()
 endif()
 
 mark_as_advanced(GRLIMESDR_LIBRARIES GRLIMESDR_INCLUDE_DIR)

@@ -269,8 +269,12 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     endif()
 endif()
 
+if(GR_LIMESDR_IS_G38_BRANCH)
+    target_compile_definitions(signal_source_adapters PRIVATE -DGR_LIMESDR_IS_G38_BRANCH=1)
+endif()
+
 if(GRLIMESDR_PPS)
-    target_compile_definitions(signal_source_adapters PUBLIC -DLimeSDR_PPS=1)
+    target_compile_definitions(signal_source_adapters PRIVATE -DLimeSDR_PPS=1)
 endif()
 
 if(ENABLE_CLANG_TIDY)

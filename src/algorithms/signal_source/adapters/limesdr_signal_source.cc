@@ -56,14 +56,13 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
     PPS_mode_ = configuration->property(role + ".PPS_mode", false);
     ext_clock_MHz_ = configuration->property(role + ".ext_clock_MHz", 0.0);  // external clock: 0.0 MHz will enable the internal clock
     limechannel_mode_ = configuration->property(role + ".limechannel_mode", 0);
-    if (limechannel_mode_ < 0 && limechannel_mode_ > 2)
+    if ((limechannel_mode_ < 0) || (limechannel_mode_ > 2))
         {
             std::cout
                 << "ERROR: source_impl::source_impl(): ChannelMode must be A(0), B(1) or (A+B) MIMO(2)"
                 << std::endl;
             exit(0);
         }
-
 
     if (item_type_ == "short")
         {
@@ -87,7 +86,7 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
                         {
                             if (limesdr_source_->set_ext_clk(ext_clock_MHz_))
                                 {
-                                    std::cout << "External clock enabled with expected frequency input of " << ext_clock_MHz_ << "\n";
+                                    std::cout << "External clock enabled with expected frequency input of " << ext_clock_MHz_ << " MHz\n";
                                 }
                             else
                                 {
@@ -100,7 +99,7 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
                         }
 #else
 
-#ifdef GR_GREATER_38
+#ifdef GR_LIMESDR_IS_G38_BRANCH
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_, false);
 #else
                     limesdr_source_ = gr::limesdr::source::make(limesdr_serial_, limechannel_mode_, limesdr_file_);
@@ -124,8 +123,9 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
              */
 
             limesdr_source_->set_antenna(antenna_, channel_);
-            std::cout << "LimeSDR RX antenna set to " << antenna_ << " for channel " << channel_ << "\n";
+            std::cout << "LimeSDR RX antenna set to " << antenna_ << " for channel " << channel_ << '\n';
             LOG(INFO) << "LimeSDR RX antenna set to " << antenna_ << " for channel " << channel_;
+
             // 2 set sampling rate
             double actual_sample_rate = limesdr_source_->set_sample_rate(sample_rate_);
             std::cout << "Actual RX Rate: " << actual_sample_rate << " [SPS]...\n";
@@ -140,7 +140,6 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
             // TODO: Assign the remnant IF from the PLL tune error
             std::cout << "PLL Frequency tune error: " << actual_center_freq - freq_ << " [Hz]...\n";
             LOG(INFO) << "PLL Frequency tune error: " << actual_center_freq - freq_ << " [Hz]...\n";
-
 
             // TODO: gr-limesdr does not report PLL tune frequency error...
 

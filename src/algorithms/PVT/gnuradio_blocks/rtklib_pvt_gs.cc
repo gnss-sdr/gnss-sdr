@@ -563,9 +563,18 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     // timetag
     if (d_log_timetag)
         {
-            d_log_timetag_file.open(conf_.log_source_timetag_file, std::ios::out | std::ios::binary);
-            std::cout << "Log PVT timetag metadata enabled, log file: " << conf_.log_source_timetag_file << "\n";
+            try
+                {
+                    d_log_timetag_file.open(conf_.log_source_timetag_file, std::ios::out | std::ios::binary);
+                    std::cout << "Log PVT timetag metadata enabled, log file: " << conf_.log_source_timetag_file << '\n';
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << "Log PVT timetag metadata file cannot be created: " << e.what() << '\n';
+                    d_log_timetag = false;
+                }
         }
+
     d_start = std::chrono::system_clock::now();
 }
 
@@ -1116,7 +1125,14 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
 
             if (d_log_timetag_file.is_open())
                 {
-                    d_log_timetag_file.close();
+                    try
+                        {
+                            d_log_timetag_file.close();
+                        }
+                    catch (const std::exception& e)
+                        {
+                            LOG(WARNING) << "Problem closing Log PVT timetag metadata file: " << e.what();
+                        }
                 }
         }
     catch (std::length_error& e)
@@ -1670,14 +1686,23 @@ bool rtklib_pvt_gs::save_gnss_synchro_map_xml(const std::string& file_name)
     return false;
 }
 
+
 void rtklib_pvt_gs::log_source_timetag_info(double RX_time_ns, double TAG_time_ns)
 {
     if (d_log_timetag_file.is_open())
         {
-            d_log_timetag_file.write(reinterpret_cast<char*>(&RX_time_ns), sizeof(double));
-            d_log_timetag_file.write(reinterpret_cast<char*>(&TAG_time_ns), sizeof(double));
+            try
+                {
+                    d_log_timetag_file.write(reinterpret_cast<char*>(&RX_time_ns), sizeof(double));
+                    d_log_timetag_file.write(reinterpret_cast<char*>(&TAG_time_ns), sizeof(double));
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << "Problem writting at the log PVT timetag metadata file: " << e.what() << '\n';
+                }
         }
 }
+
 
 bool rtklib_pvt_gs::load_gnss_synchro_map_xml(const std::string& file_name)
 {
@@ -1927,14 +1952,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             std::vector<gr::tag_t> tags_vec;
             // time tag from obs to pvt is always propagated in channel 0
             this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items);
-            for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+            for (const auto& it : tags_vec)
                 {
                     try
                         {
-                            if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+                            if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
-                                    const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
-                                    // std::cout << "PVT timetag: " << timetag->rx_time << "\n";
+                                    const auto timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
+                                    // std::cout << "PVT timetag: " << timetag->rx_time << '\n';
                                     d_TimeChannelTagTimestamps.push(*timetag);
                                 }
                             else

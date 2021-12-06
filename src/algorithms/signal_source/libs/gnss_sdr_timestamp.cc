@@ -17,7 +17,6 @@
 
 #include "gnss_sdr_timestamp.h"
 #include "command_event.h"
-#include <glog/logging.h>           // for LOG
 #include <gnuradio/io_signature.h>  // for io_signature
 #include <pmt/pmt.h>                // for make_any
 #include <pmt/pmt_sugar.h>          // for mp
@@ -25,13 +24,16 @@
 #include <cmath>
 #include <cstring>  // for memcpy
 #include <memory>
+#include <utility>
+
 
 Gnss_Sdr_Timestamp::Gnss_Sdr_Timestamp(size_t sizeof_stream_item,
-    std::string timestamp_file, double clock_offset_ms) : gr::sync_block("Timestamp",
-                                                              gr::io_signature::make(1, 20, sizeof_stream_item),
-                                                              gr::io_signature::make(1, 20, sizeof_stream_item)),
-                                                          d_timefile(timestamp_file),
-                                                          d_clock_offset_ms(clock_offset_ms)
+    std::string timestamp_file, double clock_offset_ms)
+    : gr::sync_block("Timestamp",
+          gr::io_signature::make(1, 20, sizeof_stream_item),
+          gr::io_signature::make(1, 20, sizeof_stream_item)),
+      d_timefile(std::move(timestamp_file)),
+      d_clock_offset_ms(clock_offset_ms)
 {
     d_fraction_ms_offset = modf(d_clock_offset_ms, &d_integer_ms_offset);  // optional clockoffset parameter to convert UTC timestamps to GPS time in some receiver's configuration
     get_next_timetag = true;
@@ -41,9 +43,10 @@ Gnss_Sdr_Timestamp::Gnss_Sdr_Timestamp(size_t sizeof_stream_item,
 
 gnss_shared_ptr<Gnss_Sdr_Timestamp> gnss_sdr_make_Timestamp(size_t sizeof_stream_item, std::string timestamp_file, double clock_offset_ms)
 {
-    gnss_shared_ptr<Gnss_Sdr_Timestamp> Timestamp_(new Gnss_Sdr_Timestamp(sizeof_stream_item, timestamp_file, clock_offset_ms));
+    gnss_shared_ptr<Gnss_Sdr_Timestamp> Timestamp_(new Gnss_Sdr_Timestamp(sizeof_stream_item, std::move(timestamp_file), clock_offset_ms));
     return Timestamp_;
 }
+
 
 bool Gnss_Sdr_Timestamp::read_next_timetag()
 {
@@ -65,6 +68,7 @@ bool Gnss_Sdr_Timestamp::read_next_timetag()
     return true;
 }
 
+
 bool Gnss_Sdr_Timestamp::start()
 {
     d_timefilestream.open(d_timefile, std::ios::in | std::ios::binary);
@@ -80,11 +84,12 @@ bool Gnss_Sdr_Timestamp::start()
         }
 }
 
+
 int64_t Gnss_Sdr_Timestamp::uint64diff(uint64_t first, uint64_t second)
 {
     uint64_t abs_diff = (first > second) ? (first - second) : (second - first);
     assert(abs_diff <= INT64_MAX);
-    return (first > second) ? (int64_t)abs_diff : -(int64_t)abs_diff;
+    return (first > second) ? static_cast<int64_t>(abs_diff) : -static_cast<int64_t>(abs_diff);
 }
 
 
@@ -120,7 +125,6 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
                     get_next_timetag = true;
                 }
         }
-
 
     return noutput_items;
 }

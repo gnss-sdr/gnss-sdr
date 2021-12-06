@@ -168,7 +168,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_show_local_time_zone(conf_.show_local_time_zone),
       d_waiting_obs_block_rx_clock_offset_correction_msg(false),
       d_enable_rx_clock_correction(conf_.enable_rx_clock_correction),
-      d_an_printer_enabled(conf_.an_output_enabled)
+      d_an_printer_enabled(conf_.an_output_enabled),
+      d_log_timetag(conf_.log_source_timetag)
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
@@ -560,10 +561,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     tracelevel(conf_.rtk_trace_level);
 
     // timetag
-    d_log_timetag = conf_.log_source_timetag;
     if (d_log_timetag)
         {
-            d_log_timetag_file = std::fstream(conf_.log_source_timetag_file, std::ios::out | std::ios::binary);
+            d_log_timetag_file.open(conf_.log_source_timetag_file, std::ios::out | std::ios::binary);
             std::cout << "Log PVT timetag metadata enabled, log file: " << conf_.log_source_timetag_file << "\n";
         }
     d_start = std::chrono::system_clock::now();

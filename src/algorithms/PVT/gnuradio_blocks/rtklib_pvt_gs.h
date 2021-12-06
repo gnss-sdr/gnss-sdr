@@ -30,12 +30,13 @@
 #include <cstddef>                // for size_t
 #include <cstdint>                // for int32_t
 #include <ctime>                  // for time_t
+#include <fstream>                // for std::fstream
 #include <map>                    // for map
 #include <memory>                 // for shared_ptr, unique_ptr
-#include <queue>
-#include <string>       // for string
-#include <sys/types.h>  // for key_t
-#include <vector>       // for vector
+#include <queue>                  // for std::queue
+#include <string>                 // for string
+#include <sys/types.h>            // for key_t
+#include <vector>                 // for vector
 
 /** \addtogroup PVT
  * \{ */
@@ -167,7 +168,6 @@ private:
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
 
-    bool d_log_timetag;
     std::fstream d_log_timetag_file;
 
     std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
@@ -286,6 +286,7 @@ private:
     bool d_enable_rx_clock_correction;
     bool d_enable_has_messages;
     bool d_an_printer_enabled;
+    bool d_log_timetag;
 };
 
 

@@ -1,6 +1,7 @@
 /*!
  * \file kf_vtl_tracking.cc
- * \brief Implementation of a Kalman filter based tracking with optional Vector Tracking Loop message receiver block.
+ * \brief Implementation of a Kalman filter based tracking with optional Vector
+ * Tracking Loop message receiver block.
  * \author Javier Arribas, 2020. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -17,8 +18,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_kf_vtl_TRACKING_H
-#define GNSS_SDR_kf_vtl_TRACKING_H
+#ifndef GNSS_SDR_KF_VTL_TRACKING_H
+#define GNSS_SDR_KF_VTL_TRACKING_H
 
 #include "cpu_multicorrelator_real_codes.h"
 #include "exponential_smoother.h"
@@ -77,7 +78,7 @@ private:
     explicit kf_vtl_tracking(const Kf_Conf &conf_);
 
     void init_kf(double acq_code_phase_chips, double acq_doppler_hz);
-    void update_kf_narrow_intgration_time();
+    void update_kf_narrow_integration_time();
     void update_kf_cn0(double current_cn0_dbhz);
     void run_Kf();
 
@@ -111,22 +112,20 @@ private:
     volk_gnsssdr::vector<gr_complex> d_Prompt_Data;
     volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
 
-    // boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
-
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
 
-    const size_t int_type_hash_code = typeid(int).hash_code();
+    const size_t d_int_type_hash_code = typeid(int).hash_code();
 
     // Kalman Filter class variables
-    arma::mat F;
-    arma::mat H;
-    arma::mat R;
-    arma::mat Q;
-    arma::mat P_old_old;
-    arma::mat P_new_old;
-    arma::mat P_new_new;
-    arma::vec x_old_old;
-    arma::vec x_new_old;
+    arma::mat d_F;
+    arma::mat d_H;
+    arma::mat d_R;
+    arma::mat d_Q;
+    arma::mat d_P_old_old;
+    arma::mat d_P_new_old;
+    arma::mat d_P_new_new;
+    arma::vec d_x_old_old;
+    arma::vec d_x_new_old;
     arma::vec x_new_new;
 
     // nominal signal parameters
@@ -141,7 +140,6 @@ private:
 
     // carrier and code discriminators output
     double d_carr_phase_error_disc_hz;
-    double d_carr_freq_error_disc_hz;
     double d_code_error_disc_chips;
 
     // estimated parameters
@@ -154,7 +152,6 @@ private:
     double d_carrier_doppler_rate_kf_hz_s;
 
     double d_acc_carrier_phase_rad;
-
 
     double d_T_chip_seconds;
     double d_T_prn_seconds;
@@ -234,4 +231,4 @@ private:
     bool d_enable_extended_integration;
 };
 
-#endif  // GNSS_SDR_kf_vtl_TRACKING_H
+#endif  // GNSS_SDR_KF_VTL_TRACKING_H

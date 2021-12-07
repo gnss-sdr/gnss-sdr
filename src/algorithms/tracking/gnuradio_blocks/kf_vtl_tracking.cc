@@ -1,6 +1,7 @@
 /*!
  * \file kf_vtl_tracking.cc
- * \brief Implementation of a Kalman filter based tracking with optional Vector Tracking Loop message receiver block.
+ * \brief Implementation of a Kalman filter based tracking with optional Vector
+ * Tracking Loop message receiver block.
  * \author Javier Arribas, 2020. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -81,8 +82,9 @@ kf_vtl_tracking_sptr kf_vtl_make_tracking(const Kf_Conf &conf_)
 }
 
 
-kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_) : gr::block("kf_vtl_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                                             gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
+    : gr::block("kf_vtl_tracking", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -592,7 +594,7 @@ void kf_vtl_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
     try
         {
-            if (pmt::any_ref(msg).type().hash_code() == int_type_hash_code)
+            if (pmt::any_ref(msg).type().hash_code() == d_int_type_hash_code)
                 {
                     const int tlm_event = boost::any_cast<int>(pmt::any_ref(msg));
                     if (tlm_event == 1)
@@ -846,125 +848,116 @@ void kf_vtl_tracking::start_tracking()
 void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz)
 {
     // Kalman Filter class variables
-    double Ti = d_correlation_length_ms * 0.001;
+    const double Ti = d_correlation_length_ms * 0.001;
     // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz,carrier_freq_rate_hz, code_freq_chips_s
-    F = arma::mat(5, 5);
-    F << 1 << 0 << 0 << 0 << Ti << arma::endr
-      << 0 << 1 << 2.0 * GNSS_PI * Ti << GNSS_PI * (Ti * Ti) << 0 << arma::endr
-      << 0 << 0 << 1 << Ti << 0 << arma::endr
-      << 0 << 0 << 0 << 1 << 0 << arma::endr
-      << 0 << 0 << 0 << 0 << 1 << arma::endr;
+    d_F = arma::mat(5, 5);
+    d_F << 1 << 0 << 0 << 0 << Ti << arma::endr
+        << 0 << 1 << 2.0 * GNSS_PI * Ti << GNSS_PI * (Ti * Ti) << 0 << arma::endr
+        << 0 << 0 << 1 << Ti << 0 << arma::endr
+        << 0 << 0 << 0 << 1 << 0 << arma::endr
+        << 0 << 0 << 0 << 0 << 1 << arma::endr;
 
-    double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
+    const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    H = arma::mat(2, 5);
-    H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
-      << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
+    d_H = arma::mat(2, 5);
+    d_H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
+        << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
 
     // Phase noise variance
-    double CN0_lin = pow(10.0, d_trk_parameters.expected_cn0_dbhz / 10.0);  // CN0 in Hz
-
-    double N_periods = 1;  // Only 1 interval
-    double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
-
-    double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
+    // const double CN0_lin = pow(10.0, d_trk_parameters.expected_cn0_dbhz / 10.0);  // CN0 in Hz
+    // const double N_periods = 1;  // Only 1 interval
+    // const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
+    // const double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
 
     // measurement covariance matrix (static)
-    R = arma::mat(2, 2);
-    //    R << Sigma2_Tau << 0 << arma::endr
+    d_R = arma::mat(2, 2);
+    //    d_R << Sigma2_Tau << 0 << arma::endr
     //      << 0 << Sigma2_Phase << arma::endr;
 
-    R << pow(d_trk_parameters.code_disc_sd_chips, 2.0) << 0 << arma::endr
-      << 0 << pow(d_trk_parameters.carrier_disc_sd_rads, 2.0) << arma::endr;
+    d_R << pow(d_trk_parameters.code_disc_sd_chips, 2.0) << 0 << arma::endr
+        << 0 << pow(d_trk_parameters.carrier_disc_sd_rads, 2.0) << arma::endr;
 
     // system covariance matrix (static)
-    Q = arma::mat(5, 5);
-    Q << pow(d_trk_parameters.code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
-      << 0 << pow(d_trk_parameters.carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
-      << 0 << 0 << pow(d_trk_parameters.carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
-      << 0 << 0 << 0 << pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
-      << 0 << 0 << 0 << 0 << pow(d_trk_parameters.code_rate_sd_chips_s, 2.0) << arma::endr;
+    d_Q = arma::mat(5, 5);
+    d_Q << pow(d_trk_parameters.code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
+        << 0 << pow(d_trk_parameters.carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
+        << 0 << 0 << pow(d_trk_parameters.carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
+        << 0 << 0 << 0 << pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
+        << 0 << 0 << 0 << 0 << pow(d_trk_parameters.code_rate_sd_chips_s, 2.0) << arma::endr;
 
     // initial Kalman covariance matrix
-    P_old_old = arma::mat(5, 5);
+    d_P_old_old = arma::mat(5, 5);
 
-    P_old_old << pow(d_trk_parameters.init_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
-              << 0 << pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
-              << 0 << 0 << pow(d_trk_parameters.init_carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
-              << 0 << 0 << 0 << pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
-              << 0 << 0 << 0 << 0 << pow(d_trk_parameters.init_code_rate_sd_chips_s, 2.0) << arma::endr;
+    d_P_old_old << pow(d_trk_parameters.init_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
+                << 0 << pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
+                << 0 << 0 << pow(d_trk_parameters.init_carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
+                << 0 << 0 << 0 << pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
+                << 0 << 0 << 0 << 0 << pow(d_trk_parameters.init_code_rate_sd_chips_s, 2.0) << arma::endr;
 
     // init state vector
-    x_old_old = arma::vec(5);
+    d_x_old_old = arma::vec(5);
     // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
-    x_old_old << acq_code_phase_chips << 0 << acq_doppler_hz << 0 << 0 << arma::endr;
+    d_x_old_old << acq_code_phase_chips << 0 << acq_doppler_hz << 0 << 0 << arma::endr;
 
-    //    std::cout << "F: " << F << "\n";
-    //    std::cout << "H: " << H << "\n";
-    //    std::cout << "R: " << R << "\n";
-    //    std::cout << "Q: " << Q << "\n";
-    //    std::cout << "P: " << P_old_old << "\n";
-    //    std::cout << "x: " << x_old_old << "\n";
+    //    std::cout << "F: " << d_F << "\n";
+    //    std::cout << "H: " << d_H << "\n";
+    //    std::cout << "R: " << d_R << "\n";
+    //    std::cout << "Q: " << d_Q << "\n";
+    //    std::cout << "P: " << d_P_old_old << "\n";
+    //    std::cout << "x: " << d_x_old_old << "\n";
 }
 
 
-void kf_vtl_tracking::update_kf_narrow_intgration_time()
+void kf_vtl_tracking::update_kf_narrow_integration_time()
 {
     // Kalman Filter class variables
-    double Ti = d_current_correlation_time_s;
-    std::cout << "Ti:" << Ti << std::endl;
+    const double Ti = d_current_correlation_time_s;
+
     // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz,carrier_freq_rate_hz, code_freq_chips_s
-    F << 1 << 0 << 0 << 0 << Ti << arma::endr
-      << 0 << 1 << 2.0 * GNSS_PI * Ti << GNSS_PI * (Ti * Ti) << 0 << arma::endr
-      << 0 << 0 << 1 << Ti << 0 << arma::endr
-      << 0 << 0 << 0 << 1 << 0 << arma::endr
-      << 0 << 0 << 0 << 0 << 1 << arma::endr;
+    d_F << 1 << 0 << 0 << 0 << Ti << arma::endr
+        << 0 << 1 << 2.0 * GNSS_PI * Ti << GNSS_PI * (Ti * Ti) << 0 << arma::endr
+        << 0 << 0 << 1 << Ti << 0 << arma::endr
+        << 0 << 0 << 0 << 1 << 0 << arma::endr
+        << 0 << 0 << 0 << 0 << 1 << arma::endr;
 
-    double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
+    const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
-      << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
-
-    // Phase noise variance
-    double CN0_lin = pow(10.0, d_trk_parameters.expected_cn0_dbhz / 10.0);  // CN0 in Hz
-
-    double N_periods = 1;  // Only 1 interval
-    double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
-    double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
+    d_H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
+        << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
 
     // measurement covariance matrix (static)
-    R << pow(d_trk_parameters.code_disc_sd_chips, 2.0) << 0 << arma::endr
-      << 0 << pow(d_trk_parameters.carrier_disc_sd_rads, 2.0) << arma::endr;
+    d_R << pow(d_trk_parameters.code_disc_sd_chips, 2.0) << 0 << arma::endr
+        << 0 << pow(d_trk_parameters.carrier_disc_sd_rads, 2.0) << arma::endr;
 
     // system covariance matrix (static)
-    Q << pow(d_trk_parameters.narrow_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
-      << 0 << pow(d_trk_parameters.narrow_carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
-      << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
-      << 0 << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
-      << 0 << 0 << 0 << 0 << pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0) << arma::endr;
+    d_Q << pow(d_trk_parameters.narrow_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
+        << 0 << pow(d_trk_parameters.narrow_carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
+        << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
+        << 0 << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
+        << 0 << 0 << 0 << 0 << pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0) << arma::endr;
 }
 
 
 void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
 {
     // Kalman Filter class variables
-    double Ti = d_correlation_length_ms * 0.001;
-    double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
+    const double Ti = d_correlation_length_ms * 0.001;
+    const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    H = arma::mat(2, 5);
-    H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
-      << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
+    d_H = arma::mat(2, 5);
+    d_H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
+        << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
 
     // Phase noise variance
-    double CN0_lin = pow(10.0, current_cn0_dbhz / 10.0);  // CN0 in Hz
-    double N_periods = 1;                                 // Only 1 interval
-    double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
-    double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
+    const double CN0_lin = pow(10.0, current_cn0_dbhz / 10.0);  // CN0 in Hz
+    const double N_periods = 1;                                 // Only 1 interval
+    const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
+    const double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
 
     // measurement covariance matrix (static)
-    R = arma::mat(2, 2);
-    R << Sigma2_Tau << 0 << arma::endr
-      << 0 << Sigma2_Phase << arma::endr;
+    d_R = arma::mat(2, 2);
+    d_R << Sigma2_Tau << 0 << arma::endr
+        << 0 << Sigma2_Phase << arma::endr;
 }
 
 
@@ -1166,18 +1159,18 @@ void kf_vtl_tracking::run_Kf()
     // Kalman loop
 
     // Prediction
-    x_new_old = F * x_old_old;
-    P_new_old = F * P_old_old * F.t() + Q;
+    d_x_new_old = d_F * d_x_old_old;
+    d_P_new_old = d_F * d_P_old_old * d_F.t() + d_Q;
 
     // Innovation
     arma::vec z = {d_code_error_disc_chips, d_carr_phase_error_disc_hz * TWO_PI};
 
     // Measurement update
-    arma::mat K = P_new_old * H.t() * arma::inv(H * P_new_old * H.t() + R);  // Kalman gain
+    arma::mat K = d_P_new_old * d_H.t() * arma::inv(d_H * d_P_new_old * d_H.t() + d_R);  // Kalman gain
 
-    x_new_new = x_new_old + K * z;
+    x_new_new = d_x_new_old + K * z;
 
-    P_new_new = (arma::eye(5, 5) - K * H) * P_new_old;
+    d_P_new_new = (arma::eye(5, 5) - K * d_H) * d_P_new_old;
 
     // new code phase estimation
     d_code_error_kf_chips = x_new_new(0);
@@ -1220,8 +1213,8 @@ void kf_vtl_tracking::run_Kf()
     d_rem_carr_phase_rad = d_carrier_phase_kf_rad;
 
     // prepare data for next KF epoch
-    x_old_old = x_new_new;
-    P_old_old = P_new_new;
+    d_x_old_old = x_new_new;
+    d_P_old_old = d_P_new_new;
 }
 
 
@@ -1244,15 +1237,13 @@ void kf_vtl_tracking::clear_tracking_vars()
             d_P_data_accu = gr_complex(0.0, 0.0);
         }
     d_P_accu_old = gr_complex(0.0, 0.0);
-    //    d_carrier_phase_kf_error_hz = 0.0;
-    //    d_carrier_freq_error_hz_s = 0.0;
-    //    d_code_error_chips = 0.0;
     d_current_symbol = 0;
     d_current_data_symbol = 0;
     d_Prompt_circular_buffer.clear();
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
 }
+
 
 // todo: IT DOES NOT WORK WHEN NO KF IS RUNNING (extended correlation epochs!!)
 void kf_vtl_tracking::update_tracking_vars()
@@ -1947,7 +1938,7 @@ int kf_vtl_tracking::general_work(int noutput_items __attribute__((unused)), gr_
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                                         // Set narrow taps delay values [chips]
-                                        update_kf_narrow_intgration_time();
+                                        update_kf_narrow_integration_time();
                                         if (d_veml)
                                             {
                                                 d_local_code_shift_chips[0] = -d_trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);

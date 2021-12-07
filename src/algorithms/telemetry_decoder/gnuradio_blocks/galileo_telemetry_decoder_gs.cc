@@ -686,18 +686,18 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         }
     d_sample_counter++;  // count for the processed symbols
 
-    // ******* Time Tags from signal source (optional feature) *******
+    // Time Tags from signal source (optional feature)
     std::vector<gr::tag_t> tags_vec;
     this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + 1);  // telemetry decoder consumes symbols one-by-one
     if (!tags_vec.empty())
         {
-            for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+            for (const auto &it : tags_vec)
                 {
                     try
                         {
-                            if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+                            if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
-                                    const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+                                    const auto timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                                     // std::cout << "Old tow: " << d_current_timetag.tow_ms << " new tow: " << timetag->tow_ms << "\n";
                                     d_current_timetag = *timetag;
                                     d_valid_timetag = true;
@@ -728,7 +728,6 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         }
                 }
         }
-    // ***********************************************
 
     consume_each(1);
     d_flag_preamble = false;

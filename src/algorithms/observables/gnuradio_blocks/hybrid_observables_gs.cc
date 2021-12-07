@@ -622,6 +622,7 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
         }
 }
 
+
 void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro> &data, uint64_t rx_clock)
 {
     // it transforms the HW sample tag timestamp from a relative samplestamp (from receiver start)
@@ -652,14 +653,13 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
                 }
             while (delta_rxtime_to_tag >= 0.1 and !d_TimeChannelTagTimestamps.empty());
 
-
             if (delta_rxtime_to_tag >= 0 and delta_rxtime_to_tag <= 0.1)
                 {
-                    //                    std::cout << "[Time ch][" << delta_rxtime_to_tag
-                    //                              << "] OBS RX TimeTag Week: " << current_tag.week
-                    //                              << ", TOW: " << current_tag.tow_ms
-                    //                              << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
-                    //                              << " [ms], DELTA TLM TOW: " << last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
+                    // std::cout << "[Time ch][" << delta_rxtime_to_tag
+                    //           << "] OBS RX TimeTag Week: " << current_tag.week
+                    //           << ", TOW: " << current_tag.tow_ms
+                    //           << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
+                    //           << " [ms], DELTA TLM TOW: " << last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
                     const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
                     *tmp_obj = current_tag;
                     double intpart;
@@ -670,6 +670,7 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
                 }
         }
 }
+
 
 int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)),
     gr_vector_int &ninput_items, gr_vector_const_void_star &input_items,
@@ -684,16 +685,16 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
         {
             d_Rx_clock_buffer.push_back(in[d_nchannels_in - 1][0].Tracking_sample_counter);
 
-            //**************** time tags ****************
+            // time tags
             std::vector<gr::tag_t> tags_vec;
             this->get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1);
-            for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+            for (const auto &it : tags_vec)
                 {
                     try
                         {
-                            if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+                            if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
-                                    const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+                                    const auto timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                                     // std::cout << "[Time ch ] timetag: " << timetag->rx_time << "\n";
                                     d_TimeChannelTagTimestamps.push(*timetag);
                                 }
@@ -707,9 +708,6 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                             std::cout << "msg Bad any_cast: " << e.what();
                         }
                 }
-
-            //************* end time tags **************
-
 
             // Consume one item from the clock channel (last of the input channels)
             consume(static_cast<int32_t>(d_nchannels_in) - 1, 1);

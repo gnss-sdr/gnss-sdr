@@ -62,12 +62,14 @@ gnss_sdr_sample_counter_sptr gnss_sdr_make_sample_counter(double _fs, int32_t _i
     return sample_counter_;
 }
 
+
 int64_t gnss_sdr_sample_counter::uint64diff(uint64_t first, uint64_t second)
 {
     uint64_t abs_diff = (first > second) ? (first - second) : (second - first);
     assert(abs_diff <= INT64_MAX);
     return (first > second) ? (int64_t)abs_diff : -(int64_t)abs_diff;
 }
+
 
 int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items __attribute__((unused)),
@@ -145,15 +147,15 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
     std::vector<gr::tag_t> tags_vec;
     // notice that nitems_read is updated in decimation blocks after leaving work() with return 1, equivalent to call consume_each
     this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + samples_per_output);
-    for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+    for (const auto &it : tags_vec)
         {
             try
                 {
-                    if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+                    if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                         {
                             // recompute timestamp to match the last sample in the consumed samples in this batch
-                            int64_t diff_samplecount = uint64diff(out[0].Tracking_sample_counter, it->offset);
-                            const std::shared_ptr<GnssTime> last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+                            int64_t diff_samplecount = uint64diff(out[0].Tracking_sample_counter, it.offset);
+                            const auto last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                             double intpart;
                             last_timetag->tow_ms_fraction += modf(1000.0 * static_cast<double>(diff_samplecount) / fs, &intpart);
 

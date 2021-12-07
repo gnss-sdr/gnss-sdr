@@ -1702,11 +1702,12 @@ void dll_pll_veml_tracking::stop_tracking()
     d_state = 0;
 }
 
+
 int64_t dll_pll_veml_tracking::uint64diff(uint64_t first, uint64_t second)
 {
     uint64_t abs_diff = (first > second) ? (first - second) : (second - first);
     assert(abs_diff <= INT64_MAX);
-    return (first > second) ? (int64_t)abs_diff : -(int64_t)abs_diff;
+    return (first > second) ? static_cast<int64_t>(abs_diff) : -static_cast<int64_t>(abs_diff);
 }
 
 
@@ -2012,21 +2013,20 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             }
         }
 
-
-    //**************** time tags ****************
+    // time tags
     std::vector<gr::tag_t> tags_vec;
     this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + d_current_prn_length_samples);
-    for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
+    for (const auto &it : tags_vec)
         {
             try
                 {
-                    if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
+                    if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                         {
                             // std::cout << "ch[" << d_acquisition_gnss_synchro->Channel_ID << "] tracking time tag with offset " << it->offset << " vs. counter " << d_sample_counter << " vs. nread " << this->nitems_read(0) << " containing ";
                             // std::cout << "ch[" << d_acquisition_gnss_synchro->Channel_ID << "] tracking time tag with offset " << it->offset << " vs. nread " << this->nitems_read(0) << " containing ";
-                            const std::shared_ptr<GnssTime> last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+                            const auto last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                             d_last_timetag = *last_timetag;
-                            d_last_timetag_samplecounter = it->offset;
+                            d_last_timetag_samplecounter = it.offset;
                             d_timetag_waiting = true;
                         }
                     else
@@ -2043,9 +2043,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     LOG(WARNING) << "Bad any_cast: " << ex.what();
                 }
         }
-
-    //************* end time tags **************
-
 
     consume_each(d_current_prn_length_samples);
     // d_sample_counter += static_cast<uint64_t>(d_current_prn_length_samples);

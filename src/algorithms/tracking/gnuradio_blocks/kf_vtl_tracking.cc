@@ -616,7 +616,7 @@ void kf_vtl_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
         {
             if (pmt::any_ref(msg).type().hash_code() == typeid(const std::shared_ptr<TrackingCmd>).hash_code())
                 {
-                    const std::shared_ptr<TrackingCmd> cmd = boost::any_cast<const std::shared_ptr<TrackingCmd>>(pmt::any_ref(msg));
+                    const auto cmd = boost::any_cast<const std::shared_ptr<TrackingCmd>>(pmt::any_ref(msg));
                     //                    std::cout << "RX pvt-to-trk cmd with delay: "
                     //                              << static_cast<double>(nitems_read(0) - cmd->sample_counter) / d_trk_parameters.fs_in << " [s]\n";
                 }
@@ -829,7 +829,6 @@ void kf_vtl_tracking::start_tracking()
 
     // Initialize tracking  ==========================================
 
-
     // DEBUG OUTPUT
     std::cout << "Tracking of " << d_systemName << " " << d_signal_pretty_name << " signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
     DLOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
@@ -895,9 +894,7 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
               << 0 << 0 << 0 << pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
               << 0 << 0 << 0 << 0 << pow(d_trk_parameters.init_code_rate_sd_chips_s, 2.0) << arma::endr;
 
-
     // init state vector
-
     x_old_old = arma::vec(5);
     // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
     x_old_old << acq_code_phase_chips << 0 << acq_doppler_hz << 0 << 0 << arma::endr;
@@ -909,6 +906,7 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
     //    std::cout << "P: " << P_old_old << "\n";
     //    std::cout << "x: " << x_old_old << "\n";
 }
+
 
 void kf_vtl_tracking::update_kf_narrow_intgration_time()
 {
@@ -946,6 +944,7 @@ void kf_vtl_tracking::update_kf_narrow_intgration_time()
       << 0 << 0 << 0 << 0 << pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0) << arma::endr;
 }
 
+
 void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
 {
     // Kalman Filter class variables
@@ -967,6 +966,7 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
     R << Sigma2_Tau << 0 << arma::endr
       << 0 << Sigma2_Phase << arma::endr;
 }
+
 
 kf_vtl_tracking::~kf_vtl_tracking()
 {
@@ -1833,7 +1833,6 @@ int kf_vtl_tracking::general_work(int noutput_items __attribute__((unused)), gr_
                 LOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                 DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_kf_hz
                            << ". PULL-IN Code Phase [samples] = " << d_acq_code_phase_samples;
-
 
                 consume_each(samples_offset);  // shift input to perform alignment with local replica
                 return 0;

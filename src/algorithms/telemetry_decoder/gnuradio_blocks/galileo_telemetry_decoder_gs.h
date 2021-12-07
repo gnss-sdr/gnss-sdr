@@ -102,6 +102,8 @@ private:
     Galileo_Fnav_Message d_fnav_nav;
 
     Nav_Message_Packet d_nav_msg_packet;
+    GnssTime d_current_timetag;
+
     std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
 
     double d_delta_t;  // GPS-GALILEO time offset
@@ -145,7 +147,6 @@ private:
     bool d_dump_crc_stats;
     bool d_enable_reed_solomon_inav;
     bool d_valid_timetag;
-    GnssTime d_current_timetag;
 };
 
 

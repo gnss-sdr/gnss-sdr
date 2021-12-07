@@ -29,6 +29,9 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed the regeneration of Galileo ephemeris from the reduced clock and
   ephemeris data (CED) defined in the Galileo E1B INAV message introduced in
   Galileo OS SIS ICD Issue 2.0.
+- Added a `Limesdr_Signal_Source` for interoperability with LimeSDR (requires
+  [gr-limesdr](https://github.com/myriadrf/gr-limesdr) and the
+  `-DENABLE_LIMESDR=ON` building flag).
 
 ### Improvements in Maintainability:
 

@@ -87,8 +87,6 @@ DEFINE_int32(acq_test_iterations, 1, "Number of iterations (same signal, differe
 DEFINE_bool(plot_acq_test, false, "Plots results with gnuplot, if available");
 DEFINE_int32(acq_test_skiphead, 0, "Number of samples to skip in the input file");
 
-DEFINE_bool(acq_test_dump, false, "Dump the results of an acquisition block into .mat files.");
-
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
 
@@ -536,14 +534,7 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
                     config->set_property("Acquisition.make_two_steps", "false");
                 }
 
-            if (FLAGS_acq_test_dump)
-                {
-                    config->set_property("Acquisition.dump", "true");
-                }
-            else
-                {
-                    config->set_property("Acquisition.dump", "false");
-                }
+            config->set_property("Acquisition.dump", "true");
 
             // std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(cn0) + "_" + std::to_string(iter) + "_" + std::to_string(pfa);
             std::string dump_file = path_str + std::string("/acquisition_") + std::to_string(static_cast<int>(cn0)) + "_" + std::to_string(iter) + "_" + std::to_string(static_cast<int>(pfa * 1.0e5));
@@ -847,7 +838,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                     run_receiver();
 
                                     // count executions
-                                    std::string basename = path_str + std::string("/acquisition_") + std::to_string(static_cast<int>(it)) + "_" + std::to_string(iter) + "_" + std::to_string(static_cast<int>(pfa_vector[pfa_iter] * 1e-5)) + "_" + gnss_synchro.System + "_" + signal_id;
+                                    std::string basename = path_str + std::string("/acquisition_") + std::to_string(static_cast<int>(it)) + "_" + std::to_string(iter) + "_" + std::to_string(static_cast<int>(pfa_vector[pfa_iter] * 1.0e5)) + "_" + gnss_synchro.System + "_" + gnss_synchro.Signal;
                                     int num_executions = count_executions(basename, observed_satellite);
 
                                     // Read measured data

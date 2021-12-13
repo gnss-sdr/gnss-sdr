@@ -21,6 +21,7 @@
 #define GNSS_SDR_HYBRID_OBSERVABLES_GS_H
 
 #include "gnss_block_interface.h"
+#include "gnss_time.h"  // for timetags produced by Tracking
 #include "obs_conf.h"
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <gnuradio/block.h>           // for block
@@ -30,9 +31,10 @@
 #include <fstream>                    // for std::ofstream
 #include <map>                        // for std::map
 #include <memory>                     // for std::shared, std:unique_ptr
-#include <string>                     // for std::string
-#include <typeinfo>                   // for typeid
-#include <vector>                     // for std::vector
+#include <queue>
+#include <string>    // for std::string
+#include <typeinfo>  // for typeid
+#include <vector>    // for std::vector
 
 /** \addtogroup Observables
  * \{ */
@@ -75,6 +77,8 @@ private:
     void update_TOW(const std::vector<Gnss_Synchro>& data);
     void compute_pranges(std::vector<Gnss_Synchro>& data) const;
     void smooth_pseudoranges(std::vector<Gnss_Synchro>& data);
+
+    void set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro>& data, uint64_t rx_clock);
     int32_t save_matfile() const;
 
     Obs_Conf d_conf;
@@ -101,6 +105,9 @@ private:
 
     boost::circular_buffer<uint64_t> d_Rx_clock_buffer;  // time history
 
+    std::vector<std::queue<GnssTime>> d_SourceTagTimestamps;
+    std::queue<GnssTime> d_TimeChannelTagTimestamps;
+
     std::vector<bool> d_channel_last_pll_lock;
     std::vector<double> d_channel_last_pseudorange_smooth;
     std::vector<double> d_channel_last_carrier_phase_rads;
@@ -113,6 +120,7 @@ private:
     double d_T_rx_step_s;
 
     uint32_t d_T_rx_TOW_ms;
+    double last_rx_clock_round20ms_error;
     uint32_t d_T_rx_step_ms;
     uint32_t d_T_status_report_timer_ms;
     uint32_t d_nchannels_in;

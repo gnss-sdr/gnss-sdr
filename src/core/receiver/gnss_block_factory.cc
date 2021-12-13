@@ -39,6 +39,7 @@
 #include "direct_resampler_conditioner.h"
 #include "fifo_signal_source.h"
 #include "file_signal_source.h"
+#include "file_timestamp_signal_source.h"
 #include "fir_filter.h"
 #include "freq_xlating_fir_filter.h"
 #include "galileo_e1_dll_pll_veml_tracking.h"
@@ -72,6 +73,7 @@
 #include "gnss_sdr_string_literals.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
 #include "gps_l1_ca_kf_tracking.h"
+#include "gps_l1_ca_kf_vtl_tracking.h"
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "gps_l1_ca_pcps_acquisition_fine_doppler.h"
 #include "gps_l1_ca_pcps_assisted_acquisition.h"
@@ -159,6 +161,10 @@
 
 #if AD9361_DRIVER
 #include "ad9361_fpga_signal_source.h"
+#endif
+
+#if LIMESDR_DRIVER
+#include "limesdr_signal_source.h"
 #endif
 
 #if FLEXIBAND_DRIVER
@@ -656,6 +662,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue);
                     block = std::move(block_);
                 }
+            else if (implementation == "File_Timestamp_Signal_Source")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<FileTimestampSignalSource>(configuration, role, in_streams,
+                        out_streams, queue);
+                    block = std::move(block_);
+                }
             else if (implementation == "Multichannel_File_Signal_Source")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<MultichannelFileSignalSource>(configuration, role, in_streams,
@@ -735,6 +747,16 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<OsmosdrSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
+                    block = std::move(block_);
+                }
+#endif
+
+#if LIMESDR_DRIVER
+            else if (implementation == "Limesdr_Signal_Source")
+                {
+                    std::unique_ptr<GNSSBlockInterface>
+                        block_ = std::make_unique<LimesdrSignalSource>(configuration, role, in_streams,
+                            out_streams, queue);
                     block = std::move(block_);
                 }
 #endif
@@ -1046,6 +1068,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             else if (implementation == "GPS_L1_CA_KF_Tracking")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaKfTracking>(configuration, role, in_streams,
+                        out_streams);
+                    block = std::move(block_);
+                }
+            else if (implementation == "GPS_L1_CA_KF_VTL_Tracking")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaKfVtlTracking>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
@@ -1496,6 +1524,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
     else if (implementation == "GPS_L1_CA_KF_Tracking")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaKfTracking>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }
+    else if (implementation == "GPS_L1_CA_KF_VTL_Tracking")
+        {
+            std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaKfVtlTracking>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }

@@ -1,30 +1,34 @@
 /*!
- * \file dll_pll_veml_tracking.h
- * \brief Implementation of a code DLL + carrier PLL tracking block.
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
- * \author Antonio Ramos, 2018 antonio.ramosdet(at)gmail.com
+ * \file kf_vtl_tracking.cc
+ * \brief Implementation of a Kalman filter based tracking with optional Vector
+ * Tracking Loop message receiver block.
+ * \author Javier Arribas, 2020. jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
- * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_DLL_PLL_VEML_TRACKING_H
-#define GNSS_SDR_DLL_PLL_VEML_TRACKING_H
+#ifndef GNSS_SDR_KF_VTL_TRACKING_H
+#define GNSS_SDR_KF_VTL_TRACKING_H
 
 #include "cpu_multicorrelator_real_codes.h"
-#include "dll_pll_conf.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
-#include "gnss_time.h"                // for timetags produced by File_Timestamp_Signal_Source
+#include "gnss_time.h"  // for timetags produced by File_Timestamp_Signal_Source
+#include "kf_conf.h"
 #include "tracking_FLL_PLL_filter.h"  // for PLL/FLL filter
 #include "tracking_loop_filter.h"     // for DLL filter
+#include <armadillo>
 #include <boost/circular_buffer.hpp>
 #include <gnuradio/block.h>                   // for block
 #include <gnuradio/gr_complex.h>              // for gr_complex
@@ -34,31 +38,30 @@
 #include <cstddef>                            // for size_t
 #include <cstdint>                            // for int32_t
 #include <fstream>                            // for ofstream
-#include <string>                             // for string
-#include <typeinfo>                           // for typeid
-#include <utility>                            // for pair
-
-/** \addtogroup Tracking
- * \{ */
-/** \addtogroup Tracking_gnuradio_blocks tracking_gr_blocks
- * GNU Radio blocks for GNSS signal tracking.
- * \{ */
-
+#include <memory>
+#include <string>    // for string
+#include <typeinfo>  // for typeid
+#include <utility>   // for pair
 
 class Gnss_Synchro;
-class dll_pll_veml_tracking;
+class kf_vtl_tracking;
 
-using dll_pll_veml_tracking_sptr = gnss_shared_ptr<dll_pll_veml_tracking>;
+#if GNURADIO_USES_STD_POINTERS
+using kf_vtl_tracking_sptr = std::shared_ptr<kf_vtl_tracking>;
+#else
+using kf_vtl_tracking_sptr = boost::shared_ptr<kf_vtl_tracking>;
+#endif
 
-dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
+
+kf_vtl_tracking_sptr kf_vtl_make_tracking(const Kf_Conf &conf_);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking block.
  */
-class dll_pll_veml_tracking : public gr::block
+class kf_vtl_tracking : public gr::block
 {
 public:
-    ~dll_pll_veml_tracking() override;
+    ~kf_vtl_tracking();
 
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
@@ -66,17 +69,23 @@ public:
     void stop_tracking();
 
     int general_work(int noutput_items, gr_vector_int &ninput_items,
-        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
+        gr_vector_const_void_star &input_items, gr_vector_void_star &output_items);
 
-    void forecast(int noutput_items, gr_vector_int &ninput_items_required) override;
+    void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
-    explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
+    friend kf_vtl_tracking_sptr kf_vtl_make_tracking(const Kf_Conf &conf_);
+    explicit kf_vtl_tracking(const Kf_Conf &conf_);
+
+    void init_kf(double acq_code_phase_chips, double acq_doppler_hz);
+    void update_kf_narrow_integration_time();
+    void update_kf_cn0(double current_cn0_dbhz);
+    void run_Kf();
 
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
+    void msg_handler_pvt_to_trk(const pmt::pmt_t &msg);
     void do_correlation_step(const gr_complex *input_samples);
-    void run_dll_pll();
+
     void check_carrier_phase_coherent_initialization();
     void update_tracking_vars();
     void clear_tracking_vars();
@@ -84,19 +93,15 @@ private:
     void log_data();
     bool cn0_and_tracking_lock_status(double coh_integration_time_s);
     bool acquire_secondary();
-    int64_t uint64diff(uint64_t first, uint64_t second);
     int32_t save_matfile() const;
 
     Cpu_Multicorrelator_Real_Codes d_multicorrelator_cpu;
     Cpu_Multicorrelator_Real_Codes d_correlator_data_cpu;  // for data channel
 
-    Dll_Pll_Conf d_trk_parameters;
+    Kf_Conf d_trk_parameters;
 
     Exponential_Smoother d_cn0_smoother;
     Exponential_Smoother d_carrier_lock_test_smoother;
-
-    Tracking_loop_filter d_code_loop_filter;
-    Tracking_FLL_PLL_filter d_carrier_loop_filter;
 
     Gnss_Synchro *d_acquisition_gnss_synchro;
 
@@ -107,28 +112,47 @@ private:
     volk_gnsssdr::vector<gr_complex> d_Prompt_Data;
     volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
 
-    boost::circular_buffer<float> d_dll_filt_history;
-    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
-    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
 
-    const size_t int_type_hash_code = typeid(int).hash_code();
+    const size_t d_int_type_hash_code = typeid(int).hash_code();
 
+    // Kalman Filter class variables
+    arma::mat d_F;
+    arma::mat d_H;
+    arma::mat d_R;
+    arma::mat d_Q;
+    arma::mat d_P_old_old;
+    arma::mat d_P_new_old;
+    arma::mat d_P_new_new;
+    arma::vec d_x_old_old;
+    arma::vec d_x_new_old;
+    arma::vec x_new_new;
+
+    // nominal signal parameters
     double d_signal_carrier_freq;
     double d_code_period;
     double d_code_chip_rate;
+
+    // acquisition
     double d_acq_code_phase_samples;
     double d_acq_carrier_doppler_hz;
     double d_current_correlation_time_s;
-    double d_carr_phase_error_hz;
-    double d_carr_freq_error_hz;
-    double d_carr_error_filt_hz;
-    double d_code_error_chips;
-    double d_code_error_filt_chips;
-    double d_code_freq_chips;
-    double d_carrier_doppler_hz;
+
+    // carrier and code discriminators output
+    double d_carr_phase_error_disc_hz;
+    double d_code_error_disc_chips;
+
+    // estimated parameters
+    // code
+    double d_code_error_kf_chips;
+    double d_code_freq_kf_chips_s;
+    // carrier
+    double d_carrier_phase_kf_rad;
+    double d_carrier_doppler_kf_hz;
+    double d_carrier_doppler_rate_kf_hz_s;
+
     double d_acc_carrier_phase_rad;
-    double d_rem_code_phase_chips;
+
     double d_T_chip_seconds;
     double d_T_prn_seconds;
     double d_T_prn_samples;
@@ -136,10 +160,15 @@ private:
     double d_carrier_lock_test;
     double d_CN0_SNV_dB_Hz;
     double d_carrier_lock_threshold;
+
+    // carrier NCO
     double d_carrier_phase_step_rad;
     double d_carrier_phase_rate_step_rad;
+
+    // code NCO
     double d_code_phase_step_chips;
     double d_code_phase_rate_step_chips;
+    double d_rem_code_phase_chips;
     double d_rem_code_phase_samples;
 
     gr_complex *d_Very_Early;
@@ -165,16 +194,14 @@ private:
 
     std::ofstream d_dump_file;
 
-    // uint64_t d_sample_counter;
+    uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
-    GnssTime d_last_timetag;
-    uint64_t d_last_timetag_samplecounter;
-    bool d_timetag_waiting;
 
     float *d_prompt_data_shift;
     float d_rem_carr_phase_rad;
 
     int32_t d_symbols_per_bit;
+    int32_t d_preamble_length_symbols;
     int32_t d_state;
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
@@ -202,10 +229,6 @@ private:
     bool d_dump_mat;
     bool d_acc_carrier_phase_initialized;
     bool d_enable_extended_integration;
-    bool d_Flag_PLL_180_deg_phase_locked;
 };
 
-
-/** \} */
-/** \} */
-#endif  // GNSS_SDR_DLL_PLL_VEML_TRACKING_H
+#endif  // GNSS_SDR_KF_VTL_TRACKING_H

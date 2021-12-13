@@ -19,6 +19,7 @@
 
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
+#include "gnss_time.h"
 #include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -29,8 +30,10 @@
 #include <cstddef>                // for size_t
 #include <cstdint>                // for int32_t
 #include <ctime>                  // for time_t
+#include <fstream>                // for std::fstream
 #include <map>                    // for map
 #include <memory>                 // for shared_ptr, unique_ptr
+#include <queue>                  // for std::queue
 #include <string>                 // for string
 #include <sys/types.h>            // for key_t
 #include <vector>                 // for vector
@@ -133,6 +136,8 @@ private:
         const Pvt_Conf& conf_,
         const rtk_t& rtk);
 
+    void log_source_timetag_info(double RX_time_ns, double TAG_time_ns);
+
     void msg_handler_telemetry(const pmt::pmt_t& msg);
 
     void msg_handler_has_data(const pmt::pmt_t& msg) const;
@@ -162,6 +167,8 @@ private:
 
     bool save_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
     bool load_gnss_synchro_map_xml(const std::string& file_name);  // debug helper function
+
+    std::fstream d_log_timetag_file;
 
     std::shared_ptr<Rtklib_Solver> d_internal_pvt_solver;
     std::shared_ptr<Rtklib_Solver> d_user_pvt_solver;
@@ -207,6 +214,8 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
+
+    std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
     boost::posix_time::time_duration d_utc_diff_time;
 
@@ -277,6 +286,7 @@ private:
     bool d_enable_rx_clock_correction;
     bool d_enable_has_messages;
     bool d_an_printer_enabled;
+    bool d_log_timetag;
 };
 
 

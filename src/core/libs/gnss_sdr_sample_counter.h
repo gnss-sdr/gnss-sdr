@@ -58,6 +58,8 @@ private:
         int32_t _interval_ms,
         size_t _size);
 
+    int64_t uint64diff(uint64_t first, uint64_t second);
+
     double fs;
     int64_t current_T_rx_ms;  // Receiver time in ms since the beginning of the run
     uint64_t sample_counter;

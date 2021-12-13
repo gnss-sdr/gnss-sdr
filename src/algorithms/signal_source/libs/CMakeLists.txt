@@ -25,6 +25,7 @@ set(SIGNAL_SOURCE_LIB_SOURCES
     rtl_tcp_commands.cc
     rtl_tcp_dongle_info.cc
     gnss_sdr_valve.cc
+    gnss_sdr_timestamp.cc
     ${OPT_SIGNAL_SOURCE_LIB_SOURCES}
 )
 
@@ -68,6 +69,7 @@ target_include_directories(signal_source_libs
     PUBLIC
         ${CMAKE_SOURCE_DIR}/src/core/receiver
         ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
 )
 
 if(GNURADIO_USES_STD_POINTERS)

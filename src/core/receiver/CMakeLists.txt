@@ -104,6 +104,10 @@ if(ENABLE_OSMOSDR)
     endif()
 endif()
 
+if(ENABLE_LIMESDR)
+    target_compile_definitions(core_receiver PRIVATE -DLIMESDR_DRIVER=1)
+endif()
+
 if(ENABLE_ARRAY)
     target_compile_definitions(core_receiver PRIVATE -DRAW_ARRAY_DRIVER=1)
 endif()

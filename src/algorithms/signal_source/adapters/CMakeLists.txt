@@ -71,6 +71,13 @@ if(ENABLE_OSMOSDR)
     endif()
 endif()
 
+if(ENABLE_LIMESDR)
+    if(GRLIMESDR_FOUND)
+        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} limesdr_signal_source.cc)
+        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} limesdr_signal_source.h)
+    endif()
+endif()
+
 
 if(ENABLE_UHD)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
@@ -92,6 +99,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
     labsat_signal_source.cc
     two_bit_cpx_file_signal_source.cc
     two_bit_packed_file_signal_source.cc
+    file_timestamp_signal_source.cc
     ${OPT_DRIVER_SOURCES}
 )
 
@@ -109,6 +117,7 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
     labsat_signal_source.h
     two_bit_cpx_file_signal_source.h
     two_bit_packed_file_signal_source.h
+    file_timestamp_signal_source.h
     ${OPT_DRIVER_HEADERS}
 )
 
@@ -129,6 +138,10 @@ else()
         ${SIGNAL_SOURCE_ADAPTER_SOURCES}
         ${SIGNAL_SOURCE_ADAPTER_HEADERS}
     )
+endif()
+
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(signal_source_adapters PUBLIC -DGR_GREATER_38=1)
 endif()
 
 target_include_directories(signal_source_adapters
@@ -185,6 +198,14 @@ if(ENABLE_OSMOSDR AND GROSMOSDR_FOUND)
             Gnuradio::osmosdr
     )
 endif()
+
+if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
+    target_link_libraries(signal_source_adapters
+        PUBLIC
+            Gnuradio::limesdr
+    )
+endif()
+
 
 if(ENABLE_AD9361 AND LIBIIO_FOUND)
     target_link_libraries(signal_source_adapters
@@ -248,6 +269,14 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
     endif()
 endif()
 
+if(GR_LIMESDR_IS_G38_BRANCH)
+    target_compile_definitions(signal_source_adapters PRIVATE -DGR_LIMESDR_IS_G38_BRANCH=1)
+endif()
+
+if(GRLIMESDR_PPS)
+    target_compile_definitions(signal_source_adapters PRIVATE -DLimeSDR_PPS=1)
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_adapters
@@ -260,6 +289,8 @@ endif()
 target_compile_definitions(signal_source_adapters
     PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
+
+
 
 set_property(TARGET signal_source_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

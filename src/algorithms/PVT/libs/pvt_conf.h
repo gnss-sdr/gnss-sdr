@@ -89,6 +89,8 @@ public:
     bool pre_2009_file = false;
     bool dump = false;
     bool dump_mat = true;
+    bool log_source_timetag;
+    std::string log_source_timetag_file;
 };
 
 

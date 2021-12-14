@@ -102,7 +102,7 @@ private:
     Galileo_Fnav_Message d_fnav_nav;
 
     Nav_Message_Packet d_nav_msg_packet;
-    GnssTime d_current_timetag;
+    GnssTime d_current_timetag{};
 
     std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
 

@@ -167,7 +167,7 @@ private:
 
     // uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
-    GnssTime d_last_timetag;
+    GnssTime d_last_timetag{};
     uint64_t d_last_timetag_samplecounter;
     bool d_timetag_waiting;
 

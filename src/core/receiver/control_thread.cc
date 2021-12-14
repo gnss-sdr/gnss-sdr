@@ -129,15 +129,15 @@ ControlThread::ControlThread()
 
 
 ControlThread::ControlThread(std::shared_ptr<ConfigurationInterface> configuration)
+    : configuration_(std::move(configuration)),
+      well_formatted_configuration_(true),
+      conf_file_has_section_(true),
+      conf_file_has_mandatory_globals_(true),
+      conf_has_signal_sources_(true),
+      conf_has_observables_(true),
+      conf_has_pvt_(true),
+      restart_(false)
 {
-    configuration_ = std::move(configuration);
-    conf_file_has_section_ = true;
-    conf_file_has_mandatory_globals_ = true;
-    conf_has_signal_sources_ = true;
-    conf_has_observables_ = true;
-    conf_has_pvt_ = true;
-    well_formatted_configuration_ = true;
-    restart_ = false;
     init();
 }
 

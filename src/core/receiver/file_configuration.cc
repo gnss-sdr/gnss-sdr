@@ -27,15 +27,15 @@
 
 
 FileConfiguration::FileConfiguration(std::string filename)
+    : filename_(std::move(filename))
 {
-    filename_ = std::move(filename);
     init();
 }
 
 
 FileConfiguration::FileConfiguration()
+    : filename_("./default_config_file.txt")
 {
-    filename_ = "./default_config_file.txt";
     init();
 }
 

@@ -30,11 +30,14 @@ using namespace std::string_literals;
 
 SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInterface* configuration,
     const std::string& role, uint32_t in_streams, uint32_t out_streams, Concurrent_Queue<pmt::pmt_t>* queue)
-    : SignalSourceBase(configuration, role, "Spir_GSS6450_File_Signal_Source"s), in_streams_(in_streams), out_streams_(out_streams)
+    : SignalSourceBase(configuration, role, "Spir_GSS6450_File_Signal_Source"s),
+      item_type_("int"),
+      item_size_(sizeof(int32_t)),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
     const std::string default_filename("../data/my_capture.dat");
     const std::string default_dump_filename("../data/my_capture_dump.dat");
-    item_type_ = "int";
 
     samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
     sampling_frequency_ = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(0));
@@ -47,7 +50,7 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
     adc_bits_ = configuration->property(role + ".adc_bits", 4);
     n_channels_ = configuration->property(role + ".total_channels", 1);
     sel_ch_ = configuration->property(role + ".sel_ch", 1);
-    item_size_ = sizeof(int32_t);
+
     const int64_t bytes_seek = configuration->property(role + ".bytes_to_skip", static_cast<int64_t>(65536));
     const double sample_size_byte = static_cast<double>(adc_bits_) / 4.0;
 

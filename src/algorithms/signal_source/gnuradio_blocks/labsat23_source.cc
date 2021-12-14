@@ -45,18 +45,17 @@ labsat23_source::labsat23_source(const char *signal_file_basename,
     bool digital_io_enabled) : gr::block("labsat23_source",
                                    gr::io_signature::make(0, 0, 0),
                                    gr::io_signature::make(1, 3, sizeof(gr_complex))),
-                               d_queue(queue)
+                               d_queue(queue),
+                               d_channel_selector_config(channel_selector),
+                               d_current_file_number(0),
+                               d_labsat_version(0),
+                               d_channel_selector(0),
+                               d_ref_clock(0),
+                               d_bits_per_sample(0),
+                               d_header_parsed(false),
+                               d_ls3w_digital_io_enabled(digital_io_enabled)
 {
-    d_channel_selector_config = channel_selector;
-    d_header_parsed = false;
-    d_bits_per_sample = 0;
-    d_current_file_number = 0;
-    d_labsat_version = 0;
-    d_ref_clock = 0;
-    d_channel_selector = 0;
     d_signal_file_basename = std::string(signal_file_basename);
-    d_ls3w_digital_io_enabled = digital_io_enabled;
-
     std::string signal_file;
     this->set_output_multiple(8);
     signal_file = generate_filename();

@@ -64,7 +64,7 @@ private:
     bool read_next_timetag();
     std::string d_timefile;
     std::fstream d_timefilestream;
-    GnssTime next_timetag;
+    GnssTime next_timetag{};
     double d_clock_offset_ms;
     double d_integer_ms_offset;
     double d_fraction_ms_offset;

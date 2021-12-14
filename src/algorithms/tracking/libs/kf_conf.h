@@ -36,34 +36,6 @@ public:
     std::string dump_filename;
     double fs_in;
     double carrier_lock_th;
-    float early_late_space_chips;
-    float very_early_late_space_chips;
-    float early_late_space_narrow_chips;
-    float very_early_late_space_narrow_chips;
-    float slope;
-    float spc;
-    float y_intercept;
-    float cn0_smoother_alpha;
-    float carrier_lock_test_smoother_alpha;
-    uint32_t pull_in_time_s;
-    uint32_t bit_synchronization_time_limit_s;
-    uint32_t vector_length;
-    uint32_t smoother_length;
-    int32_t extend_correlation_symbols;
-    int32_t cn0_samples;
-    int32_t cn0_smoother_samples;
-    int32_t carrier_lock_test_smoother_samples;
-    int32_t cn0_min;
-    int32_t max_code_lock_fail;
-    int32_t max_carrier_lock_fail;
-    char signal[3]{};
-    char system;
-    bool track_pilot;
-    bool enable_doppler_correction;
-    bool carrier_aiding;
-    bool high_dyn;
-    bool dump;
-    bool dump_mat;
 
     // KF statistics
     // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
@@ -96,6 +68,35 @@ public:
     double init_carrier_phase_sd_rad;
     double init_carrier_freq_sd_hz;
     double init_carrier_freq_rate_sd_hz_s;
+
+    float early_late_space_chips;
+    float very_early_late_space_chips;
+    float early_late_space_narrow_chips;
+    float very_early_late_space_narrow_chips;
+    float slope;
+    float spc;
+    float y_intercept;
+    float cn0_smoother_alpha;
+    float carrier_lock_test_smoother_alpha;
+    uint32_t pull_in_time_s;
+    uint32_t bit_synchronization_time_limit_s;
+    uint32_t vector_length;
+    uint32_t smoother_length;
+    int32_t extend_correlation_symbols;
+    int32_t cn0_samples;
+    int32_t cn0_smoother_samples;
+    int32_t carrier_lock_test_smoother_samples;
+    int32_t cn0_min;
+    int32_t max_code_lock_fail;
+    int32_t max_carrier_lock_fail;
+    char signal[3]{};
+    char system;
+    bool track_pilot;
+    bool enable_doppler_correction;
+    bool carrier_aiding;
+    bool high_dyn;
+    bool dump;
+    bool dump_mat;
 
     bool enable_dynamic_measurement_covariance;
     bool use_estimated_cn0;

@@ -499,6 +499,11 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
     d_current_prn_length_samples = static_cast<int32_t>(d_trk_parameters.vector_length);
     d_current_correlation_time_s = 0.0;
 
+    d_carr_phase_error_disc_hz = 0.0;
+    d_code_error_disc_chips = 0.0;
+    d_code_error_kf_chips = 0.0;
+    d_code_freq_kf_chips_s = 0.0;
+
     // CN0 estimation and lock detector buffers
     d_cn0_estimation_counter = 0;
     d_Prompt_buffer.reserve(d_trk_parameters.cn0_samples);

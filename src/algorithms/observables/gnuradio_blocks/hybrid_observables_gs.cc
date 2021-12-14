@@ -63,6 +63,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
       d_dump_filename(conf_.dump_filename),
       d_smooth_filter_M(static_cast<double>(conf_.smoothing_factor)),
       d_T_rx_step_s(static_cast<double>(conf_.observable_interval_ms) / 1000.0),
+      d_last_rx_clock_round20ms_error(0.0),
       d_T_rx_TOW_ms(0U),
       d_T_rx_step_ms(conf_.observable_interval_ms),
       d_T_status_report_timer_ms(0),
@@ -113,7 +114,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 
 
     d_SourceTagTimestamps = std::vector<std::queue<GnssTime>>(d_nchannels_out);
-    last_rx_clock_round20ms_error = 0;
+
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
 
     // ############# ENABLE DATA FILE LOG #################
@@ -216,7 +217,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                         {
                             d_T_rx_TOW_ms += d_T_rx_step_ms - d_T_rx_TOW_ms % d_T_rx_step_ms;
                         }
-                    last_rx_clock_round20ms_error = static_cast<double>(d_T_rx_TOW_ms) - old_tow_corrected;
+                    d_last_rx_clock_round20ms_error = static_cast<double>(d_T_rx_TOW_ms) - old_tow_corrected;
                     // d_Rx_clock_buffer.clear();  // Clear all the elements in the buffer
                     for (uint32_t n = 0; n < d_nchannels_out; n++)
                         {
@@ -659,7 +660,7 @@ void hybrid_observables_gs::set_tag_timestamp_in_sdr_timeframe(const std::vector
                     //           << "] OBS RX TimeTag Week: " << current_tag.week
                     //           << ", TOW: " << current_tag.tow_ms
                     //           << " [ms], TOW fraction: " << current_tag.tow_ms_fraction
-                    //           << " [ms], DELTA TLM TOW: " << last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
+                    //           << " [ms], DELTA TLM TOW: " << d_last_rx_clock_round20ms_error + delta_rxtime_to_tag * 1000.0 + static_cast<double>(current_tag.tow_ms) - static_cast<double>(d_T_rx_TOW_ms) + current_tag.tow_ms_fraction << " [ms] \n";
                     const std::shared_ptr<GnssTime> tmp_obj = std::make_shared<GnssTime>(GnssTime());
                     *tmp_obj = current_tag;
                     double intpart;

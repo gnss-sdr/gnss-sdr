@@ -33,9 +33,9 @@ Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
                            d_nitems(nitems),
                            d_ncopied_items(0),
                            d_queue(queue),
-                           d_stop_flowgraph(stop_flowgraph)
+                           d_stop_flowgraph(stop_flowgraph),
+                           d_open_valve(false)
 {
-    d_open_valve = false;
 }
 
 

@@ -126,7 +126,30 @@ private:
     arma::mat d_P_new_new;
     arma::vec d_x_old_old;
     arma::vec d_x_new_old;
-    arma::vec x_new_new;
+    arma::vec d_x_new_new;
+
+    std::string d_secondary_code_string;
+    std::string d_data_secondary_code_string;
+    std::string d_systemName;
+    std::string d_signal_type;
+    std::string d_signal_pretty_name;
+    std::string d_dump_filename;
+
+    std::ofstream d_dump_file;
+
+    gr_complex *d_Very_Early;
+    gr_complex *d_Early;
+    gr_complex *d_Prompt;
+    gr_complex *d_Late;
+    gr_complex *d_Very_Late;
+
+    gr_complex d_VE_accu;
+    gr_complex d_E_accu;
+    gr_complex d_P_accu;
+    gr_complex d_P_accu_old;
+    gr_complex d_L_accu;
+    gr_complex d_VL_accu;
+    gr_complex d_P_data_accu;
 
     // nominal signal parameters
     double d_signal_carrier_freq;
@@ -171,37 +194,17 @@ private:
     double d_rem_code_phase_chips;
     double d_rem_code_phase_samples;
 
-    gr_complex *d_Very_Early;
-    gr_complex *d_Early;
-    gr_complex *d_Prompt;
-    gr_complex *d_Late;
-    gr_complex *d_Very_Late;
-
-    gr_complex d_VE_accu;
-    gr_complex d_E_accu;
-    gr_complex d_P_accu;
-    gr_complex d_P_accu_old;
-    gr_complex d_L_accu;
-    gr_complex d_VL_accu;
-    gr_complex d_P_data_accu;
-
-    std::string d_secondary_code_string;
-    std::string d_data_secondary_code_string;
-    std::string d_systemName;
-    std::string d_signal_type;
-    std::string d_signal_pretty_name;
-    std::string d_dump_filename;
-
-    std::ofstream d_dump_file;
-
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 
     float *d_prompt_data_shift;
     float d_rem_carr_phase_rad;
 
+    uint32_t d_channel;
+    uint32_t d_secondary_code_length;
+    uint32_t d_data_secondary_code_length;
+
     int32_t d_symbols_per_bit;
-    int32_t d_preamble_length_symbols;
     int32_t d_state;
     int32_t d_correlation_length_ms;
     int32_t d_n_correlator_taps;
@@ -214,10 +217,6 @@ private:
     int32_t d_code_lock_fail_counter;
     int32_t d_code_samples_per_chip;  // All signals have 1 sample per chip code except Gal. E1 which has 2 (CBOC disabled) or 12 (CBOC enabled)
     int32_t d_code_length_chips;
-
-    uint32_t d_channel;
-    uint32_t d_secondary_code_length;
-    uint32_t d_data_secondary_code_length;
 
     bool d_pull_in_transitory;
     bool d_corrected_doppler;

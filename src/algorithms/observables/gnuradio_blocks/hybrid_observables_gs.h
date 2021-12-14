@@ -118,9 +118,9 @@ private:
 
     double d_smooth_filter_M;
     double d_T_rx_step_s;
-
+    double d_last_rx_clock_round20ms_error;
+    
     uint32_t d_T_rx_TOW_ms;
-    double last_rx_clock_round20ms_error;
     uint32_t d_T_rx_step_ms;
     uint32_t d_T_status_report_timer_ms;
     uint32_t d_nchannels_in;

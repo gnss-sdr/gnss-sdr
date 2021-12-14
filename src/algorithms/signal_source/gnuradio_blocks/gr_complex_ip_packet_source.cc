@@ -94,19 +94,27 @@ Gr_Complex_Ip_Packet_Source::make(std::string src_device,
 Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
     __attribute__((unused)) const std::string &origin_address,
     int udp_port,
-    int udp_packet_size,
+    int udp_packet_size __attribute__((unused)),
     int n_baseband_channels,
     const std::string &wire_sample_type,
     size_t item_size,
     bool IQ_swap_)
     : gr::sync_block("gr_complex_ip_packet_source",
           gr::io_signature::make(0, 0, 0),
-          gr::io_signature::make(1, 4, item_size))  // 1 to 4 baseband complex channels
+          gr::io_signature::make(1, 4, item_size)),  // 1 to 4 baseband complex channels
+      d_pcap_thread(nullptr),
+      d_src_device(std::move(src_device)),
+      descr(nullptr),
+      fifo_buff(new char[FIFO_SIZE]),
+      fifo_read_ptr(0),
+      fifo_write_ptr(0),
+      fifo_items(0),
+      d_sock_raw(0),
+      d_udp_port(udp_port),
+      d_n_baseband_channels(n_baseband_channels),
+      d_IQ_swap(IQ_swap_)
 {
-    std::cout << "Start Ethernet packet capture\n";
-    std::cout << "Overflow events will be indicated by o's\n";
-
-    d_n_baseband_channels = n_baseband_channels;
+    memset(reinterpret_cast<char *>(&si_me), 0, sizeof(si_me));
     if (wire_sample_type == "cbyte")
         {
             d_wire_sample_type = 1;
@@ -132,24 +140,9 @@ Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
             std::cout << "Unknown wire sample type\n";
             exit(0);
         }
+    std::cout << "Start Ethernet packet capture\n";
+    std::cout << "Overflow events will be indicated by o's\n";
     std::cout << "d_wire_sample_type:" << d_wire_sample_type << '\n';
-    d_src_device = std::move(src_device);
-    d_udp_port = udp_port;
-    d_udp_payload_size = udp_packet_size;
-    d_fifo_full = false;
-
-    // allocate signal samples buffer
-    fifo_buff = new char[FIFO_SIZE];
-    fifo_read_ptr = 0;
-    fifo_write_ptr = 0;
-    fifo_items = 0;
-    d_item_size = item_size;
-    d_IQ_swap = IQ_swap_;
-    d_sock_raw = 0;
-    d_pcap_thread = nullptr;
-    descr = nullptr;
-
-    memset(reinterpret_cast<char *>(&si_me), 0, sizeof(si_me));
 }
 
 
@@ -230,7 +223,7 @@ Gr_Complex_Ip_Packet_Source::~Gr_Complex_Ip_Packet_Source()
         {
             delete d_pcap_thread;
         }
-    delete fifo_buff;
+    delete[] fifo_buff;
     std::cout << "Stop Ethernet packet capture\n";
 }
 

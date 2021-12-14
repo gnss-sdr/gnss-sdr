@@ -34,12 +34,16 @@
 #include <utility>     // for move
 
 
-Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_t num_freq_bands, bool dump, std::string dump_filename)
+Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name,
+    uint32_t num_freq_bands,
+    bool dump,
+    std::string dump_filename)
+    : d_dump_filename(std::move(dump_filename)),
+      d_num_freq_bands(num_freq_bands),
+      d_max_buff_occ_freq_band_0(0),
+      d_max_buff_occ_freq_band_1(0),
+      d_dump(dump)
 {
-    d_num_freq_bands = num_freq_bands;
-    d_dump = dump;
-    d_dump_filename = std::move(dump_filename);
-
     // open device descriptor
     if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
         {
@@ -68,10 +72,6 @@ Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name, uint32_
         }
 
     DLOG(INFO) << "FPGA buffer monitor class created";
-
-    // initialize maximum buffer occupancy in case buffer monitoring is enabled
-    d_max_buff_occ_freq_band_0 = 0;
-    d_max_buff_occ_freq_band_1 = 0;
 
     if (d_dump)
         {

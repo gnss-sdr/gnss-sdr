@@ -22,21 +22,22 @@
 #include <utility>
 
 ChannelFsm::ChannelFsm()
+    : queue_(nullptr),
+      channel_(0U),
+      state_(0U)
 {
     acq_ = nullptr;
     trk_ = nullptr;
-    channel_ = 0U;
-    state_ = 0U;
-    queue_ = nullptr;
 }
 
 
-ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition) : acq_(std::move(acquisition))
+ChannelFsm::ChannelFsm(std::shared_ptr<AcquisitionInterface> acquisition)
+    : acq_(std::move(acquisition)),
+      queue_(nullptr),
+      channel_(0U),
+      state_(0U)
 {
     trk_ = nullptr;
-    channel_ = 0U;
-    state_ = 0U;
-    queue_ = nullptr;
 }
 
 

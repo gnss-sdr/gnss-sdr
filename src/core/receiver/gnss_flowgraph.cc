@@ -69,14 +69,15 @@
 #define GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS 8
 
 
-GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration, std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
+GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configuration,
+    std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue)  // NOLINT(performance-unnecessary-value-param)
+    : configuration_(std::move(configuration)),
+      queue_(std::move(queue)),
+      connected_(false),
+      running_(false),
+      multiband_(GNSSFlowgraph::is_multiband()),
+      enable_e6_has_rx_(false)
 {
-    connected_ = false;
-    running_ = false;
-    enable_e6_has_rx_ = false;
-    configuration_ = std::move(configuration);
-    queue_ = std::move(queue);
-    multiband_ = GNSSFlowgraph::is_multiband();
     enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
     init();
 }

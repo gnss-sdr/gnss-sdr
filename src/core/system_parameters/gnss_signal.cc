@@ -19,15 +19,15 @@
 
 
 Gnss_Signal::Gnss_Signal(const std::string& signal_)
+    : signal(signal_)
 {
-    this->signal = signal_;
 }
 
 
 Gnss_Signal::Gnss_Signal(const Gnss_Satellite& satellite_, const std::string& signal_)
+    : satellite(satellite_),
+      signal(signal_)
 {
-    this->satellite = satellite_;
-    this->signal = signal_;
 }
 
 

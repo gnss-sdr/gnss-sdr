@@ -31,15 +31,10 @@
 #include <vector>
 
 Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
+    : server_port(0), request(0), mcc(0), mns(0), lac(0), ci(0)
 {
-    mcc = 0;
-    mns = 0;
-    lac = 0;
-    ci = 0;
     supl_ctx_new(&ctx);
     assist = supl_assist_t();
-    server_port = 0;
-    request = 0;
 }
 
 

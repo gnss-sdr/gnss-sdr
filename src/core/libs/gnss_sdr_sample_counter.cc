@@ -31,27 +31,28 @@
 gnss_sdr_sample_counter::gnss_sdr_sample_counter(
     double _fs,
     int32_t _interval_ms,
-    size_t _size) : gr::sync_decimator("sample_counter",
-                        gr::io_signature::make(1, 1, _size),
-                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                        static_cast<uint32_t>(std::round(_fs * static_cast<double>(_interval_ms) / 1e3)))
+    size_t _size)
+    : gr::sync_decimator("sample_counter",
+          gr::io_signature::make(1, 1, _size),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          static_cast<uint32_t>(std::round(_fs * static_cast<double>(_interval_ms) / 1e3))),
+      fs(_fs),
+      current_T_rx_ms(0),
+      sample_counter(0),
+      interval_ms(_interval_ms),
+      report_interval_ms(1000),  // default reporting 1 second
+      samples_per_output(std::round(fs * static_cast<double>(interval_ms) / 1e3)),
+      current_s(0),
+      current_m(0),
+      current_h(0),
+      current_days(0),
+      flag_m(false),
+      flag_h(false),
+      flag_days(false),
+      flag_enable_send_msg(false)  // enable it for reporting time with asynchronous message
 {
     message_port_register_out(pmt::mp("sample_counter"));
     set_max_noutput_items(1);
-    interval_ms = _interval_ms;
-    fs = _fs;
-    samples_per_output = std::round(fs * static_cast<double>(interval_ms) / 1e3);
-    sample_counter = 0;
-    current_T_rx_ms = 0;
-    current_s = 0;
-    current_m = 0;
-    current_h = 0;
-    current_days = 0;
-    report_interval_ms = 1000;     // default reporting 1 second
-    flag_enable_send_msg = false;  // enable it for reporting time with asynchronous message
-    flag_m = false;
-    flag_h = false;
-    flag_days = false;
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
 }
 

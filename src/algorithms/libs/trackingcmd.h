@@ -15,22 +15,29 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef SRC_ALGORITHMS_LIBS_TRACKINGCMD_H_
-#define SRC_ALGORITHMS_LIBS_TRACKINGCMD_H_
+#ifndef GNSS_SDR_TRACKINGCMD_H_
+#define GNSS_SDR_TRACKINGCMD_H_
 
 #include <cstdint>
+
+/** \addtogroup Algorithms_Library
+ * \{ */
+/** \addtogroup Algorithm_libs algorithms_libs
+ * \{ */
 
 class TrackingCmd
 {
 public:
     TrackingCmd();
 
-    bool enable_carrier_nco_cmd;
-    bool enable_code_nco_cmd;
-    double code_freq_chips;
-    double carrier_freq_hz;
-    double carrier_freq_rate_hz_s;
-    uint64_t sample_counter;
+    bool enable_carrier_nco_cmd = false;
+    bool enable_code_nco_cmd = false;
+    double code_freq_chips = 0.0;
+    double carrier_freq_hz = 0.0;
+    double carrier_freq_rate_hz_s = 0.0;
+    uint64_t sample_counter = 0UL;
 };
 
-#endif /* SRC_ALGORITHMS_LIBS_TRACKINGCMD_H_ */
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_TRACKINGCMD_H_

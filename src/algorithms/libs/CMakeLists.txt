@@ -29,7 +29,6 @@ set(GNSS_SPLIBS_SOURCES
     gnss_sdr_create_directory.cc
     geofunctions.cc
     item_type_helpers.cc
-    trackingcmd.cc
     pass_through.cc
     short_x2_to_cshort.cc
     gnss_sdr_string_literals.cc

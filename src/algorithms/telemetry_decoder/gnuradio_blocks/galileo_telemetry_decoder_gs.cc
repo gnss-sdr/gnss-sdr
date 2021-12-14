@@ -84,7 +84,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_print_cnav_page(true),
                       d_enable_navdata_monitor(conf.enable_navdata_monitor),
                       d_dump_crc_stats(conf.dump_crc_stats),
-                      d_enable_reed_solomon_inav(false)
+                      d_enable_reed_solomon_inav(false),
+                      d_valid_timetag(false)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);

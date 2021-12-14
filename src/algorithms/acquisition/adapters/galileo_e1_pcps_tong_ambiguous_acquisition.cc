@@ -36,11 +36,16 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams)
+    : configuration_(configuration),
+      gnss_synchro_(nullptr),
+      role_(role),
+      threshold_(0.0),
+      channel_(0),
+      doppler_step_(0),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
-    configuration_ = configuration;
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("../data/acquisition.dat");
 
@@ -105,11 +110,6 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
             item_size_ = sizeof(gr_complex);
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-
-    channel_ = 0;
-    threshold_ = 0.0;
-    doppler_step_ = 0;
-    gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
         {

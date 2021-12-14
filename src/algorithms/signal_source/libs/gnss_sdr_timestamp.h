@@ -66,10 +66,10 @@ private:
     std::fstream d_timefilestream;
     GnssTime next_timetag{};
     double d_clock_offset_ms;
-    double d_integer_ms_offset;
     double d_fraction_ms_offset;
-    uint64_t next_timetag_samplecount;
-    bool get_next_timetag;
+    double d_integer_ms_offset;
+    uint64_t d_next_timetag_samplecount;
+    bool d_get_next_timetag;
 };
 
 

@@ -22,7 +22,7 @@ command_event_sptr command_event_make(int command_id, int event_type)
 }
 
 Command_Event::Command_Event(int command_id_, int event_type_)
+    : command_id(command_id_),
+      event_type(event_type_)
 {
-    command_id = command_id_;
-    event_type = event_type_;
 }

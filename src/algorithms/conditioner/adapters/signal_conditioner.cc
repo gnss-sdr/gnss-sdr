@@ -28,9 +28,9 @@ SignalConditioner::SignalConditioner(std::shared_ptr<GNSSBlockInterface> data_ty
     std::string role) : data_type_adapt_(std::move(data_type_adapt)),
                         in_filt_(std::move(in_filt)),
                         res_(std::move(res)),
-                        role_(std::move(role))
+                        role_(std::move(role)),
+                        connected_(false)
 {
-    connected_ = false;
 }
 
 

@@ -21,9 +21,12 @@
 #include <iostream>
 #include <sstream>
 
-Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool enable_protobuf) : socket{io_context}
+Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(const std::vector<std::string>& addresses,
+    const uint16_t& port,
+    bool enable_protobuf)
+    : socket{io_context},
+      use_protobuf(enable_protobuf)
 {
-    use_protobuf = enable_protobuf;
     if (enable_protobuf)
         {
             serdes = Serdes_Gnss_Synchro();

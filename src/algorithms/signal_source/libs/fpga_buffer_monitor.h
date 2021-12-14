@@ -81,6 +81,9 @@ private:
     int32_t buffer_monitor_test_register();
     void close_device();
 
+    std::string d_dump_filename;
+    std::ofstream d_dump_file;
+
     volatile unsigned* d_map_base;  // driver memory map corresponding to the FPGA buffer monitor
     int d_device_descriptor;        // driver descriptor corresponding to the FPGA buffer monitor
 
@@ -90,8 +93,6 @@ private:
     uint32_t d_max_buff_occ_freq_band_1;
 
     bool d_dump;
-    std::string d_dump_filename;
-    std::ofstream d_dump_file;
 };
 
 

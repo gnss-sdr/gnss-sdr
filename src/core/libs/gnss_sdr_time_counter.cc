@@ -21,20 +21,21 @@
 #include <iostream>
 #include <string>
 
-gnss_sdr_time_counter::gnss_sdr_time_counter() : gr::block("time_counter",
-                                                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                                                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+gnss_sdr_time_counter::gnss_sdr_time_counter()
+    : gr::block("time_counter",
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      current_T_rx_ms(0),
+      report_interval_ms(1000),  // default reporting 1 second
+      current_s(0),
+      current_m(0),
+      current_h(0),
+      current_days(0),
+      flag_m(false),
+      flag_h(false),
+      flag_days(false)
 {
     set_max_noutput_items(1);
-    current_T_rx_ms = 0;
-    current_s = 0;
-    current_m = 0;
-    current_h = 0;
-    current_days = 0;
-    report_interval_ms = 1000;  // default reporting 1 second
-    flag_m = false;
-    flag_h = false;
-    flag_days = false;
 }
 
 

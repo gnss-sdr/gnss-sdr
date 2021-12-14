@@ -32,14 +32,14 @@ using b_io_context = boost::asio::io_service;
 #endif
 
 TcpCmdInterface::TcpCmdInterface()
+    : rx_latitude_(0.0),
+      rx_longitude_(0.0),
+      rx_altitude_(0.0),
+      receiver_utc_time_(0),
+      keep_running_(true)
 {
     register_functions();
-    keep_running_ = true;
     control_queue_ = nullptr;
-    rx_latitude_ = 0.0;
-    rx_longitude_ = 0.0;
-    rx_altitude_ = 0.0;
-    receiver_utc_time_ = 0;
 }
 
 

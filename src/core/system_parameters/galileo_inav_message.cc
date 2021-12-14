@@ -1016,6 +1016,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "E1B_DVS_5= " << E1B_DVS_5;
             // GST
             WN_5 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_5_BIT));
+            WN_0 = WN_5;
             DLOG(INFO) << "WN_5= " << WN_5;
             TOW_5 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_5_BIT));
             DLOG(INFO) << "TOW_5= " << TOW_5;
@@ -1358,6 +1359,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             if (Time_0 == 2)  // valid data
                 {
                     WN_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_0_BIT));
+                    WN_5 = WN_0;
                     DLOG(INFO) << "WN_0= " << WN_0;
                     TOW_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TOW_0_BIT));
                     flag_TOW_set = true;  // set to false externally

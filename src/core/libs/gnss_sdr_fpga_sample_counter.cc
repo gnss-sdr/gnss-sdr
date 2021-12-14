@@ -46,30 +46,31 @@
 
 gnss_sdr_fpga_sample_counter::gnss_sdr_fpga_sample_counter(
     double _fs,
-    int32_t _interval_ms) : gr::block("fpga_fpga_sample_counter",
-                                gr::io_signature::make(0, 0, 0),
-                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    int32_t _interval_ms)
+    : gr::block("fpga_fpga_sample_counter",
+          gr::io_signature::make(0, 0, 0),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      fs(_fs),
+      sample_counter(0ULL),
+      last_sample_counter(0ULL),
+      current_T_rx_ms(0),
+      interval_ms(_interval_ms),
+      current_s(0),
+      current_m(0),
+      current_h(0),
+      current_days(0),
+      report_interval_ms(1000),     // default reporting 1 second
+      flag_enable_send_msg(false),  // enable it for reporting time with asynchronous message
+      flag_m(false),
+      flag_h(false),
+      flag_days(false),
+      is_open(true)
 {
     message_port_register_out(pmt::mp("fpga_sample_counter"));
     set_max_noutput_items(1);
-    interval_ms = _interval_ms;
-    fs = _fs;
     samples_per_output = std::round(fs * static_cast<double>(interval_ms) / 1e3);
-    open_device();
-    is_open = true;
-    sample_counter = 0ULL;
-    last_sample_counter = 0ULL;
-    current_T_rx_ms = 0;
-    current_s = 0;
-    current_m = 0;
-    current_h = 0;
-    current_days = 0;
-    report_interval_ms = 1000;  // default reporting 1 second
     samples_per_report = std::round(fs * static_cast<double>(report_interval_ms) / 1e3);
-    flag_enable_send_msg = false;  // enable it for reporting time with asynchronous message
-    flag_m = false;
-    flag_h = false;
-    flag_days = false;
+    open_device();
 }
 
 

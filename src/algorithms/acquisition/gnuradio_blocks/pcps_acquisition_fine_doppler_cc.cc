@@ -41,30 +41,41 @@ pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(cons
 pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Conf &conf_)
     : gr::block("pcps_acquisition_fine_doppler_cc",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
-          gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+          gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(conf_.dump_filename),
+      d_gnss_synchro(nullptr),
+      acq_parameters(conf_),
+      d_fs_in(conf_.fs_in),
+      d_dump_number(0),
+      d_sample_counter(0ULL),
+      d_threshold(0),
+      d_test_statistics(0),
+      d_positive_acq(0),
+      d_state(0),
+      d_samples_per_ms(static_cast<int>(conf_.samples_per_ms)),
+      d_max_dwells(conf_.max_dwells),
+      d_config_doppler_max(conf_.doppler_max),
+      d_num_doppler_points(0),
+      d_well_count(0),
+      d_n_samples_in_buffer(0),
+      d_fft_size(d_samples_per_ms),
+      d_gnuradio_forecast_samples(d_fft_size),
+      d_doppler_step(0),
+      d_channel(0),
+      d_dump_channel(0),
+      d_active(false),
+      d_dump(conf_.dump)
 {
     this->message_port_register_out(pmt::mp("events"));
-    acq_parameters = conf_;
-    d_sample_counter = 0ULL;  // SAMPLE COUNTER
-    d_active = false;
-    d_fs_in = conf_.fs_in;
-    d_samples_per_ms = static_cast<int>(conf_.samples_per_ms);
-    d_config_doppler_max = conf_.doppler_max;
-    d_fft_size = d_samples_per_ms;
-    // HS Acquisition
-    d_max_dwells = conf_.max_dwells;
-    d_gnuradio_forecast_samples = d_fft_size;
-    d_state = 0;
+
     d_fft_codes = volk_gnsssdr::vector<gr_complex>(d_fft_size);
     d_magnitude = volk_gnsssdr::vector<float>(d_fft_size);
     d_10_ms_buffer = volk_gnsssdr::vector<gr_complex>(50 * d_samples_per_ms);
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
 
-    // For dumping samples into a file
-    d_dump = conf_.dump;
-    d_dump_filename = conf_.dump_filename;
-
+    // this implementation can only produce dumps in channel 0
+    // todo: migrate config parameters to the unified acquisition config class
     if (d_dump)
         {
             std::string dump_path;
@@ -96,21 +107,6 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
                     d_dump = false;
                 }
         }
-
-    d_n_samples_in_buffer = 0;
-    d_threshold = 0;
-    d_num_doppler_points = 0;
-    d_doppler_step = 0;
-    d_gnss_synchro = nullptr;
-    d_code_phase = 0;
-    d_doppler_freq = 0;
-    d_test_statistics = 0;
-    d_well_count = 0;
-    d_channel = 0;
-    d_positive_acq = 0;
-    d_dump_number = 0;
-    d_dump_channel = 0;  // this implementation can only produce dumps in channel 0
-    // todo: migrate config parameters to the unified acquisition config class
 }
 
 

@@ -47,48 +47,45 @@ pcps_assisted_acquisition_cc_sptr pcps_make_assisted_acquisition_cc(
 pcps_assisted_acquisition_cc::pcps_assisted_acquisition_cc(
     int32_t max_dwells, uint32_t sampled_ms, int32_t doppler_max, int32_t doppler_min,
     int64_t fs_in, int32_t samples_per_ms, bool dump, const std::string &dump_filename,
-    bool enable_monitor_output) : gr::block("pcps_assisted_acquisition_cc",
-                                      gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+    bool enable_monitor_output)
+    : gr::block("pcps_assisted_acquisition_cc",
+          gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(dump_filename),
+      d_gnss_synchro(nullptr),
+      d_fs_in(fs_in),
+      d_sample_counter(0ULL),
+      d_threshold(0),
+      d_doppler_freq(0),
+      d_input_power(0.0),
+      d_test_statistics(0),
+      d_doppler_resolution(0),
+      d_channel(0),
+      d_sampled_ms(sampled_ms),
+      d_code_phase(0),
+      d_samples_per_ms(samples_per_ms),
+      d_fft_size(d_sampled_ms * d_samples_per_ms),
+      d_max_dwells(max_dwells),
+      d_gnuradio_forecast_samples(d_fft_size * 4),
+      d_doppler_max(0),
+      d_doppler_min(0),
+      d_config_doppler_max(doppler_max),
+      d_config_doppler_min(doppler_min),
+      d_num_doppler_points(0),
+      d_doppler_step(0),
+      d_state(0),
+      d_well_count(0),
+      d_active(false),
+      d_disable_assist(false),
+      d_dump(dump),
+      d_enable_monitor_output(enable_monitor_output)
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0ULL;  // SAMPLE COUNTER
-    d_active = false;
-    d_fs_in = fs_in;
-    d_samples_per_ms = samples_per_ms;
-    d_sampled_ms = sampled_ms;
-    d_config_doppler_max = doppler_max;
-    d_config_doppler_min = doppler_min;
-    d_fft_size = d_sampled_ms * d_samples_per_ms;
-    // HS Acquisition
-    d_max_dwells = max_dwells;
-    d_gnuradio_forecast_samples = d_fft_size * 4;
-    d_input_power = 0.0;
-    d_state = 0;
-    d_disable_assist = false;
+
     d_fft_codes = std::vector<gr_complex>(d_fft_size);
 
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
-
-    // For dumping samples into a file
-    d_dump = dump;
-    d_dump_filename = dump_filename;
-
-    d_enable_monitor_output = enable_monitor_output;
-
-    d_doppler_resolution = 0;
-    d_threshold = 0;
-    d_doppler_max = 0;
-    d_doppler_min = 0;
-    d_num_doppler_points = 0;
-    d_doppler_step = 0;
-    d_gnss_synchro = nullptr;
-    d_code_phase = 0;
-    d_doppler_freq = 0;
-    d_test_statistics = 0;
-    d_well_count = 0;
-    d_channel = 0;
 }
 
 

@@ -47,7 +47,6 @@
 
 gps_l1_ca_kf_tracking_cc_sptr gps_l1_ca_kf_make_tracking_cc(
     uint32_t order,
-    int64_t if_freq,
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -60,7 +59,7 @@ gps_l1_ca_kf_tracking_cc_sptr gps_l1_ca_kf_make_tracking_cc(
     int32_t bce_nu,
     int32_t bce_kappa)
 {
-    return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(order, if_freq,
+    return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(order,
         fs_in, vector_length, dump, dump_filename, dll_bw_hz, early_late_space_chips,
         bce_run, bce_ptrans, bce_strans, bce_nu, bce_kappa));
 }
@@ -78,7 +77,6 @@ void Gps_L1_Ca_Kf_Tracking_cc::forecast(int noutput_items,
 
 Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     uint32_t order,
-    int64_t if_freq,
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -89,36 +87,64 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     uint32_t bce_ptrans,
     uint32_t bce_strans,
     int32_t bce_nu,
-    int32_t bce_kappa) : gr::block("Gps_L1_Ca_Kf_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                             gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    int32_t bce_kappa)
+    : gr::block("Gps_L1_Ca_Kf_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_order(order),
+      d_vector_length(vector_length),
+      d_dump(dump),
+      d_acquisition_gnss_synchro(nullptr),
+      d_channel(0),
+      d_fs_in(fs_in),
+      d_early_late_spc_chips(early_late_space_chips),
+      d_rem_code_phase_samples(0.0),
+      d_rem_code_phase_chips(0.0),
+      d_rem_carr_phase_rad(0.0),
+      bayes_ptrans(bce_ptrans),
+      bayes_strans(bce_strans),
+      bayes_nu(bce_nu),
+      bayes_kappa(bce_kappa),
+      bayes_run(bce_run),
+      kf_iter(0),
+      d_acq_code_phase_samples(0.0),
+      d_acq_carrier_doppler_hz(0.0),
+      d_n_correlator_taps(3),
+      d_code_freq_chips(GPS_L1_CA_CODE_RATE_CPS),
+      d_code_phase_step_chips(0.0),
+      d_code_phase_rate_step_chips(0.0),
+      d_carrier_doppler_hz(0.0),
+      d_carrier_dopplerrate_hz2(0.0),
+      d_carrier_phase_step_rad(0.0),
+      d_acc_carrier_phase_rad(0.0),
+      d_carr_phase_sigma2(0.0),
+      d_code_phase_samples(0.0),
+      code_error_chips(0.0),
+      code_error_filt_chips(0.0),
+      d_current_prn_length_samples(static_cast<int>(d_vector_length)),
+      d_sample_counter(0),
+      d_acq_sample_stamp(0),
+      d_cn0_estimation_counter(0),
+      d_carrier_lock_test(1),
+      d_CN0_SNV_dB_Hz(0),
+      d_carrier_lock_threshold(FLAGS_carrier_lock_th),
+      d_carrier_lock_fail_counter(0),
+      d_enable_tracking(false),
+      d_pull_in(false),
+      d_dump_filename(dump_filename)
+
 {
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
     this->message_port_register_out(pmt::mp("events"));
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
-    // initialize internal vars
-    d_order = order;
-    d_dump = dump;
-    d_if_freq = if_freq;
-    d_fs_in = fs_in;
-    d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
 
-    d_current_prn_length_samples = static_cast<int>(d_vector_length);
-
-    // Initialize tracking  ==========================================
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
-
-    // --- DLL variables --------------------------------------------------------
-    d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code.resize(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS));
+    d_ca_code = volk_gnsssdr::vector<float>(static_cast<int>(GPS_L1_CA_CODE_LENGTH_CHIPS));
 
-    // correlator outputs (scalar)
-    d_n_correlator_taps = 3;  // Early, Prompt, and Late
-    d_correlator_outs.resize(d_n_correlator_taps, gr_complex(0.0, 0.0));
+    d_correlator_outs = volk_gnsssdr::vector<gr_complex>(d_n_correlator_taps, gr_complex(0.0, 0.0));
 
     d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
     // Set TAPs delay values [chips]
@@ -128,63 +154,24 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
 
     multicorrelator_cpu.init(2 * d_current_prn_length_samples, d_n_correlator_taps);
 
-    // --- Perform initializations ------------------------------
-    // define initial code frequency basis of NCO
-    d_code_freq_chips = GPS_L1_CA_CODE_RATE_CPS;
-    // define residual code phase (in chips)
-    d_rem_code_phase_samples = 0.0;
-    // define residual carrier phase
-    d_rem_carr_phase_rad = 0.0;
-    // define residual carrier phase covariance
-    d_carr_phase_sigma2 = 0.0;
-
-    // sample synchronization
-    d_sample_counter = 0;
-    d_acq_sample_stamp = 0;
-
-    d_enable_tracking = false;
-    d_pull_in = false;
-
-    // CN0 estimation and lock detector buffers
-    d_cn0_estimation_counter = 0;
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-    d_carrier_lock_test = 1;
-    d_CN0_SNV_dB_Hz = 0;
-    d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
 
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
-
-    d_acquisition_gnss_synchro = nullptr;
-    d_channel = 0;
-    d_acq_code_phase_samples = 0.0;
-    d_acq_carrier_doppler_hz = 0.0;
-    d_carrier_doppler_hz = 0.0;
-    d_carrier_dopplerrate_hz2 = 0.0;
-    d_acc_carrier_phase_rad = 0.0;
-    d_code_phase_samples = 0.0;
-    d_rem_code_phase_chips = 0.0;
-    d_code_phase_step_chips = 0.0;
-    d_code_phase_rate_step_chips = 0.0;
-    d_carrier_phase_step_rad = 0.0;
-    code_error_chips = 0.0;
-    code_error_filt_chips = 0.0;
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 
     // Kalman filter initialization (receiver initialization)
 
-    double CN_dB_Hz = 30;
-    double CN_lin = pow(10, CN_dB_Hz / 10.0);
+    const double CN_dB_Hz = 30;
+    const double CN_lin = pow(10, CN_dB_Hz / 10.0);
 
-    double sigma2_phase_detector_cycles2;
-    sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S));
+    const double sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S));
 
     // covariances (static)
-    double sigma2_carrier_phase = TWO_PI / 4;
-    double sigma2_doppler = 450;
-    double sigma2_doppler_rate = pow(4.0 * TWO_PI, 2) / 12.0;
+    const double sigma2_carrier_phase = TWO_PI / 4;
+    const double sigma2_doppler = 450;
+    const double sigma2_doppler_rate = pow(4.0 * TWO_PI, 2) / 12.0;
 
     kf_P_x_ini = arma::zeros(2, 2);
     kf_P_x_ini(0, 0) = sigma2_carrier_phase;
@@ -236,13 +223,6 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
         }
 
     // Bayesian covariance estimator initialization
-    kf_iter = 0;
-    bayes_run = bce_run;
-    bayes_ptrans = bce_ptrans;
-    bayes_strans = bce_strans;
-
-    bayes_kappa = bce_kappa;
-    bayes_nu = bce_nu;
     kf_R_est = kf_R;
 
     bayes_estimator.init(arma::zeros(1, 1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R) * (bayes_nu + 2));
@@ -691,7 +671,7 @@ int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unus
 
             // Kalman estimation (measurement update)
             double sigma2_phase_detector_cycles2;
-            double CN_lin = pow(10, d_CN0_SNV_dB_Hz / 10.0);
+            const double CN_lin = pow(10, d_CN0_SNV_dB_Hz / 10.0);
             sigma2_phase_detector_cycles2 = (1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S)) * (1.0 + 1.0 / (2.0 * CN_lin * GPS_L1_CA_CODE_PERIOD_S));
 
             kf_y(0) = d_carr_phase_error_rad;  // measurement vector

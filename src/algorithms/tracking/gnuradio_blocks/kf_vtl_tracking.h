@@ -21,6 +21,10 @@
 #ifndef GNSS_SDR_KF_VTL_TRACKING_H
 #define GNSS_SDR_KF_VTL_TRACKING_H
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "cpu_multicorrelator_real_codes.h"
 #include "exponential_smoother.h"
 #include "gnss_block_interface.h"
@@ -46,12 +50,7 @@
 class Gnss_Synchro;
 class kf_vtl_tracking;
 
-#if GNURADIO_USES_STD_POINTERS
-using kf_vtl_tracking_sptr = std::shared_ptr<kf_vtl_tracking>;
-#else
-using kf_vtl_tracking_sptr = boost::shared_ptr<kf_vtl_tracking>;
-#endif
-
+using kf_vtl_tracking_sptr = gnss_shared_ptr<kf_vtl_tracking>;
 
 kf_vtl_tracking_sptr kf_vtl_make_tracking(const Kf_Conf &conf_);
 

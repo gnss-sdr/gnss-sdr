@@ -219,7 +219,6 @@ private:
     int64_t d_dump_number;
     uint64_t d_sample_counter;
 
-    float d_doppler_freq;
     float d_threshold;
     float d_test_statistics;
 
@@ -227,15 +226,14 @@ private:
     int d_state;
     int d_samples_per_ms;
     int d_max_dwells;
-    int d_gnuradio_forecast_samples;
     int d_config_doppler_max;
     int d_num_doppler_points;
     int d_well_count;
     int d_n_samples_in_buffer;
     int d_fft_size;
+    int d_gnuradio_forecast_samples;
     unsigned int d_doppler_step;
     unsigned int d_channel;
-    unsigned int d_code_phase;
     unsigned int d_dump_channel;
 
     bool d_active;

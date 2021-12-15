@@ -231,10 +231,10 @@ private:
     uint32_t d_doppler_step;
     uint32_t d_sampled_ms;
     uint32_t d_dwell_count;
-    uint32_t d_tong_count;
     uint32_t d_tong_init_val;
     uint32_t d_tong_max_val;
     uint32_t d_tong_max_dwells;
+    uint32_t d_tong_count;
     uint32_t d_fft_size;
     uint32_t d_num_doppler_bins;
     uint32_t d_code_phase;

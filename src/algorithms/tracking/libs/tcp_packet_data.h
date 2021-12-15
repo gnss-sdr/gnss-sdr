@@ -30,11 +30,11 @@
 class Tcp_Packet_Data
 {
 public:
-    Tcp_Packet_Data();
+    Tcp_Packet_Data() = default;
     ~Tcp_Packet_Data() = default;
-    float proc_pack_code_error;
-    float proc_pack_carr_error;
-    float proc_pack_carrier_doppler_hz;
+    float proc_pack_code_error = 0.0;
+    float proc_pack_carr_error = 0.0;
+    float proc_pack_carrier_doppler_hz = 0.0;
 };
 
 

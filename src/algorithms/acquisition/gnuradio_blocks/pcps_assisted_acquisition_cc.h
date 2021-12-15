@@ -219,7 +219,16 @@ private:
     float d_doppler_freq;
     float d_input_power;
     float d_test_statistics;
+
+    uint32_t d_doppler_resolution;
+    uint32_t d_channel;
+    uint32_t d_sampled_ms;
+    uint32_t d_code_phase;
+
     int32_t d_samples_per_ms;
+
+    uint32_t d_fft_size;
+
     int32_t d_max_dwells;
     int32_t d_gnuradio_forecast_samples;
     int32_t d_doppler_max;
@@ -230,11 +239,6 @@ private:
     int32_t d_doppler_step;
     int32_t d_state;
     int32_t d_well_count;
-    uint32_t d_doppler_resolution;
-    uint32_t d_channel;
-    uint32_t d_sampled_ms;
-    uint32_t d_fft_size;
-    uint32_t d_code_phase;
 
     bool d_active;
     bool d_disable_assist;

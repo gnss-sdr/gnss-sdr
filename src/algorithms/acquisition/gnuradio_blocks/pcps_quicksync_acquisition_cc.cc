@@ -59,29 +59,40 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     bool bit_transition_flag,
     bool dump,
     const std::string& dump_filename,
-    bool enable_monitor_output) : gr::block("pcps_quicksync_acquisition_cc",
-                                      gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+    bool enable_monitor_output)
+    : gr::block("pcps_quicksync_acquisition_cc",
+          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+          gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(dump_filename),
+      d_gnss_synchro(nullptr),
+      d_fs_in(fs_in),
+      d_sample_counter(0ULL),
+      d_noise_floor_power(0),
+      d_threshold(0),
+      d_doppler_freq(0),
+      d_mag(0),
+      d_input_power(0.0),
+      d_test_statistics(0),
+      d_samples_per_ms(samples_per_ms),
+      d_samples_per_code(samples_per_code),
+      d_state(0),
+      d_channel(0),
+      d_folding_factor(folding_factor),
+      d_doppler_resolution(0),
+      d_doppler_max(doppler_max),
+      d_doppler_step(0),
+      d_sampled_ms(sampled_ms),
+      d_max_dwells(max_dwells),
+      d_well_count(0),
+      d_fft_size((d_samples_per_code) / d_folding_factor),
+      d_num_doppler_bins(0),
+      d_code_phase(0),
+      d_bit_transition_flag(bit_transition_flag),
+      d_active(false),
+      d_dump(dump),
+      d_enable_monitor_output(enable_monitor_output)
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0ULL;  // SAMPLE COUNTER
-    d_active = false;
-    d_state = 0;
-    d_fs_in = fs_in;
-    d_samples_per_ms = samples_per_ms;
-    d_samples_per_code = samples_per_code;
-    d_sampled_ms = sampled_ms;
-    d_max_dwells = max_dwells;
-    d_well_count = 0;
-    d_doppler_max = doppler_max;
-    d_mag = 0;
-    d_input_power = 0.0;
-    d_num_doppler_bins = 0;
-    d_bit_transition_flag = bit_transition_flag;
-    d_folding_factor = folding_factor;
-
-    // fft size is reduced.
-    d_fft_size = (d_samples_per_code) / d_folding_factor;
 
     d_fft_codes = std::vector<gr_complex>(d_fft_size);
     d_magnitude = std::vector<float>(d_samples_per_code * d_folding_factor);
@@ -96,24 +107,8 @@ pcps_quicksync_acquisition_cc::pcps_quicksync_acquisition_cc(
     d_fft_if = gnss_fft_fwd_make_unique(d_fft_size);
     d_ifft = gnss_fft_rev_make_unique(d_fft_size);
 
-    // For dumping samples into a file
-    d_dump = dump;
-    d_dump_filename = dump_filename;
-
-    d_enable_monitor_output = enable_monitor_output;
-
     d_code_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
-
     d_signal_folded = std::vector<gr_complex>(d_fft_size);
-    d_noise_floor_power = 0;
-    d_doppler_resolution = 0;
-    d_threshold = 0;
-    d_doppler_step = 0;
-    d_gnss_synchro = nullptr;
-    d_code_phase = 0;
-    d_doppler_freq = 0;
-    d_test_statistics = 0;
-    d_channel = 0;
 }
 
 

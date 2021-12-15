@@ -69,39 +69,58 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     bool dump,
     const std::string &dump_filename,
     float early_late_space_chips,
-    size_t port_ch0) : gr::block("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    size_t port_ch0)
+    : gr::block("Gps_L1_Ca_Tcp_Connector_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_acquisition_gnss_synchro(nullptr),
+      d_dump_filename(dump_filename),
+      d_early_late_spc_chips(early_late_space_chips),
+      d_code_phase_step_chips(0.0),
+      d_rem_code_phase_samples(0.0),
+      d_next_rem_code_phase_samples(0),
+      d_code_freq_hz(GPS_L1_CA_CODE_RATE_CPS),
+      d_carrier_doppler_hz(0.0),
+      d_acc_carrier_phase_rad(0.0),
+      d_code_phase_samples(0),
+      d_sample_counter_seconds(0),
+      d_fs_in(fs_in),
+      d_sample_counter(0ULL),
+      d_acq_sample_stamp(0ULL),
+      d_port_ch0(port_ch0),
+      d_port(0),
+      d_vector_length(vector_length),
+      d_channel(0),
+      d_correlation_length_samples(d_vector_length),
+      d_n_correlator_taps(3),
+      d_listen_connection(true),
+      d_current_prn_length_samples(static_cast<int32_t>(d_vector_length)),
+      d_next_prn_length_samples(0),
+      d_cn0_estimation_counter(0),
+      d_carrier_lock_fail_counter(0),
+      d_rem_carr_phase_rad(0.0),
+      d_acq_code_phase_samples(0.0),
+      d_acq_carrier_doppler_hz(0.0),
+      d_carrier_lock_test(1),
+      d_CN0_SNV_dB_Hz(0),
+      d_carrier_lock_threshold(static_cast<float>(FLAGS_carrier_lock_th)),
+      d_control_id(0),
+      d_enable_tracking(false),
+      d_pull_in(false),
+      d_dump(dump)
 {
     this->message_port_register_out(pmt::mp("events"));
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
-    // initialize internal vars
-    d_dump = dump;
-    d_fs_in = fs_in;
-    d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
-
-    // -- DLL variables --------------------------------------------------------
-    d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
-
-    // -- TCP CONNECTOR variables --------------------------------------------------------
-    d_port_ch0 = port_ch0;
-    d_port = 0;
-    d_listen_connection = true;
-    d_control_id = 0;
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
-    d_ca_code.resize(GPS_L1_CA_CODE_LENGTH_CHIPS);
+    d_ca_code = volk_gnsssdr::vector<gr_complex>(GPS_L1_CA_CODE_LENGTH_CHIPS);
 
-    // correlator outputs (scalar)
-    d_n_correlator_taps = 3;  // Very-Early, Early, Prompt, Late, Very-Late
-    d_correlator_outs.resize(d_n_correlator_taps);
-    std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
+    d_correlator_outs = volk_gnsssdr::vector<gr_complex>(d_n_correlator_taps);
 
     // map memory pointers of correlator outputs
-    d_Early = &d_correlator_outs[0];
-    d_Prompt = &d_correlator_outs[1];
-    d_Late = &d_correlator_outs[2];
+    d_Early = &d_correlator_outs[0];   // NOLINT(cppcoreguidelines-prefer-member-initializer)
+    d_Prompt = &d_correlator_outs[1];  // NOLINT(cppcoreguidelines-prefer-member-initializer)
+    d_Late = &d_correlator_outs[2];    // NOLINT(cppcoreguidelines-prefer-member-initializer)
 
     d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
     // Set TAPs delay values [chips]
@@ -109,52 +128,15 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
     d_local_code_shift_chips[1] = 0.0;
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
-    d_correlation_length_samples = d_vector_length;
-
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
-    // --- Perform initializations ------------------------------
-    // define initial code frequency basis of NCO
-    d_code_freq_hz = GPS_L1_CA_CODE_RATE_CPS;
-    // define residual code phase (in chips)
-    d_rem_code_phase_samples = 0.0;
-    // define residual carrier phase
-    d_rem_carr_phase_rad = 0.0;
-
-    // sample synchronization
-    d_sample_counter = 0ULL;
-    d_sample_counter_seconds = 0;
-    d_acq_sample_stamp = 0ULL;
-
-    d_enable_tracking = false;
-    d_pull_in = false;
-
-    d_current_prn_length_samples = static_cast<int32_t>(d_vector_length);
-
-    // CN0 estimation and lock detector buffers
-    d_cn0_estimation_counter = 0;
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-    d_carrier_lock_test = 1;
-    d_CN0_SNV_dB_Hz = 0;
-    d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = static_cast<float>(FLAGS_carrier_lock_th);
 
     systemName["G"] = std::string("GPS");
     systemName["R"] = std::string("GLONASS");
     systemName["S"] = std::string("SBAS");
     systemName["E"] = std::string("Galileo");
     systemName["C"] = std::string("Compass");
-
-    d_acquisition_gnss_synchro = nullptr;
-    d_channel = 0;
-    d_next_rem_code_phase_samples = 0;
-    d_acq_code_phase_samples = 0.0;
-    d_acq_carrier_doppler_hz = 0.0;
-    d_carrier_doppler_hz = 0.0;
-    d_acc_carrier_phase_rad = 0.0;
-    d_code_phase_samples = 0;
-    d_next_prn_length_samples = 0;
-    d_code_phase_step_chips = 0.0;
 }
 
 

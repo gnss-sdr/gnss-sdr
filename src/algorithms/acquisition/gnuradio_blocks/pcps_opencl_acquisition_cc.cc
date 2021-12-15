@@ -76,34 +76,38 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
     bool bit_transition_flag,
     bool dump,
     const std::string &dump_filename,
-    bool enable_monitor_output) : gr::block("pcps_opencl_acquisition_cc",
-                                      gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
-                                      gr::io_signature::make(0, 1, sizeof(Gnss_Synchro)))
+    bool enable_monitor_output)
+    : gr::block("pcps_opencl_acquisition_cc",
+          gr::io_signature::make(1, 1, static_cast<int>(sizeof(gr_complex) * sampled_ms * samples_per_ms)),
+          gr::io_signature::make(0, 1, sizeof(Gnss_Synchro))),
+      d_cl_fft_batch_size(1),
+      d_dump_filename(dump_filename),
+      d_fs_in(fs_in),
+      d_sample_counter(0ULL),
+      d_mag(0),
+      d_input_power(0.0),
+      d_samples_per_ms(samples_per_ms),
+      d_samples_per_code(samples_per_code),
+      d_state(0),
+      d_doppler_max(doppler_max),
+      d_sampled_ms(sampled_ms),
+      d_max_dwells(max_dwells),
+      d_well_count(0),
+      d_fft_size(d_sampled_ms * d_samples_per_ms),
+      d_fft_size_pow2(pow(2, ceil(log2(2 * d_fft_size)))),
+      d_num_doppler_bins(0),
+      d_in_dwell_count(0),
+      d_bit_transition_flag(bit_transition_flag),
+      d_active(false),
+      d_core_working(false),
+      d_dump(dump),
+      d_enable_monitor_output(enable_monitor_output)
 {
     this->message_port_register_out(pmt::mp("events"));
-    d_sample_counter = 0ULL;  // SAMPLE COUNTER
-    d_active = false;
-    d_state = 0;
-    d_core_working = false;
-    d_fs_in = fs_in;
-    d_samples_per_ms = samples_per_ms;
-    d_samples_per_code = samples_per_code;
-    d_sampled_ms = sampled_ms;
-    d_max_dwells = max_dwells;
-    d_well_count = 0;
-    d_doppler_max = doppler_max;
-    d_fft_size = d_sampled_ms * d_samples_per_ms;
-    d_fft_size_pow2 = pow(2, ceil(log2(2 * d_fft_size)));
-    d_mag = 0;
-    d_input_power = 0.0;
-    d_num_doppler_bins = 0;
-    d_bit_transition_flag = bit_transition_flag;
-    d_in_dwell_count = 0;
-    d_cl_fft_batch_size = 1;
 
     d_in_buffer = std::vector<std::vector<gr_complex>>(d_max_dwells, std::vector<gr_complex>(d_fft_size));
     d_magnitude = std::vector<float>(d_fft_size);
-    d_fft_codes = std::vector<gr_complex>(_fft_size_pow2);
+    d_fft_codes = std::vector<gr_complex>(d_fft_size_pow2);
     d_zero_vector = std::vector<gr_complex>(d_fft_size_pow2 - d_fft_size, 0.0);
 
     d_opencl = init_opencl_environment("math_kernel.cl");
@@ -116,12 +120,6 @@ pcps_opencl_acquisition_cc::pcps_opencl_acquisition_cc(
             // Inverse FFT
             d_ifft = gnss_fft_rev_make_unique(d_fft_size);
         }
-
-    // For dumping samples into a file
-    d_dump = dump;
-    d_dump_filename = dump_filename;
-
-    d_enable_monitor_output = enable_monitor_output;
 }
 
 

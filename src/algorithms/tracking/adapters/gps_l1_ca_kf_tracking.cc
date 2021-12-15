@@ -42,7 +42,6 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     int order = configuration->property(role + ".order", 2);
     int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    int f_if = configuration->property(role + ".if", 0);
     bool dump = configuration->property(role + ".dump", false);
     float dll_bw_hz = configuration->property(role + ".dll_bw_hz", static_cast<float>(2.0));
     if (FLAGS_dll_bw_hz != 0.0)
@@ -66,7 +65,6 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
             item_size_ = sizeof(gr_complex);
             tracking_ = gps_l1_ca_kf_make_tracking_cc(
                 order,
-                f_if,
                 fs_in,
                 vector_length,
                 dump,

@@ -31,33 +31,29 @@
 /***************** CUBATURE KALMAN FILTER *****************/
 
 CubatureFilter::CubatureFilter()
+    : x_pred_out(arma::zeros(1, 1)),
+      P_x_pred_out(arma::eye(1, 1) * (1 + 1)),
+      x_est(x_pred_out),
+      P_x_est(P_x_pred_out)
 {
-    int nx = 1;
-    x_pred_out = arma::zeros(nx, 1);
-    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
 }
 
 
 CubatureFilter::CubatureFilter(int nx)
+    : x_pred_out(arma::zeros(nx, 1)),
+      P_x_pred_out(arma::eye(nx, nx) * (nx + 1)),
+      x_est(x_pred_out),
+      P_x_est(P_x_pred_out)
 {
-    x_pred_out = arma::zeros(nx, 1);
-    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
 }
 
 
 CubatureFilter::CubatureFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0)
+    : x_pred_out(x_pred_0),
+      P_x_pred_out(P_x_pred_0),
+      x_est(x_pred_out),
+      P_x_est(P_x_pred_out)
 {
-    x_pred_out = x_pred_0;
-    P_x_pred_out = P_x_pred_0;
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
 }
 
 
@@ -189,33 +185,29 @@ arma::mat CubatureFilter::get_P_x_est() const
 /***************** UNSCENTED KALMAN FILTER *****************/
 
 UnscentedFilter::UnscentedFilter()
+    : x_pred_out(arma::zeros(1, 1)),
+      P_x_pred_out(arma::eye(1, 1) * (1 + 1)),
+      x_est(x_pred_out),
+      P_x_est(P_x_pred_out)
 {
-    int nx = 1;
-    x_pred_out = arma::zeros(nx, 1);
-    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
 }
 
 
 UnscentedFilter::UnscentedFilter(int nx)
+    : x_pred_out(arma::zeros(nx, 1)),
+      P_x_pred_out(arma::eye(nx, nx) * (nx + 1)),
+      x_est(x_pred_out),
+      P_x_est(P_x_pred_out)
 {
-    x_pred_out = arma::zeros(nx, 1);
-    P_x_pred_out = arma::eye(nx, nx) * (nx + 1);
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
 }
 
 
 UnscentedFilter::UnscentedFilter(const arma::vec& x_pred_0, const arma::mat& P_x_pred_0)
+    : x_pred_out(x_pred_0),
+      P_x_pred_out(P_x_pred_0),
+      x_est(x_pred_out),
+      P_x_est(P_x_pred_out)
 {
-    x_pred_out = x_pred_0;
-    P_x_pred_out = P_x_pred_0;
-
-    x_est = x_pred_out;
-    P_x_est = P_x_pred_out;
 }
 
 

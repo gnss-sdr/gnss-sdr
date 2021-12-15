@@ -104,8 +104,56 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
     float pll_bw_narrow_hz,
     float dll_bw_narrow_hz,
     int32_t extend_correlation_ms,
-    float early_late_space_chips) : gr::block("glonass_l1_ca_dll_pll_c_aid_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    float early_late_space_chips)
+    : gr::block("glonass_l1_ca_dll_pll_c_aid_tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(dump_filename),
+      d_acquisition_gnss_synchro(nullptr),
+      d_fs_in(fs_in),
+      d_glonass_freq_ch(0),
+      d_early_late_spc_chips(early_late_space_chips),
+      d_vector_length(vector_length),
+      d_channel(0),
+      d_n_correlator_taps(3),
+      d_rem_code_phase_samples(0.0),
+      d_rem_code_phase_chips(0.0),
+      d_rem_carrier_phase_rad(0.0),
+      d_rem_code_phase_integer_samples(0),
+      d_acq_code_phase_samples(0.0),
+      d_acq_carrier_doppler_hz(0.0),
+      d_dll_bw_hz(dll_bw_hz),
+      d_pll_bw_hz(pll_bw_hz),
+      d_dll_bw_narrow_hz(dll_bw_narrow_hz),
+      d_pll_bw_narrow_hz(pll_bw_narrow_hz),
+      d_code_freq_chips(GLONASS_L1_CA_CODE_RATE_CPS),
+      d_code_phase_step_chips(0.0),
+      d_carrier_doppler_hz(0.0),
+      d_carrier_frequency_hz(0.0),
+      d_carrier_doppler_old_hz(0.0),
+      d_carrier_phase_step_rad(0.0),
+      d_acc_carrier_phase_cycles(0.0),
+      d_code_phase_samples(0.0),
+      d_pll_to_dll_assist_secs_Ti(0.0),
+      d_code_error_chips_Ti(0.0),
+      d_code_error_filt_chips_s(0.0),
+      d_code_error_filt_chips_Ti(0.0),
+      d_carr_phase_error_secs_Ti(0.0),
+      d_preamble_timestamp_s(0.0),
+      d_extend_correlation_ms(extend_correlation_ms),
+      d_correlation_length_samples(static_cast<int32_t>(d_vector_length)),
+      d_sample_counter(0ULL),
+      d_acq_sample_stamp(0),
+      d_cn0_estimation_counter(0),
+      d_carrier_lock_test(1),
+      d_CN0_SNV_dB_Hz(0),
+      d_carrier_lock_threshold(FLAGS_carrier_lock_th),
+      d_carrier_lock_fail_counter(0),
+      d_enable_extended_integration(false),
+      d_preamble_synchronized(false),
+      d_enable_tracking(false),
+      d_pull_in(false),
+      d_acc_carrier_phase_initialized(false),
+      d_dump(dump)
 {
     // Telemetry bit synchronization message port input
     this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
@@ -122,31 +170,16 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
 #endif
     this->message_port_register_out(pmt::mp("events"));
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
-    // initialize internal vars
-    d_dump = dump;
-    d_fs_in = fs_in;
-    d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
-    d_correlation_length_samples = static_cast<int32_t>(d_vector_length);
 
     // Initialize tracking  ==========================================
-    d_pll_bw_hz = pll_bw_hz;
-    d_dll_bw_hz = dll_bw_hz;
-    d_pll_bw_narrow_hz = pll_bw_narrow_hz;
-    d_dll_bw_narrow_hz = dll_bw_narrow_hz;
-    d_extend_correlation_ms = extend_correlation_ms;
     d_code_loop_filter.set_DLL_BW(d_dll_bw_hz);
     d_carrier_loop_filter.set_params(10.0, d_pll_bw_hz, 2);
-
-    // --- DLL variables --------------------------------------------------------
-    d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
     d_ca_code = volk_gnsssdr::vector<gr_complex>(static_cast<size_t>(GLONASS_L1_CA_CODE_LENGTH_CHIPS));
 
-    // correlator outputs (scalar)
-    d_n_correlator_taps = 3;  // Early, Prompt, and Late
+    // correlator outputs
     d_correlator_outs = volk_gnsssdr::vector<gr_complex>(d_n_correlator_taps);
 
     d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
@@ -157,59 +190,10 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
 
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
-    // --- Perform initializations ------------------------------
-    // define initial code frequency basis of NCO
-    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_CPS;
-    // define residual code phase (in chips)
-    d_rem_code_phase_samples = 0.0;
-    // define residual carrier phase
-    d_rem_carrier_phase_rad = 0.0;
-
-    // sample synchronization
-    d_sample_counter = 0ULL;  // (from trk to tlm)
-    d_acq_sample_stamp = 0;
-    d_enable_tracking = false;
-    d_pull_in = false;
-
-    // CN0 estimation and lock detector buffers
-    d_cn0_estimation_counter = 0;
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-    d_carrier_lock_test = 1;
-    d_CN0_SNV_dB_Hz = 0;
-    d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
-
     systemName["R"] = std::string("Glonass");
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
-
-    d_acquisition_gnss_synchro = nullptr;
-    d_channel = 0;
-    d_acq_code_phase_samples = 0.0;
-    d_acq_carrier_doppler_hz = 0.0;
-    d_carrier_doppler_hz = 0.0;
-    d_code_error_filt_chips_Ti = 0.0;
-    d_acc_carrier_phase_cycles = 0.0;
-    d_code_phase_samples = 0.0;
-
-    d_pll_to_dll_assist_secs_Ti = 0.0;
-    d_rem_code_phase_chips = 0.0;
-    d_code_phase_step_chips = 0.0;
-    d_carrier_phase_step_rad = 0.0;
-    d_enable_extended_integration = false;
-    d_preamble_synchronized = false;
-    d_rem_code_phase_integer_samples = 0;
-    d_code_error_chips_Ti = 0.0;
-    d_code_error_filt_chips_s = 0.0;
-    d_carr_phase_error_secs_Ti = 0.0;
-    d_preamble_timestamp_s = 0.0;
-
-    d_carrier_frequency_hz = 0.0;
-    d_carrier_doppler_old_hz = 0.0;
-
-    d_glonass_freq_ch = 0;
-
-    d_acc_carrier_phase_initialized = false;
     // set_min_output_buffer((int64_t)300);
 }
 

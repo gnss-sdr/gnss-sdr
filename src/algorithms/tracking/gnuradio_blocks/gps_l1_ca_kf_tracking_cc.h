@@ -55,8 +55,8 @@ using gps_l1_ca_kf_tracking_cc_sptr = gnss_shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>;
 
 gps_l1_ca_kf_tracking_cc_sptr
 gps_l1_ca_kf_make_tracking_cc(uint32_t order,
-    int64_t if_freq,
-    int64_t fs_in, uint32_t vector_length,
+    int64_t fs_in,
+    uint32_t vector_length,
     bool dump,
     const std::string& dump_filename,
     float dll_bw_hz,
@@ -88,8 +88,8 @@ public:
 private:
     friend gps_l1_ca_kf_tracking_cc_sptr
     gps_l1_ca_kf_make_tracking_cc(uint32_t order,
-        int64_t if_freq,
-        int64_t fs_in, uint32_t vector_length,
+        int64_t fs_in,
+        uint32_t vector_length,
         bool dump,
         const std::string& dump_filename,
         float dll_bw_hz,
@@ -101,8 +101,8 @@ private:
         int32_t bce_kappa);
 
     Gps_L1_Ca_Kf_Tracking_cc(uint32_t order,
-        int64_t if_freq,
-        int64_t fs_in, uint32_t vector_length,
+        int64_t fs_in,
+        uint32_t vector_length,
         bool dump,
         const std::string& dump_filename,
         float dll_bw_hz,
@@ -113,6 +113,8 @@ private:
         int32_t bce_nu,
         int32_t bce_kappa);
 
+    int32_t save_matfile();
+
     // tracking configuration vars
     uint32_t d_order;
     uint32_t d_vector_length;
@@ -121,7 +123,6 @@ private:
     Gnss_Synchro* d_acquisition_gnss_synchro;
     uint32_t d_channel;
 
-    int64_t d_if_freq;
     int64_t d_fs_in;
 
     double d_early_late_spc_chips;
@@ -212,8 +213,6 @@ private:
 
     std::map<std::string, std::string> systemName;
     std::string sys;
-
-    int32_t save_matfile();
 };
 
 

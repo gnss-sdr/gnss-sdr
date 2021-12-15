@@ -78,32 +78,53 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
     const std::string &dump_filename,
     float pll_bw_hz,
     float dll_bw_hz,
-    float early_late_space_chips) : gr::block("Glonass_L2_Ca_Dll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
-                                        gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)))
+    float early_late_space_chips)
+    : gr::block("Glonass_L1_Ca_Dll_Pll_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+      d_dump_filename(dump_filename),
+      d_acquisition_gnss_synchro(nullptr),
+      d_fs_in(fs_in),
+      d_glonass_freq_ch(0),
+      d_early_late_spc_chips(early_late_space_chips),
+      d_vector_length(vector_length),
+      d_channel(0),
+      d_rem_code_phase_samples(0.0),
+      d_rem_code_phase_chips(0.0),
+      d_rem_carr_phase_rad(0.0),
+      d_acq_code_phase_samples(0.0),
+      d_acq_carrier_doppler_hz(0.0),
+      d_n_correlator_taps(3),
+      d_code_freq_chips(GLONASS_L2_CA_CODE_RATE_CPS),
+      d_code_phase_step_chips(0.0),
+      d_carrier_doppler_hz(0.0),
+      d_carrier_doppler_phase_step_rad(0.0),
+      d_carrier_frequency_hz(0.0),
+      d_carrier_phase_step_rad(0.0),
+      d_acc_carrier_phase_rad(0.0),
+      d_code_phase_samples(0.0),
+      d_current_prn_length_samples(static_cast<int32_t>(d_vector_length)),
+      d_sample_counter(0ULL),
+      d_acq_sample_stamp(0),
+      d_carrier_lock_test(1),
+      d_CN0_SNV_dB_Hz(0),
+      d_carrier_lock_threshold(FLAGS_carrier_lock_th),
+      d_cn0_estimation_counter(0),
+      d_carrier_lock_fail_counter(0),
+      d_enable_tracking(false),
+      d_pull_in(false),
+      d_acc_carrier_phase_initialized(false),
+      d_dump(dump)
 {
     this->message_port_register_out(pmt::mp("events"));
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
-    // initialize internal vars
-    d_dump = dump;
-    d_fs_in = fs_in;
-    d_vector_length = vector_length;
-    d_dump_filename = dump_filename;
 
-    d_current_prn_length_samples = static_cast<int32_t>(d_vector_length);
-
-    // Initialize tracking  ==========================================
     d_code_loop_filter.set_DLL_BW(dll_bw_hz);
     d_carrier_loop_filter.set_PLL_BW(pll_bw_hz);
-
-    // --- DLL variables -------------------------------------------------------
-    d_early_late_spc_chips = early_late_space_chips;  // Define early-late offset (in chips)
 
     // Initialization of local code replica
     // Get space for a vector with the C/A code replica sampled 1x/chip
     d_ca_code = volk_gnsssdr::vector<gr_complex>(static_cast<size_t>(GLONASS_L2_CA_CODE_LENGTH_CHIPS));
 
-    // correlator outputs (scalar)
-    d_n_correlator_taps = 3;  // Early, Prompt, and Late
     d_correlator_outs = volk_gnsssdr::vector<gr_complex>(d_n_correlator_taps);
 
     d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
@@ -114,48 +135,9 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
 
     multicorrelator_cpu.init(2 * d_current_prn_length_samples, d_n_correlator_taps);
 
-    // --- Perform initializations ------------------------------
-    // define initial code frequency basis of NCO
-    d_code_freq_chips = GLONASS_L2_CA_CODE_RATE_CPS;
-    // define residual code phase (in chips)
-    d_rem_code_phase_samples = 0.0;
-    // define residual carrier phase
-    d_rem_carr_phase_rad = 0.0;
-
-    // sample synchronization
-    d_sample_counter = 0ULL;
-    // d_sample_counter_seconds = 0;
-    d_acq_sample_stamp = 0;
-
-    d_enable_tracking = false;
-    d_pull_in = false;
-
-    // CN0 estimation and lock detector buffers
-    d_cn0_estimation_counter = 0;
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-    d_carrier_lock_test = 1;
-    d_CN0_SNV_dB_Hz = 0;
-    d_carrier_lock_fail_counter = 0;
-    d_carrier_lock_threshold = FLAGS_carrier_lock_th;
 
     systemName["R"] = std::string("Glonass");
-
-    d_acquisition_gnss_synchro = nullptr;
-    d_channel = 0;
-    d_acq_code_phase_samples = 0.0;
-    d_acq_carrier_doppler_hz = 0.0;
-    d_carrier_doppler_hz = 0.0;
-    d_carrier_doppler_phase_step_rad = 0.0;
-    d_carrier_frequency_hz = 0.0;
-    d_acc_carrier_phase_rad = 0.0;
-    d_code_phase_samples = 0.0;
-    d_rem_code_phase_chips = 0.0;
-    d_code_phase_step_chips = 0.0;
-    d_carrier_phase_step_rad = 0.0;
-
-    d_glonass_freq_ch = 0;
-
-    d_acc_carrier_phase_initialized = false;
 
     set_relative_rate(1.0 / static_cast<double>(d_vector_length));
 }

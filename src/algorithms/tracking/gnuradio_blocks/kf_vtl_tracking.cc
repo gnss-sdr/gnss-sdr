@@ -458,8 +458,8 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
             d_n_correlator_taps = 3;
         }
 
-    d_correlator_outs.reserve(d_n_correlator_taps);
-    d_local_code_shift_chips.reserve(d_n_correlator_taps);
+    d_correlator_outs = volk_gnsssdr::vector<gr_complex>(d_n_correlator_taps);
+    d_local_code_shift_chips = volk_gnsssdr::vector<float>(d_n_correlator_taps);
     // map memory pointers of correlator outputs
     if (d_veml)
         {
@@ -517,9 +517,9 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
     d_code_freq_kf_chips_s = d_code_chip_rate;
 
     // CN0 estimation and lock detector buffers
-    d_Prompt_buffer.reserve(d_trk_parameters.cn0_samples);
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(d_trk_parameters.cn0_samples);
 
-    d_Prompt_Data.reserve(1);
+    d_Prompt_Data = volk_gnsssdr::vector<gr_complex>(1);
     d_cn0_smoother = Exponential_Smoother();
     d_cn0_smoother.set_alpha(d_trk_parameters.cn0_smoother_alpha);
 

@@ -71,7 +71,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
         }
 
     // basic check
-    if ((gain_mode_ != "manual") and (gain_mode_ != "slow_attack") and (gain_mode_ != "fast_attack") and (gain_mode_ != "hybrid"))
+    if ((gain_mode_ != "manual") && (gain_mode_ != "slow_attack") && (gain_mode_ != "fast_attack") && (gain_mode_ != "hybrid"))
         {
             std::cout << "Configuration parameter gain_mode should take one of these values:\n";
             std::cout << " manual, slow_attack, fast_attack, hybrid\n";
@@ -83,7 +83,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
 
     if (gain_mode_ == "manual")
         {
-            if (rf_gain_ > 73.0 or rf_gain_ < -1.0)
+            if (rf_gain_ > 73.0 || rf_gain_ < -1.0)
                 {
                     std::cout << "Configuration parameter rf_gain should take values between -1.0 and 73 dB\n";
                     std::cout << "Error: provided value rf_gain=" << rf_gain_ << " is not among valid values\n";
@@ -93,7 +93,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
                 }
         }
 
-    if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
+    if ((filter_source_ != "Off") && (filter_source_ != "Auto") && (filter_source_ != "File") && (filter_source_ != "Design"))
         {
             std::cout << "Configuration parameter filter_source should take one of these values:\n";
             std::cout << "  Off: Disable filter\n";
@@ -108,7 +108,7 @@ PlutosdrSignalSource::PlutosdrSignalSource(const ConfigurationInterface* configu
             LOG(WARNING) << "Invalid configuration value for filter_source parameter. Set to filter_source=Off";
         }
 
-    if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+    if (bandwidth_ < 200000 || bandwidth_ > 56000000)
         {
             std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz\n";
             std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values\n";
@@ -216,7 +216,7 @@ void PlutosdrSignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr PlutosdrSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
-    return gr::basic_block_sptr();
+    return {};
 }
 
 

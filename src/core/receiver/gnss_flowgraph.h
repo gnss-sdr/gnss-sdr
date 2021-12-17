@@ -205,14 +205,13 @@ private:
     int disconnect_fpga_sample_counter();
 #endif
 
-    void assign_channels();
+    int assign_channels();
     void check_signal_conditioners();
 
     void set_signals_list();
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
     Gnss_Signal search_next_signal(const std::string& searched_signal,
-        const bool pop,
         bool& is_primary_frequency,
         bool& assistance_available,
         float& estimated_doppler,

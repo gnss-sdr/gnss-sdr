@@ -410,6 +410,15 @@ void GNSSFlowgraph::disconnect()
 int GNSSFlowgraph::connect_desktop_flowgraph()
 {
     // Connect blocks to the top_block
+    const int max_channels_in_acq = configuration_->property("Channels.in_acquisition", 0);
+    if (max_channels_in_acq > channels_count_)
+        {
+            help_hint_ += " * The maximum number of channels with concurrent signal acquisition is set to Channels.in_acquisition=" + std::to_string(max_channels_in_acq) + ",\n";
+            help_hint_ += " but the total number of channels is set to " + std::to_string(channels_count_) + ".\n";
+            help_hint_ += " Please set Channels.in_acquisition to " + std::to_string(channels_count_) + " or lower, or increment the number of channels in your configuration file.\n";
+            return 1;
+        }
+
     if (connect_signal_sources() != 0)
         {
             return 1;
@@ -458,7 +467,10 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
 
     check_signal_conditioners();
 
-    assign_channels();
+    if (assign_channels() != 0)
+        {
+            return 1;
+        }
 
     if (connect_observables_to_pvt() != 0)
         {
@@ -563,6 +575,15 @@ int GNSSFlowgraph::disconnect_desktop_flowgraph()
 #if ENABLE_FPGA
 int GNSSFlowgraph::connect_fpga_flowgraph()
 {
+    const int max_channels_in_acq = configuration_->property("Channels.in_acquisition", 0);
+    if (max_channels_in_acq != 1)
+        {
+            help_hint_ += " * The maximum number of channels with concurrent signal acquisition is set to Channels.in_acquisition=" + std::to_string(max_channels_in_acq) + ",\n";
+            help_hint_ += " but it must be set to 1 in the FPGA flow graph.\n";
+            help_hint_ += " Please set Channels.in_acquisition=1 in your configuration file.\n";
+            return 1;
+        }
+
     // Check that the Signal Source has been instantiated successfully
     for (auto& src : sig_source_)
         {
@@ -610,7 +631,10 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
             return 1;
         }
 
-    assign_channels();
+    if (assign_channels() != 0)
+        {
+            return 1;
+        }
 
     if (connect_observables_to_pvt() != 0)
         {
@@ -1709,7 +1733,7 @@ void GNSSFlowgraph::check_signal_conditioners()
 }
 
 
-void GNSSFlowgraph::assign_channels()
+int GNSSFlowgraph::assign_channels()
 {
     // Put channels fixed to a given satellite at the beginning of the vector, then the rest
     std::vector<unsigned int> vector_of_channels;
@@ -1735,6 +1759,95 @@ void GNSSFlowgraph::assign_channels()
                 }
         }
 
+    if (configuration_->property("Channels_1C.count", 0ULL) > available_GPS_1C_signals_.size())
+        {
+            help_hint_ += " * The number of GPS L1 channels is set to Channels_1C.count=" + std::to_string(configuration_->property("Channels_1C.count", 0));
+            help_hint_ += " but the maximum number of available GPS satellites is " + std::to_string(available_GPS_1C_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_1C.count=" + std::to_string(available_GPS_1C_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_2S.count", 0ULL) > available_GPS_2S_signals_.size())
+        {
+            help_hint_ += " * The number of GPS L2 channels is set to Channels_2S.count=" + std::to_string(configuration_->property("Channels_2S.count", 0));
+            help_hint_ += " but the maximum number of available GPS satellites is " + std::to_string(available_GPS_2S_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_2S.count=" + std::to_string(available_GPS_2S_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_L5.count", 0ULL) > available_GPS_L5_signals_.size())
+        {
+            help_hint_ += " * The number of GPS L5 channels is set to Channels_L5.count=" + std::to_string(configuration_->property("Channels_L5.count", 0));
+            help_hint_ += " but the maximum number of available GPS satellites is " + std::to_string(available_GPS_L5_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_L5.count=" + std::to_string(available_GPS_L5_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_1B.count", 0ULL) > available_GAL_1B_signals_.size())
+        {
+            help_hint_ += " * The number of Galileo E1 channels is set to Channels_1B.count=" + std::to_string(configuration_->property("Channels_1B.count", 0));
+            help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_1B_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_1B.count=" + std::to_string(available_GAL_1B_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_5X.count", 0ULL) > available_GAL_5X_signals_.size())
+        {
+            help_hint_ += " * The number of Galileo E5a channels is set to Channels_5X.count=" + std::to_string(configuration_->property("Channels_5X.count", 0));
+            help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_5X_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_5X.count=" + std::to_string(available_GAL_5X_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_7X.count", 0ULL) > available_GAL_7X_signals_.size())
+        {
+            help_hint_ += " * The number of Galileo E5b channels is set to Channels_7X.count=" + std::to_string(configuration_->property("Channels_7X.count", 0));
+            help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_7X_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_7X.count=" + std::to_string(available_GAL_7X_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_E6.count", 0ULL) > available_GAL_E6_signals_.size())
+        {
+            help_hint_ += " * The number of Galileo E6 channels is set to Channels_7X.count=" + std::to_string(configuration_->property("Channels_E6.count", 0));
+            help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_E6_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_E6.count=" + std::to_string(available_GAL_E6_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_1G.count", 0ULL) > available_GLO_1G_signals_.size() + 8)  // satellites sharing same frequency number
+        {
+            help_hint_ += " * The number of Glonass L1 channels is set to Channels_1G.count=" + std::to_string(configuration_->property("Channels_1G.count", 0));
+            help_hint_ += " but the maximum number of available Glonass satellites is " + std::to_string(available_GLO_1G_signals_.size() + 8) + ".\n";
+            help_hint_ += " Please set Channels_1G.count=" + std::to_string(available_GLO_1G_signals_.size() + 8) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_2G.count", 0ULL) > available_GLO_2G_signals_.size() + 8)  // satellites sharing same frequency number
+        {
+            help_hint_ += " * The number of Glonass L2 channels is set to Channels_2G.count=" + std::to_string(configuration_->property("Channels_2G.count", 0));
+            help_hint_ += " but the maximum number of available Glonass satellites is " + std::to_string(available_GLO_2G_signals_.size() + 8) + ".\n";
+            help_hint_ += " Please set Channels_1G.count=" + std::to_string(available_GLO_2G_signals_.size() + 8) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_B1.count", 0ULL) > available_BDS_B1_signals_.size())
+        {
+            help_hint_ += " * The number of BeiDou B1 channels is set to Channels_B1.count=" + std::to_string(configuration_->property("Channels_B1.count", 0));
+            help_hint_ += " but the maximum number of available BeiDou satellites is " + std::to_string(available_BDS_B1_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_B1.count=" + std::to_string(available_BDS_B1_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+    if (configuration_->property("Channels_B3.count", 0ULL) > available_BDS_B3_signals_.size())
+        {
+            help_hint_ += " * The number of BeiDou B3 channels is set to Channels_B1.count=" + std::to_string(configuration_->property("Channels_B3.count", 0));
+            help_hint_ += " but the maximum number of available BeiDou satellites is " + std::to_string(available_BDS_B3_signals_.size()) + ".\n";
+            help_hint_ += " Please set Channels_B3.count=" + std::to_string(available_BDS_B3_signals_.size()) + " or lower in your configuration file.\n";
+            top_block_->disconnect_all();
+            return 1;
+        }
+
     // Assign satellites to channels in the initialization
     for (unsigned int& i : vector_of_channels)
         {
@@ -1754,7 +1867,7 @@ void GNSSFlowgraph::assign_channels()
                     float estimated_doppler;
                     double RX_time;
                     bool is_primary_freq;
-                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, false, is_primary_freq, assistance_available, estimated_doppler, RX_time));
+                    channels_.at(i)->set_signal(search_next_signal(gnss_signal, is_primary_freq, assistance_available, estimated_doppler, RX_time));
                 }
             else
                 {
@@ -1839,6 +1952,7 @@ void GNSSFlowgraph::assign_channels()
                     channels_.at(i)->set_signal(signal_value);
                 }
         }
+    return 0;
 }
 
 
@@ -2052,7 +2166,6 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                     if (sat_ == 0)
                         {
                             gnss_signal = search_next_signal(channels_[current_channel]->get_signal().get_signal_str(),
-                                true,
                                 is_primary_freq,
                                 assistance_available,
                                 estimated_doppler,
@@ -2816,7 +2929,6 @@ bool GNSSFlowgraph::is_multiband() const
 
 
 Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal,
-    const bool pop,
     bool& is_primary_frequency,
     bool& assistance_available,
     float& estimated_doppler,
@@ -2829,12 +2941,11 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
     switch (mapStringValues_[searched_signal])
         {
         case evGPS_1C:
-            // todo: assist the satellite selection with almanac and current PVT here (rehuse priorize_satellite function used in control_thread)
+            // todo: assist the satellite selection with almanac and current PVT here (reuse priorize_satellite function used in control_thread)
             result = available_GPS_1C_signals_.front();
-            available_GPS_1C_signals_.pop_front();
-            if (!pop)
+            if (available_GPS_1C_signals_.size() > 1)
                 {
-                    available_GPS_1C_signals_.push_back(result);
+                    available_GPS_1C_signals_.pop_front();
                 }
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
@@ -2859,10 +2970,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             RX_time = current_status.second->RX_time;
                                             // 3. return the GPS L2 satellite and remove it from list
                                             result = *it2;
-                                            if (pop)
-                                                {
-                                                    available_GPS_2S_signals_.erase(it2);
-                                                }
+                                            available_GPS_2S_signals_.erase(it2);
                                             found_signal = true;
                                             assistance_available = true;
                                             break;
@@ -2873,20 +2981,18 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                     if (found_signal == false)
                         {
                             result = available_GPS_2S_signals_.front();
-                            available_GPS_2S_signals_.pop_front();
-                            if (!pop)
+                            if (available_GPS_2S_signals_.size() > 1)
                                 {
-                                    available_GPS_2S_signals_.push_back(result);
+                                    available_GPS_2S_signals_.pop_front();
                                 }
                         }
                 }
             else
                 {
                     result = available_GPS_2S_signals_.front();
-                    available_GPS_2S_signals_.pop_front();
-                    if (!pop)
+                    if (available_GPS_2S_signals_.size() > 1)
                         {
-                            available_GPS_2S_signals_.push_back(result);
+                            available_GPS_2S_signals_.pop_front();
                         }
                 }
             break;
@@ -2912,10 +3018,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the GPS L5 satellite and remove it from list
                                             result = *it2;
-                                            if (pop)
-                                                {
-                                                    available_GPS_L5_signals_.erase(it2);
-                                                }
+                                            available_GPS_L5_signals_.erase(it2);
                                             found_signal = true;
                                             assistance_available = true;
                                             break;
@@ -2927,20 +3030,18 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (found_signal == false)
                 {
                     result = available_GPS_L5_signals_.front();
-                    available_GPS_L5_signals_.pop_front();
-                    if (!pop)
+                    if (available_GPS_L5_signals_.size() > 1)
                         {
-                            available_GPS_L5_signals_.push_back(result);
+                            available_GPS_L5_signals_.pop_front();
                         }
                 }
             break;
 
         case evGAL_1B:
             result = available_GAL_1B_signals_.front();
-            available_GAL_1B_signals_.pop_front();
-            if (!pop)
+            if (available_GAL_1B_signals_.size() > 1)
                 {
-                    available_GAL_1B_signals_.push_back(result);
+                    available_GAL_1B_signals_.pop_front();
                 }
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
@@ -2966,10 +3067,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the Gal 5X satellite and remove it from list
                                             result = *it2;
-                                            if (pop)
-                                                {
-                                                    available_GAL_5X_signals_.erase(it2);
-                                                }
+                                            available_GAL_5X_signals_.erase(it2);
                                             found_signal = true;
                                             assistance_available = true;
                                             break;
@@ -2981,10 +3079,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (found_signal == false)
                 {
                     result = available_GAL_5X_signals_.front();
-                    available_GAL_5X_signals_.pop_front();
-                    if (!pop)
+                    if (available_GAL_5X_signals_.size() > 1)
                         {
-                            available_GAL_5X_signals_.push_back(result);
+                            available_GAL_5X_signals_.pop_front();
                         }
                 }
             break;
@@ -3010,10 +3107,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the Gal 7X satellite and remove it from list
                                             result = *it2;
-                                            if (pop)
-                                                {
-                                                    available_GAL_7X_signals_.erase(it2);
-                                                }
+                                            available_GAL_7X_signals_.erase(it2);
                                             found_signal = true;
                                             assistance_available = true;
                                             break;
@@ -3025,10 +3119,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (found_signal == false)
                 {
                     result = available_GAL_7X_signals_.front();
-                    available_GAL_7X_signals_.pop_front();
-                    if (!pop)
+                    if (available_GAL_7X_signals_.size() > 1)
                         {
-                            available_GAL_7X_signals_.push_back(result);
+                            available_GAL_7X_signals_.pop_front();
                         }
                 }
             break;
@@ -3054,10 +3147,7 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                             // std::cout << " Channel: " << it->first << " => Doppler: " << estimated_doppler << "[Hz] \n";
                                             // 3. return the Gal E6 satellite and remove it from list
                                             result = *it2;
-                                            if (pop)
-                                                {
-                                                    available_GAL_E6_signals_.erase(it2);
-                                                }
+                                            available_GAL_E6_signals_.erase(it2);
                                             found_signal = true;
                                             assistance_available = true;
                                             break;
@@ -3069,56 +3159,51 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             if (found_signal == false)
                 {
                     result = available_GAL_E6_signals_.front();
-                    available_GAL_E6_signals_.pop_front();
-                    if (!pop)
+                    if (available_GAL_E6_signals_.size() > 1)
                         {
-                            available_GAL_E6_signals_.push_back(result);
+                            available_GAL_E6_signals_.pop_front();
                         }
                 }
             break;
 
         case evGLO_1G:
             result = available_GLO_1G_signals_.front();
-            available_GLO_1G_signals_.pop_front();
-            if (!pop)
+            if (available_GLO_1G_signals_.size() > 1)
                 {
-                    available_GLO_1G_signals_.push_back(result);
+                    available_GLO_1G_signals_.pop_front();
                 }
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGLO_2G:
             result = available_GLO_2G_signals_.front();
-            available_GLO_2G_signals_.pop_front();
-            if (!pop)
+            if (available_GLO_2G_signals_.size() > 1)
                 {
-                    available_GLO_2G_signals_.push_back(result);
+                    available_GLO_2G_signals_.pop_front();
                 }
             break;
 
         case evBDS_B1:
             result = available_BDS_B1_signals_.front();
-            available_BDS_B1_signals_.pop_front();
-            if (!pop)
+            if (available_BDS_B1_signals_.size() > 1)
                 {
-                    available_BDS_B1_signals_.push_back(result);
+                    available_BDS_B1_signals_.pop_front();
                 }
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evBDS_B3:
             result = available_BDS_B3_signals_.front();
-            available_BDS_B3_signals_.pop_front();
-            if (!pop)
+            if (available_BDS_B3_signals_.size() > 1)
                 {
-                    available_BDS_B3_signals_.push_back(result);
+                    available_BDS_B3_signals_.pop_front();
                 }
             break;
 
         default:
             LOG(ERROR) << "This should not happen :-(";
             result = available_GPS_1C_signals_.front();
-            if (pop)
+            if (available_GPS_1C_signals_.size() > 1)
                 {
                     available_GPS_1C_signals_.pop_front();
                 }

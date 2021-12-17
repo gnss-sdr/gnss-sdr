@@ -95,6 +95,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added a new output parameter `Flag_PLL_180_deg_phase_locked` in the monitor
   output that indicates if the PLL got locked at 180 degrees, so the symbol sign
   is reversed.
+- Fix bug in the satellite selection algorithm for configurations with a large
+  number of channels. The maximum number of channels per signal is now limited
+  to the number of available satellites per system. The number of channels
+  performing concurrent acquisition, `Channels.in_acquisition`, cannot be larger
+  than the total number of channels. The program will stop if those requirements
+  are not met in the configuration file.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

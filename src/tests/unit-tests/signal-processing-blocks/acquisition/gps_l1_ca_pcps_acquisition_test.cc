@@ -97,7 +97,9 @@ void GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_channel_events(const pmt::pm
 }
 
 
-GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx() : gr::block("GpsL1CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx()
+    : gr::block("GpsL1CaPcpsAcquisitionTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)),
+      rx_message(0)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -110,7 +112,6 @@ GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx() : gr::blo
         boost::bind(&GpsL1CaPcpsAcquisitionTest_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
-    rx_message = 0;
 }
 
 
@@ -123,12 +124,12 @@ class GpsL1CaPcpsAcquisitionTest : public ::testing::Test
 {
 protected:
     GpsL1CaPcpsAcquisitionTest()
+        : item_size(sizeof(gr_complex)),
+          doppler_max(5000),
+          doppler_step(100)
     {
         config = std::make_shared<InMemoryConfiguration>();
-        item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
-        doppler_max = 5000;
-        doppler_step = 100;
     }
 
     ~GpsL1CaPcpsAcquisitionTest() override = default;

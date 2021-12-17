@@ -41,12 +41,12 @@ class GalileoE1DllPllVemlTrackingInternalTest : public ::testing::Test
 {
 protected:
     GalileoE1DllPllVemlTrackingInternalTest()
+        : item_size(sizeof(gr_complex)),
+          stop(false),
+          message(0)
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
-        item_size = sizeof(gr_complex);
-        stop = false;
-        message = 0;
         gnss_synchro = Gnss_Synchro();
     }
 

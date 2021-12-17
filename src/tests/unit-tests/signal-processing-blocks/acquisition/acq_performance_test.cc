@@ -282,7 +282,8 @@ protected:
 
         num_thresholds = pfa_vector.size();
 
-        int aux2 = ((generated_signal_duration_s * 900 - (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells)) / (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells));
+        // the gnss simulator does not dump the trk observables for the last 100 ms of generated signal
+        int aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells) - 1);
         if ((FLAGS_acq_test_num_meas > 0) and (FLAGS_acq_test_num_meas < aux2))
             {
                 num_of_measurements = static_cast<unsigned int>(FLAGS_acq_test_num_meas);
@@ -369,6 +370,8 @@ protected:
     std::string signal_id;
 
 private:
+    static const uint32_t ms_per_s = 1000;
+
     std::string generator_binary;
     std::string p1;
     std::string p2;

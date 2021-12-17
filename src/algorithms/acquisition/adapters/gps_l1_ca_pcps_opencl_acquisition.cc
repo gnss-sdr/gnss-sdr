@@ -224,7 +224,7 @@ void GpsL1CaPcpsOpenClAcquisition::reset()
 }
 
 
-float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa)
+float GpsL1CaPcpsOpenClAcquisition::calculate_threshold(float pfa) const
 {
     // Calculate the threshold
     unsigned int frequency_bins = 0;

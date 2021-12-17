@@ -1348,7 +1348,7 @@ int GNSSFlowgraph::assign_channels()
                 }
         }
 
-    if (configuration_->property("Channels_1C.count", 0ULL) > available_GPS_1C_signals_.size())
+    if (configuration_->property("Channels_1C.count", uint64_t(0ULL)) > available_GPS_1C_signals_.size())
         {
             help_hint_ += " * The number of GPS L1 channels is set to Channels_1C.count=" + std::to_string(configuration_->property("Channels_1C.count", 0));
             help_hint_ += " but the maximum number of available GPS satellites is " + std::to_string(available_GPS_1C_signals_.size()) + ".\n";
@@ -1356,7 +1356,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_2S.count", 0ULL) > available_GPS_2S_signals_.size())
+    if (configuration_->property("Channels_2S.count", uint64_t(0ULL)) > available_GPS_2S_signals_.size())
         {
             help_hint_ += " * The number of GPS L2 channels is set to Channels_2S.count=" + std::to_string(configuration_->property("Channels_2S.count", 0));
             help_hint_ += " but the maximum number of available GPS satellites is " + std::to_string(available_GPS_2S_signals_.size()) + ".\n";
@@ -1364,7 +1364,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_L5.count", 0ULL) > available_GPS_L5_signals_.size())
+    if (configuration_->property("Channels_L5.count", uint64_t(0ULL)) > available_GPS_L5_signals_.size())
         {
             help_hint_ += " * The number of GPS L5 channels is set to Channels_L5.count=" + std::to_string(configuration_->property("Channels_L5.count", 0));
             help_hint_ += " but the maximum number of available GPS satellites is " + std::to_string(available_GPS_L5_signals_.size()) + ".\n";
@@ -1372,7 +1372,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_1B.count", 0ULL) > available_GAL_1B_signals_.size())
+    if (configuration_->property("Channels_1B.count", uint64_t(0ULL)) > available_GAL_1B_signals_.size())
         {
             help_hint_ += " * The number of Galileo E1 channels is set to Channels_1B.count=" + std::to_string(configuration_->property("Channels_1B.count", 0));
             help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_1B_signals_.size()) + ".\n";
@@ -1380,7 +1380,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_5X.count", 0ULL) > available_GAL_5X_signals_.size())
+    if (configuration_->property("Channels_5X.count", uint64_t(0ULL)) > available_GAL_5X_signals_.size())
         {
             help_hint_ += " * The number of Galileo E5a channels is set to Channels_5X.count=" + std::to_string(configuration_->property("Channels_5X.count", 0));
             help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_5X_signals_.size()) + ".\n";
@@ -1388,7 +1388,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_7X.count", 0ULL) > available_GAL_7X_signals_.size())
+    if (configuration_->property("Channels_7X.count", uint64_t(0ULL)) > available_GAL_7X_signals_.size())
         {
             help_hint_ += " * The number of Galileo E5b channels is set to Channels_7X.count=" + std::to_string(configuration_->property("Channels_7X.count", 0));
             help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_7X_signals_.size()) + ".\n";
@@ -1396,7 +1396,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_E6.count", 0ULL) > available_GAL_E6_signals_.size())
+    if (configuration_->property("Channels_E6.count", uint64_t(0ULL)) > available_GAL_E6_signals_.size())
         {
             help_hint_ += " * The number of Galileo E6 channels is set to Channels_7X.count=" + std::to_string(configuration_->property("Channels_E6.count", 0));
             help_hint_ += " but the maximum number of available Galileo satellites is " + std::to_string(available_GAL_E6_signals_.size()) + ".\n";
@@ -1404,7 +1404,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_1G.count", 0ULL) > available_GLO_1G_signals_.size() + 8)  // satellites sharing same frequency number
+    if (configuration_->property("Channels_1G.count", uint64_t(0ULL)) > available_GLO_1G_signals_.size() + 8)  // satellites sharing same frequency number
         {
             help_hint_ += " * The number of Glonass L1 channels is set to Channels_1G.count=" + std::to_string(configuration_->property("Channels_1G.count", 0));
             help_hint_ += " but the maximum number of available Glonass satellites is " + std::to_string(available_GLO_1G_signals_.size() + 8) + ".\n";
@@ -1412,7 +1412,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_2G.count", 0ULL) > available_GLO_2G_signals_.size() + 8)  // satellites sharing same frequency number
+    if (configuration_->property("Channels_2G.count", uint64_t(0ULL)) > available_GLO_2G_signals_.size() + 8)  // satellites sharing same frequency number
         {
             help_hint_ += " * The number of Glonass L2 channels is set to Channels_2G.count=" + std::to_string(configuration_->property("Channels_2G.count", 0));
             help_hint_ += " but the maximum number of available Glonass satellites is " + std::to_string(available_GLO_2G_signals_.size() + 8) + ".\n";
@@ -1420,7 +1420,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_B1.count", 0ULL) > available_BDS_B1_signals_.size())
+    if (configuration_->property("Channels_B1.count", uint64_t(0ULL)) > available_BDS_B1_signals_.size())
         {
             help_hint_ += " * The number of BeiDou B1 channels is set to Channels_B1.count=" + std::to_string(configuration_->property("Channels_B1.count", 0));
             help_hint_ += " but the maximum number of available BeiDou satellites is " + std::to_string(available_BDS_B1_signals_.size()) + ".\n";
@@ -1428,7 +1428,7 @@ int GNSSFlowgraph::assign_channels()
             top_block_->disconnect_all();
             return 1;
         }
-    if (configuration_->property("Channels_B3.count", 0ULL) > available_BDS_B3_signals_.size())
+    if (configuration_->property("Channels_B3.count", uint64_t(0ULL)) > available_BDS_B3_signals_.size())
         {
             help_hint_ += " * The number of BeiDou B3 channels is set to Channels_B1.count=" + std::to_string(configuration_->property("Channels_B3.count", 0));
             help_hint_ += " but the maximum number of available BeiDou satellites is " + std::to_string(available_BDS_B3_signals_.size()) + ".\n";

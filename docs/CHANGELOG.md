@@ -42,6 +42,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   readability of the code, could potentially increase performance, and allows
   for easier detection of unused data members (see
   https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize).
+  Added the `cppcoreguidelines-prefer-member-initializer` clang-tidy check to
+  enforce this policy.
 - Non-functional change: Fixed formatting defects detected by clang-format 13.0.
 - Non-functional change: Simplified flow graph disconnection.
 - Updated GSL implementation to v0.40.0. See

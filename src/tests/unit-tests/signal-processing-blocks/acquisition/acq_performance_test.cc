@@ -991,7 +991,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                             for (int i = 0; i < num_clean_executions - 1; i++)
 
                                                 {
-                                                    if (abs(clean_delay_estimation_error(i)) < 0.5 and abs(clean_doppler_estimation_error(i)) < static_cast<float>(config->property("Acquisition.doppler_step", 1)) / 2.0)
+                                                    if (abs(clean_delay_estimation_error(i)) < 0.5 and abs(clean_doppler_estimation_error(i)) < static_cast<float>(config->property("Acquisition.doppler_step", 1)))
                                                         {
                                                             correctly_detected = correctly_detected + 1.0;
                                                         }

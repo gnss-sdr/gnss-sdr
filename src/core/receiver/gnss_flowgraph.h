@@ -183,26 +183,9 @@ private:
     int connect_tracking_monitor();
     int connect_navdata_monitor();
 
-    int disconnect_desktop_flowgraph();
-
-    int disconnect_signal_sources();
-    int disconnect_signal_conditioners();
-    int disconnect_channels();
-    int disconnect_observables();
-    int disconnect_pvt();
-    int disconnect_sample_counter();
-
-    int disconnect_signal_sources_from_signal_conditioners();
-    int disconnect_signal_conditioners_from_channels();
-    int disconnect_channels_from_observables();
-    int disconnect_observables_from_pvt();
-    int disconnect_monitors();
-
 #if ENABLE_FPGA
     int connect_fpga_flowgraph();
-    int disconnect_fpga_flowgraph();
     int connect_fpga_sample_counter();
-    int disconnect_fpga_sample_counter();
 #endif
 
     int assign_channels();

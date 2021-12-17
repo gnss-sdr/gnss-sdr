@@ -380,28 +380,14 @@ void GNSSFlowgraph::disconnect()
             return;
         }
     connected_ = false;
-
-#if ENABLE_FPGA
-    if (enable_fpga_offloading_ == true)
+    try
         {
-            if (disconnect_fpga_flowgraph() != 0)
-                {
-                    return;
-                }
+            top_block_->disconnect_all();
         }
-    else
+    catch (const std::exception& e)
         {
-            if (disconnect_desktop_flowgraph() != 0)
-                {
-                    return;
-                }
+            LOG(INFO) << "Problem disconnecting the flowgraph: " << e.what();
         }
-#else
-    if (disconnect_desktop_flowgraph() != 0)
-        {
-            return;
-        }
-#endif
 
     LOG(INFO) << "Flowgraph disconnected";
 }
@@ -509,69 +495,6 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
 }
 
 
-int GNSSFlowgraph::disconnect_desktop_flowgraph()
-{
-    // Disconnect blocks between them
-    if (disconnect_signal_sources_from_signal_conditioners() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_sample_counter() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_signal_conditioners_from_channels() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_channels_from_observables() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_monitors() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_observables_from_pvt() != 0)
-        {
-            return 1;
-        }
-
-    // Disconnect blocks from the top_block
-    if (disconnect_signal_sources() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_signal_conditioners() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_channels() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_observables() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_pvt() != 0)
-        {
-            return 1;
-        }
-
-    return 0;
-}
-
-
 #if ENABLE_FPGA
 int GNSSFlowgraph::connect_fpga_flowgraph()
 {
@@ -651,47 +574,6 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
     LOG(INFO) << "The GNU Radio flowgraph for the current GNSS-SDR configuration with FPGA off-loading has been successfully connected";
     return 0;
 }
-
-
-int GNSSFlowgraph::disconnect_fpga_flowgraph()
-{
-    if (disconnect_fpga_sample_counter() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_monitors() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_channels_from_observables() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_observables_from_pvt() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_channels() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_observables() != 0)
-        {
-            return 1;
-        }
-
-    if (disconnect_pvt() != 0)
-        {
-            return 1;
-        }
-
-    return 0;
-}
 #endif
 
 
@@ -721,25 +603,6 @@ int GNSSFlowgraph::connect_signal_sources()
                 }
         }
     DLOG(INFO) << "Signal Source blocks successfully connected to the top_block";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_signal_sources()
-{
-    for (int i = 0; i < sources_count_; i++)
-        {
-            try
-                {
-                    sig_source_.at(i)->disconnect(top_block_);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect signal source block " << i << " internally: " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
     return 0;
 }
 
@@ -815,25 +678,6 @@ int GNSSFlowgraph::connect_signal_conditioners()
 }
 
 
-int GNSSFlowgraph::disconnect_signal_conditioners()
-{
-    for (auto& sig : sig_conditioner_)
-        {
-            try
-                {
-                    sig->disconnect(top_block_);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect signal conditioner block internally: " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
-    return 0;
-}
-
-
 int GNSSFlowgraph::connect_channels()
 {
     if (channels_count_ <= 0)
@@ -876,25 +720,6 @@ int GNSSFlowgraph::connect_channels()
 }
 
 
-int GNSSFlowgraph::disconnect_channels()
-{
-    for (int i = 0; i < channels_count_; i++)
-        {
-            try
-                {
-                    channels_.at(i)->disconnect(top_block_);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect channel " << i << " internally: " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
-    return 0;
-}
-
-
 int GNSSFlowgraph::connect_observables()
 {
     if (observables_ == nullptr)
@@ -919,22 +744,6 @@ int GNSSFlowgraph::connect_observables()
 }
 
 
-int GNSSFlowgraph::disconnect_observables()
-{
-    try
-        {
-            observables_->disconnect(top_block_);
-        }
-    catch (const std::exception& e)
-        {
-            LOG(INFO) << "Can't disconnect observables block internally: " << e.what();
-            top_block_->disconnect_all();
-            return 1;
-        }
-    return 0;
-}
-
-
 int GNSSFlowgraph::connect_pvt()
 {
     if (pvt_ == nullptr)
@@ -955,22 +764,6 @@ int GNSSFlowgraph::connect_pvt()
             return 1;
         }
     DLOG(INFO) << "PVT block successfully connected to the top_block";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_pvt()
-{
-    try
-        {
-            pvt_->disconnect(top_block_);
-        }
-    catch (const std::exception& e)
-        {
-            LOG(INFO) << "Can't disconnect PVT block internally: " << e.what();
-            top_block_->disconnect_all();
-            return 1;
-        }
     return 0;
 }
 
@@ -1001,23 +794,6 @@ int GNSSFlowgraph::connect_sample_counter()
             return 1;
         }
     DLOG(INFO) << "sample counter successfully connected to Signal Conditioner and Observables blocks";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_sample_counter()
-{
-    try
-        {
-            top_block_->disconnect(sig_conditioner_.at(0)->get_right_block(), 0, ch_out_sample_counter_, 0);
-            top_block_->disconnect(ch_out_sample_counter_, 0, observables_->get_left_block(), channels_count_);  // extra port for the sample counter pulse
-        }
-    catch (const std::exception& e)
-        {
-            LOG(INFO) << "Can't disconnect sample counter: " << e.what();
-            top_block_->disconnect_all();
-            return 1;
-        }
     return 0;
 }
 
@@ -1055,22 +831,6 @@ int GNSSFlowgraph::connect_fpga_sample_counter()
             return 1;
         }
     LOG(INFO) << "FPGA sample counter successfully connected";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_fpga_sample_counter()
-{
-    try
-        {
-            top_block_->disconnect(ch_out_fpga_sample_counter_, 0, observables_->get_left_block(), channels_count_);
-        }
-    catch (const std::exception& e)
-        {
-            LOG(INFO) << "Can't disconnect FPGA sample counter: " << e.what();
-            top_block_->disconnect_all();
-            return 1;
-        }
     return 0;
 }
 #endif
@@ -1176,63 +936,6 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
         }
 
     DLOG(INFO) << "Signal source(s) successfully connected to signal conditioner(s)";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_signal_sources_from_signal_conditioners()
-{
-    int signal_conditioner_ID = 0;
-    for (int i = 0; i < sources_count_; i++)
-        {
-            try
-                {
-                    auto& src = sig_source_.at(i);
-
-                    // TODO: Remove this array implementation and create generic multistream connector
-                    // (if a signal source has more than 1 stream, then connect it to the multistream signal conditioner)
-                    if (src->implementation() == "Raw_Array_Signal_Source")
-                        {
-                            // Multichannel Array
-                            for (int j = 0; j < GNSS_SDR_ARRAY_SIGNAL_CONDITIONER_CHANNELS; j++)
-                                {
-                                    top_block_->disconnect(src->get_right_block(), j, sig_conditioner_.at(i)->get_left_block(), j);
-                                }
-                        }
-                    else
-                        {
-                            auto RF_Channels = src->getRfChannels();
-
-                            for (auto j = 0U; j < RF_Channels; ++j)
-                                {
-                                    if (src->get_right_block()->output_signature()->max_streams() > 1 or src->get_right_block()->output_signature()->max_streams() == -1)
-                                        {
-                                            top_block_->disconnect(src->get_right_block(), j, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                        }
-                                    else
-                                        {
-                                            if (j == 0)
-                                                {
-                                                    // RF_channel 0 backward compatibility with single channel sources
-                                                    top_block_->disconnect(src->get_right_block(), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                }
-                                            else
-                                                {
-                                                    // Multiple channel sources using multiple output blocks of single channel (requires RF_channel selector in call)
-                                                    top_block_->disconnect(src->get_right_block(j), 0, sig_conditioner_.at(signal_conditioner_ID)->get_left_block(), 0);
-                                                }
-                                        }
-                                    signal_conditioner_ID++;
-                                }
-                        }
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect signal source " << i << " to signal conditioner " << i << ": " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
     return 0;
 }
 
@@ -1380,38 +1083,6 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
 }
 
 
-int GNSSFlowgraph::disconnect_signal_conditioners_from_channels()
-{
-    for (int i = 0; i < channels_count_; i++)
-        {
-            int selected_signal_conditioner_ID;
-            try
-                {
-                    selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(WARNING) << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-            try
-                {
-                    top_block_->disconnect(sig_conditioner_.at(selected_signal_conditioner_ID)->get_right_block(), 0,
-                        channels_.at(i)->get_left_block_trk(), 0);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect signal conditioner " << selected_signal_conditioner_ID << " to channel " << i << ": " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
-    DLOG(INFO) << "Signal conditioner(s) successfully disconnected from channels";
-    return 0;
-}
-
-
 int GNSSFlowgraph::connect_channels_to_observables()
 {
     for (int i = 0; i < channels_count_; i++)
@@ -1429,26 +1100,6 @@ int GNSSFlowgraph::connect_channels_to_observables()
                 }
         }
     DLOG(INFO) << "Channel blocks successfully connected to the Observables block";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_channels_from_observables()
-{
-    for (int i = 0; i < channels_count_; i++)
-        {
-            try
-                {
-                    top_block_->disconnect(channels_.at(i)->get_right_block(), 0,
-                        observables_->get_left_block(), i);
-                }
-            catch (const std::exception& e)
-                {
-                    LOG(INFO) << "Can't disconnect channel " << i << " to observables: " << e.what();
-                    top_block_->disconnect_all();
-                    return 1;
-                }
-        }
     return 0;
 }
 
@@ -1488,30 +1139,6 @@ int GNSSFlowgraph::connect_observables_to_pvt()
             return 1;
         }
     DLOG(INFO) << "Observables successfully connected to the PVT block";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_observables_from_pvt()
-{
-    try
-        {
-            for (int i = 0; i < channels_count_; i++)
-                {
-                    top_block_->disconnect(observables_->get_right_block(), i, pvt_->get_left_block(), i);
-                    top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("telemetry"), pvt_->get_left_block(), pmt::mp("telemetry"));
-                }
-            top_block_->msg_disconnect(observables_->get_right_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
-
-            top_block_->msg_disconnect(pvt_->get_left_block(), pmt::mp("pvt_to_observables"), observables_->get_right_block(), pmt::mp("pvt_to_observables"));
-            top_block_->msg_disconnect(pvt_->get_left_block(), pmt::mp("status"), channels_status_, pmt::mp("status"));
-        }
-    catch (const std::exception& e)
-        {
-            LOG(INFO) << "Can't disconnect observables to PVT: " << e.what();
-            top_block_->disconnect_all();
-            return 1;
-        }
     return 0;
 }
 
@@ -1674,44 +1301,6 @@ int GNSSFlowgraph::connect_gal_e6_has()
             return 1;
         }
     DLOG(INFO) << "Galileo E6 HAS message ports connected";
-    return 0;
-}
-
-
-int GNSSFlowgraph::disconnect_monitors()
-{
-    try
-        {
-            for (int i = 0; i < channels_count_; i++)
-                {
-                    if (enable_monitor_)
-                        {
-                            top_block_->disconnect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
-                        }
-                    if (enable_acquisition_monitor_)
-                        {
-                            top_block_->disconnect(channels_.at(i)->get_right_block_acq(), 0, GnssSynchroAcquisitionMonitor_, i);
-                        }
-                    if (enable_tracking_monitor_)
-                        {
-                            top_block_->disconnect(channels_.at(i)->get_right_block_trk(), 0, GnssSynchroTrackingMonitor_, i);
-                        }
-                    if (enable_navdata_monitor_)
-                        {
-                            top_block_->msg_disconnect(channels_.at(i)->get_right_block(), pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
-                            if (enable_e6_has_rx_)
-                                {
-                                    top_block_->msg_disconnect(gal_e6_has_rx_, pmt::mp("Nav_msg_from_TLM"), NavDataMonitor_, pmt::mp("Nav_msg_from_TLM"));
-                                }
-                        }
-                }
-        }
-    catch (const std::exception& e)
-        {
-            LOG(INFO) << "Can't disconnect monitors: " << e.what();
-            top_block_->disconnect_all();
-            return 1;
-        }
     return 0;
 }
 

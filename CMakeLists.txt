@@ -74,6 +74,8 @@ option(ENABLE_ARMA_NO_DEBUG OFF)
 
 option(ENABLE_STRIP "Create stripped binaries without debugging symbols (in Release build mode only)" OFF)
 
+option(Boost_USE_STATIC_LIBS "Use Boost static libs" OFF)
+
 if(ENABLE_PACKAGING)
     set(ENABLE_GENERIC_ARCH ON)
     set(ENABLE_ARMA_NO_DEBUG ON)
@@ -671,19 +673,19 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURA
         endif()
         if(FILESYSTEM_FOUND)
             set(CMAKE_CXX_STANDARD 17)
-            if(CMAKE_VERSION VERSION_GREATER 3.13)
+            # if(CMAKE_VERSION VERSION_GREATER 3.13)
                 # UHD 3.15.0.0-5 does not support C++20
                 # GNU Radio 3.10.0.git does not support C++20
-                if(((NOT UHD_FOUND) OR (UHD_FOUND AND ("${UHD_VERSION}" VERSION_LESS 3.14.99))) AND (GNURADIO_VERSION VERSION_LESS 3.9.99))
-                    # set(CMAKE_CXX_STANDARD 20)
-                    if(CMAKE_VERSION VERSION_GREATER 3.20.99)
-                        if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")) OR
-                            ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12.0")))
-                            # set(CMAKE_CXX_STANDARD 23)
-                        endif()
-                    endif()
-                endif()
-            endif()
+                # if(((NOT UHD_FOUND) OR (UHD_FOUND AND ("${UHD_VERSION}" VERSION_LESS 3.14.99))) AND (GNURADIO_VERSION VERSION_LESS 3.9.99))
+                #     set(CMAKE_CXX_STANDARD 20)
+                #     if(CMAKE_VERSION VERSION_GREATER 3.20.99)
+                #         if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.0.0")) OR
+                #             ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12.0")))
+                #             set(CMAKE_CXX_STANDARD 23)
+                #         endif()
+                #     endif()
+                # endif()
+            # endif()
             set(CMAKE_CXX_STANDARD_REQUIRED ON)
         endif()
     endif()
@@ -711,9 +713,6 @@ set(Boost_ADDITIONAL_VERSIONS
     "1.70.0" "1.70" "1.71.0" "1.71"
 )
 set(Boost_USE_MULTITHREAD ON)
-#set(Boost_USE_STATIC_LIBS OFF)
-option(Boost_USE_STATIC_LIBS "Use Boost static libs" OFF)
-
 set(BOOST_COMPONENTS atomic chrono date_time serialization system thread)
 if(NOT ${FILESYSTEM_FOUND})
     set(BOOST_COMPONENTS ${BOOST_COMPONENTS} filesystem)
@@ -1807,6 +1806,8 @@ if(NOT TARGET BLAS::BLAS)
     )
 endif()
 
+
+
 ################################################################################
 # Check that LAPACK (Linear Algebra PACKage) is found in the system
 # See https://www.netlib.org/lapack/
@@ -1839,6 +1840,7 @@ if(NOT TARGET LAPACK::LAPACK)
         INTERFACE_LINK_LIBRARIES ${LAPACK_LIBRARIES}
     )
 endif()
+
 
 
 ################################################################################
@@ -2981,6 +2983,7 @@ else()
 endif()
 
 
+
 ##########################################
 # gr-limesdr - OPTIONAL
 # https://github.com/myriadrf/gr-limesdr
@@ -3006,6 +3009,7 @@ else()
     message(STATUS "The (optional) driver for LimeSDR is not enabled.")
     message(STATUS " Enable it with 'cmake -DENABLE_LIMESDR=ON ..' to add support for LimeSDR.")
 endif()
+
 
 
 ##############################################
@@ -3054,6 +3058,7 @@ if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
 endif()
 
 
+
 #####################################################################
 # libiio - OPTIONAL
 # A library for interfacing with local and remote Linux IIO devices
@@ -3079,6 +3084,7 @@ if(ENABLE_AD9361 OR ENABLE_FMCOMMS2)
         endif()
     endif()
 endif()
+
 
 
 ##############################################
@@ -3110,6 +3116,7 @@ if(ENABLE_FLEXIBAND)
         message(FATAL_ERROR "Teleorbit Flexiband GNU Radio driver required to build gnss-sdr with the optional FLEXIBAND adapter")
     endif()
 endif()
+
 
 
 #######################################################
@@ -3342,6 +3349,7 @@ add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binarie
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
 add_feature_info(ENABLE_EXTERNAL_MATHJAX ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
 add_feature_info(ENABLE_OWN_CPUFEATURES ENABLE_OWN_CPUFEATURES "Force building own local version of the cpu_features library, even if it is already installed.")
+add_feature_info(Boost_USE_STATIC_LIBS Boost_USE_STATIC_LIBS "Use Boost static libraries.")
 
 message(STATUS "")
 message(STATUS "***************************************")

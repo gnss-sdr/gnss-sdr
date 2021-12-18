@@ -1416,7 +1416,7 @@ int GNSSFlowgraph::assign_channels()
         {
             help_hint_ += " * The number of Glonass L2 channels is set to Channels_2G.count=" + std::to_string(configuration_->property("Channels_2G.count", 0));
             help_hint_ += " but the maximum number of available Glonass satellites is " + std::to_string(available_GLO_2G_signals_.size() + 8) + ".\n";
-            help_hint_ += " Please set Channels_1G.count=" + std::to_string(available_GLO_2G_signals_.size() + 8) + " or lower in your configuration file.\n";
+            help_hint_ += " Please set Channels_2G.count=" + std::to_string(available_GLO_2G_signals_.size() + 8) + " or lower in your configuration file.\n";
             top_block_->disconnect_all();
             return 1;
         }
@@ -2757,19 +2757,11 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
 
         case evGLO_1G:
             result = available_GLO_1G_signals_.front();
-            if (available_GLO_1G_signals_.size() > 1)
-                {
-                    available_GLO_1G_signals_.pop_front();
-                }
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGLO_2G:
             result = available_GLO_2G_signals_.front();
-            if (available_GLO_2G_signals_.size() > 1)
-                {
-                    available_GLO_2G_signals_.pop_front();
-                }
             break;
 
         case evBDS_B1:

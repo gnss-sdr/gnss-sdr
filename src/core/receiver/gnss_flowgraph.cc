@@ -2531,12 +2531,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
         {
         case evGPS_1C:
             // todo: assist the satellite selection with almanac and current PVT here (reuse priorize_satellite function used in control_thread)
-            if (!available_GPS_1C_signals_.empty())
-                {
-                    result = available_GPS_1C_signals_.front();
-                    available_GPS_1C_signals_.pop_front();
-                    available_GPS_1C_signals_.push_back(result);
-                }
+            result = available_GPS_1C_signals_.front();
+            available_GPS_1C_signals_.pop_front();
+            available_GPS_1C_signals_.push_back(result);
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
@@ -2567,25 +2564,13 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
                                         }
                                 }
                         }
-                    // fallback: pick the front satellite because there is no tracked satellites in L1 to assist L2
-                    if (found_signal == false)
-                        {
-                            if (!available_GPS_2S_signals_.empty())
-                                {
-                                    result = available_GPS_2S_signals_.front();
-                                    available_GPS_2S_signals_.pop_front();
-                                    available_GPS_2S_signals_.push_back(result);
-                                }
-                        }
-                    else
-                        {
-                            if (!available_GPS_2S_signals_.empty())
-                                {
-                                    result = available_GPS_2S_signals_.front();
-                                    available_GPS_2S_signals_.pop_front();
-                                    available_GPS_2S_signals_.push_back(result);
-                                }
-                        }
+                }
+            // fallback: pick the front satellite because there is no tracked satellites in L1 to assist L2
+            if (found_signal == false)
+                {
+                    result = available_GPS_2S_signals_.front();
+                    available_GPS_2S_signals_.pop_front();
+                    available_GPS_2S_signals_.push_back(result);
                 }
             break;
 
@@ -2621,22 +2606,16 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             // fallback: pick the front satellite because there is no tracked satellites in L1 to assist L5
             if (found_signal == false)
                 {
-                    if (!available_GPS_L5_signals_.empty())
-                        {
-                            result = available_GPS_L5_signals_.front();
-                            available_GPS_L5_signals_.pop_front();
-                            available_GPS_L5_signals_.push_back(result);
-                        }
+                    result = available_GPS_L5_signals_.front();
+                    available_GPS_L5_signals_.pop_front();
+                    available_GPS_L5_signals_.push_back(result);
                 }
             break;
 
         case evGAL_1B:
-            if (!available_GAL_1B_signals_.empty())
-                {
-                    result = available_GAL_1B_signals_.front();
-                    available_GAL_1B_signals_.pop_front();
-                    available_GAL_1B_signals_.push_back(result);
-                }
+            result = available_GAL_1B_signals_.front();
+            available_GAL_1B_signals_.pop_front();
+            available_GAL_1B_signals_.push_back(result);
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
@@ -2672,12 +2651,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             // fallback: pick the front satellite because there is no tracked satellites in E1 to assist E5
             if (found_signal == false)
                 {
-                    if (!available_GAL_5X_signals_.empty())
-                        {
-                            result = available_GAL_5X_signals_.front();
-                            available_GAL_5X_signals_.pop_front();
-                            available_GAL_5X_signals_.push_back(result);
-                        }
+                    result = available_GAL_5X_signals_.front();
+                    available_GAL_5X_signals_.pop_front();
+                    available_GAL_5X_signals_.push_back(result);
                 }
             break;
 
@@ -2713,12 +2689,9 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             // fallback: pick the front satellite because there is no tracked satellites in E1 to assist E5
             if (found_signal == false)
                 {
-                    if (!available_GAL_7X_signals_.empty())
-                        {
-                            result = available_GAL_7X_signals_.front();
-                            available_GAL_7X_signals_.pop_front();
-                            available_GAL_7X_signals_.push_back(result);
-                        }
+                    result = available_GAL_7X_signals_.front();
+                    available_GAL_7X_signals_.pop_front();
+                    available_GAL_7X_signals_.push_back(result);
                 }
             break;
 
@@ -2754,51 +2727,36 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             // fallback: pick the front satellite because there is no tracked satellites in E1 to assist E6
             if (found_signal == false)
                 {
-                    if (!available_GAL_E6_signals_.empty())
-                        {
-                            result = available_GAL_E6_signals_.front();
-                            available_GAL_E6_signals_.pop_front();
-                            available_GAL_E6_signals_.push_back(result);
-                        }
+                    result = available_GAL_E6_signals_.front();
+                    available_GAL_E6_signals_.pop_front();
+                    available_GAL_E6_signals_.push_back(result);
                 }
             break;
 
         case evGLO_1G:
-            if (!available_GLO_1G_signals_.empty())
-                {
-                    result = available_GLO_1G_signals_.front();
-                    available_GLO_1G_signals_.pop_front();
-                    available_GLO_1G_signals_.push_back(result);
-                }
+            result = available_GLO_1G_signals_.front();
+            available_GLO_1G_signals_.pop_front();
+            available_GLO_1G_signals_.push_back(result);
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evGLO_2G:
-            if (!available_GLO_2G_signals_.empty())
-                {
-                    result = available_GLO_2G_signals_.front();
-                    available_GLO_2G_signals_.pop_front();
-                    available_GLO_2G_signals_.push_back(result);
-                }
+            result = available_GLO_2G_signals_.front();
+            available_GLO_2G_signals_.pop_front();
+            available_GLO_2G_signals_.push_back(result);
             break;
 
         case evBDS_B1:
-            if (!available_BDS_B1_signals_.empty())
-                {
-                    result = available_BDS_B1_signals_.front();
-                    available_BDS_B1_signals_.pop_front();
-                    available_BDS_B1_signals_.push_back(result);
-                }
+            result = available_BDS_B1_signals_.front();
+            available_BDS_B1_signals_.pop_front();
+            available_BDS_B1_signals_.push_back(result);
             is_primary_frequency = true;  // indicate that the searched satellite signal belongs to "primary" link (L1, E1, B1, etc..)
             break;
 
         case evBDS_B3:
-            if (!available_BDS_B3_signals_.empty())
-                {
-                    result = available_BDS_B3_signals_.front();
-                    available_BDS_B3_signals_.pop_front();
-                    available_BDS_B3_signals_.push_back(result);
-                }
+            result = available_BDS_B3_signals_.front();
+            available_BDS_B3_signals_.pop_front();
+            available_BDS_B3_signals_.push_back(result);
             break;
 
         default:

@@ -1430,7 +1430,7 @@ int GNSSFlowgraph::assign_channels()
         }
     if (configuration_->property("Channels_B3.count", uint64_t(0ULL)) > available_BDS_B3_signals_.size())
         {
-            help_hint_ += " * The number of BeiDou B3 channels is set to Channels_B1.count=" + std::to_string(configuration_->property("Channels_B3.count", 0));
+            help_hint_ += " * The number of BeiDou B3 channels is set to Channels_B3.count=" + std::to_string(configuration_->property("Channels_B3.count", 0));
             help_hint_ += " but the maximum number of available BeiDou satellites is " + std::to_string(available_BDS_B3_signals_.size()) + ".\n";
             help_hint_ += " Please set Channels_B3.count=" + std::to_string(available_BDS_B3_signals_.size()) + " or lower in your configuration file.\n";
             top_block_->disconnect_all();

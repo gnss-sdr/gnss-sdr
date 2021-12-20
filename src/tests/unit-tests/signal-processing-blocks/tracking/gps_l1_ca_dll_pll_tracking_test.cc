@@ -102,7 +102,9 @@ void GpsL1CADllPllTrackingTest_msg_rx::msg_handler_channel_events(const pmt::pmt
 }
 
 
-GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx() : gr::block("GpsL1CADllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0))
+GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx()
+    : gr::block("GpsL1CADllPllTrackingTest_msg_rx", gr::io_signature::make(0, 0, 0), gr::io_signature::make(0, 0, 0)),
+      rx_message(0)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -115,7 +117,6 @@ GpsL1CADllPllTrackingTest_msg_rx::GpsL1CADllPllTrackingTest_msg_rx() : gr::block
         boost::bind(&GpsL1CADllPllTrackingTest_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
-    rx_message = 0;
 }
 
 
@@ -166,11 +167,10 @@ public:
         double& rmse);
 
     bool save_mat_xy(std::vector<double>& x, std::vector<double>& y, std::string filename);
-    GpsL1CADllPllTrackingTest()
+    GpsL1CADllPllTrackingTest() : item_size(sizeof(gr_complex))
     {
         factory = std::make_shared<GNSSBlockFactory>();
         config = std::make_shared<InMemoryConfiguration>();
-        item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
     }
 

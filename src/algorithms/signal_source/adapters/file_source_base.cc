@@ -65,6 +65,14 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
         {
             filename_ = FLAGS_s;
         }
+    if (sampling_frequency_ == 0)
+        {
+            std::cerr << "Warning: parameter " << role << ".sampling_frequency is not set, this could lead to wrong results.\n"
+                      << "  Please set the " << role << ".sampling_frequency parameter in your configuration file.\n"
+                      << "  If not set, " << role << ".sampling_frequency=" << configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0))
+                      << " will be assumed.\n";
+            sampling_frequency_ = configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0));
+        }
 }
 
 

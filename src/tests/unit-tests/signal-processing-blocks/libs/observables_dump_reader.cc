@@ -104,8 +104,8 @@ void Observables_Dump_Reader::close_obs_file()
 
 
 Observables_Dump_Reader::Observables_Dump_Reader(int n_channels_)
+    : n_channels(n_channels_)
 {
-    n_channels = n_channels_;
     RX_time = std::vector<double>(n_channels);
     TOW_at_current_symbol_s = std::vector<double>(n_channels);
     Carrier_Doppler_hz = std::vector<double>(n_channels);

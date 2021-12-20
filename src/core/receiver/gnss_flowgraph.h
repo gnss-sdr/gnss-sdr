@@ -183,36 +183,18 @@ private:
     int connect_tracking_monitor();
     int connect_navdata_monitor();
 
-    int disconnect_desktop_flowgraph();
-
-    int disconnect_signal_sources();
-    int disconnect_signal_conditioners();
-    int disconnect_channels();
-    int disconnect_observables();
-    int disconnect_pvt();
-    int disconnect_sample_counter();
-
-    int disconnect_signal_sources_from_signal_conditioners();
-    int disconnect_signal_conditioners_from_channels();
-    int disconnect_channels_from_observables();
-    int disconnect_observables_from_pvt();
-    int disconnect_monitors();
-
 #if ENABLE_FPGA
     int connect_fpga_flowgraph();
-    int disconnect_fpga_flowgraph();
     int connect_fpga_sample_counter();
-    int disconnect_fpga_sample_counter();
 #endif
 
-    void assign_channels();
+    int assign_channels();
     void check_signal_conditioners();
 
     void set_signals_list();
     void set_channels_state();  // Initializes the channels state (start acquisition or keep standby)
                                 // using the configuration parameters (number of channels and max channels in acquisition)
     Gnss_Signal search_next_signal(const std::string& searched_signal,
-        const bool pop,
         bool& is_primary_frequency,
         bool& assistance_available,
         float& estimated_doppler,

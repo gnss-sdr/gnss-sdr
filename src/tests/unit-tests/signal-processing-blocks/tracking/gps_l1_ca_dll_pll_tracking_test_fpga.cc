@@ -197,9 +197,11 @@ void GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_channel_events(const pmt:
 }
 
 
-GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() : gr::block("GpsL1CADllPllTrackingTestFpga_msg_rx",
-                                                                                   gr::io_signature::make(0, 0, 0),
-                                                                                   gr::io_signature::make(0, 0, 0))
+GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx()
+    : gr::block("GpsL1CADllPllTrackingTestFpga_msg_rx",
+          gr::io_signature::make(0, 0, 0),
+          gr::io_signature::make(0, 0, 0)),
+      rx_message(0)
 {
     this->message_port_register_in(pmt::mp("events"));
     this->set_msg_handler(pmt::mp("events"),
@@ -212,7 +214,6 @@ GpsL1CADllPllTrackingTestFpga_msg_rx::GpsL1CADllPllTrackingTestFpga_msg_rx() : g
         boost::bind(&GpsL1CADllPllTrackingTestFpga_msg_rx::msg_handler_channel_events, this, _1));
 #endif
 #endif
-    rx_message = 0;
 }
 
 
@@ -245,10 +246,10 @@ public:
     void check_results_codephase(arma::vec &true_time_s, arma::vec &true_value,
         arma::vec &meas_time_s, arma::vec &meas_value);
 
-    GpsL1CADllPllTrackingTestFpga()
+    GpsL1CADllPllTrackingTestFpga() : item_size(sizeof(gr_complex))
     {
         config = std::make_shared<InMemoryConfiguration>();
-        item_size = sizeof(gr_complex);
+
         gnss_synchro = Gnss_Synchro();
     }
 

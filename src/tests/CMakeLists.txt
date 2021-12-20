@@ -30,7 +30,7 @@ if(NOT GOOGLETEST_FOUND)
         "--build" "${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}"
         "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.12)
+    if(CMAKE_VERSION VERSION_GREATER 3.12 AND NOT CMAKE_CROSSCOMPILING)
         # Parallel building of gtest causes problems in some environments (e.g. Macports buildings)
         set(GTEST_BUILD_COMMAND ${GTEST_BUILD_COMMAND} "--parallel 1")
     endif()

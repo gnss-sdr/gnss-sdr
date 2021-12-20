@@ -196,21 +196,12 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
     unsigned int samples_per_code,
     int channel,
     int execution)
+    : d_basename(basename),
+      d_sat(sat),
+      d_doppler_max(doppler_max),
+      d_doppler_step(doppler_step),
+      d_samples_per_code(samples_per_code)
 {
-    d_basename = basename;
-    d_sat = sat;
-    d_doppler_max = doppler_max;
-    d_doppler_step = doppler_step;
-    d_samples_per_code = samples_per_code;
-    acq_doppler_hz = 0.0;
-    acq_delay_samples = 0.0;
-    test_statistic = 0.0;
-    input_power = 0.0;
-    threshold = 0.0;
-    positive_acq = 0;
-    sample_counter = 0;
-    num_dwells = 0;
-    PRN = 0;
     if (d_doppler_step == 0)
         {
             d_doppler_step = 1;

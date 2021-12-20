@@ -44,10 +44,9 @@ DEFINE_int32(filter_test_nsamples, 1000000, "Number of samples to filter in the 
 class FirFilterTest : public ::testing::Test
 {
 protected:
-    FirFilterTest()
+    FirFilterTest() : item_size(sizeof(gr_complex))
     {
         queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-        item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
     }
     ~FirFilterTest() override = default;

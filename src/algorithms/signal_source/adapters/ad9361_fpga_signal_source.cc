@@ -283,7 +283,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             enable_ovf_check_buffer_monitor_active_ = false;  // check buffer overflow and buffer monitor disabled by default
 
             // some basic checks
-            if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
+            if ((rf_port_select_ != "A_BALANCED") && (rf_port_select_ != "B_BALANCED") && (rf_port_select_ != "A_N") && (rf_port_select_ != "B_N") && (rf_port_select_ != "B_P") && (rf_port_select_ != "C_N") && (rf_port_select_ != "C_P") && (rf_port_select_ != "TX_MONITOR1") && (rf_port_select_ != "TX_MONITOR2") && (rf_port_select_ != "TX_MONITOR1_2"))
                 {
                     std::cout << "Configuration parameter rf_port_select should take one of these values:\n";
                     std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2\n";
@@ -293,7 +293,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     LOG(WARNING) << "Invalid configuration value for rf_port_select parameter. Set to rf_port_select=" << default_rf_port_select;
                 }
 
-            if ((gain_mode_rx1_ != "manual") and (gain_mode_rx1_ != "slow_attack") and (gain_mode_rx1_ != "fast_attack") and (gain_mode_rx1_ != "hybrid"))
+            if ((gain_mode_rx1_ != "manual") && (gain_mode_rx1_ != "slow_attack") && (gain_mode_rx1_ != "fast_attack") && (gain_mode_rx1_ != "hybrid"))
                 {
                     std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:\n";
                     std::cout << " manual, slow_attack, fast_attack, hybrid\n";
@@ -303,7 +303,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx1=" << default_gain_mode;
                 }
 
-            if ((gain_mode_rx2_ != "manual") and (gain_mode_rx2_ != "slow_attack") and (gain_mode_rx2_ != "fast_attack") and (gain_mode_rx2_ != "hybrid"))
+            if ((gain_mode_rx2_ != "manual") && (gain_mode_rx2_ != "slow_attack") && (gain_mode_rx2_ != "fast_attack") && (gain_mode_rx2_ != "hybrid"))
                 {
                     std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:\n";
                     std::cout << " manual, slow_attack, fast_attack, hybrid\n";
@@ -315,7 +315,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
             if (gain_mode_rx1_ == "manual")
                 {
-                    if (rf_gain_rx1_ > 73.0 or rf_gain_rx1_ < -1.0)
+                    if (rf_gain_rx1_ > 73.0 || rf_gain_rx1_ < -1.0)
                         {
                             std::cout << "Configuration parameter rf_gain_rx1 should take values between -1.0 and 73 dB\n";
                             std::cout << "Error: provided value rf_gain_rx1=" << rf_gain_rx1_ << " is not among valid values\n";
@@ -327,7 +327,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
             if (gain_mode_rx2_ == "manual")
                 {
-                    if (rf_gain_rx2_ > 73.0 or rf_gain_rx2_ < -1.0)
+                    if (rf_gain_rx2_ > 73.0 || rf_gain_rx2_ < -1.0)
                         {
                             std::cout << "Configuration parameter rf_gain_rx2 should take values between -1.0 and 73 dB\n";
                             std::cout << "Error: provided value rf_gain_rx2=" << rf_gain_rx2_ << " is not among valid values\n";
@@ -337,7 +337,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                         }
                 }
 
-            if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
+            if ((filter_source_ != "Off") && (filter_source_ != "Auto") && (filter_source_ != "File") && (filter_source_ != "Design"))
                 {
                     std::cout << "Configuration parameter filter_source should take one of these values:\n";
                     std::cout << "  Off: Disable filter\n";
@@ -350,7 +350,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     LOG(WARNING) << "Invalid configuration value for filter_source parameter. Set to filter_source=Off";
                 }
 
-            if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+            if (bandwidth_ < 200000 || bandwidth_ > 56000000)
                 {
                     std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz\n";
                     std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values\n";
@@ -389,7 +389,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
             if (enable_dds_lo_ == true)
                 {
-                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) or (tx_bandwidth_ < 200000) or (tx_bandwidth_ > 1000000))
+                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) || (tx_bandwidth_ < 200000) || (tx_bandwidth_ > 1000000))
                         {
                             std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz\n";
                             std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values\n";
@@ -397,7 +397,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                             tx_bandwidth_ = 500000;
                             LOG(WARNING) << "Invalid configuration value for tx_bandwidth parameter. Set to tx_bandwidth=500000";
                         }
-                    if (tx_attenuation_db_ > 0.0 or tx_attenuation_db_ < -89.75)
+                    if (tx_attenuation_db_ > 0.0 || tx_attenuation_db_ < -89.75)
                         {
                             std::cout << "Configuration parameter tx_attenuation_db should take values between 0.0 and -89.95 in 0.25 dB steps\n";
                             std::cout << "Error: provided value tx_attenuation_db=" << tx_attenuation_db_ << " is not among valid values\n";
@@ -908,11 +908,11 @@ void Ad9361FpgaSignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr Ad9361FpgaSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
-    return gr::basic_block_sptr();
+    return {};
 }
 
 
 gr::basic_block_sptr Ad9361FpgaSignalSource::get_right_block()
 {
-    return gr::basic_block_sptr();
+    return {};
 }

@@ -89,8 +89,8 @@ Channel::Channel(const ConfigurationInterface* configuration,
     acq_->set_threshold(threshold);
 
     acq_->init();
-
-    repeat_ = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".repeat_satellite", false);
+    repeat_ = configuration->property("Acquisition_" + signal_str + ".repeat_satellite", false);
+    repeat_ = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".repeat_satellite", repeat_);
     DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
     channel_fsm_->set_acquisition(acq_);

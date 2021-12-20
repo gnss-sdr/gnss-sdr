@@ -84,6 +84,7 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
       d_trk_parameters(conf_),
       d_acquisition_gnss_synchro(nullptr),
       d_signal_type(d_trk_parameters.signal),
+      d_code_chip_rate(0.0),
       d_acq_code_phase_samples(0.0),
       d_acq_carrier_doppler_hz(0.0),
       d_current_correlation_time_s(0.0),

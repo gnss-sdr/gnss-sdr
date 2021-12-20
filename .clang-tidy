@@ -56,6 +56,7 @@ Checks: '-*,
         clang-analyzer-optin.performance.*,
         clang-analyzer-optin.portability.UnixAPI,
         clang-analyzer-security.*,
+        cppcoreguidelines-prefer-member-initializer,
         cppcoreguidelines-pro-type-cstyle-cast,
         cppcoreguidelines-pro-type-static-cast-downcast,
         cppcoreguidelines-slicing,
@@ -120,70 +121,16 @@ HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
 CheckOptions:
-  - key:             bugprone-argument-comment.CommentBoolLiterals
-    value:           '0'
-  - key:             bugprone-argument-comment.CommentCharacterLiterals
-    value:           '0'
-  - key:             bugprone-argument-comment.CommentFloatLiterals
-    value:           '0'
-  - key:             bugprone-argument-comment.CommentIntegerLiterals
-    value:           '0'
-  - key:             bugprone-argument-comment.CommentNullPtrs
-    value:           '0'
-  - key:             bugprone-argument-comment.CommentStringLiterals
-    value:           '0'
-  - key:             bugprone-argument-comment.CommentUserDefinedLiterals
-    value:           '0'
-  - key:             bugprone-argument-comment.IgnoreSingleArgument
-    value:           '0'
-  - key:             bugprone-argument-comment.StrictMode
-    value:           '0'
-  - key:             bugprone-assert-side-effect.AssertMacros
-    value:           assert
-  - key:             bugprone-assert-side-effect.CheckFunctionCalls
-    value:           'false'
-  - key:             bugprone-dangling-handle.HandleClasses
-    value:           'std::basic_string_view;std::experimental::basic_string_view'
-  - key:             bugprone-exception-escape.FunctionsThatShouldNotThrow
+  - key:             performance-unnecessary-copy-initialization.ExcludedContainerTypes
     value:           ''
-  - key:             bugprone-exception-escape.IgnoredExceptions
-    value:           ''
-  - key:             bugprone-misplaced-widening-cast.CheckImplicitCasts
-    value:           'false'
-  - key:             bugprone-reserved-identifier.AggressiveDependentMemberLookup
-    value:           'false'
-  - key:             bugprone-reserved-identifier.AllowedIdentifiers
-    value:           ''
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             performance-move-const-arg.CheckTriviallyCopyableMove
+    value:           'true'
+  - key:             modernize-use-auto.MinTypeNameLength
+    value:           '5'
   - key:             bugprone-reserved-identifier.Invert
     value:           'false'
-  - key:             bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant
-    value:           'true'
-  - key:             bugprone-sizeof-expression.WarnOnSizeOfConstant
-    value:           'true'
-  - key:             bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression
-    value:           'false'
-  - key:             bugprone-sizeof-expression.WarnOnSizeOfThis
-    value:           'true'
-  - key:             bugprone-string-constructor.LargeLengthThreshold
-    value:           '8388608'
-  - key:             bugprone-string-constructor.WarnOnLargeLength
-    value:           'true'
-  - key:             bugprone-suspicious-enum-usage.StrictMode
-    value:           'false'
-  - key:             bugprone-suspicious-missing-comma.MaxConcatenatedTokens
-    value:           '5'
-  - key:             bugprone-suspicious-missing-comma.RatioThreshold
-    value:           '0.200000'
-  - key:             bugprone-suspicious-missing-comma.SizeThreshold
-    value:           '5'
-  - key:             bugprone-suspicious-string-compare.StringCompareLikeFunctions
-    value:           ''
-  - key:             bugprone-suspicious-string-compare.WarnOnImplicitComparison
-    value:           'true'
-  - key:             bugprone-suspicious-string-compare.WarnOnLogicalNotComparison
-    value:           'false'
-  - key:             bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit
-    value:           '16'
   - key:             bugprone-unused-return-value.CheckedFunctions
     value:           'std::async;
 std::launder;
@@ -276,148 +223,218 @@ std::vector::at;
 ::ttyname'
   - key:             cert-dcl16-c.NewSuffixes
     value:           'L;LL;LU;LLU'
-  - key:             cert-msc51-cpp.DisallowedSeedTypes
-    value:           'time_t,std::time_t'
-  - key:             cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
-    value:           '0'
-  - key:             cert-str34-c.DiagnoseSignedUnsignedCharComparisons
-    value:           '0'
-  - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
-    value:           '1'
-  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
-    value:           '1'
-  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
-    value:           'false'
-  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
-    value:           'false'
-  - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
-    value:           'false'
-  - key:             google-build-namespaces.HeaderFileExtensions
-    value:           ';h;hh;hpp;hxx'
-  - key:             google-global-names-in-headers.HeaderFileExtensions
-    value:           ';h;hh;hpp;hxx'
-  - key:             google-readability-braces-around-statements.ShortStatementLines
-    value:           '1'
-  - key:             google-readability-function-size.StatementThreshold
-    value:           '800'
-  - key:             google-readability-namespace-comments.ShortNamespaceLines
-    value:           '10'
-  - key:             google-readability-namespace-comments.SpacesBeforeComments
-    value:           '2'
-  - key:             google-runtime-int.SignedTypePrefix
-    value:           int
-  - key:             google-runtime-int.TypeSuffix
-    value:           _t
-  - key:             google-runtime-int.UnsignedTypePrefix
-    value:           uint
-  - key:             llvm-else-after-return.WarnOnConditionVariables
-    value:           '0'
-  - key:             llvm-else-after-return.WarnOnUnfixable
-    value:           '0'
-  - key:             llvm-qualified-auto.AddConstToQualified
-    value:           '0'
-  - key:             misc-throw-by-value-catch-by-reference.CheckThrowTemporaries
-    value:           'true'
-  - key:             misc-throw-by-value-catch-by-reference.MaxSize
-    value:           '64'
-  - key:             misc-throw-by-value-catch-by-reference.WarnOnLargeObjects
-    value:           'false'
-  - key:             modernize-avoid-bind.PermissiveParameterList
-    value:           'false'
-  - key:             modernize-loop-convert.MaxCopySize
-    value:           '16'
-  - key:             modernize-loop-convert.MinConfidence
-    value:           reasonable
-  - key:             modernize-loop-convert.NamingStyle
-    value:           CamelCase
-  - key:             modernize-pass-by-value.IncludeStyle
-    value:           llvm
-  - key:             modernize-raw-string-literal.DelimiterStem
-    value:           lit
-  - key:             modernize-raw-string-literal.ReplaceShorterLiterals
-    value:           'false'
-  - key:             modernize-replace-auto-ptr.IncludeStyle
-    value:           llvm
-  - key:             modernize-use-auto.MinTypeNameLength
-    value:           '5'
-  - key:             modernize-use-auto.RemoveStars
-    value:           'false'
-  - key:             modernize-use-bool-literals.IgnoreMacros
-    value:           'true'
-  - key:             modernize-use-default-member-init.IgnoreMacros
-    value:           'true'
-  - key:             modernize-use-default-member-init.UseAssignment
-    value:           'false'
-  - key:             modernize-use-emplace.ContainersWithPushBack
-    value:           'std::vector;std::list;std::deque'
-  - key:             modernize-use-emplace.IgnoreImplicitConstructors
-    value:           'false'
-  - key:             modernize-use-emplace.SmartPointers
-    value:           'std::shared_ptr;std::unique_ptr;std::auto_ptr;std::weak_ptr'
-  - key:             modernize-use-emplace.TupleMakeFunctions
-    value:           'std::make_pair;std::make_tuple'
-  - key:             modernize-use-emplace.TupleTypes
-    value:           'std::pair;std::tuple'
-  - key:             modernize-use-equals-default.IgnoreMacros
-    value:           'true'
-  - key:             modernize-use-equals-delete.IgnoreMacros
-    value:           'true'
-  - key:             modernize-use-noexcept.ReplacementString
-    value:           ''
-  - key:             modernize-use-noexcept.UseNoexceptFalse
-    value:           'true'
-  - key:             modernize-use-nullptr.NullMacros
-    value:           'NULL'
-  - key:             modernize-use-override.AllowOverrideAndFinal
-    value:           'false'
-  - key:             modernize-use-override.FinalSpelling
-    value:           final
-  - key:             modernize-use-override.IgnoreDestructors
-    value:           'false'
-  - key:             modernize-use-override.OverrideSpelling
-    value:           override
-  - key:             performance-faster-string-find.StringLikeClasses
-    value:           'std::basic_string;std::basic_string_view'
-  - key:             performance-for-range-copy.AllowedTypes
-    value:           ''
-  - key:             performance-for-range-copy.WarnOnAllAutoCopies
-    value:           'false'
-  - key:             performance-inefficient-string-concatenation.StrictMode
-    value:           'false'
-  - key:             performance-inefficient-vector-operation.EnableProto
-    value:           'false'
-  - key:             performance-inefficient-vector-operation.VectorLikeClasses
-    value:           'std::vector'
-  - key:             performance-move-const-arg.CheckTriviallyCopyableMove
-    value:           'true'
-  - key:             performance-move-constructor-init.IncludeStyle
-    value:           llvm
-  - key:             performance-type-promotion-in-math-fn.IncludeStyle
-    value:           llvm
-  - key:             performance-unnecessary-copy-initialization.AllowedTypes
-    value:           ''
-  - key:             performance-unnecessary-value-param.AllowedTypes
-    value:           ''
-  - key:             performance-unnecessary-value-param.IncludeStyle
-    value:           llvm
-  - key:             readability-braces-around-statements.ShortStatementLines
-    value:           '0'
-  - key:             readability-identifier-naming.AggressiveDependentMemberLookup
-    value:           'false'
-  - key:             readability-identifier-naming.IgnoreFailedSplit
-    value:           'false'
-  - key:             readability-identifier-naming.IgnoreMainLikeFunctions
-    value:           'false'
-  - key:             readability-inconsistent-declaration-parameter-name.IgnoreMacros
+  - key:             readability-identifier-naming.GetConfigPerFile
     value:           'true'
   - key:             readability-inconsistent-declaration-parameter-name.Strict
     value:           'false'
+  - key:             modernize-use-default-member-init.UseAssignment
+    value:           'false'
+  - key:             modernize-use-override.AllowOverrideAndFinal
+    value:           'false'
+  - key:             modernize-loop-convert.IncludeStyle
+    value:           llvm
+  - key:             cert-str34-c.DiagnoseSignedUnsignedCharComparisons
+    value:           'false'
+  - key:             misc-uniqueptr-reset-release.IncludeStyle
+    value:           llvm
+  - key:             bugprone-suspicious-string-compare.WarnOnLogicalNotComparison
+    value:           'false'
+  - key:             readability-identifier-naming.AggressiveDependentMemberLookup
+    value:           'false'
+  - key:             bugprone-suspicious-string-compare.WarnOnImplicitComparison
+    value:           'true'
+  - key:             modernize-use-emplace.TupleTypes
+    value:           'std::pair;std::tuple'
+  - key:             modernize-use-emplace.TupleMakeFunctions
+    value:           'std::make_pair;std::make_tuple'
+  - key:             bugprone-argument-comment.CommentNullPtrs
+    value:           '0'
+  - key:             bugprone-argument-comment.StrictMode
+    value:           '0'
+  - key:             modernize-loop-convert.MakeReverseRangeHeader
+    value:           ''
+  - key:             modernize-use-bool-literals.IgnoreMacros
+    value:           'true'
+  - key:             google-readability-namespace-comments.ShortNamespaceLines
+    value:           '10'
+  - key:             bugprone-suspicious-string-compare.StringCompareLikeFunctions
+    value:           ''
+  - key:             modernize-avoid-bind.PermissiveParameterList
+    value:           'false'
+  - key:             modernize-use-override.FinalSpelling
+    value:           final
+  - key:             modernize-loop-convert.UseCxx20ReverseRanges
+    value:           'true'
+  - key:             modernize-use-noexcept.ReplacementString
+    value:           ''
+  - key:             cppcoreguidelines-prefer-member-initializer.UseAssignment
+    value:           'false'
+  - key:             performance-type-promotion-in-math-fn.IncludeStyle
+    value:           llvm
+  - key:             modernize-loop-convert.NamingStyle
+    value:           CamelCase
+  - key:             bugprone-suspicious-missing-comma.SizeThreshold
+    value:           '5'
+  - key:             readability-inconsistent-declaration-parameter-name.IgnoreMacros
+    value:           'true'
+  - key:             performance-for-range-copy.WarnOnAllAutoCopies
+    value:           'false'
+  - key:             bugprone-argument-comment.CommentIntegerLiterals
+    value:           '0'
+  - key:             google-runtime-int.UnsignedTypePrefix
+    value:           uint
+  - key:             modernize-loop-convert.MakeReverseRangeFunction
+    value:           ''
+  - key:             readability-identifier-naming.IgnoreFailedSplit
+    value:           'false'
+  - key:             modernize-pass-by-value.IncludeStyle
+    value:           llvm
   - key:             readability-qualified-auto.AddConstToQualified
     value:           'true'
-  - key:             readability-redundant-member-init.IgnoreBaseInCopyConstructors
-    value:           'false'
+  - key:             bugprone-sizeof-expression.WarnOnSizeOfThis
+    value:           'true'
+  - key:             bugprone-string-constructor.WarnOnLargeLength
+    value:           'true'
+  - key:             bugprone-argument-comment.CommentCharacterLiterals
+    value:           '0'
+  - key:             bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit
+    value:           '16'
+  - key:             bugprone-argument-comment.CommentFloatLiterals
+    value:           '0'
+  - key:             google-global-names-in-headers.HeaderFileExtensions
+    value:           ';h;hh;hpp;hxx'
   - key:             readability-uppercase-literal-suffix.IgnoreMacros
     value:           'true'
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+  - key:             bugprone-suspicious-enum-usage.StrictMode
+    value:           'false'
+  - key:             performance-unnecessary-copy-initialization.AllowedTypes
+    value:           ''
+  - key:             bugprone-suspicious-missing-comma.MaxConcatenatedTokens
+    value:           '5'
+  - key:             misc-throw-by-value-catch-by-reference.CheckThrowTemporaries
+    value:           'true'
+  - key:             bugprone-string-constructor.LargeLengthThreshold
+    value:           '8388608'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
+    value:           'false'
+  - key:             cert-oop54-cpp.WarnOnlyIfThisHasSuspiciousField
+    value:           'false'
+  - key:             bugprone-exception-escape.FunctionsThatShouldNotThrow
+    value:           ''
+  - key:             performance-inefficient-vector-operation.EnableProto
+    value:           'false'
+  - key:             bugprone-argument-comment.CommentStringLiterals
+    value:           '0'
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           '16'
+  - key:             google-build-namespaces.HeaderFileExtensions
+    value:           ';h;hh;hpp;hxx'
+  - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
+    value:           'true'
+  - key:             performance-for-range-copy.AllowedTypes
+    value:           ''
+  - key:             modernize-use-override.IgnoreDestructors
+    value:           'false'
+  - key:             bugprone-sizeof-expression.WarnOnSizeOfConstant
+    value:           'true'
+  - key:             modernize-use-emplace.ContainersWithPushBack
+    value:           'std::vector;std::list;std::deque'
+  - key:             bugprone-argument-comment.CommentBoolLiterals
+    value:           '0'
+  - key:             readability-braces-around-statements.ShortStatementLines
+    value:           '0'
+  - key:             bugprone-argument-comment.CommentUserDefinedLiterals
+    value:           '0'
+  - key:             modernize-use-override.OverrideSpelling
+    value:           override
+  - key:             performance-inefficient-string-concatenation.StrictMode
+    value:           'false'
+  - key:             google-readability-braces-around-statements.ShortStatementLines
+    value:           '1'
+  - key:             google-runtime-int.TypeSuffix
+    value:           _t
+  - key:             bugprone-reserved-identifier.AllowedIdentifiers
+    value:           ''
+  - key:             modernize-use-emplace.IgnoreImplicitConstructors
+    value:           'false'
+  - key:             modernize-use-equals-delete.IgnoreMacros
+    value:           'true'
+  - key:             bugprone-misplaced-widening-cast.CheckImplicitCasts
+    value:           'false'
   - key:             readability-uppercase-literal-suffix.NewSuffixes
     value:           ''
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+  - key:             performance-unnecessary-value-param.AllowedTypes
+    value:           ''
+  - key:             bugprone-suspicious-missing-comma.RatioThreshold
+    value:           '0.200000'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
+    value:           'false'
+  - key:             modernize-use-noexcept.UseNoexceptFalse
+    value:           'true'
+  - key:             google-readability-namespace-comments.SpacesBeforeComments
+    value:           '2'
+  - key:             misc-throw-by-value-catch-by-reference.MaxSize
+    value:           '64'
+  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           'true'
+  - key:             bugprone-argument-comment.IgnoreSingleArgument
+    value:           '0'
+  - key:             bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression
+    value:           'false'
+  - key:             performance-faster-string-find.StringLikeClasses
+    value:           'std::basic_string;std::basic_string_view'
+  - key:             bugprone-assert-side-effect.CheckFunctionCalls
+    value:           'false'
+  - key:             bugprone-string-constructor.StringNames
+    value:           '::std::basic_string;::std::basic_string_view'
+  - key:             bugprone-assert-side-effect.AssertMacros
+    value:           assert
+  - key:             bugprone-exception-escape.IgnoredExceptions
+    value:           ''
+  - key:             modernize-use-default-member-init.IgnoreMacros
+    value:           'true'
+  - key:             llvm-qualified-auto.AddConstToQualified
+    value:           'false'
+  - key:             readability-identifier-naming.IgnoreMainLikeFunctions
+    value:           'false'
+  - key:             google-runtime-int.SignedTypePrefix
+    value:           int
+  - key:             google-readability-function-size.StatementThreshold
+    value:           '800'
+  - key:             llvm-else-after-return.WarnOnConditionVariables
+    value:           'false'
+  - key:             cert-msc51-cpp.DisallowedSeedTypes
+    value:           'time_t,std::time_t'
+  - key:             bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant
+    value:           'true'
+  - key:             bugprone-reserved-identifier.AggressiveDependentMemberLookup
+    value:           'false'
+  - key:             modernize-raw-string-literal.DelimiterStem
+    value:           lit
+  - key:             modernize-use-equals-default.IgnoreMacros
+    value:           'true'
+  - key:             misc-throw-by-value-catch-by-reference.WarnOnLargeObjects
+    value:           'false'
+  - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value:           'false'
+  - key:             modernize-raw-string-literal.ReplaceShorterLiterals
+    value:           'false'
+  - key:             modernize-use-emplace.SmartPointers
+    value:           'std::shared_ptr;std::unique_ptr;std::auto_ptr;std::weak_ptr'
+  - key:             performance-inefficient-vector-operation.VectorLikeClasses
+    value:           'std::vector'
+  - key:             modernize-use-auto.RemoveStars
+    value:           'false'
+  - key:             bugprone-dangling-handle.HandleClasses
+    value:           'std::basic_string_view;std::experimental::basic_string_view'
+  - key:             performance-unnecessary-value-param.IncludeStyle
+    value:           llvm
+  - key:             readability-redundant-member-init.IgnoreBaseInCopyConstructors
+    value:           'false'
+  - key:             llvm-else-after-return.WarnOnUnfixable
+    value:           'false'
 ...

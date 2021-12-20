@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 ########################################################################
-# Toolchain file for building native on a ARM Cortex A72 w/ NEON
+# Toolchain file for building native on a ARM Cortex A53 w/ NEON
 # Usage: cmake -DCMAKE_TOOLCHAIN_FILE=<this file> <source directory>
 ########################################################################
 set(CMAKE_CXX_COMPILER g++)

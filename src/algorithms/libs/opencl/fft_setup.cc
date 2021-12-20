@@ -31,9 +31,13 @@ getBlockConfigAndKernelString(cl_fft_plan *plan)
     *plan->kernel_string += baseKernels;
 
     if (plan->format == clFFT_SplitComplexFormat)
-        *plan->kernel_string += twistKernelPlannar;
+        {
+            *plan->kernel_string += twistKernelPlannar;
+        }
     else
-        *plan->kernel_string += twistKernelInterleaved;
+        {
+            *plan->kernel_string += twistKernelInterleaved;
+        }
 
     switch (plan->dim)
         {
@@ -72,12 +76,17 @@ deleteKernelInfo(cl_fft_kernel_info *kInfo)
     if (kInfo)
         {
             if (kInfo->kernel_name)
-                free(kInfo->kernel_name);
+                {
+                    free(kInfo->kernel_name);
+                }
             if (kInfo->kernel)
-                clReleaseKernel(kInfo->kernel);
+                {
+                    clReleaseKernel(kInfo->kernel);
+                }
             free(kInfo);
         }
 }
+
 
 static void
 destroy_plan(cl_fft_plan *Plan)
@@ -125,6 +134,7 @@ destroy_plan(cl_fft_plan *Plan)
         }
 }
 
+
 static int
 createKernelList(cl_fft_plan *plan)
 {
@@ -136,20 +146,29 @@ createKernelList(cl_fft_plan *plan)
         {
             kernel_info->kernel = clCreateKernel(program, kernel_info->kernel_name, &err);
             if (!kernel_info->kernel || err != CL_SUCCESS)
-                return err;
+                {
+                    return err;
+                }
             kernel_info = kernel_info->next;
         }
 
     if (plan->format == clFFT_SplitComplexFormat)
-        plan->twist_kernel = clCreateKernel(program, "clFFT_1DTwistSplit", &err);
+        {
+            plan->twist_kernel = clCreateKernel(program, "clFFT_1DTwistSplit", &err);
+        }
     else
-        plan->twist_kernel = clCreateKernel(program, "clFFT_1DTwistInterleaved", &err);
+        {
+            plan->twist_kernel = clCreateKernel(program, "clFFT_1DTwistInterleaved", &err);
+        }
 
     if (!plan->twist_kernel || err)
-        return err;
+        {
+            return err;
+        }
 
     return CL_SUCCESS;
 }
+
 
 int getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsigned int num_devices, cl_device_id *devices)
 {
@@ -166,13 +185,19 @@ int getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsi
                 {
                     err = clGetKernelWorkGroupInfo(kInfo->kernel, devices[i], CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), &wg_size, nullptr);
                     if (err != CL_SUCCESS)
-                        return -1;
+                        {
+                            return -1;
+                        }
 
                     if (wg_size < kInfo->num_workitems_per_workgroup)
-                        reg_needed |= 1;
+                        {
+                            reg_needed |= 1;
+                        }
 
                     if (*max_wg_size > wg_size)
-                        *max_wg_size = wg_size;
+                        {
+                            *max_wg_size = wg_size;
+                        }
 
                     kInfo = kInfo->next;
                 }
@@ -180,6 +205,7 @@ int getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsi
 
     return reg_needed;
 }
+
 
 #define ERR_MACRO(err)                               \
     {                                                \
@@ -191,6 +217,7 @@ int getMaxKernelWorkGroupSize(cl_fft_plan *plan, unsigned int *max_wg_size, unsi
                 return (clFFT_Plan)NULL;             \
             }                                        \
     }
+
 
 clFFT_Plan
 clFFT_CreatePlan(cl_context context, clFFT_Dim3 n, clFFT_Dimension dim, clFFT_DataFormat dataFormat, cl_int *error_code)
@@ -326,10 +353,13 @@ patch_kernel_source:
         }
 
     if (error_code)
-        *error_code = CL_SUCCESS;
+        {
+            *error_code = CL_SUCCESS;
+        }
 
     return (clFFT_Plan)plan;
 }
+
 
 void clFFT_DestroyPlan(clFFT_Plan plan)
 {
@@ -342,15 +372,20 @@ void clFFT_DestroyPlan(clFFT_Plan plan)
         }
 }
 
+
 void clFFT_DumpPlan(clFFT_Plan Plan, FILE *file)
 {
     size_t gDim;
     size_t lDim;
     FILE *out;
     if (!file)
-        out = stdout;
+        {
+            out = stdout;
+        }
     else
-        out = file;
+        {
+            out = file;
+        }
 
     auto *plan = (cl_fft_plan *)Plan;
     cl_fft_kernel_info *kInfo = plan->kernel_info;

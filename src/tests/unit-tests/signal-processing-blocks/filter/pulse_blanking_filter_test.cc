@@ -43,12 +43,10 @@ DEFINE_int32(pb_filter_test_nsamples, 1000000, "Number of samples to filter in t
 class PulseBlankingFilterTest : public ::testing::Test
 {
 protected:
-    PulseBlankingFilterTest()
+    PulseBlankingFilterTest() : item_size(sizeof(gr_complex)), nsamples(FLAGS_pb_filter_test_nsamples)
     {
         queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
-        item_size = sizeof(gr_complex);
         config = std::make_shared<InMemoryConfiguration>();
-        nsamples = FLAGS_pb_filter_test_nsamples;
     }
     ~PulseBlankingFilterTest() override = default;
     bool stop = false;

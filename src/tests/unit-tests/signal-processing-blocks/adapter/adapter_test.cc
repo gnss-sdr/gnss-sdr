@@ -53,9 +53,9 @@ public:
 
 
 DataTypeAdapter::DataTypeAdapter()
+    : file_name_input("adapter_test_input.dat"),
+      file_name_output("adapter_test_output.dat")
 {
-    file_name_input = "adapter_test_input.dat";
-    file_name_output = "adapter_test_output.dat";
     std::array<int8_t, 6> input_bytes{2, 23, -1, 127, -127, 0};
     std::array<int16_t, 8> input_shorts{2, 23, -1, 127, -127, 0, 255, 255};
 

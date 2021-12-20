@@ -42,7 +42,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   readability of the code, could potentially increase performance, and allows
   for easier detection of unused data members (see
   https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize).
+  Added the `cppcoreguidelines-prefer-member-initializer` clang-tidy check to
+  enforce this policy.
 - Non-functional change: Fixed formatting defects detected by clang-format 13.0.
+- Non-functional change: Simplified flow graph disconnection.
 - Updated GSL implementation to v0.40.0. See
   https://github.com/gsl-lite/gsl-lite/releases/tag/v0.40.0
 - CI - `cpplint` job on GitHub: Added the `build/include_what_you_use` filter
@@ -95,6 +98,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added a new output parameter `Flag_PLL_180_deg_phase_locked` in the monitor
   output that indicates if the PLL got locked at 180 degrees, so the symbol sign
   is reversed.
+- Fix bug in the satellite selection algorithm for configurations with a large
+  number of channels. The maximum number of channels per signal is now limited
+  to the number of available satellites per system minus one. The number of
+  channels performing concurrent acquisition, `Channels.in_acquisition`, cannot
+  be larger than the total number of channels. The program will stop if those
+  requirements are not met in the configuration file.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

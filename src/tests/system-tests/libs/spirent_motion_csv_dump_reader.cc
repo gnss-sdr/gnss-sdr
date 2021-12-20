@@ -22,46 +22,46 @@
 
 
 Spirent_Motion_Csv_Dump_Reader::Spirent_Motion_Csv_Dump_Reader()
+    : header_lines(2),
+      TOW_ms(0.0),
+      Pos_X(0.0),
+      Pos_Y(0.0),
+      Pos_Z(0.0),
+      Vel_X(0.0),
+      Vel_Y(0.0),
+      Vel_Z(0.0),
+      Acc_X(0.0),
+      Acc_Y(0.0),
+      Acc_Z(0.0),
+      Jerk_X(0.0),
+      Jerk_Y(0.0),
+      Jerk_Z(0.0),
+      Lat(0.0),
+      Long(0.0),
+      Height(0.0),
+      Heading(0.0),
+      Elevation(0.0),
+      Bank(0.0),
+      Ang_vel_X(0.0),
+      Ang_vel_Y(0.0),
+      Ang_vel_Z(0.0),
+      Ang_acc_X(0.0),
+      Ang_acc_Y(0.0),
+      Ang_acc_Z(0.0),
+      Ant1_Pos_X(0.0),
+      Ant1_Pos_Y(0.0),
+      Ant1_Pos_Z(0.0),
+      Ant1_Vel_X(0.0),
+      Ant1_Vel_Y(0.0),
+      Ant1_Vel_Z(0.0),
+      Ant1_Acc_X(0.0),
+      Ant1_Acc_Y(0.0),
+      Ant1_Acc_Z(0.0),
+      Ant1_Lat(0.0),
+      Ant1_Long(0.0),
+      Ant1_Height(0.0),
+      Ant1_DOP(0.0)
 {
-    header_lines = 2;
-    TOW_ms = 0.0;
-    Pos_X = 0.0;
-    Pos_Y = 0.0;
-    Pos_Z = 0.0;
-    Vel_X = 0.0;
-    Vel_Y = 0.0;
-    Vel_Z = 0.0;
-    Acc_X = 0.0;
-    Acc_Y = 0.0;
-    Acc_Z = 0.0;
-    Jerk_X = 0.0;
-    Jerk_Y = 0.0;
-    Jerk_Z = 0.0;
-    Lat = 0.0;
-    Long = 0.0;
-    Height = 0.0;
-    Heading = 0.0;
-    Elevation = 0.0;
-    Bank = 0.0;
-    Ang_vel_X = 0.0;
-    Ang_vel_Y = 0.0;
-    Ang_vel_Z = 0.0;
-    Ang_acc_X = 0.0;
-    Ang_acc_Y = 0.0;
-    Ang_acc_Z = 0.0;
-    Ant1_Pos_X = 0.0;
-    Ant1_Pos_Y = 0.0;
-    Ant1_Pos_Z = 0.0;
-    Ant1_Vel_X = 0.0;
-    Ant1_Vel_Y = 0.0;
-    Ant1_Vel_Z = 0.0;
-    Ant1_Acc_X = 0.0;
-    Ant1_Acc_Y = 0.0;
-    Ant1_Acc_Z = 0.0;
-    Ant1_Lat = 0.0;
-    Ant1_Long = 0.0;
-    Ant1_Height = 0.0;
-    Ant1_DOP = 0.0;
 }
 
 

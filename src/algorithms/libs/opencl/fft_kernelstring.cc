@@ -30,7 +30,7 @@ num2str(int num)
 {
     char temp[200];
     snprintf(temp, sizeof(temp), "%d", num);
-    return string(temp);
+    return {temp};
 }
 
 // For any n, this function decomposes n into factors for loacal memory tranpose
@@ -155,14 +155,20 @@ getRadixArray(unsigned int n, unsigned int *radixArray, unsigned int *numRadices
         }
 }
 
+
 static void
 insertHeader(string &kernelString, string &kernelName, clFFT_DataFormat dataFormat)
 {
     if (dataFormat == clFFT_SplitComplexFormat)
-        kernelString += string("__kernel void ") + kernelName + string("(__global float *in_real, __global float *in_imag, __global float *out_real, __global float *out_imag, int dir, int S)\n");
+        {
+            kernelString += string("__kernel void ") + kernelName + string("(__global float *in_real, __global float *in_imag, __global float *out_real, __global float *out_imag, int dir, int S)\n");
+        }
     else
-        kernelString += string("__kernel void ") + kernelName + string("(__global float2 *in, __global float2 *out, int dir, int S)\n");
+        {
+            kernelString += string("__kernel void ") + kernelName + string("(__global float2 *in, __global float2 *out, int dir, int S)\n");
+        }
 }
+
 
 static void
 insertVariables(string &kStream, int maxRadix)
@@ -177,11 +183,14 @@ insertVariables(string &kStream, int maxRadix)
     kStream += string("    int groupId = get_group_id( 0 );\n");
 }
 
+
 static void
 formattedLoad(string &kernelString, int aIndex, int gIndex, clFFT_DataFormat dataFormat)
 {
     if (dataFormat == clFFT_InterleavedComplexFormat)
-        kernelString += string("        a[") + num2str(aIndex) + string("] = in[") + num2str(gIndex) + string("];\n");
+        {
+            kernelString += string("        a[") + num2str(aIndex) + string("] = in[") + num2str(gIndex) + string("];\n");
+        }
     else
         {
             kernelString += string("        a[") + num2str(aIndex) + string("].x = in_real[") + num2str(gIndex) + string("];\n");
@@ -189,17 +198,21 @@ formattedLoad(string &kernelString, int aIndex, int gIndex, clFFT_DataFormat dat
         }
 }
 
+
 static void
 formattedStore(string &kernelString, int aIndex, int gIndex, clFFT_DataFormat dataFormat)
 {
     if (dataFormat == clFFT_InterleavedComplexFormat)
-        kernelString += string("        out[") + num2str(gIndex) + string("] = a[") + num2str(aIndex) + string("];\n");
+        {
+            kernelString += string("        out[") + num2str(gIndex) + string("] = a[") + num2str(aIndex) + string("];\n");
+        }
     else
         {
             kernelString += string("        out_real[") + num2str(gIndex) + string("] = a[") + num2str(aIndex) + string("].x;\n");
             kernelString += string("        out_imag[") + num2str(gIndex) + string("] = a[") + num2str(aIndex) + string("].y;\n");
         }
 }
+
 
 static int
 insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXForm, int numXFormsPerWG, int R0, int mem_coalesce_width, clFFT_DataFormat dataFormat)
@@ -211,7 +224,9 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
     int lMemSize = 0;
 
     if (numXFormsPerWG > 1)
-        kernelString += string("        s = S & ") + num2str(numXFormsPerWG - 1) + string(";\n");
+        {
+            kernelString += string("        s = S & ") + num2str(numXFormsPerWG - 1) + string(";\n");
+        }
 
     if (numWorkItemsPerXForm >= mem_coalesce_width)
         {
@@ -234,7 +249,9 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
                             kernelString += string("        out_imag += offset;\n");
                         }
                     for (i = 0; i < R0; i++)
-                        formattedLoad(kernelString, i, i * numWorkItemsPerXForm, dataFormat);
+                        {
+                            formattedLoad(kernelString, i, i * numWorkItemsPerXForm, dataFormat);
+                        }
                     kernelString += string("    }\n");
                 }
             else
@@ -255,7 +272,9 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
                             kernelString += string("        out_imag += offset;\n");
                         }
                     for (i = 0; i < R0; i++)
-                        formattedLoad(kernelString, i, i * numWorkItemsPerXForm, dataFormat);
+                        {
+                            formattedLoad(kernelString, i, i * numWorkItemsPerXForm, dataFormat);
+                        }
                 }
         }
     else if (N >= mem_coalesce_width)
@@ -286,17 +305,23 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
                 {
                     kernelString += string("    if( jj < s ) {\n");
                     for (j = 0; j < numInnerIter; j++)
-                        formattedLoad(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        {
+                            formattedLoad(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        }
                     kernelString += string("    }\n");
                     if (i != numOuterIter - 1)
-                        kernelString += string("    jj += ") + num2str(groupSize / mem_coalesce_width) + string(";\n");
+                        {
+                            kernelString += string("    jj += ") + num2str(groupSize / mem_coalesce_width) + string(";\n");
+                        }
                 }
             kernelString += string("}\n ");
             kernelString += string("else {\n");
             for (i = 0; i < numOuterIter; i++)
                 {
                     for (j = 0; j < numInnerIter; j++)
-                        formattedLoad(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        {
+                            formattedLoad(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        }
                 }
             kernelString += string("}\n");
 
@@ -315,7 +340,9 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < R0; i++)
-                kernelString += string("    a[") + num2str(i) + string("].x = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                {
+                    kernelString += string("    a[") + num2str(i) + string("].x = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < numOuterIter; i++)
@@ -329,7 +356,9 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < R0; i++)
-                kernelString += string("    a[") + num2str(i) + string("].y = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                {
+                    kernelString += string("    a[") + num2str(i) + string("].y = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             lMemSize = (N + numWorkItemsPerXForm) * numXFormsPerWG;
@@ -360,7 +389,9 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
                     kernelString += string("    if(jj < s )\n");
                     formattedLoad(kernelString, i, i * groupSize, dataFormat);
                     if (i != R0 - 1)
-                        kernelString += string("    jj += ") + num2str(groupSize / N) + string(";\n");
+                        {
+                            kernelString += string("    jj += ") + num2str(groupSize / N) + string(";\n");
+                        }
                 }
             kernelString += string("}\n");
             kernelString += string("else {\n");
@@ -385,19 +416,27 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
 
 
             for (i = 0; i < R0; i++)
-                kernelString += string("    lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("] = a[") + num2str(i) + string("].x;\n");
+                {
+                    kernelString += string("    lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("] = a[") + num2str(i) + string("].x;\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < R0; i++)
-                kernelString += string("    a[") + num2str(i) + string("].x = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                {
+                    kernelString += string("    a[") + num2str(i) + string("].x = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < R0; i++)
-                kernelString += string("    lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("] = a[") + num2str(i) + string("].y;\n");
+                {
+                    kernelString += string("    lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("] = a[") + num2str(i) + string("].y;\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < R0; i++)
-                kernelString += string("    a[") + num2str(i) + string("].y = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                {
+                    kernelString += string("    a[") + num2str(i) + string("].y = lMemLoad[") + num2str(i * numWorkItemsPerXForm) + string("];\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             lMemSize = (N + numWorkItemsPerXForm) * numXFormsPerWG;
@@ -405,6 +444,7 @@ insertGlobalLoadsAndTranspose(string &kernelString, int N, int numWorkItemsPerXF
 
     return lMemSize;
 }
+
 
 static int
 insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr, int numWorkItemsPerXForm, int numXFormsPerWG, int mem_coalesce_width, clFFT_DataFormat dataFormat)
@@ -433,7 +473,9 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
                     formattedStore(kernelString, ind, i * numWorkItemsPerXForm, dataFormat);
                 }
             if (numXFormsPerWG > 1)
-                kernelString += string("    }\n");
+                {
+                    kernelString += string("    }\n");
+                }
         }
     else if (N >= mem_coalesce_width)
         {
@@ -455,8 +497,12 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < numOuterIter; i++)
-                for (j = 0; j < numInnerIter; j++)
-                    kernelString += string("    a[") + num2str(i * numInnerIter + j) + string("].x = lMemStore[") + num2str(j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * (N + numWorkItemsPerXForm)) + string("];\n");
+                {
+                    for (j = 0; j < numInnerIter; j++)
+                        {
+                            kernelString += string("    a[") + num2str(i * numInnerIter + j) + string("].x = lMemStore[") + num2str(j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * (N + numWorkItemsPerXForm)) + string("];\n");
+                        }
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < maxRadix; i++)
@@ -469,8 +515,12 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < numOuterIter; i++)
-                for (j = 0; j < numInnerIter; j++)
-                    kernelString += string("    a[") + num2str(i * numInnerIter + j) + string("].y = lMemStore[") + num2str(j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * (N + numWorkItemsPerXForm)) + string("];\n");
+                {
+                    for (j = 0; j < numInnerIter; j++)
+                        {
+                            kernelString += string("    a[") + num2str(i * numInnerIter + j) + string("].y = lMemStore[") + num2str(j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * (N + numWorkItemsPerXForm)) + string("];\n");
+                        }
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             kernelString += string("if((groupId == get_num_groups(0)-1) && s) {\n");
@@ -478,17 +528,23 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
                 {
                     kernelString += string("    if( jj < s ) {\n");
                     for (j = 0; j < numInnerIter; j++)
-                        formattedStore(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        {
+                            formattedStore(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        }
                     kernelString += string("    }\n");
                     if (i != numOuterIter - 1)
-                        kernelString += string("    jj += ") + num2str(groupSize / mem_coalesce_width) + string(";\n");
+                        {
+                            kernelString += string("    jj += ") + num2str(groupSize / mem_coalesce_width) + string(";\n");
+                        }
                 }
             kernelString += string("}\n");
             kernelString += string("else {\n");
             for (i = 0; i < numOuterIter; i++)
                 {
                     for (j = 0; j < numInnerIter; j++)
-                        formattedStore(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        {
+                            formattedStore(kernelString, i * numInnerIter + j, j * mem_coalesce_width + i * (groupSize / mem_coalesce_width) * N, dataFormat);
+                        }
                 }
             kernelString += string("}\n");
 
@@ -512,7 +568,9 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < maxRadix; i++)
-                kernelString += string("    a[") + num2str(i) + string("].x = lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("];\n");
+                {
+                    kernelString += string("    a[") + num2str(i) + string("].x = lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("];\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < maxRadix; i++)
@@ -525,7 +583,9 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             for (i = 0; i < maxRadix; i++)
-                kernelString += string("    a[") + num2str(i) + string("].y = lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("];\n");
+                {
+                    kernelString += string("    a[") + num2str(i) + string("].y = lMemStore[") + num2str(i * (groupSize / N) * (N + numWorkItemsPerXForm)) + string("];\n");
+                }
             kernelString += string("    barrier( CLK_LOCAL_MEM_FENCE );\n");
 
             kernelString += string("if((groupId == get_num_groups(0)-1) && s) {\n");
@@ -535,7 +595,9 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
                     formattedStore(kernelString, i, i * groupSize, dataFormat);
                     kernelString += string("    }\n");
                     if (i != maxRadix - 1)
-                        kernelString += string("    jj +=") + num2str(groupSize / N) + string(";\n");
+                        {
+                            kernelString += string("    jj +=") + num2str(groupSize / N) + string(";\n");
+                        }
                 }
             kernelString += string("}\n");
             kernelString += string("else {\n");
@@ -551,6 +613,7 @@ insertGlobalStoresAndTranspose(string &kernelString, int N, int maxRadix, int Nr
     return lMemSize;
 }
 
+
 static void
 insertfftKernel(string &kernelString, int Nr, int numIter)
 {
@@ -560,6 +623,7 @@ insertfftKernel(string &kernelString, int Nr, int numIter)
             kernelString += string("    fftKernel") + num2str(Nr) + string("(a+") + num2str(i * Nr) + string(", dir);\n");
         }
 }
+
 
 static void
 insertTwiddleKernel(string &kernelString, int Nr, int numIter, int Nprev, int len, int numWorkItemsPerXForm)
@@ -573,16 +637,24 @@ insertTwiddleKernel(string &kernelString, int Nr, int numIter, int Nprev, int le
             if (z == 0)
                 {
                     if (Nprev > 1)
-                        kernelString += string("    angf = (float) (ii >> ") + num2str(logNPrev) + string(");\n");
+                        {
+                            kernelString += string("    angf = (float) (ii >> ") + num2str(logNPrev) + string(");\n");
+                        }
                     else
-                        kernelString += string("    angf = (float) ii;\n");
+                        {
+                            kernelString += string("    angf = (float) ii;\n");
+                        }
                 }
             else
                 {
                     if (Nprev > 1)
-                        kernelString += string("    angf = (float) ((") + num2str(z * numWorkItemsPerXForm) + string(" + ii) >>") + num2str(logNPrev) + string(");\n");
+                        {
+                            kernelString += string("    angf = (float) ((") + num2str(z * numWorkItemsPerXForm) + string(" + ii) >>") + num2str(logNPrev) + string(");\n");
+                        }
                     else
-                        kernelString += string("    angf = (float) (") + num2str(z * numWorkItemsPerXForm) + string(" + ii);\n");
+                        {
+                            kernelString += string("    angf = (float) (") + num2str(z * numWorkItemsPerXForm) + string(" + ii);\n");
+                        }
                 }
 
             for (k = 1; k < Nr; k++)
@@ -596,30 +668,41 @@ insertTwiddleKernel(string &kernelString, int Nr, int numIter, int Nprev, int le
         }
 }
 
+
 static int
 getPadding(int numWorkItemsPerXForm, int Nprev, int numWorkItemsReq, int numXFormsPerWG, int Nr, int numBanks, int *offset, int *midPad)
 {
     if ((numWorkItemsPerXForm <= Nprev) || (Nprev >= numBanks))
-        *offset = 0;
+        {
+            *offset = 0;
+        }
     else
         {
             int numRowsReq = ((numWorkItemsPerXForm < numBanks) ? numWorkItemsPerXForm : numBanks) / Nprev;
             int numColsReq = 1;
             if (numRowsReq > Nr)
-                numColsReq = numRowsReq / Nr;
+                {
+                    numColsReq = numRowsReq / Nr;
+                }
             numColsReq = Nprev * numColsReq;
             *offset = numColsReq;
         }
 
     if (numWorkItemsPerXForm >= numBanks || numXFormsPerWG == 1)
-        *midPad = 0;
+        {
+            *midPad = 0;
+        }
     else
         {
             int bankNum = ((numWorkItemsReq + *offset) * Nr) & (numBanks - 1);
             if (bankNum >= numWorkItemsPerXForm)
-                *midPad = 0;
+                {
+                    *midPad = 0;
+                }
             else
-                *midPad = numWorkItemsPerXForm - bankNum;
+                {
+                    *midPad = numWorkItemsPerXForm - bankNum;
+                }
         }
 
     int lMemSize = (numWorkItemsReq + *offset) * Nr * numXFormsPerWG + *midPad * (numXFormsPerWG - 1);
@@ -643,6 +726,7 @@ insertLocalStores(string &kernelString, int numIter, int Nr, int numWorkItemsPer
         }
     kernelString += string("    barrier(CLK_LOCAL_MEM_FENCE);\n");
 }
+
 
 static void
 insertLocalLoads(string &kernelString, int n, int Nr, int Nrn, int Nprev, int Ncurr, int numWorkItemsPerXForm, int numWorkItemsReq, int offset, string &comp)
@@ -676,6 +760,7 @@ insertLocalLoads(string &kernelString, int n, int Nr, int Nrn, int Nprev, int Nc
     kernelString += string("    barrier(CLK_LOCAL_MEM_FENCE);\n");
 }
 
+
 static void
 insertLocalLoadIndexArithmatic(string &kernelString, int Nprev, int Nr, int numWorkItemsReq, int numWorkItemsPerXForm, int numXFormsPerWG, int offset, int midPad)
 {
@@ -687,32 +772,51 @@ insertLocalLoadIndexArithmatic(string &kernelString, int Nprev, int Nr, int numW
     if (Ncurr < numWorkItemsPerXForm)
         {
             if (Nprev == 1)
-                kernelString += string("    j = ii & ") + num2str(Ncurr - 1) + string(";\n");
+                {
+                    kernelString += string("    j = ii & ") + num2str(Ncurr - 1) + string(";\n");
+                }
             else
-                kernelString += string("    j = (ii & ") + num2str(Ncurr - 1) + string(") >> ") + num2str(logNprev) + string(";\n");
+                {
+                    kernelString += string("    j = (ii & ") + num2str(Ncurr - 1) + string(") >> ") + num2str(logNprev) + string(";\n");
+                }
 
             if (Nprev == 1)
-                kernelString += string("    i = ii >> ") + num2str(logNcurr) + string(";\n");
+                {
+                    kernelString += string("    i = ii >> ") + num2str(logNcurr) + string(";\n");
+                }
             else
-                kernelString += string("    i = mad24(ii >> ") + num2str(logNcurr) + string(", ") + num2str(Nprev) + string(", ii & ") + num2str(Nprev - 1) + string(");\n");
+                {
+                    kernelString += string("    i = mad24(ii >> ") + num2str(logNcurr) + string(", ") + num2str(Nprev) + string(", ii & ") + num2str(Nprev - 1) + string(");\n");
+                }
         }
     else
         {
             if (Nprev == 1)
-                kernelString += string("    j = ii;\n");
+                {
+                    kernelString += string("    j = ii;\n");
+                }
             else
-                kernelString += string("    j = ii >> ") + num2str(logNprev) + string(";\n");
+                {
+                    kernelString += string("    j = ii >> ") + num2str(logNprev) + string(";\n");
+                }
             if (Nprev == 1)
-                kernelString += string("    i = 0;\n");
+                {
+                    kernelString += string("    i = 0;\n");
+                }
             else
-                kernelString += string("    i = ii & ") + num2str(Nprev - 1) + string(";\n");
+                {
+                    kernelString += string("    i = ii & ") + num2str(Nprev - 1) + string(";\n");
+                }
         }
 
     if (numXFormsPerWG > 1)
-        kernelString += string("    i = mad24(jj, ") + num2str(incr) + string(", i);\n");
+        {
+            kernelString += string("    i = mad24(jj, ") + num2str(incr) + string(", i);\n");
+        }
 
     kernelString += string("    lMemLoad = sMem + mad24(j, ") + num2str(numWorkItemsReq + offset) + string(", i);\n");
 }
+
 
 static void
 insertLocalStoreIndexArithmatic(string &kernelString, int numWorkItemsReq, int numXFormsPerWG, int Nr, int offset, int midPad)
@@ -742,7 +846,9 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
     assert(numRadix > 0 && "no radix array supplied\n");
 
     if (n / radixArray[0] > plan->max_work_item_per_workgroup)
-        getRadixArray(n, radixArray, &numRadix, plan->max_radix);
+        {
+            getRadixArray(n, radixArray, &numRadix, plan->max_radix);
+        }
 
     assert(radixArray[0] <= plan->max_radix && "max radix choosen is greater than allowed\n");
     assert(n / radixArray[0] <= plan->max_work_item_per_workgroup && "required work items per xform greater than maximum work items allowed per work group for local mem fft\n");
@@ -839,10 +945,13 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
     insertHeader(*kernelString, kernelName, dataFormat);
     *kernelString += string("{\n");
     if ((*kInfo)->lmem_size)
-        *kernelString += string("    __local float sMem[") + num2str((*kInfo)->lmem_size) + string("];\n");
+        {
+            *kernelString += string("    __local float sMem[") + num2str((*kInfo)->lmem_size) + string("];\n");
+        }
     *kernelString += localString;
     *kernelString += string("}\n");
 }
+
 
 // For n larger than what can be computed using local memory fft, global transposes
 // multiple kernel launces is needed. For these sizes, n can be decomposed using
@@ -864,7 +973,6 @@ createLocalMemfftKernelString(cl_fft_plan *plan)
 // in this example. Users can play with difference base radices and difference
 // decompositions of base radices to generates different kernels and see which gives
 // best performance. Following function is just fixed to use 128 as base radix
-
 void getGlobalRadixInfo(int n, int *radix, int *R1, int *R2, int *numRadices)
 {
     int baseRadix = min(n, 128);
@@ -878,7 +986,9 @@ void getGlobalRadixInfo(int n, int *radix, int *R1, int *R2, int *numRadices)
         }
 
     for (int i = 0; i < numR; i++)
-        radix[i] = baseRadix;
+        {
+            radix[i] = baseRadix;
+        }
 
     radix[numR] = N;
     numR++;
@@ -905,6 +1015,7 @@ void getGlobalRadixInfo(int n, int *radix, int *R1, int *R2, int *numRadices)
             R2[i] = r2;
         }
 }
+
 
 static void
 createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir dir, int vertBS)
@@ -960,12 +1071,18 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
 
             int strideI = Rinit;
             for (i = 0; i < numPasses; i++)
-                if (i != passNum)
-                    strideI *= radixArr[i];
+                {
+                    if (i != passNum)
+                        {
+                            strideI *= radixArr[i];
+                        }
+                }
 
             int strideO = Rinit;
             for (i = 0; i < passNum; i++)
-                strideO *= radixArr[i];
+                {
+                    strideO *= radixArr[i];
+                }
 
             int threadsPerXForm = R2;
             batchSize = R2 == 1 ? plan->max_work_item_per_workgroup : batchSize;
@@ -986,30 +1103,44 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
             int numBlocksPerXForm = strideI / batchSize;
             int numBlocks = numBlocksPerXForm;
             if (!vertical)
-                numBlocks *= BS;
+                {
+                    numBlocks *= BS;
+                }
             else
-                numBlocks *= vertBS;
+                {
+                    numBlocks *= vertBS;
+                }
 
             kernelName = string("fft") + num2str(kCount);
             *kInfo = (cl_fft_kernel_info *)malloc(sizeof(cl_fft_kernel_info));
             (*kInfo)->kernel = nullptr;
             if (R2 == 1)
-                (*kInfo)->lmem_size = 0;
+                {
+                    (*kInfo)->lmem_size = 0;
+                }
             else
                 {
                     if (strideO == 1)
-                        (*kInfo)->lmem_size = (radix + 1) * batchSize;
+                        {
+                            (*kInfo)->lmem_size = (radix + 1) * batchSize;
+                        }
                     else
-                        (*kInfo)->lmem_size = threadsPerBlock * R1;
+                        {
+                            (*kInfo)->lmem_size = threadsPerBlock * R1;
+                        }
                 }
             (*kInfo)->num_workgroups = numBlocks;
             (*kInfo)->num_xforms_per_workgroup = 1;
             (*kInfo)->num_workitems_per_workgroup = threadsPerBlock;
             (*kInfo)->dir = dir;
             if ((passNum == (numPasses - 1)) && (numPasses & 1))
-                (*kInfo)->in_place_possible = 1;
+                {
+                    (*kInfo)->in_place_possible = 1;
+                }
             else
-                (*kInfo)->in_place_possible = 0;
+                {
+                    (*kInfo)->in_place_possible = 0;
+                }
             (*kInfo)->next = nullptr;
             (*kInfo)->kernel_name = (char *)malloc(sizeof(char) * (kernelName.size() + 1));
             snprintf((*kInfo)->kernel_name, sizeof((*kInfo)->kernel_name), kernelName.c_str());
@@ -1026,7 +1157,9 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                     localString += string("j = tid & ") + num2str(strideO - 1) + string(";\n");
                     int stride = radix * Rinit;
                     for (i = 0; i < passNum; i++)
-                        stride *= radixArr[i];
+                        {
+                            stride *= radixArr[i];
+                        }
                     localString += string("indexOut = mad24(i, ") + num2str(stride) + string(", j + ") + string("(xNum << ") + num2str((int)log2(n * BS)) + string("));\n");
                     localString += string("bNum = groupId;\n");
                 }
@@ -1041,7 +1174,9 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                     localString += string("j = tid & ") + num2str(strideO - 1) + string(";\n");
                     int stride = radix * Rinit;
                     for (i = 0; i < passNum; i++)
-                        stride *= radixArr[i];
+                        {
+                            stride *= radixArr[i];
+                        }
                     localString += string("indexOut = mad24(i, ") + num2str(stride) + string(", j);\n");
                     localString += string("indexIn += (xNum << ") + num2str(m) + string(");\n");
                     localString += string("indexOut += (xNum << ") + num2str(m) + string(");\n");
@@ -1059,15 +1194,21 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                     localString += string("in_real += indexIn;\n");
                     localString += string("in_imag += indexIn;\n");
                     for (j = 0; j < R1; j++)
-                        localString += string("a[") + num2str(j) + string("].x = in_real[") + num2str(j * gInInc * strideI) + string("];\n");
+                        {
+                            localString += string("a[") + num2str(j) + string("].x = in_real[") + num2str(j * gInInc * strideI) + string("];\n");
+                        }
                     for (j = 0; j < R1; j++)
-                        localString += string("a[") + num2str(j) + string("].y = in_imag[") + num2str(j * gInInc * strideI) + string("];\n");
+                        {
+                            localString += string("a[") + num2str(j) + string("].y = in_imag[") + num2str(j * gInInc * strideI) + string("];\n");
+                        }
                 }
             else
                 {
                     localString += string("in += indexIn;\n");
                     for (j = 0; j < R1; j++)
-                        localString += string("a[") + num2str(j) + string("] = in[") + num2str(j * gInInc * strideI) + string("];\n");
+                        {
+                            localString += string("a[") + num2str(j) + string("] = in[") + num2str(j * gInInc * strideI) + string("];\n");
+                        }
                 }
 
             localString += string("fftKernel") + num2str(R1) + string("(a, dir);\n");
@@ -1088,22 +1229,36 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                     localString += string("lMemStore = sMem + tid;\n");
                     localString += string("lMemLoad = sMem + indexIn;\n");
                     for (k = 0; k < R1; k++)
-                        localString += string("lMemStore[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].x;\n");
+                        {
+                            localString += string("lMemStore[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].x;\n");
+                        }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
                     for (k = 0; k < numIter; k++)
-                        for (t = 0; t < R2; t++)
-                            localString += string("a[") + num2str(k * R2 + t) + string("].x = lMemLoad[") + num2str(t * batchSize + k * threadsPerBlock) + string("];\n");
+                        {
+                            for (t = 0; t < R2; t++)
+                                {
+                                    localString += string("a[") + num2str(k * R2 + t) + string("].x = lMemLoad[") + num2str(t * batchSize + k * threadsPerBlock) + string("];\n");
+                                }
+                        }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
                     for (k = 0; k < R1; k++)
-                        localString += string("lMemStore[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].y;\n");
+                        {
+                            localString += string("lMemStore[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].y;\n");
+                        }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
                     for (k = 0; k < numIter; k++)
-                        for (t = 0; t < R2; t++)
-                            localString += string("a[") + num2str(k * R2 + t) + string("].y = lMemLoad[") + num2str(t * batchSize + k * threadsPerBlock) + string("];\n");
+                        {
+                            for (t = 0; t < R2; t++)
+                                {
+                                    localString += string("a[") + num2str(k * R2 + t) + string("].y = lMemLoad[") + num2str(t * batchSize + k * threadsPerBlock) + string("];\n");
+                                }
+                        }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
 
                     for (j = 0; j < numIter; j++)
-                        localString += string("fftKernel") + num2str(R2) + string("(a + ") + num2str(j * R2) + string(", dir);\n");
+                        {
+                            localString += string("fftKernel") + num2str(R2) + string("(a + ") + num2str(j * R2) + string(", dir);\n");
+                        }
                 }
 
             // twiddle
@@ -1127,40 +1282,60 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                     localString += string("lMemLoad = sMem + mad24(tid >> ") + num2str((int)log2(radix)) + string(", ") + num2str(radix + 1) + string(", tid & ") + num2str(radix - 1) + string(");\n");
 
                     for (i = 0; i < R1 / R2; i++)
-                        for (j = 0; j < R2; j++)
-                            localString += string("lMemStore[ ") + num2str(i + j * R1) + string("] = a[") + num2str(i * R2 + j) + string("].x;\n");
+                        {
+                            for (j = 0; j < R2; j++)
+                                {
+                                    localString += string("lMemStore[ ") + num2str(i + j * R1) + string("] = a[") + num2str(i * R2 + j) + string("].x;\n");
+                                }
+                        }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
                     if (threadsPerBlock >= radix)
                         {
                             for (i = 0; i < R1; i++)
-                                localString += string("a[") + num2str(i) + string("].x = lMemLoad[") + num2str(i * (radix + 1) * (threadsPerBlock / radix)) + string("];\n");
+                                {
+                                    localString += string("a[") + num2str(i) + string("].x = lMemLoad[") + num2str(i * (radix + 1) * (threadsPerBlock / radix)) + string("];\n");
+                                }
                         }
                     else
                         {
                             int innerIter = radix / threadsPerBlock;
                             int outerIter = R1 / innerIter;
                             for (i = 0; i < outerIter; i++)
-                                for (j = 0; j < innerIter; j++)
-                                    localString += string("a[") + num2str(i * innerIter + j) + string("].x = lMemLoad[") + num2str(j * threadsPerBlock + i * (radix + 1)) + string("];\n");
+                                {
+                                    for (j = 0; j < innerIter; j++)
+                                        {
+                                            localString += string("a[") + num2str(i * innerIter + j) + string("].x = lMemLoad[") + num2str(j * threadsPerBlock + i * (radix + 1)) + string("];\n");
+                                        }
+                                }
                         }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
 
                     for (i = 0; i < R1 / R2; i++)
-                        for (j = 0; j < R2; j++)
-                            localString += string("lMemStore[ ") + num2str(i + j * R1) + string("] = a[") + num2str(i * R2 + j) + string("].y;\n");
+                        {
+                            for (j = 0; j < R2; j++)
+                                {
+                                    localString += string("lMemStore[ ") + num2str(i + j * R1) + string("] = a[") + num2str(i * R2 + j) + string("].y;\n");
+                                }
+                        }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
                     if (threadsPerBlock >= radix)
                         {
                             for (i = 0; i < R1; i++)
-                                localString += string("a[") + num2str(i) + string("].y = lMemLoad[") + num2str(i * (radix + 1) * (threadsPerBlock / radix)) + string("];\n");
+                                {
+                                    localString += string("a[") + num2str(i) + string("].y = lMemLoad[") + num2str(i * (radix + 1) * (threadsPerBlock / radix)) + string("];\n");
+                                }
                         }
                     else
                         {
                             int innerIter = radix / threadsPerBlock;
                             int outerIter = R1 / innerIter;
                             for (i = 0; i < outerIter; i++)
-                                for (j = 0; j < innerIter; j++)
-                                    localString += string("a[") + num2str(i * innerIter + j) + string("].y = lMemLoad[") + num2str(j * threadsPerBlock + i * (radix + 1)) + string("];\n");
+                                {
+                                    for (j = 0; j < innerIter; j++)
+                                        {
+                                            localString += string("a[") + num2str(i * innerIter + j) + string("].y = lMemLoad[") + num2str(j * threadsPerBlock + i * (radix + 1)) + string("];\n");
+                                        }
+                                }
                         }
                     localString += string("barrier(CLK_LOCAL_MEM_FENCE);\n");
 
@@ -1170,15 +1345,21 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                             localString += string("out_real += indexOut;\n");
                             localString += string("out_imag += indexOut;\n");
                             for (k = 0; k < R1; k++)
-                                localString += string("out_real[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].x;\n");
+                                {
+                                    localString += string("out_real[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].x;\n");
+                                }
                             for (k = 0; k < R1; k++)
-                                localString += string("out_imag[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].y;\n");
+                                {
+                                    localString += string("out_imag[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("].y;\n");
+                                }
                         }
                     else
                         {
                             localString += string("out += indexOut;\n");
                             for (k = 0; k < R1; k++)
-                                localString += string("out[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("];\n");
+                                {
+                                    localString += string("out[") + num2str(k * threadsPerBlock) + string("] = a[") + num2str(k) + string("];\n");
+                                }
                         }
                 }
             else
@@ -1189,22 +1370,30 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
                             localString += string("out_real += indexOut;\n");
                             localString += string("out_imag += indexOut;\n");
                             for (k = 0; k < R1; k++)
-                                localString += string("out_real[") + num2str(((k % R2) * R1 + (k / R2)) * strideO) + string("] = a[") + num2str(k) + string("].x;\n");
+                                {
+                                    localString += string("out_real[") + num2str(((k % R2) * R1 + (k / R2)) * strideO) + string("] = a[") + num2str(k) + string("].x;\n");
+                                }
                             for (k = 0; k < R1; k++)
-                                localString += string("out_imag[") + num2str(((k % R2) * R1 + (k / R2)) * strideO) + string("] = a[") + num2str(k) + string("].y;\n");
+                                {
+                                    localString += string("out_imag[") + num2str(((k % R2) * R1 + (k / R2)) * strideO) + string("] = a[") + num2str(k) + string("].y;\n");
+                                }
                         }
                     else
                         {
                             localString += string("out += indexOut;\n");
                             for (k = 0; k < R1; k++)
-                                localString += string("out[") + num2str(((k % R2) * R1 + (k / R2)) * strideO) + string("] = a[") + num2str(k) + string("];\n");
+                                {
+                                    localString += string("out[") + num2str(((k % R2) * R1 + (k / R2)) * strideO) + string("] = a[") + num2str(k) + string("];\n");
+                                }
                         }
                 }
 
             insertHeader(*kernelString, kernelName, dataFormat);
             *kernelString += string("{\n");
             if ((*kInfo)->lmem_size)
-                *kernelString += string("    __local float sMem[") + num2str((*kInfo)->lmem_size) + string("];\n");
+                {
+                    *kernelString += string("    __local float sMem[") + num2str((*kInfo)->lmem_size) + string("];\n");
+                }
             *kernelString += localString;
             *kernelString += string("}\n");
 
@@ -1213,6 +1402,7 @@ createGlobalFFTKernelString(cl_fft_plan *plan, int n, int BS, cl_fft_kernel_dir 
             kCount++;
         }
 }
+
 
 void FFT1D(cl_fft_plan *plan, cl_fft_kernel_dir dir)
 {
@@ -1237,21 +1427,29 @@ void FFT1D(cl_fft_plan *plan, cl_fft_kernel_dir dir)
                         {
                             getRadixArray(plan->n.x, radixArray, &numRadix, plan->max_radix);
                             if (plan->n.x / radixArray[0] <= plan->max_work_item_per_workgroup)
-                                createLocalMemfftKernelString(plan);
+                                {
+                                    createLocalMemfftKernelString(plan);
+                                }
                             else
-                                createGlobalFFTKernelString(plan, plan->n.x, 1, cl_fft_kernel_x, 1);
+                                {
+                                    createGlobalFFTKernelString(plan, plan->n.x, 1, cl_fft_kernel_x, 1);
+                                }
                         }
                 }
             break;
 
         case cl_fft_kernel_y:
             if (plan->n.y > 1)
-                createGlobalFFTKernelString(plan, plan->n.y, plan->n.x, cl_fft_kernel_y, 1);
+                {
+                    createGlobalFFTKernelString(plan, plan->n.y, plan->n.x, cl_fft_kernel_y, 1);
+                }
             break;
 
         case cl_fft_kernel_z:
             if (plan->n.z > 1)
-                createGlobalFFTKernelString(plan, plan->n.z, plan->n.x * plan->n.y, cl_fft_kernel_z, 1);
+                {
+                    createGlobalFFTKernelString(plan, plan->n.z, plan->n.x * plan->n.y, cl_fft_kernel_z, 1);
+                }
         default:
             return;
         }

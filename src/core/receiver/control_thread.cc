@@ -1207,6 +1207,7 @@ void ControlThread::keyboard_listener()
                 {
                     std::cout << "Quit keystroke order received, stopping GNSS-SDR !!\n";
                     control_queue_->push(pmt::make_any(command_event_make(200, 0)));
+                    stop_ = true;
                     read_keys = false;
                 }
             else

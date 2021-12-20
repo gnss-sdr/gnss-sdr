@@ -146,7 +146,7 @@ public:
     }
 
 private:
-    float calculate_threshold(float pfa);
+    float calculate_threshold(float pfa) const;
     const ConfigurationInterface* configuration_;
     pcps_opencl_acquisition_cc_sptr acquisition_cc_;
     gr::blocks::stream_to_vector::sptr stream_to_vector_;

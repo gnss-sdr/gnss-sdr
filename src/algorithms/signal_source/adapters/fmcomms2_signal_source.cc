@@ -91,7 +91,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
     item_size_ = sizeof(gr_complex);
 
     // some basic checks
-    if ((rf_port_select_ != "A_BALANCED") and (rf_port_select_ != "B_BALANCED") and (rf_port_select_ != "A_N") and (rf_port_select_ != "B_N") and (rf_port_select_ != "B_P") and (rf_port_select_ != "C_N") and (rf_port_select_ != "C_P") and (rf_port_select_ != "TX_MONITOR1") and (rf_port_select_ != "TX_MONITOR2") and (rf_port_select_ != "TX_MONITOR1_2"))
+    if ((rf_port_select_ != "A_BALANCED") && (rf_port_select_ != "B_BALANCED") && (rf_port_select_ != "A_N") && (rf_port_select_ != "B_N") && (rf_port_select_ != "B_P") && (rf_port_select_ != "C_N") && (rf_port_select_ != "C_P") && (rf_port_select_ != "TX_MONITOR1") && (rf_port_select_ != "TX_MONITOR2") && (rf_port_select_ != "TX_MONITOR1_2"))
         {
             std::cout << "Configuration parameter rf_port_select should take one of these values:\n";
             std::cout << " A_BALANCED, B_BALANCED, A_N, B_N, B_P, C_N, C_P, TX_MONITOR1, TX_MONITOR2, TX_MONITOR1_2\n";
@@ -101,7 +101,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
             LOG(WARNING) << "Invalid configuration value for rf_port_select parameter. Set to rf_port_select=A_BALANCED";
         }
 
-    if ((gain_mode_rx1_ != "manual") and (gain_mode_rx1_ != "slow_attack") and (gain_mode_rx1_ != "fast_attack") and (gain_mode_rx1_ != "hybrid"))
+    if ((gain_mode_rx1_ != "manual") && (gain_mode_rx1_ != "slow_attack") && (gain_mode_rx1_ != "fast_attack") && (gain_mode_rx1_ != "hybrid"))
         {
             std::cout << "Configuration parameter gain_mode_rx1 should take one of these values:\n";
             std::cout << " manual, slow_attack, fast_attack, hybrid\n";
@@ -111,7 +111,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
             LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx1=" << default_gain_mode;
         }
 
-    if ((gain_mode_rx2_ != "manual") and (gain_mode_rx2_ != "slow_attack") and (gain_mode_rx2_ != "fast_attack") and (gain_mode_rx2_ != "hybrid"))
+    if ((gain_mode_rx2_ != "manual") && (gain_mode_rx2_ != "slow_attack") && (gain_mode_rx2_ != "fast_attack") && (gain_mode_rx2_ != "hybrid"))
         {
             std::cout << "Configuration parameter gain_mode_rx2 should take one of these values:\n";
             std::cout << " manual, slow_attack, fast_attack, hybrid\n";
@@ -121,7 +121,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
             LOG(WARNING) << "Invalid configuration value for gain_mode_rx1 parameter. Set to gain_mode_rx2=" << default_gain_mode;
         }
 
-    if ((filter_source_ != "Off") and (filter_source_ != "Auto") and (filter_source_ != "File") and (filter_source_ != "Design"))
+    if ((filter_source_ != "Off") && (filter_source_ != "Auto") && (filter_source_ != "File") && (filter_source_ != "Design"))
         {
             std::cout << "Configuration parameter filter_source should take one of these values:\n";
             std::cout << "  Off: Disable filter\n";
@@ -138,7 +138,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
 
     if (gain_mode_rx1_ == "manual")
         {
-            if (rf_gain_rx1_ > 73.0 or rf_gain_rx1_ < -1.0)
+            if (rf_gain_rx1_ > 73.0 || rf_gain_rx1_ < -1.0)
                 {
                     std::cout << "Configuration parameter rf_gain_rx1 should take values between -1.0 and 73 dB\n";
                     std::cout << "Error: provided value rf_gain_rx1=" << rf_gain_rx1_ << " is not among valid values\n";
@@ -150,7 +150,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
 
     if (gain_mode_rx2_ == "manual")
         {
-            if (rf_gain_rx2_ > 73.0 or rf_gain_rx2_ < -1.0)
+            if (rf_gain_rx2_ > 73.0 || rf_gain_rx2_ < -1.0)
                 {
                     std::cout << "Configuration parameter rf_gain_rx2 should take values between -1.0 and 73 dB\n";
                     std::cout << "Error: provided value rf_gain_rx2=" << rf_gain_rx2_ << " is not among valid values\n";
@@ -160,7 +160,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                 }
         }
 
-    if (bandwidth_ < 200000 or bandwidth_ > 56000000)
+    if (bandwidth_ < 200000 || bandwidth_ > 56000000)
         {
             std::cout << "Configuration parameter bandwidth should take values between 200000 and 56000000 Hz\n";
             std::cout << "Error: provided value bandwidth=" << bandwidth_ << " is not among valid values\n";
@@ -177,7 +177,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
         {
             if (RF_channels_ == 1)
                 {
-                    if (rx1_en_ and rx2_en_)
+                    if (rx1_en_ && rx2_en_)
                         {
                             LOG(FATAL) << "Configuration error: both rx1 and rx2 are enabled but RF_channels=1 !";
                         }
@@ -220,7 +220,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {
-                                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) or (tx_bandwidth_ < 200000) or (tx_bandwidth_ > 1000000))
+                                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) || (tx_bandwidth_ < 200000) || (tx_bandwidth_ > 1000000))
                                         {
                                             std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz\n";
                                             std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values\n";
@@ -228,7 +228,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                                             tx_bandwidth_ = 500000;
                                             LOG(WARNING) << "Invalid configuration value for tx_bandwidth parameter. Set to tx_bandwidth=500000";
                                         }
-                                    if (tx_attenuation_db_ > 0.0 or tx_attenuation_db_ < -89.75)
+                                    if (tx_attenuation_db_ > 0.0 || tx_attenuation_db_ < -89.75)
                                         {
                                             std::cout << "Configuration parameter tx_attenuation_db should take values between 0.0 and -89.95 in 0.25 dB steps\n";
                                             std::cout << "Error: provided value tx_attenuation_db=" << tx_attenuation_db_ << " is not among valid values\n";
@@ -257,7 +257,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                 }
             else if (RF_channels_ == 2)
                 {
-                    if (!(rx1_en_ and rx2_en_))
+                    if (!(rx1_en_ && rx2_en_))
                         {
                             LOG(FATAL) << "Configuration error: RF_channels=2 but are not enabled both receivers in FMCOMMS2 !";
                         }
@@ -294,7 +294,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                             // configure LO
                             if (enable_dds_lo_ == true)
                                 {
-                                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) or (tx_bandwidth_ < 200000) or (tx_bandwidth_ > 1000000))
+                                    if (tx_bandwidth_ < static_cast<uint64_t>(std::floor(static_cast<float>(freq_dds_tx_hz_) * 1.1)) || (tx_bandwidth_ < 200000) || (tx_bandwidth_ > 1000000))
                                         {
                                             std::cout << "Configuration parameter tx_bandwidth value should be between " << std::max(static_cast<float>(freq_dds_tx_hz_) * 1.1, 200000.0) << " and 1000000 Hz\n";
                                             std::cout << "Error: provided value tx_bandwidth=" << tx_bandwidth_ << " is not among valid values\n";
@@ -302,7 +302,7 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                                             tx_bandwidth_ = 500000;
                                             LOG(WARNING) << "Invalid configuration value for tx_bandwidth parameter. Set to tx_bandwidth=500000";
                                         }
-                                    if (tx_attenuation_db_ > 0.0 or tx_attenuation_db_ < -89.75)
+                                    if (tx_attenuation_db_ > 0.0 || tx_attenuation_db_ < -89.75)
                                         {
                                             std::cout << "Configuration parameter tx_attenuation_db should take values between 0.0 and -89.95 in 0.25 dB steps\n";
                                             std::cout << "Error: provided value tx_attenuation_db=" << tx_attenuation_db_ << " is not among valid values\n";
@@ -433,7 +433,7 @@ void Fmcomms2SignalSource::disconnect(gr::top_block_sptr top_block)
 gr::basic_block_sptr Fmcomms2SignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
-    return gr::basic_block_sptr();
+    return {};
 }
 
 

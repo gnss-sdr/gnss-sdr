@@ -283,7 +283,15 @@ protected:
         num_thresholds = pfa_vector.size();
 
         // the gnss simulator does not dump the trk observables for the last 100 ms of generated signal
-        int aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells) - 1);
+        int aux2;
+        if (FLAGS_acq_test_bit_transition_flag)
+            {
+                aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (FLAGS_acq_test_coherent_time_ms * 2.0) - 1);
+            }
+        else
+            {
+                aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells) - 1);
+            }
         if ((FLAGS_acq_test_num_meas > 0) and (FLAGS_acq_test_num_meas < aux2))
             {
                 num_of_measurements = static_cast<unsigned int>(FLAGS_acq_test_num_meas);

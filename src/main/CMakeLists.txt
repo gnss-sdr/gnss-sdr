@@ -3,7 +3,7 @@
 #
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
-
+ 
 
 if(USE_CMAKE_TARGET_SOURCES)
     add_executable(gnss-sdr)
@@ -12,8 +12,31 @@ else()
     add_executable(gnss-sdr main.cc)
 endif()
 
+add_library(libusb SHARED IMPORTED)
+set_target_properties(libusb PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libusb1.0.so)
+
+
+add_library(libcrypto SHARED IMPORTED)
+set_target_properties(libcrypto PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libcrypto.so.3)
+
+add_library(libhackrf SHARED IMPORTED)
+set_target_properties(libhackrf PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libhackrf.so)
+
+add_library(librtlsdr SHARED IMPORTED)
+set_target_properties(librtlsdr PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/librtlsdr.so)
+
+
 target_link_libraries(gnss-sdr
-    PRIVATE
+     PUBLIC
+        libusb
+        libcrypto
+        libhackrf
+        librtlsdr
+     PRIVATE
         algorithms_libs
         core_receiver
         Boost::headers
@@ -21,6 +44,8 @@ target_link_libraries(gnss-sdr
         Gflags::gflags
         Glog::glog
         Threads::Threads
+        log
+        android
 )
 
 target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")

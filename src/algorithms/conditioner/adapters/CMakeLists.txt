@@ -37,6 +37,7 @@ endif()
 target_link_libraries(conditioner_adapters
     PUBLIC
         Gnuradio::runtime
+        Boost::headers
     PRIVATE
         Gflags::gflags
         Glog::glog

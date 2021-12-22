@@ -28,6 +28,8 @@ target_link_libraries(front_end_cal_lib
         algorithms_libs
         core_receiver
         core_libs
+        log
+        android
     PRIVATE
         Boost::headers
         Gflags::gflags
@@ -52,8 +54,30 @@ else()
     add_executable(front-end-cal main.cc)
 endif()
 
+
+add_library(libusb SHARED IMPORTED)
+set_target_properties(libusb PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libusb1.0.so)
+
+add_library(libcrypto SHARED IMPORTED)
+set_target_properties(libcrypto PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libcrypto.so.3)
+
+add_library(libhackrf SHARED IMPORTED)
+set_target_properties(libhackrf PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libhackrf.so)
+
+add_library(librtlsdr SHARED IMPORTED)
+set_target_properties(librtlsdr PROPERTIES IMPORTED_LOCATION
+    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/librtlsdr.so)
+
+
 target_link_libraries(front-end-cal
     PRIVATE
+        libusb
+        libcrypto
+        libhackrf
+        librtlsdr
         core_receiver
         algorithms_libs
         front_end_cal_lib

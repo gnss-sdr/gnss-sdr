@@ -120,6 +120,7 @@ endif()
 
 option(ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs" ON)
 
+option(ENABLE_ORC "Use (if available) the Optimized Inner Loop Runtime Compiler (ORC)" OFF)
 
 ################################################################################
 # GNSS-SDR version information
@@ -1139,13 +1140,18 @@ if(NOT VOLKGNSSSDR_FOUND)
     else()
         set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
     endif()
-    find_package(ORC)
-    set_package_properties(ORC PROPERTIES
-        PURPOSE "Used by volk_gnsssdr."
-        TYPE OPTIONAL
-    )
-    if(ORC_FOUND)
-        set(ORC_ENABLED ON)
+
+    if(ENABLE_ORC)
+        find_package(ORC)
+        set_package_properties(ORC PROPERTIES
+            PURPOSE "Used by volk_gnsssdr."
+            TYPE OPTIONAL
+            )
+        if(ORC_FOUND)
+            set(ORC_ENABLED ON)
+        else()
+            set(ORC_ENABLED OFF)
+        endif()
     else()
         set(ORC_ENABLED OFF)
     endif()

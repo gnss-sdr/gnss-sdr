@@ -604,6 +604,7 @@ void galileo_telemetry_decoder_gs::reset()
     d_TOW_at_Preamble_ms = 0;
     d_fnav_nav.set_flag_TOW_set(false);
     d_inav_nav.set_flag_TOW_set(false);
+    d_inav_nav.set_TOW0_flag(false);
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
     d_stat = 0;

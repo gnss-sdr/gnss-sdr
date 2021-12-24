@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 #ifndef CPU_FEATURES_INCLUDE_CPUINFO_PPC_H_
 #define CPU_FEATURES_INCLUDE_CPUINFO_PPC_H_
 
@@ -62,7 +61,6 @@ typedef struct
     PPCFeatures features;
 } PPCInfo;
 
-// This function is guaranteed to be malloc, memset and memcpy free.
 PPCInfo GetPPCInfo(void);
 
 typedef struct
@@ -113,7 +111,7 @@ typedef enum
     PPC_ARCH_2_06,              /* ISA 2.06 - POWER7 */
     PPC_HAS_VSX,                /* Vector-scalar extension */
     PPC_PSERIES_PERFMON_COMPAT, /* Set of backwards compatibile performance
-                                 monitoring events */
+                                   monitoring events */
     PPC_TRUE_LE,
     PPC_PPC_LE,
     PPC_ARCH_2_07,      /* ISA 2.07 - POWER8 */

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google LLC
+// SPDX-FileCopyrightText: 2021 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 // This program dumps current host data to the standard output.

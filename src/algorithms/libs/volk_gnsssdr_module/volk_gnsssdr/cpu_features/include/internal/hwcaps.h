@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 // Interface to retrieve hardware capabilities. It relies on Linux's getauxval
 // or `/proc/self/auxval` under the hood.
 #ifndef CPU_FEATURES_INCLUDE_INTERNAL_HWCAPS_H_

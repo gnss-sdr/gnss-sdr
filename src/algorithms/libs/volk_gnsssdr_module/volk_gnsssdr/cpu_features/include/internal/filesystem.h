@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 // An interface for the filesystem that allows mocking the filesystem in
 // unittests.
 #ifndef CPU_FEATURES_INCLUDE_INTERNAL_FILESYSTEM_H_

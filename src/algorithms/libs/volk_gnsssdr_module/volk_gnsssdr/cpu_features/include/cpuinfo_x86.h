@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 #ifndef CPU_FEATURES_INCLUDE_CPUINFO_X86_H_
 #define CPU_FEATURES_INCLUDE_CPUINFO_X86_H_
 
@@ -98,18 +97,19 @@ typedef struct
 } X86Info;
 
 // Calls cpuid and returns an initialized X86info.
-// This function is guaranteed to be malloc, memset and memcpy free.
 X86Info GetX86Info(void);
 
 // Returns cache hierarchy informations.
 // Can call cpuid multiple times.
 // Only works on Intel CPU at the moment.
-// This function is guaranteed to be malloc, memset and memcpy free.
 CacheInfo GetX86CacheInfo(void);
 
 typedef enum
 {
     X86_UNKNOWN,
+    INTEL_80486,       // 80486
+    INTEL_P5,          // P5
+    INTEL_LAKEMONT,    // LAKEMONT
     INTEL_CORE,        // CORE
     INTEL_PNR,         // PENRYN
     INTEL_NHM,         // NEHALEM
@@ -129,6 +129,13 @@ typedef enum
     INTEL_ICL,         // ICE LAKE
     INTEL_TGL,         // TIGER LAKE
     INTEL_SPR,         // SAPPHIRE RAPIDS
+    INTEL_ADL,         // ALDER LAKE
+    INTEL_RCL,         // ROCKET LAKE
+    INTEL_KNIGHTS_M,   // KNIGHTS MILL
+    INTEL_KNIGHTS_L,   // KNIGHTS LANDING
+    INTEL_KNIGHTS_F,   // KNIGHTS FERRY
+    INTEL_KNIGHTS_C,   // KNIGHTS CORNER
+    INTEL_NETBURST,    // NETBURST
     AMD_HAMMER,        // K8  HAMMER
     AMD_K10,           // K10
     AMD_K11,           // K11
@@ -144,6 +151,7 @@ typedef enum
     AMD_ZEN_PLUS,      // K17 ZEN+
     AMD_ZEN2,          // K17 ZEN 2
     AMD_ZEN3,          // K19 ZEN 3
+    X86_MICROARCHITECTURE_LAST_,
 } X86Microarchitecture;
 
 // Returns the underlying microarchitecture by looking at X86Info's vendor,
@@ -153,7 +161,6 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info);
 // Calls cpuid and fills the brand_string.
 // - brand_string *must* be of size 49 (beware of array decaying).
 // - brand_string will be zero terminated.
-// - This function calls memcpy.
 void FillX86BrandString(char brand_string[49]);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -237,4 +244,4 @@ CPU_FEATURES_END_CPP_NAMESPACE
 #error "Including cpuinfo_x86.h from a non-x86 target."
 #endif
 
-#endif  // CPU_FEATURES_INCLUDE_CPUINFO_X86_H
+#endif  // CPU_FEATURES_INCLUDE_CPUINFO_X86_H_

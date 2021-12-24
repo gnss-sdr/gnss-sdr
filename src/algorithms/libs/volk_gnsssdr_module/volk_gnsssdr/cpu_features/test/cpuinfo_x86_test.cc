@@ -16,6 +16,7 @@
 
 namespace cpu_features
 {
+
 class FakeCpu
 {
 public:
@@ -41,7 +42,7 @@ public:
         xcr0_eax_ = os_backups_extended_registers ? -1 : 0;
     }
 
-#if defined(CPU_FEATURES_OS_DARWIN)
+#if defined(CPU_FEATURES_OS_MACOS)
     bool GetDarwinSysCtlByName(std::string name) const
     {
         return darwin_sysctlbyname_.count(name);
@@ -51,7 +52,7 @@ public:
     {
         darwin_sysctlbyname_.insert(name);
     }
-#endif  // CPU_FEATURES_OS_DARWIN
+#endif  // CPU_FEATURES_OS_MACOS
 
 #if defined(CPU_FEATURES_OS_WINDOWS)
     bool GetWindowsIsProcessorFeaturePresent(DWORD ProcessorFeature)
@@ -67,9 +68,9 @@ public:
 
 private:
     std::map<std::pair<uint32_t, int>, Leaf> cpuid_leaves_;
-#if defined(CPU_FEATURES_OS_DARWIN)
+#if defined(CPU_FEATURES_OS_MACOS)
     std::set<std::string> darwin_sysctlbyname_;
-#endif  // CPU_FEATURES_OS_DARWIN
+#endif  // CPU_FEATURES_OS_MACOS
 #if defined(CPU_FEATURES_OS_WINDOWS)
     std::set<DWORD> windows_isprocessorfeaturepresent_;
 #endif  // CPU_FEATURES_OS_WINDOWS
@@ -91,12 +92,12 @@ extern "C" Leaf GetCpuidLeaf(uint32_t leaf_id, int ecx)
 
 extern "C" uint32_t GetXCR0Eax(void) { return cpu().GetXCR0Eax(); }
 
-#if defined(CPU_FEATURES_OS_DARWIN)
+#if defined(CPU_FEATURES_OS_MACOS)
 extern "C" bool GetDarwinSysCtlByName(const char* name)
 {
     return cpu().GetDarwinSysCtlByName(name);
 }
-#endif  // CPU_FEATURES_OS_DARWIN
+#endif  // CPU_FEATURES_OS_MACOS
 
 #if defined(CPU_FEATURES_OS_WINDOWS)
 extern "C" bool GetWindowsIsProcessorFeaturePresent(DWORD ProcessorFeature)
@@ -107,6 +108,7 @@ extern "C" bool GetWindowsIsProcessorFeaturePresent(DWORD ProcessorFeature)
 
 namespace
 {
+
 class CpuidX86Test : public ::testing::Test
 {
 protected:
@@ -800,7 +802,7 @@ TEST_F(CpuidX86Test, Nehalem)
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE);
-#elif defined(CPU_FEATURES_OS_DARWIN)
+#elif defined(CPU_FEATURES_OS_MACOS)
     cpu().SetDarwinSysCtlByName("hw.optional.sse");
     cpu().SetDarwinSysCtlByName("hw.optional.sse2");
     cpu().SetDarwinSysCtlByName("hw.optional.sse3");
@@ -817,7 +819,7 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
   Features2=0x5eda2203<SSE3,PCLMULQDQ,SSSE3,CX16,PCID,SSE4.1,SSE4.2,MOVBE,POPCNT,AESNI,XSAVE,OSXSAVE,RDRAND>
 real memory  = 2147418112 (2047 MB)
 )");
-#elif defined(CPU_FEATURES_OS_LINUX_OR_ANDROID)
+#elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(processor       :
 flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
@@ -883,7 +885,7 @@ TEST_F(CpuidX86Test, Atom)
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE);
-#elif defined(CPU_FEATURES_OS_DARWIN)
+#elif defined(CPU_FEATURES_OS_MACOS)
     cpu().SetDarwinSysCtlByName("hw.optional.sse");
     cpu().SetDarwinSysCtlByName("hw.optional.sse2");
     cpu().SetDarwinSysCtlByName("hw.optional.sse3");
@@ -900,7 +902,7 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
   Features2=0x5eda2203<SSE3,PCLMULQDQ,SSSE3,CX16,PCID,SSE4.1,SSE4.2,MOVBE,POPCNT,AESNI,XSAVE,OSXSAVE,RDRAND>
 real memory  = 2147418112 (2047 MB)
 )");
-#elif defined(CPU_FEATURES_OS_LINUX_OR_ANDROID)
+#elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(
 flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
@@ -1017,7 +1019,7 @@ TEST_F(CpuidX86Test, P3)
     cpu().SetOsBackupsExtendedRegisters(false);
 #if defined(CPU_FEATURES_OS_WINDOWS)
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
-#elif defined(CPU_FEATURES_OS_DARWIN)
+#elif defined(CPU_FEATURES_OS_MACOS)
     cpu().SetDarwinSysCtlByName("hw.optional.sse");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
     auto& fs = GetEmptyFilesystem();
@@ -1028,7 +1030,7 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
   Features=0x1783fbff<FPU,VME,DE,PSE,TSC,MSR,PAE,MCE,CX8,APIC,SEP,MTRR,PGE,MCA,CMOV,PAT,PSE36,MMX,FXSR,SSE>
 real memory  = 2147418112 (2047 MB)
 )");
-#elif defined(CPU_FEATURES_OS_LINUX_OR_ANDROID)
+#elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(
 flags           : fpu mmx sse
@@ -1063,6 +1065,68 @@ flags           : fpu mmx sse
     EXPECT_FALSE(info.features.sse4_1);
     EXPECT_FALSE(info.features.sse4_2);
 #endif  // !defined(CPU_FEATURES_OS_WINDOWS)
+}
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0000480_486_CPUID.txt
+TEST_F(CpuidX86Test, INTEL_80486)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000001, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00000480, 0x00000000, 0x00000000, 0x00000003}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x04);
+    EXPECT_EQ(info.model, 0x08);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_80486);
+}
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0000526_P54C_CPUID.txt
+TEST_F(CpuidX86Test, INTEL_P54C)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000001, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00000525, 0x00000000, 0x00000000, 0x000001BF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x05);
+    EXPECT_EQ(info.model, 0x02);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_P5);
+}
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0000590_Lakemont_CPUID2.txt
+TEST_F(CpuidX86Test, INTEL_LAKEMONT)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000002, 0x756E6547, 0x6c65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00000590, 0x00000000, 0x00010200, 0x8000237B}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x05);
+    EXPECT_EQ(info.model, 0x09);
+    EXPECT_EQ(GetX86Microarchitecture(&info),
+        X86Microarchitecture::INTEL_LAKEMONT);
+}
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0050670_KnightsLanding_CPUID.txt
+TEST_F(CpuidX86Test, INTEL_KNIGHTS_LANDING)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x0000000D, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00050670, 0x02FF0800, 0x7FF8F3BF, 0xBFEBFBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x06);
+    EXPECT_EQ(info.model, 0x57);
+    EXPECT_EQ(GetX86Microarchitecture(&info),
+        X86Microarchitecture::INTEL_KNIGHTS_L);
 }
 
 // TODO(user): test what happens when xsave/osxsave are not present.

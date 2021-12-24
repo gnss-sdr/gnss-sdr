@@ -72,23 +72,66 @@ if(NOT GOOGLETEST_FOUND)
                 ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest_maind${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
-        ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            GIT_REPOSITORY https://github.com/google/googletest
-            GIT_TAG ${GOOGLETEST_GIT_TAG}
-            SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            BINARY_DIR ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
-            CMAKE_ARGS ${GTEST_COMPILER}
-                -DINSTALL_GTEST=OFF
-                -DBUILD_GMOCK=OFF
-                -Dgtest_hide_internal_symbols=ON
-                ${TOOLCHAIN_ARG}
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${GTEST_BUILD_COMMAND}
-            UPDATE_COMMAND ""
-            PATCH_COMMAND ""
-            BUILD_BYPRODUCTS ${GOOGLETEST_BUILD_BYPRODUCTS}
-            INSTALL_COMMAND ""
-        )
+            if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+                set(GTEST_COMPILER "")
+                ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/google/googletest
+                    GIT_TAG ${GOOGLETEST_GIT_TAG}
+                    SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+                    BINARY_DIR ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+                    CMAKE_ARGS ${GTEST_COMPILER} 
+                        -DINSTALL_GTEST=OFF 
+                        -DBUILD_GMOCK=OFF 
+                        -Dgtest_hide_internal_symbols=ON 
+                        ${TOOLCHAIN_ARG}
+                        -DANDROID_TOOLCHAIN=${CMAKE_TOOLCHAIN_FILE}
+                        -DANDROID_ABI=${ANDROID_ABI} 
+                        -DANDROID_ARM_NEON=ON 
+                        -DANDROID_NATIVE_API_LEVEL=21 
+                        -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                    BUILD_COMMAND ${GTEST_BUILD_COMMAND}
+                    UPDATE_COMMAND ""
+                    PATCH_COMMAND ""
+                    BUILD_BYPRODUCTS ${GOOGLETEST_BUILD_BYPRODUCTS}
+                    INSTALL_COMMAND ""
+                )
+                add_library(libusb SHARED IMPORTED)
+                set_target_properties(libusb PROPERTIES IMPORTED_LOCATION
+                    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libusb1.0.so)
+
+
+                add_library(libcrypto SHARED IMPORTED)
+                set_target_properties(libcrypto PROPERTIES IMPORTED_LOCATION
+                    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libcrypto.so.3)
+
+                add_library(libhackrf SHARED IMPORTED)
+                set_target_properties(libhackrf PROPERTIES IMPORTED_LOCATION
+                    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/libhackrf.so)
+
+                add_library(librtlsdr SHARED IMPORTED)
+                set_target_properties(librtlsdr PROPERTIES IMPORTED_LOCATION
+                    /home/android/src/gnuradio-android/toolchain/arm64-v8a/lib/librtlsdr.so)
+            else()
+                ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/google/googletest
+                    GIT_TAG ${GOOGLETEST_GIT_TAG}
+                    SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+                    BINARY_DIR ${CMAKE_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
+                    CMAKE_ARGS ${GTEST_COMPILER}
+                        -DINSTALL_GTEST=OFF
+                        -DBUILD_GMOCK=OFF
+                        -Dgtest_hide_internal_symbols=ON
+                        ${TOOLCHAIN_ARG}
+                        -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                    BUILD_COMMAND ${GTEST_BUILD_COMMAND}
+                    UPDATE_COMMAND ""
+                    PATCH_COMMAND ""
+                    BUILD_BYPRODUCTS ${GOOGLETEST_BUILD_BYPRODUCTS}
+                    INSTALL_COMMAND ""
+                )
+                set(ANDROID_PUBLIC_LIBS "")
+                set(ANDROID_PRIVATE_LIBS "")
+            endif()
     endif()
     ExternalProject_Get_Property(gtest-${GNSSSDR_GTEST_LOCAL_VERSION} binary_dir)
 
@@ -533,6 +576,20 @@ if(ENABLE_UNIT_TESTING)
             system_testing_lib
             core_receiver
     )
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+            target_link_libraries(run_tests
+                PUBLIC
+                    libusb
+                    libcrypto
+                    libhackrf
+                    librtlsdr
+                PRIVATE
+                    log
+                    android
+            )
+    endif()
+
     target_include_directories(run_tests
         INTERFACE
             ${CMAKE_SOURCE_DIR}/src/tests/common-files
@@ -839,6 +896,19 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
     )
 
+    if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+            target_link_libraries(flowgraph_test
+                PUBLIC
+                    libusb
+                    libcrypto
+                    libhackrf
+                    librtlsdr
+                PRIVATE
+                    log
+                    android
+            )
+    endif()
+
     target_include_directories(flowgraph_test
         PRIVATE
             ${CMAKE_SOURCE_DIR}/src/algorithms/libs
@@ -890,6 +960,19 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
     )
 
+    if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+            target_link_libraries(gnss_block_test
+                PUBLIC
+                    libusb
+                    libcrypto
+                    libhackrf
+                    librtlsdr
+                PRIVATE
+                    log
+                    android
+            )
+    endif()
+
     target_include_directories(gnss_block_test
         PRIVATE ${CMAKE_SOURCE_DIR}/src/algorithms/libs
         INTERFACE ${CMAKE_SOURCE_DIR}/src/tests/common-files
@@ -936,6 +1019,18 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
     )
 
+    if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+            target_link_libraries(gnuradio_block_test
+                PUBLIC
+                    libusb
+                    libcrypto
+                    libhackrf
+                    librtlsdr
+                PRIVATE
+                    log
+                    android
+            )
+    endif()
     add_test(gnuradio_block_test gnuradio_block_test)
 
     set_property(TEST gnuradio_block_test PROPERTY TIMEOUT 30)
@@ -954,6 +1049,8 @@ else()
     add_executable(matio_test ${MATIO_TEST_SOURCES})
 endif()
 
+
+
 target_link_libraries(matio_test
     PRIVATE
         algorithms_libs
@@ -964,6 +1061,20 @@ target_link_libraries(matio_test
         Matio::matio
         core_receiver
 )
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+        target_link_libraries(matio_test
+            PUBLIC
+                libusb
+                libcrypto
+                libhackrf
+                librtlsdr
+            PRIVATE
+                log
+                android
+        )
+endif()
 
 target_include_directories(matio_test
     INTERFACE
@@ -1008,6 +1119,20 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_processing_testing_lib
             core_receiver
     )
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+            target_link_libraries(acq_test
+                PUBLIC
+                    libusb
+                    libcrypto
+                    libhackrf
+                    librtlsdr
+                PRIVATE
+                    log
+                    android
+            )
+    endif()
+
     target_include_directories(acq_test
         INTERFACE
             ${CMAKE_SOURCE_DIR}/src/tests/common-files
@@ -1087,6 +1212,20 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_generator_gr_blocks
             core_receiver
     )
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+            target_link_libraries(trk_test
+                PUBLIC
+                    libusb
+                    libcrypto
+                    libhackrf
+                    librtlsdr
+                PRIVATE
+                    log
+                    android
+            )
+    endif()
+
     if(USE_GENERIC_LAMBDAS)
         set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
         set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
@@ -1144,6 +1283,19 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
             core_receiver
     )
+
+    if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+            target_link_libraries(control_thread_test
+                PUBLIC
+                    libusb
+                    libcrypto
+                    libhackrf
+                    librtlsdr
+                PRIVATE
+                    log
+                    android
+            )
+    endif()
 
     add_test(control_thread_test control_thread_test)
 

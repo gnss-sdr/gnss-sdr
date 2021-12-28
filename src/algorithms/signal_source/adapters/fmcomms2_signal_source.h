@@ -61,6 +61,9 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    const std::string default_gain_mode = std::string("slow_attack");
+    const double default_tx_attenuation_db = -10.0;
+
 #if GNURADIO_API_IIO
 #if GR_IIO_TEMPLATIZED_API
     gr::iio::fmcomms2_source<gr_complex>::sptr fmcomms2_source_f32c_;
@@ -88,9 +91,6 @@ private:
     int64_t samples_;
     size_t item_size_;
 
-    unsigned int in_stream_;
-    unsigned int out_stream_;
-
     double rf_gain_rx1_;
     double rf_gain_rx2_;
     uint64_t freq_;  // frequency of local oscilator
@@ -99,14 +99,16 @@ private:
     uint64_t buffer_size_;  // reception buffer
     float Fpass_;
     float Fstop_;
+    unsigned int in_stream_;
+    unsigned int out_stream_;
     int RF_channels_;
 
     // DDS configuration for LO generation for external mixer
     double scale_dds_dbfs_;
     double phase_dds_deg_;
     double tx_attenuation_db_;
-    uint64_t freq_rf_tx_hz_;
     uint64_t freq_dds_tx_hz_;
+    uint64_t freq_rf_tx_hz_;
     uint64_t tx_bandwidth_;
     bool enable_dds_lo_;
 

@@ -63,13 +63,10 @@ private:
     gnss_shared_ptr<gr::block> valve_;
     gr::blocks::file_sink::sptr file_sink_;
 
-    std::string role_;
     std::string item_type_;
     std::string dump_filename_;
     std::string limesdr_serial_;
     std::string limesdr_file_;
-    int antenna_;
-    int channel_;
 
     // Front-end settings
     double sample_rate_;
@@ -85,6 +82,8 @@ private:
     unsigned int out_stream_;
 
     int limechannel_mode_;
+    int antenna_;
+    int channel_;
 
     bool PPS_mode_;
     bool dump_;

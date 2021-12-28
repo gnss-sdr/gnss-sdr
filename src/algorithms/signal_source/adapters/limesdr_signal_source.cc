@@ -16,12 +16,12 @@
 
 #include "limesdr_signal_source.h"
 #include "configuration_interface.h"
+#include "gnss_frequencies.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <iostream>
-#include <utility>
 
 using namespace std::string_literals;
 
@@ -31,33 +31,25 @@ LimesdrSignalSource::LimesdrSignalSource(const ConfigurationInterface* configura
     unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, "Limesdr_Signal_Source"s),
+      item_type_(configuration->property(role + ".item_type", std::string("gr_complex"))),
+      dump_filename_(configuration->property(role + ".dump_filename", std::string("./data/signal_source.dat"))),
+      limesdr_serial_(configuration->property(role + ".limesdr_serial", std::string())),
+      limesdr_file_(configuration->property(role + ".limesdr_file", std::string())),
+      sample_rate_(configuration->property(role + ".sampling_frequency", 2.0e6)),
+      freq_(configuration->property(role + ".freq", FREQ1)),
+      gain_(configuration->property(role + ".gain", 40.0)),
+      analog_bw_hz_(configuration->property(role + ".analog_bw", sample_rate_ / 2.0)),  // LPF analog filters in I,Q branches
+      digital_bw_hz_(configuration->property(role + ".digital_bw", 0.0)),               // disable by default
+      ext_clock_MHz_(configuration->property(role + ".ext_clock_MHz", 0.0)),            // external clock: 0.0 MHz will enable the internal clock
+      samples_(configuration->property(role + ".samples", int64_t(0))),
       in_stream_(in_stream),
-      out_stream_(out_stream)
+      out_stream_(out_stream),
+      limechannel_mode_(configuration->property(role + ".limechannel_mode", 0)),
+      antenna_(configuration->property(role + ".antenna", 255)),
+      channel_(configuration->property(role + ".channel", 0)),
+      PPS_mode_(configuration->property(role + ".PPS_mode", false)),
+      dump_(configuration->property(role + ".dump", false))
 {
-    // DUMP PARAMETERS
-    const std::string empty;
-    const std::string default_dump_file("./data/signal_source.dat");
-    const std::string default_item_type("gr_complex");
-    samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
-    // Driver parameters
-    channel_ = configuration->property(role + ".channel", 0);
-    freq_ = configuration->property(role + ".freq", 1575420000);
-    gain_ = configuration->property(role + ".gain", 40.0);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 2.0e6);
-    // todo: check if bw is within limits
-    analog_bw_hz_ = configuration->property(role + ".analog_bw", sample_rate_ / 2);  // LPF analog filters in I,Q branches
-    digital_bw_hz_ = configuration->property(role + ".digital_bw", 0);               // disable by default
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
-    limesdr_serial_ = configuration->property(role + ".limesdr_serial", std::string());
-    limesdr_file_ = configuration->property(role + ".limesdr_file", std::string());
-    antenna_ = configuration->property(role + ".antenna", 255);
-
-    PPS_mode_ = configuration->property(role + ".PPS_mode", false);
-    ext_clock_MHz_ = configuration->property(role + ".ext_clock_MHz", 0.0);  // external clock: 0.0 MHz will enable the internal clock
-    limechannel_mode_ = configuration->property(role + ".limechannel_mode", 0);
     if ((limechannel_mode_ < 0) || (limechannel_mode_ > 2))
         {
             std::cerr << "ERROR: source_impl::source_impl(): ChannelMode must be A(0), B(1) or (A+B) MIMO(2)\n";

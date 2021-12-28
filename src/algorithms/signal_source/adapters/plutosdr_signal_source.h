@@ -66,6 +66,7 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
+    const std::string default_gain_mode = std::string("slow_attack");
 #if GR_IIO_TEMPLATIZED_API
     gr::iio::fmcomms2_source<gr_complex>::sptr plutosdr_source_;
 #else

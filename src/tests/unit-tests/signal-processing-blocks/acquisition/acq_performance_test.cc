@@ -266,7 +266,7 @@ protected:
                         pfa_vector.push_back(FLAGS_acq_test_pfa_init * std::pow(10, aux));
                         aux = aux + 1.0;
                     }
-                pfa_vector.push_back(1.0);
+                pfa_vector.push_back(0.999);
             }
         else
             {
@@ -292,7 +292,7 @@ protected:
             {
                 aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (FLAGS_acq_test_coherent_time_ms * FLAGS_acq_test_max_dwells) - 1);
             }
-        if ((FLAGS_acq_test_num_meas > 0) and (FLAGS_acq_test_num_meas < aux2))
+        if ((FLAGS_acq_test_num_meas > 0) && (FLAGS_acq_test_num_meas < aux2))
             {
                 num_of_measurements = static_cast<unsigned int>(FLAGS_acq_test_num_meas);
             }
@@ -947,7 +947,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                             // Cut measurements without reference
                                             for (int i = 0; i < num_executions; i++)
                                                 {
-                                                    if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
+                                                    if (!std::isnan(doppler_estimation_error(i)) && !std::isnan(delay_estimation_error(i)))
                                                         {
                                                             num_clean_executions++;
                                                         }
@@ -957,7 +957,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                             num_clean_executions = 0;
                                             for (int i = 0; i < num_executions; i++)
                                                 {
-                                                    if (!std::isnan(doppler_estimation_error(i)) and !std::isnan(delay_estimation_error(i)))
+                                                    if (!std::isnan(doppler_estimation_error(i)) && !std::isnan(delay_estimation_error(i)))
                                                         {
                                                             clean_doppler_estimation_error(num_clean_executions) = doppler_estimation_error(i);
                                                             clean_delay_estimation_error(num_clean_executions) = delay_estimation_error(i);
@@ -999,10 +999,9 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                         {
                                             arma::vec correct_acq = arma::zeros(num_executions, 1);
                                             double correctly_detected = 0.0;
-                                            for (int i = 0; i < num_clean_executions - 1; i++)
-
+                                            for (int i = 0; i < num_clean_executions; i++)
                                                 {
-                                                    if (abs(clean_delay_estimation_error(i)) < 0.5 and abs(clean_doppler_estimation_error(i)) < static_cast<float>(config->property("Acquisition.doppler_step", 1)))
+                                                    if (abs(clean_delay_estimation_error(i)) < 0.5 && abs(clean_doppler_estimation_error(i)) < static_cast<float>(config->property("Acquisition.doppler_step", 1)))
                                                         {
                                                             correctly_detected = correctly_detected + 1.0;
                                                         }
@@ -1038,7 +1037,7 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                     float sum_pd = static_cast<float>(std::accumulate(meas_Pd_.begin(), meas_Pd_.end(), 0.0));
                     float sum_pd_correct = static_cast<float>(std::accumulate(meas_Pd_correct_.begin(), meas_Pd_correct_.end(), 0.0));
                     float sum_pfa = static_cast<float>(std::accumulate(meas_Pfa_.begin(), meas_Pfa_.end(), 0.0));
-                    if (!meas_Pd_.empty() and !meas_Pfa_.empty())
+                    if (!meas_Pd_.empty() && !meas_Pfa_.empty())
                         {
                             Pd[cn0_index][pfa_iter] = sum_pd / static_cast<float>(meas_Pd_.size());
                             Pfa[cn0_index][pfa_iter] = sum_pfa / static_cast<float>(meas_Pfa_.size());

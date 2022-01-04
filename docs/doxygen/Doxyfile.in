@@ -1,5 +1,9 @@
 # Doxyfile 1.9.3
 
+#
+# SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project.
 #

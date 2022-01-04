@@ -1354,7 +1354,10 @@ endif()
 ################################################################################
 set(LOCAL_GFLAGS FALSE)
 if(NOT ENABLE_OWN_GLOG)
-    find_package(GFLAGS)
+    find_package(GLOG)
+    if(GLOG_FOUND)
+        find_package(GFLAGS)
+    endif()
 endif()
 set_package_properties(GFLAGS PROPERTIES
     PURPOSE "Used for commandline flags management."
@@ -1495,9 +1498,6 @@ endif()
 ################################################################################
 # glog - https://github.com/google/glog
 ################################################################################
-if(NOT ENABLE_OWN_GLOG AND NOT ${LOCAL_GFLAGS})
-    find_package(GLOG)
-endif()
 set_package_properties(GLOG PROPERTIES
     PURPOSE "Used for runtime internal logging."
     TYPE REQUIRED

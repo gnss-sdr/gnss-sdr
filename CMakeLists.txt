@@ -11,7 +11,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
 
-cmake_minimum_required(VERSION 2.8.12...3.21)
+cmake_minimum_required(VERSION 2.8.12...3.22)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -120,6 +120,7 @@ endif()
 
 option(ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs" ON)
 
+option(ENABLE_ORC "Use (if available) the Optimized Inner Loop Runtime Compiler (ORC)" OFF)
 
 ################################################################################
 # GNSS-SDR version information
@@ -325,7 +326,7 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.5.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.7.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.8.x")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
@@ -1139,15 +1140,22 @@ if(NOT VOLKGNSSSDR_FOUND)
     else()
         set(VOLK_GNSSSDR_COMPILER -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER})
     endif()
-    find_package(ORC)
-    set_package_properties(ORC PROPERTIES
-        PURPOSE "Used by volk_gnsssdr."
-        TYPE OPTIONAL
-    )
-    if(ORC_FOUND)
-        set(ORC_ENABLED ON)
+
+    if(ENABLE_ORC)
+        find_package(ORC)
+        set_package_properties(ORC PROPERTIES
+            PURPOSE "Used by volk_gnsssdr."
+            TYPE OPTIONAL
+            )
+        if(ORC_FOUND)
+            set(ORC_ENABLED ON)
+        else()
+            set(ORC_ENABLED OFF)
+            set(ENABLE_ORC OFF)
+        endif()
     else()
         set(ORC_ENABLED OFF)
+        set(ENABLE_ORC OFF)
     endif()
 
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
@@ -1336,6 +1344,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     )
 else()
     set(ENABLE_OWN_CPUFEATURES OFF)
+    set(ENABLE_ORC OFF)
 endif()
 
 
@@ -1345,7 +1354,10 @@ endif()
 ################################################################################
 set(LOCAL_GFLAGS FALSE)
 if(NOT ENABLE_OWN_GLOG)
-    find_package(GFLAGS)
+    find_package(GLOG)
+    if(GLOG_FOUND)
+        find_package(GFLAGS)
+    endif()
 endif()
 set_package_properties(GFLAGS PROPERTIES
     PURPOSE "Used for commandline flags management."
@@ -1486,9 +1498,6 @@ endif()
 ################################################################################
 # glog - https://github.com/google/glog
 ################################################################################
-if(NOT ENABLE_OWN_GLOG AND NOT ${LOCAL_GFLAGS})
-    find_package(GLOG)
-endif()
 set_package_properties(GLOG PROPERTIES
     PURPOSE "Used for runtime internal logging."
     TYPE REQUIRED
@@ -3337,6 +3346,7 @@ add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging."
 add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
 add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
 add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging with Google glog.")
+add_feature_info(ENABLE_ORC ENABLE_ORC "Use the Optimized Inner Loop Runtime Compiler (ORC) for building volk_gnsssdr.")
 add_feature_info(ENABLE_STRIP ENABLE_STRIP "Enables the generation of stripped binaries (without debugging symbols).")
 add_feature_info(ENABLE_UNIT_TESTING ENABLE_UNIT_TESTING "Enables building of Unit Tests.")
 add_feature_info(ENABLE_UNIT_TESTING_MINIMAL ENABLE_UNIT_TESTING_MINIMAL "Enables building a minimal set of Unit Tests.")

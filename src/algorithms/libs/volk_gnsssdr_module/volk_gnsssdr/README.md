@@ -46,8 +46,7 @@ kernel is actually doing.
 This figure shows the role of some VOLK_GNSSSDR kernels in the context of a GNSS
 baseband processor:
 
-![Example of VOLK_GNSSSDR
-usage.](./docs/images/VOLK_GNSSSDR_Usage_Example.png)
+![Example of VOLK_GNSSSDR usage.](./docs/images/VOLK_GNSSSDR_Usage_Example.png)
 
 ## How to build VOLK_GNSSSDR
 

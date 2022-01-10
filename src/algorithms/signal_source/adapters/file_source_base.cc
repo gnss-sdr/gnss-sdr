@@ -15,15 +15,25 @@
  */
 
 #include "file_source_base.h"
+#include "Beidou_B1I.h"
+#include "Beidou_B3I.h"
+#include "GPS_L1_CA.h"
+#include "GPS_L2C.h"
+#include "GPS_L5.h"
+#include "Galileo_E1.h"
+#include "Galileo_E5a.h"
+#include "Galileo_E5b.h"
+#include "Galileo_E6.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <glog/logging.h>
-#include <cmath>  // ceil, floor
-#include <fstream>
-#include <utility>  // move
+#include <algorithm>  // for std::max
+#include <cmath>      // for ceil, floor
+#include <iostream>   // for std::cout, std:cerr
+#include <utility>    // for std::move
 
 
 using namespace std::string_literals;
@@ -31,31 +41,58 @@ using namespace std::string_literals;
 FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std::string const& role, std::string impl,
     Concurrent_Queue<pmt::pmt_t>* queue,
     std::string default_item_type)
-    : SignalSourceBase(configuration, role, std::move(impl)), filename_(configuration->property(role + ".filename"s, "../data/example_capture.dat"s)),
-
-      file_source_(),  // NOLINT
-
-      item_type_(configuration->property(role + ".item_type"s, default_item_type)),  // NOLINT
-      item_size_(0),
-      is_complex_(false),
-
-      // apparently, MacOS (LLVM) finds 0UL ambiguous with bool, int64_t, uint64_t, int32_t, int16_t, uint16_t,... float, double
-      header_size_(configuration->property(role + ".header_size"s, uint64_t(0))),
-      seconds_to_skip_(configuration->property(role + ".seconds_to_skip"s, 0.0)),
-      repeat_(configuration->property(role + ".repeat"s, false)),
-
-      samples_(configuration->property(role + ".samples"s, uint64_t(0))),
-      sampling_frequency_(configuration->property(role + ".sampling_frequency"s, int64_t(0))),
-      valve_(),  // NOLINT
+    : SignalSourceBase(configuration, role, std::move(impl)),
       queue_(queue),
-
-      enable_throttle_control_(configuration->property(role + ".enable_throttle_control"s, false)),
-      throttle_(),  // NOLINT
-
-      dump_(configuration->property(role + ".dump"s, false)),
-      dump_filename_(configuration->property(role + ".dump_filename"s, "../data/my_capture.dat"s)),
-      sink_()  // NOLINT
+      role_(role),
+      filename_(configuration->property(role_ + ".filename"s, "../data/example_capture.dat"s)),
+      dump_filename_(configuration->property(role_ + ".dump_filename"s, "../data/my_capture.dat"s)),
+      item_type_(configuration->property(role_ + ".item_type"s, std::move(default_item_type))),
+      item_size_(0),
+      header_size_(configuration->property(role_ + ".header_size"s, uint64_t(0))),
+      samples_(configuration->property(role_ + ".samples"s, uint64_t(0))),
+      sampling_frequency_(configuration->property(role_ + ".sampling_frequency"s, int64_t(0))),
+      minimum_tail_s_(0.1),
+      seconds_to_skip_(configuration->property(role_ + ".seconds_to_skip"s, 0.0)),
+      is_complex_(false),
+      repeat_(configuration->property(role_ + ".repeat"s, false)),
+      enable_throttle_control_(configuration->property(role_ + ".enable_throttle_control"s, false)),
+      dump_(configuration->property(role_ + ".dump"s, false))
 {
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_1C.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_2S.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_L5.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_1B.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_5X.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_7X.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_E6.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_B1.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_B3.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_1G.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Acquisition_2G.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+
+    minimum_tail_s_ = std::max(configuration->property("Tracking_1C.extend_correlation_symbols", 0.0) * GPS_L1_CA_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_2S.extend_correlation_symbols", 0.0) * GPS_L2_M_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_L5.extend_correlation_symbols", 0.0) * GPS_L5I_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_1B.extend_correlation_symbols", 0.0) * GALILEO_E1_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_5X.extend_correlation_symbols", 0.0) * GALILEO_E5A_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_7X.extend_correlation_symbols", 0.0) * GALILEO_E5B_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_E6.extend_correlation_symbols", 0.0) * GALILEO_E6_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_B1.extend_correlation_symbols", 0.0) * BEIDOU_B1I_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_B3.extend_correlation_symbols", 0.0) * BEIDOU_B3I_CODE_PERIOD_S * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_1G.extend_correlation_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+    minimum_tail_s_ = std::max(configuration->property("Tracking_2G.extend_correlation_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
+
+    if (repeat())
+        {
+            minimum_tail_s_ = 0.0;
+            if (seconds_to_skip_ != 0.0)
+                {
+                    seconds_to_skip_ = 0.0;
+                    std::cout << "Warning: since " << role_ << ".repeat is set to true, "
+                              << role_ << ".seconds_to_skip parameter will be ignored.\n";
+                }
+        }
+
     // override value with commandline flag, if present
     if (FLAGS_signal_source != "-")
         {
@@ -67,9 +104,9 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
         }
     if (sampling_frequency_ == 0)
         {
-            std::cerr << "Warning: parameter " << role << ".sampling_frequency is not set, this could lead to wrong results.\n"
-                      << "  Please set the " << role << ".sampling_frequency parameter in your configuration file.\n"
-                      << "  If not set, " << role << ".sampling_frequency=" << configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0))
+            std::cerr << "Warning: parameter " << role_ << ".sampling_frequency is not set, this could lead to wrong results.\n"
+                      << "  Please set the " << role_ << ".sampling_frequency parameter in your configuration file.\n"
+                      << "  If not set, " << role_ << ".sampling_frequency=" << configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0))
                       << " will be assumed.\n";
             sampling_frequency_ = configuration->property("GNSS-SDR.internal_fs_sps"s, int64_t(0));
         }
@@ -348,38 +385,61 @@ size_t FileSourceBase::computeSamplesInFile() const
 {
     auto n_samples = static_cast<size_t>(samples());
 
+    // this could throw, but the existence of the file has been proven before we get here.
+    const auto size = fs::file_size(filename());
+
+    const auto to_skip = samplesToSkip();
+
+    /*!
+     * BUG workaround: The GNU Radio 3.7 file source does not stop the receiver after reaching the End of File.
+     * A possible solution is to compute the file length in samples using file size, excluding at least
+     * the last 2 milliseconds, and enable always the valve block
+     */
+    const auto tail = static_cast<size_t>(std::ceil(minimum_tail_s_ * sampling_frequency()));
+
+    if (tail > size)
+        {
+            std::cout << "Warning: file " << filename() << " has " << size << " samples (it is too short).\n";
+            return 1;
+        }
+    if (to_skip + tail > size)
+        {
+            std::cout << "Warning: " << role_ << ".seconds_to_skip is larger than file duration.\n";
+            return 1;
+        }
+
     // if configured with 0 samples (read the whole file), figure out how many samples are in the file, and go from there
     if (n_samples == 0)
         {
-            // this could throw, but the existence of the file has been proven before we get here.
-            auto size = fs::file_size(filename());
-
             // if there is some kind of compression/encoding, figure out the uncompressed number of samples
             n_samples = std::floor(packetsPerSample() * size / item_size());
-
-            auto to_skip = samplesToSkip();
-
-            /*!
-             * BUG workaround: The GNU Radio file source does not stop the receiver after reaching the End of File.
-             * A possible solution is to compute the file length in samples using file size, excluding at least
-             * the last 2 milliseconds, and enable always the valve block
-             */
-            auto tail = static_cast<size_t>(std::ceil(0.002 * sampling_frequency()));
 
             DLOG(INFO) << "Total samples in the file= " << n_samples;
             std::cout << "Processing file " << filename() << ", which contains " << n_samples << " samples (" << size << " bytes)\n";
 
             if (n_samples > (to_skip + tail))
                 {
-                    // process all the samples available in the file excluding up to the last 2 ms
+                    // process all the samples available in the file excluding the hearder and the tail
                     n_samples -= to_skip + tail;
                 }
             else
                 {
-                    // this will terminate the program
-                    LOG(FATAL) << "Skipping " << to_skip << " samples from the front and truncating 2ms (" << tail << " samples)\n"
-                               << "is greater than the number of samples in the file (" << n_samples << ")";
+                    std::cout << "Warning: Skipping " << to_skip << " samples from the front and truncating " << tail << " samples\n"
+                              << "is greater than the number of samples in the file (" << size << ")\n";
+                    return 1;
                 }
+        }
+    else
+        {
+            if (n_samples > size - to_skip - tail)
+                {
+                    std::cout << "Warning: file " << filename() << " has " << size - to_skip
+                              << " samples, but " << role_ << ".samples has been set to " << n_samples << ".\n"
+                              << " Setting " << role_ << ".samples to " << size - to_skip - tail
+                              << " (" << to_skip << " samples skipped at header and " << tail << " samples skipped at the tail).\n";
+                    n_samples = size - to_skip - tail;
+                }
+            std::cout << "Processing " << n_samples << " samples from file " << filename() << '\n';
         }
 
     return n_samples;
@@ -421,7 +481,7 @@ gr::blocks::file_source::sptr FileSourceBase::create_file_source()
             if (samples_to_skip > 0)
                 {
                     LOG(INFO) << "Skipping " << samples_to_skip << " samples of the input file";
-                    if (not file_source_->seek(samples_to_skip, SEEK_SET))
+                    if (!file_source_->seek(samples_to_skip, SEEK_SET))
                         {
                             LOG(ERROR) << "Error skipping bytes!";
                         }
@@ -435,7 +495,7 @@ gr::blocks::file_source::sptr FileSourceBase::create_file_source()
                 << "[" << filename() << "]\n"
                 << "\n"
                 << "Please modify your configuration file\n"
-                << "and point SignalSource.filename to a valid raw data file. Then:\n"
+                << "and point " << role_ << ".filename to a valid raw data file. Then:\n"
                 << "$ gnss-sdr --config_file=/path/to/my_GNSS_SDR_configuration.conf\n"
                 << "Examples of configuration files available at:\n"
                 << GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/\n"

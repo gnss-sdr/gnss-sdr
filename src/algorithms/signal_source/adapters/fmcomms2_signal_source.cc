@@ -28,7 +28,6 @@
 #include <algorithm>  // for max
 #include <exception>
 #include <iostream>
-#include <utility>
 #include <vector>
 
 using namespace std::string_literals;
@@ -36,30 +35,44 @@ using namespace std::string_literals;
 Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue)
-    : SignalSourceBase(configuration, role, "Fmcomms2_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
+    : SignalSourceBase(configuration, role, "Fmcomms2_Signal_Source"s),
+      item_type_(configuration->property(role + ".item_type", std::string("gr_complex"))),
+      dump_filename_(configuration->property(role + ".dump_filename", std::string("./data/signal_source.dat"))),
+      uri_(configuration->property(role + ".device_address", std::string("192.168.2.1"))),
+      gain_mode_rx1_(configuration->property(role + ".gain_mode_rx1", default_gain_mode)),
+      gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", default_gain_mode)),
+      rf_port_select_(configuration->property(role + ".rf_port_select", std::string("A_BALANCED"))),
+      filter_file_(configuration->property(role + ".filter_file", std::string(""))),
+      filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
+      samples_(configuration->property(role + ".samples", static_cast<int64_t>(0))),
+      item_size_(sizeof(gr_complex)),
+      rf_gain_rx1_(configuration->property(role + ".gain_rx1", 64.0)),
+      rf_gain_rx2_(configuration->property(role + ".gain_rx2", 64.0)),
+      freq_(configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ))),
+      sample_rate_(configuration->property(role + ".sampling_frequency", static_cast<uint64_t>(2600000))),
+      bandwidth_(configuration->property(role + ".bandwidth", static_cast<uint64_t>(2000000))),
+      buffer_size_(configuration->property(role + ".buffer_size", 0xA0000)),
+      Fpass_(configuration->property(role + ".Fpass", 0.0)),
+      Fstop_(configuration->property(role + ".Fstop", 0.0)),
+      in_stream_(in_stream),
+      out_stream_(out_stream),
+      RF_channels_(configuration->property(role + ".RF_channels", 1)),
+      scale_dds_dbfs_(configuration->property(role + ".scale_dds_dbfs", 0.0)),
+      phase_dds_deg_(configuration->property(role + ".phase_dds_deg", 0.0)),
+      tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db)),
+      freq_dds_tx_hz_(configuration->property(role + ".freq_dds_tx_hz", static_cast<uint64_t>(10000))),
+      freq_rf_tx_hz_(configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_))),
+      tx_bandwidth_(configuration->property(role + ".tx_bandwidth", static_cast<uint64_t>(500000))),
+      enable_dds_lo_(configuration->property(role + ".enable_dds_lo", false)),
+      rx1_en_(configuration->property(role + ".rx1_enable", true)),
+      rx2_en_(configuration->property(role + ".rx2_enable", false)),
+      quadrature_(configuration->property(role + ".quadrature", true)),
+      rf_dc_(configuration->property(role + ".rf_dc", true)),
+      bb_dc_(configuration->property(role + ".bb_dc", true)),
+      filter_auto_(configuration->property(role + ".filter_auto", false)),
+      rf_shutdown_(configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown)),
+      dump_(configuration->property(role + ".dump", false))
 {
-    const std::string default_item_type("gr_complex");
-    const std::string default_dump_file("./data/signal_source.dat");
-    const std::string default_gain_mode("slow_attack");
-    const double default_tx_attenuation_db = -10.0;
-    uri_ = configuration->property(role + ".device_address", std::string("192.168.2.1"));
-    freq_ = configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
-    sample_rate_ = configuration->property(role + ".sampling_frequency", static_cast<uint64_t>(2600000));
-    bandwidth_ = configuration->property(role + ".bandwidth", static_cast<uint64_t>(2000000));
-    rx1_en_ = configuration->property(role + ".rx1_enable", true);
-    rx2_en_ = configuration->property(role + ".rx2_enable", false);
-    buffer_size_ = configuration->property(role + ".buffer_size", 0xA0000);
-    quadrature_ = configuration->property(role + ".quadrature", true);
-    rf_dc_ = configuration->property(role + ".rf_dc", true);
-    bb_dc_ = configuration->property(role + ".bb_dc", true);
-    RF_channels_ = configuration->property(role + ".RF_channels", 1);
-    gain_mode_rx1_ = configuration->property(role + ".gain_mode_rx1", default_gain_mode);
-    gain_mode_rx2_ = configuration->property(role + ".gain_mode_rx2", default_gain_mode);
-    rf_gain_rx1_ = configuration->property(role + ".gain_rx1", 64.0);
-    rf_gain_rx2_ = configuration->property(role + ".gain_rx2", 64.0);
-    rf_port_select_ = configuration->property(role + ".rf_port_select", std::string("A_BALANCED"));
-    filter_file_ = configuration->property(role + ".filter_file", std::string(""));
-    filter_auto_ = configuration->property(role + ".filter_auto", false);
     if (filter_auto_)
         {
             filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
@@ -68,27 +81,6 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
         {
             filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
         }
-    filter_filename_ = configuration->property(role + ".filter_filename", filter_file_);
-    Fpass_ = configuration->property(role + ".Fpass", 0.0);
-    Fstop_ = configuration->property(role + ".Fstop", 0.0);
-
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
-    samples_ = configuration->property(role + ".samples", static_cast<int64_t>(0));
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
-    // AD9361 Local Oscillator generation for dual band operation
-    enable_dds_lo_ = configuration->property(role + ".enable_dds_lo", false);
-    freq_dds_tx_hz_ = configuration->property(role + ".freq_dds_tx_hz", static_cast<uint64_t>(10000));
-    freq_rf_tx_hz_ = configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L2_FREQ_HZ - freq_dds_tx_hz_));
-    scale_dds_dbfs_ = configuration->property(role + ".scale_dds_dbfs", 0.0);
-    phase_dds_deg_ = configuration->property(role + ".phase_dds_deg", 0.0);
-    tx_attenuation_db_ = configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db);
-    tx_bandwidth_ = configuration->property(role + ".tx_bandwidth", static_cast<uint64_t>(500000));
-
-    rf_shutdown_ = configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown);
-
-    item_size_ = sizeof(gr_complex);
 
     // some basic checks
     if ((rf_port_select_ != "A_BALANCED") && (rf_port_select_ != "B_BALANCED") && (rf_port_select_ != "A_N") && (rf_port_select_ != "B_N") && (rf_port_select_ != "B_P") && (rf_port_select_ != "C_N") && (rf_port_select_ != "C_P") && (rf_port_select_ != "TX_MONITOR1") && (rf_port_select_ != "TX_MONITOR2") && (rf_port_select_ != "TX_MONITOR1_2"))
@@ -180,6 +172,10 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
                     if (rx1_en_ && rx2_en_)
                         {
                             LOG(FATAL) << "Configuration error: both rx1 and rx2 are enabled but RF_channels=1 !";
+                        }
+                    else if (!rx1_en_ && !rx2_en_)
+                        {
+                            LOG(FATAL) << "Configuration error: both rx1 and rx2 are disabled.";
                         }
                     else
                         {

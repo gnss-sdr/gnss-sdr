@@ -152,16 +152,9 @@ protected:
     virtual void post_disconnect_hook(gr::top_block_sptr top_block);
 
 private:
-    std::string filename_;
     gr::blocks::file_source::sptr file_source_;
-
-    std::string item_type_;
-    size_t item_size_;
-    bool is_complex_;  // a misnomer; if I/Q are interleaved as integer values
-
-    size_t header_size_;  // length (in samples) of the header (if any)
-    double seconds_to_skip_;
-    bool repeat_;
+    gr::blocks::throttle::sptr throttle_;
+    gr::blocks::file_sink::sptr sink_;
 
     // The valve allows only the configured number of samples through, then it closes.
 
@@ -169,17 +162,23 @@ private:
     // class has two choices: construct the valve in the ctor, or hold onto the pointer, possibly
     // beyond its lifetime. Fortunately, the queue is only used to create the valve, so the
     // likelihood of holding a stale pointer is mitigated
-    uint64_t samples_;
-    int64_t sampling_frequency_;  // why is this signed
     gnss_shared_ptr<gr::block> valve_;
     Concurrent_Queue<pmt::pmt_t>* queue_;
 
-    bool enable_throttle_control_;
-    gr::blocks::throttle::sptr throttle_;
-
-    bool dump_;
+    std::string role_;
+    std::string filename_;
     std::string dump_filename_;
-    gr::blocks::file_sink::sptr sink_;
+    std::string item_type_;
+    size_t item_size_;
+    size_t header_size_;  // length (in samples) of the header (if any)
+    uint64_t samples_;
+    int64_t sampling_frequency_;  // why is this signed
+    double minimum_tail_s_;
+    double seconds_to_skip_;
+    bool is_complex_;  // a misnomer; if I/Q are interleaved as integer values
+    bool repeat_;
+    bool enable_throttle_control_;
+    bool dump_;
 };
 
 /** \} */

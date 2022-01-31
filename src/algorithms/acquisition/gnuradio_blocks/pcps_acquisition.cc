@@ -343,7 +343,7 @@ void pcps_acquisition::send_positive_acquisition()
     // 0=STOP_CHANNEL 1=ACQ_SUCCEES 2=ACQ_FAIL
     DLOG(INFO) << "positive acquisition"
                << ", satellite " << d_gnss_synchro->System << " " << d_gnss_synchro->PRN
-               << ", sample_stamp " << d_sample_counter
+               << ", sample_stamp " << d_sample_counter - d_consumed_samples
                << ", test statistics value " << d_test_statistics
                << ", test statistics threshold " << d_threshold
                << ", code phase " << d_gnss_synchro->Acq_delay_samples
@@ -690,7 +690,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 }
             else
                 {
-                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(std::fmod(static_cast<float>(indext), d_acq_parameters.samples_per_code));
+                    d_gnss_synchro->Acq_delay_samples = static_cast<double>(indext);
                     d_gnss_synchro->Acq_doppler_hz = static_cast<double>(doppler);
                     d_gnss_synchro->Acq_samplestamp_samples = samp_count;
                 }
@@ -990,11 +990,11 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 if (d_acq_parameters.blocking)
                     {
                         lk.unlock();
-                        acquisition_core(d_sample_counter);
+                        acquisition_core(d_sample_counter - d_consumed_samples);
                     }
                 else
                     {
-                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter);
+                        gr::thread::thread d_worker(&pcps_acquisition::acquisition_core, this, d_sample_counter - d_consumed_samples);
                         d_worker_active = true;
                     }
                 consume_each(0);

@@ -74,6 +74,9 @@ private:
     friend dll_pll_veml_tracking_sptr dll_pll_veml_make_tracking(const Dll_Pll_Conf &conf_);
     explicit dll_pll_veml_tracking(const Dll_Pll_Conf &conf_);
 
+    void set_long_integration(void);
+    void set_narrow_pll_dll(void);
+
     void msg_handler_telemetry_to_trk(const pmt::pmt_t &msg);
     void do_correlation_step(const gr_complex *input_samples);
     void run_dll_pll();
@@ -203,6 +206,12 @@ private:
     bool d_acc_carrier_phase_initialized;
     bool d_enable_extended_integration;
     bool d_Flag_PLL_180_deg_phase_locked;
+
+    bool d_enable_hs;
+    bool d_skip_samples;
+    int64_t d_samples_to_consume;
+
+    bool d_narrow_pll_dll_set;
 };
 
 

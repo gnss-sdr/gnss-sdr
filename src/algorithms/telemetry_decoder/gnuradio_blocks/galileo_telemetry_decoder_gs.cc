@@ -662,30 +662,8 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     d_band = current_symbol.Signal[0];
 
     // add new symbol to the symbol queue
-    switch (d_frame_type)
-        {
-        case 1:  // INAV
-            {
-                d_symbol_history.push_back(current_symbol.Prompt_I);
-                break;
-            }
-        case 2:  // FNAV
-            {
-                d_symbol_history.push_back(current_symbol.Prompt_Q);
-                break;
-            }
-        case 3:  // CNAV
-            {
-                d_symbol_history.push_back(current_symbol.Prompt_I);
-                break;
-            }
-        default:
-            {
-                LOG(WARNING) << "Frame type " << d_frame_type << " is not defined";
-                d_symbol_history.push_back(current_symbol.Prompt_I);
-                break;
-            }
-        }
+    d_symbol_history.push_back(current_symbol.Prompt_I);
+
     d_sample_counter++;  // count for the processed symbols
 
     // Time Tags from signal source (optional feature)

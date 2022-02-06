@@ -257,7 +257,7 @@ If you are using openSUSE Tumbleweed:
 zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_date_time-devel \
        libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
-       log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
+       spdlog-devel fmt-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
        armadillo-devel libtool automake hdf5-devel libopenssl-devel \
        python3-Mako protobuf-devel
 ```

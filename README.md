@@ -240,6 +240,9 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
 In Fedora 33 and above, you will need to add `gmp-devel` to the package list.
 Optionally, you can add `uhd-devel` starting from Fedora 32.
 
+In Fedora 36 and above, packages `spdlog-devel` and `fmt-devel` are also
+required.
+
 #### openSUSE
 
 If you are using openSUSE Leap:

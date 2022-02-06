@@ -57,8 +57,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 - Fixed building against the new API in the gr-iio component present in GNU
   Radio v3.10.X.Y.
-- Fixed building against GNU Radio v3.10.X.Y, which does not support the
-  C++20 standard.
+- Fixed building against GNU Radio v3.10.X.Y, which does not support the C++20
+  standard.
 - Fixed building against GNU Radio v3.10.X.Y, which replaced
   [log4cpp](http://log4cpp.sourceforge.net/) by
   [spdlog](https://github.com/gabime/spdlog) and

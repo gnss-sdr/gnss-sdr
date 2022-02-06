@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+on:
+  push:
+    paths:
+      - CITATION.cff
+    workflow_dispatch:
+  pull_request:
+    paths:
+      - CITATION.cff
+    workflow_dispatch:
+
+name: CITATION.cff
+jobs:
+  Validate-CITATION-cff:
+    runs-on: ubuntu-latest
+    name: Validate CITATION.cff
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RSPM: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # This is needed for workflows running on
+      # ubuntu-20.04 or later
+      - name: Install V8
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y libv8-dev
+      - name: Validate CITATION.cff
+        uses: dieghernan/cff-validator@main
+
+      # Upload artifact
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: citation-cff-errors
+          path: citation_cff_errors.md

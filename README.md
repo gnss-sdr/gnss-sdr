@@ -62,6 +62,7 @@ information about this open-source, software-defined GNSS receiver.
          - [CentOS](#centos)
          - [Fedora](#fedora)
          - [OpenSUSE](#opensuse)
+         - [Rocky Linux](#rocky-linux)
       1. [Alternative 2: Install dependencies using PyBOMBS](#alternative-2-install-dependencies-using-pybombs)
          - [Manual installation of other required dependencies](#manual-installation-of-other-required-dependencies)
            - [Armadillo](#install-armadillo-a-c-linear-algebra-library)
@@ -244,7 +245,7 @@ Optionally, you can add `uhd-devel` starting from Fedora 32.
 If you are using openSUSE Leap:
 
 ```
-zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
+$ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_chrono-devel \
        libboost_thread-devel libboost_serialization-devel log4cpp-devel \
        gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool \
@@ -254,12 +255,30 @@ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
 If you are using openSUSE Tumbleweed:
 
 ```
-zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
+$ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_date_time-devel \
        libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
        spdlog-devel fmt-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
        armadillo-devel libtool automake hdf5-devel libopenssl-devel \
        python3-Mako protobuf-devel
+```
+
+Once you have installed these packages, you can jump directly to
+[download the source code and build GNSS-SDR](#download-and-build-linux).
+
+#### Rocky Linux
+
+If you are using Rocky Linux:
+
+```
+$ dnf install -y 'dnf-command(config-manager)'
+$ dnf config-manager --set-enabled powertools
+$ yum install -y epel-release
+$ yum install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
+       boost-date-time boost-system boost-thread boost-chrono boost-serialization \
+       log4cpp-devel gmp-devel uhd-devel gnuradio-devel pugixml-devel matio-devel \
+       protobuf-devel glog-devel libpcap-devel blas-devel lapack-devel \
+       armadillo-devel openssl-devel python3-mako libarchive
 ```
 
 Once you have installed these packages, you can jump directly to

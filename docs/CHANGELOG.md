@@ -56,10 +56,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Portability:
 
 - Fixed building against the new API in the gr-iio component present in GNU
-  Radio v3.10.0.0-rc1.
-- Fixed building against GNU Radio v3.10.0.0-rc1, which does not support the
+  Radio v3.10.X.Y.
+- Fixed building against GNU Radio v3.10.X.Y, which does not support the
   C++20 standard.
-- Fixed building against GNU Radio v3.10.0.0-rc1, which replaced
+- Fixed building against GNU Radio v3.10.X.Y, which replaced
   [log4cpp](http://log4cpp.sourceforge.net/) by
   [spdlog](https://github.com/gabime/spdlog) and
   [fmt](https://github.com/fmtlib/fmt) libraries.
@@ -106,6 +106,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   those requirements are not met in the configuration file.
 - Fixed program termination when using `File_Signal_Source` and extended
   integration times.
+- Updated version of the Contributor Covenant to version 2.1.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

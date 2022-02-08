@@ -278,6 +278,26 @@ void pcps_acquisition::init()
             d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
         }
 
+    if (d_enable_hs)
+        {
+            if (d_prev_ifft.empty())
+                {
+                    d_prev_ifft = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
+                }
+            if (d_DPDI_term.empty())
+                {
+                    d_DPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
+                }
+            if (d_DPDI_term_buffer.empty())
+                {
+                    d_DPDI_term_buffer = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
+                }
+            if (d_NPDI_term.empty())
+                {
+                    d_NPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
+                }
+        }
+
     for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {
             std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
@@ -660,11 +680,55 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     if (d_num_noncoherent_integrations_counter == 1)
                         {
                             volk_32fc_magnitude_squared_32f(d_magnitude_grid[doppler_index].data(), d_ifft->get_outbuf() + offset, effective_fft_size);
+
+                            if (d_enable_hs)
+                                {
+                                    // store NPDI term for next iterations
+                                    memcpy(d_NPDI_term[doppler_index].data(), d_magnitude_grid[doppler_index].data(), effective_fft_size * sizeof(float));
+
+                                    // save current ifft output
+                                    volk_32fc_conjugate_32fc(d_prev_ifft[doppler_index].data(), d_ifft->get_outbuf() + offset, effective_fft_size);
+                                }
                         }
                     else
                         {
                             volk_32fc_magnitude_squared_32f(d_tmp_buffer.data(), d_ifft->get_outbuf() + offset, effective_fft_size);
-                            volk_32f_x2_add_32f(d_magnitude_grid[doppler_index].data(), d_magnitude_grid[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
+
+                            if (d_enable_hs)
+                                {
+                                    // accumulate NPDI term
+                                    volk_32f_x2_add_32f(d_NPDI_term[doppler_index].data(), d_NPDI_term[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
+
+                                    // compute DPDI term
+                                    volk_32fc_x2_multiply_32fc(d_DPDI_term_buffer.data(), d_ifft->get_outbuf() + offset, d_prev_ifft[doppler_index].data(), effective_fft_size);
+
+                                    if (d_num_noncoherent_integrations_counter == 2)
+                                        {
+                                            // initialize DPDI term
+                                            memcpy(d_DPDI_term[doppler_index].data(), d_DPDI_term_buffer.data(), effective_fft_size * sizeof(std::complex<float>));
+                                        }
+                                    else
+                                        {
+                                            // accumulate DPDI term
+                                            volk_32fc_x2_add_32fc(d_DPDI_term[doppler_index].data(), d_DPDI_term[doppler_index].data(), d_DPDI_term_buffer.data(), effective_fft_size);
+                                        }
+
+                                    // compute the magnitude of the DPDI term
+                                    volk_32fc_magnitude_32f(d_tmp_buffer.data(), d_DPDI_term[doppler_index].data(), effective_fft_size);
+
+                                    // multiply the magnitude of the DPDI term by two
+                                    volk_32f_s32f_multiply_32f(d_tmp_buffer.data(), d_tmp_buffer.data(), 2.0, effective_fft_size);
+
+                                    // add DPDI and NPDI terms
+                                    volk_32f_x2_add_32f(d_magnitude_grid[doppler_index].data(), d_NPDI_term[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
+
+                                    // save current ifft output
+                                    volk_32fc_conjugate_32fc(d_prev_ifft[doppler_index].data(), d_ifft->get_outbuf() + offset, effective_fft_size);
+                                }
+                            else
+                                {
+                                    volk_32f_x2_add_32f(d_magnitude_grid[doppler_index].data(), d_magnitude_grid[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
+                                }
                         }
                     // Record results to file if required
                     if (d_dump and d_channel == d_dump_channel)

@@ -19,7 +19,6 @@
 #define GNSS_SDR_FIFO_READER_H_
 
 #include "gnss_block_interface.h"
-#include <boost/thread.hpp>
 #include <gnuradio/sync_block.h>
 #include <fstream>  // std::ifstream
 #include <string>
@@ -35,6 +34,8 @@ public:
     using sptr = gnss_shared_ptr<FifoReader>;
     static sptr make(const std::string &file_name, const std::string &sample_type);
 
+    ~FifoReader() = default;
+
     //! initialize istream resource for FIFO
     bool start();
 
@@ -49,16 +50,42 @@ private:
     //! (gr handles this with public and private header pair)
     FifoReader(const std::string &file_name, const std::string &sample_type);
 
-    //! \brief Destructor
-    //! private destructor
-    ~FifoReader();
-
     size_t read_gr_complex(int noutput_items, gr_vector_void_star &output_items);
 
     //! function to read data out of FIFO which is stored as interleaved I/Q stream.
     //! template argument determines sample_type
+    // Note: template definition necessary in header file
+    // See also: https://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
     template <typename Type>
-    size_t read_interleaved(int noutput_items, gr_vector_void_star &output_items);
+    size_t read_interleaved(int noutput_items, gr_vector_void_star &output_items)
+    {
+        size_t items_retrieved = 0;
+        for (int n = 0; n < noutput_items; n++)
+            {
+                // TODO: try if performance increases if we copy larger chunks to vector.
+                // how to read from stream: https://en.cppreference.com/w/cpp/io/basic_ifstream
+                std::array<char, 2 * sizeof(Type)> buffer;
+                fifo_.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
+                if (fifo_.good())
+                    {
+                        auto real = reinterpret_cast<Type const *>(&buffer[0]);
+                        auto imag = reinterpret_cast<Type const *>(&buffer[sizeof(Type)]);
+                        static_cast<gr_complex *>(output_items[0])[n] = gr_complex(*real, *imag);
+                        items_retrieved++;
+                    }
+                else if (fifo_.eof())
+                    {
+                        fifo_.clear();
+                        break;
+                    }
+                else
+                    {
+                        fifo_error_output();
+                        break;
+                    }
+            }
+        return items_retrieved;
+    }
 
     //! this function moves logging output from this header into the source file
     //! thereby eliminating the need to include glog/logging.h in this header
@@ -67,9 +94,6 @@ private:
     const std::string file_name_;
     const std::string sample_type_;
     std::ifstream fifo_;
-    char *fifo_buffer_;
-    int buffer_idx_, buffer_size_;
-    boost::mutex d_mutex;
 };
 
 /** \} */

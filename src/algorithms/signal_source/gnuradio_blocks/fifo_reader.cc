@@ -19,8 +19,6 @@
 #include <glog/logging.h>
 #include <volk/volk.h>
 
-const int FIFO_SIZE = 1472000;  // Value taken from gr_complex_ip_packet_source, is it optimal?
-
 // initial construction; pass to private constructor
 FifoReader::sptr FifoReader::make(const std::string &file_name, const std::string &sample_type)
 {
@@ -33,10 +31,7 @@ FifoReader::FifoReader(const std::string &file_name, const std::string &sample_t
           gr::io_signature::make(0, 0, 0),                    // no input
           gr::io_signature::make(1, 1, sizeof(gr_complex))),  // <+MIN_OUT+>, <+MAX_OUT+>, sizeof(<+OTYPE+>)
       file_name_(file_name),
-      sample_type_(sample_type),
-      fifo_buffer_(new char[FIFO_SIZE]),
-      buffer_idx_(0),
-      buffer_size_(0)
+      sample_type_(sample_type)
 {
     DLOG(INFO) << "Starting FifoReader";
 }
@@ -67,14 +62,17 @@ int FifoReader::work(int noutput_items,
     size_t items_retrieved = 0;
     if (sample_type_ == "ishort")
         {
+            // ishort == int16_t
             items_retrieved = read_interleaved<int16_t>(noutput_items, output_items);
         }
     else if (sample_type_ == "ibyte")  // Does this also work with cbyte?
         {
+            // ibyte == int8_t
             items_retrieved = read_interleaved<int8_t>(noutput_items, output_items);
         }
     else if (sample_type_ == "gr_complex")
         {
+            // gr_complex == complex<float>
             items_retrieved = read_gr_complex(noutput_items, output_items);
         }
     else
@@ -89,101 +87,35 @@ int FifoReader::work(int noutput_items,
 }
 
 
-template <typename Type>
-size_t FifoReader::read_interleaved(int noutput_items, gr_vector_void_star &output_items)
-{
-    boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
-    size_t items_retrieved = 0;
-    int n;
-    Type real;
-    Type imag;
-
-    if (buffer_idx_ >= buffer_size_)
-        {
-            fifo_.read(fifo_buffer_, FIFO_SIZE);
-            buffer_idx_ = 0;
-            if (fifo_.good())
-                {
-                    buffer_size_ = FIFO_SIZE;
-                }
-            else if (fifo_.eof())
-                {
-                    // Although we got an EOF, ensure we don't lose the other samples
-                    buffer_size_ = fifo_.gcount();
-                    fifo_.clear();
-                }
-            else
-                {
-                    fifo_error_output();
-                    return 0;
-                }
-        }
-
-    for (n = 0; n < noutput_items && buffer_idx_ < buffer_size_; n++)
-        {
-            memcpy(&real, &fifo_buffer_[buffer_idx_], sizeof(real));
-            memcpy(&imag, &fifo_buffer_[buffer_idx_ + sizeof(imag)], sizeof(imag));
-            static_cast<gr_complex *>(output_items.at(0))[n] = gr_complex(real, imag);
-
-            buffer_idx_ += 2 * sizeof(Type);
-        }
-
-    items_retrieved = n;
-
-    return items_retrieved;
-}
-
-
 // read gr_complex items from fifo
-// this fct has duplicate code with the templated read_interleaved fct above
+// this fct has duplicate code with the templated read_interleaved fct in header
 size_t FifoReader::read_gr_complex(int noutput_items, gr_vector_void_star &output_items)
 {
-    boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     size_t items_retrieved = 0;
-    int n;
-    gr_complex sample;
-
-    if (buffer_idx_ >= buffer_size_)
+    for (int n = 0; n < noutput_items; n++)
         {
-            fifo_.read(fifo_buffer_, FIFO_SIZE);
-            buffer_idx_ = 0;
+            gr_complex sample;
+            fifo_.read(reinterpret_cast<char *>(&sample), sizeof(sample));
             if (fifo_.good())
                 {
-                    buffer_size_ = FIFO_SIZE;
+                    static_cast<gr_complex *>(output_items.at(0))[n] = sample;
+                    items_retrieved++;
                 }
             else if (fifo_.eof())
                 {
-                    // Although we got an EOF, ensure we don't lose the other samples
-                    buffer_size_ = fifo_.gcount();
                     fifo_.clear();
+                    break;
                 }
             else
                 {
                     fifo_error_output();
-                    return 0;
+                    break;
                 }
         }
-
-    for (n = 0; n < noutput_items && buffer_idx_ < buffer_size_; n++)
-        {
-            memcpy(&sample, &fifo_buffer_[buffer_idx_], sizeof(gr_complex));
-            static_cast<gr_complex *>(output_items.at(0))[n] = sample;
-
-            buffer_idx_ += sizeof(gr_complex);
-        }
-
-    items_retrieved = n;
-
     return items_retrieved;
 }
 
 void FifoReader::fifo_error_output() const
 {
     LOG(ERROR) << "unhandled FIFO event";
-}
-
-
-FifoReader::~FifoReader()
-{
-    delete[] fifo_buffer_;
 }

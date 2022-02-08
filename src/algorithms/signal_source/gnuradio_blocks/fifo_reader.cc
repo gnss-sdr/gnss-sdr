@@ -17,7 +17,6 @@
 
 #include "fifo_reader.h"
 #include <glog/logging.h>
-#include <volk/volk.h>
 
 // initial construction; pass to private constructor
 FifoReader::sptr FifoReader::make(const std::string &file_name, const std::string &sample_type)

@@ -99,7 +99,7 @@ authors:
     given-names: Leonardo
   - alias: stefanlinden
     email: spvdlinden@gmail.com
-    family-name: "van der Linden"
+    family-names: "van der Linden"
     given-names: Stefan
 cff-version: "1.2.0"
 date-released: "2021-08-23"

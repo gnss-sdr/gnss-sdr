@@ -505,9 +505,9 @@ $ sudo ldconfig
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library:
 
 ```
-$ wget https://github.com/zeux/pugixml/releases/download/v1.11.4/pugixml-1.11.4.tar.gz
-$ tar xvfz pugixml-1.11.4.tar.gz
-$ cd pugixml-1.11.4
+$ wget https://github.com/zeux/pugixml/releases/download/v1.12/pugixml-1.12.tar.gz
+$ tar xvfz pugixml-1.12.tar.gz
+$ cd pugixml-1.12
 $ mkdir build && cd build
 $ cmake ..
 $ make

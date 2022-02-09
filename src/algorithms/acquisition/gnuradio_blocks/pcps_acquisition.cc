@@ -683,9 +683,6 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
                             if (d_enable_hs)
                                 {
-                                    // store NPDI term for next iterations
-                                    memcpy(d_NPDI_term[doppler_index].data(), d_magnitude_grid[doppler_index].data(), effective_fft_size * sizeof(float));
-
                                     // save current ifft output
                                     volk_32fc_conjugate_32fc(d_prev_ifft[doppler_index].data(), d_ifft->get_outbuf() + offset, effective_fft_size);
                                 }
@@ -697,7 +694,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                             if (d_enable_hs)
                                 {
                                     // accumulate NPDI term
-                                    volk_32f_x2_add_32f(d_NPDI_term[doppler_index].data(), d_NPDI_term[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
+                                    volk_32f_x2_add_32f(d_NPDI_term[doppler_index].data(), d_magnitude_grid[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
 
                                     // compute DPDI term
                                     volk_32fc_x2_multiply_32fc(d_DPDI_term_buffer.data(), d_ifft->get_outbuf() + offset, d_prev_ifft[doppler_index].data(), effective_fft_size);

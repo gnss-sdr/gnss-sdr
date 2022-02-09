@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -40,14 +40,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   memory management and source code readability.
 - Prefer initialization to assignment in constructors. This improves the
   readability of the code, could potentially increase performance, and allows
-  for easier detection of unused data members (see
-  https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize).
+  for easier detection of unused data members (see the
+  [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize)).
   Added the `cppcoreguidelines-prefer-member-initializer` clang-tidy check to
   enforce this policy.
 - Non-functional change: Fixed formatting defects detected by clang-format 13.0.
 - Non-functional change: Simplified flow graph disconnection.
-- Updated GSL implementation to v0.40.0. See
-  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.40.0
+- Updated GSL implementation to v0.40.0. See the
+  [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v0.40.0).
 - CI - `cpplint` job on GitHub: Added the `build/include_what_you_use` filter
   for early detection of missing includes.
 - CI - `clang-tidy` job on GitHub: More robust detection of LLVM paths installed
@@ -60,7 +60,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed building against GNU Radio v3.10.X.Y, which does not support the C++20
   standard.
 - Fixed building against GNU Radio v3.10.X.Y, which replaced
-  [log4cpp](http://log4cpp.sourceforge.net/) by
+  [log4cpp](http://log4cpp.sourceforge.net/) by the
   [spdlog](https://github.com/gabime/spdlog) and
   [fmt](https://github.com/fmtlib/fmt) libraries.
 - Updated `cpu_features` library for improved processor detection.
@@ -106,6 +106,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   those requirements are not met in the configuration file.
 - Fixed program termination when using `File_Signal_Source` and extended
   integration times.
+- The `Fifo_Signal_Source` Signal Source implementation learned to handle the
+  `ibyte` type.
+- Added a `CITATION.cff` file.
 - Updated version of the Contributor Covenant to version 2.1.
 
 See the definitions of concepts and metrics at

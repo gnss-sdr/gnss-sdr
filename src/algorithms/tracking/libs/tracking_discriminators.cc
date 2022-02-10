@@ -20,6 +20,7 @@
 
 #include "tracking_discriminators.h"
 #include "MATH_CONSTANTS.h"
+#include <gnuradio/math.h>
 
 //  All the outputs are in RADIANS
 
@@ -53,7 +54,7 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
 {
     const float dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
     const float cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
-    return std::atan2(cross, dot) / (t2 - t1);
+    return static_cast<double>(gr::fast_atan2f(cross, dot) / (t2 - t1));
 }
 
 
@@ -84,7 +85,7 @@ double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, doub
  */
 double pll_four_quadrant_atan(gr_complex prompt_s1)
 {
-    return static_cast<double>(std::atan2(prompt_s1.imag(), prompt_s1.real()));
+    return static_cast<double>(gr::fast_atan2f(prompt_s1.imag(), prompt_s1.real()));
 }
 
 

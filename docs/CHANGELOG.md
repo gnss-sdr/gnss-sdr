@@ -16,6 +16,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Availability:
 
+- Added the Galileo E5b receiving chain. The software is now able to compute PVT
+  solutions as a standalone Galileo E5b receiver.
 - Improved Time-To-First-Fix when using GPS L1 C/A signals, fixing a bug that
   was making the receiver to drop the satellite if the PLL got locked at 180
   degrees, and making some optimizations on bit transition detection.

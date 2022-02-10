@@ -36,8 +36,9 @@ In the L2 band:
 
 In the L5 band:
 
-- &#128752; GPS L5 (centered at 1176.45 MHz) :white_check_mark:
-- &#128752; Galileo E5a (centered at 1176.45 MHz) :white_check_mark:
+- &#128752; Galileo E5b (centered at 1207.140 MHz) :white_check_mark:
+- &#128752; Galileo E5a (centered at 1176.450 MHz) :white_check_mark:
+- &#128752; GPS L5 (centered at 1176.450 MHz) :white_check_mark:
 
 GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and
 raw sample file formats, generates processing outputs in standard formats,
@@ -1662,6 +1663,7 @@ identifiers:
 | Glonass L2 C/A |       2G       |
 | GPS L5         |       L5       |
 | Galileo E5a    |       5X       |
+| Galileo E5b    |       7X       |
 
 Example: Eight GPS L1 C/A channels.
 

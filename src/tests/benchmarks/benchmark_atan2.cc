@@ -20,7 +20,7 @@
 #include <cmath>
 #include <random>
 
-void bm_atan2(benchmark::State& state)
+void bm_std_atan2(benchmark::State& state)
 {
     std::random_device rd;
     std::default_random_engine e2(rd());
@@ -33,10 +33,14 @@ void bm_atan2(benchmark::State& state)
         {
             c = std::atan2(a, b);
         }
+    if (c > 1.0)
+        {
+            // Avoid unused-but-set-variable warning
+        }
 }
 
 
-void bm_fast_atan2(benchmark::State& state)
+void bm_gr_fast_atan2f(benchmark::State& state)
 {
     std::random_device rd;
     std::default_random_engine e2(rd());
@@ -49,9 +53,13 @@ void bm_fast_atan2(benchmark::State& state)
         {
             c = gr::fast_atan2f(a, b);
         }
+    if (c > 1.0)
+        {
+            // Avoid unused-but-set-variable warning
+        }
 }
 
-BENCHMARK(bm_atan2);
-BENCHMARK(bm_fast_atan2);
+BENCHMARK(bm_std_atan2);
+BENCHMARK(bm_gr_fast_atan2f);
 
 BENCHMARK_MAIN();

@@ -64,9 +64,14 @@ int FifoReader::work(int noutput_items,
             // ishort == int16_t
             items_retrieved = read_interleaved<int16_t>(noutput_items, output_items);
         }
+    else if (sample_type_ == "ibyte")  // Does this also work with cbyte?
+        {
+            // ibyte == int8_t
+            items_retrieved = read_interleaved<int8_t>(noutput_items, output_items);
+        }
     else if (sample_type_ == "gr_complex")
         {
-            LOG(WARNING) << sample_type_ << " is not yet tested. Please consider removing this warning if tested successfully";
+            // gr_complex == complex<float>
             items_retrieved = read_gr_complex(noutput_items, output_items);
         }
     else
@@ -79,6 +84,7 @@ int FifoReader::work(int noutput_items,
     produce(0, items_retrieved);
     return this->WORK_CALLED_PRODUCE;
 }
+
 
 // read gr_complex items from fifo
 // this fct has duplicate code with the templated read_interleaved fct in header

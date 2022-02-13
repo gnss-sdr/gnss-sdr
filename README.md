@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![REUSE status](https://api.reuse.software/badge/github.com/gnss-sdr/gnss-sdr)](https://api.reuse.software/info/github.com/gnss-sdr/gnss-sdr)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.0-4baaaa.svg)](CODE_OF_CONDUCT.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 **Welcome to GNSS-SDR!**
 
@@ -36,8 +36,9 @@ In the L2 band:
 
 In the L5 band:
 
-- &#128752; GPS L5 (centered at 1176.45 MHz) :white_check_mark:
-- &#128752; Galileo E5a (centered at 1176.45 MHz) :white_check_mark:
+- &#128752; Galileo E5b (centered at 1207.140 MHz) :white_check_mark:
+- &#128752; Galileo E5a (centered at 1176.450 MHz) :white_check_mark:
+- &#128752; GPS L5 (centered at 1176.450 MHz) :white_check_mark:
 
 GNSS-SDR provides interfaces for a wide range of radio frequency front-ends and
 raw sample file formats, generates processing outputs in standard formats,
@@ -62,6 +63,7 @@ information about this open-source, software-defined GNSS receiver.
          - [CentOS](#centos)
          - [Fedora](#fedora)
          - [OpenSUSE](#opensuse)
+         - [Rocky Linux](#rocky-linux)
       1. [Alternative 2: Install dependencies using PyBOMBS](#alternative-2-install-dependencies-using-pybombs)
          - [Manual installation of other required dependencies](#manual-installation-of-other-required-dependencies)
            - [Armadillo](#install-armadillo-a-c-linear-algebra-library)
@@ -239,12 +241,15 @@ $ sudo yum install make automake gcc gcc-c++ kernel-devel cmake git boost-devel 
 In Fedora 33 and above, you will need to add `gmp-devel` to the package list.
 Optionally, you can add `uhd-devel` starting from Fedora 32.
 
+In Fedora 36 and above, packages `spdlog-devel` and `fmt-devel` are also
+required.
+
 #### openSUSE
 
 If you are using openSUSE Leap:
 
 ```
-zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
+$ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_chrono-devel \
        libboost_thread-devel libboost_serialization-devel log4cpp-devel \
        gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool \
@@ -254,12 +259,30 @@ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
 If you are using openSUSE Tumbleweed:
 
 ```
-zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
+$ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_date_time-devel \
        libboost_thread-devel libboost_chrono-devel libboost_serialization-devel \
-       log4cpp-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
+       spdlog-devel fmt-devel gtest gnuradio-devel pugixml-devel libpcap-devel \
        armadillo-devel libtool automake hdf5-devel libopenssl-devel \
        python3-Mako protobuf-devel
+```
+
+Once you have installed these packages, you can jump directly to
+[download the source code and build GNSS-SDR](#download-and-build-linux).
+
+#### Rocky Linux
+
+If you are using Rocky Linux:
+
+```
+$ dnf install -y 'dnf-command(config-manager)'
+$ dnf config-manager --set-enabled powertools
+$ yum install -y epel-release
+$ yum install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
+       boost-date-time boost-system boost-thread boost-chrono boost-serialization \
+       log4cpp-devel gmp-devel uhd-devel gnuradio-devel pugixml-devel matio-devel \
+       protobuf-devel glog-devel libpcap-devel blas-devel lapack-devel \
+       armadillo-devel openssl-devel python3-mako libarchive
 ```
 
 Once you have installed these packages, you can jump directly to
@@ -355,9 +378,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget http://sourceforge.net/projects/arma/files/armadillo-10.6.1.tar.xz
-$ tar xvfz armadillo-10.6.1.tar.xz
-$ cd armadillo-10.6.1
+$ wget https://sourceforge.net/projects/arma/files/armadillo-10.8.0.tar.xz
+$ tar xvfz armadillo-10.8.0.tar.xz
+$ cd armadillo-10.8.0
 $ cmake .
 $ make
 $ sudo make install
@@ -470,9 +493,9 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ```
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.18.0/protobuf-cpp-3.18.0.tar.gz
-$ tar xvfz protobuf-cpp-3.18.0.tar.gz
-$ cd protobuf-3.18.0
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protobuf-cpp-3.19.4.tar.gz
+$ tar xvfz protobuf-cpp-3.19.4.tar.gz
+$ cd protobuf-3.19.4
 $ ./autogen.sh
 $ ./configure
 $ make
@@ -483,9 +506,9 @@ $ sudo ldconfig
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library:
 
 ```
-$ wget https://github.com/zeux/pugixml/releases/download/v1.11.4/pugixml-1.11.4.tar.gz
-$ tar xvfz pugixml-1.11.4.tar.gz
-$ cd pugixml-1.11.4
+$ wget https://github.com/zeux/pugixml/releases/download/v1.12/pugixml-1.12.tar.gz
+$ tar xvfz pugixml-1.12.tar.gz
+$ cd pugixml-1.12
 $ mkdir build && cd build
 $ cmake ..
 $ make
@@ -1640,6 +1663,7 @@ identifiers:
 | Glonass L2 C/A |       2G       |
 | GPS L5         |       L5       |
 | Galileo E5a    |       5X       |
+| Galileo E5b    |       7X       |
 
 Example: Eight GPS L1 C/A channels.
 

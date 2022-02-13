@@ -852,7 +852,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
         }
     d_worker_active = false;
 
-    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) or (d_positive_acq == 1))
+    if ((d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells) or (d_positive_acq == 1) or (d_acq_parameters.bit_transition_flag))
         {
             // Record results to file if required
             if (d_dump and d_channel == d_dump_channel)
@@ -888,7 +888,7 @@ void pcps_acquisition::calculate_threshold()
 
     const int num_bins = effective_fft_size * num_doppler_bins;
 
-    d_threshold = static_cast<float>(2.0 * boost::math::gamma_p_inv(2.0 * d_acq_parameters.max_dwells, std::pow(1.0 - pfa, 1.0 / static_cast<float>(num_bins))));
+    d_threshold = static_cast<float>(2.0 * boost::math::gamma_p_inv(2.0 * (d_acq_parameters.bit_transition_flag ? 1 : d_acq_parameters.max_dwells), std::pow(1.0 - pfa, 1.0 / static_cast<float>(num_bins))));
 }
 
 

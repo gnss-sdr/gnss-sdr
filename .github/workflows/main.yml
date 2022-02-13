@@ -2,7 +2,13 @@
 # SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 name: Simple CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+    paths-ignore:
+      - '**/CITATION.cff'
+  push:
+    paths-ignore:
+      - '**/CITATION.cff'
 
 jobs:
   build-ubuntu:

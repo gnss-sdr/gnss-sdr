@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR v0.0.16](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.16) - 2022-02-14
 
 ### Improvements in Availability:
 

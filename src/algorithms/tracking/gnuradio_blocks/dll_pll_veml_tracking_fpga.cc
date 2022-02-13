@@ -303,7 +303,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                             // remove data secondary code
                             d_data_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                             d_data_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
-
+                            d_interchange_iq = true;
                             // the pilot secondary code depends on PRN and it is initialized later
                         }
                     else
@@ -312,7 +312,6 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                             d_secondary_code_length = static_cast<uint32_t>(GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
                             d_secondary_code_string = GALILEO_E5A_I_SECONDARY_CODE;
                             d_signal_pretty_name = d_signal_pretty_name + "I";
-                            d_interchange_iq = true;
                         }
                 }
             else

@@ -71,6 +71,10 @@ obsd_t insert_obs_to_rtklib(obsd_t& rtklib_obs, const Gnss_Synchro& gnss_synchro
             break;
         case 'E':
             rtklib_obs.sat = gnss_synchro.PRN + NSATGPS + NSATGLO;
+            if (sig_ == "7X")
+                {
+                    rtklib_obs.code[band] = static_cast<unsigned char>(CODE_L7X);
+                }
             break;
         case 'R':
             rtklib_obs.sat = gnss_synchro.PRN + NSATGPS;

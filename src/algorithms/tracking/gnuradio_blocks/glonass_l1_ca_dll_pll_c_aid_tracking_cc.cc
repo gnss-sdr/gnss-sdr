@@ -263,8 +263,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::start_tracking()
     d_pll_to_dll_assist_secs_Ti = 0.0;
     d_code_phase_samples = d_acq_code_phase_samples;
 
-    const std::string sys_ = &d_acquisition_gnss_synchro->System;
-    sys = sys_.substr(0, 1);
+    sys = std::string(&d_acquisition_gnss_synchro->System, 0, 1);
     d_acc_carrier_phase_initialized = false;
 
     // DEBUG OUTPUT

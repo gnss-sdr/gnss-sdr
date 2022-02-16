@@ -256,7 +256,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms * ninput_items[0]);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms * ninput_items[0];  // sample counter
                 consume_each(ninput_items[0]);
                 // DLOG(INFO) << "END CASE 0";
                 break;
@@ -495,7 +495,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms * ninput_items[0]);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms * ninput_items[0];  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 1;
@@ -538,7 +538,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms * ninput_items[0]);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms * ninput_items[0];  // sample counter
                 consume_each(ninput_items[0]);
 
                 acquisition_message = 2;

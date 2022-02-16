@@ -290,7 +290,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                 d_test_statistics = 0.0;
                 d_noise_floor_power = 0.0;
 
-                d_sample_counter += static_cast<uint64_t>(d_sampled_ms * d_samples_per_ms);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_sampled_ms) * d_samples_per_ms;  // sample counter
 
                 d_well_count++;
 

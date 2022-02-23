@@ -65,11 +65,6 @@ uint32_t GetXCR0Eax(void) { return (uint32_t)_xgetbv(0); }
 #error "Unsupported compiler, x86 cpuid requires either GCC, Clang or MSVC."
 #endif
 
-static Leaf CpuId(uint32_t leaf_id)
-{
-    return GetCpuidLeaf(leaf_id, 0);
-}
-
 static const Leaf kEmptyLeaf;
 
 static Leaf SafeCpuIdEx(uint32_t max_cpuid_leaf, uint32_t leaf_id, int ecx)
@@ -84,9 +79,42 @@ static Leaf SafeCpuIdEx(uint32_t max_cpuid_leaf, uint32_t leaf_id, int ecx)
         }
 }
 
-static Leaf SafeCpuId(uint32_t max_cpuid_leaf, uint32_t leaf_id)
+typedef struct
 {
-    return SafeCpuIdEx(max_cpuid_leaf, leaf_id, 0);
+    uint32_t max_cpuid_leaf;
+    Leaf leaf_0;    // Root
+    Leaf leaf_1;    // Family, Model, Stepping
+    Leaf leaf_2;    // Intel cache info + features
+    Leaf leaf_7;    // Features
+    Leaf leaf_7_1;  // Features
+    uint32_t max_cpuid_leaf_ext;
+    Leaf leaf_80000000;  // Root for extended leaves
+    Leaf leaf_80000001;  // AMD features features and cache
+    Leaf leaf_80000002;  // brand string
+    Leaf leaf_80000003;  // brand string
+    Leaf leaf_80000004;  // brand string
+} Leaves;
+
+static Leaves ReadLeaves()
+{
+    const Leaf leaf_0 = GetCpuidLeaf(0, 0);
+    const uint32_t max_cpuid_leaf = leaf_0.eax;
+    const Leaf leaf_80000000 = GetCpuidLeaf(0x80000000, 0);
+    const uint32_t max_cpuid_leaf_ext = leaf_80000000.eax;
+    return (Leaves){
+        .max_cpuid_leaf = max_cpuid_leaf,
+        .leaf_0 = leaf_0,
+        .leaf_1 = SafeCpuIdEx(max_cpuid_leaf, 0x00000001, 0),
+        .leaf_2 = SafeCpuIdEx(max_cpuid_leaf, 0x00000002, 0),
+        .leaf_7 = SafeCpuIdEx(max_cpuid_leaf, 0x00000007, 0),
+        .leaf_7_1 = SafeCpuIdEx(max_cpuid_leaf, 0x00000007, 1),
+        .max_cpuid_leaf_ext = max_cpuid_leaf_ext,
+        .leaf_80000000 = leaf_80000000,
+        .leaf_80000001 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000001, 0),
+        .leaf_80000002 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000002, 0),
+        .leaf_80000003 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000003, 0),
+        .leaf_80000004 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000004, 0),
+    };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,19 +190,19 @@ static int IsVendorByX86Info(const X86Info* info, const char* const name)
     return equals(info->vendor, name, sizeof(info->vendor));
 }
 
+// TODO: Remove when deprecation period is over,
 void FillX86BrandString(char brand_string[49])
 {
-    const Leaf leaf_ext_0 = CpuId(0x80000000);
-    const uint32_t max_cpuid_leaf_ext = leaf_ext_0.eax;
-    const Leaf leaves[3] = {
-        SafeCpuId(max_cpuid_leaf_ext, 0x80000002),
-        SafeCpuId(max_cpuid_leaf_ext, 0x80000003),
-        SafeCpuId(max_cpuid_leaf_ext, 0x80000004),
+    const Leaves leaves = ReadLeaves();
+    const Leaf packed[3] = {
+        leaves.leaf_80000002,
+        leaves.leaf_80000003,
+        leaves.leaf_80000004,
     };
 #if __STDC_VERSION__ >= 201112L
-    _Static_assert(sizeof(leaves) == 48, "Leaves must be packed");
+    _Static_assert(sizeof(packed) == 48, "Leaves must be packed");
 #endif
-    copy(brand_string, (const char*)(leaves), 48);
+    copy(brand_string, (const char*)(packed), 48);
     brand_string[48] = '\0';
 }
 
@@ -182,34 +210,36 @@ void FillX86BrandString(char brand_string[49])
 // CpuId
 ////////////////////////////////////////////////////////////////////////////////
 
-static bool HasSecondFMA(uint32_t model)
+static bool HasSecondFMA(const X86Info* info)
 {
     // Skylake server
-    if (model == 0x55)
+    if (info->model == 0x55)
         {
-            char proc_name[49] = {0};
-            FillX86BrandString(proc_name);
             // detect Xeon
-            if (proc_name[9] == 'X')
+            if (info->brand_string[9] == 'X')
                 {
                     // detect Silver or Bronze
-                    if (proc_name[17] == 'S' || proc_name[17] == 'B') return false;
+                    if (info->brand_string[17] == 'S' || info->brand_string[17] == 'B')
+                        return false;
                     // detect Gold 5_20 and below, except for Gold 53__
-                    if (proc_name[17] == 'G' && proc_name[22] == '5')
-                        return ((proc_name[23] == '3') ||
-                                (proc_name[24] == '2' && proc_name[25] == '2'));
+                    if (info->brand_string[17] == 'G' && info->brand_string[22] == '5')
+                        return (
+                            (info->brand_string[23] == '3') ||
+                            (info->brand_string[24] == '2' && info->brand_string[25] == '2'));
                     // detect Xeon W 210x
-                    if (proc_name[17] == 'W' && proc_name[21] == '0') return false;
+                    if (info->brand_string[17] == 'W' && info->brand_string[21] == '0')
+                        return false;
                     // detect Xeon D 2xxx
-                    if (proc_name[17] == 'D' && proc_name[19] == '2' && proc_name[20] == '1')
+                    if (info->brand_string[17] == 'D' && info->brand_string[19] == '2' &&
+                        info->brand_string[20] == '1')
                         return false;
                 }
             return true;
         }
     // Cannon Lake client
-    if (model == 0x66) return false;
+    if (info->model == 0x66) return false;
     // Ice Lake client
-    if (model == 0x7d || model == 0x7e) return false;
+    if (info->model == 0x7d || info->model == 0x7e) return false;
     // This is the right default...
     return true;
 }
@@ -227,15 +257,15 @@ typedef struct
 // These two functions have to be implemented by the OS, that is the file
 // including this file.
 static void OverrideOsPreserves(OsPreserves* os_preserves);
-static void DetectFeaturesFromOs(X86Features* features);
+static void DetectFeaturesFromOs(X86Info* info, X86Features* features);
 
 // Reference https://en.wikipedia.org/wiki/CPUID.
-static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
+static void ParseCpuId(const Leaves* leaves, X86Info* info,
     OsPreserves* os_preserves)
 {
-    const Leaf leaf_1 = SafeCpuId(max_cpuid_leaf, 1);
-    const Leaf leaf_7 = SafeCpuId(max_cpuid_leaf, 7);
-    const Leaf leaf_7_1 = SafeCpuIdEx(max_cpuid_leaf, 7, 1);
+    const Leaf leaf_1 = leaves->leaf_1;
+    const Leaf leaf_7 = leaves->leaf_7;
+    const Leaf leaf_7_1 = leaves->leaf_7_1;
 
     const bool have_xsave = IsBitSet(leaf_1.ecx, 26);
     const bool have_osxsave = IsBitSet(leaf_1.ecx, 27);
@@ -248,10 +278,24 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
 
     X86Features* const features = &info->features;
 
+    // Fill Family, Model and Stepping.
     info->family = extended_family + family;
     info->model = (extended_model << 4) + model;
     info->stepping = ExtractBitRange(leaf_1.eax, 3, 0);
 
+    // Fill Brand String.
+    const Leaf packed[3] = {
+        leaves->leaf_80000002,
+        leaves->leaf_80000003,
+        leaves->leaf_80000004,
+    };
+#if __STDC_VERSION__ >= 201112L
+    _Static_assert(sizeof(packed) == 48, "Leaves must be packed");
+#endif
+    copy(info->brand_string, (const char*)(packed), 48);
+    info->brand_string[48] = '\0';
+
+    // Fill cpu features.
     features->fpu = IsBitSet(leaf_1.edx, 0);
     features->tsc = IsBitSet(leaf_1.edx, 4);
     features->cx8 = IsBitSet(leaf_1.edx, 8);
@@ -330,7 +374,7 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
                     features->avx512vpopcntdq = IsBitSet(leaf_7.ecx, 14);
                     features->avx512_4vnniw = IsBitSet(leaf_7.edx, 2);
                     features->avx512_4vbmi2 = IsBitSet(leaf_7.edx, 3);
-                    features->avx512_second_fma = HasSecondFMA(info->model);
+                    features->avx512_second_fma = HasSecondFMA(info);
                     features->avx512_4fmaps = IsBitSet(leaf_7.edx, 3);
                     features->avx512_bf16 = IsBitSet(leaf_7_1.eax, 5);
                     features->avx512_vp2intersect = IsBitSet(leaf_7.edx, 8);
@@ -346,7 +390,7 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
         {
             // When XCR0 is not available (Atom based or older cpus) we need to defer to
             // the OS via custom code.
-            DetectFeaturesFromOs(features);
+            DetectFeaturesFromOs(info, features);
             // Now that we have queried the OS for SSE support, we report this back to
             // os_preserves. This is needed in case of AMD CPU's to enable testing of
             // sse4a (See ParseExtraAMDCpuId below).
@@ -354,17 +398,10 @@ static void ParseCpuId(const uint32_t max_cpuid_leaf, X86Info* info,
         }
 }
 
-// Reference
-// https://en.wikipedia.org/wiki/CPUID#EAX=80000000h:_Get_Highest_Extended_Function_Implemented.
-static Leaf GetLeafByIdAMD(uint32_t leaf_id)
+static void ParseExtraAMDCpuId(const Leaves* leaves, X86Info* info,
+    OsPreserves os_preserves)
 {
-    uint32_t max_extended = CpuId(0x80000000).eax;
-    return SafeCpuId(max_extended, leaf_id);
-}
-
-static void ParseExtraAMDCpuId(X86Info* info, OsPreserves os_preserves)
-{
-    const Leaf leaf_80000001 = GetLeafByIdAMD(0x80000001);
+    const Leaf leaf_80000001 = leaves->leaf_80000001;
 
     X86Features* const features = &info->features;
 
@@ -385,19 +422,24 @@ static const OsPreserves kEmptyOsPreserves;
 X86Info GetX86Info(void)
 {
     X86Info info = kEmptyX86Info;
-    const Leaf leaf_0 = CpuId(0);
-    const bool is_intel = IsVendor(leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL);
-    const bool is_amd = IsVendor(leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
-    const bool is_hygon = IsVendor(leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE);
-    SetVendor(leaf_0, info.vendor);
-    if (is_intel || is_amd || is_hygon)
+    const Leaves leaves = ReadLeaves();
+    const bool is_intel =
+        IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL);
+    const bool is_amd =
+        IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
+    const bool is_hygon =
+        IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE);
+    const bool is_zhaoxin =
+        (IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_CENTAUR_HAULS) ||
+            IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_SHANGHAI));
+    SetVendor(leaves.leaf_0, info.vendor);
+    if (is_intel || is_amd || is_hygon || is_zhaoxin)
         {
             OsPreserves os_preserves = kEmptyOsPreserves;
-            const uint32_t max_cpuid_leaf = leaf_0.eax;
-            ParseCpuId(max_cpuid_leaf, &info, &os_preserves);
+            ParseCpuId(&leaves, &info, &os_preserves);
             if (is_amd || is_hygon)
                 {
-                    ParseExtraAMDCpuId(&info, os_preserves);
+                    ParseExtraAMDCpuId(&leaves, &info, os_preserves);
                 }
         }
     return info;
@@ -559,6 +601,46 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                 case CPUID(0x0F, 0x06):
                     // https://en.wikichip.org/wiki/intel/microarchitectures/netburst
                     return INTEL_NETBURST;
+                default:
+                    return X86_UNKNOWN;
+                }
+        }
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_CENTAUR_HAULS))
+        {
+            switch (CPUID(info->family, info->model))
+                {
+                case CPUID(0x06, 0x0F):
+                case CPUID(0x06, 0x19):
+                    // https://en.wikichip.org/wiki/zhaoxin/microarchitectures/zhangjiang
+                    return ZHAOXIN_ZHANGJIANG;
+                case CPUID(0x07, 0x1B):
+                    // https://en.wikichip.org/wiki/zhaoxin/microarchitectures/wudaokou
+                    return ZHAOXIN_WUDAOKOU;
+                case CPUID(0x07, 0x3B):
+                    // https://en.wikichip.org/wiki/zhaoxin/microarchitectures/lujiazui
+                    return ZHAOXIN_LUJIAZUI;
+                case CPUID(0x07, 0x5B):
+                    return ZHAOXIN_YONGFENG;
+                default:
+                    return X86_UNKNOWN;
+                }
+        }
+    if (IsVendorByX86Info(info, CPU_FEATURES_VENDOR_SHANGHAI))
+        {
+            switch (CPUID(info->family, info->model))
+                {
+                case CPUID(0x06, 0x0F):
+                case CPUID(0x06, 0x19):
+                    // https://en.wikichip.org/wiki/zhaoxin/microarchitectures/zhangjiang
+                    return ZHAOXIN_ZHANGJIANG;
+                case CPUID(0x07, 0x1B):
+                    // https://en.wikichip.org/wiki/zhaoxin/microarchitectures/wudaokou
+                    return ZHAOXIN_WUDAOKOU;
+                case CPUID(0x07, 0x3B):
+                    // https://en.wikichip.org/wiki/zhaoxin/microarchitectures/lujiazui
+                    return ZHAOXIN_LUJIAZUI;
+                case CPUID(0x07, 0x5B):
+                    return ZHAOXIN_YONGFENG;
                 default:
                     return X86_UNKNOWN;
                 }
@@ -1551,9 +1633,9 @@ static CacheLevelInfo GetCacheLevelInfo(const uint32_t reg)
 }
 
 // From https://www.felixcloutier.com/x86/cpuid#tbl-3-12
-static void ParseLeaf2(const int max_cpuid_leaf, CacheInfo* info)
+static void ParseLeaf2(const Leaves* leaves, CacheInfo* info)
 {
-    Leaf leaf = SafeCpuId(max_cpuid_leaf, 2);
+    Leaf leaf = leaves->leaf_2;
     // The least-significant byte in register EAX (register AL) will always return
     // 01H. Software should ignore this value and not interpret it as an
     // informational descriptor.
@@ -1626,24 +1708,23 @@ static void ParseCacheInfo(const int max_cpuid_leaf, uint32_t leaf_id,
 CacheInfo GetX86CacheInfo(void)
 {
     CacheInfo info = kEmptyCacheInfo;
-    const Leaf leaf_0 = CpuId(0);
-    if (IsVendor(leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL))
+    const Leaves leaves = ReadLeaves();
+    if (IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_GENUINE_INTEL) ||
+        IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_CENTAUR_HAULS) ||
+        IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_SHANGHAI))
         {
-            ParseLeaf2(leaf_0.eax, &info);
-            ParseCacheInfo(leaf_0.eax, 4, &info);
+            ParseLeaf2(&leaves, &info);
+            ParseCacheInfo(leaves.max_cpuid_leaf, 4, &info);
         }
-    else if (IsVendor(leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD) ||
-             IsVendor(leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE))
+    else if (IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_AUTHENTIC_AMD) ||
+             IsVendor(leaves.leaf_0, CPU_FEATURES_VENDOR_HYGON_GENUINE))
         {
-            const uint32_t max_ext = CpuId(0x80000000).eax;
-            const uint32_t cpuid_ext = SafeCpuId(max_ext, 0x80000001).ecx;
-
             // If CPUID Fn8000_0001_ECX[TopologyExtensions]==0
             // then CPUID Fn8000_0001_E[D,C,B,A]X is reserved.
             // https://www.amd.com/system/files/TechDocs/25481.pdf
-            if (IsBitSet(cpuid_ext, 22))
+            if (IsBitSet(leaves.leaf_80000001.ecx, 22))
                 {
-                    ParseCacheInfo(max_ext, 0x8000001D, &info);
+                    ParseCacheInfo(leaves.max_cpuid_leaf_ext, 0x8000001D, &info);
                 }
         }
     return info;
@@ -1720,6 +1801,10 @@ CacheInfo GetX86CacheInfo(void)
 
 #define X86_MICROARCHITECTURE_NAMES \
     LINE(X86_UNKNOWN)               \
+    LINE(ZHAOXIN_ZHANGJIANG)        \
+    LINE(ZHAOXIN_WUDAOKOU)          \
+    LINE(ZHAOXIN_LUJIAZUI)          \
+    LINE(ZHAOXIN_YONGFENG)          \
     LINE(INTEL_80486)               \
     LINE(INTEL_P5)                  \
     LINE(INTEL_LAKEMONT)            \

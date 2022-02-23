@@ -662,30 +662,8 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     d_band = current_symbol.Signal[0];
 
     // add new symbol to the symbol queue
-    switch (d_frame_type)
-        {
-        case 1:  // INAV
-            {
-                d_symbol_history.push_back(current_symbol.Prompt_I);
-                break;
-            }
-        case 2:  // FNAV
-            {
-                d_symbol_history.push_back(current_symbol.Prompt_Q);
-                break;
-            }
-        case 3:  // CNAV
-            {
-                d_symbol_history.push_back(current_symbol.Prompt_I);
-                break;
-            }
-        default:
-            {
-                LOG(WARNING) << "Frame type " << d_frame_type << " is not defined";
-                d_symbol_history.push_back(current_symbol.Prompt_I);
-                break;
-            }
-        }
+    d_symbol_history.push_back(current_symbol.Prompt_I);
+
     d_sample_counter++;  // count for the processed symbols
 
     // Time Tags from signal source (optional feature)
@@ -1025,18 +1003,18 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                     }
-                                if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
-                                    {
-                                        d_nav_msg_packet.system = std::string(1, current_symbol.System);
-                                        d_nav_msg_packet.signal = std::string(current_symbol.Signal);
-                                        d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
-                                        d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
-                                        const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
-                                        this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
-                                        d_nav_msg_packet.nav_message = "";
-                                    }
-                                break;
                             }
+                        if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                            {
+                                d_nav_msg_packet.system = std::string(1, current_symbol.System);
+                                d_nav_msg_packet.signal = std::string(current_symbol.Signal);
+                                d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                                d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                                const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                                this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                                d_nav_msg_packet.nav_message = "";
+                            }
+                        break;
                     }
                 case 3:  // CNAV
                     {

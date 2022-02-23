@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -14,8 +14,23 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Reliability:
+
+- Fix some defects detected by Coverity Scan 2021.12.1.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
+## [GNSS-SDR v0.0.16](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.16) - 2022-02-15
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6090349.svg)](https://doi.org/10.5281/zenodo.6090349)
+
 ### Improvements in Availability:
 
+- Added the Galileo E5b receiving chain. The software is now able to compute PVT
+  solutions as a standalone Galileo E5b receiver.
 - Improved Time-To-First-Fix when using GPS L1 C/A signals, fixing a bug that
   was making the receiver to drop the satellite if the PLL got locked at 180
   degrees, and making some optimizations on bit transition detection.
@@ -40,14 +55,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   memory management and source code readability.
 - Prefer initialization to assignment in constructors. This improves the
   readability of the code, could potentially increase performance, and allows
-  for easier detection of unused data members (see
-  https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize).
+  for easier detection of unused data members (see the
+  [CppCoreGuidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md/#Rc-initialize)).
   Added the `cppcoreguidelines-prefer-member-initializer` clang-tidy check to
   enforce this policy.
 - Non-functional change: Fixed formatting defects detected by clang-format 13.0.
 - Non-functional change: Simplified flow graph disconnection.
-- Updated GSL implementation to v0.40.0. See
-  https://github.com/gsl-lite/gsl-lite/releases/tag/v0.40.0
+- Updated GSL implementation to v0.40.0. See the
+  [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v0.40.0).
 - CI - `cpplint` job on GitHub: Added the `build/include_what_you_use` filter
   for early detection of missing includes.
 - CI - `clang-tidy` job on GitHub: More robust detection of LLVM paths installed
@@ -56,11 +71,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Portability:
 
 - Fixed building against the new API in the gr-iio component present in GNU
-  Radio v3.10.0.0-rc1.
-- Fixed building against GNU Radio v3.10.0.0-rc1, which does not support the
-  C++20 standard.
-- Fixed building against GNU Radio v3.10.0.0-rc1, which replaced
-  [log4cpp](http://log4cpp.sourceforge.net/) by
+  Radio v3.10.X.Y.
+- Fixed building against GNU Radio v3.10.X.Y, which does not support the C++20
+  standard.
+- Fixed building against GNU Radio v3.10.X.Y, which replaced
+  [log4cpp](http://log4cpp.sourceforge.net/) by the
   [spdlog](https://github.com/gabime/spdlog) and
   [fmt](https://github.com/fmtlib/fmt) libraries.
 - Updated `cpu_features` library for improved processor detection.
@@ -98,12 +113,18 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added a new output parameter `Flag_PLL_180_deg_phase_locked` in the monitor
   output that indicates if the PLL got locked at 180 degrees, so the symbol sign
   is reversed.
-- Fix bug in the satellite selection algorithm for configurations with a large
-  number of channels. The maximum number of channels per signal is now limited
-  to the number of available satellites per system minus one. The number of
-  channels performing concurrent acquisition, `Channels.in_acquisition`, cannot
-  be larger than the total number of channels. The program will stop if those
-  requirements are not met in the configuration file.
+- Fixed a bug in the satellite selection algorithm for configurations with a
+  large number of channels. The maximum number of channels per signal is now
+  limited to the number of available satellites per system minus one. The number
+  of channels performing concurrent acquisition, `Channels.in_acquisition`,
+  cannot be larger than the total number of channels. The program will stop if
+  those requirements are not met in the configuration file.
+- Fixed program termination when using `File_Signal_Source` and extended
+  integration times.
+- The `Fifo_Signal_Source` Signal Source implementation learned to handle the
+  `ibyte` type.
+- Added a `CITATION.cff` file.
+- Updated version of the Contributor Covenant to version 2.1.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/
@@ -111,6 +132,8 @@ https://gnss-sdr.org/design-forces/
 &nbsp;
 
 ## [GNSS-SDR v0.0.15](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.15) - 2021-08-23
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5242839.svg)](https://doi.org/10.5281/zenodo.5242839)
 
 ### Improvements in Availability:
 
@@ -236,6 +259,8 @@ https://gnss-sdr.org/design-forces/
 
 ## [GNSS-SDR v0.0.14](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.14) - 2021-01-08
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4428100.svg)](https://doi.org/10.5281/zenodo.4428100)
+
 ### Improvements in Availability:
 
 - Fixed bug in acquisition detection when the configuration parameter
@@ -344,6 +369,8 @@ https://gnss-sdr.org/design-forces/
 &nbsp;
 
 ## [GNSS-SDR v0.0.13](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.13) - 2020-07-29
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3965566.svg)](https://doi.org/10.5281/zenodo.3965566)
 
 ### Improvements in Efficiency:
 
@@ -458,6 +485,8 @@ https://gnss-sdr.org/design-forces/
 &nbsp;
 
 ## [GNSS-SDR v0.0.12](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.12) - 2020-03-13
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3709089.svg)](https://doi.org/10.5281/zenodo.3709089)
 
 ### Improvements in Accuracy:
 
@@ -653,6 +682,8 @@ https://gnss-sdr.org/design-forces/
 
 ## [GNSS-SDR v0.0.11](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.11) - 2019-08-04
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3359989.svg)](https://doi.org/10.5281/zenodo.3359989)
+
 This release has several improvements in different dimensions, addition of new
 features and bug fixes:
 
@@ -805,6 +836,8 @@ https://gnss-sdr.org/design-forces/
 &nbsp;
 
 ## [GNSS-SDR v0.0.10](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.10) - 2018-12-14
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2279988.svg)](https://doi.org/10.5281/zenodo.2279988)
 
 This release has several improvements in different dimensions, addition of new
 features and bug fixes:
@@ -1038,7 +1071,7 @@ https://gnss-sdr.org/design-forces/
 
 ## [GNSS-SDR v0.0.9](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.9) - 2017-02-13
 
-DOI: https://doi.org/10.5281/zenodo.291371
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.291371.svg)](https://doi.org/10.5281/zenodo.291371)
 
 This release has several improvements, addition of new features and bug fixes in
 many dimensions:
@@ -1159,7 +1192,7 @@ https://gnss-sdr.org/design-forces/
 
 ## [GNSS-SDR v0.0.8](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.8) - 2016-07-04
 
-DOI: https://doi.org/10.5281/zenodo.57022
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.57022.svg)](http://dx.doi.org/10.5281/zenodo.57022)
 
 This is a maintenance and bug fix release with no relevant new features with
 respect to v0.0.7. The main changes are:
@@ -1185,7 +1218,7 @@ respect to v0.0.7. The main changes are:
 
 ## [GNSS-SDR v0.0.7](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.7) - 2016-05-15
 
-DOI: https://doi.org/10.5281/zenodo.51521
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.51521.svg)](https://doi.org/10.5281/zenodo.51521)
 
 This release has several improvements, addition of new features and bug fixes:
 
@@ -1277,6 +1310,8 @@ This release has several improvements, addition of new features and bug fixes:
 
 ## [GNSS-SDR v0.0.6](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.6) - 2015-09-02
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.30104.svg)](https://doi.org/10.5281/zenodo.30104)
+
 This release has several improvements and bug fixes:
 
 - Added initial support to multi-band, multi-source configurations (multiple
@@ -1327,6 +1362,8 @@ This release has several improvements and bug fixes:
 
 ## [GNSS-SDR v0.0.5](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.5) - 2015-01-13
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13920.svg)](https://doi.org/10.5281/zenodo.13920)
+
 This release has several improvements and bug fixes:
 
 - Now GNSS-SDR can be installed on the system with the usual
@@ -1353,6 +1390,8 @@ This release has several improvements and bug fixes:
 &nbsp;
 
 ## [GNSS-SDR v0.0.4](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.4) - 2014-09-08
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11628.svg)](https://doi.org/10.5281/zenodo.11628)
 
 This release has several improvements and bug fixes:
 
@@ -1390,6 +1429,8 @@ This release has several improvements and bug fixes:
 &nbsp;
 
 ## [GNSS-SDR v0.0.3](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.3) - 2014-06-30
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10708.svg)](https://doi.org/10.5281/zenodo.10708)
 
 This release has several improvements and bug fixes, completing the transition
 from Subversion to Git. The main changes are:

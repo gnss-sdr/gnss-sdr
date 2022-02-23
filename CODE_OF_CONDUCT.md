@@ -16,8 +16,8 @@ We as members, contributors, and leaders pledge to make participation in our
 community a harassment-free experience for everyone, regardless of age, body
 size, visible or invisible disability, ethnicity, sex characteristics, gender
 identity and expression, level of experience, education, socio-economic status,
-nationality, personal appearance, race, religion, or sexual identity and
-orientation.
+nationality, personal appearance, race, caste, color, religion, or sexual
+identity and orientation.
 
 We pledge to act and interact in ways that contribute to an open, welcoming,
 diverse, inclusive, and healthy community.
@@ -64,13 +64,7 @@ This Code of Conduct applies within all community spaces, and also applies when
 an individual is officially representing the community in public spaces.
 Examples of representing our community include using an official e-mail address,
 posting via an official social media account, or acting as an appointed
-representative at an online or offline event. This Code of Conduct applies both
-within project spaces and in public spaces when an individual is representing
-the project or its community. Examples of representing a project or community
-include using an official project e-mail address, posting via an official social
-media account, or acting as an appointed representative at an online or offline
-event. Representation of a project may be further defined and clarified by
-project maintainers.
+representative at an online or offline event.
 
 ## Enforcement
 
@@ -131,18 +125,18 @@ community.
 ## Attribution
 
 This Code of Conduct is adapted from the [Contributor Covenant][homepage],
-version 2.0, available at
-[https://www.contributor-covenant.org/version/2/0/code_of_conduct.html][version].
+version 2.1, available at
+[https://www.contributor-covenant.org/version/2/1/code_of_conduct.html][v2.1].
 
 Community Impact Guidelines were inspired by [Mozilla's code of conduct
-enforcement ladder][diversity].
+enforcement ladder][mozilla coc].
 
 For answers to common questions about this code of conduct, see the FAQ at
 [https://www.contributor-covenant.org/faq][faq]. Translations are available at
 [https://www.contributor-covenant.org/translations][translations].
 
 [homepage]: https://www.contributor-covenant.org
-[diversity]: https://github.com/mozilla/diversity
-[version]: https://www.contributor-covenant.org/version/2/0/code_of_conduct.html
-[faq]: https://www.contributor-covenant.org/faq/
+[v2.1]: https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
+[mozilla coc]: https://github.com/mozilla/diversity
+[faq]: https://www.contributor-covenant.org/faq
 [translations]: https://www.contributor-covenant.org/translations

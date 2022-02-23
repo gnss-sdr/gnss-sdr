@@ -1698,7 +1698,7 @@ void rtklib_pvt_gs::log_source_timetag_info(double RX_time_ns, double TAG_time_n
                 }
             catch (const std::exception& e)
                 {
-                    std::cerr << "Problem writting at the log PVT timetag metadata file: " << e.what() << '\n';
+                    std::cerr << "Problem writing at the log PVT timetag metadata file: " << e.what() << '\n';
                 }
         }
 }

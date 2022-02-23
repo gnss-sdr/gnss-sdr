@@ -102,6 +102,7 @@ add_benchmark(benchmark_copy)
 add_benchmark(benchmark_preamble core_system_parameters)
 add_benchmark(benchmark_detector core_system_parameters)
 add_benchmark(benchmark_reed_solomon core_system_parameters)
+add_benchmark(benchmark_atan2 Gnuradio::runtime)
 
 if(has_std_plus_void)
     target_compile_definitions(benchmark_detector PRIVATE -DCOMPILER_HAS_STD_PLUS_VOID=1)

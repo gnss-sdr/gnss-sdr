@@ -1,0 +1,328 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2022 C. Fernandez-Prades carles.fernandez(at)cttc.es
+---
+authors:
+  - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
+    alias: carlesfernandez
+    email: carles.fernandez@cttc.es
+    family-names: "Fernández-Prades"
+    given-names: Carles
+    orcid: "https://orcid.org/0000-0002-9201-7007"
+  - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
+    alias: Arribas
+    email: javier.arribas@cttc.es
+    family-names: Arribas
+    given-names: Javier
+    orcid: "https://orcid.org/0000-0001-6346-3406"
+  - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
+    alias: mmajoral
+    email: marc.majoral@cttc.es
+    family-names: Majoral
+    given-names: Marc
+    orcid: "https://orcid.org/0000-0001-6161-6747"
+  - alias: Gastd
+    email: gabriel.araujo.5000@gmail.com
+    family-names: Araujo
+    given-names: Gabriel
+  - email: anthony.arnold@uqconnect.edu.au
+    family-names: Arnold
+    given-names: Anthony
+  - email: carlos.avilesr@googlemail.com
+    family-names: Avilés
+    given-names: Carlos
+  - alias: marabra
+    email: mara.branzanti@gmail.com
+    family-names: Branzanti
+    given-names: Mara
+  - alias: acebrianjuan
+    email: acebrianjuan@gmail.com
+    family-names: "Cebrián-Juan"
+    given-names: Álvaro
+  - email: a.cecilia.luque@gmail.com
+    family-names: "Cecilia-Luque"
+    given-names: Andrés
+  - alias: luis-esteve
+    email: luis@epsilon-formacion.com
+    family-names: Esteve
+    given-names: Luis
+  - email: fabra@ice.csic.es
+    family-names: Fabra
+    given-names: Fran
+  - email: daniel.co@bluewin.ch
+    family-names: Fehr
+    given-names: Daniel
+  - alias: piyush0411
+    email: piyush04111999@gmail.com
+    family-names: Gupta
+    given-names: Piyush
+  - alias: glamountain
+    email: gerald@gece.neu.edu
+    family-names: LaMountain
+    given-names: Gerald
+  - alias: lenhart
+    email: malte.lenhart@mailbox.org
+    family-names: Lenhart
+    given-names: Malte
+  - alias: jwmelto
+    email: jim.melton@sncorp.com
+    family-names: Melton
+    given-names: Jim
+  - alias: dmiralles2009
+    email: dmiralles2009@gmail.com
+    family-names: Miralles
+    given-names: Damian
+    orcid: "https://orcid.org/0000-0001-5820-9569"
+  - email: marc.molina.pena@gmail.com
+    family-names: Molina
+    given-names: Marc
+  - email: rodrigo.munoz@proteinlab.cl
+    family-names: Muñoz
+    given-names: Rodrigo
+  - alias: odrisci
+    email: cillian.odriscoll@gmail.com
+    family-names: "O'Driscoll"
+    given-names: Cillian
+  - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
+    email: david.pubill@cttc.cat
+    family-names: Pubill
+    given-names: David
+  - alias: antonioramosdet
+    family-names: Ramos
+    given-names: Antonio
+  - alias: jschindehette
+    email: jschindehette@geontech.com
+    family-names: Schindehette
+    given-names: Josh
+  - email: tonetto.dev@gmail.com
+    family-names: Tonetto
+    given-names: Leonardo
+  - alias: stefanlinden
+    email: spvdlinden@gmail.com
+    family-names: "van der Linden"
+    given-names: Stefan
+cff-version: "1.2.0"
+date-released: "2022-02-15"
+identifiers:
+  - description: "The concept DOI of the work. This is a DOI always pointing to the latest stable release."
+    type: doi
+    value: 10.5281/zenodo.591700
+keywords:
+  - "Global Navigation Satellite System"
+  - GNSS
+  - "software radio"
+  - SDR
+  - GPS
+  - Galileo
+  - C++
+license: GPL-3.0-or-later
+message: "If you use this software, please cite it using the metadata from this file."
+references:
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: "Vilà-Valls"
+        given-names: Jordi
+      - family-names: Arribas
+        given-names: Javier
+      - family-names: Ramos
+        given-names: Antonio
+    doi: 10.1109/ACCESS.2018.2822835
+    issue: 1
+    journal: "IEEE Access"
+    pages: 13
+    start: 20451
+    end: 20463
+    scope: "Discussion on reproducibility in GNSS signal processing."
+    title: "Continuous Reproducibility in GNSS Signal Processing."
+    type: article
+    volume: 6
+    year: 2018
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: "Lo Presti"
+        given-names: Letizia
+      - family-names: Falleti
+        given-names: Emanuela
+    doi: 10.1109/JPROC.2011.2158032
+    issue: 11
+    journal: "Proceedigs of the IEEE"
+    month: 11
+    pages: 23
+    start: 1882
+    end: 1904
+    scope: "General overview on GNSS receiver technology."
+    title: "Satellite Radiolocalization From GPS to GNSS and Beyond: Novel Technologies and Applications for Civil Mass Market."
+    type: article
+    volume: 99
+    year: 2011
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: Arribas
+        given-names: Javier
+      - family-names: Majoral
+        given-names: Marc
+      - family-names: Ramos
+        given-names: Antonio
+      - family-names: "Vilà-Valls"
+        given-names: Jordi
+      - family-names: Giordano
+        given-names: Pietro
+    conference:
+      name: "Proc. 9th ESA Workshop on Satellite Navigation Technologies and European Workshop on GNSS Signals and Signal Processing (NAVITEC)"
+    doi: 10.1109/NAVITEC.2018.8642697
+    location:
+      name: "ESA/ESTEC, Noordwijk, Netherlands."
+    month: 12
+    pages: 9
+    scope: "Space applications of the software-defined GNSS embeded receiver."
+    title: "A Software-Defined Spaceborne GNSS Receiver."
+    type: conference-paper
+    year: 2018
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: Pomar
+        given-names: Christian
+      - family-names: Arribas
+        given-names: Javier
+      - family-names: Fàbrega
+        given-names: "Josep Maria"
+      - family-names: "Vilà-Valls"
+        given-names: Jordi
+      - family-names: "Svaluto Moreolo"
+        given-names: Michela
+      - family-names: Casellas
+        given-names: Ramon
+      - family-names: Martínez
+        given-names: Ricardo
+      - family-names: Navarro
+        given-names: Mònica
+      - family-names: Vílchez
+        given-names: "Francisco Javier"
+      - family-names: Muñoz
+        given-names: Raul
+      - family-names: Vilalta
+        given-names: Ricard
+      - family-names: Nadal
+        given-names: Laia
+      - family-names: Mayoral
+        given-names: Arturo
+    conference:
+      name: "Proc. 30th Int. Tech. Meeting Sat. Div. Inst. Navig."
+    doi: 10.33012/2017.15234
+    location:
+      name: "Portland, OR."
+    month: 9
+    scope: "Introduction of the virtualized GNSS receiver."
+    pages: 20
+    start: 3796
+    end: 3815
+    title: "A Cloud Optical Access Network for Virtualized GNSS Receivers"
+    type: conference-paper
+    year: 2017
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: Arribas
+        given-names: Javier
+      - family-names: Closas
+        given-names: Pau
+    conference:
+      name: "Proc. 8th ESA Workshop on Satellite Navigation Technologies and European Workshop on GNSS Signals and Signal Processing (NAVITEC)"
+    doi: 10.1109/NAVITEC.2016.7931740
+    location:
+      name: "ESA/ESTEC, Noordwijk, Netherlands."
+    month: 12
+    pages: 9
+    scope: "Discussion on testing methodologies for software-defined GNSS receivers."
+    title: "Assessment of Software-Defined GNSS Receivers"
+    type: conference-paper
+    year: 2016
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: Arribas
+        given-names: Javier
+      - family-names: Closas
+        given-names: Pau
+    conference:
+      name: "Proc. 29th Int. Tech. Meeting Sat. Div. Inst. Navig."
+    doi: 10.33012/2016.14576
+    location:
+      name: "Portland, OR."
+    month: 9
+    pages: 18
+    start: 44
+    end: 61
+    scope: "Analysis of software strategies for accelerating signal processing."
+    title: "Accelerating GNSS Software Receivers"
+    type: conference-paper
+    year: 2016
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: Arribas
+        given-names: Javier
+      - family-names: Closas
+        given-names: Pau
+      - family-names: Avilés
+        given-names: Carlos
+      - family-names: Esteve
+        given-names: Luis
+    conference:
+      name: "Proc. 24th Int. Tech. Meeting Sat. Div. Inst. Navig."
+    location:
+      name: "Portland, OR."
+    month: 9
+    pages: 15
+    start: 780
+    end: 794
+    scope: "General description of the software architecture."
+    title: "GNSS-SDR: An Open Source Tool For Researchers and Developers"
+    type: conference-paper
+    year: 2011
+  - authors:
+      - family-names: "Fernández-Prades"
+        given-names: Carles
+      - family-names: Avilés
+        given-names: Carlos
+      - family-names: Esteve
+        given-names: Luis
+      - family-names: Arribas
+        given-names: Javier
+      - family-names: Closas
+        given-names: Pau
+    conference:
+      name: "Proc. 5th ESA Workshop on Satellite Navigation Technologies and European Workshop on GNSS Signals and Signal Processing (NAVITEC)."
+    doi: 10.1109/NAVITEC.2010.5707981
+    location:
+      name: "ESA/ESTEC, Noordwijk, Netherlands."
+    month: 12
+    pages: 8
+    scope: "Seminal work on GNSS-SDR and its software design patterns."
+    title: "Design patterns for GNSS software receivers"
+    type: conference-paper
+    year: 2010
+  - authors:
+    - name: "The GNU Radio Project team"
+    doi: 10.5281/zenodo.2704343
+    repository-code: "https://github.com/gnuradio/gnuradio"
+    scope: "Software dependency: the SDR framework."
+    title: "GNU Radio: The Free & Open Software Radio Ecosystem"
+    type: software
+    url: "https://www.gnuradio.org"
+  - authors:
+    - name: "The VOLK Project team"
+    doi: 10.5281/zenodo.3360942
+    repository-code: "https://github.com/gnuradio/volk"
+    scope: "Software dependency: the portable SIMD library."
+    title: "VOLK: The Vector-Optimized Library of Kernels"
+    type: software
+    url: "https://www.libvolk.org"
+repository-code: "https://github.com/gnss-sdr/gnss-sdr"
+title: GNSS-SDR
+type: software
+url: "https://gnss-sdr.org"
+version: "0.0.16"

@@ -1254,8 +1254,9 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         }
                     if (gps_cnav_ephemeris->signal_health != 0)
                         {
-                            std::cout << TEXT_RED << "Satellite " << Gnss_Satellite(std::string("GPS"), gps_cnav_ephemeris->PRN)
-                                      << " is not healthy, not used for navigation" << TEXT_RESET << '\n';
+                            std::cout << "Satellite " << Gnss_Satellite(std::string("GPS"), gps_cnav_ephemeris->PRN)
+                                      << " does not report a healthy status in the CNAV message,"
+                                      << " use PVT solutions at your own risk.\n";
                         }
                     DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
                 }
@@ -2023,7 +2024,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
-                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal) == std::string("2S")) || (std::string(in[i][epoch].Signal) == std::string("L5"))) && (tmp_eph_iter_cnav->second.signal_health == 0)))
+                                    if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal) == std::string("2S")) || (std::string(in[i][epoch].Signal) == std::string("L5")))))
                                         {
                                             store_valid_observable = true;
                                         }

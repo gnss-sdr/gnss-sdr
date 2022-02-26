@@ -14,6 +14,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability:
+
+- Compute PVT solutions when using GPS L5 signals even if the satellite is
+  reported as not healthy in the CNAV message.
+
 ### Improvements in Reliability:
 
 - Fix some defects detected by Coverity Scan 2021.12.1.

@@ -78,9 +78,12 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_worker_active(false),
       d_step_two(false),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
-      d_dump(conf_.dump)
+      d_dump(conf_.dump),
+      d_sampled_ms(conf_.sampled_ms)
 {
     this->message_port_register_out(pmt::mp("events"));
+
+    d_enable_hs = true;
 
     if (d_acq_parameters.sampled_ms == d_acq_parameters.ms_per_code)
         {
@@ -88,7 +91,14 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
         }
     else
         {
-            d_fft_size = d_consumed_samples * 2;
+            if (d_enable_hs)
+                {
+                    d_fft_size = d_consumed_samples;
+                }
+            else
+                {
+                    d_fft_size = d_consumed_samples * 2;
+                }
         }
     // d_fft_size = next power of two?  ////
 
@@ -163,8 +173,6 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
                     d_dump = false;
                 }
         }
-
-    d_enable_hs = true;
 }
 
 
@@ -201,8 +209,15 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
                 }
             else
                 {
-                    std::fill_n(d_fft_if->get_inbuf(), d_fft_size - d_consumed_samples, gr_complex(0.0, 0.0));
-                    memcpy(d_fft_if->get_inbuf() + d_consumed_samples, code, sizeof(gr_complex) * d_consumed_samples);
+                    if (d_enable_hs)
+                        {
+                            memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_consumed_samples);
+                        }
+                    else
+                        {
+                            std::fill_n(d_fft_if->get_inbuf(), d_fft_size - d_consumed_samples, gr_complex(0.0, 0.0));
+                            memcpy(d_fft_if->get_inbuf() + d_consumed_samples, code, sizeof(gr_complex) * d_consumed_samples);
+                        }
                 }
         }
 
@@ -245,6 +260,12 @@ void pcps_acquisition::update_local_carrier(own::span<gr_complex> carrier_vector
         }
     std::array<float, 1> _phase{};
     volk_gnsssdr_s32f_sincos_32fc(carrier_vector.data(), -phase_step_rad, _phase.data(), carrier_vector.size());
+
+    if (d_enable_hs)
+        {
+            // scale the carrier vector down to avoid overflow when performing long integrations
+            volk_32fc_s32fc_multiply_32fc(carrier_vector.data(), carrier_vector.data(), d_sampled_ms * 1e-8, carrier_vector.size());
+        }
 }
 
 
@@ -693,19 +714,27 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
                             if (d_enable_hs)
                                 {
-                                    // accumulate NPDI term
-                                    volk_32f_x2_add_32f(d_NPDI_term[doppler_index].data(), d_magnitude_grid[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
-
-                                    // compute DPDI term
-                                    volk_32fc_x2_multiply_32fc(d_DPDI_term_buffer.data(), d_ifft->get_outbuf() + offset, d_prev_ifft[doppler_index].data(), effective_fft_size);
-
                                     if (d_num_noncoherent_integrations_counter == 2)
                                         {
-                                            // initialize DPDI term
-                                            memcpy(d_DPDI_term[doppler_index].data(), d_DPDI_term_buffer.data(), effective_fft_size * sizeof(std::complex<float>));
+                                            // accumulate NPDI term
+                                            volk_32f_x2_add_32f(d_NPDI_term[doppler_index].data(), d_magnitude_grid[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
                                         }
                                     else
                                         {
+                                            // accumulate NPDI term
+                                            volk_32f_x2_add_32f(d_NPDI_term[doppler_index].data(), d_NPDI_term[doppler_index].data(), d_tmp_buffer.data(), effective_fft_size);
+                                        }
+
+                                    if (d_num_noncoherent_integrations_counter == 2)
+                                        {
+                                            // compute DPDI term
+                                            volk_32fc_x2_multiply_32fc(d_DPDI_term[doppler_index].data(), d_ifft->get_outbuf() + offset, d_prev_ifft[doppler_index].data(), effective_fft_size);
+                                        }
+                                    else
+                                        {
+                                            // compute DPDI term
+                                            volk_32fc_x2_multiply_32fc(d_DPDI_term_buffer.data(), d_ifft->get_outbuf() + offset, d_prev_ifft[doppler_index].data(), effective_fft_size);
+
                                             // accumulate DPDI term
                                             volk_32fc_x2_add_32fc(d_DPDI_term[doppler_index].data(), d_DPDI_term[doppler_index].data(), d_DPDI_term_buffer.data(), effective_fft_size);
                                         }

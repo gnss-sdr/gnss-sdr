@@ -288,6 +288,8 @@ private:
     bool d_dump;
 
     bool d_enable_hs;
+
+    uint32_t d_sampled_ms;
 };
 
 

@@ -85,6 +85,8 @@ void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
 
     enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);
 
+    enable_hs = configuration->property(role + ".enable_hs", false);
+
     SetDerivedParams();
 }
 

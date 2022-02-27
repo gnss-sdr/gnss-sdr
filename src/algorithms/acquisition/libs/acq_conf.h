@@ -73,6 +73,7 @@ public:
     bool make_2_steps{false};
     bool use_automatic_resampler{false};
     bool enable_monitor_output{false};
+    bool enable_hs{false};
 
 private:
     void SetDerivedParams();

@@ -79,11 +79,10 @@ pcps_acquisition::pcps_acquisition(const Acq_Conf& conf_)
       d_step_two(false),
       d_use_CFAR_algorithm_flag(conf_.use_CFAR_algorithm_flag),
       d_dump(conf_.dump),
+      d_enable_hs(conf_.enable_hs),
       d_sampled_ms(conf_.sampled_ms)
 {
     this->message_port_register_out(pmt::mp("events"));
-
-    d_enable_hs = true;
 
     if (d_acq_parameters.sampled_ms == d_acq_parameters.ms_per_code)
         {

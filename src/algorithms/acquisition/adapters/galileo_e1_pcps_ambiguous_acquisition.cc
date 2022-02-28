@@ -87,7 +87,7 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
             LOG(ERROR) << "This implementation does not provide an output stream";
         }
 
-    enable_hs = true;
+    enable_hs = acq_parameters_.enable_hs;
 }
 
 

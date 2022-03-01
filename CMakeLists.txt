@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2021 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2022 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ################################################################################
@@ -10,6 +10,11 @@
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "Prevented in-tree build, it is bad practice.\nTry 'cd build && cmake ..' instead.")
 endif()
+
+# Select the release build type by default to get optimization flags.
+# This has to come before project() which otherwise initializes it.
+# Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
 cmake_minimum_required(VERSION 2.8.12...3.22)
 project(gnss-sdr CXX C)
@@ -161,9 +166,9 @@ endif()
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 15)
+    set(VERSION_INFO_MINOR_VERSION 16)
 else()
-    set(VERSION_INFO_MINOR_VERSION 15.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 16.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -219,19 +224,9 @@ include(GnsssdrBuildTypes)
 #  - O2WithASM: -O2 -g -save-temps
 #  - O3WithASM: -O3 -g -save-temps
 #  - ASAN: -Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer
-if(NOT CMAKE_BUILD_TYPE)
-    if(ENABLE_GPERFTOOLS OR ENABLE_GPROF)
-        set(CMAKE_BUILD_TYPE "RelWithDebInfo")
-        message(STATUS "Build type not specified: defaulting to RelWithDebInfo.")
-    else()
-        set(CMAKE_BUILD_TYPE "Release")
-        message(STATUS "Build type not specified: defaulting to Release.")
-    endif()
-else()
-    message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
-endif()
 gnsssdr_check_build_type(${CMAKE_BUILD_TYPE})
-set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
+message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
+
 if(NOT (${CMAKE_BUILD_TYPE} STREQUAL "Release"))
     set(ENABLE_STRIP OFF)
 endif()
@@ -336,8 +331,8 @@ endif()
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.21")
-set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.11.4")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.19.0")
+set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.12")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.19.4")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.6.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 

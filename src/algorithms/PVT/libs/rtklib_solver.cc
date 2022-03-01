@@ -406,6 +406,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     bool gps_dual_band = false;
     bool band1 = false;
     bool band2 = false;
+    bool gal_e5_is_e5b = false;
     for (gnss_observables_iter = gnss_observables_map.cbegin();
          gnss_observables_iter != gnss_observables_map.cend();
          ++gnss_observables_iter)
@@ -468,7 +469,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             }
 
                         // Galileo E5
-                        if (sig_ == "5X")
+                        if ((sig_ == "5X") || (sig_ == "7X"))
                             {
                                 // 1 Gal - find the ephemeris for the current GALILEO SV observation. The SV PRN ID is the map key
                                 galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
@@ -507,6 +508,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 else  // the ephemeris are not available for this SV
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                                if (sig_ == "7X")
+                                    {
+                                        gal_e5_is_e5b = true;
                                     }
                             }
                         break;
@@ -874,7 +879,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                     for (int j = 0; j < NFREQ; j++)
                         {
-                            nav_data.lam[i][j] = satwavelen(i + 1, j, &nav_data);
+                            if (j == 2 && gal_e5_is_e5b)
+                                {
+                                    // frq = 4 corresponds to E5B in that function
+                                    nav_data.lam[i][j] = satwavelen(i + 1, 4, &nav_data);
+                                }
+                            else
+                                {
+                                    nav_data.lam[i][j] = satwavelen(i + 1, j, &nav_data);
+                                }
                         }
                 }
 

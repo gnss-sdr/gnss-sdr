@@ -680,7 +680,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         d_state = 1;
                     }
 
-                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
 
                 break;
             }
@@ -710,7 +710,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                     {
                         // We already have d_max_dwells consecutive blocks in the internal buffer,
                         // just skip input blocks.
-                        d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);
+                        d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];
                     }
 
                 // We create a new thread to process next block if the following
@@ -754,7 +754,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
 
                 acquisition_message = 1;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));
@@ -788,7 +788,7 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                 d_active = false;
                 d_state = 0;
 
-                d_sample_counter += static_cast<uint64_t>(d_fft_size * ninput_items[0]);  // sample counter
+                d_sample_counter += static_cast<uint64_t>(d_fft_size) * ninput_items[0];  // sample counter
 
                 acquisition_message = 2;
                 this->message_port_pub(pmt::mp("events"), pmt::from_long(acquisition_message));

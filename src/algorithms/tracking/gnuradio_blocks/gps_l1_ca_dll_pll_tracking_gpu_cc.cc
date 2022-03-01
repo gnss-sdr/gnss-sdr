@@ -218,8 +218,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_pll_to_dll_assist_secs_Ti = 0.0;
     d_code_phase_samples = d_acq_code_phase_samples;
 
-    const std::string sys_ = &d_acquisition_gnss_synchro->System;
-    sys = sys_.substr(0, 1);
+    sys = std::string(1, d_acquisition_gnss_synchro->System);
 
     // DEBUG OUTPUT
     std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';

@@ -89,6 +89,7 @@ target_link_libraries(tracking_libs
     PRIVATE
         gnss_sdr_flags
         Glog::glog
+        Gnuradio::runtime
 )
 
 if(ENABLE_CUDA)

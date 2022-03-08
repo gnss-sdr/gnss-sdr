@@ -45,7 +45,7 @@ constexpr int32_t GALILEO_E1_NUMBER_OF_CODES = 50;
 
 
 // optimum parameters
-constexpr uint32_t GALILEO_E1_OPT_ACQ_FS_SPS = 2000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
+constexpr uint32_t GALILEO_E1_OPT_ACQ_FS_SPS = 4000000;  //!< Sampling frequency that maximizes the acquisition SNR while using a non-multiple of chip rate
 
 constexpr int32_t GALILEO_E1_HISTORY_DEEP = 100;  //!< Observable history length for interpotalion
 

@@ -30,4 +30,13 @@ void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string default_crc_stats_dumpname("telemetry_crc_stats");
     dump_crc_stats_filename = configuration->property(role + ".dump_crc_stats_filename", default_crc_stats_dumpname);
     enable_navdata_monitor = configuration->property("NavDataMonitor.enable_monitor", false);
+    // navigation data assistance
+    enable_navdata_assist = configuration->property(role + ".enable_nav_data_assist", false);
+    navdata_assist_real_time = configuration->property(role + ".nav_data_assist_real_time", false);
+    const uint32_t default_nav_data_assist_TOW(0);
+    navdata_assist_Tow_ms = configuration->property(role + ".nav_data_assist_TOW", default_nav_data_assist_TOW);
+    const uint32_t default_nav_data_assist_samplestamp(0);
+    navdata_assist_samplestamp = configuration->property(role + ".nav_data_assist_samplestamp", default_nav_data_assist_samplestamp);
+    const uint32_t default_navdata_assist_GNSS_UTC_leap_s = 18;
+    navdata_assist_GNSS_UTC_leap_s = configuration->property(role + ".navdata_assist_GNSS_UTC_leap_s", default_navdata_assist_GNSS_UTC_leap_s);
 }

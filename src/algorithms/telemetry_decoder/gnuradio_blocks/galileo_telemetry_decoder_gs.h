@@ -45,6 +45,7 @@
 
 class Viterbi_Decoder;               // forward declaration
 class Tlm_CRC_Stats;                 // forward declaration
+class Tlm_navdata_assist;            // forward declaration
 class galileo_telemetry_decoder_gs;  // forward declaration
 
 using galileo_telemetry_decoder_gs_sptr = gnss_shared_ptr<galileo_telemetry_decoder_gs>;
@@ -106,6 +107,8 @@ private:
 
     std::unique_ptr<Tlm_CRC_Stats> d_Tlm_CRC_Stats;
 
+    std::unique_ptr<Tlm_navdata_assist> d_Tlm_navdata_assist;
+
     double d_delta_t;  // GPS-GALILEO time offset
 
     uint64_t d_sample_counter;
@@ -147,6 +150,16 @@ private:
     bool d_dump_crc_stats;
     bool d_enable_reed_solomon_inav;
     bool d_valid_timetag;
+
+    // navigation data assistance
+    static const uint32_t PREAMBLE_SAMPLESTAMPS_BUFF_SIZE = 10;  // default preamble samplestamps buffer size
+    static const uint32_t CHECK_s = 20;                          // number of seconds before checking the percentage of correctly detected preambles
+    const float MIN_PREAMBLE_DETECTION_SUCCESS_RATE = 0.05;      // minimum preamble detection success rate in state 2 when using
+                                                                 // navigation data assistance
+    bool d_enable_nav_data_assist;
+    uint32_t num_preambles_detected;
+    uint32_t num_preambles_not_detected;
+    boost::circular_buffer<uint64_t> d_preamble_samplestamps;
 };
 
 

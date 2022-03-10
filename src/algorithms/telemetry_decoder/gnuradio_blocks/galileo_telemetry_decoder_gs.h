@@ -156,7 +156,8 @@ private:
     static const uint32_t CHECK_s = 20;                          // number of seconds before checking the percentage of correctly detected preambles
     const float MIN_PREAMBLE_DETECTION_SUCCESS_RATE = 0.05;      // minimum preamble detection success rate in state 2 when using
                                                                  // navigation data assistance
-    bool d_enable_nav_data_assist;
+    bool d_enable_navdata_assist;
+    bool d_navdata_assist_TOW_set;
     uint32_t num_preambles_detected;
     uint32_t num_preambles_not_detected;
     boost::circular_buffer<uint64_t> d_preamble_samplestamps;

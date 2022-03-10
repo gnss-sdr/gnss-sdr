@@ -87,7 +87,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_dump_crc_stats(conf.dump_crc_stats),
                       d_enable_reed_solomon_inav(false),
                       d_valid_timetag(false),
-                      d_enable_nav_data_assist(conf.enable_navdata_assist)
+                      d_enable_navdata_assist(conf.enable_navdata_assist)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -243,12 +243,13 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     // Instantiate the Viterbi decoder
     d_viterbi = std::make_unique<Viterbi_Decoder>(KK, nn, d_datalength, g_encoder);
 
-    if (d_enable_nav_data_assist)
+    if (d_enable_navdata_assist)
         {
             d_preamble_samplestamps.set_capacity(PREAMBLE_SAMPLESTAMPS_BUFF_SIZE);
             num_preambles_detected = 0;
             num_preambles_not_detected = 0;
             d_Tlm_navdata_assist = std::make_unique<Tlm_navdata_assist>(conf);
+            d_navdata_assist_TOW_set = false;
         }
 }
 
@@ -623,6 +624,15 @@ void galileo_telemetry_decoder_gs::reset()
         {
             d_inav_nav.enable_reed_solomon();
         }
+
+    if (d_enable_navdata_assist)
+        {
+            d_preamble_samplestamps.set_capacity(PREAMBLE_SAMPLESTAMPS_BUFF_SIZE);
+            num_preambles_detected = 0;
+            num_preambles_not_detected = 0;
+            d_navdata_assist_TOW_set = false;
+        }
+
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -760,7 +770,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                 d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                                 LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite << " in channel " << this->d_channel;
                                 d_stat = 1;  // enter into frame pre-detection status
-                                if (d_enable_nav_data_assist)
+                                if (d_enable_navdata_assist)
                                     {
                                         d_preamble_samplestamps.push_back(d_sample_counter);
                                     }
@@ -793,7 +803,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
 
                                 int32_t preamble_diff;
                                 bool sync_preamble_detected = false;
-                                if (!d_enable_nav_data_assist)
+                                if (!d_enable_navdata_assist)
                                     {
                                         preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
                                         if (std::abs(preamble_diff - d_preamble_period_symbols) == 0)
@@ -829,7 +839,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                             {
                                                 d_flag_PLL_180_deg_phase_locked = false;
                                             }
-                                        if (d_enable_nav_data_assist)
+                                        if (d_enable_navdata_assist)
                                             {
                                                 num_preambles_detected = 0;
                                                 num_preambles_not_detected = 0;
@@ -838,7 +848,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     }
                                 else
                                     {
-                                        if (!d_enable_nav_data_assist)
+                                        if (!d_enable_navdata_assist)
                                             {
                                                 if (preamble_diff > d_preamble_period_symbols)
                                                     {
@@ -854,7 +864,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             {
                 if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
                     {
-                        if (d_enable_nav_data_assist)
+                        if (d_enable_navdata_assist)
                             {
                                 int32_t corr_value = 0;
                                 // ******* preamble correlation ********
@@ -918,7 +928,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             }
 
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                        if (!d_enable_nav_data_assist)
+                        if (!d_enable_navdata_assist)
                             {
                                 if (crc_ok)
                                     {
@@ -983,7 +993,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     if (this->d_flag_preamble == true)
         // update TOW at the preamble instant
         {
-            if (!d_enable_nav_data_assist)
+            if (!d_enable_navdata_assist)
                 {
                     switch (d_frame_type)
                         {
@@ -1124,44 +1134,53 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 }
             else
                 {
-                    d_TOW_at_current_symbol_ms = d_Tlm_navdata_assist->get_TOW_at_current_symbol_ms(current_symbol.Tracking_sample_counter, current_symbol.fs);
-                    d_TOW_at_Preamble_ms = 0;  // not used when using assistance
+                    uint32_t current_estimated_Tow = d_Tlm_navdata_assist->get_TOW_at_current_symbol_ms(current_symbol.Tracking_sample_counter, current_symbol.fs);
+                    uint32_t estimated_TOW_at_Preamble = current_estimated_Tow - static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                    d_TOW_at_Preamble_ms = GALILEO_INAV_PAGE_PART_MS * static_cast<uint32_t>(roundf(static_cast<float>(estimated_TOW_at_Preamble) / static_cast<float>(GALILEO_INAV_PAGE_PART_MS)));
+                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                    d_navdata_assist_TOW_set = true;
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
         {
-            switch (d_frame_type)
+            if (!d_enable_navdata_assist)
                 {
-                case 1:  // INAV
-                    {
-                        if (d_inav_nav.get_flag_TOW_set() == true)
+                    switch (d_frame_type)
+                        {
+                        case 1:  // INAV
                             {
-                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                                if (d_inav_nav.get_flag_TOW_set() == true)
+                                    {
+                                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                                    }
+                                break;
                             }
-                        break;
-                    }
-                case 2:  // FNAV
-                    {
-                        if (d_fnav_nav.get_flag_TOW_set() == true)
+                        case 2:  // FNAV
                             {
-                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                                if (d_fnav_nav.get_flag_TOW_set() == true)
+                                    {
+                                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                                    }
+                                break;
                             }
-                        break;
-                    }
-                case 3:  // CNAV
-                    {
-                        // TODO
-                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;  // this is not the TOW!
-                        break;
-                    }
+                        case 3:  // CNAV
+                            {
+                                // TODO
+                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;  // this is not the TOW!
+                                break;
+                            }
+                        }
+                }
+            else
+                {
+                    if (d_navdata_assist_TOW_set)
+                        {
+                            d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                        }
                 }
         }
 
-    if (d_enable_nav_data_assist)
-        {
-            current_symbol.Flag_valid_word = true;
-        }
-    else
+    if (!d_enable_navdata_assist)
         {
             switch (d_frame_type)
                 {
@@ -1194,8 +1213,15 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 }
         }
+    else
+        {
+            if (d_navdata_assist_TOW_set)
+                {
+                    current_symbol.Flag_valid_word = true;
+                }
+        }
 
-    if (d_inav_nav.get_flag_TOW_set() == true || d_fnav_nav.get_flag_TOW_set() == true || d_cnav_nav.get_flag_CRC_test() == true || (d_enable_nav_data_assist) == true)
+    if (d_inav_nav.get_flag_TOW_set() == true || d_fnav_nav.get_flag_TOW_set() == true || d_cnav_nav.get_flag_CRC_test() == true || ((d_enable_navdata_assist == true) && (d_navdata_assist_TOW_set)))
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.

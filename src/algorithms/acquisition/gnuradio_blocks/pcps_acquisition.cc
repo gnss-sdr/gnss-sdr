@@ -293,34 +293,17 @@ void pcps_acquisition::init()
             d_grid_doppler_wipeoffs_step_two = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins_step2, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
         }
 
-    if (d_magnitude_grid.empty())
+    if (!d_enable_hs)
         {
-            d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
-        }
+            if (d_magnitude_grid.empty())
+                {
+                    d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
+                }
 
-    if (d_enable_hs)
-        {
-            if (d_prev_ifft.empty())
+            for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
                 {
-                    d_prev_ifft = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
+                    std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
                 }
-            if (d_DPDI_term.empty())
-                {
-                    d_DPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
-                }
-            if (d_DPDI_term_buffer.empty())
-                {
-                    d_DPDI_term_buffer = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
-                }
-            if (d_NPDI_term.empty())
-                {
-                    d_NPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
-                }
-        }
-
-    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-        {
-            std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
         }
 
     update_grid_doppler_wipeoffs();
@@ -644,6 +627,36 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
+    if (d_enable_hs)
+        {
+            if (d_magnitude_grid.empty())
+                {
+                    d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
+                }
+
+            for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                {
+                    std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
+                }
+
+            if (d_prev_ifft.empty())
+                {
+                    d_prev_ifft = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
+                }
+            if (d_DPDI_term.empty())
+                {
+                    d_DPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
+                }
+            if (d_DPDI_term_buffer.empty())
+                {
+                    d_DPDI_term_buffer = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
+                }
+            if (d_NPDI_term.empty())
+                {
+                    d_NPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
+                }
+        }
+
     // Initialize acquisition algorithm
     int32_t doppler = 0;
     uint32_t indext = 0U;
@@ -959,6 +972,37 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                 }
             d_num_noncoherent_integrations_counter = 0U;
             d_positive_acq = 0;
+        }
+
+    if (d_enable_hs)
+        {
+            if (!d_magnitude_grid.empty())
+                {
+                    // deallocate vector storage
+                    d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>();
+                }
+
+            if (!d_prev_ifft.empty())
+                {
+                    // deallocate vector storage
+                    d_prev_ifft = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>();
+                }
+            if (!d_DPDI_term.empty())
+                {
+                    // deallocate vector storage
+                    d_DPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>();
+                }
+            if (!d_DPDI_term_buffer.empty())
+                {
+                    // deallocate vector storage
+                    d_DPDI_term_buffer = volk_gnsssdr::vector<std::complex<float>>();
+                }
+
+            if (!d_NPDI_term.empty())
+                {
+                    // deallocate vector storage
+                    d_NPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>();
+                }
         }
 }
 

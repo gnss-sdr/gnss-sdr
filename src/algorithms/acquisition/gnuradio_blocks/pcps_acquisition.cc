@@ -627,33 +627,20 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 {
     gr::thread::scoped_lock lk(d_setlock);
 
+    volk_gnsssdr::vector<volk_gnsssdr::vector<float>> d_NPDI_term(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));                              // for GPDIT PDI Implementation
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_prev_ifft(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));  // for GPDIT PDI Implementation
+    volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>> d_DPDI_term(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));  // for GPDIT PDI Implementation
+    volk_gnsssdr::vector<std::complex<float>> d_DPDI_term_buffer(d_fft_size);                                                                                // for GPDIT PDI Implementation
+
     if (d_enable_hs)
         {
             if (d_magnitude_grid.empty())
                 {
                     d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
-                }
-
-            for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
-                {
-                    std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
-                }
-
-            if (d_prev_ifft.empty())
-                {
-                    d_prev_ifft = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
-                }
-            if (d_DPDI_term.empty())
-                {
-                    d_DPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>(d_num_doppler_bins, volk_gnsssdr::vector<std::complex<float>>(d_fft_size));
-                }
-            if (d_DPDI_term_buffer.empty())
-                {
-                    d_DPDI_term_buffer = volk_gnsssdr::vector<std::complex<float>>(d_fft_size);
-                }
-            if (d_NPDI_term.empty())
-                {
-                    d_NPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>(d_num_doppler_bins, volk_gnsssdr::vector<float>(d_fft_size));
+                    for (uint32_t doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
+                        {
+                            std::fill(d_magnitude_grid[doppler_index].begin(), d_magnitude_grid[doppler_index].end(), 0.0);
+                        }
                 }
         }
 
@@ -898,6 +885,10 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                         {
                             send_positive_acquisition();
                             d_state = 0;  // Positive acquisition
+                            if (d_enable_hs)
+                                {
+                                    d_magnitude_grid.clear();
+                                }
                         }
                 }
             else
@@ -919,6 +910,10 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     if (was_step_two)
                         {
                             calculate_threshold();
+                        }
+                    if (d_enable_hs)
+                        {
+                            d_magnitude_grid.clear();
                         }
                 }
         }
@@ -976,36 +971,12 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 
     if (d_enable_hs)
         {
-            if (!d_magnitude_grid.empty())
-                {
-                    // deallocate vector storage
-                    d_magnitude_grid = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>();
-                }
-
-            if (!d_prev_ifft.empty())
-                {
-                    // deallocate vector storage
-                    d_prev_ifft = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>();
-                }
-            if (!d_DPDI_term.empty())
-                {
-                    // deallocate vector storage
-                    d_DPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<std::complex<float>>>();
-                }
-            if (!d_DPDI_term_buffer.empty())
-                {
-                    // deallocate vector storage
-                    d_DPDI_term_buffer = volk_gnsssdr::vector<std::complex<float>>();
-                }
-
-            if (!d_NPDI_term.empty())
-                {
-                    // deallocate vector storage
-                    d_NPDI_term = volk_gnsssdr::vector<volk_gnsssdr::vector<float>>();
-                }
+            d_prev_ifft.clear();
+            d_DPDI_term.clear();
+            d_DPDI_term_buffer.clear();
+            d_NPDI_term.clear();
         }
 }
-
 
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool pcps_acquisition::start()

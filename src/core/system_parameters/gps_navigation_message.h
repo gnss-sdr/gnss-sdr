@@ -195,22 +195,6 @@ private:
     int32_t i_Toa{};   // Almanac reference time [s]
     int32_t i_WN_A{};  // Modulo 256 of the GPS week number to which the almanac reference time (i_Toa) is referenced
 
-    // clock terms
-    // double d_master_clock{};  // GPS transmission time
-
-    double d_dtr{};  // relativistic clock correction term
-    double d_satClkDrift{};
-
-    // satellite positions
-    double d_satpos_X{};  // Earth-fixed coordinate x of the satellite [m]. Intersection of the IERS Reference Meridian (IRM) and the plane passing through the origin and normal to the Z-axis.
-    double d_satpos_Y{};  // Earth-fixed coordinate y of the satellite [m]. Completes a right-handed, Earth-Centered, Earth-Fixed orthogonal coordinate system.
-    double d_satpos_Z{};  // Earth-fixed coordinate z of the satellite [m]. The direction of the IERS (International Earth Rotation and Reference Systems Service) Reference Pole (IRP).
-
-    // Satellite velocity
-    double d_satvel_X{};  // Earth-fixed velocity coordinate x of the satellite [m]
-    double d_satvel_Y{};  // Earth-fixed velocity coordinate y of the satellite [m]
-    double d_satvel_Z{};  // Earth-fixed velocity coordinate z of the satellite [m]
-
     // satellite identification info
     int32_t i_channel_ID{};
     uint32_t i_satellite_PRN{};

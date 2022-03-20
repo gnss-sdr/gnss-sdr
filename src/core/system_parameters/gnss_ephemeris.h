@@ -39,6 +39,20 @@ public:
 
     /*!
      * \brief Computes prediction of the Doppler shift for a given time and receiver's position and velocity.
+     * \f[
+     * f_{d} = - \mathbf{v} \frac{\mathbf{x}^{T}}{\left| \mathbf{x} \right| } \frac{f_{L}}{c}
+     * \f]
+     * where:
+     * \f[
+     * \mathbf{v} = \mathbf{v}_{sat} - \mathbf{v}_{rx}
+     * \f]
+     * \f[
+     * \mathbf{x} = \mathbf{x}_{sat} - \mathbf{x}_{rx}
+     * \f]
+     * \f[
+     * \left| \mathbf{x} \right| = \sqrt{\mathbf{x}\mathbf{x}^{T}}
+     * \f]
+     *
      * @param[in] rx_time_s Time of Week in seconds
      * @param[in] lat Receiver's latitude in degrees
      * @param[in] lon Receiver's longitude in degrees

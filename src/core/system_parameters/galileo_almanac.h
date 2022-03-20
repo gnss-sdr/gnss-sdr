@@ -36,7 +36,10 @@ public:
     /*!
      * Default constructor
      */
-    Galileo_Almanac() = default;
+    Galileo_Almanac()
+    {
+        this->System = 'E';
+    };
 
     int32_t IODa{};
     int32_t E5b_HS{};

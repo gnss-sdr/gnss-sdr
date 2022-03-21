@@ -38,7 +38,8 @@ public:
      */
     Gnss_Almanac() = default;
 
-    /* \brief Computes prediction of the Doppler shift for a given time and receiver's position and velocity.
+    /*!
+     * \brief Computes prediction of the Doppler shift for a given time and receiver's position and velocity.
      * \f[
      * f_{d} = - \mathbf{v} \frac{\mathbf{x}^{T}}{\left| \mathbf{x} \right| } \frac{f_{L}}{c}
      * \f]
@@ -72,6 +73,9 @@ public:
         double vu,
         int band) const;
 
+    /*!
+     * \brief Computes satellite Position and Velocity, in ECEF, for a given time (expressed in seconds of week)
+     */
     void satellitePosVelComputation(double transmitTime, std::array<double, 7>& pos_vel_dtr) const;
 
     uint32_t PRN{};     //!< SV PRN NUMBER

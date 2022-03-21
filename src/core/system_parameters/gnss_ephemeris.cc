@@ -59,7 +59,7 @@ double Gnss_Ephemeris::predicted_doppler(double rx_time_s,
     // Position in EFEF
     const std::vector<double> pos_rx = {(v + h) * cosp * cosl, (v + h) * cosp * sinl, (v * (1.0 - e2) + h) * sinp};
 
-    // Velovity in EFEF
+    // Velocity in EFEF
     const double t = cosp * vu - sinp * vn;
     const std::vector<double> vel_rx = {cosl * t - sinl * ve, sinl * t + cosl * ve, sinp * vu + cosp * vn};
 

@@ -2115,10 +2115,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 
-                            //**************** time tags ****************
+                            // **************** time tags ****************
                             if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled (computed clock offset is applied here)
                                 {
-                                    //************ Source TimeTag comparison with GNSS computed TOW *************
+                                    // ************ Source TimeTag comparison with GNSS computed TOW *************
 
                                     if (!d_TimeChannelTagTimestamps.empty())
                                         {
@@ -2152,7 +2152,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 }
                                         }
                                 }
-                            //**********************************************
+                            // **********************************************
 
                             if (fabs(Rx_clock_offset_s) * 1000.0 > d_max_obs_block_rx_clock_offset_ms)
                                 {

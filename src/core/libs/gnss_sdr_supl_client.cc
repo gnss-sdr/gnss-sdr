@@ -19,6 +19,7 @@
 
 #include "gnss_sdr_supl_client.h"
 #include "GPS_L1_CA.h"
+#include "MATH_CONSTANTS.h"
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
@@ -858,6 +859,7 @@ bool Gnss_Sdr_Supl_Client::read_gal_almanac_from_gsa(const std::string& file_nam
             Galileo_Almanac gal_alm;
             try
                 {
+                    const double sqrtAnominal = 5440.588203494;  // square root of Galileo nominal orbit semi-major axis
                     uint32_t prn = static_cast<uint32_t>(std::stoi(almanac.child_value("SVID")));
                     gal_alm.PRN = prn;
                     gal_alm.toa = std::stoi(almanac.child("almanac").child_value("t0a"));
@@ -866,7 +868,7 @@ bool Gnss_Sdr_Supl_Client::read_gal_almanac_from_gsa(const std::string& file_nam
                     gal_alm.delta_i = std::stod(almanac.child("almanac").child_value("deltai"));
                     gal_alm.M_0 = std::stod(almanac.child("almanac").child_value("m0"));
                     gal_alm.ecc = std::stod(almanac.child("almanac").child_value("ecc"));
-                    gal_alm.sqrtA = std::stod(almanac.child("almanac").child_value("aSqRoot"));
+                    gal_alm.sqrtA = std::stod(almanac.child("almanac").child_value("aSqRoot")) + sqrtAnominal;
                     gal_alm.OMEGA_0 = std::stod(almanac.child("almanac").child_value("omega0"));
                     gal_alm.omega = std::stod(almanac.child("almanac").child_value("w"));
                     gal_alm.OMEGAdot = std::stod(almanac.child("almanac").child_value("omegaDot"));

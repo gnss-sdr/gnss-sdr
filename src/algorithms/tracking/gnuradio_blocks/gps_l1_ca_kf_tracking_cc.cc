@@ -303,7 +303,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
     d_code_phase_samples = d_acq_code_phase_samples;
 
     sys = std::string(1, d_acquisition_gnss_synchro->System);
-    std::cout << "++++++++++++++ " << sys << "++++++++++++\n";
+
     // DEBUG OUTPUT
     std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;

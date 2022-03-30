@@ -19,6 +19,7 @@
 #include "gnss_frequencies.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
+#include <boost/exception/diagnostic_information.hpp>
 #include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <iostream>

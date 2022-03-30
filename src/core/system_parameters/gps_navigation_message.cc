@@ -465,18 +465,6 @@ Gps_Ephemeris Gps_Navigation_Message::get_ephemeris() const
     ephemeris.alert_flag = b_alert_flag;
     ephemeris.antispoofing_flag = b_antispoofing_flag;
 
-    // These parameters are empty; can be computed later with
-    // ephemeris.sv_clock_drift(double transmitTime);
-    // ephemeris.satellitePosition(double transmitTime);
-    ephemeris.satClkDrift = d_satClkDrift;
-    ephemeris.dtr = d_dtr;
-    ephemeris.satpos_X = d_satpos_X;
-    ephemeris.satpos_Y = d_satpos_Y;
-    ephemeris.satpos_Z = d_satpos_Z;
-    ephemeris.satvel_X = d_satvel_X;
-    ephemeris.satvel_Y = d_satvel_Y;
-    ephemeris.satvel_Z = d_satvel_Z;
-
     return ephemeris;
 }
 

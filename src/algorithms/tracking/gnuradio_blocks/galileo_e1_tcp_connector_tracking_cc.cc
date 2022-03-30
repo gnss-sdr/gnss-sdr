@@ -178,8 +178,7 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
     d_carrier_doppler_hz = d_acq_carrier_doppler_hz;
     d_current_prn_length_samples = d_vector_length;
 
-    std::string sys_ = &d_acquisition_gnss_synchro->System;
-    sys = sys_.substr(0, 1);
+    sys = std::string(1, d_acquisition_gnss_synchro->System);
 
     // DEBUG OUTPUT
     std::cout << "Tracking of Galileo E1 signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';

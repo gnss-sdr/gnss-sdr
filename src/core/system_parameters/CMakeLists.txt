@@ -6,6 +6,7 @@
 
 
 set(SYSTEM_PARAMETERS_SOURCES
+    gnss_almanac.cc
     gnss_ephemeris.cc
     gnss_satellite.cc
     gnss_signal.cc

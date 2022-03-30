@@ -78,7 +78,7 @@ else()
     add_library(tracking_libs ${TRACKING_LIB_SOURCES} ${TRACKING_LIB_HEADERS})
 endif()
 
-    target_link_libraries(tracking_libs
+target_link_libraries(tracking_libs
     PUBLIC
         Armadillo::armadillo
         Boost::headers

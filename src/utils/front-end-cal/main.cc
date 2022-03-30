@@ -344,9 +344,9 @@ int main(int argc, char** argv)
         {
             std::cout << "Exception caught while capturing samples (bad lexical cast)\n";
         }
-    catch (const boost::io::too_few_args& e)
+    catch (const std::exception& e)
         {
-            std::cout << "Exception caught while capturing samples (too few args)\n";
+            std::cout << "Exception caught while capturing samples: " << e.what() << '\n';
         }
     catch (...)
         {

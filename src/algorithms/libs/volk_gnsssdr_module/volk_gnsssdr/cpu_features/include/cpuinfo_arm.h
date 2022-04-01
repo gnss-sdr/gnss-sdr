@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 #ifndef CPU_FEATURES_INCLUDE_CPUINFO_ARM_H_
 #define CPU_FEATURES_INCLUDE_CPUINFO_ARM_H_
 

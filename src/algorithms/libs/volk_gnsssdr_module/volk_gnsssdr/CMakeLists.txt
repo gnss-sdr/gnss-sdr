@@ -270,6 +270,7 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
 endif()
 
 if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
+    set(BUILD_TESTING OFF CACHE BOOL "Build cpu_features without tests." FORCE)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL
         "Build cpu_features with Position Independent Code (PIC)."
         FORCE

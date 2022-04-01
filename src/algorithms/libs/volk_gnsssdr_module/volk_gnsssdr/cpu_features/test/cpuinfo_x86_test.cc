@@ -16,6 +16,7 @@
 
 namespace cpu_features
 {
+
 class FakeCpu
 {
 public:
@@ -41,7 +42,7 @@ public:
         xcr0_eax_ = os_backups_extended_registers ? -1 : 0;
     }
 
-#if defined(CPU_FEATURES_OS_DARWIN)
+#if defined(CPU_FEATURES_OS_MACOS)
     bool GetDarwinSysCtlByName(std::string name) const
     {
         return darwin_sysctlbyname_.count(name);
@@ -51,7 +52,7 @@ public:
     {
         darwin_sysctlbyname_.insert(name);
     }
-#endif  // CPU_FEATURES_OS_DARWIN
+#endif  // CPU_FEATURES_OS_MACOS
 
 #if defined(CPU_FEATURES_OS_WINDOWS)
     bool GetWindowsIsProcessorFeaturePresent(DWORD ProcessorFeature)
@@ -67,9 +68,9 @@ public:
 
 private:
     std::map<std::pair<uint32_t, int>, Leaf> cpuid_leaves_;
-#if defined(CPU_FEATURES_OS_DARWIN)
+#if defined(CPU_FEATURES_OS_MACOS)
     std::set<std::string> darwin_sysctlbyname_;
-#endif  // CPU_FEATURES_OS_DARWIN
+#endif  // CPU_FEATURES_OS_MACOS
 #if defined(CPU_FEATURES_OS_WINDOWS)
     std::set<DWORD> windows_isprocessorfeaturepresent_;
 #endif  // CPU_FEATURES_OS_WINDOWS
@@ -91,12 +92,12 @@ extern "C" Leaf GetCpuidLeaf(uint32_t leaf_id, int ecx)
 
 extern "C" uint32_t GetXCR0Eax(void) { return cpu().GetXCR0Eax(); }
 
-#if defined(CPU_FEATURES_OS_DARWIN)
+#if defined(CPU_FEATURES_OS_MACOS)
 extern "C" bool GetDarwinSysCtlByName(const char* name)
 {
     return cpu().GetDarwinSysCtlByName(name);
 }
-#endif  // CPU_FEATURES_OS_DARWIN
+#endif  // CPU_FEATURES_OS_MACOS
 
 #if defined(CPU_FEATURES_OS_WINDOWS)
 extern "C" bool GetWindowsIsProcessorFeaturePresent(DWORD ProcessorFeature)
@@ -107,6 +108,7 @@ extern "C" bool GetWindowsIsProcessorFeaturePresent(DWORD ProcessorFeature)
 
 namespace
 {
+
 class CpuidX86Test : public ::testing::Test
 {
 protected:
@@ -430,6 +432,8 @@ TEST_F(CpuidX86Test, AMD_K15_EXCAVATOR_STONEY_RIDGE)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x15);
     EXPECT_EQ(info.model, 0x70);
+    EXPECT_STREQ(info.brand_string,
+        "AMD A9-9410 RADEON R5, 5 COMPUTE CORES 2C+3G   ");
     EXPECT_EQ(GetX86Microarchitecture(&info),
         X86Microarchitecture::AMD_EXCAVATOR);
 
@@ -456,6 +460,8 @@ TEST_F(CpuidX86Test, AMD_K15_PILEDRIVER_ABU_DHABI)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x15);
     EXPECT_EQ(info.model, 0x02);
+    EXPECT_STREQ(info.brand_string,
+        "AMD Opteron(tm) Processor 6376                 ");
     EXPECT_EQ(GetX86Microarchitecture(&info),
         X86Microarchitecture::AMD_PILEDRIVER);
 
@@ -531,6 +537,8 @@ TEST_F(CpuidX86Test, AMD_K15_BULLDOZER_INTERLAGOS)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x15);
     EXPECT_EQ(info.model, 0x01);
+    EXPECT_STREQ(info.brand_string,
+        "AMD Opteron(TM) Processor 6238                 ");
     EXPECT_EQ(GetX86Microarchitecture(&info),
         X86Microarchitecture::AMD_BULLDOZER);
 
@@ -559,6 +567,8 @@ TEST_F(CpuidX86Test, AMD_K15_STREAMROLLER_GODAVARI)
     EXPECT_EQ(info.family, 0x15);
     EXPECT_EQ(info.model, 0x38);
     EXPECT_EQ(info.stepping, 0x01);
+    EXPECT_STREQ(info.brand_string,
+        "AMD A8-7670K Radeon R7, 10 Compute Cores 4C+6G ");
     EXPECT_EQ(GetX86Microarchitecture(&info),
         X86Microarchitecture::AMD_STREAMROLLER);
 
@@ -585,6 +595,8 @@ TEST_F(CpuidX86Test, AMD_K16_JAGUAR_KABINI)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x16);
     EXPECT_EQ(info.model, 0x00);
+    EXPECT_STREQ(info.brand_string,
+        "AMD A4-5000 APU with Radeon(TM) HD Graphics    ");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_JAGUAR);
 
     char brand_string[49];
@@ -610,6 +622,8 @@ TEST_F(CpuidX86Test, AMD_K16_PUMA_BEEMA)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x16);
     EXPECT_EQ(info.model, 0x30);
+    EXPECT_STREQ(info.brand_string,
+        "AMD A6-6310 APU with AMD Radeon R4 Graphics    ");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_PUMA);
 
     char brand_string[49];
@@ -635,6 +649,8 @@ TEST_F(CpuidX86Test, AMD_K17_ZEN_DALI)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x17);
     EXPECT_EQ(info.model, 0x20);
+    EXPECT_STREQ(info.brand_string,
+        "AMD 3020e with Radeon Graphics                 ");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN);
 
     char brand_string[49];
@@ -660,6 +676,8 @@ TEST_F(CpuidX86Test, AMD_K17_ZEN_PLUS_PINNACLE_RIDGE)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x17);
     EXPECT_EQ(info.model, 0x08);
+    EXPECT_STREQ(info.brand_string,
+        "AMD Ryzen 7 2700X Eight-Core Processor         ");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN_PLUS);
 
     char brand_string[49];
@@ -685,6 +703,7 @@ TEST_F(CpuidX86Test, AMD_K17_ZEN2_XBOX_SERIES_X)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x17);
     EXPECT_EQ(info.model, 0x47);
+    EXPECT_STREQ(info.brand_string, "AMD 4700S 8-Core Processor Desktop Kit");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN2);
 
     char brand_string[49];
@@ -710,6 +729,8 @@ TEST_F(CpuidX86Test, AMD_K18_ZEN_DHYANA)
     EXPECT_STREQ(info.vendor, "HygonGenuine");
     EXPECT_EQ(info.family, 0x18);
     EXPECT_EQ(info.model, 0x00);
+    EXPECT_STREQ(info.brand_string,
+        "Hygon C86 3185  8-core Processor               ");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN);
 
     char brand_string[49];
@@ -784,6 +805,8 @@ TEST_F(CpuidX86Test, AMD_K19_ZEN3_VERMEER)
     EXPECT_STREQ(info.vendor, "AuthenticAMD");
     EXPECT_EQ(info.family, 0x19);
     EXPECT_EQ(info.model, 0x21);
+    EXPECT_STREQ(info.brand_string,
+        "AMD Ryzen 9 5900X 12-Core Processor            ");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN3);
 
     char brand_string[49];
@@ -800,7 +823,7 @@ TEST_F(CpuidX86Test, Nehalem)
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE);
-#elif defined(CPU_FEATURES_OS_DARWIN)
+#elif defined(CPU_FEATURES_OS_MACOS)
     cpu().SetDarwinSysCtlByName("hw.optional.sse");
     cpu().SetDarwinSysCtlByName("hw.optional.sse2");
     cpu().SetDarwinSysCtlByName("hw.optional.sse3");
@@ -817,10 +840,10 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
   Features2=0x5eda2203<SSE3,PCLMULQDQ,SSSE3,CX16,PCID,SSE4.1,SSE4.2,MOVBE,POPCNT,AESNI,XSAVE,OSXSAVE,RDRAND>
 real memory  = 2147418112 (2047 MB)
 )");
-#elif defined(CPU_FEATURES_OS_LINUX_OR_ANDROID)
+#elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(processor       :
-flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
+flags           : fpu mmx sse sse2 pni ssse3 sse4_1 sse4_2
 )");
 #endif
     cpu().SetLeaves({
@@ -856,6 +879,8 @@ flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
     EXPECT_EQ(info.family, 0x06);
     EXPECT_EQ(info.model, 0x1A);
     EXPECT_EQ(info.stepping, 0x02);
+    EXPECT_STREQ(info.brand_string,
+        "Genuine Intel(R) CPU           @ 0000 @ 1.87GHz");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_NHM);
 
     char brand_string[49];
@@ -883,7 +908,7 @@ TEST_F(CpuidX86Test, Atom)
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI64_INSTRUCTIONS_AVAILABLE);
     cpu().SetWindowsIsProcessorFeaturePresent(PF_SSE3_INSTRUCTIONS_AVAILABLE);
-#elif defined(CPU_FEATURES_OS_DARWIN)
+#elif defined(CPU_FEATURES_OS_MACOS)
     cpu().SetDarwinSysCtlByName("hw.optional.sse");
     cpu().SetDarwinSysCtlByName("hw.optional.sse2");
     cpu().SetDarwinSysCtlByName("hw.optional.sse3");
@@ -900,10 +925,10 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
   Features2=0x5eda2203<SSE3,PCLMULQDQ,SSSE3,CX16,PCID,SSE4.1,SSE4.2,MOVBE,POPCNT,AESNI,XSAVE,OSXSAVE,RDRAND>
 real memory  = 2147418112 (2047 MB)
 )");
-#elif defined(CPU_FEATURES_OS_LINUX_OR_ANDROID)
+#elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(
-flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
+flags           : fpu mmx sse sse2 pni ssse3 sse4_1 sse4_2
 )");
 #endif
     cpu().SetLeaves({
@@ -938,6 +963,8 @@ flags           : fpu mmx sse sse2 sse3 ssse3 sse4_1 sse4_2
     EXPECT_EQ(info.family, 0x06);
     EXPECT_EQ(info.model, 0x37);
     EXPECT_EQ(info.stepping, 0x03);
+    EXPECT_STREQ(info.brand_string,
+        "      Intel(R) Celeron(R) CPU  J1900  @ 1.99GHz");
     EXPECT_EQ(GetX86Microarchitecture(&info),
         X86Microarchitecture::INTEL_ATOM_SMT);
 
@@ -1017,7 +1044,7 @@ TEST_F(CpuidX86Test, P3)
     cpu().SetOsBackupsExtendedRegisters(false);
 #if defined(CPU_FEATURES_OS_WINDOWS)
     cpu().SetWindowsIsProcessorFeaturePresent(PF_XMMI_INSTRUCTIONS_AVAILABLE);
-#elif defined(CPU_FEATURES_OS_DARWIN)
+#elif defined(CPU_FEATURES_OS_MACOS)
     cpu().SetDarwinSysCtlByName("hw.optional.sse");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
     auto& fs = GetEmptyFilesystem();
@@ -1028,7 +1055,7 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
   Features=0x1783fbff<FPU,VME,DE,PSE,TSC,MSR,PAE,MCE,CX8,APIC,SEP,MTRR,PGE,MCA,CMOV,PAT,PSE36,MMX,FXSR,SSE>
 real memory  = 2147418112 (2047 MB)
 )");
-#elif defined(CPU_FEATURES_OS_LINUX_OR_ANDROID)
+#elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
     auto& fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(
 flags           : fpu mmx sse
@@ -1046,6 +1073,7 @@ flags           : fpu mmx sse
     EXPECT_EQ(info.family, 0x06);
     EXPECT_EQ(info.model, 0x07);
     EXPECT_EQ(info.stepping, 0x03);
+    EXPECT_STREQ(info.brand_string, "");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::X86_UNKNOWN);
 
     char brand_string[49];
@@ -1064,6 +1092,95 @@ flags           : fpu mmx sse
     EXPECT_FALSE(info.features.sse4_2);
 #endif  // !defined(CPU_FEATURES_OS_WINDOWS)
 }
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0000480_486_CPUID.txt
+TEST_F(CpuidX86Test, INTEL_80486)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000001, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00000480, 0x00000000, 0x00000000, 0x00000003}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x04);
+    EXPECT_EQ(info.model, 0x08);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_80486);
+}
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0000526_P54C_CPUID.txt
+TEST_F(CpuidX86Test, INTEL_P54C)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000001, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00000525, 0x00000000, 0x00000000, 0x000001BF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x05);
+    EXPECT_EQ(info.model, 0x02);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_P5);
+}
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0000590_Lakemont_CPUID2.txt
+TEST_F(CpuidX86Test, INTEL_LAKEMONT)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000002, 0x756E6547, 0x6c65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00000590, 0x00000000, 0x00010200, 0x8000237B}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x05);
+    EXPECT_EQ(info.model, 0x09);
+    EXPECT_EQ(GetX86Microarchitecture(&info),
+        X86Microarchitecture::INTEL_LAKEMONT);
+}
+
+// https://github.com/InstLatx64/InstLatx64/blob/master/GenuineIntel/GenuineIntel0050670_KnightsLanding_CPUID.txt
+TEST_F(CpuidX86Test, INTEL_KNIGHTS_LANDING)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x0000000D, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x00050670, 0x02FF0800, 0x7FF8F3BF, 0xBFEBFBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, "GenuineIntel");
+    EXPECT_EQ(info.family, 0x06);
+    EXPECT_EQ(info.model, 0x57);
+    EXPECT_EQ(GetX86Microarchitecture(&info),
+        X86Microarchitecture::INTEL_KNIGHTS_L);
+}
+
+// https://github.com/google/cpu_features/issues/200
+// http://users.atw.hu/instlatx64/GenuineIntel/GenuineIntel00206F2_Eagleton_CPUID.txt
+#if defined(CPU_FEATURES_OS_WINDOWS)
+TEST_F(CpuidX86Test, WIN_INTEL_WESTMERE_EX)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x0000000B, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x000206F2, 0x00400800, 0x02BEE3FF, 0xBFEBFBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_EQ(info.family, 0x06);
+    EXPECT_EQ(info.model, 0x2F);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_WSM);
+
+#if (_WIN32_WINNT < 0x0601)  // before Win7
+    EXPECT_FALSE(info.features.ssse3);
+    EXPECT_FALSE(info.features.sse4_1);
+    EXPECT_FALSE(info.features.sse4_2);
+#else
+    EXPECT_TRUE(info.features.ssse3);
+    EXPECT_TRUE(info.features.sse4_1);
+    EXPECT_TRUE(info.features.sse4_2);
+#endif
+}
+#endif  // CPU_FEATURES_OS_WINDOWS
 
 // TODO(user): test what happens when xsave/osxsave are not present.
 // TODO(user): test what happens when xmm/ymm/zmm os support are not

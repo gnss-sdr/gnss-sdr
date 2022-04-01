@@ -19,6 +19,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Compute PVT solutions when using GPS L5 signals even if the satellite is
   reported as not healthy in the CNAV message.
 
+### Improvements in Portability:
+
+- Updated `cpu_features` library to v0.7.0.
+- Fixed building against GNU Radio > v3.10.1.1.
+
 ### Improvements in Reliability:
 
 - Fix some defects detected by Coverity Scan 2021.12.1.

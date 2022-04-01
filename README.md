@@ -470,9 +470,9 @@ your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library:
 
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.22/matio-1.5.22.tar.gz
-$ tar xvfz matio-1.5.22.tar.gz
-$ cd matio-1.5.22
+$ wget https://github.com/tbeu/matio/releases/download/v1.5.23/matio-1.5.23.tar.gz
+$ tar xvfz matio-1.5.23.tar.gz
+$ cd matio-1.5.23
 $ ./configure
 $ make
 $ sudo make install

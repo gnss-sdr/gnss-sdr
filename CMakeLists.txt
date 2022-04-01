@@ -101,7 +101,7 @@ option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra syst
 
 option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
 
-option(ENABLE_OWN_CPUFEATURES "Force the building of the cpu_features library even if it is already installed" ON)
+option(ENABLE_OWN_CPUFEATURES "Force the building of the cpu_features library even if it is already installed" OFF)
 
 if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))
     set(ENABLE_GNSS_SIM_INSTALL OFF)
@@ -1156,7 +1156,6 @@ if(NOT VOLKGNSSSDR_FOUND)
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
         -DENABLE_STATIC_LIBS=ON
-        -DENABLE_OWN_CPUFEATURES=${ENABLE_OWN_CPUFEATURES}
         -DENABLE_PROFILING=${ENABLE_PROFILING}
         -DENABLE_ORC=${ORC_ENABLED}
         ${STRIP_VOLK_GNSSSDR_PROFILE}
@@ -1228,7 +1227,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                 ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
             )
             if(NOT ENABLE_OWN_CPUFEATURES)
-                find_package(CpuFeatures QUIET)
+                find_package(CpuFeatures)
                 set_package_properties(CpuFeatures PROPERTIES
                     URL "https://github.com/google/cpu_features"
                     PURPOSE "Used by the volk_gnsssdr library."
@@ -1249,7 +1248,11 @@ if(NOT VOLKGNSSSDR_FOUND)
                     ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
                     ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
                 )
+                set(ENABLE_OWN_CPUFEATURES ON)
             endif()
+            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                -DENABLE_OWN_CPUFEATURES=${ENABLE_OWN_CPUFEATURES}
+            )
             ExternalProject_Add(volk_gnsssdr_module
                 PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
                 SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr

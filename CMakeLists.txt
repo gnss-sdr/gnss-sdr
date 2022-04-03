@@ -1236,7 +1236,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                 set_package_properties(CPUFEATURES PROPERTIES
                     DESCRIPTION "A cross platform C99 library to get CPU features at runtime"
                 )
-                if(VOLK_VERSION AND VOLK_VERSION VERSION_GREATER 2.4 AND VOLK_VERSION VERSION_LESS "2.5.2") # detect "hidden" cpu_features 0.6.0
+                if(VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3" AND VOLK_VERSION VERSION_LESS "2.5.2") # detect "hidden" cpu_features 0.6.0
                     set(ENABLE_CPUFEATURES OFF)
                 else()
                     set_package_properties(CPUFEATURES PROPERTIES

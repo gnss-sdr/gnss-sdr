@@ -24,7 +24,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Updated `cpu_features` library to v0.7.0. The building option
   `ENABLE_OWN_CPUFEATURES` has been replaced by `ENABLE_CPUFEATURES`, defaulting
   to `ON`.
-- Fixed building against GNU Radio > v3.10.1.1.
+- Fixed building against GNU Radio v3.10.2
 
 ### Improvements in Reliability:
 

@@ -58,6 +58,16 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
         add_dependencies(obsdiff matio-${GNSSSDR_MATIO_LOCAL_VERSION})
     endif()
+    file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIR}/gpstk)
+    if(NOT TARGET Gpstk::gpstk)
+        add_library(Gpstk::gpstk STATIC IMPORTED)
+        set_target_properties(Gpstk::gpstk PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GPSTK_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${(GPSTK_INCLUDE_DIR};${GPSTK_INCLUDE_DIR}/gpstk"
+            INTERFACE_LINK_LIBRARIES "${GPSTK_LIBRARY}"
+        )
+    endif()
 
     target_link_libraries(obsdiff
         PRIVATE
@@ -65,13 +75,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
             Threads::Threads
             Gflags::gflags
             Matio::matio
-            ${GPSTK_LIBRARY}
-    )
-
-    target_include_directories(obsdiff
-        PRIVATE
-            ${GPSTK_INCLUDE_DIR}/gpstk
-            ${GPSTK_INCLUDE_DIR}
+            Gpstk::gpstk
     )
 
     if(GPSTK_OLDER_THAN_8)

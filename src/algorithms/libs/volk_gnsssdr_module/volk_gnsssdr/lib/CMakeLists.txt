@@ -549,6 +549,10 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
     if(NOT MSVC)
         set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
     endif()
+else()
+    if(USE_CPU_FEATURES)
+        set_source_files_properties(volk_gnsssdr_cpu.c PROPERTIES COMPILE_DEFINITIONS "VOLK_CPU_FEATURES=1")
+    endif()
 endif()
 
 # Add dynamic library

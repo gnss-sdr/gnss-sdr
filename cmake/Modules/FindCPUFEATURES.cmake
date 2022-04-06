@@ -86,7 +86,6 @@ if(CPUFEATURES_FOUND AND NOT TARGET CpuFeature::cpu_features)
         INTERFACE_INCLUDE_DIRECTORIES "${CPUFEATURES_INCLUDE_DIR}"
         INTERFACE_LINK_LIBRARIES "${CPUFEATURES_LIBRARIES}"
     )
-    add_library(cpu_features ALIAS CpuFeature::cpu_features)
 endif()
 
 mark_as_advanced(CPUFEATURES_LIBRARIES)

@@ -493,9 +493,9 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ```
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protobuf-cpp-3.19.4.tar.gz
-$ tar xvfz protobuf-cpp-3.19.4.tar.gz
-$ cd protobuf-3.19.4
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.0/protobuf-cpp-3.20.0.tar.gz
+$ tar xvfz protobuf-cpp-3.20.0.tar.gz
+$ cd protobuf-3.20.0
 $ ./autogen.sh
 $ ./configure
 $ make
@@ -2128,7 +2128,7 @@ if you reference the following article to credit the GNSS-SDR project:
 
 - C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, C. Avil&eacute;s, and L.
   Esteve,
-  [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/),
+  [GNSS-SDR: an open source tool for researchers and developers](https://www.researchgate.net/publication/233380791_GNSS-SDR_An_open_source_tool_for_researchers_and_developers),
   in Proceedings of the 24th International Technical Meeting of The Satellite
   Division of the Institute of Navigation (ION GNSS), Portland, Oregon, Sept.
   19-23, 2011, pp. 780-794.

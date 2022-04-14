@@ -203,4 +203,4 @@ by Carles Fern&aacute;ndez-Prades and Javier Arribas. This software is released
 under the GNU General Public License version 3, see the file COPYING.
 
 This project is managed by
-[Centre Tecnol&ograve;gic de Telecomunicacions de Catalunya](http://www.cttc.es "CTTC webpage").
+[Centre Tecnol&ograve;gic de Telecomunicacions de Catalunya](https://www.cttc.cat "CTTC webpage").

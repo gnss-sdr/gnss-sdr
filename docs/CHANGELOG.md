@@ -929,8 +929,7 @@ features and bug fixes:
 - Improvements in the RTCM server stability.
 - Improvements in the correctness of generated RINEX files.
 - The receiver can read and make use of Galileo almanac XML files published by
-  the European GNSS Service Centre at
-  https://www.gsc-europa.eu/product-almanacs
+  the European GNSS Service Centre at https://www.gsc-europa.eu/product-almanacs
 - Own-defined XML schemas for navigation data published at
   https://github.com/gnss-sdr/gnss-sdr/tree/next/docs/xml-schemas
 - Added program `rinex2assist` to convert RINEX navigation files into XML files

@@ -89,7 +89,7 @@ dependencies and build process. Mainly, it consists on installing <a href="https
 \li <a href="https://www.libvolk.org" target="_blank">Volk</a>, a Vector-Optimized Library of Kernels which provides an abstraction of optimized math routines targeting several SIMD processors,
 
 and, optionally,
-\li GNU Radio modules for hardware interface (<a href="https://github.com/gnuradio/gnuradio/tree/master/gr-uhd" target="_blank">gr-uhd</a>, <a href="http://git.osmocom.org/gr-osmosdr" target="_blank">gr-osmosdr</a>, <a href="https://github.com/analogdevicesinc/gr-iio" target="_blank">gr-iio</a>),
+\li GNU Radio modules for hardware interface (<a href="https://github.com/gnuradio/gnuradio/tree/main/gr-uhd" target="_blank">gr-uhd</a>, <a href="http://git.osmocom.org/gr-osmosdr" target="_blank">gr-osmosdr</a>, <a href="https://github.com/analogdevicesinc/gr-iio" target="_blank">gr-iio</a>),
 \li <a href="https://github.com/google/benchmark" target="_blank">Benchmark</a>, a library to benchmark code snippets,
 \li <a href="https://github.com/gperftools/gperftools" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
 
@@ -584,10 +584,10 @@ but if you distribute the code, it has to remain under GPL.
 If you use GNSS-SDR to produce a research paper or Thesis, we would appreciate
 if you reference any of these articles to credit the GNSS-SDR project:
 
-\li \anchor Navitec2012 C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, <a href="http://www.cttc.es/publication/an-open-source-galileo-e1-software-receiver/" target="_blank"><i>An Open Source Galileo E1 Software Receiver</i></a>, in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
+\li \anchor Navitec2012 C. Fern&aacute;ndez-Prades, J. Arribas, L. Esteve, D. Pubill, P. Closas, <a href="https://www.researchgate.net/publication/233859838_An_Open_Source_Galileo_E1_Software_Receiver/" target="_blank"><i>An Open Source Galileo E1 Software Receiver</i></a>, in Proc. of the 6th ESA Workshop on Satellite Navigation Technologies (NAVITEC 2012), ESTEC, Noordwijk, The Netherlands, Dec. 2012.
 \li J. Arribas, <a href="https://theses.eurasip.org/theses/449/gnss-array-based-acquisition-theory-and/" target="_blank"><i>GNSS Array-based Acquisition: Theory and Implementation</i></a>, PhD Thesis, Universitat Polit&egrave;cnica de Catalunya, Barcelona, Spain, June 2012.
-\li C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacute;s, and L. Esteve, <a href="http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/" target="_blank"><i>GNSS-SDR: an open source tool for researchers and developers</i></a>, in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011.
-\li C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, <a href="http://www.cttc.es/publication/design-patterns-for-gnss-software-receivers/" target="_blank"><i>Design patterns for GNSS software receivers</i></a>, in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981
+\li C. Fern&aacute;ndez-Prades, J. Arribas,  P. Closas, C. Avil&eacute;s, and L. Esteve, <a href="https://www.researchgate.net/publication/233380791_GNSS-SDR_An_open_source_tool_for_researchers_and_developers" target="_blank"><i>GNSS-SDR: an open source tool for researchers and developers</i></a>, in Proc. of the ION GNSS 2011 Conference, Portland, Oregon, Sept. 19-23, 2011.
+\li C. Fern&aacute;ndez-Prades, C. Avil&eacute;s, L. Esteve, J. Arribas, and P. Closas, <a href="https://www.researchgate.net/publication/228624103_Design_Patterns_for_GNSS_Software_Receivers" target="_blank"><i>Design patterns for GNSS software receivers</i></a>, in Proc. of the 5th ESA Workshop on Satellite Navigation Technologies (NAVITEC'2010), ESTEC, Noordwijk, The Netherlands, Dec. 2010. DOI:10.1109/NAVITEC.2010.5707981
 
 For LaTeX users, these are the BibTeX cites for your convenience:
 

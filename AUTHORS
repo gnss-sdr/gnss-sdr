@@ -17,13 +17,13 @@ Contact Information
 
     CTTC Homepage
     ----------------------------
-    http://www.cttc.cat
+    https://www.cttc.cat
 
 
     Mailing List
     ----------------------------
     gnss-sdr-developers@lists.sourceforge.net
-    https://lists.sourceforge.net/lists/listinfo/gnss-sdr-developers
+    https://sourceforge.net/projects/gnss-sdr/lists/gnss-sdr-developers
 
 
     Email
@@ -60,7 +60,8 @@ Marc Molina             marc.molina.pena@gmail.com       Contributor
 Marc Sales              marcsales92@gmail.com            Contributor
 Piyush Gupta            piyush04111999@gmail.com         Contributor
 Rodrigo Muñoz           rodrigo.munoz@proteinlab.cl      Contributor
+Stefan van der Linden   spvdlinden@gmail.com             Contributor
 Carlos Paniego          carpanie@hotmail.com             Artwork
 
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2011-2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+# SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>

@@ -2,7 +2,13 @@
 # SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 name: Simple CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+    paths-ignore:
+      - '**/CITATION.cff'
+  push:
+    paths-ignore:
+      - '**/CITATION.cff'
 
 jobs:
   build-ubuntu:
@@ -118,7 +124,7 @@ jobs:
         pip install mako
     - name: configure
       shell: powershell
-      run: cd build; cmake -G "Visual Studio 16 2019" ..\src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr
+      run: cd build; cmake -G "Visual Studio 17 2022" ..\src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr
     - name: build
       run: cmake --build build --config Release
     - name: test

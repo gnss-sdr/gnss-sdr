@@ -532,10 +532,11 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
     if(USE_CPU_FEATURES)
-        if(CpuFeatures_FOUND)
+        set_source_files_properties(volk_gnsssdr_cpu.c PROPERTIES COMPILE_DEFINITIONS "VOLK_CPU_FEATURES=1")
+        if(CPUFEATURES_FOUND)
             target_include_directories(volk_gnsssdr_obj
                 PRIVATE
-                    $<TARGET_PROPERTY:CpuFeatures::cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+                    $<TARGET_PROPERTY:CpuFeature::cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
             )
         else()
             target_include_directories(volk_gnsssdr_obj
@@ -548,6 +549,10 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
     if(NOT MSVC)
         set_target_properties(volk_gnsssdr_obj PROPERTIES COMPILE_FLAGS "-fPIC")
     endif()
+else()
+    if(USE_CPU_FEATURES)
+        set_source_files_properties(volk_gnsssdr_cpu.c PROPERTIES COMPILE_DEFINITIONS "VOLK_CPU_FEATURES=1")
+    endif()
 endif()
 
 # Add dynamic library
@@ -557,10 +562,10 @@ else()
     add_library(volk_gnsssdr SHARED $<TARGET_OBJECTS:volk_gnsssdr_obj>)
 endif()
 if(USE_CPU_FEATURES)
-    if(CpuFeatures_FOUND)
+    if(CPUFEATURES_FOUND)
         target_link_libraries(volk_gnsssdr
             PUBLIC ${volk_gnsssdr_libraries}
-            PRIVATE CpuFeatures::cpu_features
+            PRIVATE CpuFeature::cpu_features
         )
     else()
         target_link_libraries(volk_gnsssdr
@@ -580,10 +585,10 @@ target_include_directories(volk_gnsssdr
     PUBLIC $<INSTALL_INTERFACE:include>
 )
 if(USE_CPU_FEATURES)
-    if(CpuFeatures_FOUND)
+    if(CPUFEATURES_FOUND)
         target_include_directories(volk_gnsssdr
             PRIVATE
-                $<TARGET_PROPERTY:CpuFeatures::cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
+                $<TARGET_PROPERTY:CpuFeature::cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
         )
     else()
         target_include_directories(volk_gnsssdr
@@ -620,9 +625,9 @@ if(ENABLE_STATIC_LIBS)
     endif()
     target_link_libraries(volk_gnsssdr_static PUBLIC ${volk_gnsssdr_libraries})
     if(USE_CPU_FEATURES)
-        if(CpuFeatures_FOUND)
+        if(CPUFEATURES_FOUND)
             target_link_libraries(volk_gnsssdr_static
-                PRIVATE CpuFeatures::cpu_features
+                PRIVATE CpuFeature::cpu_features
             )
         else()
             target_link_libraries(volk_gnsssdr_static

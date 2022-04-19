@@ -26,6 +26,7 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
+#include <boost/exception/diagnostic_information.hpp>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>

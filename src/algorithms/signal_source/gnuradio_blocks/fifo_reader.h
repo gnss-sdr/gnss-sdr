@@ -51,8 +51,11 @@ private:
     FifoReader(const std::string &file_name, const std::string &sample_type);
 
     size_t read_gr_complex(int noutput_items, gr_vector_void_star &output_items);
+
     //! function to read data out of FIFO which is stored as interleaved I/Q stream.
     //! template argument determines sample_type
+    // Note: template definition necessary in header file
+    // See also: https://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
     template <typename Type>
     size_t read_interleaved(int noutput_items, gr_vector_void_star &output_items)
     {
@@ -61,15 +64,13 @@ private:
             {
                 // TODO: try if performance increases if we copy larger chunks to vector.
                 // how to read from stream: https://en.cppreference.com/w/cpp/io/basic_ifstream
-                std::array<char, 4> buffer;  // gr_complex is 32bit = 4*char
-                fifo_.read(reinterpret_cast<char *>(&buffer[0]), buffer.size());
+                std::array<char, 2 * sizeof(Type)> buffer;
+                fifo_.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
                 if (fifo_.good())
                     {
-                        Type real;
-                        Type imag;
-                        memcpy(&real, &buffer[0], sizeof(real));
-                        memcpy(&imag, &buffer[2], sizeof(imag));
-                        static_cast<gr_complex *>(output_items.at(0))[n] = gr_complex(real, imag);
+                        auto real = reinterpret_cast<Type const *>(&buffer[0]);
+                        auto imag = reinterpret_cast<Type const *>(&buffer[sizeof(Type)]);
+                        static_cast<gr_complex *>(output_items[0])[n] = gr_complex(*real, *imag);
                         items_retrieved++;
                     }
                 else if (fifo_.eof())

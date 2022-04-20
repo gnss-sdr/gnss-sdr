@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2022 C. Fernandez-Prades carles.fernandez(at)cttc.es
 ---
-abstract: "An open-source Global Navigation Satellite Systems software-defined receiver."
 authors:
   - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
     alias: carlesfernandez
@@ -102,7 +101,7 @@ authors:
     family-names: "van der Linden"
     given-names: Stefan
 cff-version: "1.2.0"
-date-released: "2022-02-14"
+date-released: "2022-04-20"
 identifiers:
   - description: "The concept DOI of the work. This is a DOI always pointing to the latest stable release."
     type: doi
@@ -326,4 +325,4 @@ repository-code: "https://github.com/gnss-sdr/gnss-sdr"
 title: GNSS-SDR
 type: software
 url: "https://gnss-sdr.org"
-version: "0.0.16"
+version: "0.0.17"

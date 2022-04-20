@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 #ifndef CPU_FEATURES_INCLUDE_CPU_FEATURES_MACROS_H_
 #define CPU_FEATURES_INCLUDE_CPU_FEATURES_MACROS_H_
 
@@ -29,7 +28,7 @@
 #define CPU_FEATURES_ARCH_ARM
 #endif
 
-#if (defined(__aarch64__) || (defined(__APPLE__) && defined(__arm64__)))
+#if defined(__aarch64__)
 #define CPU_FEATURES_ARCH_AARCH64
 #endif
 
@@ -57,12 +56,17 @@
 // Os
 ////////////////////////////////////////////////////////////////////////////////
 
-#if defined(__linux__)
-#define CPU_FEATURES_OS_LINUX_OR_ANDROID
+#if (defined(__freebsd__) || defined(__FreeBSD__))
+#define CPU_FEATURES_OS_FREEBSD
 #endif
 
 #if defined(__ANDROID__)
 #define CPU_FEATURES_OS_ANDROID
+#endif
+
+#if defined(__linux__) && !defined(CPU_FEATURES_OS_FREEBSD) && \
+    !defined(CPU_FEATURES_OS_ANDROID)
+#define CPU_FEATURES_OS_LINUX
 #endif
 
 #if (defined(_WIN64) || defined(_WIN32))
@@ -70,11 +74,15 @@
 #endif
 
 #if (defined(__apple__) || defined(__APPLE__) || defined(__MACH__))
-#define CPU_FEATURES_OS_DARWIN
+// From https://stackoverflow.com/a/49560690
+#include "TargetConditionals.h"
+#if defined(TARGET_OS_OSX)
+#define CPU_FEATURES_OS_MACOS
 #endif
-
-#if (defined(__freebsd__) || defined(__FreeBSD__))
-#define CPU_FEATURES_OS_FREEBSD
+#if defined(TARGET_OS_IPHONE)
+// This is set for any non-Mac Apple products (IOS, TV, WATCH)
+#define CPU_FEATURES_OS_IPHONE
+#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -215,11 +223,18 @@
 
 // Communicates to the compiler that the block is unreachable
 #if defined(CPU_FEATURES_COMPILER_CLANG) || defined(CPU_FEATURES_COMPILER_GCC)
-#define UNREACHABLE() __builtin_unreachable()
+#define CPU_FEATURES_UNREACHABLE() __builtin_unreachable()
 #elif defined(CPU_FEATURES_COMPILER_MSC)
-#define UNREACHABLE() __assume(0)
+#define CPU_FEATURES_UNREACHABLE() __assume(0)
 #else
-#define UNREACHABLE()
+#define CPU_FEATURES_UNREACHABLE()
+#endif
+
+// Communicates to the compiler that the function is now deprecated
+#if defined(CPU_FEATURES_COMPILER_CLANG) || defined(CPU_FEATURES_COMPILER_GCC)
+#define CPU_FEATURES_DEPRECATED(message) __attribute__((deprecated(message)))
+#else
+#define CPU_FEATURES_DEPRECATED(message)
 #endif
 
 #endif  // CPU_FEATURES_INCLUDE_CPU_FEATURES_MACROS_H_

@@ -36,7 +36,10 @@ public:
     /*!
      * Default constructor
      */
-    Beidou_Dnav_Almanac() = default;
+    Beidou_Dnav_Almanac()
+    {
+        this->System = 'B';
+    };
 
     int SV_health{};  //!< SV Health
 

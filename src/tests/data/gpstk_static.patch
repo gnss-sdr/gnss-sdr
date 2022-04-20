@@ -1,10 +1,10 @@
 SPDX-License-Identifier: GPL-3.0-or-later
 SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
---- CMakeLists.txt	2020-10-25 10:06:26.000000000 +0100
-+++ CMakeLists.txt	2020-10-25 10:06:11.000000000 +0100
+--- CMakeLists.txt	2022-04-05 23:24:04.000000000 +0200
++++ CMakeLists.txt	2022-04-05 23:29:02.000000000 +0200
 @@ -77,7 +77,16 @@
- 
- 
+
+
  include( BuildSetup.cmake )
 -
 +set(STADYN "STATIC")
@@ -20,3 +20,12 @@ SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
  #============================================================
  # Core Library Target Files
  #============================================================
+@@ -160,7 +169,7 @@
+ add_library( gpstk ${STADYN} ${GPSTK_SRC_FILES} ${GPSTK_INC_FILES} )
+
+ # GPSTk library install target
+-install( TARGETS gpstk DESTINATION "${CMAKE_INSTALL_LIBDIR}" EXPORT "${EXPORT_TARGETS_FILENAME}" )
++install( TARGETS gpstk DESTINATION lib EXPORT "${EXPORT_TARGETS_FILENAME}" )
+
+ # GPSTk header file install target (whether it is version dependent changes based on user flag)
+ install( FILES ${GPSTK_INC_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )

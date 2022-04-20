@@ -19,6 +19,7 @@
 #ifndef GNSS_SDR_GNSS_EPHEMERIS_H
 #define GNSS_SDR_GNSS_EPHEMERIS_H
 
+#include <array>
 #include <cstdint>
 
 /*!
@@ -35,6 +36,34 @@ public:
      * (IS-GPS-200M, 20.3.3.3.3.1, and Galileo OS SIS ICD, 5.1.4).
      */
     double sv_clock_drift(double transmitTime);
+
+    /*!
+     * \brief Computes prediction of the Doppler shift for a given time and receiver's position and velocity.
+     * \f[
+     * f_{d} = - \mathbf{v} \frac{\mathbf{x}^{T}}{\left| \mathbf{x} \right| } \frac{f_{L}}{c}
+     * \f]
+     * where:
+     * \f[
+     * \mathbf{v} = \mathbf{v}_{sat} - \mathbf{v}_{rx}
+     * \f]
+     * \f[
+     * \mathbf{x} = \mathbf{x}_{sat} - \mathbf{x}_{rx}
+     * \f]
+     * \f[
+     * \left| \mathbf{x} \right| = \sqrt{\mathbf{x}\mathbf{x}^{T}}
+     * \f]
+     *
+     * @param[in] rx_time_s Time of Week in seconds
+     * @param[in] lat Receiver's latitude in degrees
+     * @param[in] lon Receiver's longitude in degrees
+     * @param[in] h   Receiver's height in meters
+     * @param[in] ve  Receiver's velocity in the East direction [m/s]
+     * @param[in] vn  Receiver's velocity in the North direction [m/s]
+     * @param[in] vu  Receiver's velocity in the Up direction [m/s]
+     * @param[in] band Signal band for which the Doppler will be computed
+     *                 (1: L1 C/A, E1B, BI1; 2: L2C, BI2; 3: BI3; 5: L5/E5a; 6: E6B; 7: E5b; 8: E5a+E5b)
+     */
+    double predicted_doppler(double rx_time_s, double lat, double lon, double h, double ve, double vn, double vu, int band) const;
 
     void satellitePosition(double transmitTime);  //!< Computes the ECEF SV coordinates and ECEF velocity
 
@@ -83,6 +112,7 @@ protected:
     char System{};  //!< Character ID of the GNSS system. 'G': GPS.  'E': Galileo.  'B': BeiDou
 
 private:
+    void satellitePosVelComputation(double transmitTime, std::array<double, 7>& pos_vel_dtr) const;
     double check_t(double time) const;
     double sv_clock_relativistic_term(double transmitTime) const;
 };

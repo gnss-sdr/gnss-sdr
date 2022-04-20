@@ -38,7 +38,10 @@ public:
     /*!
      * Default constructor
      */
-    Gps_Almanac() = default;
+    Gps_Almanac()
+    {
+        this->System = 'G';
+    };
 
     int32_t SV_health{};  //!< SV Health
     int32_t AS_status{};  //!< Anti-Spoofing Flags and SV Configuration

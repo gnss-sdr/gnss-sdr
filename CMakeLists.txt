@@ -130,7 +130,7 @@ option(ENABLE_ORC "Use (if available) the Optimized Inner Loop Runtime Compiler 
 ################################################################################
 # GNSS-SDR version information
 ################################################################################
-set(THIS_IS_A_RELEASE OFF)   # only related to version name, no further implications.
+set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications.
 if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES
@@ -166,9 +166,9 @@ endif()
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 16)
+    set(VERSION_INFO_MINOR_VERSION 17)
 else()
-    set(VERSION_INFO_MINOR_VERSION 16.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 17.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -1232,9 +1232,9 @@ if(NOT VOLKGNSSSDR_FOUND)
                 )
             endif()
             if(CPUFEATURES_FOUND)
-                message(STATUS "Found CpuFeatures: (found version ${CpuFeatures_VERSION})")
+                message(STATUS "Found CpuFeatures: (found version ${CPUFEATURES_VERSION})")
                 set_package_properties(CPUFEATURES PROPERTIES
-                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime (found: v${CpuFeatures_VERSION})"
+                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime (version: ${CPUFEATURES_VERSION})"
                 )
             else()
                 set_package_properties(CPUFEATURES PROPERTIES

@@ -170,6 +170,9 @@ Please note that the required files from `libgtest-dev` were moved to
 again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic" (and
 above).
 
+Since Ubuntu 21.04 Hirsute / Debian 11, the package `libcpu-features-dev` is
+also required.
+
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source
 and install GNU Radio manually, as explained below, since GNSS-SDR requires
 `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the

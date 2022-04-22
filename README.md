@@ -381,9 +381,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-10.8.0.tar.xz
-$ tar xvfz armadillo-10.8.0.tar.xz
-$ cd armadillo-10.8.0
+$ wget https://sourceforge.net/projects/arma/files/armadillo-11.0.1.tar.xz
+$ tar xvfz armadillo-11.0.1.tar.xz
+$ cd armadillo-11.0.1
 $ cmake .
 $ make
 $ sudo make install
@@ -496,9 +496,9 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ```
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.0/protobuf-cpp-3.20.0.tar.gz
-$ tar xvfz protobuf-cpp-3.20.0.tar.gz
-$ cd protobuf-3.20.0
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protobuf-cpp-3.20.1.tar.gz
+$ tar xvfz protobuf-cpp-3.20.1.tar.gz
+$ cd protobuf-3.20.1
 $ ./autogen.sh
 $ ./configure
 $ make

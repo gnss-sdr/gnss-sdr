@@ -4,14 +4,18 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-file(GLOB ASN_RRLP_SOURCES "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp/*.c")
+file(GLOB ASN_RRLP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/asn-rrlp/*.c")
 list(SORT ASN_RRLP_SOURCES)
-file(GLOB ASN_RRLP_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp/*.h")
+file(GLOB ASN_RRLP_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/asn-rrlp/*.h")
 list(SORT ASN_RRLP_HEADERS)
-file(GLOB ASN_SUPL_SOURCES "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.c")
+file(GLOB ASN_SUPL_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/asn-supl/*.c")
 list(SORT ASN_SUPL_SOURCES)
-file(GLOB ASN_SUPL_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.h")
+file(GLOB ASN_SUPL_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/asn-supl/*.h")
 list(SORT ASN_SUPL_HEADERS)
+file(GLOB ASN_TYPES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/types/*.c")
+list(SORT ASN_TYPES_SOURCES)
+file(GLOB ASN_TYPES_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/types/*.h")
+list(SORT ASN_TYPES_HEADERS)
 
 if(USE_CMAKE_TARGET_SOURCES)
     add_library(core_libs_supl STATIC)
@@ -19,8 +23,10 @@ if(USE_CMAKE_TARGET_SOURCES)
         PRIVATE
             ${ASN_RRLP_SOURCES}
             ${ASN_SUPL_SOURCES}
+            ${ASN_TYPES_SOURCES}
             ${ASN_RRLP_HEADERS}
             ${ASN_SUPL_HEADERS}
+            ${ASN_TYPES_HEADERS}
             ${CMAKE_CURRENT_LIST_DIR}/supl.c
         PUBLIC
             ${CMAKE_CURRENT_LIST_DIR}/supl.h
@@ -30,6 +36,7 @@ else()
         STATIC
             ${ASN_RRLP_SOURCES}
             ${ASN_SUPL_SOURCES}
+            ${ASN_TYPES_SOURCES}
             supl.c
     )
 endif()
@@ -53,11 +60,16 @@ target_include_directories(core_libs_supl
     PUBLIC
         ${GNUTLS_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
-        ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
+        ${CMAKE_CURRENT_SOURCE_DIR}/asn-supl
+        ${CMAKE_CURRENT_SOURCE_DIR}/asn-rrlp
+        ${CMAKE_CURRENT_SOURCE_DIR}/types
 )
 
-set_target_properties(core_libs_supl PROPERTIES
-    LINKER_LANGUAGE C
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl;${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp;${GNUTLS_INCLUDE_DIR}"
+set_property(TARGET core_libs_supl
+    APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/asn-supl>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/asn-rrlp>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/types>
+        $<BUILD_INTERFACE:${GNUTLS_INCLUDE_DIR}>
 )

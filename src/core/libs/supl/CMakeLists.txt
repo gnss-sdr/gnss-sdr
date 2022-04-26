@@ -12,6 +12,10 @@ file(GLOB ASN_SUPL_SOURCES "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.c"
 list(SORT ASN_SUPL_SOURCES)
 file(GLOB ASN_SUPL_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl/*.h")
 list(SORT ASN_SUPL_HEADERS)
+file(GLOB ASN_TYPES_SOURCES "${CMAKE_SOURCE_DIR}/src/core/libs/supl/types/*.c")
+list(SORT ASN_TYPES_SOURCES)
+file(GLOB ASN_TYPES_HEADERS "${CMAKE_SOURCE_DIR}/src/core/libs/supl/types/*.h")
+list(SORT ASN_TYPES_HEADERS)
 
 if(USE_CMAKE_TARGET_SOURCES)
     add_library(core_libs_supl STATIC)
@@ -19,8 +23,10 @@ if(USE_CMAKE_TARGET_SOURCES)
         PRIVATE
             ${ASN_RRLP_SOURCES}
             ${ASN_SUPL_SOURCES}
+            ${ASN_TYPES_SOURCES}
             ${ASN_RRLP_HEADERS}
             ${ASN_SUPL_HEADERS}
+            ${ASN_TYPES_HEADERS}
             ${CMAKE_CURRENT_LIST_DIR}/supl.c
         PUBLIC
             ${CMAKE_CURRENT_LIST_DIR}/supl.h
@@ -30,6 +36,7 @@ else()
         STATIC
             ${ASN_RRLP_SOURCES}
             ${ASN_SUPL_SOURCES}
+            ${ASN_TYPES_SOURCES}
             supl.c
     )
 endif()
@@ -55,9 +62,10 @@ target_include_directories(core_libs_supl
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl
         ${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp
+        ${CMAKE_SOURCE_DIR}/src/core/libs/supl/types
 )
 
 set_target_properties(core_libs_supl PROPERTIES
     LINKER_LANGUAGE C
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl;${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp;${GNUTLS_INCLUDE_DIR}"
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR};${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-supl;${CMAKE_SOURCE_DIR}/src/core/libs/supl/asn-rrlp;${CMAKE_SOURCE_DIR}/src/core/libs/supl/types;${GNUTLS_INCLUDE_DIR}"
 )

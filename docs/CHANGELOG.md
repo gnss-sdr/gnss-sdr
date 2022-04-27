@@ -12,7 +12,19 @@ SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Portability:
+
+- Improved detection of the BLAS library under macOS / Macports (the `lapack`
+  port dependency installed with the `+openblas` variant does not install `blas`
+  but `openblas`, which is used as a replacement if `blas` is not found).
+- Removed duplicated files in the Secure User Plane Location implementation,
+  which caused issues when linking with some compilers.
+
 ## [GNSS-SDR v0.0.17](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.17) - 2022-04-20
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6473244.svg)](https://doi.org/10.5281/zenodo.6473244)
 
 ### Improvements in Availability:
 

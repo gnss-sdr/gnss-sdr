@@ -119,8 +119,8 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     if (filename0_.empty())
         {
-            filename0_ = configuration->property(role + ".filename0_", empty_string);
-            filename1_ = configuration->property(role + ".filename1_", empty_string);
+            filename0_ = configuration->property(role + ".filename0", empty_string);
+            filename1_ = configuration->property(role + ".filename1", empty_string);
         }
     // if only one input file is specified in the configuration file then:
     // if there is at least one channel assigned to frequency band 1 then the DMA transfers the samples to the L1 frequency band channels

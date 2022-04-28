@@ -56,6 +56,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
       gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", default_gain_mode)),
       rf_port_select_(configuration->property(role + ".rf_port_select", default_rf_port_select)),
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
+      filename0_(configuration->property(role + ".filename", empty_string)),
       rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
       rf_gain_rx2_(configuration->property(role + ".gain_rx1", default_manual_gain_rx2)),
       freq_(configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ))),
@@ -109,18 +110,23 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     // override value with commandline flag, if present
     if (FLAGS_signal_source != "-")
         {
-            filename0 = FLAGS_signal_source;
+            filename0_ = FLAGS_signal_source;
         }
     if (FLAGS_s != "-")
         {
-            filename0 = FLAGS_s;
+            filename0_ = FLAGS_s;
         }
 
+    if (filename0_.empty())
+        {
+            filename0_ = configuration->property(role + ".filename0_", empty_string);
+            filename1_ = configuration->property(role + ".filename1_", empty_string);
+        }
     // if only one input file is specified in the configuration file then:
     // if there is at least one channel assigned to frequency band 1 then the DMA transfers the samples to the L1 frequency band channels
     // otherwise the DMA transfers the samples to the L2/L5 frequency band channels
     // if more than one input file are specified then the DMA transfer the samples to both the L1 and the L2/L5 frequency channels.
-    if (filename1.empty())
+    if (filename1_.empty())
         {
             num_freq_bands_ = 1;
             if (l1_band != 0)
@@ -172,7 +178,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                      * A possible solution is to compute the file length in samples using file size, excluding the last 100 milliseconds, and enable always the
                      * valve block
                      */
-                    std::ifstream file(filename0.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+                    std::ifstream file(filename0_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
                     std::ifstream::pos_type size;
 
                     if (file.is_open())
@@ -182,13 +188,13 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                         }
                     else
                         {
-                            std::cerr << "SignalSource: Unable to open the samples file " << filename0.c_str() << '\n';
+                            std::cerr << "SignalSource: Unable to open the samples file " << filename0_.c_str() << '\n';
                             item_size_ = 0;
                             return;
                         }
                     std::streamsize ss = std::cout.precision();
                     std::cout << std::setprecision(16);
-                    std::cout << "Processing file " << filename0 << ", which contains " << static_cast<double>(size) << " [bytes]\n";
+                    std::cout << "Processing file " << filename0_ << ", which contains " << static_cast<double>(size) << " [bytes]\n";
                     std::cout.precision(ss);
 
                     if (size > 0)
@@ -198,9 +204,9 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                             samples_ = floor(static_cast<double>(bytes_to_process) / static_cast<double>(item_size_) - ceil(0.002 * static_cast<double>(sample_rate_)));  // process all the samples available in the file excluding at least the last 1 ms
                         }
 
-                    if (!filename1.empty())
+                    if (!filename1_.empty())
                         {
-                            std::ifstream file(filename1.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+                            std::ifstream file(filename1_.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
                             std::ifstream::pos_type size;
 
                             if (file.is_open())
@@ -210,13 +216,13 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                                 }
                             else
                                 {
-                                    std::cerr << "SignalSource: Unable to open the samples file " << filename1.c_str() << '\n';
+                                    std::cerr << "SignalSource: Unable to open the samples file " << filename1_.c_str() << '\n';
                                     item_size_ = 0;
                                     return;
                                 }
                             std::streamsize ss = std::cout.precision();
                             std::cout << std::setprecision(16);
-                            std::cout << "Processing file " << filename1 << ", which contains " << static_cast<double>(size) << " [bytes]\n";
+                            std::cout << "Processing file " << filename1_ << ", which contains " << static_cast<double>(size) << " [bytes]\n";
                             std::cout.precision(ss);
 
                             int64_t samples_rx2 = 0;
@@ -236,14 +242,14 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             DLOG(INFO) << "Total number samples to be processed= " << samples_ << " GNSS signal duration= " << signal_duration_s << " [s]";
             std::cout << "GNSS signal recorded time to be processed: " << signal_duration_s << " [s]\n";
 
-            if (filename1.empty())
+            if (filename1_.empty())
                 {
-                    DLOG(INFO) << "File source filename " << filename0;
+                    DLOG(INFO) << "File source filename " << filename0_;
                 }
             else
                 {
-                    DLOG(INFO) << "File source filename rx1 " << filename0;
-                    DLOG(INFO) << "File source filename rx2 " << filename1;
+                    DLOG(INFO) << "File source filename rx1 " << filename0_;
+                    DLOG(INFO) << "File source filename rx2 " << filename1_;
                 }
             DLOG(INFO) << "Samples " << samples_;
             DLOG(INFO) << "Sampling frequency " << sample_rate_;
@@ -521,39 +527,45 @@ Ad9361FpgaSignalSource::~Ad9361FpgaSignalSource()
 
 void Ad9361FpgaSignalSource::start()
 {
-    thread_file_to_dma = std::thread([&] { run_DMA_process(filename0, filename1, samples_to_skip_, item_size_, samples_, repeat_, dma_buff_offset_pos_, queue_); });
+    thread_file_to_dma = std::thread([&] { run_DMA_process(filename0_, filename1_, samples_to_skip_, item_size_, samples_, repeat_, dma_buff_offset_pos_, queue_); });
 }
 
 
-void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const std::string &filename1, uint64_t &samples_to_skip, size_t &item_size, int64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
+void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, const std::string &filename1_, uint64_t &samples_to_skip, size_t &item_size, int64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
 {
     std::ifstream infile1;
     infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
+
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+    // FPGA DMA control
+    dma_fpga = std::make_shared<Fpga_DMA>();
+#endif
+
     // open the files
     try
         {
-            infile1.open(filename0, std::ios::binary);
+            infile1.open(filename0_, std::ios::binary);
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception opening file " << filename0 << '\n';
+            std::cerr << "Exception opening file " << filename0_ << '\n';
             // stop the receiver
             queue->push(pmt::make_any(command_event_make(200, 0)));
             return;
         }
 
     std::ifstream infile2;
-    if (!filename1.empty())
+    if (!filename1_.empty())
         {
             infile2.exceptions(std::ifstream::failbit | std::ifstream::badbit);
             try
                 {
-                    infile2.open(filename1, std::ios::binary);
+                    infile2.open(filename1_, std::ios::binary);
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cerr << "Exception opening file " << filename1 << '\n';
+                    std::cerr << "Exception opening file " << filename1_ << '\n';
                     // stop the receiver
                     queue->push(pmt::make_any(command_event_make(200, 0)));
                     return;
@@ -568,13 +580,13 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception skipping initial samples file " << filename0 << '\n';
+            std::cerr << "Exception skipping initial samples file " << filename0_ << '\n';
             // stop the receiver
             queue->push(pmt::make_any(command_event_make(200, 0)));
             return;
         }
 
-    if (!filename1.empty())
+    if (!filename1_.empty())
         {
             try
                 {
@@ -582,7 +594,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cerr << "Exception skipping initial samples file " << filename1 << '\n';
+                    std::cerr << "Exception skipping initial samples file " << filename1_ << '\n';
                     // stop the receiver
                     queue->push(pmt::make_any(command_event_make(200, 0)));
                     return;
@@ -592,12 +604,23 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
     // rx signal vectors
     std::vector<int8_t> input_samples(sample_block_size * 2);      // complex samples
     std::vector<int8_t> input_samples_dma(sample_block_size * 4);  // complex samples, two frequency bands
-
+    // pointer to DMA buffer
+    int8_t *dma_buffer;
     int nread_elements = 0;  // num bytes read from the file corresponding to frequency band 1
     bool run_DMA = true;
-    int num_transferred_bytes;
 
     // Open DMA device
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+    if (dma_fpga->DMA_open())
+        {
+            std::cerr << "Cannot open loop device\n";
+            // stop the receiver
+            queue->push(pmt::make_any(command_event_make(200, 0)));
+            return;
+        }
+    dma_buffer = dma_fpga->get_buffer_address();
+
+#else  // 32-bit processor architecture
     int tx_fd = open("/dev/loop_tx", O_WRONLY);
     if (tx_fd < 0)
         {
@@ -623,6 +646,9 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
             return;
         }
 
+    dma_buffer = input_samples_dma;
+#endif
+
     // if only one frequency band is used then clear the samples corresponding to the unused frequency band
     uint32_t dma_index = 0;
     if (num_freq_bands_ == 1)
@@ -630,8 +656,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
             // if only one file is enabled then clear the samples corresponding to the frequency band that is not used.
             for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                 {
-                    input_samples_dma[dma_index + (2 - dma_buff_offset_pos)] = 0;
-                    input_samples_dma[dma_index + 1 + (2 - dma_buff_offset_pos)] = 0;
+                    dma_buffer[dma_index + (2 - dma_buff_offset_pos)] = 0;
+                    dma_buffer[dma_index + 1 + (2 - dma_buff_offset_pos)] = 0;
                     dma_index += 4;
                 }
         }
@@ -656,7 +682,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cerr << "Exception reading file " << filename0 << '\n';
+                    std::cerr << "Exception reading file " << filename0_ << '\n';
                     break;
                 }
             if (infile1)
@@ -672,8 +698,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
             for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                 {
                     // dma_buff_offset_pos is 1 for the L1 band and 0 for the other bands
-                    input_samples_dma[dma_index + dma_buff_offset_pos] = input_samples[index0];
-                    input_samples_dma[dma_index + 1 + dma_buff_offset_pos] = input_samples[index0 + 1];
+                    dma_buffer[dma_index + dma_buff_offset_pos] = input_samples[index0];
+                    dma_buffer[dma_index + 1 + dma_buff_offset_pos] = input_samples[index0 + 1];
                     dma_index += 4;
                 }
 
@@ -687,7 +713,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            std::cerr << "Exception reading file " << filename1 << '\n';
+                            std::cerr << "Exception reading file " << filename1_ << '\n';
                             break;
                         }
                     if (infile2)
@@ -703,22 +729,29 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                     for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                         {
                             // filename2 is never the L1 band
-                            input_samples_dma[dma_index] = input_samples[index0];
-                            input_samples_dma[dma_index + 1] = input_samples[index0 + 1];
+                            dma_buffer[dma_index] = input_samples[index0];
+                            dma_buffer[dma_index + 1] = input_samples[index0 + 1];
                             dma_index += 4;
                         }
                 }
 
             if (nread_elements > 0)
                 {
-                    num_transferred_bytes = nread_elements * 2;
-                    const int num_bytes_sent = write(tx_fd, input_samples_dma.data(), nread_elements * 2);
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+                    if (dma_fpga->DMA_write(nread_elements * 2))
+                        {
+                            std::cerr << "Error: DMA could not send all the required samples\n";
+                            break;
+                        }
+#else  // 32-bit processor architecture
+                    int num_transferred_bytes = nread_elements * 2;
+                    const int num_bytes_sent = write(tx_fd, dma_buffer, nread_elements * 2);
                     if (num_bytes_sent != num_transferred_bytes)
                         {
                             std::cerr << "Error: DMA could not send all the required samples\n";
                             break;
                         }
-
+#endif
                     // Throttle the DMA
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
@@ -736,7 +769,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                                 }
                             catch (const std::ifstream::failure &e)
                                 {
-                                    std::cerr << "Exception resetting the position of the next byte to be extracted to zero " << filename0 << '\n';
+                                    std::cerr << "Exception resetting the position of the next byte to be extracted to zero " << filename0_ << '\n';
                                     break;
                                 }
 
@@ -748,11 +781,11 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                                 }
                             catch (const std::ifstream::failure &e)
                                 {
-                                    std::cerr << "Exception skipping initial samples file " << filename0 << '\n';
+                                    std::cerr << "Exception skipping initial samples file " << filename0_ << '\n';
                                     break;
                                 }
 
-                            if (!filename1.empty())
+                            if (!filename1_.empty())
                                 {
                                     try
                                         {
@@ -760,7 +793,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                                         }
                                     catch (const std::ifstream::failure &e)
                                         {
-                                            std::cerr << "Exception setting the position of the next byte to be extracted to zero " << filename1 << '\n';
+                                            std::cerr << "Exception setting the position of the next byte to be extracted to zero " << filename1_ << '\n';
                                             break;
                                         }
 
@@ -770,7 +803,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                                         }
                                     catch (const std::ifstream::failure &e)
                                         {
-                                            std::cerr << "Exception skipping initial samples file " << filename1 << '\n';
+                                            std::cerr << "Exception skipping initial samples file " << filename1_ << '\n';
                                             break;
                                         }
                                 }
@@ -789,18 +822,24 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
             lock.unlock();
         }
 
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+    if (dma_fpga->DMA_close())
+        {
+            std::cerr << "Error closing loop device " << '\n';
+        }
+#else  // 32-bit processor architecture
     if (close(tx_fd) < 0)
         {
             std::cerr << "Error closing loop device " << '\n';
         }
-
+#endif
     try
         {
             infile1.close();
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Exception closing file " << filename0 << '\n';
+            std::cerr << "Exception closing file " << filename0_ << '\n';
         }
 
     if (num_freq_bands_ > 1)
@@ -811,7 +850,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0, const
                 }
             catch (const std::ifstream::failure &e)
                 {
-                    std::cerr << "Exception closing file " << filename1 << '\n';
+                    std::cerr << "Exception closing file " << filename1_ << '\n';
                 }
         }
 

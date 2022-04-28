@@ -166,9 +166,9 @@ endif()
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 16)
+    set(VERSION_INFO_MINOR_VERSION 17)
 else()
-    set(VERSION_INFO_MINOR_VERSION 16.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 17.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -321,7 +321,7 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.8.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "11.0.x")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
@@ -332,7 +332,7 @@ set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.12")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.20.0")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.20.1")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.6.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
@@ -1232,9 +1232,9 @@ if(NOT VOLKGNSSSDR_FOUND)
                 )
             endif()
             if(CPUFEATURES_FOUND)
-                message(STATUS "Found CpuFeatures: (found version ${CpuFeatures_VERSION})")
+                message(STATUS "Found CpuFeatures: (found version ${CPUFEATURES_VERSION})")
                 set_package_properties(CPUFEATURES PROPERTIES
-                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime (found: v${CpuFeatures_VERSION})"
+                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime (version: ${CPUFEATURES_VERSION})"
                 )
             else()
                 set_package_properties(CPUFEATURES PROPERTIES

@@ -95,7 +95,7 @@ typedef struct
     Leaf leaf_80000004;  // brand string
 } Leaves;
 
-static Leaves ReadLeaves()
+static Leaves ReadLeaves(void)
 {
     const Leaf leaf_0 = GetCpuidLeaf(0, 0);
     const uint32_t max_cpuid_leaf = leaf_0.eax;

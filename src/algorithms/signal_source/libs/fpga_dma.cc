@@ -15,28 +15,11 @@
  */
 
 #include "fpga_dma.h"
-#include <errno.h>
 #include <fcntl.h>
-#include <iostream>  // for operator<<
-#include <pthread.h>
-#include <sched.h>
-#include <signal.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <sys/param.h>
-#include <sys/time.h>
-#include <time.h>
+#include <iostream>     // for std::cerr
+#include <sys/ioctl.h>  // for ioctl()
+#include <sys/mman.h>   // libraries used by the GIPO
 #include <unistd.h>
-
-//Fpga_DMA::Fpga_DMA()
-//{
-//
-//}
-
 
 int Fpga_DMA::DMA_open()
 {
@@ -55,11 +38,6 @@ int Fpga_DMA::DMA_open()
             return -1;
         }
 
-
-    //buffer = std::vector<int8_t>(BUFFER_SIZE);
-    //tx_channel.buf_ptr[0].buffer2 = buffer;
-    //tx_channel.buf_ptr[0].buffer = &buffer;
-
     return 0;
 }
 
@@ -75,13 +53,6 @@ int Fpga_DMA::DMA_write(int nbytes)
     int buffer_id = 0;
 
     tx_channel.buf_ptr[0].length = nbytes;
-    //std::cout << "transmitting " << nbytes << " bytes" << std::endl;
-
-    // debug write values to buffer
-    //for (uint k= 0; k < 512; k++)
-    //{
-    //	tx_channel.buf_ptr[0].buffer[k] = k;
-    //}
 
     // start DMA transfer
     if (ioctl(tx_channel.fd, START_XFER, &buffer_id))

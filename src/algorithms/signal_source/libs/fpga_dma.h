@@ -18,8 +18,7 @@
 #ifndef GNSS_SDR_FPGA_DMA_H
 #define GNSS_SDR_FPGA_DMA_H
 
-#include <cstdint>
-#include <vector>
+#include <cstdint>  // for int8_t
 
 #define BUFFER_SIZE (128 * 1024) /* must match driver exactly */
 
@@ -31,10 +30,7 @@
 // channel buffer structure
 struct channel_buffer
 {
-    //unsigned int buffer[BUFFER_SIZE / sizeof(unsigned int)];
     int8_t buffer[BUFFER_SIZE];
-    //int8_t *buffer2;
-    //std::vector<int8_t> * buffer;
     enum proxy_status
     {
         PROXY_NO_ERROR = 0,
@@ -89,7 +85,5 @@ public:
 
 private:
     channel tx_channel;
-    //int8_t buffer[BUFFER_SIZE];
-    //std::vector<int8_t> buffer;
 };
 #endif  // GNSS_SDR_FPGA_DMA_H

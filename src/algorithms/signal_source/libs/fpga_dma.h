@@ -22,6 +22,8 @@
 
 #define BUFFER_SIZE (128 * 1024) /* must match driver exactly */
 
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+
 #define TX_BUFFER_COUNT 1 /* app only, must be <= to the number in the driver */
 
 #define FINISH_XFER _IOW('a', 'a', int32_t *)
@@ -47,6 +49,8 @@ struct channel
     struct channel_buffer *buf_ptr;
     int fd;
 };
+
+#endif
 
 /*!
  * \brief Class that controls the switch DMA in the FPGA
@@ -84,6 +88,11 @@ public:
     int DMA_close(void);
 
 private:
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     channel tx_channel;
+    int8_t buffer[BUFFER_SIZE];
+#else  // 32-bit processor architecture
+    int tx_fd;
+#endif
 };
 #endif  // GNSS_SDR_FPGA_DMA_H

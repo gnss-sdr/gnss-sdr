@@ -537,10 +537,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
     infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
 
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     // FPGA DMA control
     dma_fpga = std::make_shared<Fpga_DMA>();
-#endif
 
     // open the files
     try
@@ -602,15 +600,13 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
         }
 
     // rx signal vectors
-    std::vector<int8_t> input_samples(sample_block_size * 2);      // complex samples
-    std::vector<int8_t> input_samples_dma(sample_block_size * 4);  // complex samples, two frequency bands
+    std::vector<int8_t> input_samples(sample_block_size * 2);  // complex samples
     // pointer to DMA buffer
     int8_t *dma_buffer;
     int nread_elements = 0;  // num bytes read from the file corresponding to frequency band 1
     bool run_DMA = true;
 
     // Open DMA device
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     if (dma_fpga->DMA_open())
         {
             std::cerr << "Cannot open loop device\n";
@@ -619,35 +615,6 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
             return;
         }
     dma_buffer = dma_fpga->get_buffer_address();
-
-#else  // 32-bit processor architecture
-    int tx_fd = open("/dev/loop_tx", O_WRONLY);
-    if (tx_fd < 0)
-        {
-            std::cerr << "Cannot open loop device\n";
-            // stop the receiver
-            queue->push(pmt::make_any(command_event_make(200, 0)));
-            return;
-        }
-    // note: a problem was identified with the DMA: when switching from tx to rx or rx to tx mode
-    // the DMA transmission may hang. This problem will be fixed soon.
-    // for the moment this problem can be avoided by closing and opening the DMA a second time
-    if (close(tx_fd) < 0)
-        {
-            std::cerr << "Error closing loop device " << '\n';
-        }
-    // open the DMA  a second time
-    tx_fd = open("/dev/loop_tx", O_WRONLY);
-    if (tx_fd < 0)
-        {
-            std::cerr << "Cannot open loop device\n";
-            // stop the receiver
-            queue->push(pmt::make_any(command_event_make(200, 0)));
-            return;
-        }
-
-    dma_buffer = input_samples_dma;
-#endif
 
     // if only one frequency band is used then clear the samples corresponding to the unused frequency band
     uint32_t dma_index = 0;
@@ -737,21 +704,11 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
 
             if (nread_elements > 0)
                 {
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
                     if (dma_fpga->DMA_write(nread_elements * 2))
                         {
                             std::cerr << "Error: DMA could not send all the required samples\n";
                             break;
                         }
-#else  // 32-bit processor architecture
-                    int num_transferred_bytes = nread_elements * 2;
-                    const int num_bytes_sent = write(tx_fd, dma_buffer, nread_elements * 2);
-                    if (num_bytes_sent != num_transferred_bytes)
-                        {
-                            std::cerr << "Error: DMA could not send all the required samples\n";
-                            break;
-                        }
-#endif
                     // Throttle the DMA
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
@@ -822,17 +779,10 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
             lock.unlock();
         }
 
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     if (dma_fpga->DMA_close())
         {
             std::cerr << "Error closing loop device " << '\n';
         }
-#else  // 32-bit processor architecture
-    if (close(tx_fd) < 0)
-        {
-            std::cerr << "Error closing loop device " << '\n';
-        }
-#endif
     try
         {
             infile1.close();

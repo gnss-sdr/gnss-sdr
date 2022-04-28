@@ -23,6 +23,7 @@
 
 int Fpga_DMA::DMA_open()
 {
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     tx_channel.fd = open("/dev/dma_proxy_tx", O_RDWR);
     if (tx_channel.fd < 1)
         {
@@ -38,18 +39,48 @@ int Fpga_DMA::DMA_open()
             return -1;
         }
 
+#else  // 32-bit processor architecture
+    tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if (tx_fd < 1)
+        {
+            return tx_fd;
+        }
+    // note: a problem was identified with the DMA: when switching from tx to rx or rx to tx mode
+    // the DMA transmission may hang. This problem will be fixed soon.
+    // for the moment this problem can be avoided by closing and opening the DMA a second time
+    if (close(tx_fd) < 0)
+        {
+            std::cerr << "Error closing loop device " << '\n';
+            return -1;
+        }
+    // open the DMA  a second time
+    tx_fd = open("/dev/loop_tx", O_WRONLY);
+    if (tx_fd < 1)
+        {
+            std::cerr << "Cannot open loop device\n";
+            // stop the receiver
+            return tx_fd;
+        }
+#endif
+
     return 0;
 }
 
 
 int8_t *Fpga_DMA::get_buffer_address(void)
 {
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     return tx_channel.buf_ptr[0].buffer;
+#else  // 32-bit processor architecture
+    return buffer;
+#endif
 }
 
 
 int Fpga_DMA::DMA_write(int nbytes)
 {
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+
     int buffer_id = 0;
 
     tx_channel.buf_ptr[0].length = nbytes;
@@ -73,15 +104,30 @@ int Fpga_DMA::DMA_write(int nbytes)
             std::cerr << "Proxy DMA Tx transfer error " << '\n';
             return -1;
         }
+
+#else  // 32-bit processor architecture
+
+    const int num_bytes_sent = write(tx_fd, dma_buffer, nread_elements * 2);
+    if (num_bytes_sent != num_transferred_bytes)
+        {
+            return -1
+        }
+
+#endif
+
     return 0;
 }
 
 int Fpga_DMA::DMA_close()
 {
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     if (munmap(tx_channel.buf_ptr, sizeof(struct channel_buffer)))
         {
             std::cerr << "Failed to unmap DMA tx channel " << '\n';
             return -1;
         }
     return close(tx_channel.fd);
+#else  // 32-bit processor architecture
+    return close(tx_fd);
+#endif
 }

@@ -1,6 +1,7 @@
 /*!
  * \file fpga_dma.cc
- * \brief FPGA DMA control.
+ * \brief FPGA DMA control. This code is based in the Xilinx DMA proxy test application:
+ * https://github.com/Xilinx-Wiki-Projects/software-prototypes/tree/master/linux-user-space-dma/Software
  * \author Marc Majoral, mmajoral(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -67,12 +68,12 @@ int Fpga_DMA::DMA_open()
 }
 
 
-int8_t *Fpga_DMA::get_buffer_address(void)
+std::array<int8_t, BUFFER_SIZE> *Fpga_DMA::get_buffer_address(void)
 {
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
-    return tx_channel.buf_ptr[0].buffer;
+    return &tx_channel.buf_ptr[0].buffer;
 #else  // 32-bit processor architecture
-    return buffer;
+    return &buffer;
 #endif
 }
 

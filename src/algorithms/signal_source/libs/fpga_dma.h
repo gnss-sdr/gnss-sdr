@@ -1,6 +1,7 @@
 /*!
  * \file fpga_dma.h
- * \brief FPGA DMA control.
+ * \brief FPGA DMA control. This code is based in the Xilinx DMA proxy test application:
+ * https://github.com/Xilinx-Wiki-Projects/software-prototypes/tree/master/linux-user-space-dma/Software
  * \author Marc Majoral, mmajoral(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -18,7 +19,8 @@
 #ifndef GNSS_SDR_FPGA_DMA_H
 #define GNSS_SDR_FPGA_DMA_H
 
-#include <cstdint>  // for int8_t
+#include <array>    // for std::array
+#include <cstdint>  // for std::int8_t
 
 #define BUFFER_SIZE (128 * 1024) /* must match driver exactly */
 
@@ -32,7 +34,7 @@
 // channel buffer structure
 struct channel_buffer
 {
-    int8_t buffer[BUFFER_SIZE];
+    std::array<int8_t, BUFFER_SIZE> buffer;
     enum proxy_status
     {
         PROXY_NO_ERROR = 0,
@@ -76,7 +78,7 @@ public:
     /*!
      * \brief Obtain DMA buffer address.
      */
-    int8_t *get_buffer_address(void);
+    std::array<int8_t, BUFFER_SIZE> *get_buffer_address(void);
     /*!
      * \brief Transfer DMA data
      */
@@ -90,8 +92,8 @@ public:
 private:
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     channel tx_channel;
-    int8_t buffer[BUFFER_SIZE];
 #else  // 32-bit processor architecture
+    std::array<int8_t, BUFFER_SIZE> buffer[BUFFER_SIZE];
     int tx_fd;
 #endif
 };

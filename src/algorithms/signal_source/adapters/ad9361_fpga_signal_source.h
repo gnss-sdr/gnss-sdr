@@ -23,9 +23,7 @@
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
 #include "fpga_dma.h"
-#endif
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
@@ -108,10 +106,7 @@ private:
     std::shared_ptr<Fpga_Switch> switch_fpga;
     std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
     std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
-
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     std::shared_ptr<Fpga_DMA> dma_fpga;
-#endif
 
     std::mutex dma_mutex;
     std::mutex dynamic_bit_selection_mutex;

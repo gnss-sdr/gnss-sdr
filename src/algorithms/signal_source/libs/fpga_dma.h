@@ -79,6 +79,7 @@ public:
      * \brief Obtain DMA buffer address.
      */
     std::array<int8_t, BUFFER_SIZE> *get_buffer_address(void);
+
     /*!
      * \brief Transfer DMA data
      */
@@ -93,7 +94,7 @@ private:
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     channel tx_channel;
 #else  // 32-bit processor architecture
-    std::array<int8_t, BUFFER_SIZE> buffer[BUFFER_SIZE];
+    std::array<int8_t, BUFFER_SIZE> buffer;
     int tx_fd;
 #endif
 };

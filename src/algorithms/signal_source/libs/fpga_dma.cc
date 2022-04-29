@@ -108,10 +108,10 @@ int Fpga_DMA::DMA_write(int nbytes)
 
 #else  // 32-bit processor architecture
 
-    const int num_bytes_sent = write(tx_fd, dma_buffer, nread_elements * 2);
-    if (num_bytes_sent != num_transferred_bytes)
+    const int num_bytes_sent = write(tx_fd, buffer.data(), nbytes);
+    if (num_bytes_sent != nbytes)
         {
-            return -1
+            return -1;
         }
 
 #endif

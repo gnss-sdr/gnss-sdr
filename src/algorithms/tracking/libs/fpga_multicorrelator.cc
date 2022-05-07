@@ -197,7 +197,7 @@ void Fpga_Multicorrelator_8sc::open_channel(const std::string &device_io_name, u
             LOG(WARNING) << "Cannot open deviceio" << device_io_name;
             std::cout << "Cannot open deviceio" << device_io_name << '\n';
         }
-    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, page_size,
+    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, FPGA_PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -402,7 +402,7 @@ void Fpga_Multicorrelator_8sc::unlock_channel()
 void Fpga_Multicorrelator_8sc::close_device()
 {
     auto *aux = const_cast<uint32_t *>(d_map_base);
-    if (munmap(static_cast<void *>(aux), page_size) == -1)
+    if (munmap(static_cast<void *>(aux), FPGA_PAGE_SIZE) == -1)
         {
             std::cout << "Failed to unmap memory uio\n";
         }

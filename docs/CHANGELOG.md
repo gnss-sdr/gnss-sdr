@@ -21,6 +21,19 @@ All notable changes to GNSS-SDR will be documented in this file.
   but `openblas`, which is used as a replacement if `blas` is not found).
 - Removed duplicated files in the Secure User Plane Location implementation,
   which caused issues when linking with some compilers.
+- Added support for Xilinx's Zynq UltraScale+ devices (requires the
+  `-DENABLE_FPGA=ON` building option).
+
+### Improvements in Usability:
+
+- Fixed large GLONASS velocity errors when using the
+  `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
+  `GLONASS_L2_CA_DLL_PLL_C_Aid_Tracking` implementations.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
 
 ## [GNSS-SDR v0.0.17](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.17) - 2022-04-20
 

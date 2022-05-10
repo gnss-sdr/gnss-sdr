@@ -163,6 +163,162 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
     return true;
 }
 
+int setup_filter(std::string filter_source_, uint64_t bandwidth_, uint64_t sample_rate_, uint64_t freq_, const std::string &rf_port_select_, struct iio_context *ctx,
+    struct iio_device *ad9361_phy, struct iio_channel *rx_chan1, std::string filter_filename_, float Fpass_, float Fstop_)
+{
+    int ret;
+    if (filter_source_ == "Off")
+        {
+            struct stream_cfg rxcfg;
+            rxcfg.bw_hz = bandwidth_;
+            rxcfg.fs_hz = sample_rate_;
+            rxcfg.lo_hz = freq_;
+            rxcfg.rfport = rf_port_select_.c_str();
+
+            if (!cfg_ad9361_streaming_ch(ctx, &rxcfg, RX, 0))
+                {
+                    std::cout << "RX port 0 not found\n";
+                    throw std::runtime_error("AD9361 IIO RX port 0 not found");
+                }
+        }
+    else if (filter_source_ == "Auto")
+        {
+            ret = ad9361_set_bb_rate(ad9361_phy, sample_rate_);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set BB rate");
+                    // set bw
+                    // params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
+                }
+            // wr_ch_str(rx_chan1, "rf_port_select", rf_port_select_.c_str());
+            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set rf_port_select");
+                }
+            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
+            if (!get_lo_chan(ctx, RX, &rx_chan1))
+                {
+                    return -1;
+                }
+            wr_ch_lli(rx_chan1, "frequency", freq_);
+        }
+    else if (filter_source_ == "File")
+        {
+            try
+                {
+                    if (!load_fir_filter(filter_filename_, ad9361_phy))
+                        {
+                            throw std::runtime_error("Unable to load filter file");
+                        }
+                }
+            catch (const std::runtime_error &e)
+                {
+                    std::cout << "Exception cached when configuring the RX FIR filter: " << e.what() << '\n';
+                }
+            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set rf_port_select");
+                }
+            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
+            if (!get_lo_chan(ctx, RX, &rx_chan1))
+                {
+                    return -1;
+                }
+            wr_ch_lli(rx_chan1, "frequency", freq_);
+        }
+#if LIBAD9361_VERSION_GREATER_THAN_01
+    else if (filter_source_ == "Design")
+        {
+            ret = ad9361_set_bb_rate_custom_filter_manual(
+                ad9361_phy, sample_rate_, static_cast<uint64_t>(Fpass_), static_cast<uint64_t>(Fstop_), bandwidth_, bandwidth_);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set BB rate");
+                }
+            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to set rf_port_select");
+                }
+            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
+            if (!get_lo_chan(ctx, RX, &rx_chan1))
+                {
+                    return -1;
+                }
+            wr_ch_lli(rx_chan1, "frequency", freq_);
+        }
+#endif
+    else
+        {
+            throw std::runtime_error("Unknown filter configuration");
+        }
+
+    // Filters can only be disabled after the sample rate has been set
+    if (filter_source_ == "Off")
+        {
+            ret = ad9361_set_trx_fir_enable(ad9361_phy, false);
+            if (ret)
+                {
+                    throw std::runtime_error("Unable to disable filters");
+                }
+        }
+    return 0;
+}
+
+int setup_device_parameters(iio_device *ad9361_phy, bool quadrature_, bool rfdc_, bool bbdc_, const std::string &gain_mode_rx1_, const std::string &gain_mode_rx2_)
+{
+    int ret;
+    ret = iio_device_attr_write(ad9361_phy, "trx_rate_governor", "nominal");
+    if (ret < 0)
+        {
+            std::cout << "Failed to set trx_rate_governor: " << ret << '\n';
+            return ret;
+        }
+    ret = iio_device_attr_write(ad9361_phy, "ensm_mode", "fdd");
+    if (ret < 0)
+        {
+            std::cout << "Failed to set ensm_mode: " << ret << '\n';
+            return ret;
+        }
+    ret = iio_device_attr_write(ad9361_phy, "calib_mode", "auto");
+    if (ret < 0)
+        {
+            std::cout << "Failed to set calib_mode: " << ret << '\n';
+            return ret;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_quadrature_tracking_en", quadrature_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_quadrature_tracking_en: " << ret << '\n';
+            return ret;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_rf_dc_offset_tracking_en", rfdc_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_rf_dc_offset_tracking_en: " << ret << '\n';
+            return ret;
+        }
+    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_bb_dc_offset_tracking_en", bbdc_);
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage_bb_dc_offset_tracking_en: " << ret << '\n';
+            return ret;
+        }
+    ret = iio_device_attr_write(ad9361_phy, "in_voltage0_gain_control_mode", gain_mode_rx1_.c_str());
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage0_gain_control_mode: " << ret << '\n';
+            return ret;
+        }
+    ret = iio_device_attr_write(ad9361_phy, "in_voltage1_gain_control_mode", gain_mode_rx2_.c_str());
+    if (ret < 0)
+        {
+            std::cout << "Failed to set in_voltage1_gain_control_mode: " << ret << '\n';
+        }
+    return ret;
+}
 
 bool config_ad9361_rx_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
@@ -205,6 +361,8 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         }
 #endif
 
+    // iio context
+
     ctx = iio_create_default_context();
     if (!ctx)
         {
@@ -218,124 +376,87 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
             throw std::runtime_error("AD9361 IIO No devices");
         }
 
+    // AD9361-A
     struct iio_device *ad9361_phy;
-    ad9361_phy = iio_context_find_device(ctx, "ad9361-phy");
-
-    std::cout << "* Acquiring AD9361 streaming devices\n";
-    if (!get_ad9361_stream_dev(ctx, RX, &rx))
+    ad9361_phy = iio_context_find_device(ctx, RX_DEV_A.c_str());
+    if (!ad9361_phy)
         {
             std::cout << "No rx dev found\n";
-            throw std::runtime_error("AD9361 IIO No rx dev found");
+            throw std::runtime_error("AD9361 IIO no rx dev found");
         }
 
-    std::cout << "* Initializing AD9361 IIO streaming channels\n";
+    // AD9361-B
+    struct iio_device *ad9361_phy_B;
+    bool enable_ad9361_b;
+    ad9361_phy_B = iio_context_find_device(ctx, RX_DEV_B.c_str());
+    if (ad9361_phy_B)
+        {
+            enable_ad9361_b = true;
+        }
+    else
+        {
+            enable_ad9361_b = false;
+        }
+
+    // set-up AD9361-A stream device
+
+    std::cout << "* Acquiring AD9361 streaming devices\n";
+    std::string rx_stream_dev_a = (enable_ad9361_b ? RX_STREAM_DEV_A : RX_STREAM_DEV);
+    rx = iio_context_find_device(ctx, rx_stream_dev_a.c_str());
+    if (!rx)
+        {
+            std::cout << "No rx stream dev found\n";
+            throw std::runtime_error("AD9361 IIO No rx stream dev found");
+        }
+
+    // get AD9361-A stream device channel 1 as rx channel 1
+
     if (!get_ad9361_stream_ch(ctx, RX, rx, 0, &rx_chan1))
         {
             std::cout << "RX channel 1 not found\n";
             throw std::runtime_error("RX channel 1 not found");
         }
-
-    if (!get_ad9361_stream_ch(ctx, RX, rx, 1, &rx_chan2))
+    if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq_, rf_port_select_, ctx, ad9361_phy, rx_chan1, filter_filename_, Fpass_, Fstop_) == -1)
         {
-            std::cout << "RX channel 2 not found\n";
-            throw std::runtime_error("RX channel 2 not found");
+            return false;
         }
 
-    if (filter_source_ == "Off")
+    if (enable_ad9361_b)
         {
-            struct stream_cfg rxcfg;
-            rxcfg.bw_hz = bandwidth_;
-            rxcfg.fs_hz = sample_rate_;
-            rxcfg.lo_hz = freq_;
-            rxcfg.rfport = rf_port_select_.c_str();
+            // set-up AD9361-B stream device
 
-            if (!cfg_ad9361_streaming_ch(ctx, &rxcfg, RX, 0))
+            std::cout << "* Acquiring AD9361 streaming devices\n";
+            rx = iio_context_find_device(ctx, RX_STREAM_DEV_B.c_str());
+            if (!rx)
                 {
-                    std::cout << "RX port 0 not found\n";
-                    throw std::runtime_error("AD9361 IIO RX port 0 not found");
+                    std::cout << "No rx stream dev found\n";
+                    throw std::runtime_error("AD9361 IIO No rx stream dev found");
                 }
-        }
-    else if (filter_source_ == "Auto")
-        {
-            ret = ad9361_set_bb_rate(ad9361_phy, sample_rate_);
-            if (ret)
+
+            // get AD9361-A stream device channel 1 as rx channel 2
+
+            if (!get_ad9361_stream_ch(ctx, RX, rx, 0, &rx_chan2))
                 {
-                    throw std::runtime_error("Unable to set BB rate");
-                    // set bw
-                    // params.push_back("in_voltage_rf_bandwidth=" + boost::to_string(bandwidth));
+                    std::cout << "RX channel 1 not found\n";
+                    throw std::runtime_error("RX channel 1 not found");
                 }
-            // wr_ch_str(rx_chan1, "rf_port_select", rf_port_select_.c_str());
-            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
-            if (ret)
-                {
-                    throw std::runtime_error("Unable to set rf_port_select");
-                }
-            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
-            if (!get_lo_chan(ctx, RX, &rx_chan1))
+            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq_, rf_port_select_, ctx, ad9361_phy_B, rx_chan2, filter_filename_, Fpass_, Fstop_) == -1)
                 {
                     return false;
                 }
-            wr_ch_lli(rx_chan1, "frequency", freq_);
         }
-    else if (filter_source_ == "File")
-        {
-            try
-                {
-                    if (!load_fir_filter(filter_filename_, ad9361_phy))
-                        {
-                            throw std::runtime_error("Unable to load filter file");
-                        }
-                }
-            catch (const std::runtime_error &e)
-                {
-                    std::cout << "Exception cached when configuring the RX FIR filter: " << e.what() << '\n';
-                }
-            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
-            if (ret)
-                {
-                    throw std::runtime_error("Unable to set rf_port_select");
-                }
-            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
-            if (!get_lo_chan(ctx, RX, &rx_chan1))
-                {
-                    return false;
-                }
-            wr_ch_lli(rx_chan1, "frequency", freq_);
-        }
-#if LIBAD9361_VERSION_GREATER_THAN_01
-    else if (filter_source_ == "Design")
-        {
-            ret = ad9361_set_bb_rate_custom_filter_manual(
-                ad9361_phy, sample_rate_, static_cast<uint64_t>(Fpass_), static_cast<uint64_t>(Fstop_), bandwidth_, bandwidth_);
-            if (ret)
-                {
-                    throw std::runtime_error("Unable to set BB rate");
-                }
-            ret = iio_device_attr_write(ad9361_phy, "in_voltage0_rf_port_select", rf_port_select_.c_str());
-            if (ret)
-                {
-                    throw std::runtime_error("Unable to set rf_port_select");
-                }
-            wr_ch_lli(rx_chan1, "rf_bandwidth", bandwidth_);
-            if (!get_lo_chan(ctx, RX, &rx_chan1))
-                {
-                    return false;
-                }
-            wr_ch_lli(rx_chan1, "frequency", freq_);
-        }
-#endif
     else
         {
-            throw std::runtime_error("Unknown filter configuration");
-        }
+            // GET ad9361-A stream device channel 2 as rx channel 2
 
-    // Filters can only be disabled after the sample rate has been set
-    if (filter_source_ == "Off")
-        {
-            ret = ad9361_set_trx_fir_enable(ad9361_phy, false);
-            if (ret)
+            if (!get_ad9361_stream_ch(ctx, RX, rx, 1, &rx_chan2))
                 {
-                    throw std::runtime_error("Unable to disable filters");
+                    std::cout << "RX channel 2 not found\n";
+                    throw std::runtime_error("RX channel 2 not found");
+                }
+            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq_, rf_port_select_, ctx, ad9361_phy, rx_chan2, filter_filename_, Fpass_, Fstop_) == -1)
+                {
+                    return false;
                 }
         }
 
@@ -353,46 +474,18 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
             std::cout << "WARNING: No Rx channels enabled.\n";
         }
 
-    ret = iio_device_attr_write(ad9361_phy, "trx_rate_governor", "nominal");
-    if (ret < 0)
+    if (setup_device_parameters(ad9361_phy, quadrature_, rfdc_, bbdc_, gain_mode_rx1_, gain_mode_rx2_) < 0)
         {
-            std::cout << "Failed to set trx_rate_governor: " << ret << '\n';
+            throw std::runtime_error("setup AD9361 device parameters failed");
         }
-    ret = iio_device_attr_write(ad9361_phy, "ensm_mode", "fdd");
-    if (ret < 0)
+    if (enable_ad9361_b)
         {
-            std::cout << "Failed to set ensm_mode: " << ret << '\n';
+            if (setup_device_parameters(ad9361_phy_B, quadrature_, rfdc_, bbdc_, gain_mode_rx1_, gain_mode_rx2_) < 0)
+                {
+                    throw std::runtime_error("setup AD9361 device parameters failed");
+                }
         }
-    ret = iio_device_attr_write(ad9361_phy, "calib_mode", "auto");
-    if (ret < 0)
-        {
-            std::cout << "Failed to set calib_mode: " << ret << '\n';
-        }
-    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_quadrature_tracking_en", quadrature_);
-    if (ret < 0)
-        {
-            std::cout << "Failed to set in_voltage_quadrature_tracking_en: " << ret << '\n';
-        }
-    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_rf_dc_offset_tracking_en", rfdc_);
-    if (ret < 0)
-        {
-            std::cout << "Failed to set in_voltage_rf_dc_offset_tracking_en: " << ret << '\n';
-        }
-    ret = iio_device_attr_write_bool(ad9361_phy, "in_voltage_bb_dc_offset_tracking_en", bbdc_);
-    if (ret < 0)
-        {
-            std::cout << "Failed to set in_voltage_bb_dc_offset_tracking_en: " << ret << '\n';
-        }
-    ret = iio_device_attr_write(ad9361_phy, "in_voltage0_gain_control_mode", gain_mode_rx1_.c_str());
-    if (ret < 0)
-        {
-            std::cout << "Failed to set in_voltage0_gain_control_mode: " << ret << '\n';
-        }
-    ret = iio_device_attr_write(ad9361_phy, "in_voltage1_gain_control_mode", gain_mode_rx2_.c_str());
-    if (ret < 0)
-        {
-            std::cout << "Failed to set in_voltage1_gain_control_mode: " << ret << '\n';
-        }
+
     if (gain_mode_rx1_ == "manual")
         {
             ret = iio_device_attr_write_double(ad9361_phy, "in_voltage0_hardwaregain", rf_gain_rx1_);
@@ -401,12 +494,24 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                     std::cout << "Failed to set in_voltage0_hardwaregain: " << ret << '\n';
                 }
         }
-    if (gain_mode_rx2_ == "manual")
+
+    if (!enable_ad9361_b)
         {
-            ret = iio_device_attr_write_double(ad9361_phy, "in_voltage1_hardwaregain", rf_gain_rx2_);
+            if (gain_mode_rx2_ == "manual")
+                {
+                    ret = iio_device_attr_write_double(ad9361_phy, "in_voltage1_hardwaregain", rf_gain_rx2_);
+                    if (ret < 0)
+                        {
+                            std::cout << "Failed to set in_voltage1_hardwaregain: " << ret << '\n';
+                        }
+                }
+        }
+    else
+        {
+            ret = iio_device_attr_write_double(ad9361_phy_B, "in_voltage0_hardwaregain", rf_gain_rx1_);
             if (ret < 0)
                 {
-                    std::cout << "Failed to set in_voltage1_hardwaregain: " << ret << '\n';
+                    std::cout << "Failed to set in_voltage0_hardwaregain: " << ret << '\n';
                 }
         }
 

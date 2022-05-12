@@ -16,7 +16,7 @@ endif()
 # Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
-cmake_minimum_required(VERSION 2.8.12...3.22)
+cmake_minimum_required(VERSION 2.8.12...3.23)
 project(gnss-sdr CXX C)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
@@ -101,7 +101,7 @@ option(ENABLE_SYSTEM_TESTING_EXTRA "Download external tools and build extra syst
 
 option(ENABLE_GNSS_SIM_INSTALL "Enable the installation of gnss_sim on the fly" ON)
 
-option(ENABLE_OWN_CPUFEATURES "Force the building of the cpu_features library even if it is already installed" ON)
+option(ENABLE_CPUFEATURES "Make use of the cpu_features library" ON)
 
 if(NOT (ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA))
     set(ENABLE_GNSS_SIM_INSTALL OFF)
@@ -166,9 +166,9 @@ endif()
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_API_COMPAT 0)
 if(${THIS_IS_A_RELEASE})
-    set(VERSION_INFO_MINOR_VERSION 16)
+    set(VERSION_INFO_MINOR_VERSION 17)
 else()
-    set(VERSION_INFO_MINOR_VERSION 16.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
+    set(VERSION_INFO_MINOR_VERSION 17.git-${GIT_BRANCH}-${GIT_COMMIT_HASH})
 endif()
 
 set(VERSION ${VERSION_INFO_MAJOR_VERSION}.${VERSION_INFO_API_COMPAT}.${VERSION_INFO_MINOR_VERSION})
@@ -320,8 +320,8 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 # Versions to download and build (but not installed) if not found
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
-set(GNSSSDR_GLOG_LOCAL_VERSION "0.5.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.8.x")
+set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "11.0.x")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
@@ -330,11 +330,15 @@ else()
 endif()
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.22")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.12")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.19.4")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.20.1")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.6.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
+
+if(CMAKE_VERSION VERSION_LESS "3.16")
+    set(GNSSSDR_GLOG_LOCAL_VERSION "0.5.0")
+endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.3")
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")    # Fix for Debian 8
@@ -1156,7 +1160,6 @@ if(NOT VOLKGNSSSDR_FOUND)
     set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_COMPILER}
         -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
         -DENABLE_STATIC_LIBS=ON
-        -DENABLE_OWN_CPUFEATURES=${ENABLE_OWN_CPUFEATURES}
         -DENABLE_PROFILING=${ENABLE_PROFILING}
         -DENABLE_ORC=${ORC_ENABLED}
         ${STRIP_VOLK_GNSSSDR_PROFILE}
@@ -1193,15 +1196,8 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
     include(GNUInstallDirs)
     set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
-        set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
-        set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64")
-        set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(^i.86$)")
-        set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES
+        "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)")
         set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
     endif()
     if(${CMAKE_INSTALL_LIBDIR} MATCHES lib64)
@@ -1227,29 +1223,38 @@ if(NOT VOLKGNSSSDR_FOUND)
                 ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                 ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
             )
-            if(NOT ENABLE_OWN_CPUFEATURES)
-                find_package(CpuFeatures QUIET)
-                set_package_properties(CpuFeatures PROPERTIES
+            if(ENABLE_CPUFEATURES)
+                find_package(CPUFEATURES)
+                set_package_properties(CPUFEATURES PROPERTIES
                     URL "https://github.com/google/cpu_features"
                     PURPOSE "Used by the volk_gnsssdr library."
                     TYPE REQUIRED
                 )
             endif()
-            if(CpuFeatures_FOUND)
-                message(STATUS "Found CpuFeatures: (found version ${CpuFeatures_VERSION})")
-                set_package_properties(CpuFeatures PROPERTIES
-                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime (found: v${CpuFeatures_VERSION})"
+            if(CPUFEATURES_FOUND)
+                message(STATUS "Found CpuFeatures: (found version ${CPUFEATURES_VERSION})")
+                set_package_properties(CPUFEATURES PROPERTIES
+                    DESCRIPTION "A cross platform C99 library to get CPU features at runtime (version: ${CPUFEATURES_VERSION})"
                 )
             else()
-                set_package_properties(CpuFeatures PROPERTIES
+                set_package_properties(CPUFEATURES PROPERTIES
                     DESCRIPTION "A cross platform C99 library to get CPU features at runtime"
-                    PURPOSE "CpuFeatures will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
                 )
-                set(VOLK_GNSSSDR_BUILD_BYPRODUCTS
-                    ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
-                    ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
-                )
+                if(VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3" AND VOLK_VERSION VERSION_LESS "2.5.2") # detect "hidden" cpu_features 0.6.0
+                    set(ENABLE_CPUFEATURES OFF)
+                else()
+                    set_package_properties(CPUFEATURES PROPERTIES
+                        PURPOSE "CpuFeatures will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+                    )
+                    set(VOLK_GNSSSDR_BUILD_BYPRODUCTS
+                        ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
+                        ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    )
+                endif()
             endif()
+            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                    -DVOLK_CPU_FEATURES=${ENABLE_CPUFEATURES}
+            )
             ExternalProject_Add(volk_gnsssdr_module
                 PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
                 SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -1265,6 +1270,10 @@ if(NOT VOLKGNSSSDR_FOUND)
                 INSTALL_DIR ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install
             )
         else()
+            set(ENABLE_CPUFEATURES OFF)
+            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
+                -DVOLK_CPU_FEATURES=${ENABLE_CPUFEATURES}
+            )
             ExternalProject_Add(volk_gnsssdr_module
                 PREFIX ${CMAKE_BINARY_DIR}/volk_gnsssdr_module
                 SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
@@ -1292,8 +1301,8 @@ if(NOT VOLKGNSSSDR_FOUND)
     set_property(TARGET volk_gnsssdr PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/libvolk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(VOLK_GNSSSDR_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/volk_gnsssdr_module/build/include/;${CMAKE_SOURCE_DIR}/src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include;${ORC_INCLUDE_DIRS}")
     set(VOLK_GNSSSDR_LIBRARIES volk_gnsssdr ${ORC_LIBRARIES_STATIC})
-    if(CpuFeatures_FOUND)
-        set(VOLK_GNSSSDR_LIBRARIES ${VOLK_GNSSSDR_LIBRARIES} CpuFeatures::cpu_features)
+    if(CPUFEATURES_FOUND)
+        set(VOLK_GNSSSDR_LIBRARIES ${VOLK_GNSSSDR_LIBRARIES} CpuFeature::cpu_features)
     endif()
 
     if(NOT TARGET Volkgnsssdr::volkgnsssdr)
@@ -1308,7 +1317,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             INTERFACE_LINK_LIBRARIES "${VOLK_GNSSSDR_LIBRARIES}"
         )
         if(CMAKE_VERSION VERSION_GREATER 3.0 AND SUPPORTED_CPU_FEATURES_ARCH)
-            if(NOT CpuFeatures_FOUND)
+            if(NOT CPUFEATURES_FOUND AND ENABLE_CPUFEATURES)
                 set_target_properties(Volkgnsssdr::volkgnsssdr PROPERTIES
                     INTERFACE_LINK_LIBRARIES ${CMAKE_BINARY_DIR}/volk_gnsssdr_module/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}cpu_features${CMAKE_STATIC_LIBRARY_SUFFIX}
                 )
@@ -1338,7 +1347,6 @@ if(NOT VOLKGNSSSDR_FOUND)
         PURPOSE "volk_gnsssdr will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
 else()
-    set(ENABLE_OWN_CPUFEATURES OFF)
     set(ENABLE_ORC OFF)
 endif()
 
@@ -1674,8 +1682,11 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
                 ${CMAKE_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
         endif()
-        if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
+        if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode) AND NOT CMAKE_CROSSCOMPILING)
             set(PARALLEL_BUILD "--parallel 2")
+        endif()
+        if(GNSSSDR_GLOG_LOCAL_VERSION VERSION_GREATER 0.5.0)
+            set(GLOG_GTEST -DWITH_GTEST=FALSE)
         endif()
         ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             DEPENDS ${TARGET_GFLAGS}
@@ -1689,6 +1700,7 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
                 ${GLOG_TOOLCHAIN_FILE}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
                 -DBUILD_SHARED_LIBS=OFF
+                ${GLOG_GTEST}
                 -DBUILD_TESTING=OFF
             BUILD_COMMAND "${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
@@ -3353,7 +3365,7 @@ add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downlo
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")
 add_feature_info(ENABLE_EXTERNAL_MATHJAX ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} doc'.")
-add_feature_info(ENABLE_OWN_CPUFEATURES ENABLE_OWN_CPUFEATURES "Force building own local version of the cpu_features library, even if it is already installed.")
+add_feature_info(ENABLE_CPUFEATURES ENABLE_CPUFEATURES "Make use of the cpu_features library.")
 add_feature_info(Boost_USE_STATIC_LIBS Boost_USE_STATIC_LIBS "Use Boost static libraries.")
 
 message(STATUS "")

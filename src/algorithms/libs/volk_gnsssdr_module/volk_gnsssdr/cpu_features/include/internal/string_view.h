@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 // A view over a piece of string. The view is not 0 terminated.
 #ifndef CPU_FEATURES_INCLUDE_INTERNAL_STRING_VIEW_H_
 #define CPU_FEATURES_INCLUDE_INTERNAL_STRING_VIEW_H_

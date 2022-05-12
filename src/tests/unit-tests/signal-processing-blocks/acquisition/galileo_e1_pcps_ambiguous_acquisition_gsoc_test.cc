@@ -35,6 +35,7 @@
 #include "gnss_signal.h"
 #include "gnss_synchro.h"
 #include "in_memory_configuration.h"
+#include <boost/exception/diagnostic_information.hpp>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>

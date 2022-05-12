@@ -10,7 +10,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     find_package(GPSTK QUIET)
     if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
         include(GNUInstallDirs)
-        set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX})
         set(GPSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
     endif()
 
@@ -55,19 +55,25 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         add_dependencies(obsdiff matio-${GNSSSDR_MATIO_LOCAL_VERSION})
     endif()
 
+    if(NOT TARGET Gpstk::gpstk)
+        file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIR}/gpstk)
+        add_library(Gpstk::gpstk STATIC IMPORTED)
+        add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+        set_target_properties(Gpstk::gpstk PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GPSTK_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GPSTK_INCLUDE_DIR};${GPSTK_INCLUDE_DIR}/gpstk"
+            INTERFACE_LINK_LIBRARIES "${GPSTK_LIBRARY}"
+        )
+    endif()
+
     target_link_libraries(obsdiff
         PRIVATE
             Armadillo::armadillo
             Threads::Threads
             Gflags::gflags
             Matio::matio
-            ${GPSTK_LIBRARY}
-    )
-
-    target_include_directories(obsdiff
-        PRIVATE
-            ${GPSTK_INCLUDE_DIR}/gpstk
-            ${GPSTK_INCLUDE_DIR}
+            Gpstk::gpstk
     )
 
     if(GPSTK_OLDER_THAN_8)

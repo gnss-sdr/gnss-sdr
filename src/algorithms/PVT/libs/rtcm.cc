@@ -3728,25 +3728,25 @@ std::string Rtcm::get_IGM05_content_sat(const Galileo_HAS_data& has_data, uint8_
                                     valid_bias_v.push_back(true);
                                     valid_num_bias_processed++;
                                 }
-                            else if (code_string == "L1 L1C(D)")
+                            else if (code_string == "L1C(D)")
                                 {
                                     gnss_signal_tracking_mode_id_v.push_back(3);
                                     valid_bias_v.push_back(true);
                                     valid_num_bias_processed++;
                                 }
-                            else if (code_string == "L1 L1C(P)")
+                            else if (code_string == "L1C(P)")
                                 {
                                     gnss_signal_tracking_mode_id_v.push_back(4);
                                     valid_bias_v.push_back(true);
                                     valid_num_bias_processed++;
                                 }
-                            else if (code_string == "L2 L2C(M)")
+                            else if (code_string == "L2 CM")
                                 {
                                     gnss_signal_tracking_mode_id_v.push_back(7);
                                     valid_bias_v.push_back(true);
                                     valid_num_bias_processed++;
                                 }
-                            else if (code_string == "L2 L2C(L)")
+                            else if (code_string == "L2 CL")
                                 {
                                     gnss_signal_tracking_mode_id_v.push_back(8);
                                     valid_bias_v.push_back(true);

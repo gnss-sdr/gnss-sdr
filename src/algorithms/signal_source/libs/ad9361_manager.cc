@@ -508,10 +508,13 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         }
     else
         {
-            ret = iio_device_attr_write_double(ad9361_phy_B, "in_voltage0_hardwaregain", rf_gain_rx1_);
-            if (ret < 0)
+            if (gain_mode_rx2_ == "manual")
                 {
-                    std::cout << "Failed to set in_voltage0_hardwaregain: " << ret << '\n';
+                    ret = iio_device_attr_write_double(ad9361_phy_B, "in_voltage1_hardwaregain", rf_gain_rx2_);
+                    if (ret < 0)
+                        {
+                            std::cout << "Failed to set in_voltage1_hardwaregain: " << ret << '\n';
+                        }
                 }
         }
 

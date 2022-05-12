@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 #ifndef CPU_FEATURES_INCLUDE_INTERNAL_CPUID_X86_H_
 #define CPU_FEATURES_INCLUDE_INTERNAL_CPUID_X86_H_
 

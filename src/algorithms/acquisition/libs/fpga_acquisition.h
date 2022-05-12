@@ -142,7 +142,7 @@ public:
 
 private:
     // FPGA register parameters
-    static const uint32_t PAGE_SIZE_DEFAULT = 0x10000;            // default page size for the multicorrelator memory map
+    static const uint32_t FPGA_PAGE_SIZE = 0x1000;                // default page size for the multicorrelator memory map
     static const uint32_t LAUNCH_ACQUISITION = 1;                 // command to launch the acquisition process
     static const uint32_t RESET_ACQUISITION = 2;                  // command to reset the acquisition and the FPGA Modules
     static const uint32_t STOP_ACQUISITION = 4;                   // command to stop the acquisition and the FPGA modules

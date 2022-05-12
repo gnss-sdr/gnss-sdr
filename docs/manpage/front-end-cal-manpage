@@ -32,7 +32,7 @@ The crystal oscillator that ships with the RTL2832U family devices exhibits limi
 \.TP
 Example of configuration file available at: ${prefix}/share/gnss\-sdr/conf/front\-end\-cal.conf, where ${prefix}$ uses to be /usr or /usr/local. This will be the configuration file used by default if the \fB\-config_file\fR option is not set.
 \.TP
-[1] C. Fernandez\-Prades, J. Arribas, P. Closas, \fITurning a Television into a GNSS Receiver\fR, in Proceedings of ION GNSS+, 15\-16 September 2013, Nashville, Tennessee (USA). A draft copy is freely available at http://www.cttc.es/publication/turning\-a\-television\-into\-a\-gnss\-receiver/
+[1] C. Fernandez\-Prades, J. Arribas, P. Closas, \fITurning a Television into a GNSS Receiver\fR, in Proceedings of ION GNSS+, 15\-16 September 2013, Nashville, Tennessee (USA). A draft copy is freely available at https://www.researchgate.net/publication/257137427_Turning_a_Television_into_a_GNSS_Receiver
 \.TP
 Check https://gnss\-sdr.org for more information.
 .SH BUGS
@@ -40,4 +40,4 @@ No known bugs.
 .SH AUTHOR
 Javier Arribas (javier.arribas@cttc.es)
 \.TP
-This software has been developed at CTTC (Centre Tecnologic de Telecomunicacions de Catalunya, http://www.cttc.es) with contributions from around the world.
+This software has been developed at CTTC (Centre Tecnologic de Telecomunicacions de Catalunya, https://www.cttc.cat) with contributions from around the world.

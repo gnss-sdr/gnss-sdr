@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2017 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
-
 // Reads a file line by line and stores the data on the stack. This allows
 // parsing files in one go without allocating.
 #ifndef CPU_FEATURES_INCLUDE_INTERNAL_STACK_LINE_READER_H_

@@ -14,14 +14,52 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Portability:
+
+- Improved detection of the BLAS library under macOS / Macports (the `lapack`
+  port dependency installed with the `+openblas` variant does not install `blas`
+  but `openblas`, which is used as a replacement if `blas` is not found).
+- Removed duplicated files in the Secure User Plane Location implementation,
+  which caused issues when linking with some compilers.
+- Added support for Xilinx's Zynq UltraScale+ devices (requires the
+  `-DENABLE_FPGA=ON` building option).
+
+### Improvements in Usability:
+
+- Fixed large GLONASS velocity errors when using the
+  `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
+  `GLONASS_L2_CA_DLL_PLL_C_Aid_Tracking` implementations.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
+## [GNSS-SDR v0.0.17](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.17) - 2022-04-20
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6473244.svg)](https://doi.org/10.5281/zenodo.6473244)
+
 ### Improvements in Availability:
 
 - Compute PVT solutions when using GPS L5 signals even if the satellite is
   reported as not healthy in the CNAV message.
 
+### Improvements in Portability:
+
+- Updated `cpu_features` library to v0.7.0. The building option
+  `ENABLE_OWN_CPUFEATURES` has been replaced by `ENABLE_CPUFEATURES`, defaulting
+  to `ON`.
+- Fixed building against GNU Radio v3.10.2.0.
+
 ### Improvements in Reliability:
 
 - Fix some defects detected by Coverity Scan 2021.12.1.
+
+### Improvements in Usability:
+
+- Added a script at `src/utils/scripts/download-galileo-almanac.sh` that
+  downloads an XML file with the latest Galileo almanac published by the
+  European GNSS Service Centre at https://www.gsc-europa.eu/product-almanacs
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/
@@ -922,8 +960,7 @@ features and bug fixes:
 - Improvements in the RTCM server stability.
 - Improvements in the correctness of generated RINEX files.
 - The receiver can read and make use of Galileo almanac XML files published by
-  the European GNSS Service Centre at
-  https://www.gsc-europa.eu/system-status/almanac-data
+  the European GNSS Service Centre at https://www.gsc-europa.eu/product-almanacs
 - Own-defined XML schemas for navigation data published at
   https://github.com/gnss-sdr/gnss-sdr/tree/next/docs/xml-schemas
 - Added program `rinex2assist` to convert RINEX navigation files into XML files

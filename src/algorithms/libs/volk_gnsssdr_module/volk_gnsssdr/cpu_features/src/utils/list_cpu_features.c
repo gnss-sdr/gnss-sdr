@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google LLC
+// SPDX-FileCopyrightText: 2021 Google LLC
 // SPDX-License-Identifier: Apache-2.0
 
 // This program dumps current host data to the standard output.
@@ -363,7 +363,7 @@ static Node* GetCacheTypeString(CacheType cache_type)
         case CPU_FEATURE_CACHE_PREFETCH:
             return CreateConstantString("prefetch");
         }
-    UNREACHABLE();
+    CPU_FEATURES_UNREACHABLE();
 }
 
 static void AddCacheInfo(Node* root, const CacheInfo* cache_info)

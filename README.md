@@ -170,6 +170,9 @@ Please note that the required files from `libgtest-dev` were moved to
 again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic" (and
 above).
 
+Since Ubuntu 21.04 Hirsute / Debian 11, the package `libcpu-features-dev` is
+also required.
+
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source
 and install GNU Radio manually, as explained below, since GNSS-SDR requires
 `gnuradio-dev` >= 3.7.3, and Ubuntu 14.04 came with 3.7.2. Install all the
@@ -378,9 +381,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-10.8.0.tar.xz
-$ tar xvfz armadillo-10.8.0.tar.xz
-$ cd armadillo-10.8.0
+$ wget https://sourceforge.net/projects/arma/files/armadillo-11.0.1.tar.xz
+$ tar xvfz armadillo-11.0.1.tar.xz
+$ cd armadillo-11.0.1
 $ cmake .
 $ make
 $ sudo make install
@@ -470,9 +473,9 @@ your GNU/Linux distribution, GNSS-SDR can also work well with OpenSSL.
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library:
 
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.22/matio-1.5.22.tar.gz
-$ tar xvfz matio-1.5.22.tar.gz
-$ cd matio-1.5.22
+$ wget https://github.com/tbeu/matio/releases/download/v1.5.23/matio-1.5.23.tar.gz
+$ tar xvfz matio-1.5.23.tar.gz
+$ cd matio-1.5.23
 $ ./configure
 $ make
 $ sudo make install
@@ -493,9 +496,9 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ```
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protobuf-cpp-3.19.4.tar.gz
-$ tar xvfz protobuf-cpp-3.19.4.tar.gz
-$ cd protobuf-3.19.4
+$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protobuf-cpp-3.20.1.tar.gz
+$ tar xvfz protobuf-cpp-3.20.1.tar.gz
+$ cd protobuf-3.20.1
 $ ./autogen.sh
 $ ./configure
 $ make
@@ -2128,7 +2131,7 @@ if you reference the following article to credit the GNSS-SDR project:
 
 - C. Fern&aacute;ndez-Prades, J. Arribas, P. Closas, C. Avil&eacute;s, and L.
   Esteve,
-  [GNSS-SDR: an open source tool for researchers and developers](http://www.cttc.es/publication/gnss-sdr-an-open-source-tool-for-researchers-and-developers/),
+  [GNSS-SDR: an open source tool for researchers and developers](https://www.researchgate.net/publication/233380791_GNSS-SDR_An_open_source_tool_for_researchers_and_developers),
   in Proceedings of the 24th International Technical Meeting of The Satellite
   Division of the Institute of Navigation (ION GNSS), Portland, Oregon, Sept.
   19-23, 2011, pp. 780-794.

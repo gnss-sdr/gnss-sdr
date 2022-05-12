@@ -32,8 +32,6 @@ namespace own = std;
 namespace own = gsl;
 #endif
 
-using google::LogMessage;
-
 BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     const ConfigurationInterface* configuration,
     const std::string& role,

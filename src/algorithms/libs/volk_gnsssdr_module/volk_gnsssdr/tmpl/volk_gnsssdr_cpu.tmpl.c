@@ -14,6 +14,7 @@
 #include <string.h>
 // clang-format on
 
+#if defined(VOLK_CPU_FEATURES)
 #include "cpu_features_macros.h"
 #if defined(CPU_FEATURES_ARCH_X86)
 #include "cpuinfo_x86.h"
@@ -30,6 +31,7 @@
 // This is required for MSVC
 #if defined(__cplusplus)
 using namespace cpu_features;
+#endif
 #endif
 
 struct VOLK_CPU volk_gnsssdr_cpu;

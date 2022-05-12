@@ -1,9 +1,9 @@
 /*!
  * \file Galileo_CNAV.h
  * \brief Galileo CNAV mesage constants. Data from:
- * Galileo High Accuracy Service E6-B Signal-In-Space Message Specification v1.2
- * (April 2020).
- * \author Carles Fernandez-Prades, 2020. cfernandez(at)cttc.es
+ * Galileo High Accuracy Service Signal-In-Space Interface Control Document
+ * (HAS SIS ICD) Issue 1.0, May 2022
+ * \author Carles Fernandez-Prades, 2020-2022. cfernandez(at)cttc.es
  *
  *
  * -----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -61,11 +61,11 @@ constexpr size_t HAS_MSG_MASK_RESERVED_LENGTH = 6;
 constexpr size_t HAS_MSG_VALIDITY_INDEX_LENGTH = 4;
 constexpr size_t HAS_MSG_IOD_GPS_LENGTH = 8;
 constexpr size_t HAS_MSG_IOD_GAL_LENGTH = 10;
-constexpr size_t HAS_MSG_DELTA_RADIAL_LENGTH = 14;
-constexpr size_t HAS_MSG_DELTA_ALONG_TRACK_LENGTH = 12;
+constexpr size_t HAS_MSG_DELTA_RADIAL_LENGTH = 13;
+constexpr size_t HAS_MSG_DELTA_IN_TRACK_LENGTH = 12;
 constexpr size_t HAS_MSG_DELTA_CROSS_TRACK_LENGTH = 12;
 constexpr size_t HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH = 2;
-constexpr size_t HAS_MSG_DELTA_CLOCK_C0_LENGTH = 14;
+constexpr size_t HAS_MSG_DELTA_CLOCK_C0_LENGTH = 13;
 constexpr size_t HAS_MSG_NSYSPRIME_LENGTH = 4;
 constexpr size_t HAS_MSG_ID_CLOCK_SUBSET_LENGTH = 4;
 constexpr size_t HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH = 2;
@@ -73,7 +73,8 @@ constexpr size_t HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH = 13;
 constexpr size_t HAS_MSG_CODE_BIAS_LENGTH = 11;
 constexpr size_t HAS_MSG_PHASE_BIAS_LENGTH = 11;
 constexpr size_t HAS_MSG_PHASE_DISCONTINUITY_INDICATOR_LENGTH = 2;
-constexpr size_t HAS_MSG_URA_LENGTH = 2;
+
+constexpr uint64_t MAX_SECONDS_REMEMBERING_MID = 100;
 
 constexpr int32_t HAS_MSG_NUMBER_MASK_IDS = 32;
 constexpr int32_t HAS_MSG_NUMBER_GNSS_IDS = 16;
@@ -82,7 +83,7 @@ constexpr int32_t HAS_MSG_NUMBER_SATELLITE_IDS = 40;
 constexpr int32_t HAS_MSG_NUMBER_SIGNAL_MASKS = 16;
 
 constexpr float HAS_MSG_DELTA_RADIAL_SCALE_FACTOR = 0.0025;
-constexpr float HAS_MSG_DELTA_ALONG_TRACK_SCALE_FACTOR = 0.008;
+constexpr float HAS_MSG_DELTA_IN_TRACK_SCALE_FACTOR = 0.008;
 constexpr float HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR = 0.008;
 constexpr float HAS_MSG_DELTA_CLOCK_SCALE_FACTOR = 0.0025;
 constexpr float HAS_MSG_CODE_BIAS_SCALE_FACTOR = 0.02;
@@ -90,10 +91,11 @@ constexpr float HAS_MSG_PHASE_BIAS_SCALE_FACTOR = 0.01;
 
 constexpr uint16_t HAS_MSG_NUMBER_MAX_TOH = 3599;
 
-constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // Table 8 ICD v1.2
-constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 8 ICD v1.2
+constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // HAS SIS ICD v1.0 Table 18
+constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // HAS SIS ICD v1.0 Table 18
 constexpr uint8_t HAS_MSG_WRONG_SYSTEM = 255;
 
+// HAS SIS ICD v1.0 Table 7
 const std::pair<int32_t, int32_t> GALILEO_HAS_STATUS({1, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_RESERVED({3, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_TYPE({5, 2});
@@ -101,6 +103,7 @@ const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_ID({7, 5});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_SIZE({12, 5});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_PAGE_ID({17, 8});
 
+// HAS SIS ICD v1.0 Table 12
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_TOH({1, 12});
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_MASK_FLAG({13, 1});
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_ORBIT_CORRECTION_FLAG({14, 1});
@@ -108,9 +111,9 @@ const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_CLOCK_FULLSET_FLAG({15, 1})
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_CLOCK_SUBSET_FLAG({16, 1});
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_CODE_BIAS_FLAG({17, 1});
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_PHASE_BIAS_FLAG({18, 1});
-const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_URA_FLAG({19, 1});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_RESERVED({19, 4});
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_MASK_ID({23, 5});
-const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_IOD_ID({28, 5});
+const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_IOD_SET_ID({28, 5});
 
 
 /** \} */

@@ -1,14 +1,14 @@
 /*!
  * \file galileo_has_data.h
  * \brief Class for Galileo HAS message type 1 data storage
- * \author Carles Fernandez-Prades, 2020-2021 cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2020-2022 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -31,20 +31,20 @@ struct mt1_header
 {
     uint16_t toh;
     uint8_t mask_id;
-    uint8_t iod_id;
+    uint8_t iod_set_id;
+    uint8_t reserved;
     bool mask_flag;
     bool orbit_correction_flag;
     bool clock_fullset_flag;
     bool clock_subset_flag;
     bool code_bias_flag;
     bool phase_bias_flag;
-    bool ura_flag;
 };
 
 /*!
  * \brief This class is a storage for Galileo HAS message type 1, as defined in
- * Galileo High Accuracy Service E6-B Signal-In-Space Message Specification v1.2
- * (April 2020).
+ * Galileo High Accuracy Service Signal-In-Space Interface Control Document
+ * (HAS SIS ICD) Issue 1.0, May 2022
  */
 class Galileo_HAS_data
 {
@@ -57,10 +57,10 @@ public:
     std::vector<std::vector<float>> get_phase_bias_cycle() const;             //!< Get Nsat x Nphases phase biases in [cycles]
     std::vector<float> get_delta_radial_m() const;                            //!< Get Nsat delta radial corrections in [m]
     std::vector<float> get_delta_radial_m(uint8_t nsys) const;                //!< Get delta radial corrections in [m] for system nsys, with 0 <= nsys < Nsys
-    std::vector<float> get_delta_along_track_m() const;                       //!< Get Nsat delta along_track corrections in [m]
-    std::vector<float> get_delta_along_track_m(uint8_t nsys) const;           //!< Get alog-track corrections in [m] for system nsys, with 0 <= nsys < Nsys
-    std::vector<float> get_delta_cross_track_m() const;                       //!< Get Nsat delta cross_track corrections in [m]
-    std::vector<float> get_delta_cross_track_m(uint8_t nsys) const;           //!< Get delta cross_track corrections in [m] for system nsys, with 0 <= nsys < Nsys
+    std::vector<float> get_delta_in_track_m() const;                          //!< Get Nsat delta in-track corrections in [m]
+    std::vector<float> get_delta_in_track_m(uint8_t nsys) const;              //!< Get delta in-track corrections in [m] for system nsys, with 0 <= nsys < Nsys
+    std::vector<float> get_delta_cross_track_m() const;                       //!< Get Nsat delta cross-track corrections in [m]
+    std::vector<float> get_delta_cross_track_m(uint8_t nsys) const;           //!< Get delta cross-track corrections in [m] for system nsys, with 0 <= nsys < Nsys
     std::vector<float> get_delta_clock_c0_m() const;                          //!< Get Nsat delta clock C0 corrections in [m]
     std::vector<float> get_delta_clock_c0_m(uint8_t nsys) const;              //!< Get delta clock C0 corrections in [m] for system nsys, with 0 <= nsys < Nsys
     std::vector<int> get_PRNs_in_mask(uint8_t nsys) const;                    //!< Get PRNs in mask for system nsys, with 0 <= nsys < Nsys
@@ -83,19 +83,17 @@ public:
     // Orbit corrections
     std::vector<uint16_t> gnss_iod;
     std::vector<int16_t> delta_radial;
-    std::vector<int16_t> delta_along_track;
+    std::vector<int16_t> delta_in_track;
     std::vector<int16_t> delta_cross_track;
 
     // Clock full-set corrections
     std::vector<uint8_t> delta_clock_c0_multiplier;
-    std::vector<bool> iod_change_flag;
     std::vector<int16_t> delta_clock_c0;
 
     // Clock subset corrections
     std::vector<uint8_t> gnss_id_clock_subset;
     std::vector<uint8_t> delta_clock_c0_multiplier_clock_subset;
     std::vector<uint64_t> satellite_submask;
-    std::vector<std::vector<bool>> iod_change_flag_clock_subset;
     std::vector<std::vector<int16_t>> delta_clock_c0_clock_subset;
 
     // Code bias
@@ -104,9 +102,6 @@ public:
     // Phase bias
     std::vector<std::vector<int16_t>> phase_bias;
     std::vector<std::vector<uint8_t>> phase_discontinuity_indicator;
-
-    // URA
-    std::vector<uint8_t> ura;
 
     mt1_header header;
     uint8_t has_status;
@@ -119,7 +114,6 @@ public:
     uint8_t Nsysprime;                                          // in Clock subset corrections
     uint8_t validity_interval_index_code_bias_corrections;      // in Code bias
     uint8_t validity_interval_index_phase_bias_corrections;     // in Phase bias
-    uint8_t validity_interval_index_ura_corrections;            // in URA
 };
 
 

@@ -22,12 +22,12 @@
 
 TEST(ReedSolomonE6BTest, EncodeWithGenMatrix)
 {
-    // input vector as defined in Galileo HAS ICD v1.2, Annex D
+    // input vector
     const std::vector<uint8_t> input = {71, 12, 25, 210, 178, 81, 243, 9, 112,
         98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31, 128,
         245, 87, 150, 58, 192, 66, 130, 179};
 
-    // Expected encoded output as defined in Galileo HAS ICD v1.2, Annex D
+    // Expected encoded output
     const std::vector<uint8_t> expected_output = {71, 12, 25, 210, 178, 81, 243,
         9, 112, 98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31,
         128, 245, 87, 150, 58, 192, 66, 130, 179, 133, 210, 122, 224, 75, 138,
@@ -55,12 +55,12 @@ TEST(ReedSolomonE6BTest, EncodeWithGenMatrix)
 
 TEST(ReedSolomonE6BTest, EncodeWithGenPoly)
 {
-    // input vector as defined in Galileo HAS ICD v1.2, Annex D
+    // input vector
     const std::vector<uint8_t> input = {71, 12, 25, 210, 178, 81, 243, 9, 112,
         98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31, 128,
         245, 87, 150, 58, 192, 66, 130, 179};
 
-    // Expected encoded output as defined in Galileo HAS ICD v1.2, Annex D
+    // Expected encoded output
     const std::vector<uint8_t> expected_output = {71, 12, 25, 210, 178, 81, 243,
         9, 112, 98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31,
         128, 245, 87, 150, 58, 192, 66, 130, 179, 133, 210, 122, 224, 75, 138,
@@ -88,12 +88,12 @@ TEST(ReedSolomonE6BTest, EncodeWithGenPoly)
 
 TEST(ReedSolomonE6BTest, EncodeWithCustomPoly)
 {
-    // input vector as defined in Galileo HAS ICD v1.2, Annex D
+    // input vector
     const std::vector<uint8_t> input = {71, 12, 25, 210, 178, 81, 243, 9, 112,
         98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31, 128,
         245, 87, 150, 58, 192, 66, 130, 179};
 
-    // Expected encoded output as defined in Galileo HAS ICD v1.2, Annex D
+    // Expected encoded output
     const std::vector<uint8_t> expected_output = {71, 12, 25, 210, 178, 81, 243,
         9, 112, 98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31,
         128, 245, 87, 150, 58, 192, 66, 130, 179, 133, 210, 122, 224, 75, 138,
@@ -144,12 +144,12 @@ TEST(ReedSolomonE6BTest, EncodeWithCustomPoly)
 
 TEST(ReedSolomonE6BTest, EncodeWithCustomMatrix)
 {
-    // input vector as defined in Galileo HAS ICD v1.2, Annex D
+    // input vector
     const std::vector<uint8_t> input = {71, 12, 25, 210, 178, 81, 243, 9, 112,
         98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31, 128,
         245, 87, 150, 58, 192, 66, 130, 179};
 
-    // Expected encoded output as defined in Galileo HAS ICD v1.2, Annex D
+    // Expected encoded output
     const std::vector<uint8_t> expected_output = {71, 12, 25, 210, 178, 81, 243,
         9, 112, 98, 196, 203, 48, 125, 114, 165, 181, 193, 71, 174, 168, 42, 31,
         128, 245, 87, 150, 58, 192, 66, 130, 179, 133, 210, 122, 224, 75, 138,

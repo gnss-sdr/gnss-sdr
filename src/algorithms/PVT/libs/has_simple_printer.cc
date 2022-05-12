@@ -183,7 +183,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
             d_has_file << indent << indent << "Code Bias Flag:      " << static_cast<float>(has_data->header.code_bias_flag) << '\n';
             d_has_file << indent << indent << "Phase Bias Flag:     " << static_cast<float>(has_data->header.phase_bias_flag) << '\n';
             d_has_file << indent << indent << "Mask ID:             " << static_cast<float>(has_data->header.mask_id) << '\n';
-            d_has_file << indent << indent << "IOD Set ID:          " << static_cast<float>(has_data->header.iod_id) << "\n\n";
+            d_has_file << indent << indent << "IOD Set ID:          " << static_cast<float>(has_data->header.iod_set_id) << "\n\n";
 
             d_has_file << indent << "MT1 Body\n";
             d_has_file << indent << "--------\n";
@@ -240,7 +240,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "Validity interval:     " << static_cast<float>(has_data->validity_interval_index_orbit_corrections) << '\n';
                     d_has_file << indent << indent << "GNSS IOD:              " << print_vector(has_data->gnss_iod) << '\n';
                     d_has_file << indent << indent << "Delta Radial [m]:      " << print_vector(has_data->delta_radial, HAS_MSG_DELTA_RADIAL_SCALE_FACTOR) << '\n';
-                    d_has_file << indent << indent << "Delta Along Track [m]: " << print_vector(has_data->delta_along_track, HAS_MSG_DELTA_ALONG_TRACK_SCALE_FACTOR) << '\n';
+                    d_has_file << indent << indent << "Delta In-Track [m]:    " << print_vector(has_data->delta_in_track, HAS_MSG_DELTA_IN_TRACK_SCALE_FACTOR) << '\n';
                     d_has_file << indent << indent << "Delta Cross Track [m]: " << print_vector(has_data->delta_cross_track, HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR) << '\n';
                 }
 

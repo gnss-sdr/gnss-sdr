@@ -1,16 +1,16 @@
 /*!
  * \file galileo_cnav_message.cc
  * \brief  Implementation of a Galileo CNAV Data message as described in
- * Galileo High Accuracy Service E6-B Signal-In-Space Message Specification v1.2
- * (April 2020)
- * \author Carles Fernandez-Prades, 2020-2021 cfernandez(at)cttc.es
+ * Galileo High Accuracy Service Signal-In-Space Interface Control Document
+ * (HAS SIS ICD) Issue 1.0, May 2022
+ * \author Carles Fernandez-Prades, 2020-2022 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
             read_HAS_page_header(page_string.substr(GALILEO_CNAV_PAGE_RESERVED_BITS, GALILEO_CNAV_PAGE_HEADER_BITS));
             bool use_has = false;
             d_test_mode = false;
-            // HAS status as defined in ICD v1.2 Table 5 HAS Page Header
+            // HAS status as defined in HAS SIS ICD v1.0 Table 9 - HASS values and corresponding semantic
             if (!d_page_dummy)
                 {
                     switch (d_has_page_status)
@@ -118,7 +118,7 @@ void Galileo_Cnav_Message::read_HAS_page_header(const std::string& page_string)
         }
     if (!d_page_dummy)
         {
-            // ICD v1.2 Table 5: HAS page header
+            // HAS SIS ICD v1.0 Table 7: HAS page header
             const std::bitset<GALILEO_CNAV_PAGE_HEADER_BITS> has_page_header(page_string);
             d_has_page_status = read_has_page_header_parameter(has_page_header, GALILEO_HAS_STATUS);
             d_has_reserved = read_has_page_header_parameter(has_page_header, GALILEO_HAS_RESERVED);

@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -29,8 +29,8 @@
 
 /*!
  * \brief This class is a storage for Galileo HAS message page, as defined in
- * Galileo High Accuracy Service E6-B Signal-In-Space Message Specification v1.2
- * (April 2020).
+ * Galileo High Accuracy Service Signal-In-Space Interface Control Document
+ * (HAS SIS ICD) Issue 1.0, May 2022
  */
 class Galileo_HAS_page
 {

@@ -1,14 +1,14 @@
 /*!
  * \file galileo_has_data.h
  * \brief Class for Galileo HAS message type 1 data storage
- * \author Carles Fernandez-Prades, 2020-2021 cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2020-2022 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -43,8 +43,8 @@ struct mt1_header
 
 /*!
  * \brief This class is a storage for Galileo HAS message type 1, as defined in
- * Galileo High Accuracy Service E6-B Signal-In-Space Message Specification v1.2
- * (April 2020).
+ * Galileo High Accuracy Service Signal-In-Space Interface Control Document
+ * (HAS SIS ICD) Issue 1.0, May 2022
  */
 class Galileo_HAS_data
 {

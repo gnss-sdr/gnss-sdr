@@ -1,14 +1,14 @@
 /*!
  * \file galileo_has_data.cc
  * \brief Class for Galileo HAS message type 1 data storage
- * \author Carles Fernandez-Prades, 2020-2021 cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2020-2022 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -117,6 +117,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                         {
                             uint8_t system = gnss_id_mask[nsys];
                             std::string signal;
+                            // See HAS SIS ICD v1.0 Table 20
                             switch (k)
                                 {
                                 case 0:
@@ -171,7 +172,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L1 L1C(D)";
+                                            signal = "L1C(D)";
                                         }
                                     else if (system == 2)
                                         {
@@ -187,7 +188,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L1 L1C(P)";
+                                            signal = "L1C(P)";
                                         }
                                     else if (system == 2)
                                         {
@@ -203,7 +204,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L1 L1C(D+P)";
+                                            signal = "L1C(D+P)";
                                         }
                                     else if (system == 2)
                                         {
@@ -219,7 +220,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L2 L2C(M)";
+                                            signal = "L2 CM";
                                         }
                                     else if (system == 2)
                                         {
@@ -235,7 +236,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L2 L2C(L)";
+                                            signal = "L2 CL";
                                         }
                                     else if (system == 2)
                                         {
@@ -251,7 +252,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L2 L2C(M+L)";
+                                            signal = "L2 CM+CL";
                                         }
                                     else if (system == 2)
                                         {
@@ -405,6 +406,7 @@ uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
 uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_index) const
 {
     uint16_t validity_interval;
+    // See HAS SIS ICD v1.0 Table 23
     switch (validity_interval_index)
         {
         case 0:

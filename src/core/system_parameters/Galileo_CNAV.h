@@ -1,9 +1,9 @@
 /*!
  * \file Galileo_CNAV.h
  * \brief Galileo CNAV mesage constants. Data from:
- * Galileo High Accuracy Service E6-B Signal-In-Space Message Specification v1.4
- * (February 2021).
- * \author Carles Fernandez-Prades, 2020-2021. cfernandez(at)cttc.es
+ * Galileo High Accuracy Service Signal-In-Space Interface Control Document
+ * (HAS SIS ICD) Issue 1.0, May 2022
+ * \author Carles Fernandez-Prades, 2020-2022. cfernandez(at)cttc.es
  *
  *
  * -----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -91,10 +91,11 @@ constexpr float HAS_MSG_PHASE_BIAS_SCALE_FACTOR = 0.01;
 
 constexpr uint16_t HAS_MSG_NUMBER_MAX_TOH = 3599;
 
-constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // Table 9 ICD v1.4
-constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // Table 9 ICD v1.4
+constexpr uint8_t HAS_MSG_GPS_SYSTEM = 0;      // HAS SIS ICD v1.0 Table 18
+constexpr uint8_t HAS_MSG_GALILEO_SYSTEM = 2;  // HAS SIS ICD v1.0 Table 18
 constexpr uint8_t HAS_MSG_WRONG_SYSTEM = 255;
 
+// HAS SIS ICD v1.0 Table 7
 const std::pair<int32_t, int32_t> GALILEO_HAS_STATUS({1, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_RESERVED({3, 2});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_TYPE({5, 2});
@@ -102,6 +103,7 @@ const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_ID({7, 5});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_SIZE({12, 5});
 const std::pair<int32_t, int32_t> GALILEO_HAS_MESSAGE_PAGE_ID({17, 8});
 
+// HAS SIS ICD v1.0 Table 12
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_TOH({1, 12});
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_MASK_FLAG({13, 1});
 const std::pair<int32_t, int32_t> GALILEO_MT1_HEADER_ORBIT_CORRECTION_FLAG({14, 1});

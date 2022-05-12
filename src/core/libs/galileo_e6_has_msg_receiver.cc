@@ -432,7 +432,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
 void galileo_e6_has_msg_receiver::read_MT1_header(const std::string& message_header)
 {
-    // ICD v1.4 Table 7: MT1 Message Header
+    // HAS SIS ICD v1.0 Table 13: MT1 Message Header
     const std::bitset<GALILEO_CNAV_MT1_HEADER_BITS> has_mt1_header(message_header);
     d_HAS_data.header.toh = read_has_message_header_parameter_uint16(has_mt1_header, GALILEO_MT1_HEADER_TOH);
     d_HAS_data.header.mask_flag = read_has_message_header_parameter_bool(has_mt1_header, GALILEO_MT1_HEADER_MASK_FLAG);
@@ -461,7 +461,7 @@ void galileo_e6_has_msg_receiver::read_MT1_header(const std::string& message_hea
 
 void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
 {
-    // ICD v1.4 Table 8: MT1 Message Body.
+    // HAS SIS ICD v1.0 Table 17: MT1 Message Body
     auto message = std::string(message_body);
     int Nsat = 0;
     bool have_mask = false;

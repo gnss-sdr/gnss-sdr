@@ -84,7 +84,8 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
 
 bool config_ad9361_rx_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
-    uint64_t freq_,
+    uint64_t freq0_,
+    uint64_t freq1_,
     const std::string &rf_port_select_,
     bool rx1_enable_,
     bool rx2_enable_,

@@ -593,28 +593,28 @@ std::vector<float> Galileo_HAS_data::get_delta_cross_track_m(uint8_t nsys) const
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m() const
+std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m() const
 {
-    std::vector<float> delta_clock_c0_m;
-    delta_clock_c0_m.reserve(this->delta_clock_c0.size());
-    for (const auto& d : this->delta_clock_c0)
+    std::vector<float> delta_clock_correction_m;
+    delta_clock_correction_m.reserve(this->delta_clock_correction.size());
+    for (const auto& d : this->delta_clock_correction)
         {
-            delta_clock_c0_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
+            delta_clock_correction_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
         }
-    return delta_clock_c0_m;
+    return delta_clock_correction_m;
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m(uint8_t nsys) const
+std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m(uint8_t nsys) const
 {
-    std::vector<float> delta_clock_c0_m = this->get_delta_clock_c0_m();
+    std::vector<float> delta_clock_correction_m = this->get_delta_clock_correction_m();
     if (nsys >= this->Nsys)
         {
-            return delta_clock_c0_m;
+            return delta_clock_correction_m;
         }
-    std::vector<float> delta_clock_c0_m_aux;
+    std::vector<float> delta_clock_correction_m_aux;
     uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
-    delta_clock_c0_m_aux.reserve(num_sats_in_this_system);
+    delta_clock_correction_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
@@ -628,12 +628,12 @@ std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_clock_c0_m_aux.push_back(delta_clock_c0_m[index]);
+                            delta_clock_correction_m_aux.push_back(delta_clock_correction_m[index]);
                             index++;
                         }
                 }
         }
-    return delta_clock_c0_m_aux;
+    return delta_clock_correction_m_aux;
 }
 
 
@@ -762,8 +762,8 @@ std::vector<std::string> Galileo_HAS_data::get_systems_string() const
 }
 
 
-uint16_t Galileo_HAS_data::get_nsatprime() const
+uint16_t Galileo_HAS_data::get_nsat_sub() const
 {
-    auto Nsatprime = static_cast<uint16_t>(this->delta_clock_c0_clock_subset.size());
-    return Nsatprime;
+    auto Nsat_sub = static_cast<uint16_t>(this->delta_clock_correction_clock_subset.size());
+    return Nsat_sub;
 }

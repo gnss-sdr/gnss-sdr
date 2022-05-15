@@ -3553,7 +3553,7 @@ std::string Rtcm::get_IGM02_content_sat(const Galileo_HAS_data& has_data, uint8_
 
     std::vector<int> prn = has_data.get_PRNs_in_mask(nsys_index);
 
-    std::vector<float> delta_clock_c0 = has_data.get_delta_clock_c0_m(nsys_index);
+    std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys_index);
     std::vector<float> delta_clock_c1(num_sats_in_this_system);
     std::vector<float> delta_clock_c2(num_sats_in_this_system);
 
@@ -3629,7 +3629,7 @@ std::string Rtcm::get_IGM03_content_sat(const Galileo_HAS_data& has_data, uint8_
     std::vector<float> delta_orbit_radial_m = has_data.get_delta_radial_m(nsys_index);
     std::vector<float> delta_orbit_in_track_m = has_data.get_delta_in_track_m(nsys_index);
     std::vector<float> delta_orbit_cross_track_m = has_data.get_delta_cross_track_m(nsys_index);
-    std::vector<float> delta_clock_c0 = has_data.get_delta_clock_c0_m(nsys_index);
+    std::vector<float> delta_clock_c0 = has_data.get_delta_clock_correction_m(nsys_index);
     std::vector<float> delta_clock_c1(num_sats_in_this_system);
     std::vector<float> delta_clock_c2(num_sats_in_this_system);
 

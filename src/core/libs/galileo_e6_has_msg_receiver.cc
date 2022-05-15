@@ -634,22 +634,22 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             d_HAS_data.validity_interval_index_clock_fullset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
             message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
 
-            d_HAS_data.delta_clock_c0_multiplier = std::vector<uint8_t>(d_HAS_data.Nsys);
+            d_HAS_data.delta_clock_multiplier = std::vector<uint8_t>(d_HAS_data.Nsys);
             for (uint8_t i = 0; i < d_HAS_data.Nsys; i++)
                 {
-                    d_HAS_data.delta_clock_c0_multiplier[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH)) + 1;  // b00 means x1, b01 means x2, etc
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_MULTIPLIER_LENGTH, message.end());
+                    d_HAS_data.delta_clock_multiplier[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_LENGTH)) + 1;  // b00 means x1, b01 means x2, etc
+                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_LENGTH, message.end());
                 }
 
-            d_HAS_data.delta_clock_c0 = std::vector<int16_t>(Nsat);
+            d_HAS_data.delta_clock_correction = std::vector<int16_t>(Nsat);
             for (int i = 0; i < Nsat; i++)
                 {
-                    d_HAS_data.delta_clock_c0[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_LENGTH));
-                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_LENGTH, message.end());
+                    d_HAS_data.delta_clock_correction[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH));
+                    message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH, message.end());
                 }
 
-            DLOG(INFO) << debug_print_vector("delta_clock_c0_multiplier", d_HAS_data.delta_clock_c0_multiplier);
-            DLOG(INFO) << debug_print_vector("delta_clock_c0", d_HAS_data.delta_clock_c0);
+            DLOG(INFO) << debug_print_vector("delta_clock_multiplier", d_HAS_data.delta_clock_multiplier);
+            DLOG(INFO) << debug_print_vector("delta_clock_correction", d_HAS_data.delta_clock_correction);
         }
 
     if (d_HAS_data.header.clock_subset_flag && have_mask)
@@ -658,28 +658,28 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             d_HAS_data.validity_interval_index_clock_subset_corrections = read_has_message_body_uint8(message.substr(0, HAS_MSG_VALIDITY_INDEX_LENGTH));
             message = std::string(message.begin() + HAS_MSG_VALIDITY_INDEX_LENGTH, message.end());
 
-            d_HAS_data.Nsysprime = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYSPRIME_LENGTH));
-            message = std::string(message.begin() + HAS_MSG_NSYSPRIME_LENGTH, message.end());
+            d_HAS_data.Nsys_sub = read_has_message_body_uint8(message.substr(0, HAS_MSG_NSYS_SUB_LENGTH));
+            message = std::string(message.begin() + HAS_MSG_NSYS_SUB_LENGTH, message.end());
 
-            if (d_HAS_data.Nsysprime == 0)
+            if (d_HAS_data.Nsys_sub == 0)
                 {
                     // wrong data format, aborting
                     have_mask = false;
                     d_nsat_in_mask_id[d_HAS_data.header.mask_id] = 0;
                 }
 
-            d_HAS_data.gnss_id_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsysprime);
-            d_HAS_data.delta_clock_c0_multiplier_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsysprime);
-            d_HAS_data.satellite_submask = std::vector<uint64_t>(d_HAS_data.Nsysprime);
-            d_HAS_data.delta_clock_c0_clock_subset = std::vector<std::vector<int16_t>>(d_HAS_data.Nsysprime, std::vector<int16_t>());
+            d_HAS_data.gnss_id_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsys_sub);
+            d_HAS_data.delta_clock_multiplier_clock_subset = std::vector<uint8_t>(d_HAS_data.Nsys_sub);
+            d_HAS_data.satellite_submask = std::vector<uint64_t>(d_HAS_data.Nsys_sub);
+            d_HAS_data.delta_clock_correction_clock_subset = std::vector<std::vector<int16_t>>(d_HAS_data.Nsys_sub, std::vector<int16_t>());
 
-            for (uint8_t i = 0; i < d_HAS_data.Nsysprime; i++)
+            for (uint8_t i = 0; i < d_HAS_data.Nsys_sub; i++)
                 {
                     d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_CLOCK_SUBSET_LENGTH));
                     message = std::string(message.begin() + HAS_MSG_ID_CLOCK_SUBSET_LENGTH, message.end());
 
                     uint8_t clock_multiplier = read_has_message_body_uint8(message.substr(0, HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH));
-                    d_HAS_data.delta_clock_c0_multiplier_clock_subset[i] = clock_multiplier + 1;  // b00 means x1, b01 means x2, etc
+                    d_HAS_data.delta_clock_multiplier_clock_subset[i] = clock_multiplier + 1;  // b00 means x1, b01 means x2, etc
                     message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_MULTIPLIER_SUBSET_LENGTH, message.end());
 
                     // find the satellite mask corresponding to this GNSS ID
@@ -711,22 +711,22 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                                 }
                             aux <<= 1;
                         }
-                    int Nsatprime = std::count(binary.begin(), binary.end(), '1');
-                    d_HAS_data.delta_clock_c0_clock_subset[i].reserve(Nsatprime);
+                    int Nsat_sub = std::count(binary.begin(), binary.end(), '1');
+                    d_HAS_data.delta_clock_correction_clock_subset[i].reserve(Nsat_sub);
 
-                    // Read Nsatprime values of delta_clock_c0_clock_subset
-                    for (int j = 0; j < Nsatprime; j++)
+                    // Read Nsat_sub values of delta_clock_correction_clock_subset
+                    for (int j = 0; j < Nsat_sub; j++)
                         {
-                            d_HAS_data.delta_clock_c0_clock_subset[i][j] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH));
-                            message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_C0_SUBSET_LENGTH, message.end());
+                            d_HAS_data.delta_clock_correction_clock_subset[i][j] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_CORRECTION_SUBSET_LENGTH));
+                            message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_CORRECTION_SUBSET_LENGTH, message.end());
                         }
                 }
 
-            DLOG(INFO) << "Nsysprime: " << static_cast<float>(d_HAS_data.Nsysprime);
-            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("gnss_id_clock_subset", d_HAS_data.gnss_id_clock_subset));
-            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("delta_clock_c0_multiplier_clock_subset", d_HAS_data.delta_clock_c0_multiplier_clock_subset));
-            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_vector("satellite_submask", d_HAS_data.satellite_submask));
-            DLOG(INFO) << (d_HAS_data.Nsysprime == 0 ? "" : debug_print_matrix("delta_clock_c0_clock_subset", d_HAS_data.delta_clock_c0_clock_subset));
+            DLOG(INFO) << "Nsys_sub: " << static_cast<float>(d_HAS_data.Nsys_sub);
+            DLOG(INFO) << (d_HAS_data.Nsys_sub == 0 ? "" : debug_print_vector("gnss_id_clock_subset", d_HAS_data.gnss_id_clock_subset));
+            DLOG(INFO) << (d_HAS_data.Nsys_sub == 0 ? "" : debug_print_vector("delta_clock_multiplier_clock_subset", d_HAS_data.delta_clock_multiplier_clock_subset));
+            DLOG(INFO) << (d_HAS_data.Nsys_sub == 0 ? "" : debug_print_vector("satellite_submask", d_HAS_data.satellite_submask));
+            DLOG(INFO) << (d_HAS_data.Nsys_sub == 0 ? "" : debug_print_matrix("delta_clock_correction_clock_subset", d_HAS_data.delta_clock_correction_clock_subset));
         }
 
     if (d_HAS_data.header.code_bias_flag && have_mask)

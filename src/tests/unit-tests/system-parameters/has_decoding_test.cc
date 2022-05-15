@@ -204,8 +204,8 @@ private:
     std::ifstream indata;
     std::string sat_id;
     std::string page_content;
-    int time_instant;
-    bool known_test_data;
+    int time_instant{};
+    bool known_test_data{};
 };
 
 

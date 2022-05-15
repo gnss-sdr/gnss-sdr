@@ -40,6 +40,7 @@ class Gps_CNAV_Ephemeris;
 class Gps_Ephemeris;
 class Rtcm;
 class Rtklib_Solver;
+class Galileo_HAS_data;
 
 /*!
  * \brief This class provides a implementation of a subset of the RTCM Standard 10403.2 messages
@@ -97,6 +98,8 @@ public:
      * \return locked time during logging process
      */
     uint32_t lock_time(const Glonass_Gnav_Ephemeris& eph, double obs_time, const Gnss_Synchro& gnss_synchro);
+
+    void Print_IGM_Messages(const Galileo_HAS_data& has_data);
 
     std::string print_MT1005_test();  //!<  For testing purposes
 
@@ -177,6 +180,11 @@ private:
         int32_t smooth_int,
         bool divergence_free,
         bool more_messages);
+
+    bool Print_IGM01(const Galileo_HAS_data& has_data);  // SSR Orbit Corrections
+    bool Print_IGM02(const Galileo_HAS_data& has_data);  // SSR Clock Corrections
+    bool Print_IGM03(const Galileo_HAS_data& has_data);  // SSR Combined Orbit & Clock Corrections
+    bool Print_IGM05(const Galileo_HAS_data& has_data);  // SSR Bias Corrections
 
     int32_t init_serial(const std::string& serial_device);  // serial port control
     void close_serial() const;

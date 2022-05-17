@@ -443,7 +443,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                     throw std::runtime_error(RX_STREAM_DEV_B + "RX channel 0 not found");
                 }
 
-            if (!get_phy_chan(ad9361_phy, RX, 1, &chn))
+            if (!get_phy_chan(ad9361_phy_B, RX, 0, &chn))
                 {
                     return false;
                 }
@@ -453,12 +453,12 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                 }
             // Configure LO channel
             std::cout << "* Acquiring LO RX channel 1\n";
-            if (!get_lo_chan(ad9361_phy_B, RX, 1, &chn))
+            if (!get_lo_chan(ad9361_phy_B, RX, 0, &chn))
                 {
                     std::cout << "RX LO channel 1 not found\n";
                     throw std::runtime_error("RX LO channel 1 not found");
                 }
-            wr_ch_lli(chn, "frequency", freq0_);
+            wr_ch_lli(chn, "frequency", freq1_);
         }
     else
         {
@@ -497,7 +497,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     if (enable_ad9361_b)
         {
             std::cout << "configuring " << RX_DEV_B << " device parameters\n";
-            if (setup_device_parameters(ad9361_phy_B, quadrature_, rfdc_, bbdc_, gain_mode_rx1_, gain_mode_rx2_) < 0)
+            if (setup_device_parameters(ad9361_phy_B, quadrature_, rfdc_, bbdc_, gain_mode_rx2_, gain_mode_rx2_) < 0)
                 {
                     throw std::runtime_error("configuring " + RX_DEV_B + " device parameters failed\n");
                 }

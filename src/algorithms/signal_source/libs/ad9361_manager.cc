@@ -111,21 +111,12 @@ bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn
 
 
 /* applies streaming configuration through IIO */
-bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, enum iodev type, iio_channel *chn)
+void cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, iio_channel *chn)
 {
     // Configure phy and lo channels
     wr_ch_str(chn, "rf_port_select", cfg->rfport);
     wr_ch_lli(chn, "rf_bandwidth", cfg->bw_hz);
     wr_ch_lli(chn, "sampling_frequency", cfg->fs_hz);
-
-    // Configure LO channel
-    std::cout << "* Acquiring LO channel " << (type == TX ? "TX" : "RX") << '\n';
-    if (!get_lo_chan(ctx, type, &chn))
-        {
-            return false;
-        }
-    wr_ch_lli(chn, "frequency", cfg->lo_hz);
-    return true;
 }
 
 int setup_filter(std::string filter_source_, uint64_t bandwidth_, uint64_t sample_rate_, uint64_t freq_, const std::string &rf_port_select_, struct iio_context *ctx,
@@ -139,12 +130,7 @@ int setup_filter(std::string filter_source_, uint64_t bandwidth_, uint64_t sampl
             rxcfg.fs_hz = sample_rate_;
             rxcfg.lo_hz = freq_;
             rxcfg.rfport = rf_port_select_.c_str();
-
-            if (!cfg_ad9361_streaming_ch(ctx, &rxcfg, RX, rx_chan))
-                {
-                    std::cout << "RX LO channel not found\n";
-                    throw std::runtime_error("AD9361 IIO LO not found");
-                }
+            cfg_ad9361_streaming_ch(&rxcfg, RX, rx_chan);
         }
     else if (filter_source_ == "Auto")
         {
@@ -388,6 +374,15 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
             return false;
         }
 
+    // Configure LO channel
+    std::cout << "* Acquiring LO channel RX\n";
+    if (!get_lo_chan(ctx, RX, &rx_chan0))
+        {
+            std::cout << "RX LO channel not found\n";
+            throw std::runtime_error("RX LO channel not found");
+        }
+    wr_ch_lli(rx_chan0, "frequency", freq0_);
+
     if (enable_ad9361_b)
         {
             // set-up AD9361-B stream device
@@ -578,6 +573,15 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
             return false;
         }
 
+    // Configure LO channel
+    std::cout << "* Acquiring LO channel RX\n";
+    if (!get_lo_chan(ctx, RX, &rx_chan0))
+        {
+            std::cout << "RX LO channel not found\n";
+            throw std::runtime_error("RX LO channel not found");
+        }
+    wr_ch_lli(rx_chan0, "frequency", freq_);
+
     std::cout << "* Enabling IIO streaming channels\n";
     if (rx1_enable_)
         {
@@ -705,11 +709,16 @@ bool config_ad9361_lo_local(uint64_t bandwidth_,
             throw std::runtime_error("TX channel 0 not found");
         }
 
-    if (!cfg_ad9361_streaming_ch(ctx, &txcfg, TX, tx_chan))
+    cfg_ad9361_streaming_ch(&txcfg, TX, tx_chan);
+
+    // Configure LO channel
+    std::cout << "* Acquiring LO channel TX\n";
+    if (!get_lo_chan(ctx, TX, &tx_chan))
         {
             std::cout << "TX LO channel not found\n";
             throw std::runtime_error("TX LO channel not found");
         }
+    wr_ch_lli(tx_chan, "frequency", txcfg.lo_hz);
 
     int ret;
     // set output amplifier attenuation
@@ -856,11 +865,17 @@ bool config_ad9361_lo_remote(const std::string &remote_host,
             throw std::runtime_error("TX channel 0 not found");
         }
 
-    if (!cfg_ad9361_streaming_ch(ctx, &txcfg, TX, tx_chan))
+    cfg_ad9361_streaming_ch(&txcfg, TX, tx_chan);
+
+    // Configure LO channel
+    std::cout << "* Acquiring LO channel TX\n";
+    if (!get_lo_chan(ctx, TX, &tx_chan))
         {
             std::cout << "TX LO channel not found\n";
             throw std::runtime_error("TX LO channel not found");
         }
+    wr_ch_lli(tx_chan, "frequency", txcfg.lo_hz);
+
     int ret;
     // set output amplifier attenuation
     ret = iio_device_attr_write_double(ad9361_phy, "out_voltage0_hardwaregain", -std::abs(tx_attenuation_db_));

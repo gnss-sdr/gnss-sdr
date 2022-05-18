@@ -58,7 +58,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
       filename0_(configuration->property(role + ".filename", empty_string)),
       rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
-      rf_gain_rx2_(configuration->property(role + ".gain_rx1", default_manual_gain_rx2)),
+      rf_gain_rx2_(configuration->property(role + ".gain_rx2", default_manual_gain_rx2)),
       freq0_(configuration->property(role + ".freq", 0)),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
       bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),

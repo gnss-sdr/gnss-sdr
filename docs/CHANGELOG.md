@@ -34,6 +34,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   allowing to select the `sc8` format instead of the default `sc16`. This would
   reduce the dynamic range and increase quantization noise, but also reduce the
   load on the data link and thus allow more bandwidth.
+- Added gain setting and reading for the XTRX board when using the
+  `Osmosdr_Signal_Source` implementation of a `SignalSource`.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

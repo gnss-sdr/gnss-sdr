@@ -103,9 +103,9 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
                         {
                             if (!osmosdr_args_.empty() && (osmosdr_args_.find("xtrx") != std::string::npos))
                                 {
-                                    osmosdr_source_->set_gain(gain_, "LNA", 0); 
+                                    osmosdr_source_->set_gain(gain_, "LNA", 0);
                                     osmosdr_source_->set_gain(rf_gain_, "TIA", 0);
-                                    osmosdr_source_->set_gain(if_gain_, "PGA", 0); 
+                                    osmosdr_source_->set_gain(if_gain_, "PGA", 0);
                                     std::cout << "Actual XTRX LNA Gain: " << osmosdr_source_->get_gain("LNA", 0) << " dB...\n";
                                     std::cout << "Actual XTRX TIA Gain: " << osmosdr_source_->get_gain("TIA", 0) << " dB...\n";
                                     std::cout << "Actual XTRX PGA Gain: " << osmosdr_source_->get_gain("PGA", 0) << " dB...\n";

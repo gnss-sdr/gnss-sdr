@@ -415,7 +415,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
             return false;
         }
     // Configure LO channel
-    std::cout << "* Acquiring LO RX channel 0\n";
+    std::cout << "* Acquiring " << RX_DEV_A << " LO RX channel 0\n";
     if (!get_lo_chan(ad9361_phy, RX, 0, &chn))
         {
             std::cout << "RX LO channel 0not found\n";
@@ -452,7 +452,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                     return false;
                 }
             // Configure LO channel
-            std::cout << "* Acquiring LO RX channel 1\n";
+            std::cout << "* Acquiring " << RX_DEV_B << " LO RX channel 0\n";
             if (!get_lo_chan(ad9361_phy_B, RX, 0, &chn))
                 {
                     std::cout << "RX LO channel 1 not found\n";

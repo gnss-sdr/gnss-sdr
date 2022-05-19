@@ -69,6 +69,7 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
+    this->message_port_register_out(pmt::mp("preamble_timestamp_samples"));
 
     if (d_enable_navdata_monitor)
         {
@@ -367,6 +368,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                             // try to decode frame
                             LOG(INFO) << "Starting string decoder for GLONASS L1 C/A SAT " << this->d_satellite;
                             d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+                            this->message_port_pub(pmt::mp("preamble_timestamp_samples"), pmt::mp(d_preamble_time_samples));
                             d_stat = 2;
                         }
                     else

@@ -128,6 +128,10 @@ void Channel::connect(gr::top_block_sptr top_block)
 
     // Message ports
     top_block->msg_connect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
+    if ((trk_->get_right_block()->name() == "glonass_l1_ca_dll_pll_c_aid_tracking_cc") || (trk_->get_right_block()->name() == "glonass_l2_ca_dll_pll_c_aid_tracking_cc"))
+        {
+            top_block->msg_connect(nav_->get_left_block(), pmt::mp("preamble_timestamp_samples"), trk_->get_right_block(), pmt::mp("preamble_timestamp_samples"));
+        }
     DLOG(INFO) << "tracking -> telemetry_decoder";
 
     // Message ports
@@ -158,6 +162,10 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     nav_->disconnect(top_block);
 
     top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
+    if ((trk_->get_right_block()->name() == "glonass_l1_ca_dll_pll_c_aid_tracking_cc") || (trk_->get_right_block()->name() == "glonass_l2_ca_dll_pll_c_aid_tracking_cc"))
+        {
+            top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("preamble_timestamp_samples"), trk_->get_right_block(), pmt::mp("preamble_timestamp_samples"));
+        }
     if (!flag_enable_fpga_)
         {
             top_block->msg_disconnect(acq_->get_right_block(), pmt::mp("events"), channel_msg_rx_, pmt::mp("events"));

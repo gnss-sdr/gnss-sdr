@@ -483,6 +483,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     if (rx2_enable_)
         {
             iio_channel_enable(rx_chan1);
+            ad9361_fmcomms5_multichip_sync(ctx, FIXUP_INTERFACE_TIMING | CHECK_SAMPLE_RATES);
         }
     if (!rx1_enable_ and !rx2_enable_)
         {

@@ -16,7 +16,6 @@
 #include "file_timestamp_signal_source.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
-#include "gnss_sdr_timestamp.h"
 #include <glog/logging.h>
 #include <string>
 
@@ -51,10 +50,22 @@ gnss_shared_ptr<gr::block> FileTimestampSignalSource::source() const { return ti
 
 void FileTimestampSignalSource::create_file_source_hook()
 {
-    timestamp_block_ = gnss_sdr_make_Timestamp(
-        std::get<0>(itemTypeToSize()),
-        timestamp_file_,
-        timestamp_clock_offset_ms_);
+    if (is_complex() == false)
+        {
+            timestamp_block_ = gnss_sdr_make_Timestamp(
+                std::get<0>(itemTypeToSize()),
+                timestamp_file_,
+                timestamp_clock_offset_ms_,
+                source_item_size() * 2);
+        }
+    else
+        {
+            timestamp_block_ = gnss_sdr_make_Timestamp(
+                std::get<0>(itemTypeToSize()),
+                timestamp_file_,
+                timestamp_clock_offset_ms_,
+                source_item_size());
+        }
     DLOG(INFO) << "timestamp_block_(" << timestamp_block_->unique_id() << ")";
 }
 

@@ -21,6 +21,7 @@
 #define GNSS_SDR_FOUR_BIT_CPX_FILE_SIGNAL_SOURCE_H
 
 #include "file_source_base.h"
+#include "gnss_sdr_timestamp.h"
 #include "unpack_byte_4bit_samples.h"
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <cstddef>
@@ -63,6 +64,10 @@ private:
     gr::blocks::interleaved_short_to_complex::sptr inter_shorts_to_cpx_;
     std::string sample_type_;
     bool reverse_interleaving_;
+
+    gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
+    std::string timestamp_file_;
+    double timestamp_clock_offset_ms_;
 };
 
 

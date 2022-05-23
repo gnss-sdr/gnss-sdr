@@ -17,6 +17,7 @@
 
 #include "four_bit_cpx_file_signal_source.h"
 #include "configuration_interface.h"
+#include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
 
@@ -28,7 +29,9 @@ FourBitCpxFileSignalSource::FourBitCpxFileSignalSource(
     const std::string& role,
     unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
-    : FileSourceBase(configuration, role, "Four_Bit_Cpx_File_Signal_Source"s, queue, "byte"s)
+    : FileSourceBase(configuration, role, "Four_Bit_Cpx_File_Signal_Source"s, queue, "byte"s),
+      timestamp_file_(configuration->property(role + ".timestamp_filename"s, ""s)),
+      timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0))
 {
     sample_type_ = configuration->property(role + ".sample_type", "iq"s);
     // the complex-ness of the input is inferred from the output type
@@ -54,6 +57,12 @@ FourBitCpxFileSignalSource::FourBitCpxFileSignalSource(
         {
             LOG(ERROR) << "This implementation only supports one output stream";
         }
+
+    // override value with commandline flag, if present
+    if (FLAGS_timestamp_source != "-")
+        {
+            timestamp_file_ = FLAGS_timestamp_source;
+        }
 }
 
 
@@ -76,7 +85,7 @@ std::tuple<size_t, bool> FourBitCpxFileSignalSource::itemTypeToSize()
 
 // 1 byte -> 1 complex samples
 double FourBitCpxFileSignalSource::packetsPerSample() const { return 1.0; }
-gnss_shared_ptr<gr::block> FourBitCpxFileSignalSource::source() const { return inter_shorts_to_cpx_; }
+gnss_shared_ptr<gr::block> FourBitCpxFileSignalSource::source() const { return timestamp_block_; }
 
 
 void FourBitCpxFileSignalSource::create_file_source_hook()
@@ -85,6 +94,14 @@ void FourBitCpxFileSignalSource::create_file_source_hook()
     DLOG(INFO) << "unpack_byte_2bit_cpx_samples(" << unpack_byte_->unique_id() << ")";
     inter_shorts_to_cpx_ = gr::blocks::interleaved_short_to_complex::make(false, reverse_interleaving_);  // I/Q swap enabled
     DLOG(INFO) << "interleaved_short_to_complex(" << inter_shorts_to_cpx_->unique_id() << ")";
+    if (timestamp_file_.size() > 1)
+        {
+            timestamp_block_ = gnss_sdr_make_Timestamp(sizeof(gr_complex),
+                timestamp_file_,
+                timestamp_clock_offset_ms_,
+                1);
+            DLOG(INFO) << "timestamp_block_(" << timestamp_block_->unique_id() << ")";
+        }
 }
 
 void FourBitCpxFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
@@ -92,10 +109,20 @@ void FourBitCpxFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
     top_block->connect(file_source(), 0, unpack_byte_, 0);
     top_block->connect(unpack_byte_, 0, inter_shorts_to_cpx_, 0);
     DLOG(INFO) << "connected file_source to unpacker";
+    if (timestamp_file_.size() > 1)
+        {
+            top_block->connect(inter_shorts_to_cpx_, 0, timestamp_block_, 0);
+            DLOG(INFO) << "connected file_source to timestamp_block_";
+        }
 }
 
 void FourBitCpxFileSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
 {
+    if (timestamp_file_.size() > 1)
+        {
+            top_block->disconnect(inter_shorts_to_cpx_, 0, timestamp_block_, 0);
+            DLOG(INFO) << "disconnected file_source from timestamp_block_";
+        }
     top_block->disconnect(file_source(), 0, unpack_byte_, 0);
     top_block->disconnect(unpack_byte_, 0, inter_shorts_to_cpx_, 0);
     DLOG(INFO) << "disconnected file_source from unpacker";

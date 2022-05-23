@@ -1022,19 +1022,19 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 case 3:  // CNAV
                     {
                         // TODO
-                        // Obtain Galileo E6 TOW from timetags, if available
+                        // Add option to use system time to estimate the preamble TOW
+                        // Add option to use Galileo E1 or E5 TOW information..
+
+                        // Done: Obtain Galileo E6 TOW from timetags, if available
                         if (d_valid_timetag == true)
                             {
                                 int rx_tow_at_preamble = d_current_timetag.tow_ms;
                                 uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
-
                                 d_TOW_at_Preamble_ms = predicted_tow_at_preamble_ms;
-                                //todo: compute tow at current symbol from the decoder delay similar as d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                d_TOW_at_current_symbol_ms = predicted_tow_at_preamble_ms + static_cast<uint32_t>((GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS) * d_PRN_code_period_ms);
+                                d_TOW_at_current_symbol_ms = predicted_tow_at_preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * d_PRN_code_period_ms);
                                 if (d_E6_TOW_set == false)
                                     {
                                         std::cout << " Sat PRN " << d_satellite.get_PRN() << " E6 TimeTag TOW at preamble: " << predicted_tow_at_preamble_ms
-                                                  //                                                  << " [ms] TOW fraction: " << d_current_timetag.tow_ms_fraction
                                                   << " [ms] d_TOW_at_current_symbol_ms: " << d_TOW_at_current_symbol_ms << " [ms]\n";
                                         d_E6_TOW_set = true;
                                     }
@@ -1064,8 +1064,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 3:  // CNAV
                     {
-                        // TODO
-                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;  // this is not the TOW!
+                        if (d_E6_TOW_set == true)
+                            {
+                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                            }
                         break;
                     }
                 }

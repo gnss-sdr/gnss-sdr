@@ -85,7 +85,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_enable_navdata_monitor(conf.enable_navdata_monitor),
                       d_dump_crc_stats(conf.dump_crc_stats),
                       d_enable_reed_solomon_inav(false),
-                      d_valid_timetag(false)
+                      d_valid_timetag(false),
+                      d_E6_TOW_set(false)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -591,6 +592,7 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
+    d_E6_TOW_set = false;
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
@@ -607,6 +609,7 @@ void galileo_telemetry_decoder_gs::reset()
     d_inav_nav.set_TOW0_flag(false);
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
+    d_E6_TOW_set = false;
     d_stat = 0;
     d_viterbi->reset();
     if (d_enable_reed_solomon_inav == true)
@@ -1019,6 +1022,23 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 case 3:  // CNAV
                     {
                         // TODO
+                        // Obtain Galileo E6 TOW from timetags, if available
+                        if (d_valid_timetag == true)
+                            {
+                                int rx_tow_at_preamble = d_current_timetag.tow_ms;
+                                uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
+
+                                d_TOW_at_Preamble_ms = predicted_tow_at_preamble_ms;
+                                //todo: compute tow at current symbol from the decoder delay similar as d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
+                                d_TOW_at_current_symbol_ms = predicted_tow_at_preamble_ms + static_cast<uint32_t>((GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS) * d_PRN_code_period_ms);
+                                if (d_E6_TOW_set == false)
+                                    {
+                                        std::cout << " Sat PRN " << d_satellite.get_PRN() << " E6 TimeTag TOW at preamble: " << predicted_tow_at_preamble_ms
+                                                  //                                                  << " [ms] TOW fraction: " << d_current_timetag.tow_ms_fraction
+                                                  << " [ms] d_TOW_at_current_symbol_ms: " << d_TOW_at_current_symbol_ms << " [ms]\n";
+                                        d_E6_TOW_set = true;
+                                    }
+                            }
                     }
                 }
         }
@@ -1078,6 +1098,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         case 3:  // CNAV
             {
                 // TODO
+                if (d_E6_TOW_set == true)
+                    {
+                        current_symbol.Flag_valid_word = true;
+                    }
                 break;
             }
         }

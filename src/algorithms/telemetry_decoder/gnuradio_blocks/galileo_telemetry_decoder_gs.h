@@ -147,6 +147,7 @@ private:
     bool d_dump_crc_stats;
     bool d_enable_reed_solomon_inav;
     bool d_valid_timetag;
+    bool d_E6_TOW_set;
 };
 
 

@@ -26,9 +26,16 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Usability:
 
-- Fixed large GLONASS velocity errors when using the
+- Fixed large GLONASS velocity errors and the extended correlator when using the
   `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
   `GLONASS_L2_CA_DLL_PLL_C_Aid_Tracking` implementations.
+- Added a over-the-wire sample format (that is, the format used between the
+  device and the UHD) configuration parameter for the `UHD_Signal_Source`, thus
+  allowing to select the `sc8` format instead of the default `sc16`. This would
+  reduce the dynamic range and increase quantization noise, but also reduce the
+  load on the data link and thus allow more bandwidth.
+- Added gain setting and reading for the XTRX board when using the
+  `Osmosdr_Signal_Source` implementation of a `SignalSource`.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

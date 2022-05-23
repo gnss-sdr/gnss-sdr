@@ -131,6 +131,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/system-parameters/glonass_gnav_crc_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
+#include "unit-tests/system-parameters/has_decoding_test.cc"
 
 #if EXTRA_TESTS
 #include "unit-tests/signal-processing-blocks/acquisition/acq_performance_test.cc"

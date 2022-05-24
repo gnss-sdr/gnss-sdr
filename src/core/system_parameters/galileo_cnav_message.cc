@@ -21,6 +21,7 @@
 #include <boost/dynamic_bitset.hpp>  // for boost::dynamic_bitset
 #include <glog/logging.h>
 #include <algorithm>  // for reverse
+#include <limits>
 #include <vector>
 
 using CRC_Galileo_CNAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
@@ -60,6 +61,7 @@ void Galileo_Cnav_Message::read_HAS_page(const std::string& page_string)
     const std::bitset<GALILEO_CNAV_CRC_LENGTH> checksum(CRC_data);
     d_new_HAS_page = false;
     has_page = Galileo_HAS_page();
+    has_page.tow = std::numeric_limits<uint32_t>::max();  // Unknown
     d_flag_CRC_test = CRC_test(Word_for_CRC_bits, checksum.to_ulong());
     if (d_flag_CRC_test == true)
         {

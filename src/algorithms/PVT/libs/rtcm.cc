@@ -3428,7 +3428,7 @@ std::string Rtcm::get_IGM01_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                                // TODO
+    uint32_t tow = has_data.tow;
     uint16_t ssr_provider_id = 0;                    // ?
     uint8_t igm_version = 0;                         // ?
     uint8_t ssr_solution_id = 0;                     // ?
@@ -3505,7 +3505,7 @@ std::string Rtcm::get_IGM02_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                                // TODO
+    uint32_t tow = has_data.tow;
     uint16_t ssr_provider_id = 0;                    // ?
     uint8_t igm_version = 0;                         // ?
     uint8_t ssr_solution_id = 0;                     // ?
@@ -3576,7 +3576,7 @@ std::string Rtcm::get_IGM03_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                                // TODO
+    uint32_t tow = has_data.tow;
     uint16_t ssr_provider_id = 0;                    // ?
     uint8_t igm_version = 0;                         // ?
     uint8_t ssr_solution_id = 0;                     // ?
@@ -3661,7 +3661,7 @@ std::string Rtcm::get_IGM05_header(const Galileo_HAS_data& has_data, uint8_t nsy
 {
     std::string header;
 
-    uint32_t tow = 0;                                // TODO
+    uint32_t tow = has_data.tow;
     uint16_t ssr_provider_id = 0;                    // ?
     uint8_t igm_version = 0;                         // ?
     uint8_t ssr_solution_id = 0;                     // ?

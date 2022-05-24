@@ -26,6 +26,7 @@
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>                // for std::find, std::count
+#include <cmath>                    // for std::remainder
 #include <cstddef>                  // for size_t
 #include <iterator>                 // for std::back_inserter
 #include <limits>                   // for std::numeric_limits
@@ -111,6 +112,7 @@ void galileo_e6_has_msg_receiver::set_enable_navdata_monitor(bool enable)
 std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page(const pmt::pmt_t& msg)
 {
     int64_t timestamp = std::numeric_limits<uint64_t>::max();
+    uint32_t tow = std::numeric_limits<uint32_t>::max();
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -126,6 +128,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
                     timestamp = HAS_data_page->time_stamp;
+                    tow = HAS_data_page->tow;
                     if (d_printed_mids[d_current_message_id] == false)
                         {
                             process_HAS_page(*HAS_data_page.get());
@@ -146,6 +149,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
         {
             d_HAS_data.has_status = d_current_has_status;
             d_HAS_data.message_id = d_current_message_id;
+            d_HAS_data.tow = tow - static_cast<uint32_t>(std::remainder(tow, 3600)) + d_HAS_data.header.toh;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
             d_new_message = false;
             d_printed_mids[d_current_message_id] = true;
@@ -160,6 +164,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
 {
     gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_galileo_e6_has function called by the scheduler
     int64_t timestamp = std::numeric_limits<uint64_t>::max();
+    uint32_t tow = std::numeric_limits<uint32_t>::max();
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -175,6 +180,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
                     d_current_has_status = HAS_data_page->has_status;
                     d_current_message_id = HAS_data_page->message_id;
                     timestamp = HAS_data_page->time_stamp;
+                    tow = HAS_data_page->tow;
                     if (d_printed_mids[d_current_message_id] == false)
                         {
                             process_HAS_page(*HAS_data_page.get());
@@ -195,6 +201,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
         {
             d_HAS_data.has_status = d_current_has_status;
             d_HAS_data.message_id = d_current_message_id;
+            d_HAS_data.tow = tow - static_cast<uint32_t>(std::remainder(tow, 3600)) + d_HAS_data.header.toh;
             d_printed_mids[d_current_message_id] = true;
             d_printed_timestamps[d_current_message_id] = timestamp;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
@@ -399,6 +406,7 @@ int galileo_e6_has_msg_receiver::decode_message_type1(uint8_t message_id, uint8_
 
     // Trigger HAS message content reading and fill the d_HAS_data object
     d_HAS_data = Galileo_HAS_data();
+    d_HAS_data.tow = std::numeric_limits<uint32_t>::max();  // Unknown
 
     read_MT1_header(decoded_message_type_1.substr(0, GALILEO_CNAV_MT1_HEADER_BITS));
 

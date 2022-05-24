@@ -571,6 +571,10 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(uint64_t time_stamp, float *
                 }
             else
                 {
+                    if (d_E6_TOW_set == true)
+                        {
+                            d_cnav_nav.set_tow(d_TOW_at_Preamble_ms / 1000);
+                        }
                     const std::shared_ptr<Galileo_HAS_page> tmp_obj = std::make_shared<Galileo_HAS_page>(d_cnav_nav.get_HAS_encoded_page());
                     this->message_port_pub(pmt::mp("E6_HAS_from_TLM"), pmt::make_any(tmp_obj));
                     if (d_print_cnav_page == true)

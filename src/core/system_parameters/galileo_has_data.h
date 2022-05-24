@@ -104,6 +104,8 @@ public:
     std::vector<std::vector<int16_t>> phase_bias;                     //!< PB - Phase bias for the m-th signal of the n-th SV. See HAS SIS ICD 1.0 Section 5.2.6
     std::vector<std::vector<uint8_t>> phase_discontinuity_indicator;  //!< PDI - Phase Discontinuity Indicator. See HAS SIS ICD 1.0 Section 5.2.6.
 
+    uint32_t tow;  //!< Time of Week
+
     mt1_header header;   //!< MT1 Header parameters. See HAS SIS ICD 1.0 Section 5.1.1
     uint8_t has_status;  //!< HASS - HAS Status (from HAS page header). See HAS SIS ICD 1.0 Section 3.1.1
     uint8_t message_id;  //!< MID - Message ID (from HAS page header). See HAS SIS ICD 1.0 Section 3.1

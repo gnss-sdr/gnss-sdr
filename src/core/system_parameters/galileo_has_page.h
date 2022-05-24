@@ -39,6 +39,7 @@ public:
 
     std::string has_message_string;  //!< HAS message content
     uint64_t time_stamp{};           //!< HAS page time stamp, in [s]
+    uint32_t tow{};                  //!< HAS page time of week, in [s]
 
     // HAS page header
     uint8_t has_status{};       //!< HAS status

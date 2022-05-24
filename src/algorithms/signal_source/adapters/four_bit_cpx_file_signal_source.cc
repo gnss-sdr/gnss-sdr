@@ -85,7 +85,17 @@ std::tuple<size_t, bool> FourBitCpxFileSignalSource::itemTypeToSize()
 
 // 1 byte -> 1 complex samples
 double FourBitCpxFileSignalSource::packetsPerSample() const { return 1.0; }
-gnss_shared_ptr<gr::block> FourBitCpxFileSignalSource::source() const { return timestamp_block_; }
+gnss_shared_ptr<gr::block> FourBitCpxFileSignalSource::source() const
+{
+    if (timestamp_file_.size() > 1)
+        {
+            return timestamp_block_;
+        }
+    else
+        {
+            return inter_shorts_to_cpx_;
+        }
+}
 
 
 void FourBitCpxFileSignalSource::create_file_source_hook()

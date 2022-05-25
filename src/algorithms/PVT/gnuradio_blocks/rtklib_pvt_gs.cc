@@ -651,6 +651,13 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                                 {
                                     ofs.open(file_name.c_str(), std::ofstream::trunc | std::ofstream::out);
                                     boost::archive::xml_oarchive xml(ofs);
+                                    // Annotate as GPS week number
+                                    for (auto gal_eph_iter = d_internal_pvt_solver->galileo_ephemeris_map.begin();
+                                         gal_eph_iter != d_internal_pvt_solver->galileo_ephemeris_map.end();
+                                         ++gal_eph_iter)
+                                        {
+                                            gal_eph_iter->second.WN += 1024;
+                                        }
                                     xml << boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", d_internal_pvt_solver->galileo_ephemeris_map);
                                     LOG(INFO) << "Saved Galileo E1 Ephemeris map data";
                                 }
@@ -2048,6 +2055,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             store_valid_observable = true;
                                         }
+                                }
+                            if (std::string(in[i][epoch].Signal) == std::string("E6"))
+                                {
+                                    store_valid_observable = true;
                                 }
 
                             if (store_valid_observable)

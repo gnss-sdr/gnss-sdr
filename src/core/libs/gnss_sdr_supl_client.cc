@@ -414,6 +414,13 @@ bool Gnss_Sdr_Supl_Client::load_gal_ephemeris_xml(const std::string& file_name)
             gal_ephemeris_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gal_ephemeris_map", this->gal_ephemeris_map);
             LOG(INFO) << "Loaded Ephemeris map data with " << this->gal_ephemeris_map.size() << " satellites";
+            // Convert to GPS week number
+            for (auto gal_eph_iter = this->gal_ephemeris_map.begin();
+                 gal_eph_iter != this->gal_ephemeris_map.end();
+                 ++gal_eph_iter)
+                {
+                    gal_eph_iter->second.WN -= 1024;
+                }
         }
     catch (std::exception& e)
         {

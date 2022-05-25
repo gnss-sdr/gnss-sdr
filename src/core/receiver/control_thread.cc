@@ -188,7 +188,7 @@ void ControlThread::init()
             while (ss >> d)
                 {
                     vect.push_back(d);
-                    if ((ss.peek() == ',') or (ss.peek() == ' '))
+                    if ((ss.peek() == ',') || (ss.peek() == ' '))
                         {
                             ss.ignore();
                         }
@@ -196,7 +196,7 @@ void ControlThread::init()
             // fill agnss_ref_location_
             if (vect.size() >= 2)
                 {
-                    if ((vect[0] < 90.0) and (vect[0] > -90) and (vect[1] < 180.0) and (vect[1] > -180.0))
+                    if ((vect[0] < 90.0) && (vect[0] > -90) && (vect[1] < 180.0) && (vect[1] > -180.0))
                         {
                             agnss_ref_location_.lat = vect[0];
                             agnss_ref_location_.lon = vect[1];
@@ -550,7 +550,8 @@ bool ControlThread::read_assistance_from_XML()
                 }
         }
 
-    if ((configuration_->property("Channels_1B.count", 0) > 0) or (configuration_->property("Channels_5X.count", 0) > 0))
+    if ((configuration_->property("Channels_1B.count", 0) > 0) || (configuration_->property("Channels_5X.count", 0) > 0) ||
+        (configuration_->property("Channels_7X.count", 0) > 0) || (configuration_->property("Channels_E6.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_gal_ephemeris_xml(eph_gal_xml_filename) == true)
                 {
@@ -597,7 +598,7 @@ bool ControlThread::read_assistance_from_XML()
                 }
         }
 
-    if ((configuration_->property("Channels_2S.count", 0) > 0) or (configuration_->property("Channels_L5.count", 0) > 0))
+    if ((configuration_->property("Channels_2S.count", 0) > 0) || (configuration_->property("Channels_L5.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_cnav_ephemeris_xml(eph_cnav_xml_filename) == true)
                 {
@@ -622,7 +623,7 @@ bool ControlThread::read_assistance_from_XML()
                 }
         }
 
-    if ((configuration_->property("Channels_1G.count", 0) > 0) or (configuration_->property("Channels_2G.count", 0) > 0))
+    if ((configuration_->property("Channels_1G.count", 0) > 0) || (configuration_->property("Channels_2G.count", 0) > 0))
         {
             if (supl_client_ephemeris_.load_gnav_ephemeris_xml(eph_glo_xml_filename) == true)
                 {
@@ -692,7 +693,7 @@ void ControlThread::assist_GNSS()
     // GNSS Assistance configuration
     const bool enable_gps_supl_assistance = configuration_->property("GNSS-SDR.SUPL_gps_enabled", false);
     const bool enable_agnss_xml = configuration_->property("GNSS-SDR.AGNSS_XML_enabled", false);
-    if ((enable_gps_supl_assistance == true) and (enable_agnss_xml == false))
+    if ((enable_gps_supl_assistance == true) && (enable_agnss_xml == false))
         {
             std::cout << "SUPL RRLP GPS assistance enabled!\n";
             const std::string default_acq_server("supl.google.com");
@@ -727,12 +728,12 @@ void ControlThread::assist_GNSS()
                     supl_ci_ = -1;
                 }
 
-            if (supl_lac_ < 0 or supl_lac_ > 65535)
+            if (supl_lac_ < 0 || supl_lac_ > 65535)
                 {
                     supl_lac_ = 0x59e2;
                 }
 
-            if (supl_ci_ < 0 or supl_ci_ > 268435455)  // 2^16 for GSM and CDMA, 2^28 for UMTS and LTE networks
+            if (supl_ci_ < 0 || supl_ci_ > 268435455)  // 2^16 for GSM and CDMA, 2^28 for UMTS and LTE networks
                 {
                     supl_ci_ = 0x31b0;
                 }
@@ -880,7 +881,7 @@ void ControlThread::assist_GNSS()
                 }
         }
 
-    if ((enable_gps_supl_assistance == false) and (enable_agnss_xml == true))
+    if ((enable_gps_supl_assistance == false) && (enable_agnss_xml == true))
         {
             // read assistance from file
             if (read_assistance_from_XML())
@@ -890,7 +891,7 @@ void ControlThread::assist_GNSS()
         }
 
     // If AGNSS is enabled, make use of it
-    if ((agnss_ref_location_.valid == true) and ((enable_gps_supl_assistance == true) or (enable_agnss_xml == true)))
+    if ((agnss_ref_location_.valid == true) && ((enable_gps_supl_assistance == true) || (enable_agnss_xml == true)))
         {
             // Get the list of visible satellites
             std::array<float, 3> ref_LLH{};

@@ -529,7 +529,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             galileo_ephemeris_iter->second.WN,
-                                                            0);  // Band 1 (E6)
+                                                            2);  // Band E6
                                                         found_E1_obs = true;
                                                         break;
                                                     }
@@ -547,7 +547,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     galileo_ephemeris_iter->second.WN,
-                                                    0);  // Band 1 (E6)
+                                                    2);  // Band E6
                                                 // std::cout << "Week " << galileo_ephemeris_iter->second.WN << '\n';
                                                 valid_obs++;
                                             }
@@ -922,7 +922,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                     for (int j = 0; j < NFREQ; j++)
                         {
-                            if (j == 0 && gal_e6)
+                            if (j == 2 && gal_e6)
                                 {
                                     // frq = 3 corresponds to E6 in that function
                                     nav_data.lam[i][j] = satwavelen(i + 1, 3, &nav_data);

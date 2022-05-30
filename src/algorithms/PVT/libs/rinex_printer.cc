@@ -636,7 +636,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                     if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
                         {
                             const std::string gal_signal("1B E6");
-                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
                             rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
                             output_navfilename.push_back(navGalfilename);
                             log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);

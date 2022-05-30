@@ -117,7 +117,6 @@ bool get_phy_chan(struct iio_device *dev, enum iodev d, int chid, struct iio_cha
 }
 
 /* finds AD9361 local oscillator IIO configuration channels */
-//bool get_lo_chan(struct iio_context *ctx, enum iodev d, struct iio_channel **chn)
 bool get_lo_chan(struct iio_device *dev, enum iodev d, int chid, struct iio_channel **chn)
 {
     std::stringstream name;

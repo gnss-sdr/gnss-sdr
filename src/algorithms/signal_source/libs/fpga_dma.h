@@ -78,17 +78,17 @@ public:
     /*!
      * \brief Obtain DMA buffer address.
      */
-    std::array<int8_t, BUFFER_SIZE> *get_buffer_address(void);
+    std::array<int8_t, BUFFER_SIZE> *get_buffer_address(void) const;
 
     /*!
      * \brief Transfer DMA data
      */
-    int DMA_write(int nbytes);
+    int DMA_write(int nbytes) const;
 
     /*!
      * \brief Close the DMA device driver
      */
-    int DMA_close(void);
+    int DMA_close(void) const;
 
 private:
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture

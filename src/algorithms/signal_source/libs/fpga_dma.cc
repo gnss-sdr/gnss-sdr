@@ -31,7 +31,7 @@ int Fpga_DMA::DMA_open()
             return tx_channel.fd;
         }
 
-    tx_channel.buf_ptr = (struct channel_buffer *)mmap(NULL, sizeof(struct channel_buffer) * TX_BUFFER_COUNT,
+    tx_channel.buf_ptr = (struct channel_buffer *)mmap(nullptr, sizeof(struct channel_buffer) * TX_BUFFER_COUNT,
         PROT_READ | PROT_WRITE, MAP_SHARED, tx_channel.fd, 0);
     if (tx_channel.buf_ptr == MAP_FAILED)
         {
@@ -68,7 +68,7 @@ int Fpga_DMA::DMA_open()
 }
 
 
-std::array<int8_t, BUFFER_SIZE> *Fpga_DMA::get_buffer_address(void)
+std::array<int8_t, BUFFER_SIZE> *Fpga_DMA::get_buffer_address() const
 {
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     return &tx_channel.buf_ptr[0].buffer;
@@ -78,7 +78,7 @@ std::array<int8_t, BUFFER_SIZE> *Fpga_DMA::get_buffer_address(void)
 }
 
 
-int Fpga_DMA::DMA_write(int nbytes)
+int Fpga_DMA::DMA_write(int nbytes) const
 {
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
 
@@ -105,21 +105,18 @@ int Fpga_DMA::DMA_write(int nbytes)
             std::cerr << "Proxy DMA Tx transfer error " << '\n';
             return -1;
         }
-
 #else  // 32-bit processor architecture
-
     const int num_bytes_sent = write(tx_fd, buffer.data(), nbytes);
     if (num_bytes_sent != nbytes)
         {
             return -1;
         }
-
 #endif
-
     return 0;
 }
 
-int Fpga_DMA::DMA_close()
+
+int Fpga_DMA::DMA_close() const
 {
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     if (munmap(tx_channel.buf_ptr, sizeof(struct channel_buffer)))

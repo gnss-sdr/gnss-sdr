@@ -1784,13 +1784,7 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                     // set Doppler center to 0 Hz
                                     channels_[current_channel]->assist_acquisition_doppler(0);
                                 }
-#if ENABLE_FPGA
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[current_channel]);
-                            tmp_thread.detach();
-#else
                             channels_[current_channel]->start_acquisition();
-#endif
                         }
                     else
                         {

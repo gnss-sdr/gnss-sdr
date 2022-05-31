@@ -1883,14 +1883,7 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     acq_channels_count_++;
                     DLOG(INFO) << "Channel " << who << " Starting acquisition " << gs.get_satellite() << ", Signal " << gs.get_signal_str();
                     channels_[who]->set_signal(channels_[who]->get_signal());
-
-#if ENABLE_FPGA
-                    // create a task for the FPGA such that it doesn't stop the flow
-                    std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[who]);
-                    tmp_thread.detach();
-#else
                     channels_[who]->start_acquisition();
-#endif
                 }
             else
                 {

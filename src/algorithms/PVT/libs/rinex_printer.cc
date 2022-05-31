@@ -470,6 +470,17 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             d_rinex_header_written = true;  // do not write header anymore
                         }
                     break;
+                case 19:  // Galileo E5a + Galileo E5b
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("5X 7X");
+                            rinex_obs_header(obsFile, galileo_ephemeris_iter->second, rx_time, gal_signal);
+                            rinex_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navGalfilename);
+                            log_rinex_nav(navGalFile, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
                 case 23:  // GLONASS L1 C/A only
                     if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
                         {
@@ -949,6 +960,18 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                                     d_rinex_header_updated = true;
                                 }
                             break;
+                        case 19:  // Galileo E5a + Galileo E5b
+                            if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                {
+                                    log_rinex_obs(obsFile, galileo_ephemeris_iter->second, rx_time, gnss_observables_map, "5X 7X");
+                                }
+                            if (!d_rinex_header_updated and (pvt_solver->galileo_utc_model.A0 != 0))
+                                {
+                                    update_nav_header(navGalFile, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                    update_obs_header(obsFile, pvt_solver->galileo_utc_model);
+                                    d_rinex_header_updated = true;
+                                }
+                            break;
                         case 23:  // GLONASS L1 C/A only
                             if (glonass_gnav_ephemeris_iter != pvt_solver->glonass_gnav_ephemeris_map.cend())
                                 {
@@ -1331,6 +1354,9 @@ void Rinex_Printer::log_rinex_nav_gal_nav(int type_of_rx, const std::map<int32_t
             log_rinex_nav(navMixFile, new_cnav_eph, new_gal_eph);
             break;
         case 15:  // Galileo E1B + Galileo E5b
+            log_rinex_nav(navGalFile, new_gal_eph);
+            break;
+        case 19:  // Galileo E1B + Galileo E5b
             log_rinex_nav(navGalFile, new_gal_eph);
             break;
         case 27:  // Galileo E1B + GLONASS L1 C/A

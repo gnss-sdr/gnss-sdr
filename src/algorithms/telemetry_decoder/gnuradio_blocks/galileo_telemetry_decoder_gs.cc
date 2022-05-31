@@ -85,7 +85,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_enable_navdata_monitor(conf.enable_navdata_monitor),
                       d_dump_crc_stats(conf.dump_crc_stats),
                       d_enable_reed_solomon_inav(false),
-                      d_valid_timetag(false)
+                      d_valid_timetag(false),
+                      d_E6_TOW_set(false)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -595,6 +596,7 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
+    d_E6_TOW_set = false;
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
@@ -611,6 +613,7 @@ void galileo_telemetry_decoder_gs::reset()
     d_inav_nav.set_TOW0_flag(false);
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
+    d_E6_TOW_set = false;
     d_stat = 0;
     d_viterbi->reset();
     if (d_enable_reed_solomon_inav == true)
@@ -1048,8 +1051,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 3:  // CNAV
                     {
-                        // TODO
-                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;  // this is not the TOW!
+                        if (d_E6_TOW_set == true)
+                            {
+                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                            }
                         break;
                     }
                 }
@@ -1081,7 +1086,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         case 3:  // CNAV
             {
-                // TODO
+                if (d_E6_TOW_set == true)
+                    {
+                        current_symbol.Flag_valid_word = true;
+                    }
                 break;
             }
         }

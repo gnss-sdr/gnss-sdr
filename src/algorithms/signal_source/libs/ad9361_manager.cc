@@ -22,6 +22,7 @@
 #include <fstream>  // for ifstream
 #include <iostream>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 /* check return value of attr_write function */
@@ -91,6 +92,7 @@ bool get_ad9361_stream_ch(struct iio_context *ctx __attribute__((unused)), enum 
     return *chn != nullptr;
 }
 
+
 /* finds AD9361 phy IIO configuration channel with id chid */
 bool get_phy_chan(struct iio_device *dev, enum iodev d, int chid, struct iio_channel **chn)
 {
@@ -115,6 +117,7 @@ bool get_phy_chan(struct iio_device *dev, enum iodev d, int chid, struct iio_cha
             return false;
         }
 }
+
 
 /* finds AD9361 local oscillator IIO configuration channels */
 bool get_lo_chan(struct iio_device *dev, enum iodev d, int chid, struct iio_channel **chn)
@@ -152,7 +155,8 @@ void cfg_ad9361_streaming_ch(struct stream_cfg *cfg, iio_channel *chn)
     wr_ch_lli(chn, "sampling_frequency", cfg->fs_hz);
 }
 
-int setup_filter(std::string filter_source_, uint64_t bandwidth_, uint64_t sample_rate_, uint64_t freq_, const std::string &rf_port_select_,
+
+int setup_filter(const std::string &filter_source_, uint64_t bandwidth_, uint64_t sample_rate_, uint64_t freq_, const std::string &rf_port_select_,
     struct iio_device *ad9361_phy_dev, struct iio_channel *rx_chan, struct iio_channel *chn, int chid, std::string filter_filename_, float Fpass_, float Fstop_)
 {
     int ret;
@@ -251,6 +255,7 @@ int setup_filter(std::string filter_source_, uint64_t bandwidth_, uint64_t sampl
     return 0;
 }
 
+
 int setup_device_parameters(iio_device *ad9361_phy_dev, bool quadrature_, bool rfdc_, bool bbdc_, const std::string &gain_mode_rx1_, const std::string &gain_mode_rx2_)
 {
     int ret;
@@ -304,6 +309,7 @@ int setup_device_parameters(iio_device *ad9361_phy_dev, bool quadrature_, bool r
     return ret;
 }
 
+
 bool config_ad9361_rx_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
     uint64_t freq0_,
@@ -325,7 +331,6 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
 
 {
     // RX stream config
-
     struct iio_context *ctx;
     // Streaming devices
     struct iio_device *rx;
@@ -387,7 +392,6 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         }
 
     // set-up AD9361-A stream device
-
     std::string rx_stream_dev_a = (enable_ad9361_b ? RX_STREAM_DEV_A : RX_STREAM_DEV);
     std::cout << "* Acquiring " << rx_stream_dev_a << " streaming device\n";
     rx = iio_context_find_device(ctx, rx_stream_dev_a.c_str());
@@ -425,7 +429,6 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     if (enable_ad9361_b)
         {
             // set-up AD9361-B stream device
-
             std::cout << "* Acquiring " << RX_STREAM_DEV_B << " streaming device\n";
             rx = iio_context_find_device(ctx, RX_STREAM_DEV_B.c_str());
             if (!rx)
@@ -624,7 +627,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
         {
             return false;
         }
-    if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq_, rf_port_select_, ad9361_phy, rx_chan0, chn, 0, filter_filename_, Fpass_, Fstop_) == -1)
+    if (setup_filter(std::move(filter_source_), bandwidth_, sample_rate_, freq_, rf_port_select_, ad9361_phy, rx_chan0, chn, 0, std::move(filter_filename_), Fpass_, Fstop_) == -1)
         {
             return false;
         }
@@ -1234,6 +1237,7 @@ bool disable_ad9361_rx_local()
     iio_context_destroy(ctx);
     return true;
 }
+
 
 bool disable_ad9361_rx_remote(const std::string &remote_host)
 {

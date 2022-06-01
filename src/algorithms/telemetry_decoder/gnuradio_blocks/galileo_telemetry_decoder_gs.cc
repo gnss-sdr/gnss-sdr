@@ -1119,7 +1119,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         bool overflowed = (diff < 0) ^ (d_received_sample_counter < current_symbol.Tracking_sample_counter);
                                         if (!overflowed && (std::abs(diff) / static_cast<int64_t>(current_symbol.fs) < 1.0))
                                             {
-                                                d_TOW_at_Preamble_ms = d_received_tow;
+                                                d_TOW_at_Preamble_ms = d_received_tow * 1000;
                                                 d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_CNAV_SYMBOLS_PER_PAGE * GALILEO_CNAV_PAGE_MS);
                                                 d_E6_TOW_set = true;
                                             }

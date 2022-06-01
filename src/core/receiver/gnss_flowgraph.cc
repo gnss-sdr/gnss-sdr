@@ -488,7 +488,20 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
             LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
             if (channels_state_[i] == 1)
                 {
+#if ENABLE_FPGA
+                    if (enable_fpga_offloading_)
+                        {
+                            // create a task for the FPGA such that it doesn't stop the flow
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[i]);
+                            tmp_thread.detach();
+                        }
+                    else
+                        {
+                            channels_.at(i)->start_acquisition();
+                        }
+#else
                     channels_.at(i)->start_acquisition();
+#endif
                     LOG(INFO) << "Channel " << i << " connected to observables and ready for acquisition";
                 }
             else
@@ -1824,9 +1837,16 @@ void GNSSFlowgraph::acquisition_manager(unsigned int who)
                                     channels_[current_channel]->assist_acquisition_doppler(0);
                                 }
 #if ENABLE_FPGA
-                            // create a task for the FPGA such that it doesn't stop the flow
-                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[current_channel]);
-                            tmp_thread.detach();
+                            if (enable_fpga_offloading_)
+                                {
+                                    // create a task for the FPGA such that it doesn't stop the flow
+                                    std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[current_channel]);
+                                    tmp_thread.detach();
+                                }
+                            else
+                                {
+                                    channels_[current_channel]->start_acquisition();
+                                }
 #else
                             channels_[current_channel]->start_acquisition();
 #endif
@@ -1930,9 +1950,16 @@ void GNSSFlowgraph::apply_action(unsigned int who, unsigned int what)
                     channels_[who]->set_signal(channels_[who]->get_signal());
 
 #if ENABLE_FPGA
-                    // create a task for the FPGA such that it doesn't stop the flow
-                    std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[who]);
-                    tmp_thread.detach();
+                    if (enable_fpga_offloading_)
+                        {
+                            // create a task for the FPGA such that it doesn't stop the flow
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[who]);
+                            tmp_thread.detach();
+                        }
+                    else
+                        {
+                            channels_[who]->start_acquisition();
+                        }
 #else
                     channels_[who]->start_acquisition();
 #endif
@@ -2060,7 +2087,20 @@ void GNSSFlowgraph::start_acquisition_helper()
         {
             if (channels_state_[i] == 1)
                 {
+#if ENABLE_FPGA
+                    if (enable_fpga_offloading_)
+                        {
+                            // create a task for the FPGA such that it doesn't stop the flow
+                            std::thread tmp_thread(&ChannelInterface::start_acquisition, channels_[i]);
+                            tmp_thread.detach();
+                        }
+                    else
+                        {
+                            channels_.at(i)->start_acquisition();
+                        }
+#else
                     channels_.at(i)->start_acquisition();
+#endif
                 }
         }
 }

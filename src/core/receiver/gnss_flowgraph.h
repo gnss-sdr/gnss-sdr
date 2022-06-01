@@ -27,6 +27,7 @@
 #include "channel_status_msg_receiver.h"
 #include "concurrent_queue.h"
 #include "galileo_e6_has_msg_receiver.h"
+#include "galileo_tow_map.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
 #include "pvt_interface.h"
@@ -171,6 +172,7 @@ private:
     int connect_observables();
     int connect_pvt();
     int connect_sample_counter();
+    int connect_galileo_tow_map();
 
     int connect_signal_sources_to_signal_conditioners();
     int connect_signal_conditioners_to_channels();
@@ -231,6 +233,7 @@ private:
     gr::basic_block_sptr NavDataMonitor_;
     channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
     galileo_e6_has_msg_receiver_sptr gal_e6_has_rx_;
+    galileo_tow_map_sptr galileo_tow_map_;
 
     gnss_sdr_sample_counter_sptr ch_out_sample_counter_;
 #if ENABLE_FPGA

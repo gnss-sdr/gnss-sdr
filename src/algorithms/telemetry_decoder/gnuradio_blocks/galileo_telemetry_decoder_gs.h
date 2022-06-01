@@ -32,6 +32,7 @@
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <gnuradio/block.h>           // for block
 #include <gnuradio/types.h>           // for gr_vector_const_void_star
+#include <pmt/pmt.h>                  // for pmt::pmt_t
 #include <cstdint>                    // for int32_t, uint32_t
 #include <fstream>                    // for std::ofstream
 #include <memory>                     // for std::unique_ptr
@@ -80,6 +81,7 @@ private:
 
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type);
 
+    void msg_handler_read_galileo_tow_map(const pmt::pmt_t &msg);
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
     void decode_INAV_word(float *page_part_symbols, int32_t frame_length);
     void decode_FNAV_word(float *page_symbols, int32_t frame_length);

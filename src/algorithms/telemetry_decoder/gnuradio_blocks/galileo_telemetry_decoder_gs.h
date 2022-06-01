@@ -113,6 +113,7 @@ private:
     uint64_t d_sample_counter;
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
+    uint64_t d_received_sample_counter;
 
     int32_t d_mm;
     int32_t d_codelength;
@@ -132,6 +133,7 @@ private:
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_max_symbols_without_valid_frame;
+    uint32_t d_received_tow;
 
     char d_band;  // This variable will store which band we are dealing with (Galileo E1 or E5b)
 

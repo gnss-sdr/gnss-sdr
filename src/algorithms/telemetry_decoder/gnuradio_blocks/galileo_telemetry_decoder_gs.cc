@@ -42,6 +42,7 @@
 #include <cstddef>                   // for size_t
 #include <exception>                 // for std::exception
 #include <iostream>                  // for std::cout
+#include <limits>                    // for std::numeric_limits
 #include <map>                       // for std::map
 #include <stdexcept>                 // for std::out_of_range
 #include <typeinfo>                  // for typeid
@@ -79,6 +80,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_sample_counter(0ULL),
                       d_preamble_index(0ULL),
                       d_last_valid_preamble(0),
+                      d_received_sample_counter(0),
                       d_frame_type(frame_type),
                       d_CRC_error_counter(0),
                       d_channel(0),
@@ -86,6 +88,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_stat(0),
                       d_TOW_at_Preamble_ms(0),
                       d_TOW_at_current_symbol_ms(0),
+                      d_received_tow(std::numeric_limits<uint32_t>::max()),
                       d_band('1'),
                       d_sent_tlm_failed_msg(false),
                       d_flag_frame_sync(false),
@@ -324,8 +327,11 @@ void galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map(const pmt::p
                         {
                             const auto received_tow_map = wht::any_cast<std::shared_ptr<std::map<uint32_t, std::pair<uint32_t, uint64_t>>>>(pmt::any_ref(msg));
                             const std::pair<uint32_t, uint64_t> received_tow_sample = received_tow_map->at(d_satellite.get_PRN());
-                            std::cout << "Received TOW: " << received_tow_sample.first << '\n';
-                            std::cout << "Received sample counter: " << received_tow_sample.second << '\n';
+                            if (received_tow_sample.first < 604800)
+                                {
+                                    d_received_tow = received_tow_sample.first;
+                                    d_received_sample_counter = received_tow_sample.second;
+                                }
                         }
                 }
             catch (const wht::bad_any_cast &e)
@@ -1105,7 +1111,30 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 3:  // CNAV
                     {
-                        // TODO
+                        if (!d_valid_timetag)
+                            {
+                                if (d_received_tow < 604800)
+                                    {
+                                        const int64_t diff = d_received_sample_counter - current_symbol.Tracking_sample_counter;
+                                        bool overflowed = (diff < 0) ^ (d_received_sample_counter < current_symbol.Tracking_sample_counter);
+                                        if (!overflowed && (std::abs(diff) / static_cast<int64_t>(current_symbol.fs) < 1.0))
+                                            {
+                                                d_TOW_at_Preamble_ms = d_received_tow;
+                                                d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_CNAV_SYMBOLS_PER_PAGE * GALILEO_CNAV_PAGE_MS);
+                                                d_E6_TOW_set = true;
+                                            }
+                                    }
+                            }
+                        if (d_E6_TOW_set && d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                            {
+                                d_nav_msg_packet.system = std::string(1, current_symbol.System);
+                                d_nav_msg_packet.signal = std::string(current_symbol.Signal);
+                                d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                                d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                                const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                                this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                                d_nav_msg_packet.nav_message = "";
+                            }
                     }
                 }
         }

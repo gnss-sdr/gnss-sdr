@@ -407,6 +407,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     bool band1 = false;
     bool band2 = false;
     bool gal_e5_is_e5b = false;
+    bool gal_e6 = false;
     for (gnss_observables_iter = gnss_observables_map.cbegin();
          gnss_observables_iter != gnss_observables_map.cend();
          ++gnss_observables_iter)
@@ -512,6 +513,48 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (sig_ == "7X")
                                     {
                                         gal_e5_is_e5b = true;
+                                    }
+                            }
+                        if (sig_ == "E6")
+                            {
+                                gal_e6 = true;
+                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
+                                    {
+                                        bool found_E1_obs = false;
+                                        for (int i = 0; i < valid_obs; i++)
+                                            {
+                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
+                                                    {
+                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                            gnss_observables_iter->second,
+                                                            galileo_ephemeris_iter->second.WN,
+                                                            2);  // Band E6
+                                                        found_E1_obs = true;
+                                                        break;
+                                                    }
+                                            }
+                                        if (!found_E1_obs)
+                                            {
+                                                // insert Galileo E6 obs as new obs and also insert its ephemeris
+                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
+                                                // convert observation from GNSS-SDR class to RTKLIB structure
+                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                obsd_t newobs = {{0, 0}, '0', '0', {}, {},
+                                                    {default_code_, default_code_, default_code_},
+                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    galileo_ephemeris_iter->second.WN,
+                                                    2);  // Band E6
+                                                // std::cout << "Week " << galileo_ephemeris_iter->second.WN << '\n';
+                                                valid_obs++;
+                                            }
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
                         break;
@@ -879,6 +922,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                     for (int j = 0; j < NFREQ; j++)
                         {
+                            if (j == 2 && gal_e6)
+                                {
+                                    // frq = 3 corresponds to E6 in that function
+                                    nav_data.lam[i][j] = satwavelen(i + 1, 3, &nav_data);
+                                }
                             if (j == 2 && gal_e5_is_e5b)
                                 {
                                     // frq = 4 corresponds to E5B in that function

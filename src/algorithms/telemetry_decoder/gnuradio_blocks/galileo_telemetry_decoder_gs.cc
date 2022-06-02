@@ -661,6 +661,7 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
     d_last_valid_preamble = d_sample_counter;
     d_sent_tlm_failed_msg = false;
+    d_received_tow = std::numeric_limits<uint32_t>::max();
     d_E6_TOW_set = false;
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
@@ -680,6 +681,7 @@ void galileo_telemetry_decoder_gs::reset()
     d_sent_tlm_failed_msg = false;
     d_E6_TOW_set = false;
     d_stat = 0;
+    d_received_tow = std::numeric_limits<uint32_t>::max();
     d_viterbi->reset();
     if (d_enable_reed_solomon_inav == true)
         {

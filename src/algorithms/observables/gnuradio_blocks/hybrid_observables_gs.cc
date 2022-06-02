@@ -717,7 +717,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
     // Push the tracking observables into buffers to allow the observable interpolation at the desired Rx clock
     for (uint32_t n = 0; n < d_nchannels_out; n++)
         {
-            //**************** time tags ****************
+            // *************** time tags ****************
             //            std::vector<gr::tag_t> tags_vec;
             //            this->get_tags_in_range(tags_vec, n, this->nitems_read(n), this->nitems_read(n) + ninput_items[n]);
             //            for (std::vector<gr::tag_t>::iterator it = tags_vec.begin(); it != tags_vec.end(); ++it)
@@ -741,7 +741,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             //                        }
             //                }
 
-            //************* end time tags **************
+            // ************ end time tags **************
             for (int32_t m = 0; m < ninput_items[n]; m++)
                 {
                     // Push the valid tracking Gnss_Synchros to their corresponding deque

@@ -1951,7 +1951,7 @@ void rtklib_pvt_gs::initialize_and_apply_carrier_phase_offset()
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
-    //**************** time tags ****************
+    // *************** time tags ****************
     if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled
         {
             std::vector<gr::tag_t> tags_vec;
@@ -1978,7 +1978,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
                 }
         }
-    //************* end time tags **************
+    // ************ end time tags **************
 
     for (int32_t epoch = 0; epoch < noutput_items; epoch++)
         {

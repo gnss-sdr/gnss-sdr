@@ -189,12 +189,12 @@ bool cuda_multicorrelator::init_cuda_integrated_resampler(
     // ALLOCATE GPU MEMORY FOR INPUT/OUTPUT and INTERNAL vectors
     size_t size = signal_length_samples * sizeof(GPU_Complex);
 
-    //********* ZERO COPY VERSION ************
+    // ******** ZERO COPY VERSION ************
     // Set flag to enable zero copy access
     // Optimal in shared memory devices (like Jetson K1)
-    //cudaSetDeviceFlags(cudaDeviceMapHost);
+    // cudaSetDeviceFlags(cudaDeviceMapHost);
 
-    //******** CudaMalloc version ***********
+    // ******* CudaMalloc version ***********
 
     // input signal GPU memory (can be mapped to CPU memory in shared memory devices!)
     //    cudaMalloc((void **)&d_sig_in, size);
@@ -237,7 +237,7 @@ bool cuda_multicorrelator::set_local_code_and_taps(
     int n_correlators)
 {
     cudaSetDevice(selected_gps_device);
-    //********* ZERO COPY VERSION ************
+    // ******** ZERO COPY VERSION ************
     //    // Get device pointer from host memory. No allocation or memcpy
     //    cudaError_t code;
     //    // local code CPU -> GPU copy memory
@@ -253,7 +253,7 @@ bool cuda_multicorrelator::set_local_code_and_taps(
     //        printf("cuda cudaHostGetDevicePointer error in set_local_code_and_taps \r\n");
     //    }
 
-    //******** CudaMalloc version ***********
+    // ******* CudaMalloc version ***********
     //local code CPU -> GPU copy memory
     cudaMemcpyAsync(d_local_codes_in, local_codes_in, sizeof(GPU_Complex) * code_length_chips, cudaMemcpyHostToDevice, stream1);
     d_code_length_chips = code_length_chips;
@@ -315,7 +315,7 @@ bool cuda_multicorrelator::Carrier_wipeoff_multicorrelator_resampler_cuda(
     // input signal CPU -> GPU copy memory
     //cudaMemcpyAsync(d_sig_in, d_sig_in_cpu, memSize,
     //                               cudaMemcpyHostToDevice, stream2);
-    //***** NOTICE: NCO is computed on-the-fly, not need to copy NCO into GPU! ****
+    // **** NOTICE: NCO is computed on-the-fly, not need to copy NCO into GPU! ****
 
     //launch the multitap correlator with integrated local code resampler!
 

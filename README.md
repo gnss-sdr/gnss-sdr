@@ -496,15 +496,18 @@ $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 and then:
 
 ```
-$ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protobuf-cpp-3.20.1.tar.gz
-$ tar xvfz protobuf-cpp-3.20.1.tar.gz
-$ cd protobuf-3.20.1
+$ git clone https://github.com/protocolbuffers/protobuf.git
+$ cd protobuf
+$ git submodule update --init --recursive
 $ ./autogen.sh
-$ ./configure
-$ make
+$ /configure
+$ make -j$(nproc)
 $ sudo make install
 $ sudo ldconfig
 ```
+
+For more options, please check the
+[Protocol Buffers' installation instructions](https://github.com/protocolbuffers/protobuf/blob/main/src/README.md/).
 
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library:
 

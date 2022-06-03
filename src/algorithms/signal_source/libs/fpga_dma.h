@@ -78,7 +78,7 @@ public:
     /*!
      * \brief Obtain DMA buffer address.
      */
-    std::array<int8_t, BUFFER_SIZE> *get_buffer_address(void) const;
+    std::array<int8_t, BUFFER_SIZE> *get_buffer_address(void);  // NOLINT(readability-make-member-function-const)
 
     /*!
      * \brief Transfer DMA data

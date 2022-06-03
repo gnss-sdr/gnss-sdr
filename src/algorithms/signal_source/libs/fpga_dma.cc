@@ -68,7 +68,7 @@ int Fpga_DMA::DMA_open()
 }
 
 
-std::array<int8_t, BUFFER_SIZE> *Fpga_DMA::get_buffer_address() const
+std::array<int8_t, BUFFER_SIZE> *Fpga_DMA::get_buffer_address()  // NOLINT(readability-make-member-function-const)
 {
 #if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     return &tx_channel.buf_ptr[0].buffer;

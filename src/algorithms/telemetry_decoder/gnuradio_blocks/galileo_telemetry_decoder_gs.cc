@@ -1103,7 +1103,6 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         case 3:  // CNAV
             {
-                // TODO
                 if (d_E6_TOW_set == true)
                     {
                         current_symbol.Flag_valid_word = true;

@@ -126,7 +126,8 @@ private:
 
     double rf_gain_rx1_;
     double rf_gain_rx2_;
-    uint64_t freq_;  // frequency of local oscillator
+    uint64_t freq0_;  // frequency of local oscillator for ADRV9361-A 0
+    uint64_t freq1_;  // frequency of local oscillator for ADRV9361-B (if present)
     uint64_t sample_rate_;
     uint64_t bandwidth_;
     uint64_t samples_to_skip_;

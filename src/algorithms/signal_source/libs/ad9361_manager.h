@@ -32,6 +32,13 @@
 
 #define FIR_BUF_SIZE 8192
 
+static const std::string RX_DEV_A = "ad9361-phy";          // one or two AD9361s are present
+static const std::string RX_DEV_B = "ad9361-phy-B";        // one or two AD9361s are present
+static const std::string RX_STREAM_DEV = "cf-ad9361-lpc";  // one AD9361 is present
+static const std::string RX_STREAM_DEV_A = "cf-ad9361-A";  // two AD9361s are present
+static const std::string RX_STREAM_DEV_B = "cf-ad9361-B";  // two AD9361s are present
+static const std::string TX_STREAM_DEV = "cf-ad9361-dds-core-lpc";
+
 /* RX is input, TX is output */
 enum iodev
 {
@@ -77,7 +84,8 @@ bool cfg_ad9361_streaming_ch(struct iio_context *ctx, struct stream_cfg *cfg, en
 
 bool config_ad9361_rx_local(uint64_t bandwidth_,
     uint64_t sample_rate_,
-    uint64_t freq_,
+    uint64_t freq0_,
+    uint64_t freq1_,
     const std::string &rf_port_select_,
     bool rx1_enable_,
     bool rx2_enable_,

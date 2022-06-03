@@ -58,8 +58,9 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
       filename0_(configuration->property(role + ".filename", empty_string)),
       rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
-      rf_gain_rx2_(configuration->property(role + ".gain_rx1", default_manual_gain_rx2)),
-      freq_(configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ))),
+      rf_gain_rx2_(configuration->property(role + ".gain_rx2", default_manual_gain_rx2)),
+      freq0_(configuration->property(role + ".freq", 0)),
+      freq1_(configuration->property(role + ".freq1", static_cast<uint64_t>(GPS_L5_FREQ_HZ))),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
       bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),
       samples_to_skip_(0),
@@ -97,6 +98,12 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", 0.0);
     const size_t header_size = configuration->property(role + ".header_size", 0);
+
+    if (freq0_ == 0)
+        {
+            // use ".freq0"
+            freq0_ = configuration->property(role + ".freq0", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
+        }
 
     if (filter_auto_)
         {
@@ -340,12 +347,13 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     LOG(WARNING) << "Invalid configuration value for bandwidth parameter. Set to bandwidth=" << default_bandwidth;
                 }
 
-            std::cout << "LO frequency : " << freq_ << " Hz\n";
+            std::cout << "LO frequency : " << freq0_ << " Hz\n";
             try
                 {
                     config_ad9361_rx_local(bandwidth_,
                         sample_rate_,
-                        freq_,
+                        freq0_,
+                        freq1_,
                         rf_port_select_,
                         rx1_enable_,
                         rx2_enable_,

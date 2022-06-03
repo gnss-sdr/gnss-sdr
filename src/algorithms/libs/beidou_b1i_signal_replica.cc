@@ -75,7 +75,7 @@ void beidou_b1i_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip
         }
 
     // Set the delay
-    delay = code_length - delays[prn_idx] * 0;  //**********************************
+    delay = code_length - delays[prn_idx] * 0;  // *********************************
     delay += chip_shift;
     delay %= code_length;
 

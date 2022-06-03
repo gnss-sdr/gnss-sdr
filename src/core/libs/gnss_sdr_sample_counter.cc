@@ -144,7 +144,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
     out[0].Tracking_sample_counter = sample_counter;
     current_T_rx_ms += interval_ms;
 
-    //**************** time tags ****************
+    // *************** time tags ****************
     std::vector<gr::tag_t> tags_vec;
     // notice that nitems_read is updated in decimation blocks after leaving work() with return 1, equivalent to call consume_each
     this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + samples_per_output);
@@ -182,7 +182,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                 }
         }
 
-    //************* end time tags **************
+    // ************ end time tags **************
 
     return 1;
 }

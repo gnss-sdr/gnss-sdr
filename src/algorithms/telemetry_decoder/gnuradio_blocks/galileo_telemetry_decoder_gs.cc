@@ -88,7 +88,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_stat(0),
                       d_TOW_at_Preamble_ms(0),
                       d_TOW_at_current_symbol_ms(0),
-                      d_received_tow(std::numeric_limits<uint32_t>::max()),
+                      d_received_tow_ms(std::numeric_limits<uint32_t>::max()),
                       d_band('1'),
                       d_sent_tlm_failed_msg(false),
                       d_flag_frame_sync(false),
@@ -104,7 +104,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_dump_crc_stats(conf.dump_crc_stats),
                       d_enable_reed_solomon_inav(false),
                       d_valid_timetag(false),
-                      d_E6_TOW_set(false)
+                      d_E6_TOW_set(false),
+                      d_there_are_e6_channels(conf.there_are_e6_channels)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -112,30 +113,33 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     this->message_port_register_out(pmt::mp("telemetry"));
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
-    // register Gal E6 messages HAS out
-    this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
-    // register TOW from map out
-    this->message_port_register_out(pmt::mp("TOW_from_TLM"));
+
+    if (d_there_are_e6_channels)
+        {
+            // register Gal E6 messages HAS out
+            this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
+            // register TOW from map out
+            this->message_port_register_out(pmt::mp("TOW_from_TLM"));
+            // register TOW to TLM input
+            this->message_port_register_in(pmt::mp("TOW_to_TLM"));
+            // handler for input port
+            this->set_msg_handler(pmt::mp("TOW_to_TLM"),
+#if HAS_GENERIC_LAMBDA
+                [this](auto &&PH1) { msg_handler_read_galileo_tow_map(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+                boost::bind(&galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map, this, boost::placeholders::_1));
+#else
+                boost::bind(&galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map, this, _1));
+#endif
+#endif
+        }
 
     if (d_enable_navdata_monitor)
         {
             // register nav message monitor out
             this->message_port_register_out(pmt::mp("Nav_msg_from_TLM"));
         }
-
-    // register TOW to TLM input
-    this->message_port_register_in(pmt::mp("TOW_to_TLM"));
-    // handler for input port
-    this->set_msg_handler(pmt::mp("TOW_to_TLM"),
-#if HAS_GENERIC_LAMBDA
-        [this](auto &&PH1) { msg_handler_read_galileo_tow_map(PH1); });
-#else
-#if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map, this, boost::placeholders::_1));
-#else
-        boost::bind(&galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map, this, _1));
-#endif
-#endif
 
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
 
@@ -319,7 +323,6 @@ void galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map(const pmt::p
 {
     if (d_frame_type == 3)
         {
-            // Check if the input has the right format
             try
                 {
                     const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -327,9 +330,9 @@ void galileo_telemetry_decoder_gs::msg_handler_read_galileo_tow_map(const pmt::p
                         {
                             const auto received_tow_map = wht::any_cast<std::shared_ptr<std::map<uint32_t, std::pair<uint32_t, uint64_t>>>>(pmt::any_ref(msg));
                             const std::pair<uint32_t, uint64_t> received_tow_sample = received_tow_map->at(d_satellite.get_PRN());
-                            if (received_tow_sample.first < 604800)
+                            if (received_tow_sample.first < 604800000)
                                 {
-                                    d_received_tow = received_tow_sample.first;
+                                    d_received_tow_ms = received_tow_sample.first;
                                     d_received_sample_counter = received_tow_sample.second;
                                 }
                         }
@@ -615,6 +618,12 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(uint64_t time_stamp, float *
                     page_String.push_back('0');
                 }
         }
+
+    if (d_enable_navdata_monitor)
+        {
+            d_nav_msg_packet.nav_message = page_String;
+        }
+
     d_cnav_nav.read_HAS_page(page_String);
     d_cnav_nav.set_time_stamp(time_stamp);
     // 4. If we have a new HAS page, read it
@@ -969,9 +978,12 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW5() * 1000.0);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
                                         d_inav_nav.set_TOW5_flag(false);
-                                        const std::pair<uint32_t, uint64_t> tow_and_sample{d_inav_nav.get_TOW5(), current_symbol.Tracking_sample_counter};
-                                        const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                        this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        if (d_there_are_e6_channels && !d_valid_timetag)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                         // timetag debug
                                         if (d_valid_timetag == true)
                                             {
@@ -992,9 +1004,12 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW6() * 1000.0);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
                                         d_inav_nav.set_TOW6_flag(false);
-                                        const std::pair<uint32_t, uint64_t> tow_and_sample{d_inav_nav.get_TOW6(), current_symbol.Tracking_sample_counter};
-                                        const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                        this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        if (d_there_are_e6_channels && !d_valid_timetag)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                         // timetag debug
                                         if (d_valid_timetag == true)
                                             {
@@ -1014,9 +1029,12 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW0() * 1000.0);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
                                         d_inav_nav.set_TOW0_flag(false);
-                                        const std::pair<uint32_t, uint64_t> tow_and_sample{d_inav_nav.get_TOW0(), current_symbol.Tracking_sample_counter};
-                                        const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                        this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        if (d_there_are_e6_channels && !d_valid_timetag)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                         // timetag debug
                                         if (d_valid_timetag == true)
                                             {
@@ -1056,41 +1074,49 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW1() * 1000.0);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_fnav_nav.set_TOW1_flag(false);
-                                        const std::pair<uint32_t, uint64_t> tow_and_sample{d_fnav_nav.get_TOW1(), current_symbol.Tracking_sample_counter};
-                                        const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                        this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        if (d_there_are_e6_channels && !d_valid_timetag)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                     }
                                 else if (d_fnav_nav.is_TOW2_set() == true)
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW2() * 1000.0);
-                                        // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         d_fnav_nav.set_TOW2_flag(false);
-                                        const std::pair<uint32_t, uint64_t> tow_and_sample{d_fnav_nav.get_TOW2(), current_symbol.Tracking_sample_counter};
-                                        const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                        this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        if (d_there_are_e6_channels && !d_valid_timetag)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                     }
                                 else if (d_fnav_nav.is_TOW3_set() == true)
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW3() * 1000.0);
-                                        // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         d_fnav_nav.set_TOW3_flag(false);
-                                        const std::pair<uint32_t, uint64_t> tow_and_sample{d_fnav_nav.get_TOW3(), current_symbol.Tracking_sample_counter};
-                                        const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                        this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        if (d_there_are_e6_channels && !d_valid_timetag)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                     }
                                 else if (d_fnav_nav.is_TOW4_set() == true)
                                     {
                                         d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW4() * 1000.0);
-                                        // d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((GALILEO_FNAV_CODES_PER_PAGE + GALILEO_FNAV_CODES_PER_PREAMBLE) * GALILEO_E5a_CODE_PERIOD_MS);
                                         d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
                                         d_fnav_nav.set_TOW4_flag(false);
-                                        const std::pair<uint32_t, uint64_t> tow_and_sample{d_fnav_nav.get_TOW4(), current_symbol.Tracking_sample_counter};
-                                        const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                        this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        if (d_there_are_e6_channels && !d_valid_timetag)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                     }
                                 else
                                     {
@@ -1113,16 +1139,13 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     {
                         if (!d_valid_timetag)
                             {
-                                if (d_received_tow < 604800)
+                                if (d_received_tow_ms < 604800000)
                                     {
-                                        const int64_t diff = d_received_sample_counter - current_symbol.Tracking_sample_counter;
-                                        bool overflowed = (diff < 0) ^ (d_received_sample_counter < current_symbol.Tracking_sample_counter);
-                                        if (!overflowed && (std::abs(diff) / static_cast<int64_t>(current_symbol.fs) < 1.0))
-                                            {
-                                                d_TOW_at_Preamble_ms = d_received_tow * 1000;
-                                                d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_CNAV_SYMBOLS_PER_PAGE * GALILEO_CNAV_PAGE_MS);
-                                                d_E6_TOW_set = true;
-                                            }
+                                        const int64_t diff = current_symbol.Tracking_sample_counter - d_received_sample_counter;
+                                        const double time_since_reference_ms = (double(diff) * 1000.0) / static_cast<double>(current_symbol.fs);
+                                        d_TOW_at_current_symbol_ms = d_received_tow_ms + static_cast<uint32_t>(time_since_reference_ms);
+                                        d_TOW_at_Preamble_ms = (d_TOW_at_current_symbol_ms / 1000) * 1000;
+                                        d_E6_TOW_set = true;
                                     }
                             }
                         if (d_E6_TOW_set && d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())

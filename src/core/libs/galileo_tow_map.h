@@ -39,8 +39,6 @@ class galileo_tow_map : public gr::block
 {
 public:
     ~galileo_tow_map() = default;  //!< Default destructor
-    // void set_enable_navdata_monitor(bool enable);
-    // std::shared_ptr<Galileo_HAS_data> process_test_page(const pmt::pmt_t& msg);  //!< For testing purposes only
 
 private:
     friend galileo_tow_map_sptr galileo_tow_map_make();

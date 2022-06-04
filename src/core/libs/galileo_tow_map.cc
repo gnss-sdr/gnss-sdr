@@ -58,7 +58,7 @@ galileo_tow_map::galileo_tow_map() : gr::block("galileo_tow_map", gr::io_signatu
 #endif
 #endif
 
-    for (uint32_t prn = 1; prn < 37; prn++)
+    for (uint32_t prn = 0; prn < 37; prn++)
         {
             d_galileo_tow[prn] = std::pair<uint32_t, uint64_t>(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint64_t>::max());
         }
@@ -67,9 +67,7 @@ galileo_tow_map::galileo_tow_map() : gr::block("galileo_tow_map", gr::io_signatu
 
 void galileo_tow_map::msg_handler_galileo_tow_map(const pmt::pmt_t& msg)
 {
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_galileo_e6_has function called by the scheduler
-
-    // Check if the input has the right format
+    gr::thread::scoped_lock lock(d_setlock);
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
@@ -80,9 +78,8 @@ void galileo_tow_map::msg_handler_galileo_tow_map(const pmt::pmt_t& msg)
                     const uint32_t received_tow = received_tow_map->second.first;
                     const uint64_t received_sample_counter = received_tow_map->second.second;
 
-                    //uint64_t sample_counter = std::numeric_limits<uint32_t>::max();
                     d_galileo_tow.erase(received_prn);
-                    if (received_tow < 604800)
+                    if (received_tow < 604800000)  // received TOW is in ms
                         {
                             d_galileo_tow[received_prn] = std::pair<uint32_t, uint64_t>(received_tow, received_sample_counter);
                         }
@@ -90,13 +87,12 @@ void galileo_tow_map::msg_handler_galileo_tow_map(const pmt::pmt_t& msg)
                         {
                             d_galileo_tow[received_prn] = std::pair<uint32_t, uint64_t>(std::numeric_limits<uint32_t>::max(), std::numeric_limits<uint64_t>::max());
                         }
+                    const std::shared_ptr<std::map<uint32_t, std::pair<uint32_t, uint64_t>>> tmp_obj = std::make_shared<std::map<uint32_t, std::pair<uint32_t, uint64_t>>>(d_galileo_tow);
+                    this->message_port_pub(pmt::mp("TOW_to_TLM"), pmt::make_any(tmp_obj));
                 }
         }
     catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "galileo_tow_map Bad any_cast: " << e.what();
         }
-
-    const std::shared_ptr<std::map<uint32_t, std::pair<uint32_t, uint64_t>>> tmp_obj = std::make_shared<std::map<uint32_t, std::pair<uint32_t, uint64_t>>>(d_galileo_tow);
-    this->message_port_pub(pmt::mp("TOW_to_TLM"), pmt::make_any(tmp_obj));
 }

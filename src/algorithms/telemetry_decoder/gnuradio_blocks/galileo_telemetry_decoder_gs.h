@@ -133,7 +133,7 @@ private:
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_max_symbols_without_valid_frame;
-    uint32_t d_received_tow;
+    uint32_t d_received_tow_ms;
 
     char d_band;  // This variable will store which band we are dealing with (Galileo E1 or E5b)
 
@@ -152,6 +152,7 @@ private:
     bool d_enable_reed_solomon_inav;
     bool d_valid_timetag;
     bool d_E6_TOW_set;
+    bool d_there_are_e6_channels;
 };
 
 

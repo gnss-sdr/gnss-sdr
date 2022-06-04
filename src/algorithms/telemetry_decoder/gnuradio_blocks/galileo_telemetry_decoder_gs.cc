@@ -1139,6 +1139,19 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     }
                 case 3:  // CNAV
                     {
+                        if (d_valid_timetag == true)
+                            {
+                                int rx_tow_at_preamble = d_current_timetag.tow_ms;
+                                uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
+                                d_TOW_at_Preamble_ms = predicted_tow_at_preamble_ms;
+                                d_TOW_at_current_symbol_ms = predicted_tow_at_preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * d_PRN_code_period_ms);
+                                if (d_E6_TOW_set == false)
+                                    {
+                                        std::cout << " Sat PRN " << d_satellite.get_PRN() << " E6 TimeTag TOW at preamble: " << predicted_tow_at_preamble_ms
+                                                  << " [ms] d_TOW_at_current_symbol_ms: " << d_TOW_at_current_symbol_ms << " [ms]\n";
+                                        d_E6_TOW_set = true;
+                                    }
+                            }
                         if (!d_valid_timetag)
                             {
                                 if (d_received_tow_ms < 604800000)

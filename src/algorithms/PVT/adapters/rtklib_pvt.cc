@@ -489,28 +489,29 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     int num_bands = 0;
 
-    if ((gps_1C_count > 0) || (gal_1B_count > 0) || (gal_E6_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0))
+    if ((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0))
         {
-            num_bands = 1;
+            num_bands += 1;
         }
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0) || (bds_B3_count > 0)))
+    if ((gps_2S_count > 0) || (glo_2G_count > 0) || (bds_B3_count > 0))
         {
-            num_bands = 2;
+            num_bands += 1;
         }
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0)))
+    if (gal_E6_count > 0)
         {
-            num_bands = 2;
+            num_bands += 1;
         }
-    if ((gal_1B_count > 0) && (gal_E6_count > 0))
+    if ((gal_E5a_count > 0) || (gps_L5_count > 0))
         {
-            num_bands = 2;
+            num_bands += 1;
         }
-    if ((gal_1B_count > 0) && (gal_E6_count > 0) && ((gal_E5a_count > 0) || (gal_E5b_count > 0)))
+    if (gal_E5b_count > 0)
         {
-            num_bands = 3;
+            num_bands += 1;
         }
-    if (((gps_1C_count > 0) || (gal_1B_count > 0) || (glo_1G_count > 0) || (bds_B1_count > 0)) && ((gps_2S_count > 0) || (glo_2G_count > 0) || (bds_B3_count > 0)) && ((gal_E5a_count > 0) || (gal_E5b_count > 0) || (gps_L5_count > 0)))
+    if (num_bands > 3)
         {
+            LOG(WARNING) << "Too much bands: The PVT engine can only handle 3 bands, but " << num_bands << " were set";
             num_bands = 3;
         }
 

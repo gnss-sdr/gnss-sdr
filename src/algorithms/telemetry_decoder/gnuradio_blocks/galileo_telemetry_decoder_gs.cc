@@ -1180,7 +1180,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     {
                                         const int64_t diff = current_symbol.Tracking_sample_counter - d_received_sample_counter;
                                         const double time_since_reference_ms = (double(diff) * 1000.0) / static_cast<double>(current_symbol.fs);
-                                        d_TOW_at_current_symbol_ms = d_received_tow_ms + static_cast<uint32_t>(time_since_reference_ms);
+                                        d_TOW_at_current_symbol_ms = d_received_tow_ms + static_cast<uint32_t>(time_since_reference_ms) + GALILEO_E6_CODE_PERIOD_MS;
                                         d_TOW_at_Preamble_ms = (d_TOW_at_current_symbol_ms / 1000) * 1000;
                                         d_E6_TOW_set = true;
                                     }

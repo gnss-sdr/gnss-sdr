@@ -79,7 +79,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_delta_t(0),
                       d_sample_counter(0ULL),
                       d_preamble_index(0ULL),
-                      d_last_valid_preamble(0),
+                      d_last_valid_preamble(0ULL),
                       d_received_sample_counter(0),
                       d_frame_type(frame_type),
                       d_CRC_error_counter(0),
@@ -672,6 +672,13 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
     d_sent_tlm_failed_msg = false;
     d_received_tow_ms = std::numeric_limits<uint32_t>::max();
     d_E6_TOW_set = false;
+    d_valid_timetag = false;
+    if (d_there_are_e6_channels)
+        {
+            const std::pair<uint32_t, uint64_t> tow_and_sample{d_received_tow_ms, 0ULL};
+            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+        }
     DLOG(INFO) << "Setting decoder Finite State Machine to satellite " << d_satellite;
     DLOG(INFO) << "Navigation Satellite set to " << d_satellite;
 }
@@ -692,6 +699,13 @@ void galileo_telemetry_decoder_gs::reset()
     d_stat = 0;
     d_received_tow_ms = std::numeric_limits<uint32_t>::max();
     d_viterbi->reset();
+    d_valid_timetag = false;
+    if (d_there_are_e6_channels)
+        {
+            const std::pair<uint32_t, uint64_t> tow_and_sample{d_received_tow_ms, 0ULL};
+            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+        }
     if (d_enable_reed_solomon_inav == true)
         {
             d_inav_nav.enable_reed_solomon();
@@ -946,7 +960,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         else
                             {
                                 d_CRC_error_counter++;
-                                if ((d_CRC_error_counter > CRC_ERROR_LIMIT) && (d_frame_type != 3))
+                                if (d_CRC_error_counter > CRC_ERROR_LIMIT)
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                         gr::thread::scoped_lock lock(d_setlock);
@@ -954,6 +968,14 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                         d_stat = 0;
                                         d_TOW_at_current_symbol_ms = 0;
                                         d_TOW_at_Preamble_ms = 0;
+                                        d_E6_TOW_set = false;
+                                        d_valid_timetag = false;
+                                        if (d_there_are_e6_channels)
+                                            {
+                                                const std::pair<uint32_t, uint64_t> tow_and_sample{std::numeric_limits<uint32_t>::max(), 0ULL};
+                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                            }
                                         d_fnav_nav.set_flag_TOW_set(false);
                                         d_inav_nav.set_flag_TOW_set(false);
                                     }
@@ -1241,7 +1263,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             }
         }
 
-    if (d_inav_nav.get_flag_TOW_set() == true || d_fnav_nav.get_flag_TOW_set() == true || d_cnav_nav.get_flag_CRC_test() == true)
+    if (current_symbol.Flag_valid_word == true)
         {
             current_symbol.TOW_at_current_symbol_ms = d_TOW_at_current_symbol_ms;
             // todo: Galileo to GPS time conversion should be moved to observable block.

@@ -112,7 +112,6 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     d_mapStringValues["B2"] = evBDS_B2;
     d_mapStringValues["B3"] = evBDS_B3;
 
-
     d_SourceTagTimestamps = std::vector<std::queue<GnssTime>>(d_nchannels_out);
 
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()

@@ -50,21 +50,48 @@ gnss_shared_ptr<gr::block> FileTimestampSignalSource::source() const { return ti
 
 void FileTimestampSignalSource::create_file_source_hook()
 {
-    if (is_complex() == false)
+    int source_items_to_samples = 1;
+    bool is_complex = false;
+
+    if (item_type().compare("ibyte") == 0)
         {
+            source_items_to_samples = 1;
+        }
+    else if (item_type().compare("byte") == 0)
+        {
+            source_items_to_samples = 1;
+        }
+    else if (item_type().compare("short") == 0)
+        {
+            source_items_to_samples = 1;
+        }
+    else if (item_type().compare("ishort") == 0)
+        {
+            source_items_to_samples = 1;
+        }
+    else if (item_type().compare("gr_complex") == 0)
+        {
+            source_items_to_samples = 1;
+            is_complex = true;
+        }
+
+    if (is_complex == false)
+        {
+            std::cout << "A : " << std::get<0>(itemTypeToSize()) << "\n";
             timestamp_block_ = gnss_sdr_make_Timestamp(
                 std::get<0>(itemTypeToSize()),
                 timestamp_file_,
                 timestamp_clock_offset_ms_,
-                source_item_size() * 2);
+                source_items_to_samples * 2);
         }
     else
         {
+            std::cout << "B : " << std::get<0>(itemTypeToSize()) << "\n";
             timestamp_block_ = gnss_sdr_make_Timestamp(
                 std::get<0>(itemTypeToSize()),
                 timestamp_file_,
                 timestamp_clock_offset_ms_,
-                source_item_size());
+                source_items_to_samples);
         }
     DLOG(INFO) << "timestamp_block_(" << timestamp_block_->unique_id() << ")";
 }

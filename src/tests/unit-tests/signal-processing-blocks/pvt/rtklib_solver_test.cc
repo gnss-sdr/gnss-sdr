@@ -383,7 +383,7 @@ TEST(RTKLibSolverTest, test1)
     bool save_to_mat = false;
     rtk_t rtk = configure_rtklib_options();
 
-    auto d_ls_pvt = std::make_unique<Rtklib_Solver>(rtk, nchannels, dump_filename, flag_dump_to_file, save_to_mat);
+    auto d_ls_pvt = std::make_unique<Rtklib_Solver>(rtk, nchannels, dump_filename, 1, flag_dump_to_file, save_to_mat);
     d_ls_pvt->set_averaging_depth(1);
 
     // load ephemeris

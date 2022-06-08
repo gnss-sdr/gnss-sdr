@@ -11762,33 +11762,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
                                     gs.PRN = prn_;
                                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
                                 }
-                            if (found_E5a != std::string::npos)
-                                {
-                                    Gnss_Synchro gs = Gnss_Synchro();
-                                    gs.System = 'E';
-                                    gs.Signal[0] = '5';
-                                    gs.Signal[1] = 'X';
-                                    gs.Signal[2] = '\0';
-                                    gs.PRN = prn_;
-                                    total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
-                                }
-                        }
-                    else
-                        {
-                            // if 5X is listed but empty
-                            if (found_E5a != std::string::npos)
-                                {
-                                    if ((total_map.count(prn_)) == 1)
-                                        {
-                                            Gnss_Synchro gs = Gnss_Synchro();
-                                            gs.System = 'E';
-                                            gs.Signal[0] = '5';
-                                            gs.Signal[1] = 'X';
-                                            gs.Signal[2] = '\0';
-                                            gs.PRN = prn_;
-                                            total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, gs));
-                                        }
-                                }
                         }
                     total_map.insert(std::pair<uint32_t, Gnss_Synchro>(prn_, observables_iter->second));
                 }

@@ -87,7 +87,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::msg_handler_preamble_index(const p
     DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel << ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
     if (d_enable_extended_integration == false)  // avoid re-setting preamble indicator
         {
-            d_preamble_timestamp_s = pmt::to_double(msg);
+            d_preamble_timestamp_samples = pmt::to_double(msg);
             d_enable_extended_integration = true;
             d_preamble_synchronized = false;
         }
@@ -129,7 +129,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
       d_code_phase_step_chips(0.0),
       d_carrier_doppler_hz(0.0),
       d_carrier_frequency_hz(0.0),
-      d_carrier_doppler_old_hz(0.0),
+      d_carrier_frequency_old_hz(0.0),
       d_carrier_phase_step_rad(0.0),
       d_acc_carrier_phase_cycles(0.0),
       d_code_phase_samples(0.0),
@@ -138,7 +138,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
       d_code_error_filt_chips_s(0.0),
       d_code_error_filt_chips_Ti(0.0),
       d_carr_phase_error_secs_Ti(0.0),
-      d_preamble_timestamp_s(0.0),
+      d_preamble_timestamp_samples(0.0),
       d_extend_correlation_ms(extend_correlation_ms),
       d_correlation_length_samples(static_cast<int32_t>(d_vector_length)),
       d_sample_counter(0ULL),
@@ -156,9 +156,9 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
       d_dump(dump)
 {
     // Telemetry bit synchronization message port input
-    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
+    this->message_port_register_in(pmt::mp("preamble_timestamp_samples"));
 
-    this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
+    this->set_msg_handler(pmt::mp("preamble_timestamp_samples"),
 #if HAS_GENERIC_LAMBDA
         [this](auto &&PH1) { msg_handler_preamble_index(PH1); });
 #else
@@ -602,7 +602,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
             bool enable_dll_pll;
             if (d_enable_extended_integration == true)
                 {
-                    int64_t symbol_diff = round(1000.0 * ((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in) - d_preamble_timestamp_s));
+                    int64_t symbol_diff = round(1000.0 * ((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples - d_preamble_timestamp_samples) / static_cast<double>(d_fs_in)));
                     if (symbol_diff > 0 and symbol_diff % d_extend_correlation_ms == 0)
                         {
                             // compute coherent integration and enable tracking loop
@@ -682,15 +682,16 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     // ################## PLL ##########################################################
                     // Update PLL discriminator [rads/Ti -> Secs/Ti]
                     d_carr_phase_error_secs_Ti = pll_cloop_two_quadrant_atan(d_correlator_outs[1]) / TWO_PI;  // prompt output
-                    d_carrier_doppler_old_hz = d_carrier_doppler_hz;
+                    d_carrier_frequency_old_hz = d_carrier_frequency_hz;
                     // Carrier discriminator filter
                     // NOTICE: The carrier loop filter includes the Carrier Doppler accumulator, as described in Kaplan
                     // Input [s/Ti] -> output [Hz]
-                    d_carrier_doppler_hz = d_carrier_loop_filter.get_carrier_error(0.0, static_cast<float>(d_carr_phase_error_secs_Ti), static_cast<float>(CURRENT_INTEGRATION_TIME_S));
+                    d_carrier_frequency_hz = d_carrier_loop_filter.get_carrier_error(0.0, static_cast<float>(d_carr_phase_error_secs_Ti), static_cast<float>(CURRENT_INTEGRATION_TIME_S));
+                    d_carrier_doppler_hz = d_carrier_frequency_hz - DFRQ1_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN);
                     // PLL to DLL assistance [Secs/Ti]
-                    d_pll_to_dll_assist_secs_Ti = (d_carrier_doppler_hz * CURRENT_INTEGRATION_TIME_S) / d_glonass_freq_ch;
+                    d_pll_to_dll_assist_secs_Ti = (d_carrier_frequency_hz * CURRENT_INTEGRATION_TIME_S) / d_glonass_freq_ch;
                     // code Doppler frequency update
-                    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_CPS + (((d_carrier_doppler_hz - d_carrier_doppler_old_hz) * GLONASS_L1_CA_CODE_RATE_CPS) / d_glonass_freq_ch);
+                    d_code_freq_chips = GLONASS_L1_CA_CODE_RATE_CPS + (((d_carrier_frequency_hz - d_carrier_frequency_old_hz) * GLONASS_L1_CA_CODE_RATE_CPS) / d_glonass_freq_ch);
 
                     // ################## DLL ##########################################################
                     // DLL discriminator
@@ -716,12 +717,12 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
 
                     // ################### PLL COMMANDS #################################################
                     // carrier phase step (NCO phase increment per sample) [rads/sample]
-                    d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
+                    d_carrier_phase_step_rad = TWO_PI * d_carrier_frequency_hz / static_cast<double>(d_fs_in);
                     d_acc_carrier_phase_cycles -= d_carrier_phase_step_rad * d_correlation_length_samples / TWO_PI;
                     // UPDATE ACCUMULATED CARRIER PHASE
                     CORRECTED_INTEGRATION_TIME_S = (static_cast<double>(d_correlation_length_samples) / static_cast<double>(d_fs_in));
                     // remnant carrier phase [rad]
-                    d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + TWO_PI * d_carrier_doppler_hz * CORRECTED_INTEGRATION_TIME_S, TWO_PI);
+                    d_rem_carrier_phase_rad = fmod(d_rem_carrier_phase_rad + TWO_PI * d_carrier_frequency_hz * CORRECTED_INTEGRATION_TIME_S, TWO_PI);
 
                     // ################### DLL COMMANDS #################################################
                     // code phase step (Code resampler phase increment per sample) [chips/sample]

@@ -12,7 +12,39 @@ SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Portability:
+
+- Improved detection of the BLAS library under macOS / Macports (the `lapack`
+  port dependency installed with the `+openblas` variant does not install `blas`
+  but `openblas`, which is used as a replacement if `blas` is not found).
+- Removed duplicated files in the Secure User Plane Location implementation,
+  which caused issues when linking with some compilers.
+- Added support for Xilinx's Zynq UltraScale+ devices (requires the
+  `-DENABLE_FPGA=ON` building option).
+
+### Improvements in Usability:
+
+- Fixed large GLONASS velocity errors and the extended correlator when using the
+  `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
+  `GLONASS_L2_CA_DLL_PLL_C_Aid_Tracking` implementations.
+- Added a over-the-wire sample format (that is, the format used between the
+  device and the UHD) configuration parameter for the `UHD_Signal_Source`, thus
+  allowing to select the `sc8` format instead of the default `sc16`. This would
+  reduce the dynamic range and increase quantization noise, but also reduce the
+  load on the data link and thus allow more bandwidth.
+- Added gain setting and reading for the XTRX board when using the
+  `Osmosdr_Signal_Source` implementation of a `SignalSource`.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
 ## [GNSS-SDR v0.0.17](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.17) - 2022-04-20
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6473244.svg)](https://doi.org/10.5281/zenodo.6473244)
 
 ### Improvements in Availability:
 

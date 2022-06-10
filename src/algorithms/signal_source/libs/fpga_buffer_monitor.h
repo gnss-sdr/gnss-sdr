@@ -61,7 +61,7 @@ public:
     void check_buffer_overflow_and_monitor_buffer_status();
 
 private:
-    static const size_t FPGA_PAGE_SIZE = 0x10000;
+    static const size_t FPGA_PAGE_SIZE = 0x1000;
     static const uint32_t test_register_writeval = 0x55AA;
     static const uint32_t num_sapmples_per_buffer_element = 2;
     // write addresses

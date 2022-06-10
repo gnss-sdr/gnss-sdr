@@ -183,7 +183,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
             d_has_file << indent << indent << "Code Bias Flag:      " << static_cast<float>(has_data->header.code_bias_flag) << '\n';
             d_has_file << indent << indent << "Phase Bias Flag:     " << static_cast<float>(has_data->header.phase_bias_flag) << '\n';
             d_has_file << indent << indent << "Mask ID:             " << static_cast<float>(has_data->header.mask_id) << '\n';
-            d_has_file << indent << indent << "IOD Set ID:          " << static_cast<float>(has_data->header.iod_id) << "\n\n";
+            d_has_file << indent << indent << "IOD Set ID:          " << static_cast<float>(has_data->header.iod_set_id) << "\n\n";
 
             d_has_file << indent << "MT1 Body\n";
             d_has_file << indent << "--------\n";
@@ -240,7 +240,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "Validity interval:     " << static_cast<float>(has_data->validity_interval_index_orbit_corrections) << '\n';
                     d_has_file << indent << indent << "GNSS IOD:              " << print_vector(has_data->gnss_iod) << '\n';
                     d_has_file << indent << indent << "Delta Radial [m]:      " << print_vector(has_data->delta_radial, HAS_MSG_DELTA_RADIAL_SCALE_FACTOR) << '\n';
-                    d_has_file << indent << indent << "Delta Along Track [m]: " << print_vector(has_data->delta_along_track, HAS_MSG_DELTA_ALONG_TRACK_SCALE_FACTOR) << '\n';
+                    d_has_file << indent << indent << "Delta In-Track [m]:    " << print_vector(has_data->delta_in_track, HAS_MSG_DELTA_IN_TRACK_SCALE_FACTOR) << '\n';
                     d_has_file << indent << indent << "Delta Cross Track [m]: " << print_vector(has_data->delta_cross_track, HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR) << '\n';
                 }
 
@@ -249,9 +249,9 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << '\n';
                     d_has_file << indent << indent << "Clock Full-set Corrections Block\n";
                     d_has_file << indent << indent << "--------------------------------\n";
-                    d_has_file << indent << indent << "Validity interval:         " << static_cast<float>(has_data->validity_interval_index_clock_fullset_corrections) << '\n';
-                    d_has_file << indent << indent << "Delta Clock C0 Multiplier: " << print_vector(has_data->delta_clock_c0_multiplier) << '\n';
-                    d_has_file << indent << indent << "Delta Clock C0 [m]:        " << print_vector(has_data->delta_clock_c0, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
+                    d_has_file << indent << indent << "Validity interval:          " << static_cast<float>(has_data->validity_interval_index_clock_fullset_corrections) << '\n';
+                    d_has_file << indent << indent << "Delta Clock Multiplier:     " << print_vector(has_data->delta_clock_multiplier) << '\n';
+                    d_has_file << indent << indent << "Delta Clock Correction [m]: " << print_vector(has_data->delta_clock_correction, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
                 }
 
             if (has_data->header.clock_subset_flag == true)
@@ -260,12 +260,12 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "Clock Subset Corrections Block\n";
                     d_has_file << indent << indent << "------------------------------\n";
                     d_has_file << indent << indent << "Validity interval:         " << static_cast<float>(has_data->validity_interval_index_clock_subset_corrections) << '\n';
-                    d_has_file << indent << indent << "Nsysprime:                 " << static_cast<float>(has_data->Nsysprime) << '\n';
+                    d_has_file << indent << indent << "Nsys_sub:                  " << static_cast<float>(has_data->Nsys_sub) << '\n';
                     d_has_file << indent << indent << "GNSS ID:                   " << print_vector(has_data->gnss_id_clock_subset) << '\n';
-                    d_has_file << indent << indent << "Delta Clock C0 Multiplier: " << print_vector(has_data->delta_clock_c0_multiplier_clock_subset) << '\n';
+                    d_has_file << indent << indent << "Delta Clock Multiplier:    " << print_vector(has_data->delta_clock_multiplier_clock_subset) << '\n';
                     d_has_file << indent << indent << "Satellite sub-mask:        ";
-                    int Nsatprime = 0;
-                    for (uint8_t k = 0; k < has_data->Nsysprime; k++)
+                    int Nsat_sub = 0;
+                    for (uint8_t k = 0; k < has_data->Nsys_sub; k++)
                         {
                             auto it = std::find(has_data->gnss_id_mask.begin(), has_data->gnss_id_mask.end(), has_data->gnss_id_clock_subset[k]);
                             if (it != has_data->gnss_id_mask.end())
@@ -290,14 +290,14 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                                             mask <<= 1;
                                         }
                                     d_has_file << binary << " ";
-                                    Nsatprime += std::count(binary.begin(), binary.end(), '1');
+                                    Nsat_sub += std::count(binary.begin(), binary.end(), '1');
                                 }
                         }
                     d_has_file << '\n';
-                    d_has_file << "                           Nsat in subset = " << Nsatprime << '\n';
-                    const std::string text("Delta Clock C0 [m]:        ");
+                    d_has_file << "                           Nsat in subset = " << Nsat_sub << '\n';
+                    const std::string text("Delta Clock Correction [m]: ");
                     const std::string filler(indent.length() * 2 + text.length(), ' ');
-                    d_has_file << indent << indent << text << print_matrix(has_data->delta_clock_c0_clock_subset, filler, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
+                    d_has_file << indent << indent << text << print_matrix(has_data->delta_clock_correction_clock_subset, filler, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
                 }
 
             if (has_data->header.code_bias_flag == true)

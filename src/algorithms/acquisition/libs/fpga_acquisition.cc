@@ -101,7 +101,7 @@ void Fpga_Acquisition::open_device()
             LOG(WARNING) << "Cannot open deviceio" << d_device_name;
             std::cout << "Acq: cannot open deviceio" << d_device_name << '\n';
         }
-    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, PAGE_SIZE_DEFAULT,
+    d_map_base = reinterpret_cast<volatile uint32_t *>(mmap(nullptr, FPGA_PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_fd, 0));
 
     if (d_map_base == reinterpret_cast<void *>(-1))
@@ -227,7 +227,7 @@ void Fpga_Acquisition::read_acquisition_results(uint32_t *max_index,
 void Fpga_Acquisition::close_device()
 {
     auto *aux = const_cast<uint32_t *>(d_map_base);
-    if (munmap(static_cast<void *>(aux), PAGE_SIZE_DEFAULT) == -1)
+    if (munmap(static_cast<void *>(aux), FPGA_PAGE_SIZE) == -1)
         {
             std::cout << "Failed to unmap memory uio\n";
         }

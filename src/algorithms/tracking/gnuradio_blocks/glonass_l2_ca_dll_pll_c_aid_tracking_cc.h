@@ -159,7 +159,7 @@ private:
     double d_code_phase_step_chips;
     double d_carrier_doppler_hz;
     double d_carrier_frequency_hz;
-    double d_carrier_doppler_old_hz;
+    double d_carrier_frequency_old_hz;
     double d_carrier_phase_step_rad;
     double d_acc_carrier_phase_cycles;
     double d_code_phase_samples;
@@ -168,7 +168,7 @@ private:
     double d_code_error_filt_chips_s;
     double d_code_error_filt_chips_Ti;
     double d_carr_phase_error_secs_Ti;
-    double d_preamble_timestamp_s;
+    double d_preamble_timestamp_samples;
     int32_t d_extend_correlation_ms;
 
     // Integration period in samples

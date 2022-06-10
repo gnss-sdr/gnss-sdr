@@ -77,6 +77,13 @@ private:
     std::string subdevice_;
     std::string clock_source_;
 
+    //    * The OTW format is a string that describes the format over-the-wire.
+    //    * The following over-the-wire formats have been implemented:
+    //    * - sc16 - Q16 I16
+    //    * - sc8 - Q8_1 I8_1 Q8_0 I8_0
+    //    * - sc12 (Only some devices)
+    std::string otw_format_;
+
     double sample_rate_;
     size_t item_size_;
     int RF_channels_;

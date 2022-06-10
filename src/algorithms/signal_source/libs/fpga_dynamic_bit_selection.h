@@ -56,7 +56,7 @@ public:
     void bit_selection(void);
 
 private:
-    static const size_t FPGA_PAGE_SIZE = 0x10000;
+    static const size_t FPGA_PAGE_SIZE = 0x1000;
 
     static const uint32_t Num_bits_ADC = 12;                                      // Number of bits in the ADC
     static const uint32_t Num_bits_FPGA = 4;                                      // Number of bits after the bit selection

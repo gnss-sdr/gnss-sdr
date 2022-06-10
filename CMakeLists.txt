@@ -130,7 +130,7 @@ option(ENABLE_ORC "Use (if available) the Optimized Inner Loop Runtime Compiler 
 ################################################################################
 # GNSS-SDR version information
 ################################################################################
-set(THIS_IS_A_RELEASE ON)   # only related to version name, no further implications.
+set(THIS_IS_A_RELEASE OFF)   # only related to version name, no further implications.
 if(NOT ${THIS_IS_A_RELEASE})
     find_package(Git)
     set_package_properties(Git PROPERTIES
@@ -321,7 +321,7 @@ set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 ################################################################################
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "10.8.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "11.1.x")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
   (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
@@ -332,7 +332,7 @@ set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GPSTK_LOCAL_VERSION "8.0.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.12")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.20.0")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "3.20.1")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.6.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 

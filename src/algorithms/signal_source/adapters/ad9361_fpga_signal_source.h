@@ -23,6 +23,7 @@
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
+#include "fpga_dma.h"
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
@@ -71,6 +72,7 @@ private:
     const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
     const std::string default_rf_port_select = std::string("A_BALANCED");
     const std::string default_gain_mode = std::string("slow_attack");
+    const std::string empty_string;
     const double default_tx_attenuation_db = -10.0;
     const double default_manual_gain_rx1 = 64.0;
     const double default_manual_gain_rx2 = 64.0;
@@ -104,6 +106,7 @@ private:
     std::shared_ptr<Fpga_Switch> switch_fpga;
     std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
     std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
+    std::shared_ptr<Fpga_DMA> dma_fpga;
 
     std::mutex dma_mutex;
     std::mutex dynamic_bit_selection_mutex;
@@ -118,8 +121,8 @@ private:
     std::string filter_file_;
     std::string filter_source_;
     std::string filter_filename_;
-    std::string filename0;
-    std::string filename1;
+    std::string filename0_;
+    std::string filename1_;
 
     double rf_gain_rx1_;
     double rf_gain_rx2_;

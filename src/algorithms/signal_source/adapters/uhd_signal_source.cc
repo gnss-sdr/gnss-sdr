@@ -60,6 +60,7 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
         }
     subdevice_ = configuration->property(role + ".subdevice", empty);
     clock_source_ = configuration->property(role + ".clock_source", std::string("internal"));
+    otw_format_ = configuration->property(role + ".otw_format", std::string("sc16"));
     RF_channels_ = configuration->property(role + ".RF_channels", 1);
     sample_rate_ = configuration->property(role + ".sampling_frequency", 4.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
@@ -128,26 +129,49 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
     //    fc32: Complex floating point (32-bit floats) range [-1.0, +1.0].
     //    sc16: Complex signed integer (16-bit integers) range [-32768, +32767].
     //     sc8: Complex signed integer (8-bit integers) range [-128, 127].
+    //! Convenience constructor for streamer args
+    //    stream_args_t(const std::string& cpu = "", const std::string& otw = "")
+    //    {
+    //        cpu_format = cpu;
+    //        otw_format = otw;
+    //    }
+    //
+    //
+    //     * The CPU format is a string that describes the format of host memory.
+    //     * Conversions for the following CPU formats have been implemented:
+    //     *  - fc64 - complex<double>
+    //     *  - fc32 - complex<float>
+    //     *  - sc16 - complex<int16_t>
+    //     *  - sc8 - complex<int8_t>
+    //     *
+    //     * The following are not implemented, but are listed to demonstrate naming convention:
+    //     *  - f32 - float
+    //     *  - f64 - double
+    //     *  - s16 - int16_t
+    //     *  - s8 - int8_t
+    //     *
+    //     * The CPU format can be chosen depending on what the application requires.
+
     if (item_type_ == "cbyte")
         {
             item_size_ = sizeof(lv_8sc_t);
-            uhd_stream_args_ = uhd::stream_args_t("sc8");
+            uhd_stream_args_ = uhd::stream_args_t("sc8", otw_format_);
         }
     else if (item_type_ == "cshort")
         {
             item_size_ = sizeof(lv_16sc_t);
-            uhd_stream_args_ = uhd::stream_args_t("sc16");
+            uhd_stream_args_ = uhd::stream_args_t("sc16", otw_format_);
         }
     else if (item_type_ == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            uhd_stream_args_ = uhd::stream_args_t("fc32");
+            uhd_stream_args_ = uhd::stream_args_t("fc32", otw_format_);
         }
     else
         {
             LOG(WARNING) << item_type_ << " unrecognized item type. Using cshort.";
             item_size_ = sizeof(lv_16sc_t);
-            uhd_stream_args_ = uhd::stream_args_t("sc16");
+            uhd_stream_args_ = uhd::stream_args_t("sc16", otw_format_);
         }
 
     // select the number of channels and the subdevice specifications

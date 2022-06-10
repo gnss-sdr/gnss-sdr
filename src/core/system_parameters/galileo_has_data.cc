@@ -1,14 +1,14 @@
 /*!
  * \file galileo_has_data.cc
  * \brief Class for Galileo HAS message type 1 data storage
- * \author Carles Fernandez-Prades, 2020-2021 cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2020-2022 cfernandez(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -117,6 +117,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                         {
                             uint8_t system = gnss_id_mask[nsys];
                             std::string signal;
+                            // See HAS SIS ICD v1.0 Table 20
                             switch (k)
                                 {
                                 case 0:
@@ -171,7 +172,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L1 L1C(D)";
+                                            signal = "L1C(D)";
                                         }
                                     else if (system == 2)
                                         {
@@ -187,7 +188,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L1 L1C(P)";
+                                            signal = "L1C(P)";
                                         }
                                     else if (system == 2)
                                         {
@@ -203,7 +204,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L1 L1C(D+P)";
+                                            signal = "L1C(D+P)";
                                         }
                                     else if (system == 2)
                                         {
@@ -219,7 +220,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L2 L2C(M)";
+                                            signal = "L2 CM";
                                         }
                                     else if (system == 2)
                                         {
@@ -235,7 +236,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L2 L2C(L)";
+                                            signal = "L2 CL";
                                         }
                                     else if (system == 2)
                                         {
@@ -251,7 +252,7 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
                                     if (system == 0)
                                         {
                                             // GPS
-                                            signal = "L2 L2C(M+L)";
+                                            signal = "L2 CM+CL";
                                         }
                                     else if (system == 2)
                                         {
@@ -405,6 +406,7 @@ uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
 uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_index) const
 {
     uint16_t validity_interval;
+    // See HAS SIS ICD v1.0 Table 23
     switch (validity_interval_index)
         {
         case 0:
@@ -503,28 +505,28 @@ std::vector<float> Galileo_HAS_data::get_delta_radial_m(uint8_t nsys) const
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_along_track_m() const
+std::vector<float> Galileo_HAS_data::get_delta_in_track_m() const
 {
-    std::vector<float> delta_along_track_m;
-    delta_along_track_m.reserve(this->delta_along_track.size());
-    for (const auto& d : this->delta_along_track)
+    std::vector<float> delta_in_track_m;
+    delta_in_track_m.reserve(this->delta_in_track.size());
+    for (const auto& d : this->delta_in_track)
         {
-            delta_along_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_ALONG_TRACK_SCALE_FACTOR);
+            delta_in_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_IN_TRACK_SCALE_FACTOR);
         }
-    return delta_along_track_m;
+    return delta_in_track_m;
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_along_track_m(uint8_t nsys) const
+std::vector<float> Galileo_HAS_data::get_delta_in_track_m(uint8_t nsys) const
 {
-    std::vector<float> delta_along_track_m = this->get_delta_along_track_m();
+    std::vector<float> delta_in_track_m = this->get_delta_in_track_m();
     if (nsys >= this->Nsys)
         {
-            return delta_along_track_m;
+            return delta_in_track_m;
         }
-    std::vector<float> delta_along_track_m_aux;
+    std::vector<float> delta_in_track_m_aux;
     uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
-    delta_along_track_m_aux.reserve(num_sats_in_this_system);
+    delta_in_track_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
@@ -538,12 +540,12 @@ std::vector<float> Galileo_HAS_data::get_delta_along_track_m(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_along_track_m_aux.push_back(delta_along_track_m[index]);
+                            delta_in_track_m_aux.push_back(delta_in_track_m[index]);
                             index++;
                         }
                 }
         }
-    return delta_along_track_m_aux;
+    return delta_in_track_m_aux;
 }
 
 
@@ -551,7 +553,7 @@ std::vector<float> Galileo_HAS_data::get_delta_cross_track_m() const
 {
     std::vector<float> delta_cross_track_m;
     delta_cross_track_m.reserve(this->delta_cross_track.size());
-    for (const auto& d : this->delta_along_track)
+    for (const auto& d : this->delta_cross_track)
         {
             delta_cross_track_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR);
         }
@@ -591,28 +593,28 @@ std::vector<float> Galileo_HAS_data::get_delta_cross_track_m(uint8_t nsys) const
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m() const
+std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m() const
 {
-    std::vector<float> delta_clock_c0_m;
-    delta_clock_c0_m.reserve(this->delta_clock_c0.size());
-    for (const auto& d : this->delta_clock_c0)
+    std::vector<float> delta_clock_correction_m;
+    delta_clock_correction_m.reserve(this->delta_clock_correction.size());
+    for (const auto& d : this->delta_clock_correction)
         {
-            delta_clock_c0_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
+            delta_clock_correction_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
         }
-    return delta_clock_c0_m;
+    return delta_clock_correction_m;
 }
 
 
-std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m(uint8_t nsys) const
+std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m(uint8_t nsys) const
 {
-    std::vector<float> delta_clock_c0_m = this->get_delta_clock_c0_m();
+    std::vector<float> delta_clock_correction_m = this->get_delta_clock_correction_m();
     if (nsys >= this->Nsys)
         {
-            return delta_clock_c0_m;
+            return delta_clock_correction_m;
         }
-    std::vector<float> delta_clock_c0_m_aux;
+    std::vector<float> delta_clock_correction_m_aux;
     uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
-    delta_clock_c0_m_aux.reserve(num_sats_in_this_system);
+    delta_clock_correction_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
@@ -626,12 +628,12 @@ std::vector<float> Galileo_HAS_data::get_delta_clock_c0_m(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_clock_c0_m_aux.push_back(delta_clock_c0_m[index]);
+                            delta_clock_correction_m_aux.push_back(delta_clock_correction_m[index]);
                             index++;
                         }
                 }
         }
-    return delta_clock_c0_m_aux;
+    return delta_clock_correction_m_aux;
 }
 
 
@@ -760,8 +762,8 @@ std::vector<std::string> Galileo_HAS_data::get_systems_string() const
 }
 
 
-uint16_t Galileo_HAS_data::get_nsatprime() const
+uint16_t Galileo_HAS_data::get_nsat_sub() const
 {
-    auto Nsatprime = static_cast<uint16_t>(this->delta_clock_c0_clock_subset.size());
-    return Nsatprime;
+    auto Nsat_sub = static_cast<uint16_t>(this->delta_clock_correction_clock_subset.size());
+    return Nsat_sub;
 }

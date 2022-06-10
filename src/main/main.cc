@@ -2,7 +2,7 @@
  * \file main.cc
  * \brief Main file of the GNSS-SDR program.
  * \author Carlos Aviles, 2010. carlos.avilesr(at)googlemail.com
- *
+ * BLABLA
  * It sets up the logging system, creates a ControlThread object,
  * makes it run, and releases memory back when the main thread has ended.
  * BlahBlah

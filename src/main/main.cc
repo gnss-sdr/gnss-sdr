@@ -5,7 +5,7 @@
  *
  * It sets up the logging system, creates a ControlThread object,
  * makes it run, and releases memory back when the main thread has ended.
- *
+ * BlahBlah
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.

@@ -3,7 +3,7 @@
  * \brief Implementation of a Galileo unified INAV and FNAV message demodulator
  * block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
- * \author Carles Fernandez, 2021. cfernandez(at)cttc.es
+ * \author Carles Fernandez, 2021-2022. cfernandez(at)cttc.es
  *
  *
  * -----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -72,7 +72,6 @@ public:
     int general_work(int noutput_items, gr_vector_int &ninput_items,
         gr_vector_const_void_star &input_items, gr_vector_void_star &output_items) override;
 
-
 private:
     friend galileo_telemetry_decoder_gs_sptr galileo_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
@@ -110,7 +109,7 @@ private:
 
     double d_delta_t;  // GPS-GALILEO time offset
 
-    uint64_t d_sample_counter;
+    uint64_t d_symbol_counter;
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
     uint64_t d_received_sample_counter;

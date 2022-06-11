@@ -27,6 +27,13 @@
 #include <string>  // for string
 #include <vector>
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
 
 gnss_sdr_sample_counter::gnss_sdr_sample_counter(
     double _fs,
@@ -156,7 +163,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                         {
                             // recompute timestamp to match the last sample in the consumed samples in this batch
                             int64_t diff_samplecount = uint64diff(out[0].Tracking_sample_counter, it.offset);
-                            const auto last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
+                            const auto last_timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                             double intpart;
                             last_timetag->tow_ms_fraction += modf(1000.0 * static_cast<double>(diff_samplecount) / fs, &intpart);
 
@@ -172,7 +179,7 @@ int gnss_sdr_sample_counter::work(int noutput_items __attribute__((unused)),
                             std::cout << "hash code not match\n";
                         }
                 }
-            catch (const boost::bad_any_cast &e)
+            catch (const wht::bad_any_cast &e)
                 {
                     std::cout << "msg Bad any_cast: " << e.what();
                 }

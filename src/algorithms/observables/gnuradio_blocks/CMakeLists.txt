@@ -34,6 +34,7 @@ target_link_libraries(obs_gr_blocks
         Gflags::gflags
         Glog::glog
         Matio::matio
+        Gnuradio::pmt
 )
 
 if(GNURADIO_USES_SPDLOG)

@@ -26,6 +26,7 @@
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
+#include <pmt/pmt.h>
 #include <algorithm>  // for std::min
 #include <array>
 #include <cmath>      // for round
@@ -694,7 +695,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
-                                    const auto timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
+                                    const auto timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                                     // std::cout << "[Time ch ] timetag: " << timetag->rx_time << "\n";
                                     d_TimeChannelTagTimestamps.push(*timetag);
                                 }
@@ -703,7 +704,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                                     std::cout << "hash code not match\n";
                                 }
                         }
-                    catch (const boost::bad_any_cast &e)
+                    catch (const wht::bad_any_cast &e)
                         {
                             std::cout << "msg Bad any_cast: " << e.what();
                         }
@@ -725,7 +726,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             //                        {
             //                            if (pmt::any_ref(it->value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
             //                                {
-            //                                    const std::shared_ptr<GnssTime> timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
+            //                                    const std::shared_ptr<GnssTime> timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it->value));
             //                                    //std::cout << "[ch " << n << "] timetag: " << timetag->rx_time << "\n";
             //                                    d_SourceTagTimestamps.at(n).push(*timetag);
             //                                }
@@ -734,7 +735,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             //                                    std::cout << "hash code not match\n";
             //                                }
             //                        }
-            //                    catch (const boost::bad_any_cast &e)
+            //                    catch (const wht::bad_any_cast &e)
             //                        {
             //                            std::cout << "msg Bad any_cast: " << e.what();
             //                        }

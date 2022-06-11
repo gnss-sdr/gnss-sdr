@@ -73,69 +73,59 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["L5"] = 2;
     d_rtklib_band_index["E6"] = 0;
 
-    if (d_type_of_rx == 6)  // E5b only
+    switch (d_type_of_rx)
         {
+        case 6:  // E5b only
             d_rtklib_freq_index[2] = 4;
-        }
-    if (d_type_of_rx == 11)  // GPS L1 C/A + Galileo E5b
-        {
+            break;
+        case 11:  // GPS L1 C/A + Galileo E5b
             d_rtklib_freq_index[2] = 4;
-        }
-    if (d_type_of_rx == 15)  // Galileo E1B + Galileo E5b
-        {
+            break;
+        case 15:  // Galileo E1B + Galileo E5b
             d_rtklib_freq_index[2] = 4;
-        }
-    if (d_type_of_rx == 18)  // GPS L2C + Galileo E5b
-        {
+            break;
+        case 18:  // GPS L2C + Galileo E5b
             d_rtklib_freq_index[2] = 4;
-        }
-    if (d_type_of_rx == 19)  // Galileo E5a + Galileo E5b
-        {
+            break;
+        case 19:  // Galileo E5a + Galileo E5b
             d_rtklib_band_index["5X"] = 0;
             d_rtklib_freq_index[0] = 2;
             d_rtklib_freq_index[2] = 4;
-        }
-    if (d_type_of_rx == 20)  // GPS L5 + Galileo E5b
-        {
+            break;
+        case 20:  // GPS L5 + Galileo E5b
             d_rtklib_band_index["L5"] = 0;
             d_rtklib_freq_index[0] = 2;
             d_rtklib_freq_index[2] = 4;
-        }
-    if (d_type_of_rx == 100)  // E6B only
-        {
+            break;
+        case 100:  // E6B only
             d_rtklib_freq_index[0] = 3;
-        }
-    if (d_type_of_rx == 101)  // E1 + E6B
-        {
+            break;
+        case 101:  // E1 + E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
-        }
-    if (d_type_of_rx == 102)  // E5a + E6B
-        {
+            break;
+        case 102:  // E5a + E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
-        }
-    if (d_type_of_rx == 103)  // E5b + E6B
-        {
+            break;
+        case 103:  // E5b + E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
             d_rtklib_freq_index[2] = 4;
-        }
-    if (d_type_of_rx == 104)  // Galileo E1B + Galileo E5a + Galileo E6B
-        {
+            break;
+        case 104:  // Galileo E1B + Galileo E5a + Galileo E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
-        }
-    if (d_type_of_rx == 105)  // Galileo E1B + Galileo E5b + Galileo E6B
-        {
+            break;
+        case 105:  // Galileo E1B + Galileo E5b + Galileo E6B
             d_rtklib_freq_index[2] = 4;
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
-        }
-    if (d_type_of_rx == 106)  // GPS L1 C/A + Galileo E1B + Galileo E6B
-        {
+            break;
+        case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
+            break;
         }
 
     // ############# ENABLE DATA FILE LOG #################

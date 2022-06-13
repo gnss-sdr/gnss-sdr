@@ -69,18 +69,18 @@ int pulse_blanking_cc::general_work(int noutput_items, gr_vector_int &ninput_ite
             if ((n_segments_ < n_segments_est_) && (last_filtered_ == false))
                 {
                     noise_power_estimation_ = (static_cast<float>(n_segments_) * noise_power_estimation_ + segment_energy / static_cast<float>(n_deg_fred_)) / static_cast<float>(n_segments_ + 1);
-                    memcpy(out, in, sizeof(gr_complex) * length_);
+                    std::copy(in, in + length_, out);
                 }
             else
                 {
                     if ((segment_energy / noise_power_estimation_) > thres_)
                         {
-                            memcpy(out, zeros_.data(), sizeof(gr_complex) * length_);
+                            std::copy_n(zeros_.data(), length_, out);
                             last_filtered_ = true;
                         }
                     else
                         {
-                            memcpy(out, in, sizeof(gr_complex) * length_);
+                            std::copy(in, in + length_, out);
                             last_filtered_ = false;
                             if (n_segments_ > n_segments_reset_)
                                 {

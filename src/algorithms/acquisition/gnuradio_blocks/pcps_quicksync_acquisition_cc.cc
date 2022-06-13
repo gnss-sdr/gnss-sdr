@@ -136,9 +136,9 @@ void pcps_quicksync_acquisition_cc::set_local_code(std::complex<float>* code)
 {
     /* save a local copy of the code without the folding process to perform corre-
     lation in time in the final steps of the acquisition stage */
-    memcpy(d_code.data(), code, sizeof(gr_complex) * d_samples_per_code);
+    std::copy(code, code + d_samples_per_code, d_code.data());
 
-    memcpy(d_fft_if->get_inbuf(), d_code_folded.data(), sizeof(gr_complex) * (d_fft_size));
+    std::copy(d_code_folded.data(), d_code_folded.data() + d_fft_size, d_fft_if->get_inbuf());
 
     /* perform folding of the code by the factorial factor parameter. Notice that
     folding of the code in the time stage would result in a downsampled spectrum
@@ -317,7 +317,7 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                         // at zero. This is done to avoid over acumulation when performing
                         // the folding process to be stored in d_fft_if->get_inbuf()
                         d_signal_folded = std::vector<gr_complex>(d_fft_size, lv_cmake(0.0F, 0.0F));
-                        memcpy(d_fft_if->get_inbuf(), d_signal_folded.data(), sizeof(gr_complex) * (d_fft_size));
+                        std::copy(d_signal_folded.data(), d_signal_folded.data() + d_fft_size, d_fft_if->get_inbuf());
 
                         // Doppler search steps and then multiplication of the incoming
                         // signal with the doppler wipeoffs to eliminate frequency offset
@@ -392,9 +392,8 @@ int pcps_quicksync_acquisition_cc::general_work(int noutput_items,
                                         for (int32_t i = 0; i < static_cast<int32_t>(d_folding_factor); i++)
                                             {
                                                 // Copy a signal of 1 code length into suggested buffer.
-                                                // The copied signal must have doppler effect corrected*/
-                                                memcpy(in_1code.data(), &in_temp[d_possible_delay[i]],
-                                                    sizeof(gr_complex) * (d_samples_per_code));
+                                                // The copied signal must have doppler effect corrected
+                                                std::copy_n(&in_temp[d_possible_delay[i]], d_samples_per_code, in_1code.data());
 
                                                 // Perform multiplication of the unmodified local
                                                 // generated code with the incoming signal with doppler

@@ -24,6 +24,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
 #include <array>
 #include <exception>
 #include <sstream>
@@ -117,7 +118,7 @@ pcps_assisted_acquisition_cc::~pcps_assisted_acquisition_cc()
 
 void pcps_assisted_acquisition_cc::set_local_code(std::complex<float> *code)
 {
-    memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
+    std::copy(code, code + d_fft_size, d_fft_if->get_inbuf());
 }
 
 

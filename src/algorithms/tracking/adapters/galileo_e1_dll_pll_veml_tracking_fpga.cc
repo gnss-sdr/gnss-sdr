@@ -30,6 +30,7 @@
 #include "uio_fpga.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
+#include <algorithm>
 #include <array>
 
 GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
@@ -59,7 +60,7 @@ GalileoE1DllPllVemlTrackingFpga::GalileoE1DllPllVemlTrackingFpga(
     trk_params_fpga.vector_length = vector_length;
     trk_params_fpga.system = 'E';
     const std::array<char, 3> sig_{'1', 'B', '\0'};
-    std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
+    std::copy_n(sig_.data(), 3, trk_params_fpga.signal);
 
     // UIO device file
     device_name = configuration->property(role + ".devicename", default_device_name_Galileo_E1);

@@ -21,7 +21,6 @@
 #include <volk/volk.h>
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 
 
 notch_lite_sptr make_notch_filter_lite(float p_c_factor, float pfa, int32_t length, int32_t n_segments_est, int32_t n_segments_reset, int32_t n_segments_coeff)
@@ -83,13 +82,13 @@ int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __att
         {
             if ((n_segments_ < n_segments_est_) && (filter_state_ == false))
                 {
-                    memcpy(d_fft_->get_inbuf(), in, sizeof(gr_complex) * length_);
+                    std::copy(in, in + length_, d_fft_->get_inbuf());
                     d_fft_->execute();
                     volk_32fc_s32f_power_spectrum_32f(power_spect_.data(), d_fft_->get_outbuf(), 1.0, length_);
                     volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect_.data(), 15.0, length_);
                     sig2lin = std::pow(10.0F, (sig2dB / 10.0F)) / static_cast<float>(n_deg_fred_);
                     noise_pow_est_ = (static_cast<float>(n_segments_) * noise_pow_est_ + sig2lin) / static_cast<float>(n_segments_ + 1);
-                    memcpy(out, in, sizeof(gr_complex) * length_);
+                    std::copy(in, in + length_, out);
                 }
             else
                 {
@@ -126,7 +125,7 @@ int NotchLite::general_work(int noutput_items, gr_vector_int &ninput_items __att
                                     n_segments_ = 0;
                                 }
                             filter_state_ = false;
-                            memcpy(out, in, sizeof(gr_complex) * length_);
+                            std::copy(in, in + length_, out);
                         }
                 }
             index_out += length_;

@@ -32,9 +32,9 @@
 #include "uio_fpga.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
+#include <algorithm>
 #include <array>
-#include <cmath>    // for round
-#include <cstring>  // for memcpy
+#include <cmath>  // for round
 #include <iostream>
 
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
@@ -62,7 +62,7 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
         }
     trk_params_fpga.system = 'G';
     const std::array<char, 3> sig_{'2', 'S', '\0'};
-    std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
+    std::copy_n(sig_.data(), 3, trk_params.signal);
 
     // UIO device file
     device_name = configuration->property(role + ".devicename", default_device_name_GPS_L2);

@@ -26,6 +26,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
 #include <exception>
 #include <sstream>
 #include <utility>
@@ -126,7 +127,7 @@ void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> *code_data,
     std::complex<float> *code_pilot)
 {
     // Data code (E1B)
-    memcpy(d_fft_if->get_inbuf(), code_data, sizeof(gr_complex) * d_fft_size);
+    std::copy(code_data, code_data + d_fft_size, d_fft_if->get_inbuf());
 
     d_fft_if->execute();  // We need the FFT of local code
 
@@ -134,7 +135,7 @@ void pcps_cccwsr_acquisition_cc::set_local_code(std::complex<float> *code_data,
     volk_32fc_conjugate_32fc(d_fft_code_data.data(), d_fft_if->get_outbuf(), d_fft_size);
 
     // Pilot code (E1C)
-    memcpy(d_fft_if->get_inbuf(), code_pilot, sizeof(gr_complex) * d_fft_size);
+    std::copy(code_pilot, code_pilot + d_fft_size, d_fft_if->get_inbuf());
 
     d_fft_if->execute();  // We need the FFT of local code
 
@@ -284,7 +285,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
 
                         // Copy the result of the correlation between wiped--off signal and data code in
                         // d_data_correlation.
-                        memcpy(d_data_correlation.data(), d_ifft->get_outbuf(), sizeof(gr_complex) * d_fft_size);
+                        std::copy(d_ifft->get_outbuf(), d_ifft->get_outbuf() + d_fft_size, d_data_correlation.data());
 
                         // Multiply carrier wiped--off, Fourier transformed incoming signal
                         // with the local FFT'd pilot code reference (E1C) using SIMD operations
@@ -297,7 +298,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
 
                         // Copy the result of the correlation between wiped--off signal and pilot code in
                         // d_data_correlation.
-                        memcpy(d_pilot_correlation.data(), d_ifft->get_outbuf(), sizeof(gr_complex) * d_fft_size);
+                        std::copy(d_ifft->get_outbuf(), d_ifft->get_outbuf() + d_fft_size, d_pilot_correlation.data());
 
                         for (uint32_t i = 0; i < d_fft_size; i++)
                             {

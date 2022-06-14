@@ -27,6 +27,7 @@
 #include "gnss_sdr_flags.h"
 #include "kf_conf.h"
 #include <glog/logging.h>
+#include <algorithm>
 #include <array>
 
 GpsL1CaKfVtlTracking::GpsL1CaKfVtlTracking(
@@ -58,7 +59,7 @@ GpsL1CaKfVtlTracking::GpsL1CaKfVtlTracking(
 
     trk_params.system = 'G';
     const std::array<char, 3> sig_{'1', 'C', '\0'};
-    std::memcpy(trk_params.signal, sig_.data(), 3);
+    std::copy_n(sig_.data(), 3, trk_params.signal);
 
     // ################# Make a GNU Radio Tracking block object ################
     if (trk_params.item_type == "gr_complex")

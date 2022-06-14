@@ -32,6 +32,7 @@
 #include "uio_fpga.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
+#include <algorithm>
 #include <array>
 
 GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
@@ -61,7 +62,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     d_track_pilot = trk_params_fpga.track_pilot;
     trk_params_fpga.system = 'G';
     const std::array<char, 3> sig_{'L', '5', '\0'};
-    std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
+    std::copy_n(sig_.data(), 3, trk_params_fpga.signal);
 
     // UIO device file
     device_name = configuration->property(role + ".devicename", default_device_name_GPS_L5);

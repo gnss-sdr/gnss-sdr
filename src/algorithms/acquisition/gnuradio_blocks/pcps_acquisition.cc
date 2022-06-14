@@ -33,10 +33,9 @@
 #include <pmt/pmt_sugar.h>  // for mp
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
-#include <algorithm>  // for fill_n, min
+#include <algorithm>  // for std::fill_n, std::min, std::copy
 #include <array>
-#include <cmath>    // for floor, fmod, rint, ceil
-#include <cstring>  // for memcpy
+#include <cmath>  // for floor, fmod, rint, ceil
 #include <iostream>
 #include <map>
 
@@ -189,18 +188,18 @@ void pcps_acquisition::set_local_code(std::complex<float>* code)
         {
             const int32_t offset = d_fft_size / 2;
             std::fill_n(d_fft_if->get_inbuf(), offset, gr_complex(0.0, 0.0));
-            memcpy(d_fft_if->get_inbuf() + offset, code, sizeof(gr_complex) * offset);
+            std::copy(code, code + offset, d_fft_if->get_inbuf() + offset);
         }
     else
         {
             if (d_acq_parameters.sampled_ms == d_acq_parameters.ms_per_code)
                 {
-                    memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_consumed_samples);
+                    std::copy(code, code + d_consumed_samples, d_fft_if->get_inbuf());
                 }
             else
                 {
                     std::fill_n(d_fft_if->get_inbuf(), d_fft_size - d_consumed_samples, gr_complex(0.0, 0.0));
-                    memcpy(d_fft_if->get_inbuf() + d_consumed_samples, code, sizeof(gr_complex) * d_consumed_samples);
+                    std::copy(code, code + d_consumed_samples, d_fft_if->get_inbuf() + d_consumed_samples);
                 }
         }
 
@@ -577,7 +576,7 @@ float pcps_acquisition::first_vs_second_peak_statistic(uint32_t& indext, int32_t
         }
 
     int32_t idx = excludeRangeIndex1;
-    memcpy(d_tmp_buffer.data(), d_magnitude_grid[index_doppler].data(), d_fft_size * sizeof(float));
+    std::copy(d_magnitude_grid[index_doppler].data(), d_magnitude_grid[index_doppler].data() + d_fft_size, d_tmp_buffer.data());
     do
         {
             d_tmp_buffer[idx] = 0.0;
@@ -610,7 +609,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
         {
             volk_gnsssdr_16ic_convert_32fc(d_data_buffer.data(), d_data_buffer_sc.data(), d_consumed_samples);
         }
-    memcpy(d_input_signal.data(), d_data_buffer.data(), d_consumed_samples * sizeof(gr_complex));
+    std::copy(d_data_buffer.data(), d_data_buffer.data() + d_consumed_samples, d_input_signal.data());
     if (d_fft_size > d_consumed_samples)
         {
             for (uint32_t i = d_consumed_samples; i < d_fft_size; i++)
@@ -667,7 +666,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     // Record results to file if required
                     if (d_dump and d_channel == d_dump_channel)
                         {
-                            memcpy(d_grid.colptr(doppler_index), d_magnitude_grid[doppler_index].data(), sizeof(float) * effective_fft_size);
+                            std::copy(d_magnitude_grid[doppler_index].data(), d_magnitude_grid[doppler_index].data() + effective_fft_size, d_grid.colptr(doppler_index));
                         }
                 }
 
@@ -725,7 +724,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                     // Record results to file if required
                     if (d_dump and d_channel == d_dump_channel)
                         {
-                            memcpy(d_narrow_grid.colptr(doppler_index), d_magnitude_grid[doppler_index].data(), sizeof(float) * effective_fft_size);
+                            std::copy(d_magnitude_grid[doppler_index].data(), d_magnitude_grid[doppler_index].data() + effective_fft_size, d_narrow_grid.colptr(doppler_index));
                         }
                 }
             // Compute the test statistic
@@ -958,7 +957,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                             {
                                 buff_increment = d_consumed_samples - d_buffer_count;
                             }
-                        memcpy(&d_data_buffer_sc[d_buffer_count], in, sizeof(lv_16sc_t) * buff_increment);
+                        std::copy(in, in + buff_increment, d_data_buffer_sc.begin() + d_buffer_count);
                     }
                 else
                     {
@@ -971,7 +970,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                             {
                                 buff_increment = d_consumed_samples - d_buffer_count;
                             }
-                        memcpy(&d_data_buffer[d_buffer_count], in, sizeof(gr_complex) * buff_increment);
+                        std::copy(in, in + buff_increment, d_data_buffer.begin() + d_buffer_count);
                     }
 
                 // If buffer will be full in next iteration

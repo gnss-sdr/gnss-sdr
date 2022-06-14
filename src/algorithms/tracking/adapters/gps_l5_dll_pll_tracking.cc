@@ -27,6 +27,7 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
+#include <algorithm>
 #include <array>
 
 GpsL5DllPllTracking::GpsL5DllPllTracking(
@@ -55,7 +56,7 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
         }
     trk_params.system = 'G';
     const std::array<char, 3> sig_{'L', '5', '\0'};
-    std::memcpy(trk_params.signal, sig_.data(), 3);
+    std::copy_n(sig_.data(), 3, trk_params.signal);
 
     // ################# Make a GNU Radio Tracking block object ################
     if (trk_params.item_type == "gr_complex")

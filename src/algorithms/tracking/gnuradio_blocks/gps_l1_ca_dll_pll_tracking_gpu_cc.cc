@@ -24,6 +24,7 @@
 #include <boost/lexical_cast.hpp>
 #include <glog/logging.h>
 #include <gnuradio/io_signature.h>
+#include <algorithm>
 #include <cmath>
 #include <cuda_profiler_api.h>
 #include <iostream>
@@ -349,7 +350,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
             // perform carrier wipe-off and compute Early, Prompt and Late correlation
 
-            memcpy(in_gpu, in, sizeof(gr_complex) * d_correlation_length_samples);
+            std::copy(in, in + d_correlation_length_samples, in_gpu);
             cudaProfilerStart();
             multicorrelator_gpu->Carrier_wipeoff_multicorrelator_resampler_cuda(static_cast<float>(d_rem_carrier_phase_rad),
                 static_cast<float>(d_carrier_phase_step_rad),

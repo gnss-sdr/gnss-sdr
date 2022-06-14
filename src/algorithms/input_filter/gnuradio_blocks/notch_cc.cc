@@ -20,7 +20,6 @@
 #include <volk/volk.h>
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 
 
 notch_sptr make_notch_filter(float pfa, float p_c_factor,
@@ -75,13 +74,13 @@ int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribu
         {
             if ((n_segments_ < n_segments_est_) && (filter_state_ == false))
                 {
-                    memcpy(d_fft_->get_inbuf(), in, sizeof(gr_complex) * length_);
+                    std::copy(in, in + length_, d_fft_->get_inbuf());
                     d_fft_->execute();
                     volk_32fc_s32f_power_spectrum_32f(power_spect_.data(), d_fft_->get_outbuf(), 1.0, length_);
                     volk_32f_s32f_calc_spectral_noise_floor_32f(&sig2dB, power_spect_.data(), 15.0, length_);
                     sig2lin = std::pow(10.0F, (sig2dB / 10.0F)) / (static_cast<float>(n_deg_fred_));
                     noise_pow_est_ = (static_cast<float>(n_segments_) * noise_pow_est_ + sig2lin) / (static_cast<float>(n_segments_ + 1));
-                    memcpy(out, in, sizeof(gr_complex) * length_);
+                    std::copy(in, in + length_, out);
                 }
             else
                 {
@@ -109,7 +108,7 @@ int Notch::general_work(int noutput_items, gr_vector_int &ninput_items __attribu
                                     n_segments_ = 0;
                                 }
                             filter_state_ = false;
-                            memcpy(out, in, sizeof(gr_complex) * length_);
+                            std::copy(in, in + length_, out);
                         }
                 }
             index_out += length_;

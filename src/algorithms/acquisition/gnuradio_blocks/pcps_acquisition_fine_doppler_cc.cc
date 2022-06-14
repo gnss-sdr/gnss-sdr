@@ -146,7 +146,7 @@ void pcps_acquisition_fine_doppler_cc::set_doppler_step(unsigned int doppler_ste
 
 void pcps_acquisition_fine_doppler_cc::set_local_code(std::complex<float> *code)
 {
-    memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
+    std::copy(code, code + d_fft_size, d_fft_if->get_inbuf());
     d_fft_if->execute();  // We need the FFT of local code
     // Conjugate the local code
     volk_32fc_conjugate_32fc(d_fft_codes.data(), d_fft_if->get_outbuf(), d_fft_size);
@@ -234,7 +234,7 @@ float pcps_acquisition_fine_doppler_cc::compute_CAF()
             // Record results to file if required
             if (d_dump and d_channel == d_dump_channel)
                 {
-                    memcpy(grid_.colptr(i), d_grid_data[i].data(), sizeof(float) * d_fft_size);
+                    std::copy(d_grid_data[i].data(), d_grid_data[i].data() + d_fft_size, grid_.colptr(i));
                 }
         }
 
@@ -372,7 +372,7 @@ int pcps_acquisition_fine_doppler_cc::estimate_Doppler()
 
     for (int n = 0; n < prn_replicas - 1; n++)
         {
-            memcpy(&code_replica[(n + 1) * d_fft_size], code_replica.data(), d_fft_size * sizeof(gr_complex));
+            std::copy_n(code_replica.data(), d_fft_size, &code_replica[(n + 1) * d_fft_size]);
         }
     // 2. Perform code wipe-off
     volk_32fc_x2_multiply_32fc(fft_operator->get_inbuf(), d_10_ms_buffer.data(), code_replica.data(), signal_samples);
@@ -473,6 +473,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 
     int return_value = 0;  // Number of Gnss_Syncro objects produced
     int samples_remaining;
+    const auto *in_aux = reinterpret_cast<const gr_complex *>(input_items[0]);
     switch (d_state)
         {
         case 0:  // S0. StandBy
@@ -490,7 +491,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
             break;
         case 1:  // S1. ComputeGrid
             compute_and_accumulate_grid(input_items);
-            memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), d_fft_size * sizeof(gr_complex));
+            std::copy(in_aux, in_aux + d_fft_size, &d_10_ms_buffer[d_n_samples_in_buffer]);
             d_n_samples_in_buffer += d_fft_size;
             d_well_count++;
             if (d_well_count >= d_max_dwells)
@@ -518,7 +519,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
 
             if (samples_remaining > noutput_items)
                 {
-                    memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), noutput_items * sizeof(gr_complex));
+                    std::copy(in_aux, in_aux + noutput_items, &d_10_ms_buffer[d_n_samples_in_buffer]);
                     d_n_samples_in_buffer += noutput_items;
                     d_sample_counter += static_cast<uint64_t>(noutput_items);  // sample counter
                     consume_each(noutput_items);
@@ -527,7 +528,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                 {
                     if (samples_remaining > 0)
                         {
-                            memcpy(&d_10_ms_buffer[d_n_samples_in_buffer], reinterpret_cast<const gr_complex *>(input_items[0]), samples_remaining * sizeof(gr_complex));
+                            std::copy(in_aux, in_aux + samples_remaining, &d_10_ms_buffer[d_n_samples_in_buffer]);
                             d_sample_counter += static_cast<uint64_t>(samples_remaining);  // sample counter
                             consume_each(samples_remaining);
                         }

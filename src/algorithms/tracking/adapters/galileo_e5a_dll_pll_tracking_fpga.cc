@@ -25,6 +25,7 @@
 #include "uio_fpga.h"
 #include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
+#include <algorithm>
 #include <array>
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
@@ -54,7 +55,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
         }
     trk_params_fpga.system = 'E';
     const std::array<char, 3> sig_{'5', 'X', '\0'};
-    std::memcpy(trk_params_fpga.signal, sig_.data(), 3);
+    std::copy_n(sig_.data(), 3, trk_params_fpga.signal);
 
     d_data_codes = nullptr;
 

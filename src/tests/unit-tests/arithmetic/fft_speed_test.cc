@@ -18,6 +18,7 @@
 
 #include "gnss_sdr_fft.h"
 #include <armadillo>
+#include <algorithm>
 #include <chrono>
 #include <memory>
 
@@ -39,7 +40,7 @@ TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
             arma::arma_rng::set_seed_random();
             arma::cx_fvec d_arma_fft = arma::cx_fvec(d_fft_size).randn() + gr_complex(0.0, 1.0) * arma::cx_fvec(d_fft_size).randn();
             arma::cx_fvec d_arma_fft_result(d_fft_size);
-            memcpy(d_gr_fft->get_inbuf(), d_arma_fft.memptr(), sizeof(gr_complex) * d_fft_size);
+            std::copy_n(d_arma_fft.memptr(), d_fft_size, d_gr_fft->get_inbuf());
 
             start = std::chrono::system_clock::now();
             for (int k = 0; k < FLAGS_fft_speed_iterations_test; k++)

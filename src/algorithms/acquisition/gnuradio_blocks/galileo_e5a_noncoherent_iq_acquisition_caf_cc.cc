@@ -27,6 +27,7 @@
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include <algorithm>
 #include <array>
 #include <exception>
 #include <sstream>
@@ -160,7 +161,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
 {
     // DATA SIGNAL
     // Three replicas of data primary code. CODE A: (1,1,1)
-    memcpy(d_fft_if->get_inbuf(), codeI, sizeof(gr_complex) * d_fft_size);
+    std::copy(codeI, codeI + d_fft_size, d_fft_if->get_inbuf());
 
     d_fft_if->execute();  // We need the FFT of local code
 
@@ -171,7 +172,7 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
     if (d_both_signal_components == true)
         {
             // Three replicas of pilot primary code. CODE A: (1,1,1)
-            memcpy(d_fft_if->get_inbuf(), codeQ, sizeof(gr_complex) * d_fft_size);
+            std::copy(codeQ, codeQ + d_fft_size, d_fft_if->get_inbuf());
 
             d_fft_if->execute();  // We need the FFT of local code
 
@@ -336,7 +337,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                     {
                         buff_increment = d_fft_size - d_buffer_count;
                     }
-                memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * buff_increment);
+                std::copy(in, in + buff_increment, d_inbuffer.begin() + d_buffer_count);
                 // If buffer will be full in next iteration
                 if (d_buffer_count >= static_cast<int>(d_fft_size - d_gr_stream_buffer))
                     {
@@ -353,7 +354,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                 const auto *in = reinterpret_cast<const gr_complex *>(input_items[0]);  // Get the input samples pointer
                 if (d_buffer_count < d_fft_size)
                     {
-                        memcpy(&d_inbuffer[d_buffer_count], in, sizeof(gr_complex) * (d_fft_size - d_buffer_count));
+                        std::copy(in, in + (d_fft_size - d_buffer_count), d_inbuffer.begin() + d_buffer_count);
                     }
                 d_sample_counter += static_cast<uint64_t>(d_fft_size - d_buffer_count);  // sample counter
 

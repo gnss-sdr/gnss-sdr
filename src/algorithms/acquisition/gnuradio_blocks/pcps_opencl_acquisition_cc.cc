@@ -330,7 +330,7 @@ void pcps_opencl_acquisition_cc::set_local_code(std::complex<float> *code)
         }
     else
         {
-            memcpy(d_fft_if->get_inbuf(), code, sizeof(gr_complex) * d_fft_size);
+            std::copy(code, code + d_fft_size, d_fft_if->get_inbuf());
 
             d_fft_if->execute();  // We need the FFT of local code
 
@@ -695,8 +695,8 @@ int pcps_opencl_acquisition_cc::general_work(int noutput_items,
                         uint32_t num_dwells = std::min(static_cast<int>(d_max_dwells - d_in_dwell_count), ninput_items[0]);
                         for (uint32_t i = 0; i < num_dwells; i++)
                             {
-                                memcpy(d_in_buffer[d_in_dwell_count++].data(), static_cast<const gr_complex *>(input_items[i]),
-                                    sizeof(gr_complex) * d_fft_size);
+                                const auto *in = reinterpret_cast<const gr_complex *>(input_items[i]);
+                                std::copy(in, in + d_fft_size, d_in_buffer[d_in_dwell_count++].data());
                                 d_sample_counter += static_cast<uint64_t>(d_fft_size);
                                 d_sample_counter_buffer.push_back(d_sample_counter);
                             }

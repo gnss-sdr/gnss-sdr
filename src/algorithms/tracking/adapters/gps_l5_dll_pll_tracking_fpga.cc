@@ -62,7 +62,7 @@ GpsL5DllPllTrackingFpga::GpsL5DllPllTrackingFpga(
     d_track_pilot = trk_params_fpga.track_pilot;
     trk_params_fpga.system = 'G';
     const std::array<char, 3> sig_{'L', '5', '\0'};
-    std::copy_n(sig_.data(), 3, trk_params.signal);
+    std::copy_n(sig_.data(), 3, trk_params_fpga.signal);
 
     // UIO device file
     device_name = configuration->property(role + ".devicename", default_device_name_GPS_L5);

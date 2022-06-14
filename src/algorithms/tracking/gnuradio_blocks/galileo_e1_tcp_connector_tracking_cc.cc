@@ -156,7 +156,7 @@ void Galileo_E1_Tcp_Connector_Tracking_cc::start_tracking()
     d_acq_carrier_doppler_hz = static_cast<float>(d_acquisition_gnss_synchro->Acq_doppler_hz);
     d_acq_sample_stamp = d_acquisition_gnss_synchro->Acq_samplestamp_samples;
     std::array<char, 3> Signal_{};
-    std::memcpy(Signal_.data(), d_acquisition_gnss_synchro->Signal, 3);
+    std::copy_n(d_acquisition_gnss_synchro->Signal, 3, Signal_.data());
 
     // generate local reference ALWAYS starting at chip 1 (2 samples per chip)
     galileo_e1_code_gen_complex_sampled(d_ca_code,

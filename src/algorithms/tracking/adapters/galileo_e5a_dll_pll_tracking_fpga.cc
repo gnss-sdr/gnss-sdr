@@ -55,7 +55,7 @@ GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
         }
     trk_params_fpga.system = 'E';
     const std::array<char, 3> sig_{'5', 'X', '\0'};
-    std::copy_n(sig_.data(), 3, trk_params.signal);
+    std::copy_n(sig_.data(), 3, trk_params_fpga.signal);
 
     d_data_codes = nullptr;
 

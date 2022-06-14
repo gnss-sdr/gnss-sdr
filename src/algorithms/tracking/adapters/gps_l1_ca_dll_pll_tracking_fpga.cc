@@ -65,7 +65,7 @@ GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
         }
     trk_params_fpga.system = 'G';
     const std::array<char, 3> sig_{'1', 'C', '\0'};
-    std::copy_n(sig_.data(), 3, trk_params.signal);
+    std::copy_n(sig_.data(), 3, trk_params_fpga.signal);
 
     // UIO device file
     device_name = configuration->property(role + ".devicename", default_device_name_GPS_L1);

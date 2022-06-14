@@ -2024,7 +2024,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         {
                             // std::cout << "ch[" << d_acquisition_gnss_synchro->Channel_ID << "] tracking time tag with offset " << it->offset << " vs. counter " << d_sample_counter << " vs. nread " << this->nitems_read(0) << " containing ";
                             // std::cout << "ch[" << d_acquisition_gnss_synchro->Channel_ID << "] tracking time tag with offset " << it->offset << " vs. nread " << this->nitems_read(0) << " containing ";
-                            const auto last_timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
+                            const auto last_timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                             d_last_timetag = *last_timetag;
                             d_last_timetag_samplecounter = it.offset;
                             d_timetag_waiting = true;
@@ -2034,7 +2034,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                             std::cout << "hash code not match\n";
                         }
                 }
-            catch (const boost::bad_any_cast &e)
+            catch (const wht::bad_any_cast &e)
                 {
                     std::cout << "msg Bad any_cast: " << e.what();
                 }

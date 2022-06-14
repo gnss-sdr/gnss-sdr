@@ -1212,7 +1212,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_iono = *gps_iono;
                         }
-                    DLOG(INFO) << "New IONO record has arrived ";
+                    DLOG(INFO) << "New IONO record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_utc_model_sptr_type_hash_code)
                 {
@@ -1223,7 +1223,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_utc_model = *gps_utc_model;
                         }
-                    DLOG(INFO) << "New UTC record has arrived ";
+                    DLOG(INFO) << "New UTC record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_ephemeris_sptr_type_hash_code)
                 {
@@ -1263,7 +1263,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                       << " does not report a healthy status in the CNAV message,"
                                       << " use PVT solutions at your own risk.\n";
                         }
-                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived ";
+                    DLOG(INFO) << "New GPS CNAV ephemeris record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_iono_sptr_type_hash_code)
                 {
@@ -1274,7 +1274,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_cnav_iono = *gps_cnav_iono;
                         }
-                    DLOG(INFO) << "New CNAV IONO record has arrived ";
+                    DLOG(INFO) << "New CNAV IONO record has arrived";
                 }
             else if (msg_type_hash_code == d_gps_cnav_utc_model_sptr_type_hash_code)
                 {
@@ -1284,7 +1284,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                     {
                         d_user_pvt_solver->gps_cnav_utc_model = *gps_cnav_utc_model;
                     }
-                    DLOG(INFO) << "New CNAV UTC record has arrived ";
+                    DLOG(INFO) << "New CNAV UTC record has arrived";
                 }
 
             else if (msg_type_hash_code == d_gps_almanac_sptr_type_hash_code)
@@ -1296,7 +1296,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->gps_almanac_map[gps_almanac->PRN] = *gps_almanac;
                         }
-                    DLOG(INFO) << "New GPS almanac record has arrived ";
+                    DLOG(INFO) << "New GPS almanac record has arrived";
                 }
 
             // *********************** Galileo telemetry ***********************
@@ -1359,7 +1359,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->galileo_iono = *galileo_iono;
                         }
-                    DLOG(INFO) << "New IONO record has arrived ";
+                    DLOG(INFO) << "New IONO record has arrived";
                 }
             else if (msg_type_hash_code == d_galileo_utc_model_sptr_type_hash_code)
                 {
@@ -1370,7 +1370,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->galileo_utc_model = *galileo_utc_model;
                         }
-                    DLOG(INFO) << "New UTC record has arrived ";
+                    DLOG(INFO) << "New UTC record has arrived";
                 }
             else if (msg_type_hash_code == d_galileo_almanac_helper_sptr_type_hash_code)
                 {
@@ -1404,7 +1404,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                                     d_user_pvt_solver->galileo_almanac_map[sv3.PRN] = sv3;
                                 }
                         }
-                    DLOG(INFO) << "New Galileo Almanac data have arrived ";
+                    DLOG(INFO) << "New Galileo Almanac data have arrived";
                 }
             else if (msg_type_hash_code == d_galileo_almanac_sptr_type_hash_code)
                 {
@@ -1467,7 +1467,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->glonass_gnav_utc_model = *glonass_gnav_utc_model;
                         }
-                    DLOG(INFO) << "New GLONASS GNAV UTC record has arrived ";
+                    DLOG(INFO) << "New GLONASS GNAV UTC record has arrived";
                 }
             else if (msg_type_hash_code == d_glonass_gnav_almanac_sptr_type_hash_code)
                 {
@@ -1478,7 +1478,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->glonass_gnav_almanac = *glonass_gnav_almanac;
                         }
-                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived "
+                    DLOG(INFO) << "New GLONASS GNAV Almanac has arrived"
                                << ", GLONASS GNAV Slot Number =" << glonass_gnav_almanac->d_n_A;
                 }
 
@@ -1535,7 +1535,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->beidou_dnav_iono = *bds_dnav_iono;
                         }
-                    DLOG(INFO) << "New BeiDou DNAV IONO record has arrived ";
+                    DLOG(INFO) << "New BeiDou DNAV IONO record has arrived";
                 }
             else if (msg_type_hash_code == d_beidou_dnav_utc_model_sptr_type_hash_code)
                 {
@@ -1546,7 +1546,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->beidou_dnav_utc_model = *bds_dnav_utc_model;
                         }
-                    DLOG(INFO) << "New BeiDou DNAV UTC record has arrived ";
+                    DLOG(INFO) << "New BeiDou DNAV UTC record has arrived";
                 }
             else if (msg_type_hash_code == d_beidou_dnav_almanac_sptr_type_hash_code)
                 {
@@ -1557,7 +1557,7 @@ void rtklib_pvt_gs::msg_handler_telemetry(const pmt::pmt_t& msg)
                         {
                             d_user_pvt_solver->beidou_dnav_almanac_map[bds_dnav_almanac->PRN] = *bds_dnav_almanac;
                         }
-                    DLOG(INFO) << "New BeiDou DNAV almanac record has arrived ";
+                    DLOG(INFO) << "New BeiDou DNAV almanac record has arrived";
                 }
             else
                 {
@@ -1968,7 +1968,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
-                                    const auto timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
+                                    const auto timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                                     // std::cout << "PVT timetag: " << timetag->rx_time << '\n';
                                     d_TimeChannelTagTimestamps.push(*timetag);
                                 }
@@ -1977,7 +1977,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     std::cout << "hash code not match\n";
                                 }
                         }
-                    catch (const boost::bad_any_cast& e)
+                    catch (const wht::bad_any_cast& e)
                         {
                             std::cout << "msg Bad any_cast: " << e.what();
                         }

@@ -51,6 +51,13 @@ auto rotl = [](uint32_t x, uint32_t n) { return (((x) << (n)) ^ ((x) >> (32 - (n
 }  // namespace my_rotl
 #endif
 
+#if PMT_USES_BOOST_ANY
+#include <boost/any.hpp>
+namespace wht = boost;
+#else
+#include <any>
+namespace wht = std;
+#endif
 
 gps_l1_ca_telemetry_decoder_gs_sptr
 gps_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
@@ -605,7 +612,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         {
                             if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
-                                    const auto timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
+                                    const auto timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                                     // std::cout << "[" << this->nitems_written(0) + 1 << "] TLM RX TimeTag Week: " << timetag->week << ", TOW: " << timetag->tow_ms << " [ms], TOW fraction: " << timetag->tow_ms_fraction
                                     //           << " [ms], DELTA TLM TOW: " << static_cast<double>(timetag->tow_ms - current_symbol.TOW_at_current_symbol_ms) + timetag->tow_ms_fraction << " [ms] \n";
                                     add_item_tag(0, this->nitems_written(0) + 1, pmt::mp("timetag"), pmt::make_any(timetag));
@@ -615,12 +622,11 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                     std::cout << "hash code not match\n";
                                 }
                         }
-                    catch (const boost::bad_any_cast &e)
+                    catch (const wht::bad_any_cast &e)
                         {
                             std::cout << "msg Bad any_cast: " << e.what();
                         }
                 }
-
             if (d_dump == true)
                 {
                     // MULTIPLEXED FILE RECORDING - Record results to file

@@ -83,6 +83,7 @@ endif()
 
 target_link_libraries(core_libs
     PUBLIC
+        Boost::headers
         Gnuradio::blocks
         Gnuradio::runtime
         Gnuradio::pmt

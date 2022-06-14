@@ -3,7 +3,7 @@
  * \brief Implementation of a Galileo unified INAV and FNAV message demodulator
  * block
  * \author Javier Arribas 2018. jarribas(at)cttc.es
- * \author Carles Fernandez, 2021. cfernandez(at)cttc.es
+ * \author Carles Fernandez, 2021-2022. cfernandez(at)cttc.es
  *
  *
  * -----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -77,7 +77,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
                       d_dump_filename(conf.dump_filename),
                       d_delta_t(0),
-                      d_sample_counter(0ULL),
+                      d_symbol_counter(0ULL),
                       d_preamble_index(0ULL),
                       d_last_valid_preamble(0ULL),
                       d_received_sample_counter(0),
@@ -165,56 +165,50 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     switch (d_frame_type)
         {
         case 1:  // INAV
-            {
-                d_PRN_code_period_ms = GALILEO_E1_CODE_PERIOD_MS;  // for Galileo E5b is also 4 ms
-                d_bits_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
-                // set the preamble
-                d_samples_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
-                d_preamble_period_symbols = GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS;
-                d_required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_samples_per_preamble;
-                // preamble bits to sampled symbols
-                d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
-                d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
-                d_codelength = static_cast<int32_t>(d_frame_length_symbols);
-                d_datalength = (d_codelength / nn) - d_mm;
-                d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  // rise alarm 60 seconds without valid tlm
-                if (conf.enable_reed_solomon == true)
-                    {
-                        d_enable_reed_solomon_inav = true;
-                        d_inav_nav.enable_reed_solomon();
-                    }
-                break;
-            }
+            d_bits_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
+            d_PRN_code_period_ms = GALILEO_E1_CODE_PERIOD_MS;  // for Galileo E5b is also 4 ms
+            // set the preamble
+            d_samples_per_preamble = GALILEO_INAV_PREAMBLE_LENGTH_BITS;
+            d_preamble_period_symbols = GALILEO_INAV_PREAMBLE_PERIOD_SYMBOLS;
+            d_required_symbols = GALILEO_INAV_PAGE_SYMBOLS + d_samples_per_preamble;
+            // preamble bits to sampled symbols
+            d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
+            d_frame_length_symbols = GALILEO_INAV_PAGE_PART_SYMBOLS - GALILEO_INAV_PREAMBLE_LENGTH_BITS;
+            d_codelength = static_cast<int32_t>(d_frame_length_symbols);
+            d_datalength = (d_codelength / nn) - d_mm;
+            d_max_symbols_without_valid_frame = GALILEO_INAV_PAGE_SYMBOLS * 30;  // rise alarm 60 seconds without valid tlm
+            if (conf.enable_reed_solomon == true)
+                {
+                    d_enable_reed_solomon_inav = true;
+                    d_inav_nav.enable_reed_solomon();
+                }
+            break;
         case 2:  // FNAV
-            {
-                d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5A_CODE_PERIOD_MS * GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
-                d_bits_per_preamble = GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
-                // set the preamble
-                d_samples_per_preamble = GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
-                d_preamble_period_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE;
-                d_required_symbols = static_cast<uint32_t>(GALILEO_FNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
-                // preamble bits to sampled symbols
-                d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
-                d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
-                d_codelength = static_cast<int32_t>(d_frame_length_symbols);
-                d_datalength = (d_codelength / nn) - d_mm;
-                d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
-                break;
-            }
+            d_PRN_code_period_ms = static_cast<uint32_t>(GALILEO_E5A_CODE_PERIOD_MS * GALILEO_E5A_I_SECONDARY_CODE_LENGTH);
+            d_bits_per_preamble = GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+            // set the preamble
+            d_samples_per_preamble = GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+            d_preamble_period_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE;
+            d_required_symbols = static_cast<uint32_t>(GALILEO_FNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
+            // preamble bits to sampled symbols
+            d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
+            d_frame_length_symbols = GALILEO_FNAV_SYMBOLS_PER_PAGE - GALILEO_FNAV_PREAMBLE_LENGTH_BITS;
+            d_codelength = static_cast<int32_t>(d_frame_length_symbols);
+            d_datalength = (d_codelength / nn) - d_mm;
+            d_max_symbols_without_valid_frame = GALILEO_FNAV_SYMBOLS_PER_PAGE * 5;  // rise alarm 100 seconds without valid tlm
+            break;
         case 3:  // CNAV
-            {
-                d_PRN_code_period_ms = GALILEO_E6_CODE_PERIOD_MS;
-                d_bits_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
-                d_samples_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
-                d_preamble_period_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE;
-                d_required_symbols = static_cast<uint32_t>(GALILEO_CNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
-                d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
-                d_frame_length_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
-                d_codelength = static_cast<int32_t>(d_frame_length_symbols);
-                d_datalength = (d_codelength / nn) - d_mm;
-                d_max_symbols_without_valid_frame = GALILEO_CNAV_SYMBOLS_PER_PAGE * 60;
-                break;
-            }
+            d_PRN_code_period_ms = GALILEO_E6_CODE_PERIOD_MS;
+            d_bits_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+            d_samples_per_preamble = GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+            d_preamble_period_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE;
+            d_required_symbols = static_cast<uint32_t>(GALILEO_CNAV_SYMBOLS_PER_PAGE) + d_samples_per_preamble;
+            d_preamble_samples = std::vector<int32_t>(d_samples_per_preamble);
+            d_frame_length_symbols = GALILEO_CNAV_SYMBOLS_PER_PAGE - GALILEO_CNAV_PREAMBLE_LENGTH_BITS;
+            d_codelength = static_cast<int32_t>(d_frame_length_symbols);
+            d_datalength = (d_codelength / nn) - d_mm;
+            d_max_symbols_without_valid_frame = GALILEO_CNAV_SYMBOLS_PER_PAGE * 60;
+            break;
         default:
             d_bits_per_preamble = 0;
             d_samples_per_preamble = 0;
@@ -235,41 +229,35 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
             switch (d_frame_type)
                 {
                 case 1:  // INAV
-                    {
-                        if (GALILEO_INAV_PREAMBLE[i] == '1')
-                            {
-                                d_preamble_samples[i] = 1;
-                            }
-                        else
-                            {
-                                d_preamble_samples[i] = -1;
-                            }
-                        break;
-                    }
+                    if (GALILEO_INAV_PREAMBLE[i] == '1')
+                        {
+                            d_preamble_samples[i] = 1;
+                        }
+                    else
+                        {
+                            d_preamble_samples[i] = -1;
+                        }
+                    break;
                 case 2:  // FNAV for E5a-I
-                    {
-                        if (GALILEO_FNAV_PREAMBLE[i] == '1')
-                            {
-                                d_preamble_samples[i] = 1;
-                            }
-                        else
-                            {
-                                d_preamble_samples[i] = -1;
-                            }
-                        break;
-                    }
+                    if (GALILEO_FNAV_PREAMBLE[i] == '1')
+                        {
+                            d_preamble_samples[i] = 1;
+                        }
+                    else
+                        {
+                            d_preamble_samples[i] = -1;
+                        }
+                    break;
                 case 3:  // CNAV for E6
-                    {
-                        if (GALILEO_CNAV_PREAMBLE[i] == '1')
-                            {
-                                d_preamble_samples[i] = 1;
-                            }
-                        else
-                            {
-                                d_preamble_samples[i] = -1;
-                            }
-                        break;
-                    }
+                    if (GALILEO_CNAV_PREAMBLE[i] == '1')
+                        {
+                            d_preamble_samples[i] = 1;
+                        }
+                    else
+                        {
+                            d_preamble_samples[i] = -1;
+                        }
+                    break;
                 }
         }
 
@@ -476,6 +464,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 }
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
+
     if (d_inav_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
@@ -492,6 +481,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             d_delta_t = tmp_obj->A_0G + tmp_obj->A_1G * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G), 64.0)));
             DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
         }
+
     if (d_inav_nav.have_new_almanac() == true)
         {
             const std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
@@ -503,7 +493,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 }
             else if (d_band == '7')
                 {
-                    std::cout << "Galileo E5b I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
+                    std::cout << TEXT_BLUE << "Galileo E5b I/NAV almanac received in channel " << d_channel << " from satellite " << d_satellite << TEXT_RESET << '\n';
                 }
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
@@ -570,12 +560,14 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
+
     if (d_fnav_nav.have_new_iono_and_GST() == true)
         {
             const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_fnav_nav.get_iono());
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel " << d_channel << ": iono/GST model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
         }
+
     if (d_fnav_nav.have_new_utc_model() == true)
         {
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_fnav_nav.get_utc_model());
@@ -637,7 +629,6 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(uint64_t time_stamp, float *
                     if (is_page_dummy != d_cnav_dummy_page)
                         {
                             d_cnav_dummy_page = is_page_dummy;
-
                             std::cout << TEXT_MAGENTA << "Receiving Galileo E6 CNAV dummy pages in channel "
                                       << d_channel << " from satellite " << d_satellite
                                       << TEXT_RESET << '\n';
@@ -668,7 +659,7 @@ void galileo_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 {
     gr::thread::scoped_lock lock(d_setlock);
     d_satellite = Gnss_Satellite(satellite.get_system(), satellite.get_PRN());
-    d_last_valid_preamble = d_sample_counter;
+    d_last_valid_preamble = d_symbol_counter;
     d_sent_tlm_failed_msg = false;
     d_received_tow_ms = std::numeric_limits<uint32_t>::max();
     d_E6_TOW_set = false;
@@ -693,7 +684,7 @@ void galileo_telemetry_decoder_gs::reset()
     d_fnav_nav.set_flag_TOW_set(false);
     d_inav_nav.set_flag_TOW_set(false);
     d_inav_nav.set_TOW0_flag(false);
-    d_last_valid_preamble = d_sample_counter;
+    d_last_valid_preamble = d_symbol_counter;
     d_sent_tlm_failed_msg = false;
     d_E6_TOW_set = false;
     d_stat = 0;
@@ -761,7 +752,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // add new symbol to the symbol queue
     d_symbol_history.push_back(current_symbol.Prompt_I);
 
-    d_sample_counter++;  // count for the processed symbols
+    d_symbol_counter++;  // counter for the processed symbols
 
     // Time Tags from signal source (optional feature)
     std::vector<gr::tag_t> tags_vec;
@@ -774,7 +765,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                         {
                             if (pmt::any_ref(it.value).type().hash_code() == typeid(const std::shared_ptr<GnssTime>).hash_code())
                                 {
-                                    const auto timetag = boost::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
+                                    const auto timetag = wht::any_cast<const std::shared_ptr<GnssTime>>(pmt::any_ref(it.value));
                                     // std::cout << "Old tow: " << d_current_timetag.tow_ms << " new tow: " << timetag->tow_ms << "\n";
                                     d_current_timetag = *timetag;
                                     d_valid_timetag = true;
@@ -784,7 +775,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                                     std::cout << "hash code not match\n";
                                 }
                         }
-                    catch (const boost::bad_any_cast &e)
+                    catch (const wht::bad_any_cast &e)
                         {
                             std::cout << "msg Bad any_cast: " << e.what();
                         }
@@ -812,7 +803,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     // check if there is a problem with the telemetry of the current satellite
     if (d_sent_tlm_failed_msg == false)
         {
-            if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
+            if ((d_symbol_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
                     const int message = 1;  // bad telemetry
                     DLOG(INFO) << "sent msg sat " << this->d_satellite;
@@ -822,167 +813,159 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         }
 
     // ******* frame sync ******************
+    int32_t corr_value = 0;
     switch (d_stat)
         {
         case 0:  // no preamble information
-            {
-                // correlate with preamble
-                int32_t corr_value = 0;
-                if (d_symbol_history.size() > d_required_symbols)
-                    {
-                        // ******* preamble correlation ********
-                        for (int32_t i = 0; i < d_samples_per_preamble; i++)
-                            {
-                                if (d_symbol_history[i] < 0.0)  // symbols clipping
-                                    {
-                                        corr_value -= d_preamble_samples[i];
-                                    }
-                                else
-                                    {
-                                        corr_value += d_preamble_samples[i];
-                                    }
-                            }
-                        if (std::abs(corr_value) >= d_samples_per_preamble)
-                            {
-                                d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite << " in channel " << this->d_channel;
-                                d_stat = 1;  // enter into frame pre-detection status
-                            }
-                    }
-
-                break;
-            }
+            // correlate with preamble
+            if (d_symbol_history.size() > d_required_symbols)
+                {
+                    // ******* preamble correlation ********
+                    for (int32_t i = 0; i < d_samples_per_preamble; i++)
+                        {
+                            if (d_symbol_history[i] < 0.0)  // symbols clipping
+                                {
+                                    corr_value -= d_preamble_samples[i];
+                                }
+                            else
+                                {
+                                    corr_value += d_preamble_samples[i];
+                                }
+                        }
+                    if (std::abs(corr_value) >= d_samples_per_preamble)
+                        {
+                            d_preamble_index = d_symbol_counter;  // record the preamble sample stamp
+                            LOG(INFO) << "Preamble detection for Galileo satellite " << this->d_satellite << " in channel " << this->d_channel;
+                            d_stat = 1;  // enter into frame pre-detection status
+                        }
+                }
+            break;
         case 1:  // possible preamble lock
-            {
-                // correlate with preamble
-                int32_t corr_value = 0;
-                if (d_symbol_history.size() > d_required_symbols)
-                    {
-                        // ******* preamble correlation ********
-                        for (int32_t i = 0; i < d_samples_per_preamble; i++)
-                            {
-                                if (d_symbol_history[i] < 0.0)  // symbols clipping
-                                    {
-                                        corr_value -= d_preamble_samples[i];
-                                    }
-                                else
-                                    {
-                                        corr_value += d_preamble_samples[i];
-                                    }
-                            }
-                        if (std::abs(corr_value) >= d_samples_per_preamble)
-                            {
-                                // check preamble separation
-                                const auto preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
-                                if (std::abs(preamble_diff - d_preamble_period_symbols) == 0)
-                                    {
-                                        // try to decode frame
-                                        DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
-                                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                        d_CRC_error_counter = 0;
-                                        if (corr_value < 0)
-                                            {
-                                                d_flag_PLL_180_deg_phase_locked = true;
-                                            }
-                                        else
-                                            {
-                                                d_flag_PLL_180_deg_phase_locked = false;
-                                            }
-                                        d_stat = 2;
-                                    }
-                                else
-                                    {
-                                        if (preamble_diff > d_preamble_period_symbols)
-                                            {
-                                                d_stat = 0;  // start again
-                                            }
-                                    }
-                            }
-                    }
-                break;
-            }
+            // correlate with preamble
+            if (d_symbol_history.size() > d_required_symbols)
+                {
+                    // ******* preamble correlation ********
+                    for (int32_t i = 0; i < d_samples_per_preamble; i++)
+                        {
+                            if (d_symbol_history[i] < 0.0)  // symbols clipping
+                                {
+                                    corr_value -= d_preamble_samples[i];
+                                }
+                            else
+                                {
+                                    corr_value += d_preamble_samples[i];
+                                }
+                        }
+                    if (std::abs(corr_value) >= d_samples_per_preamble)
+                        {
+                            // check preamble separation
+                            const auto preamble_diff = static_cast<int32_t>(d_symbol_counter - d_preamble_index);
+                            if (std::abs(preamble_diff - d_preamble_period_symbols) == 0)
+                                {
+                                    // try to decode frame
+                                    DLOG(INFO) << "Starting page decoder for Galileo satellite " << this->d_satellite;
+                                    d_preamble_index = d_symbol_counter;  // record the preamble sample stamp
+                                    d_CRC_error_counter = 0;
+                                    if (corr_value < 0)
+                                        {
+                                            d_flag_PLL_180_deg_phase_locked = true;
+                                        }
+                                    else
+                                        {
+                                            d_flag_PLL_180_deg_phase_locked = false;
+                                        }
+                                    d_stat = 2;
+                                }
+                            else
+                                {
+                                    if (preamble_diff > d_preamble_period_symbols)
+                                        {
+                                            d_stat = 0;  // start again
+                                        }
+                                }
+                        }
+                }
+            break;
         case 2:  // preamble acquired
-            {
-                if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
-                    {
-                        // call the decoder
-                        // NEW Galileo page part is received
-                        // 0. fetch the symbols into an array
-                        if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
-                            {
-                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                    {
-                                        d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                    }
-                            }
-                        else  // 180 deg. inverted carrier phase PLL lock
-                            {
-                                for (uint32_t i = 0; i < d_frame_length_symbols; i++)
-                                    {
-                                        d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
-                                    }
-                            }
-                        switch (d_frame_type)
-                            {
-                            case 1:  // INAV
-                                decode_INAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
-                                break;
-                            case 2:  // FNAV
-                                decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
-                                break;
-                            case 3:  // CNAV
-                                decode_CNAV_word(current_symbol.Tracking_sample_counter / static_cast<uint64_t>(current_symbol.fs), d_page_part_symbols.data(), d_frame_length_symbols);
-                                break;
-                            default:
-                                return -1;
-                                break;
-                            }
-                        bool crc_ok = (d_inav_nav.get_flag_CRC_test() || d_fnav_nav.get_flag_CRC_test() || d_cnav_nav.get_flag_CRC_test());
-                        if (d_dump_crc_stats)
-                            {
-                                // update CRC statistics
-                                d_Tlm_CRC_Stats->update_CRC_stats(crc_ok);
-                            }
+            if (d_symbol_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
+                {
+                    // call the decoder
+                    // NEW Galileo page part is received
+                    // 0. fetch the symbols into an array
+                    if (d_flag_PLL_180_deg_phase_locked == false)  // normal PLL lock
+                        {
+                            for (uint32_t i = 0; i < d_frame_length_symbols; i++)
+                                {
+                                    d_page_part_symbols[i] = d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
+                                }
+                        }
+                    else  // 180 deg. inverted carrier phase PLL lock
+                        {
+                            for (uint32_t i = 0; i < d_frame_length_symbols; i++)
+                                {
+                                    d_page_part_symbols[i] = -d_symbol_history[i + d_samples_per_preamble];  // because last symbol of the preamble is just received now!
+                                }
+                        }
+                    switch (d_frame_type)
+                        {
+                        case 1:  // INAV
+                            decode_INAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
+                            break;
+                        case 2:  // FNAV
+                            decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols);
+                            break;
+                        case 3:  // CNAV
+                            decode_CNAV_word(current_symbol.Tracking_sample_counter / static_cast<uint64_t>(current_symbol.fs), d_page_part_symbols.data(), d_frame_length_symbols);
+                            break;
+                        default:
+                            return -1;
+                            break;
+                        }
+                    bool crc_ok = (d_inav_nav.get_flag_CRC_test() || d_fnav_nav.get_flag_CRC_test() || d_cnav_nav.get_flag_CRC_test());
+                    if (d_dump_crc_stats)
+                        {
+                            // update CRC statistics
+                            d_Tlm_CRC_Stats->update_CRC_stats(crc_ok);
+                        }
 
-                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                        if (crc_ok)
-                            {
-                                d_CRC_error_counter = 0;
-                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_last_valid_preamble = d_sample_counter;
-                                if (!d_flag_frame_sync)
-                                    {
-                                        d_flag_frame_sync = true;
-                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
-                                    }
-                            }
-                        else
-                            {
-                                d_CRC_error_counter++;
-                                if (d_CRC_error_counter > CRC_ERROR_LIMIT)
-                                    {
-                                        DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
-                                        gr::thread::scoped_lock lock(d_setlock);
-                                        d_flag_frame_sync = false;
-                                        d_stat = 0;
-                                        d_TOW_at_current_symbol_ms = 0;
-                                        d_TOW_at_Preamble_ms = 0;
-                                        d_E6_TOW_set = false;
-                                        d_valid_timetag = false;
-                                        if (d_there_are_e6_channels)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{std::numeric_limits<uint32_t>::max(), 0ULL};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                        d_fnav_nav.set_flag_TOW_set(false);
-                                        d_inav_nav.set_flag_TOW_set(false);
-                                    }
-                            }
-                    }
-                break;
-            }
+                    d_preamble_index = d_symbol_counter;  // record the preamble sample stamp (t_P)
+                    if (crc_ok)
+                        {
+                            d_CRC_error_counter = 0;
+                            d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
+                            gr::thread::scoped_lock lock(d_setlock);
+                            d_last_valid_preamble = d_symbol_counter;
+                            if (!d_flag_frame_sync)
+                                {
+                                    d_flag_frame_sync = true;
+                                    DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                }
+                        }
+                    else
+                        {
+                            d_CRC_error_counter++;
+                            if (d_CRC_error_counter > CRC_ERROR_LIMIT)
+                                {
+                                    DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
+                                    gr::thread::scoped_lock lock(d_setlock);
+                                    d_flag_frame_sync = false;
+                                    d_stat = 0;
+                                    d_TOW_at_current_symbol_ms = 0;
+                                    d_TOW_at_Preamble_ms = 0;
+                                    d_E6_TOW_set = false;
+                                    d_valid_timetag = false;
+                                    if (d_there_are_e6_channels)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{std::numeric_limits<uint32_t>::max(), 0ULL};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                    d_fnav_nav.set_flag_TOW_set(false);
+                                    d_inav_nav.set_flag_TOW_set(false);
+                                }
+                        }
+                }
+            break;
         }
 
     // UPDATE GNSS SYNCHRO DATA
@@ -993,215 +976,203 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             switch (d_frame_type)
                 {
                 case 1:  // INAV
-                    {
-                        if (d_inav_nav.get_flag_TOW_set() == true)
-                            {
-                                if (d_inav_nav.is_TOW5_set() == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
-                                    {
-                                        // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW5() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
-                                        d_inav_nav.set_TOW5_flag(false);
-                                        if (d_there_are_e6_channels && !d_valid_timetag)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                        // timetag debug
-                                        if (d_valid_timetag == true)
-                                            {
-                                                int decoder_delay_ms = static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
-                                                int rx_tow_at_preamble = d_current_timetag.tow_ms - decoder_delay_ms;
-                                                if (rx_tow_at_preamble < 0)
-                                                    {
-                                                        rx_tow_at_preamble += 604800000;
-                                                    }
-                                                uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
-                                                std::cout << "TOW at PREAMBLE: " << d_TOW_at_Preamble_ms << " predicted TOW at preamble: " << predicted_tow_at_preamble_ms << " [ms]\n";
-                                            }
-                                    }
+                    if (d_inav_nav.get_flag_TOW_set() == true)
+                        {
+                            if (d_inav_nav.is_TOW5_set() == true)  // page 5 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+                                {
+                                    // TOW_5 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
+                                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW5() * 1000.0);
+                                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                                    d_inav_nav.set_TOW5_flag(false);
+                                    if (d_there_are_e6_channels && !d_valid_timetag)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                    // timetag debug
+                                    if (d_valid_timetag == true)
+                                        {
+                                            int decoder_delay_ms = static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                                            int rx_tow_at_preamble = d_current_timetag.tow_ms - decoder_delay_ms;
+                                            if (rx_tow_at_preamble < 0)
+                                                {
+                                                    rx_tow_at_preamble += 604800000;
+                                                }
+                                            uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
+                                            std::cout << "TOW at PREAMBLE: " << d_TOW_at_Preamble_ms << " predicted TOW at preamble: " << predicted_tow_at_preamble_ms << " [ms]\n";
+                                        }
+                                }
 
-                                else if (d_inav_nav.is_TOW6_set() == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
-                                    {
-                                        // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW6() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
-                                        d_inav_nav.set_TOW6_flag(false);
-                                        if (d_there_are_e6_channels && !d_valid_timetag)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                        // timetag debug
-                                        if (d_valid_timetag == true)
-                                            {
-                                                int decoder_delay_ms = static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
-                                                int rx_tow_at_preamble = d_current_timetag.tow_ms - decoder_delay_ms;
-                                                if (rx_tow_at_preamble < 0)
-                                                    {
-                                                        rx_tow_at_preamble += 604800000;
-                                                    }
-                                                uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
-                                                std::cout << "TOW at PREAMBLE: " << d_TOW_at_Preamble_ms << " predicted TOW at preamble: " << predicted_tow_at_preamble_ms << " [ms]\n";
-                                            }
-                                    }
-                                else if (d_inav_nav.is_TOW0_set() == true)  // page 0 arrived and decoded
-                                    {
-                                        // TOW_0 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW0() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
-                                        d_inav_nav.set_TOW0_flag(false);
-                                        if (d_there_are_e6_channels && !d_valid_timetag)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                        // timetag debug
-                                        if (d_valid_timetag == true)
-                                            {
-                                                int decoder_delay_ms = static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
-                                                int rx_tow_at_preamble = d_current_timetag.tow_ms - decoder_delay_ms;
-                                                if (rx_tow_at_preamble < 0)
-                                                    {
-                                                        rx_tow_at_preamble += 604800000;
-                                                    }
-                                                uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
-                                                std::cout << "TOW at PREAMBLE: " << d_TOW_at_Preamble_ms << " predicted TOW at preamble: " << predicted_tow_at_preamble_ms << " [ms]\n";
-                                            }
-                                    }
-                                else
-                                    {
-                                        // this page has no timing information
-                                        d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
-                                    }
-                            }
-                        if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
-                            {
-                                d_nav_msg_packet.system = std::string(1, current_symbol.System);
-                                d_nav_msg_packet.signal = std::string(current_symbol.Signal);
-                                d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
-                                d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
-                                const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
-                                this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
-                                d_nav_msg_packet.nav_message = "";
-                            }
-                        break;
-                    }
+                            else if (d_inav_nav.is_TOW6_set() == true)  // page 6 arrived and decoded, so we are in the odd page (since Tow refers to the even page, we have to add 1 sec)
+                                {
+                                    // TOW_6 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
+                                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW6() * 1000.0);
+                                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                                    d_inav_nav.set_TOW6_flag(false);
+                                    if (d_there_are_e6_channels && !d_valid_timetag)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                    // timetag debug
+                                    if (d_valid_timetag == true)
+                                        {
+                                            int decoder_delay_ms = static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                                            int rx_tow_at_preamble = d_current_timetag.tow_ms - decoder_delay_ms;
+                                            if (rx_tow_at_preamble < 0)
+                                                {
+                                                    rx_tow_at_preamble += 604800000;
+                                                }
+                                            uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
+                                            std::cout << "TOW at PREAMBLE: " << d_TOW_at_Preamble_ms << " predicted TOW at preamble: " << predicted_tow_at_preamble_ms << " [ms]\n";
+                                        }
+                                }
+                            else if (d_inav_nav.is_TOW0_set() == true)  // page 0 arrived and decoded
+                                {
+                                    // TOW_0 refers to the even preamble, but when we decode it we are in the odd part, so 1 second later plus the decoding delay
+                                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_inav_nav.get_TOW0() * 1000.0);
+                                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                                    d_inav_nav.set_TOW0_flag(false);
+                                    if (d_there_are_e6_channels && !d_valid_timetag)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                    // timetag debug
+                                    if (d_valid_timetag == true)
+                                        {
+                                            int decoder_delay_ms = static_cast<uint32_t>(GALILEO_INAV_PAGE_PART_MS + (d_required_symbols + 1) * d_PRN_code_period_ms);
+                                            int rx_tow_at_preamble = d_current_timetag.tow_ms - decoder_delay_ms;
+                                            if (rx_tow_at_preamble < 0)
+                                                {
+                                                    rx_tow_at_preamble += 604800000;
+                                                }
+                                            uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
+                                            std::cout << "TOW at PREAMBLE: " << d_TOW_at_Preamble_ms << " predicted TOW at preamble: " << predicted_tow_at_preamble_ms << " [ms]\n";
+                                        }
+                                }
+                            else
+                                {
+                                    // this page has no timing information
+                                    d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                                }
+                        }
+                    if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                        {
+                            d_nav_msg_packet.system = std::string(1, current_symbol.System);
+                            d_nav_msg_packet.signal = std::string(current_symbol.Signal);
+                            d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                            d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                            const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                            this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                            d_nav_msg_packet.nav_message = "";
+                        }
+                    break;
                 case 2:  // FNAV
-                    {
-                        if (d_fnav_nav.get_flag_TOW_set() == true)
-                            {
-                                if (d_fnav_nav.is_TOW1_set() == true)
-                                    {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW1() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        d_fnav_nav.set_TOW1_flag(false);
-                                        if (d_there_are_e6_channels && !d_valid_timetag)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                    }
-                                else if (d_fnav_nav.is_TOW2_set() == true)
-                                    {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW2() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        d_fnav_nav.set_TOW2_flag(false);
-                                        if (d_there_are_e6_channels && !d_valid_timetag)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                    }
-                                else if (d_fnav_nav.is_TOW3_set() == true)
-                                    {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW3() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        d_fnav_nav.set_TOW3_flag(false);
-                                        if (d_there_are_e6_channels && !d_valid_timetag)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                    }
-                                else if (d_fnav_nav.is_TOW4_set() == true)
-                                    {
-                                        d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW4() * 1000.0);
-                                        d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                        d_fnav_nav.set_TOW4_flag(false);
-                                        if (d_there_are_e6_channels && !d_valid_timetag)
-                                            {
-                                                const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
-                                                const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
-                                                this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
-                                            }
-                                    }
-                                else
-                                    {
-                                        d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
-                                    }
-                            }
-                        if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
-                            {
-                                d_nav_msg_packet.system = std::string(1, current_symbol.System);
-                                d_nav_msg_packet.signal = std::string(current_symbol.Signal);
-                                d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
-                                d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
-                                const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
-                                this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
-                                d_nav_msg_packet.nav_message = "";
-                            }
-                        break;
-                    }
+                    if (d_fnav_nav.get_flag_TOW_set() == true)
+                        {
+                            if (d_fnav_nav.is_TOW1_set() == true)
+                                {
+                                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW1() * 1000.0);
+                                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
+                                    d_fnav_nav.set_TOW1_flag(false);
+                                    if (d_there_are_e6_channels && !d_valid_timetag)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                }
+                            else if (d_fnav_nav.is_TOW2_set() == true)
+                                {
+                                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW2() * 1000.0);
+                                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
+                                    d_fnav_nav.set_TOW2_flag(false);
+                                    if (d_there_are_e6_channels && !d_valid_timetag)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                }
+                            else if (d_fnav_nav.is_TOW3_set() == true)
+                                {
+                                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW3() * 1000.0);
+                                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
+                                    d_fnav_nav.set_TOW3_flag(false);
+                                    if (d_there_are_e6_channels && !d_valid_timetag)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                }
+                            else if (d_fnav_nav.is_TOW4_set() == true)
+                                {
+                                    d_TOW_at_Preamble_ms = static_cast<uint32_t>(d_fnav_nav.get_TOW4() * 1000.0);
+                                    d_TOW_at_current_symbol_ms = d_TOW_at_Preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
+                                    d_fnav_nav.set_TOW4_flag(false);
+                                    if (d_there_are_e6_channels && !d_valid_timetag)
+                                        {
+                                            const std::pair<uint32_t, uint64_t> tow_and_sample{d_TOW_at_current_symbol_ms, current_symbol.Tracking_sample_counter};
+                                            const auto tmp_obj = std::make_shared<std::pair<uint32_t, std::pair<uint32_t, uint64_t>>>(d_satellite.get_PRN(), tow_and_sample);
+                                            this->message_port_pub(pmt::mp("TOW_from_TLM"), pmt::make_any(tmp_obj));
+                                        }
+                                }
+                            else
+                                {
+                                    d_TOW_at_current_symbol_ms += static_cast<uint32_t>(GALILEO_FNAV_CODES_PER_SYMBOL * GALILEO_E5A_CODE_PERIOD_MS);
+                                }
+                        }
+                    if (d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
+                        {
+                            d_nav_msg_packet.system = std::string(1, current_symbol.System);
+                            d_nav_msg_packet.signal = std::string(current_symbol.Signal);
+                            d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                            d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                            const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                            this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                            d_nav_msg_packet.nav_message = "";
+                        }
+                    break;
                 case 3:  // CNAV
-                    {
-                        // TODO
-                        // Add option to use system time to estimate the preamble TOW
-                        // Add option to use Galileo E1 or E5 TOW information..
-
-                        // Done: Obtain Galileo E6 TOW from timetags, if available
-                        if (d_valid_timetag == true)
-                            {
-                                int rx_tow_at_preamble = d_current_timetag.tow_ms;
-                                uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
-                                d_TOW_at_Preamble_ms = predicted_tow_at_preamble_ms;
-                                d_TOW_at_current_symbol_ms = predicted_tow_at_preamble_ms + static_cast<uint32_t>((d_required_symbols)*d_PRN_code_period_ms);
-
-                                if (d_E6_TOW_set == false)
-                                    {
-                                        std::cout << " Sat PRN " << d_satellite.get_PRN() << " E6 TimeTag TOW at preamble: " << predicted_tow_at_preamble_ms
-                                                  << " [ms] d_TOW_at_current_symbol_ms: " << d_TOW_at_current_symbol_ms << " [ms]\n";
-                                        d_E6_TOW_set = true;
-                                    }
-                            }
-                        else
-                            {
-                                if (d_received_tow_ms < 604800000)
-                                    {
-                                        const int64_t diff = current_symbol.Tracking_sample_counter - d_received_sample_counter;
-                                        const double time_since_reference_ms = (double(diff) * 1000.0) / static_cast<double>(current_symbol.fs);
-                                        d_TOW_at_current_symbol_ms = d_received_tow_ms + static_cast<uint32_t>(time_since_reference_ms) + GALILEO_E6_CODE_PERIOD_MS;
-                                        d_TOW_at_Preamble_ms = (d_TOW_at_current_symbol_ms / 1000) * 1000;
-                                        d_E6_TOW_set = true;
-                                    }
-                            }
-                        if (d_E6_TOW_set && d_enable_navdata_monitor && !d_nav_msg_packet.nav_message.empty())
-                            {
-                                d_nav_msg_packet.system = std::string(1, current_symbol.System);
-                                d_nav_msg_packet.signal = std::string(current_symbol.Signal);
-                                d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
-                                d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
-                                const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
-                                this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
-                                d_nav_msg_packet.nav_message = "";
-                            }
-                    }
+                    if (d_valid_timetag == true)
+                        {
+                            int rx_tow_at_preamble = d_current_timetag.tow_ms;
+                            uint32_t predicted_tow_at_preamble_ms = 1000 * (rx_tow_at_preamble / 1000);  // floor to integer number of seconds
+                            d_TOW_at_Preamble_ms = predicted_tow_at_preamble_ms;
+                            d_TOW_at_current_symbol_ms = predicted_tow_at_preamble_ms + static_cast<uint32_t>((d_required_symbols + 1) * d_PRN_code_period_ms);
+                            if (d_E6_TOW_set == false)
+                                {
+                                    std::cout << " Sat PRN " << d_satellite.get_PRN() << " E6 TimeTag TOW at preamble: " << predicted_tow_at_preamble_ms
+                                              << " [ms] d_TOW_at_current_symbol_ms: " << d_TOW_at_current_symbol_ms << " [ms]\n";
+                                    d_E6_TOW_set = true;
+                                }
+                        }
+                    else
+                        {
+                            if (d_received_tow_ms < 604800000)
+                                {
+                                    const int64_t diff = current_symbol.Tracking_sample_counter - d_received_sample_counter;
+                                    const double time_since_reference_ms = (double(diff) * 1000.0) / static_cast<double>(current_symbol.fs);
+                                    d_TOW_at_current_symbol_ms = d_received_tow_ms + static_cast<uint32_t>(time_since_reference_ms) + GALILEO_E6_CODE_PERIOD_MS;
+                                    d_TOW_at_Preamble_ms = (d_TOW_at_current_symbol_ms / 1000) * 1000;
+                                    d_E6_TOW_set = true;
+                                }
+                        }
+                    if (d_enable_navdata_monitor && d_E6_TOW_set && !d_nav_msg_packet.nav_message.empty())
+                        {
+                            d_nav_msg_packet.system = std::string(1, current_symbol.System);
+                            d_nav_msg_packet.signal = std::string(current_symbol.Signal);
+                            d_nav_msg_packet.prn = static_cast<int32_t>(current_symbol.PRN);
+                            d_nav_msg_packet.tow_at_current_symbol_ms = static_cast<int32_t>(d_TOW_at_current_symbol_ms);
+                            const std::shared_ptr<Nav_Message_Packet> tmp_obj = std::make_shared<Nav_Message_Packet>(d_nav_msg_packet);
+                            this->message_port_pub(pmt::mp("Nav_msg_from_TLM"), pmt::make_any(tmp_obj));
+                            d_nav_msg_packet.nav_message = "";
+                        }
                 }
         }
     else  // if there is not a new preamble, we define the TOW of the current symbol
@@ -1209,64 +1180,50 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             switch (d_frame_type)
                 {
                 case 1:  // INAV
-                    {
-                        if (d_inav_nav.get_flag_TOW_set() == true)
-                            {
-                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
-                            }
-                        break;
-                    }
+                    if (d_inav_nav.get_flag_TOW_set() == true)
+                        {
+                            d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                        }
+                    break;
                 case 2:  // FNAV
-                    {
-                        if (d_fnav_nav.get_flag_TOW_set() == true)
-                            {
-                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
-                            }
-                        break;
-                    }
+                    if (d_fnav_nav.get_flag_TOW_set() == true)
+                        {
+                            d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                        }
+                    break;
                 case 3:  // CNAV
-                    {
-                        if (d_E6_TOW_set == true)
-                            {
-                                d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
-                            }
-                        break;
-                    }
+                    if (d_E6_TOW_set == true)
+                        {
+                            d_TOW_at_current_symbol_ms += d_PRN_code_period_ms;
+                        }
+                    break;
                 }
         }
 
     switch (d_frame_type)
         {
         case 1:  // INAV
-            {
-                if (d_inav_nav.get_flag_TOW_set() == true)
-                    {
-                        if (d_inav_nav.get_flag_GGTO() == true)  // all GGTO parameters arrived
-                            {
-                                d_delta_t = d_inav_nav.get_A0G() + d_inav_nav.get_A1G() * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.get_t0G() + 604800.0 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - d_inav_nav.get_WN0G()), 64.0)));
-                            }
-
-                        current_symbol.Flag_valid_word = true;
-                    }
-                break;
-            }
-
+            if (d_inav_nav.get_flag_TOW_set() == true)
+                {
+                    if (d_inav_nav.get_flag_GGTO() == true)  // all GGTO parameters arrived
+                        {
+                            d_delta_t = d_inav_nav.get_A0G() + d_inav_nav.get_A1G() * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - d_inav_nav.get_t0G() + 604800.0 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - d_inav_nav.get_WN0G()), 64.0)));
+                        }
+                    current_symbol.Flag_valid_word = true;
+                }
+            break;
         case 2:  // FNAV
-            {
-                if (d_fnav_nav.get_flag_TOW_set() == true)
-                    {
-                        current_symbol.Flag_valid_word = true;
-                    }
-                break;
-            }
+            if (d_fnav_nav.get_flag_TOW_set() == true)
+                {
+                    current_symbol.Flag_valid_word = true;
+                }
+            break;
         case 3:  // CNAV
-            {
-                if (d_E6_TOW_set == true)
-                    {
-                        current_symbol.Flag_valid_word = true;
-                    }
-                break;
-            }
+            if (d_E6_TOW_set == true)
+                {
+                    current_symbol.Flag_valid_word = true;
+                }
+            break;
         }
 
     if (current_symbol.Flag_valid_word == true)

@@ -14,6 +14,22 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Interoperability:
+
+- Enabled PVT computation in the Galileo E5a + E5b receiver. Observables
+  reported in the RINEX file.
+- Fixed PVT computation in the Galileo E5b-only receiver.
+- Get E6B observables and PVT solutions in the Galileo E1B + E6B receiver.
+  Decoding of HAS messages as described in the
+  [HAS SIS ICD v1.0](https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_HAS_SIS_ICD_v1.0.pdf).
+  Generation of RTCM 3.2 messages from the received HAS messages in the
+  [IGS State Space Representation (SSR) Format](https://files.igs.org/pub/data/format/igs_ssr_v1.pdf).
+  Specifically, it generates messages of type IGM01 (SSR Orbit Correction),
+  IGM02 (SSR Clock Correction), IGM03 (SSR Combined Orbit and Clock Correction),
+  and IGM05 (SSR Code Bias). Please note that the content of the HAS messages is
+  **not** applied to the computed PVT solution. In the Galileo E6B-only
+  receiver, HAS messages are decoded and reported.
+
 ### Improvements in Portability:
 
 - Improved detection of the BLAS library under macOS / Macports (the `lapack`

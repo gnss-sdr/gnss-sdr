@@ -20,6 +20,7 @@ set(CORE_LIBS_SOURCES
     galileo_e6_has_msg_receiver.cc
     nav_message_monitor.cc
     nav_message_udp_sink.cc
+    galileo_tow_map.cc
 )
 
 set(CORE_LIBS_HEADERS
@@ -35,6 +36,7 @@ set(CORE_LIBS_HEADERS
     nav_message_udp_sink.h
     serdes_nav_message.h
     nav_message_monitor.h
+    galileo_tow_map.h
 )
 
 if(ENABLE_FPGA)

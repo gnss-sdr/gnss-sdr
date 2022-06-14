@@ -32,6 +32,7 @@
 #include <boost/circular_buffer.hpp>  // for boost::circular_buffer
 #include <gnuradio/block.h>           // for block
 #include <gnuradio/types.h>           // for gr_vector_const_void_star
+#include <pmt/pmt.h>                  // for pmt::pmt_t
 #include <cstdint>                    // for int32_t, uint32_t
 #include <fstream>                    // for std::ofstream
 #include <memory>                     // for std::unique_ptr
@@ -80,6 +81,7 @@ private:
 
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type);
 
+    void msg_handler_read_galileo_tow_map(const pmt::pmt_t &msg);
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
     void decode_INAV_word(float *page_part_symbols, int32_t frame_length);
     void decode_FNAV_word(float *page_symbols, int32_t frame_length);
@@ -111,6 +113,7 @@ private:
     uint64_t d_sample_counter;
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
+    uint64_t d_received_sample_counter;
 
     int32_t d_mm;
     int32_t d_codelength;
@@ -130,6 +133,7 @@ private:
     uint32_t d_TOW_at_Preamble_ms;
     uint32_t d_TOW_at_current_symbol_ms;
     uint32_t d_max_symbols_without_valid_frame;
+    uint32_t d_received_tow_ms;
 
     char d_band;  // This variable will store which band we are dealing with (Galileo E1 or E5b)
 
@@ -148,6 +152,7 @@ private:
     bool d_enable_reed_solomon_inav;
     bool d_valid_timetag;
     bool d_E6_TOW_set;
+    bool d_there_are_e6_channels;
 };
 
 

@@ -106,15 +106,25 @@ void GNSSFlowgraph::init()
         {
             enable_e6_has_rx_ = true;
             gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
+            galileo_tow_map_ = galileo_tow_map_make();
         }
     else
         {
             gal_e6_has_rx_ = nullptr;
+            galileo_tow_map_ = nullptr;
         }
 
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
     int sources_count_deprecated = configuration_->property("Receiver.sources_count", 1);
     sources_count_ = configuration_->property("GNSS-SDR.num_sources", sources_count_deprecated);
+
+    // Avoid segmentation fault caused by wrong configuration
+    if (sources_count_ == 2 && block_factory->GetSignalSource(configuration_.get(), queue_.get(), 0)->implementation() == "Multichannel_File_Signal_Source")
+        {
+            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuraiion file\n";
+            std::cout << "   if you are using the Multichannel_File_Signal_Source implementation.\n";
+            sources_count_ = 1;
+        }
 
     int signal_conditioner_ID = 0;
 
@@ -474,7 +484,12 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
                 {
                     return 1;
                 }
+            if (connect_galileo_tow_map() != 0)
+                {
+                    return 1;
+                }
         }
+
     // Activate acquisition in enabled channels
     for (int i = 0; i < channels_count_; i++)
         {
@@ -580,6 +595,18 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
     if (connect_monitors() != 0)
         {
             return 1;
+        }
+
+    if (enable_e6_has_rx_)
+        {
+            if (connect_gal_e6_has() != 0)
+                {
+                    return 1;
+                }
+            if (connect_galileo_tow_map() != 0)
+                {
+                    return 1;
+                }
         }
 
     check_desktop_conf_in_fpga_env();
@@ -777,6 +804,26 @@ int GNSSFlowgraph::connect_pvt()
             return 1;
         }
     DLOG(INFO) << "PVT block successfully connected to the top_block";
+    return 0;
+}
+
+
+int GNSSFlowgraph::connect_galileo_tow_map()
+{
+    try
+        {
+            for (int i = 0; i < channels_count_; i++)
+                {
+                    top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("TOW_from_TLM"), galileo_tow_map_, pmt::mp("TOW_from_TLM"));
+                    top_block_->msg_connect(galileo_tow_map_, pmt::mp("TOW_to_TLM"), channels_.at(i)->get_right_block(), pmt::mp("TOW_to_TLM"));
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(ERROR) << "Can't connect The Galileo TOW map internally: " << e.what();
+            top_block_->disconnect_all();
+            return 1;
+        }
     return 0;
 }
 

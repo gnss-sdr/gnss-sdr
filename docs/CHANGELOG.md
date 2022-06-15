@@ -39,6 +39,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   which caused issues when linking with some compilers.
 - Added support for Xilinx's Zynq UltraScale+ devices (requires the
   `-DENABLE_FPGA=ON` building option).
+- Fixed running time error if the binary is built with the
+  `-Wp,-D_GLIBCXX_ASSERTIONS` compiler option. This is added by default in some
+  GNU/Linux distributions.
 
 ### Improvements in Usability:
 

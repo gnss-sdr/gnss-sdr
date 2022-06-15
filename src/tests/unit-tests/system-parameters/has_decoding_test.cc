@@ -234,7 +234,7 @@ TEST(HAS_Test, Decoder)
                 }
         }
 
-    for (size_t p = init; p < read_pages.get_number_pages(); p++)
+    for (size_t p = init; p < read_pages.get_number_pages() - 1; p++)
         {
             auto has_page = has_tester->generate_has_page(pages[p], rx_time[p]);
             if (!has_page->has_message_string.empty())  // if not dummy

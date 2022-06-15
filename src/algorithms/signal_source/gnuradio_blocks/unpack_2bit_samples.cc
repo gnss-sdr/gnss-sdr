@@ -133,7 +133,7 @@ int unpack_2bit_samples::work(int noutput_items,
     // Handle endian swap if needed
     if (swap_endian_items_)
         {
-            work_buffer_.reserve(ninput_bytes);
+            work_buffer_ = std::vector<int8_t>(ninput_bytes);
             swapEndianness(in, work_buffer_, item_size_, ninput_items);
 
             in = const_cast<signed char const *>(&work_buffer_[0]);

@@ -49,9 +49,9 @@ public:
     double DeltaAred{};   //!< Difference between the Reduced CED semi-major axis and the nominal semi-major axis [meters]
     double exred{};       //!< Reduced CED eccentricity vector component x
     double eyred{};       //!< Reduced CED eccentricity vector component y
-    double Deltai0red{};  //!< Difference between the Reduced CED inclination angle at reference time and the nominal inclination [semi-circles]
-    double Omega0red{};   //!< Reduced CED longitude of ascending node at weekly epoch [semi-circles]
-    double lambda0red{};  //!< Reduced CED mean argument of latitude [semi-circles]
+    double Deltai0red{};  //!< Difference between the Reduced CED inclination angle at reference time and the nominal inclination [rad]
+    double Omega0red{};   //!< Reduced CED longitude of ascending node at weekly epoch [rad]
+    double lambda0red{};  //!< Reduced CED mean argument of latitude [rad]
     double af0red{};      //!< Reduced CED satellite clock bias correction coefficient [seconds]
     double af1red{};      //!< Reduced CED satellite clock drift correction coefficient [seconds/seconds]
 };

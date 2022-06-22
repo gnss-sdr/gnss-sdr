@@ -68,21 +68,21 @@ public:
     void satellitePosition(double transmitTime);  //!< Computes the ECEF SV coordinates and ECEF velocity
 
     uint32_t PRN{};     //!< SV ID
-    double M_0{};       //!< Mean anomaly at reference time [semi-circles]
-    double delta_n{};   //!< Mean motion difference from computed value [semi-circles/sec]
+    double M_0{};       //!< Mean anomaly at reference time [rad]
+    double delta_n{};   //!< Mean motion difference from computed value [rad/sec]
     double ecc{};       //!< Eccentricity
     double sqrtA{};     //!< Square root of the semi-major axis [meters^1/2]
-    double OMEGA_0{};   //!< Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    double i_0{};       //!< Inclination angle at reference time [semi-circles]
-    double omega{};     //!< Argument of perigee [semi-circles]
-    double OMEGAdot{};  //!< Rate of right ascension [semi-circles/sec]
-    double idot{};      //!< Rate of inclination angle [semi-circles/sec]
-    double Cuc{};       //!< Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    double Cus{};       //!< Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    double OMEGA_0{};   //!< Longitude of ascending node of orbital plane at weekly epoch [rad]
+    double i_0{};       //!< Inclination angle at reference time [rad]
+    double omega{};     //!< Argument of perigee [rad]
+    double OMEGAdot{};  //!< Rate of right ascension [rad/sec]
+    double idot{};      //!< Rate of inclination angle [rad/sec]
+    double Cuc{};       //!< Amplitude of the cosine harmonic correction term to the argument of latitude [rad]
+    double Cus{};       //!< Amplitude of the sine harmonic correction term to the argument of latitude [rad]
     double Crc{};       //!< Amplitude of the cosine harmonic correction term to the orbit radius [meters]
     double Crs{};       //!< Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    double Cic{};       //!< Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-    double Cis{};       //!< Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    double Cic{};       //!< Amplitude of the cosine harmonic correction term to the angle of inclination [rad]
+    double Cis{};       //!< Amplitude of the sine harmonic correction term to the angle of inclination [rad]
     int32_t toe{};      //!< Ephemeris reference time [s]
 
     // Clock correction parameters

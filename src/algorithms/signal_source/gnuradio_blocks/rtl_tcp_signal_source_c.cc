@@ -25,7 +25,6 @@
 
 
 namespace ip = boost::asio::ip;
-using boost::asio::ip::tcp;
 
 // Buffer constants
 // TODO: Make these configurable
@@ -110,7 +109,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     LOG(INFO) << "Connected to " << addr << ":" << port;
 
     // 4. Set nodelay
-    socket_.set_option(tcp::no_delay(true), ec);
+    socket_.set_option(ip::tcp::no_delay(true), ec);
     if (ec)
         {
             std::cout << "Failed to set no delay option.\n";

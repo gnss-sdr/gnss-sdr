@@ -428,21 +428,21 @@ Galileo_Ephemeris Galileo_Inav_Message::get_ephemeris() const
     ephemeris.IOD_ephemeris = IOD_ephemeris;
     ephemeris.IOD_nav = IOD_nav_1;
     ephemeris.PRN = SV_ID_PRN_4;
-    ephemeris.M_0 = M0_1;              // Mean anomaly at reference time [semi-circles]
-    ephemeris.delta_n = delta_n_3;     // Mean motion difference from computed value  [semi-circles/sec]
+    ephemeris.M_0 = M0_1;              // Mean anomaly at reference time [rad]
+    ephemeris.delta_n = delta_n_3;     // Mean motion difference from computed value [rad/sec]
     ephemeris.ecc = e_1;               // Eccentricity
     ephemeris.sqrtA = A_1;             // Square root of the semi-major axis [meters^1/2]
-    ephemeris.OMEGA_0 = OMEGA_0_2;     // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    ephemeris.i_0 = i_0_2;             // Inclination angle at reference time  [semi-circles]
-    ephemeris.omega = omega_2;         // Argument of perigee [semi-circles]
-    ephemeris.OMEGAdot = OMEGA_dot_3;  // Rate of right ascension [semi-circles/sec]
-    ephemeris.idot = iDot_2;           // Rate of inclination angle [semi-circles/sec]
-    ephemeris.Cuc = C_uc_3;            // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
-    ephemeris.Cus = C_us_3;            // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
+    ephemeris.OMEGA_0 = OMEGA_0_2;     // Longitude of ascending node of orbital plane at weekly epoch [rad]
+    ephemeris.i_0 = i_0_2;             // Inclination angle at reference time  [rad]
+    ephemeris.omega = omega_2;         // Argument of perigee [rad]
+    ephemeris.OMEGAdot = OMEGA_dot_3;  // Rate of right ascension [rad/sec]
+    ephemeris.idot = iDot_2;           // Rate of inclination angle [rad/sec]
+    ephemeris.Cuc = C_uc_3;            // Amplitude of the cosine harmonic correction term to the argument of latitude [rad]
+    ephemeris.Cus = C_us_3;            // Amplitude of the sine harmonic correction term to the argument of latitude [rad]
     ephemeris.Crc = C_rc_3;            // Amplitude of the cosine harmonic correction term to the orbit radius [meters]
     ephemeris.Crs = C_rs_3;            // Amplitude of the sine harmonic correction term to the orbit radius [meters]
-    ephemeris.Cic = C_ic_4;            // Amplitude of the cosine harmonic correction term to the angle of inclination [radians]
-    ephemeris.Cis = C_is_4;            // Amplitude of the sine harmonic correction term to the angle of inclination [radians]
+    ephemeris.Cic = C_ic_4;            // Amplitude of the cosine harmonic correction term to the angle of inclination [rad]
+    ephemeris.Cis = C_is_4;            // Amplitude of the sine harmonic correction term to the angle of inclination [rad]
     ephemeris.toe = t0e_1;             // Ephemeris reference time [s]
 
     // Clock correction parameters
@@ -609,8 +609,7 @@ Galileo_Ephemeris Galileo_Inav_Message::get_reduced_ced() const
     ced.af1red = ced_af1red;
 
     Galileo_Ephemeris eph = ced.compute_eph();
-    eph.BGD_E1E5a = BGD_E1E5a_5;
-    eph.BGD_E1E5b = BGD_E1E5b_5;
+
     return eph;
 }
 

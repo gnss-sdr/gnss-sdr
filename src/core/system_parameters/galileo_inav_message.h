@@ -248,22 +248,22 @@ private:
     // Word type 1: Ephemeris (1/4)
     int32_t IOD_nav_1{};  // IOD_nav page 1
     int32_t t0e_1{};      // Ephemeris reference time [s]
-    double M0_1{};        // Mean anomaly at reference time [semi-circles]
+    double M0_1{};        // Mean anomaly at reference time [rad]
     double e_1{};         // Eccentricity
     double A_1{};         // Square root of the semi-major axis [meters^1/2]
 
     // Word type 2: Ephemeris (2/4)
     int32_t IOD_nav_2{};  // IOD_nav page 2
-    double OMEGA_0_2{};   // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
-    double i_0_2{};       // Inclination angle at reference time  [semi-circles]
-    double omega_2{};     // Argument of perigee [semi-circles]
-    double iDot_2{};      // Rate of inclination angle [semi-circles/sec]
+    double OMEGA_0_2{};   // Longitude of ascending node of orbital plane at weekly epoch [rad]
+    double i_0_2{};       // Inclination angle at reference time  [rad]
+    double omega_2{};     // Argument of perigee [rad]
+    double iDot_2{};      // Rate of inclination angle [rad/sec]
 
     // Word type 3: Ephemeris (3/4) and SISA
     int32_t IOD_nav_3{};
     int32_t SISA_3{};
-    double OMEGA_dot_3{};  // Rate of right ascension [semi-circles/sec]
-    double delta_n_3{};    // Mean motion difference from computed value  [semi-circles/sec]
+    double OMEGA_dot_3{};  // Rate of right ascension [rad/sec]
+    double delta_n_3{};    // Mean motion difference from computed value  [rad/sec]
     double C_uc_3{};       // Amplitude of the cosine harmonic correction term to the argument of latitude [radians]
     double C_us_3{};       // Amplitude of the sine harmonic correction term to the argument of latitude [radians]
     double C_rc_3{};       // Amplitude of the cosine harmonic correction term to the orbit radius [meters]

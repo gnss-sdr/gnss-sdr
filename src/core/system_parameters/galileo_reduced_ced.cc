@@ -28,12 +28,11 @@ Galileo_Ephemeris Galileo_Reduced_CED::compute_eph() const
     eph.sqrtA = std::sqrt(Ared);    // Square root of the semi-major axis [meters^1/2]
     const double i_nominal = 56.0;  // degrees (Table 1 Galileo ICD 2.0)
     const double i0red = Deltai0red + i_nominal / 180.0;
-    eph.i_0 = i0red;                                     // Inclination angle at reference time  [semi-circles]
+    eph.i_0 = i0red * GNSS_PI;                           // Inclination angle at reference time [rad]
     eph.ecc = std::sqrt(exred * exred + eyred * eyred);  // Eccentricity
-    const double omega_semicircles = std::atan2(eyred, exred) / GNSS_PI;
-    eph.omega = omega_semicircles;             // Argument of perigee [semi-circles]
-    eph.M_0 = lambda0red - omega_semicircles;  // Mean anomaly at reference time [semi-circles]
-    eph.OMEGA_0 = Omega0red;                   // Longitude of ascending node of orbital plane at weekly epoch [semi-circles]
+    eph.omega = std::atan2(eyred, exred);                // Argument of perigee [rad]
+    eph.M_0 = lambda0red * GNSS_PI - eph.omega;          // Mean anomaly at reference time [rad]
+    eph.OMEGA_0 = Omega0red * GNSS_PI;                   // Longitude of ascending node of orbital plane at weekly epoch [rad]
 
     eph.flag_all_ephemeris = true;
     eph.IOD_ephemeris = IODnav;

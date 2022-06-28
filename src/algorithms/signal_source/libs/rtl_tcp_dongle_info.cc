@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 
-using boost::asio::ip::tcp;
 
 Rtl_Tcp_Dongle_Info::Rtl_Tcp_Dongle_Info() : tuner_type_(0), tuner_gain_count_(0)
 {

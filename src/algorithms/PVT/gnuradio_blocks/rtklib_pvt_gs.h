@@ -243,6 +243,7 @@ private:
     double d_rinex_version;
     double d_rx_time;
     uint64_t d_local_counter_ms;
+    uint64_t d_timestamp_rx_clock_offset_correction_msg_ms;
 
     key_t d_sysv_msg_key;
     int d_sysv_msqid;
@@ -268,6 +269,7 @@ private:
     uint32_t d_nchannels;
     uint32_t d_type_of_rx;
     uint32_t d_observable_interval_ms;
+    uint32_t d_pvt_errors_counter;
 
     bool d_dump;
     bool d_dump_mat;
@@ -282,8 +284,6 @@ private:
     bool d_flag_monitor_pvt_enabled;
     bool d_flag_monitor_ephemeris_enabled;
     bool d_show_local_time_zone;
-    uint64_t d_timestamp_rx_clock_offset_correction_msg_ms;
-    uint32_t d_pvt_errors_counter;
     bool d_enable_rx_clock_correction;
     bool d_enable_has_messages;
     bool d_an_printer_enabled;

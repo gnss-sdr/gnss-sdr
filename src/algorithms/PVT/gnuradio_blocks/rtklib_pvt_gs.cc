@@ -2128,6 +2128,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // #### solve PVT and store the corrected observable set
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, false))
                         {
+                            d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 
                             // **************** time tags ****************
@@ -2211,7 +2212,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     else
                                         {
-                                            d_pvt_errors_counter = 0;
                                             d_rx_time = d_gnss_observables_map.begin()->second.RX_time;
                                             current_RX_time_ms = static_cast<uint32_t>(d_rx_time * 1000.0);
                                             if (current_RX_time_ms % d_output_rate_ms == 0)

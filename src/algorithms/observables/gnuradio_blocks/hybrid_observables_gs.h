@@ -70,6 +70,7 @@ private:
     explicit hybrid_observables_gs(const Obs_Conf& conf_);
 
     const size_t d_double_type_hash_code = typeid(double).hash_code();
+    const size_t d_int_type_hash_code = typeid(int).hash_code();
 
     void msg_handler_pvt_to_observables(const pmt::pmt_t& msg);
     double compute_T_rx_s(const Gnss_Synchro& a) const;

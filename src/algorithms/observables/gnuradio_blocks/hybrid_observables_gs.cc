@@ -226,6 +226,25 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
 
                     LOG(INFO) << "Corrected new RX Time offset: " << static_cast<int>(round(new_rx_clock_offset_s * 1000.0)) << "[ms]";
                 }
+            if (pmt::any_ref(msg).type().hash_code() == d_int_type_hash_code)
+                {
+                    const auto command_from_pvt = wht::any_cast<int>(pmt::any_ref(msg));
+                    switch (command_from_pvt)
+                        {
+                        case 1:  //reset TOW
+                            d_T_rx_TOW_ms = 0;
+                            d_last_rx_clock_round20ms_error = 0;
+                            d_T_rx_TOW_set = false;
+                            for (uint32_t n = 0; n < d_nchannels_out; n++)
+                                {
+                                    d_gnss_synchro_history->clear(n);
+                                }
+                            LOG(INFO) << "Received reset observables TOW command from PVT";
+                            break;
+                        default:
+                            break;
+                        }
+                }
         }
     catch (const wht::bad_any_cast &e)
         {
@@ -786,7 +805,6 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         }
                     epoch_data[n] = interpolated_gnss_synchro;
                 }
-
             if (d_T_rx_TOW_set)
                 {
                     update_TOW(epoch_data);

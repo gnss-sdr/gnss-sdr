@@ -166,11 +166,13 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_flag_monitor_pvt_enabled(conf_.monitor_enabled),
       d_flag_monitor_ephemeris_enabled(conf_.monitor_ephemeris_enabled),
       d_show_local_time_zone(conf_.show_local_time_zone),
-      d_waiting_obs_block_rx_clock_offset_correction_msg(false),
+      d_timestamp_rx_clock_offset_correction_msg_ms(0LL),
       d_enable_rx_clock_correction(conf_.enable_rx_clock_correction),
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag)
 {
+    //debug
+    d_pvt_errors_counter = 0;
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
     // Experimental: VLT commands from PVT to tracking channels
@@ -2168,18 +2170,18 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             if (fabs(Rx_clock_offset_s) * 1000.0 > d_max_obs_block_rx_clock_offset_ms)
                                 {
-                                    if (!d_waiting_obs_block_rx_clock_offset_correction_msg)
+                                    //check if the message was just sent to not duplicate it while it is being applied
+                                    if ((d_local_counter_ms - d_timestamp_rx_clock_offset_correction_msg_ms) > 1000)
                                         {
                                             this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(Rx_clock_offset_s));
-                                            d_waiting_obs_block_rx_clock_offset_correction_msg = true;
-                                            LOG(INFO) << "Sent clock offset correction to observables: " << Rx_clock_offset_s << "[s]";
+                                            d_timestamp_rx_clock_offset_correction_msg_ms = d_local_counter_ms;
+                                            LOG(INFO) << "PVT: Sent clock offset correction to observables: " << Rx_clock_offset_s << "[s]";
                                         }
                                 }
                             else
                                 {
                                     if (d_enable_rx_clock_correction == true)
                                         {
-                                            d_waiting_obs_block_rx_clock_offset_correction_msg = false;
                                             d_gnss_observables_map_t0 = d_gnss_observables_map_t1;
                                             apply_rx_clock_offset(d_gnss_observables_map, Rx_clock_offset_s);
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
@@ -2209,6 +2211,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         }
                                     else
                                         {
+                                            d_pvt_errors_counter = 0;
                                             d_rx_time = d_gnss_observables_map.begin()->second.RX_time;
                                             current_RX_time_ms = static_cast<uint32_t>(d_rx_time * 1000.0);
                                             if (current_RX_time_ms % d_output_rate_ms == 0)
@@ -2219,6 +2222,18 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 }
                                             flag_pvt_valid = true;
                                         }
+                                }
+                        }
+                    else
+                        {
+                            //sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
+                            d_pvt_errors_counter++;
+                            if (d_pvt_errors_counter >= 100)
+                                {
+                                    int command = 1;
+                                    this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(command));
+                                    LOG(INFO) << "PVT: Number of consecutive position solver error reached, Sent reset to observables.";
+                                    d_pvt_errors_counter = 0;
                                 }
                         }
 

@@ -282,7 +282,8 @@ private:
     bool d_flag_monitor_pvt_enabled;
     bool d_flag_monitor_ephemeris_enabled;
     bool d_show_local_time_zone;
-    bool d_waiting_obs_block_rx_clock_offset_correction_msg;
+    uint64_t d_timestamp_rx_clock_offset_correction_msg_ms;
+    uint32_t d_pvt_errors_counter;
     bool d_enable_rx_clock_correction;
     bool d_enable_has_messages;
     bool d_an_printer_enabled;

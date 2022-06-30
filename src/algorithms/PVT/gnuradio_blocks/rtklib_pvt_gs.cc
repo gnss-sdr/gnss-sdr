@@ -171,7 +171,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag)
 {
-    //debug
+    // debug
     d_pvt_errors_counter = 0;
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
@@ -2170,7 +2170,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             if (fabs(Rx_clock_offset_s) * 1000.0 > d_max_obs_block_rx_clock_offset_ms)
                                 {
-                                    //check if the message was just sent to not duplicate it while it is being applied
+                                    // check if the message was just sent to not duplicate it while it is being applied
                                     if ((d_local_counter_ms - d_timestamp_rx_clock_offset_correction_msg_ms) > 1000)
                                         {
                                             this->message_port_pub(pmt::mp("pvt_to_observables"), pmt::make_any(Rx_clock_offset_s));
@@ -2226,7 +2226,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
                     else
                         {
-                            //sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
+                            // sanity check: If the PVT solver is getting 100 consecutive errors, send a reset command to observables block
                             d_pvt_errors_counter++;
                             if (d_pvt_errors_counter >= 100)
                                 {

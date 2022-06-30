@@ -14,6 +14,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Availability:
+
+- Fixed bug that made the PVT block to not resolve position anymore after a loss
+  of samples event.
+
 ### Improvements in Interoperability:
 
 - Enabled PVT computation in the Galileo E5a + E5b receiver. Observables

@@ -231,7 +231,7 @@ void hybrid_observables_gs::msg_handler_pvt_to_observables(const pmt::pmt_t &msg
                     const auto command_from_pvt = wht::any_cast<int>(pmt::any_ref(msg));
                     switch (command_from_pvt)
                         {
-                        case 1:  //reset TOW
+                        case 1:  // reset TOW
                             d_T_rx_TOW_ms = 0;
                             d_last_rx_clock_round20ms_error = 0;
                             d_T_rx_TOW_set = false;

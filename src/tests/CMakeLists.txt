@@ -361,7 +361,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
         if(CMAKE_VERSION VERSION_LESS 3.2)
             ExternalProject_Add(gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
+                GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
                 SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
@@ -388,7 +388,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             endif()
 
             ExternalProject_Add(gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
+                GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
                 GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
                 SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
                 BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}

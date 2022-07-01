@@ -20,7 +20,7 @@ SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
  #============================================================
  # Core Library Target Files
  #============================================================
-@@ -160,7 +169,7 @@
+@@ -161,7 +170,7 @@
  add_library( gpstk ${STADYN} ${GPSTK_SRC_FILES} ${GPSTK_INC_FILES} )
 
  # GPSTk library install target

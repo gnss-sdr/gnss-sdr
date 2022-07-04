@@ -111,7 +111,7 @@ if(ENABLE_SYSTEM_TESTING_EXTRA)
     set(ENABLE_SYSTEM_TESTING ON)
 endif()
 
-option(ENABLE_OWN_GPSTK "Force to download, build and link GPSTk for system tests, even if it is already installed" OFF)
+option(ENABLE_OWN_GNSSTK "Force to download, build and link gnsstk for system tests, even if it is already installed" OFF)
 
 option(ENABLE_INSTALL_TESTS "Install QA code system-wide" OFF)
 if(ENABLE_FPGA)
@@ -330,7 +330,7 @@ else()
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.12.1")
 endif()
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
-set(GNSSSDR_GPSTK_LOCAL_VERSION "11.2.3")
+set(GNSSSDR_GNSSTK_LOCAL_VERSION "12.1.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.12")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.1")
@@ -654,16 +654,16 @@ endif()
 # Detect availability of std::filesystem and set C++ standard accordingly
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)
-if(NOT ENABLE_OWN_GPSTK)
-    find_package(GPSTK)
-    set_package_properties(GPSTK PROPERTIES
+if(NOT ENABLE_OWN_GNSSTK)
+    find_package(GNSSTK)
+    set_package_properties(GNSSTK PROPERTIES
         PURPOSE "Used in some Extra Tests."
     )
 endif()
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURADIO_USES_SPDLOG))
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
-        if(NOT GPSTK_FOUND OR NOT (GPSTK_FOUND AND GPSTK_OLDER_THAN_8))  # Fix for GPSTk < 8.0.0
+        #if(NOT GPSTK_FOUND OR NOT (GPSTK_FOUND AND GPSTK_OLDER_THAN_8))  # Fix for GPSTk < 8.0.0
             find_package(FILESYSTEM COMPONENTS Final Experimental)
             set_package_properties(FILESYSTEM PROPERTIES
                 URL "https://en.cppreference.com/w/cpp/filesystem"
@@ -671,7 +671,7 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURA
                 PURPOSE "Work with paths, regular files, and directories."
                 TYPE OPTIONAL
             )
-        endif()
+        #endif()
         if(FILESYSTEM_FOUND)
             set(CMAKE_CXX_STANDARD 17)
             # if(CMAKE_VERSION VERSION_GREATER 3.13)
@@ -3361,7 +3361,7 @@ add_feature_info(ENABLE_UNIT_TESTING_MINIMAL ENABLE_UNIT_TESTING_MINIMAL "Enable
 add_feature_info(ENABLE_UNIT_TESTING_EXTRA ENABLE_UNIT_TESTING_EXTRA "Enables building of Extra Unit Tests and downloading of external data files.")
 add_feature_info(ENABLE_SYSTEM_TESTING ENABLE_SYSTEM_TESTING "Enables building of System Tests.")
 add_feature_info(ENABLE_SYSTEM_TESTING_EXTRA ENABLE_SYSTEM_TESTING_EXTRA "Enables building of Extra System Tests and downloading of external tools.")
-add_feature_info(ENABLE_OWN_GPSTK ENABLE_OWN_GPSTK "Forces the downloading and building of GPSTk for system tests.")
+add_feature_info(ENABLE_OWN_GNSSTK ENABLE_OWN_GNSSTK "Forces the downloading and building of gnsstk for system tests.")
 add_feature_info(ENABLE_GNSS_SIM_INSTALL ENABLE_GNSS_SIM_INSTALL "Enables downloading and building of gnss-sim.")
 add_feature_info(ENABLE_INSTALL_TESTS ENABLE_INSTALL_TESTS "Install test binaries when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME} install'.")
 add_feature_info(ENABLE_BENCHMARKS ENABLE_BENCHMARKS "Enables building of code snippet benchmarks.")

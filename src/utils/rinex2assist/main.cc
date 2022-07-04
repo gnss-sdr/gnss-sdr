@@ -28,11 +28,11 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/serialization/map.hpp>
 #include <gflags/gflags.h>
-#include <gpstk/GALWeekSecond.hpp>
-#include <gpstk/GPSWeekSecond.hpp>
-#include <gpstk/Rinex3NavData.hpp>
-#include <gpstk/Rinex3NavHeader.hpp>
-#include <gpstk/Rinex3NavStream.hpp>
+#include <gnsstk/GALWeekSecond.hpp>
+#include <gnsstk/GPSWeekSecond.hpp>
+#include <gnsstk/Rinex3NavData.hpp>
+#include <gnsstk/Rinex3NavHeader.hpp>
+#include <gnsstk/Rinex3NavStream.hpp>
 #include <cstddef>  // for size_t
 #include <cstdlib>
 #include <iostream>
@@ -157,9 +157,9 @@ int main(int argc, char** argv)
     try
         {
             // Read nav file
-            gpstk::Rinex3NavStream rnffs(input_filename.c_str());  // Open navigation data file
-            gpstk::Rinex3NavData rne;
-            gpstk::Rinex3NavHeader hdr;
+            gnsstk::Rinex3NavStream rnffs(input_filename.c_str());  // Open navigation data file
+            gnsstk::Rinex3NavData rne;
+            gnsstk::Rinex3NavHeader hdr;
 
             // Read header
             rnffs >> hdr;
@@ -178,8 +178,14 @@ int main(int argc, char** argv)
                     gps_utc_model.valid = (hdr.valid > 2147483648) ? true : false;
                     gps_utc_model.A1 = hdr.mapTimeCorr["GPUT"].A0;
                     gps_utc_model.A0 = hdr.mapTimeCorr["GPUT"].A1;
-                    gps_utc_model.tot = static_cast<gpstk::GPSWeekSecond>(hdr.mapTimeCorr["GPUT"].refTime).sow;
-                    gps_utc_model.WN_T = static_cast<gpstk::GPSWeekSecond>(hdr.mapTimeCorr["GPUT"].refTime).week;
+                    if (std::find(hdr.commentList.begin(), hdr.commentList.end(), "GPUT") != hdr.commentList.end())
+                        {
+                            gnsstk::GPSWeekSecond ct;
+                            ct = gnsstk::GPSWeekSecond(hdr.mapTimeCorr["GPUT"].refTime);
+                            // std::cout << "gps sow: " << ct.sow << '\n';
+                            gps_utc_model.tot = ct.sow;
+                            gps_utc_model.WN_T = ct.week;
+                        }
                     gps_utc_model.DeltaT_LS = hdr.leapSeconds;
                     gps_utc_model.WN_LSF = hdr.leapWeek;
                     gps_utc_model.DN = hdr.leapDay;
@@ -201,8 +207,14 @@ int main(int argc, char** argv)
                     gal_utc_model.A0 = hdr.mapTimeCorr["GAUT"].A0;
                     gal_utc_model.A1 = hdr.mapTimeCorr["GAUT"].A1;
                     gal_utc_model.Delta_tLS = hdr.leapSeconds;
-                    gal_utc_model.tot = static_cast<gpstk::GALWeekSecond>(hdr.mapTimeCorr["GAUT"].refTime).sow;
-                    gal_utc_model.WNot = static_cast<gpstk::GALWeekSecond>(hdr.mapTimeCorr["GAUT"].refTime).week;
+                    if (std::find(hdr.commentList.begin(), hdr.commentList.end(), "GAUT") != hdr.commentList.end())
+                        {
+                            gnsstk::GALWeekSecond ct;
+                            ct = gnsstk::GALWeekSecond(hdr.mapTimeCorr["GAUT"].refTime);
+                            // std::cout << "gal sow: " << ct.sow << '\n';
+                            gal_utc_model.tot = ct.sow;
+                            gal_utc_model.WNot = ct.week;
+                        }
                     gal_utc_model.WN_LSF = hdr.leapWeek;
                     gal_utc_model.DN = hdr.leapDay;
                     gal_utc_model.Delta_tLSF = hdr.leapDelta;

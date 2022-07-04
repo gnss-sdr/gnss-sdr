@@ -5,11 +5,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-find_package(GPSTK QUIET)
-if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
+find_package(GNSSTK QUIET)
+if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
     include(GNUInstallDirs)
-    set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(GPSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
+    set(GNSSTK_LIBRARY ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+    set(GNSSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include)
 endif()
 
 
@@ -73,7 +73,7 @@ if(Boost_FOUND)
         PRIVATE
             Boost::iostreams
             Boost::serialization
-            ${GPSTK_LIBRARY}
+            ${GNSSTK_LIBRARY}
             Gflags::gflags
             Threads::Threads
             core_system_parameters
@@ -81,8 +81,8 @@ if(Boost_FOUND)
 
     target_include_directories(rinex2assist
         PRIVATE
-            ${GPSTK_INCLUDE_DIR}/gpstk
-            ${GPSTK_INCLUDE_DIR}
+            ${GNSSTK_INCLUDE_DIR}/gnsstk
+            ${GNSSTK_INCLUDE_DIR}
     )
 
     if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)
@@ -91,8 +91,8 @@ if(Boost_FOUND)
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="")
     endif()
 
-    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-        add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+    if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
+        add_dependencies(rinex2assist gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
     endif()
 
     if(ENABLE_STRIP)

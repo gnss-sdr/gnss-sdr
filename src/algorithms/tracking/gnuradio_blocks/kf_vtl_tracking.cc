@@ -844,18 +844,17 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
     const double Ti = d_correlation_length_ms * 0.001;
     // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz,carrier_freq_rate_hz, code_freq_chips_s
     d_F = arma::mat(5, 5);
-    d_F << 1 << 0 << 0 << 0 << Ti << arma::endr
-        << 0 << 1 << 2.0 * GNSS_PI * Ti << GNSS_PI * (Ti * Ti) << 0 << arma::endr
-        << 0 << 0 << 1 << Ti << 0 << arma::endr
-        << 0 << 0 << 0 << 1 << 0 << arma::endr
-        << 0 << 0 << 0 << 0 << 1 << arma::endr;
+    d_F = {{1, 0, 0, 0, Ti},
+        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * (Ti * Ti), 0},
+        {0, 0, 1, Ti, 0},
+        {0, 0, 0, 1, 0},
+        {0, 0, 0, 0, 1}};
 
     const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
     d_H = arma::mat(2, 5);
-    d_H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
-        << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
-
+    d_H = {{1, 0, -B * Ti / 2.0, B * (Ti * Ti) / 6.0, 0},
+        {0, 1, -GNSS_PI * Ti, GNSS_PI * (Ti * Ti) / 3.0, 0}};
     // Phase noise variance
     // const double CN0_lin = pow(10.0, d_trk_parameters.expected_cn0_dbhz / 10.0);  // CN0 in Hz
     // const double N_periods = 1;  // Only 1 interval
@@ -866,32 +865,26 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
     d_R = arma::mat(2, 2);
     //    d_R << Sigma2_Tau << 0 << arma::endr
     //      << 0 << Sigma2_Phase << arma::endr;
-
-    d_R << pow(d_trk_parameters.code_disc_sd_chips, 2.0) << 0 << arma::endr
-        << 0 << pow(d_trk_parameters.carrier_disc_sd_rads, 2.0) << arma::endr;
-
+    d_R = {{pow(d_trk_parameters.code_disc_sd_chips, 2.0), 0},
+        {0, pow(d_trk_parameters.carrier_disc_sd_rads, 2.0)}};
     // system covariance matrix (static)
     d_Q = arma::mat(5, 5);
-    d_Q << pow(d_trk_parameters.code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
-        << 0 << pow(d_trk_parameters.carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
-        << 0 << 0 << pow(d_trk_parameters.carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
-        << 0 << 0 << 0 << pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
-        << 0 << 0 << 0 << 0 << pow(d_trk_parameters.code_rate_sd_chips_s, 2.0) << arma::endr;
-
+    d_Q = {{pow(d_trk_parameters.code_phase_sd_chips, 2.0), 0, 0, 0, 0},
+        {0, pow(d_trk_parameters.carrier_phase_sd_rad, 2.0), 0, 0, 0},
+        {0, 0, pow(d_trk_parameters.carrier_freq_sd_hz, 2.0), 0, 0},
+        {0, 0, 0, pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0), 0},
+        {0, 0, 0, 0, pow(d_trk_parameters.code_rate_sd_chips_s, 2.0)}};
     // initial Kalman covariance matrix
     d_P_old_old = arma::mat(5, 5);
-
-    d_P_old_old << pow(d_trk_parameters.init_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
-                << 0 << pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
-                << 0 << 0 << pow(d_trk_parameters.init_carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
-                << 0 << 0 << 0 << pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
-                << 0 << 0 << 0 << 0 << pow(d_trk_parameters.init_code_rate_sd_chips_s, 2.0) << arma::endr;
-
+    d_P_old_old = {{pow(d_trk_parameters.init_code_phase_sd_chips, 2.0), 0, 0, 0, 0},
+        {0, pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0), 0, 0, 0},
+        {0, 0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0), 0, 0},
+        {0, 0, 0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0), 0},
+        {0, 0, 0, 0, pow(d_trk_parameters.init_code_rate_sd_chips_s, 2.0)}};
     // init state vector
     d_x_old_old = arma::vec(5);
     // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
-    d_x_old_old << acq_code_phase_chips << 0 << acq_doppler_hz << 0 << 0 << arma::endr;
-
+    d_x_old_old = {acq_code_phase_chips, 0, acq_doppler_hz, 0, 0};
     //    std::cout << "F: " << d_F << "\n";
     //    std::cout << "H: " << d_H << "\n";
     //    std::cout << "R: " << d_R << "\n";
@@ -907,27 +900,26 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
     const double Ti = d_current_correlation_time_s;
 
     // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz,carrier_freq_rate_hz, code_freq_chips_s
-    d_F << 1 << 0 << 0 << 0 << Ti << arma::endr
-        << 0 << 1 << 2.0 * GNSS_PI * Ti << GNSS_PI * (Ti * Ti) << 0 << arma::endr
-        << 0 << 0 << 1 << Ti << 0 << arma::endr
-        << 0 << 0 << 0 << 1 << 0 << arma::endr
-        << 0 << 0 << 0 << 0 << 1 << arma::endr;
-
+    d_F = {{1, 0, 0, 0, Ti},
+        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * (Ti * Ti), 0},
+        {0, 0, 1, Ti, 0},
+        {0, 0, 0, 1, 0},
+        {0, 0, 0, 0, 1}};
     const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    d_H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
-        << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
+    d_H = {{1, 0, -B * Ti / 2.0, B * (Ti * Ti) / 6.0, 0},
+        {0, 1, -GNSS_PI * Ti, GNSS_PI * (Ti * Ti) / 3.0, 0}};
 
     // measurement covariance matrix (static)
-    d_R << pow(d_trk_parameters.code_disc_sd_chips, 2.0) << 0 << arma::endr
-        << 0 << pow(d_trk_parameters.carrier_disc_sd_rads, 2.0) << arma::endr;
+    d_R = {{pow(d_trk_parameters.code_disc_sd_chips, 2.0), 0},
+        {0, pow(d_trk_parameters.carrier_disc_sd_rads, 2.0)}};
 
     // system covariance matrix (static)
-    d_Q << pow(d_trk_parameters.narrow_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << 0 << arma::endr
-        << 0 << pow(d_trk_parameters.narrow_carrier_phase_sd_rad, 2.0) << 0 << 0 << 0 << arma::endr
-        << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_sd_hz, 2.0) << 0 << 0 << arma::endr
-        << 0 << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_rate_sd_hz_s, 2.0) << 0 << arma::endr
-        << 0 << 0 << 0 << 0 << pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0) << arma::endr;
+    d_Q = {{pow(d_trk_parameters.narrow_code_phase_sd_chips, 2.0), 0, 0, 0, 0},
+        {0, pow(d_trk_parameters.narrow_carrier_phase_sd_rad, 2.0), 0, 0, 0},
+        {0, 0, pow(d_trk_parameters.narrow_carrier_freq_sd_hz, 2.0), 0, 0},
+        {0, 0, 0, pow(d_trk_parameters.narrow_carrier_freq_rate_sd_hz_s, 2.0), 0},
+        {0, 0, 0, 0, pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0)}};
 }
 
 
@@ -938,8 +930,8 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
     const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
     d_H = arma::mat(2, 5);
-    d_H << 1 << 0 << -B * Ti / 2.0 << B * (Ti * Ti) / 6.0 << 0 << arma::endr
-        << 0 << 1 << -GNSS_PI * Ti << GNSS_PI * (Ti * Ti) / 3.0 << 0 << arma::endr;
+    d_H = {{1, 0, -B * Ti / 2.0, B * (Ti * Ti) / 6.0, 0},
+        {0, 1, -GNSS_PI * Ti, GNSS_PI * (Ti * Ti) / 3.0, 0}};
 
     // Phase noise variance
     const double CN0_lin = pow(10.0, current_cn0_dbhz / 10.0);  // CN0 in Hz
@@ -949,8 +941,8 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
 
     // measurement covariance matrix (static)
     d_R = arma::mat(2, 2);
-    d_R << Sigma2_Tau << 0 << arma::endr
-        << 0 << Sigma2_Phase << arma::endr;
+    d_R = {{Sigma2_Tau, 0},
+        {0, Sigma2_Phase}};
 }
 
 

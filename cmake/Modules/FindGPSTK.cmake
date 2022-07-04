@@ -83,7 +83,7 @@ if(GPSTK_FOUND AND NOT EXISTS ${GPSTK_INCLUDE_DIR}/gpstk/SatelliteSystem.hpp)
 endif()
 
 set_package_properties(GPSTK PROPERTIES
-    URL "https://github.com/SGL-UT/GPSTk"
+    URL "https://github.com/SGL-UT/gnsstk"
 )
 
 if(GPSTK_FOUND AND NOT ENABLE_OWN_GPSTK AND NOT TARGET Gpstk::gpstk)

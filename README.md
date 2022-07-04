@@ -2048,10 +2048,10 @@ PVT.rtcm_MT1077_rate_ms=1000
   the user to post-process the received data to produce a more accurate result
   (usually with other data unknown to the original receiver, such as better
   models of the atmospheric conditions at time of measurement). RINEX files can
-  be used by software packages such as [GPSTk](https://github.com/SGL-UT/GPSTk),
-  [RTKLIB](http://www.rtklib.com/), and [gLAB](https://gage.upc.edu/gLAB/).
-  GNSS-SDR by default generates RINEX version
-  [3.02](ftp://igs.org/pub/data/format/rinex302.pdf). If
+  be used by software packages such as
+  [GNSSTK](https://github.com/SGL-UT/gnsstk), [RTKLIB](http://www.rtklib.com/),
+  and [gLAB](https://gage.upc.edu/gLAB/). GNSS-SDR by default generates RINEX
+  version [3.02](ftp://igs.org/pub/data/format/rinex302.pdf). If
   [2.11](ftp://igs.org/pub/data/format/rinex211.txt) is needed, it can be
   requested through the `rinex_version` parameter in the configuration file:
 

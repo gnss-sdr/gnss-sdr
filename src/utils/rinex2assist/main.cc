@@ -178,13 +178,11 @@ int main(int argc, char** argv)
                     gps_utc_model.valid = (hdr.valid > 2147483648) ? true : false;
                     gps_utc_model.A1 = hdr.mapTimeCorr["GPUT"].A0;
                     gps_utc_model.A0 = hdr.mapTimeCorr["GPUT"].A1;
-                    if (std::find(hdr.commentList.begin(), hdr.commentList.end(), "GPUT") != hdr.commentList.end())
+                    if (hdr.mapTimeCorr["GPUT"].refTime != gnsstk::CommonTime::BEGINNING_OF_TIME)
                         {
-                            gnsstk::GPSWeekSecond ct;
-                            ct = gnsstk::GPSWeekSecond(hdr.mapTimeCorr["GPUT"].refTime);
-                            // std::cout << "gps sow: " << ct.sow << '\n';
-                            gps_utc_model.tot = ct.sow;
-                            gps_utc_model.WN_T = ct.week;
+                            gnsstk::GPSWeekSecond gws(hdr.mapTimeCorr["GPUT"].refTime);
+                            gps_utc_model.tot = gws.getSOW();
+                            gps_utc_model.WN_T = gws.getWeek();
                         }
                     gps_utc_model.DeltaT_LS = hdr.leapSeconds;
                     gps_utc_model.WN_LSF = hdr.leapWeek;
@@ -207,13 +205,11 @@ int main(int argc, char** argv)
                     gal_utc_model.A0 = hdr.mapTimeCorr["GAUT"].A0;
                     gal_utc_model.A1 = hdr.mapTimeCorr["GAUT"].A1;
                     gal_utc_model.Delta_tLS = hdr.leapSeconds;
-                    if (std::find(hdr.commentList.begin(), hdr.commentList.end(), "GAUT") != hdr.commentList.end())
+                    if (hdr.mapTimeCorr["GAUT"].refTime != gnsstk::CommonTime::BEGINNING_OF_TIME)
                         {
-                            gnsstk::GALWeekSecond ct;
-                            ct = gnsstk::GALWeekSecond(hdr.mapTimeCorr["GAUT"].refTime);
-                            // std::cout << "gal sow: " << ct.sow << '\n';
-                            gal_utc_model.tot = ct.sow;
-                            gal_utc_model.WNot = ct.week;
+                            gnsstk::GPSWeekSecond gws(hdr.mapTimeCorr["GAUT"].refTime);
+                            gal_utc_model.tot = gws.getSOW();
+                            gal_utc_model.WNot = gws.getWeek();
                         }
                     gal_utc_model.WN_LSF = hdr.leapWeek;
                     gal_utc_model.DN = hdr.leapDay;

@@ -10,8 +10,13 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     find_package(GNSSTK QUIET)
     if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
         include(GNUInstallDirs)
-        set(GNSSTK_LIBRARY ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
-        set(GNSSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include)
+        if(GNSSTK_USES_GPSTK_NAMESPACE)
+            set(GNSSTK_LIBRARY ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+            set(GNSSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include)
+        else()
+            set(GNSSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+            set(GNSSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include)
+        endif()
     endif()
 
     if(USE_CMAKE_TARGET_SOURCES)
@@ -54,17 +59,35 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERSION})
         add_dependencies(obsdiff matio-${GNSSSDR_MATIO_LOCAL_VERSION})
     endif()
+    if(GNSSTK_USES_GPSTK_NAMESPACE)
+        target_compile_definitions(obsdiff PUBLIC -DGNSSTK_USES_GPSTK_NAMESPACE=1)
+    endif()
+    if(GNSSTK_OLDER_THAN_8)
+        target_compile_definitions(obsdiff PUBLIC -DOLD_GPSTK=1)
+    endif()
 
     if(NOT TARGET Gnsstk::gnsstk)
-        file(MAKE_DIRECTORY ${GNSSTK_INCLUDE_DIR}/gnsstk)
-        add_library(Gnsstk::gnsstk STATIC IMPORTED)
-        add_dependencies(Gnsstk::gnsstk gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
-        set_target_properties(Gnsstk::gnsstk PROPERTIES
-            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${GNSSTK_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${GNSSTK_INCLUDE_DIR};${GNSSTK_INCLUDE_DIR}/gnsstk"
-            INTERFACE_LINK_LIBRARIES "${GNSSTK_LIBRARY}"
-        )
+        if(GNSSTK_USES_GPSTK_NAMESPACE)
+            file(MAKE_DIRECTORY ${GNSSTK_INCLUDE_DIR}/gpstk)
+            add_library(Gnsstk::gnsstk STATIC IMPORTED)
+            add_dependencies(Gnsstk::gnsstk gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
+            set_target_properties(Gnsstk::gnsstk PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNSSTK_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNSSTK_INCLUDE_DIR};${GNSSTK_INCLUDE_DIR}/gpstk"
+                INTERFACE_LINK_LIBRARIES "${GNSSTK_LIBRARY}"
+            )
+        else()
+            file(MAKE_DIRECTORY ${GNSSTK_INCLUDE_DIR}/gnsstk)
+            add_library(Gnsstk::gnsstk STATIC IMPORTED)
+            add_dependencies(Gnsstk::gnsstk gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
+            set_target_properties(Gnsstk::gnsstk PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNSSTK_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNSSTK_INCLUDE_DIR};${GNSSTK_INCLUDE_DIR}/gnsstk"
+                INTERFACE_LINK_LIBRARIES "${GNSSTK_LIBRARY}"
+            )
+        endif()
     endif()
 
     target_link_libraries(obsdiff

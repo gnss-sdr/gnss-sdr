@@ -113,6 +113,14 @@ endif()
 
 option(ENABLE_OWN_GNSSTK "Force to download, build and link gnsstk for system tests, even if it is already installed" OFF)
 
+if(NOT ENABLE_OWN_GNSSTK)
+    option(ENABLE_OWN_GPSTK "Force to download, build and link gnsstk for system tests, even if it is already installed" OFF)
+    if(ENABLE_OWN_GPSTK)
+        message(STATUS "WARNING: Option ENABLE_OWN_GPSTK is deprecated, please use ENABLE_OWN_GNSSTK")
+        set(ENABLE_OWN_GNSSTK ON)
+    endif()
+endif()
+
 option(ENABLE_INSTALL_TESTS "Install QA code system-wide" OFF)
 if(ENABLE_FPGA)
     set(ENABLE_INSTALL_TESTS ON)
@@ -663,7 +671,7 @@ endif()
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURADIO_USES_SPDLOG))
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
-        #if(NOT GPSTK_FOUND OR NOT (GPSTK_FOUND AND GPSTK_OLDER_THAN_8))  # Fix for GPSTk < 8.0.0
+        if(NOT GNSSTK_FOUND OR NOT (GNSSTK_FOUND AND GNSSTK_OLDER_THAN_8))  # Fix for GNSSTk < 8.0.0
             find_package(FILESYSTEM COMPONENTS Final Experimental)
             set_package_properties(FILESYSTEM PROPERTIES
                 URL "https://en.cppreference.com/w/cpp/filesystem"
@@ -671,7 +679,7 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURA
                 PURPOSE "Work with paths, regular files, and directories."
                 TYPE OPTIONAL
             )
-        #endif()
+        endif()
         if(FILESYSTEM_FOUND)
             set(CMAKE_CXX_STANDARD 17)
             # if(CMAKE_VERSION VERSION_GREATER 3.13)

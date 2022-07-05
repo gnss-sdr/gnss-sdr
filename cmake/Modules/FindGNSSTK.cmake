@@ -31,14 +31,27 @@ if(DEFINED ENV{GNSSTK_ROOT})
     )
 endif()
 
+unset(GNSSTK_INCLUDE_DIR CACHE)
+set(GNSSTK_USES_GPSTK_NAMESPACE FALSE)
 find_path(GNSSTK_INCLUDE_DIR gnsstk/Rinex3ObsBase.hpp
     PATHS ${GNSSTK_ROOT_USER_DEFINED}/include
           /usr/include
           /usr/local/include
           /opt/local/include
 )
-
-set(GNSSTK_NAMES gnsstk libgnsstk)
+set(GNSSTK_NAMES ${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+if(NOT GNSSTK_INCLUDE_DIR)
+    find_path(GNSSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
+        PATHS ${GNSSTK_ROOT_USER_DEFINED}/include
+              /usr/include
+              /usr/local/include
+              /opt/local/include
+    )
+    if(GNSSTK_INCLUDE_DIR)
+        set(GNSSTK_NAMES gpstk ${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
+        set(GNSSTK_USES_GPSTK_NAMESPACE TRUE)
+    endif()
+endif()
 
 include(GNUInstallDirs)
 
@@ -61,6 +74,10 @@ if(GNSSTK_FOUND)
     unset(PACKAGE_VERSION)
     if(EXISTS ${CMAKE_INSTALL_FULL_DATADIR}/cmake/GNSSTK/GNSSTKConfigVersion.cmake)
         include(${CMAKE_INSTALL_FULL_DATADIR}/cmake/GNSSTK/GNSSTKConfigVersion.cmake)
+    else()
+        if(EXISTS ${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
+            include(${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
+        endif()
     endif()
     if(PACKAGE_VERSION)
         set(GNSSTK_VERSION ${PACKAGE_VERSION})
@@ -70,30 +87,40 @@ endif()
 
 if(GNSSTK_FOUND AND GNSSTK_VERSION)
     set_package_properties(GNSSTK PROPERTIES
-        DESCRIPTION "Library and suite of applications for satellite navigation (found: v${GNSSTK_VERSION})"
+        DESCRIPTION "The GNSSTk C++ Library (found: v${GNSSTK_VERSION})"
     )
 else()
     set_package_properties(GNSSTK PROPERTIES
-        DESCRIPTION "Library and suite of applications for satellite navigation"
+        DESCRIPTION "The GNSSTk C++ Library"
     )
 endif()
 
-#if(GNSSTK_FOUND AND NOT EXISTS ${GNSSTK_INCLUDE_DIR}/gnsstk/SatelliteSystem.hpp)
-#    set(GNSSTK_OLDER_THAN_8 TRUE)
-#endif()
+if(GNSSTK_FOUND AND GNSSTK_USES_GPSTK_NAMESPACE AND NOT EXISTS ${GNSSTK_INCLUDE_DIR}/gpstk/SatelliteSystem.hpp)
+    set(GNSSTK_OLDER_THAN_8 TRUE)
+endif()
 
 set_package_properties(GNSSTK PROPERTIES
     URL "https://github.com/SGL-UT/gnsstk/"
+    TYPE OPTIONAL
 )
 
 if(GNSSTK_FOUND AND NOT ENABLE_OWN_GNSSTK AND NOT TARGET Gnsstk::gnsstk)
     add_library(Gnsstk::gnsstk SHARED IMPORTED)
-    set_target_properties(Gnsstk::gnsstk PROPERTIES
-        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-        IMPORTED_LOCATION "${GNSSTK_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${GNSSTK_INCLUDE_DIR};${GNSSTK_INCLUDE_DIR}/gnsstk"
-        INTERFACE_LINK_LIBRARIES "${GNSSTK_LIBRARY}"
-    )
+    if(GNSSTK_USES_GPSTK_NAMESPACE)
+        set_target_properties(Gnsstk::gnsstk PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNSSTK_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNSSTK_INCLUDE_DIR};${GNSSTK_INCLUDE_DIR}/gpstk"
+            INTERFACE_LINK_LIBRARIES "${GNSSTK_LIBRARY}"
+        )
+    else()
+        set_target_properties(Gnsstk::gnsstk PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${GNSSTK_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNSSTK_INCLUDE_DIR};${GNSSTK_INCLUDE_DIR}/gnsstk"
+            INTERFACE_LINK_LIBRARIES "${GNSSTK_LIBRARY}"
+        )
+    endif()
 endif()
 
-mark_as_advanced(GNSSTK_LIBRARY GNSSTK_INCLUDE_DIR)
+mark_as_advanced(GNSSTK_LIBRARY GNSSTK_INCLUDE_DIR GNSSTK_USES_GPSTK_NAMESPACE GNSSTK_OLDER_THAN_8)

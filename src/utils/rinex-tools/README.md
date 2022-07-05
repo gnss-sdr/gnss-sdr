@@ -23,8 +23,8 @@ Requirements:
 - [Gflags](https://github.com/gflags/gflags): A C++ library that implements
   command-line flags processing. If not found in your system, the latest version
   will be downloaded, built and linked for you at building time.
-- [GPSTK](https://github.com/SGL-UT/GPSTk): The GPS Toolkit, used for RINEX
-  files reading. If not found in your system, the latest version will be
+- [GNSSTK](https://github.com/SGL-UT/gnsstk): The GNSSTk C++ Library, used for
+  RINEX files reading. If not found in your system, the latest version will be
   downloaded, built and linked for you at building time.
 - [Matio](https://github.com/tbeu/matio): A MATLAB MAT File I/O Library,
   version >= 1.5.3. If it is not found, or an older version is found, CMake will

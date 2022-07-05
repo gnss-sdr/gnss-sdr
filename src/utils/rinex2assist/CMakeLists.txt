@@ -17,7 +17,6 @@ if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
     endif()
 endif()
 
-
 find_package(Boost COMPONENTS iostreams serialization QUIET)
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::iostreams)
@@ -39,7 +38,6 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
             IMPORTED_LOCATION ${Boost_SERIALIZARION_LIBRARIES})
     endif()
 endif()
-
 
 find_program(UNCOMPRESS_EXECUTABLE uncompress
     PATHS /bin
@@ -70,7 +68,7 @@ if(Boost_FOUND)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(rinex2assist
             PRIVATE
-                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare
+                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-switch -Wno-inconsistent-missing-override
         )
     endif()
 
@@ -100,7 +98,7 @@ if(Boost_FOUND)
     endif()
     if(GNSSTK_VERSION)
         if(GNSSTK_VERSION VERSION_LESS "9.0.0")
-            target_compile_definitions(rinex2assist PUBLIC -DGNSSTK_OLDER_THAN_9=1)
+            target_compile_definitions(rinex2assist PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
     endif()
 

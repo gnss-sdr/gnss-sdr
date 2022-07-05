@@ -131,25 +131,25 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                 {
                 case 'G':
 #if OLD_GPSTK
-                    prn.system = gpstk::SatID::systemGPS;
+                    prn.system = gnsstk::SatID::systemGPS;
 #else
-                    prn.system = gpstk::SatelliteSystem::GPS;
+                    prn.system = gnsstk::SatelliteSystem::GPS;
 #endif
                     PRN_set = available_gps_prn;
                     break;
                 case 'E':
 #if OLD_GPSTK
-                    prn.system = gpstk::SatID::systemGalileo;
+                    prn.system = gnsstk::SatID::systemGalileo;
 #else
-                    prn.system = gpstk::SatelliteSystem::Galileo;
+                    prn.system = gnsstk::SatelliteSystem::Galileo;
 #endif
                     PRN_set = available_galileo_prn;
                     break;
                 default:
 #if OLD_GPSTK
-                    prn.system = gpstk::SatID::systemGPS;
+                    prn.system = gnsstk::SatID::systemGPS;
 #else
-                    prn.system = gpstk::SatelliteSystem::GPS;
+                    prn.system = gnsstk::SatelliteSystem::GPS;
 #endif
                     PRN_set = available_gps_prn;
                 }
@@ -1273,7 +1273,7 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
 #if OLD_GPSTK
                                     std::vector<gpstk::SatID::SatelliteSystem> Syss;
 #endif
-                                    gpstk::Matrix<double> invMC;
+                                    gnsstk::Matrix<double> invMC;
                                     int iret;
                                     // Call RAIMCompute
 #if OLD_GPSTK

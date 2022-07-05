@@ -32,7 +32,7 @@ if(DEFINED ENV{GNSSTK_ROOT})
 endif()
 
 unset(GNSSTK_INCLUDE_DIR CACHE)
-set(GNSSTK_USES_GPSTK_NAMESPACE FALSE)
+unset(GNSSTK_USES_GPSTK_NAMESPACE CACHE)
 find_path(GNSSTK_INCLUDE_DIR gnsstk/Rinex3ObsBase.hpp
     PATHS ${GNSSTK_ROOT_USER_DEFINED}/include
           /usr/include
@@ -40,16 +40,18 @@ find_path(GNSSTK_INCLUDE_DIR gnsstk/Rinex3ObsBase.hpp
           /opt/local/include
 )
 set(GNSSTK_NAMES ${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-if(NOT GNSSTK_INCLUDE_DIR)
+if(NOT GNSSTK_INCLUDE_DIR_FOUND)
     find_path(GNSSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
         PATHS ${GNSSTK_ROOT_USER_DEFINED}/include
               /usr/include
               /usr/local/include
               /opt/local/include
     )
-    if(GNSSTK_INCLUDE_DIR)
+    if(GNSSTK_INCLUDE_DIR_FOUND)
         set(GNSSTK_NAMES gpstk ${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
         set(GNSSTK_USES_GPSTK_NAMESPACE TRUE)
+        set(GNSSTK_OLDER_THAN_8 TRUE)
+        #set(GNSSTK_OLDER_THAN_9 TRUE)
     endif()
 endif()
 
@@ -64,12 +66,7 @@ find_library(GNSSTK_LIBRARY NAMES ${GNSSTK_NAMES}
           /opt/local/lib
 )
 
-# handle the QUIET and REQUIRED arguments and set GNSSTK_FOUND to TRUE if
-# all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GNSSTK DEFAULT_MSG GNSSTK_LIBRARY GNSSTK_INCLUDE_DIR)
-
-if(GNSSTK_FOUND)
+if(GNSSTK_LIBRARY AND GNSSTK_INCLUDE_DIR)
     set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
     unset(PACKAGE_VERSION)
     if(EXISTS ${CMAKE_INSTALL_FULL_DATADIR}/cmake/GNSSTK/GNSSTKConfigVersion.cmake)
@@ -84,6 +81,17 @@ if(GNSSTK_FOUND)
     endif()
     set(PACKAGE_VERSION ${OLD_PACKAGE_VERSION})
 endif()
+
+if(GNSSTK_VERSION)
+    if(GNSSTK_VERSION VERSION_GREATER ${GNSSSDR_GNSSTK_LOCAL_VERSION})
+        unset(GNSSTK_LIBRARY CACHE)
+        unset(GNSSTK_INCLUDE_DIR CACHE)
+    endif()
+endif()
+# handle the QUIET and REQUIRED arguments and set GNSSTK_FOUND to TRUE if
+# all listed variables are TRUE
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(GNSSTK DEFAULT_MSG GNSSTK_LIBRARY GNSSTK_INCLUDE_DIR)
 
 if(GNSSTK_FOUND AND GNSSTK_VERSION)
     set_package_properties(GNSSTK PROPERTIES
@@ -123,4 +131,9 @@ if(GNSSTK_FOUND AND NOT ENABLE_OWN_GNSSTK AND NOT TARGET Gnsstk::gnsstk)
     endif()
 endif()
 
-mark_as_advanced(GNSSTK_LIBRARY GNSSTK_INCLUDE_DIR GNSSTK_USES_GPSTK_NAMESPACE GNSSTK_OLDER_THAN_8)
+mark_as_advanced(GNSSTK_LIBRARY
+    GNSSTK_INCLUDE_DIR
+    GNSSTK_USES_GPSTK_NAMESPACE
+    GNSSTK_OLDER_THAN_8
+    GNSSTK_OLDER_THAN_9
+)

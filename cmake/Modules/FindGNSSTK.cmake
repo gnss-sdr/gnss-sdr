@@ -40,18 +40,16 @@ find_path(GNSSTK_INCLUDE_DIR gnsstk/Rinex3ObsBase.hpp
           /opt/local/include
 )
 set(GNSSTK_NAMES ${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_SHARED_LIBRARY_SUFFIX})
-if(NOT GNSSTK_INCLUDE_DIR_FOUND)
+if(NOT GNSSTK_INCLUDE_DIR)
     find_path(GNSSTK_INCLUDE_DIR gpstk/Rinex3ObsBase.hpp
         PATHS ${GNSSTK_ROOT_USER_DEFINED}/include
               /usr/include
               /usr/local/include
               /opt/local/include
     )
-    if(GNSSTK_INCLUDE_DIR_FOUND)
+    if(GNSSTK_INCLUDE_DIR)
         set(GNSSTK_NAMES gpstk ${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_SHARED_LIBRARY_SUFFIX})
         set(GNSSTK_USES_GPSTK_NAMESPACE TRUE)
-        set(GNSSTK_OLDER_THAN_8 TRUE)
-        #set(GNSSTK_OLDER_THAN_9 TRUE)
     endif()
 endif()
 
@@ -69,11 +67,13 @@ find_library(GNSSTK_LIBRARY NAMES ${GNSSTK_NAMES}
 if(GNSSTK_LIBRARY AND GNSSTK_INCLUDE_DIR)
     set(OLD_PACKAGE_VERSION ${PACKAGE_VERSION})
     unset(PACKAGE_VERSION)
-    if(EXISTS ${CMAKE_INSTALL_FULL_DATADIR}/cmake/GNSSTK/GNSSTKConfigVersion.cmake)
-        include(${CMAKE_INSTALL_FULL_DATADIR}/cmake/GNSSTK/GNSSTKConfigVersion.cmake)
+    if(GNSSTK_USES_GPSTK_NAMESPACE)
+        if(EXISTS ${GNSSTK_INCLUDE_DIR}/../share/cmake/GPSTK/GPSTKConfigVersion.cmake)
+            include(${GNSSTK_INCLUDE_DIR}/../share/cmake/GPSTK/GPSTKConfigVersion.cmake)
+        endif()
     else()
-        if(EXISTS ${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
-            include(${CMAKE_INSTALL_FULL_DATADIR}/cmake/GPSTK/GPSTKConfigVersion.cmake)
+        if(EXISTS ${GNSSTK_INCLUDE_DIR}/../share/cmake/GNSSTK/GNSSTKConfigVersion.cmake)
+            include(${GNSSTK_INCLUDE_DIR}/../share/cmake/GNSSTK/GNSSTKConfigVersion.cmake)
         endif()
     endif()
     if(PACKAGE_VERSION)
@@ -88,6 +88,7 @@ if(GNSSTK_VERSION)
         unset(GNSSTK_INCLUDE_DIR CACHE)
     endif()
 endif()
+
 # handle the QUIET and REQUIRED arguments and set GNSSTK_FOUND to TRUE if
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
@@ -135,5 +136,4 @@ mark_as_advanced(GNSSTK_LIBRARY
     GNSSTK_INCLUDE_DIR
     GNSSTK_USES_GPSTK_NAMESPACE
     GNSSTK_OLDER_THAN_8
-    GNSSTK_OLDER_THAN_9
 )

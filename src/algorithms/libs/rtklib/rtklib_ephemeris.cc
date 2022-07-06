@@ -284,7 +284,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     cosi = cos(i);
 
     /* beidou geo satellite (ref [9]) */
-    if (sys == SYS_BDS && prn <= 5)
+    if (sys == SYS_BDS && (prn <= 5 || prn > 58))
         {
             O = eph->OMG0 + eph->OMGd * tk - omge * eph->toes;
             sinO = sin(O);

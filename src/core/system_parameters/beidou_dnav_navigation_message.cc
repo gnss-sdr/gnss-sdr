@@ -27,11 +27,11 @@ Beidou_Dnav_Navigation_Message::Beidou_Dnav_Navigation_Message()
 {
     auto gnss_sat = Gnss_Satellite();
     const std::string _system("Beidou");
-    for (uint32_t i = 1; i < 36; i++)
+    for (uint32_t i = 1; i < 64; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
         }
-    for (uint32_t i = 1; i < 36; i++)
+    for (uint32_t i = 1; i < 64; i++)
         {
             almanacHealth[i] = 0;
         }
@@ -647,7 +647,7 @@ Beidou_Dnav_Ephemeris Beidou_Dnav_Navigation_Message::get_ephemeris() const
 {
     Beidou_Dnav_Ephemeris eph;
 
-    if (i_satellite_PRN > 0 and i_satellite_PRN < 6)
+    if ((i_satellite_PRN > 0 and i_satellite_PRN < 6) or i_satellite_PRN > 58)
         {
             std::bitset<BEIDOU_DNAV_SUBFRAME_DATA_BITS> subframe_bits;
 
@@ -785,7 +785,7 @@ Beidou_Dnav_Utc_Model Beidou_Dnav_Navigation_Message::get_utc_model()
 
 bool Beidou_Dnav_Navigation_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
-    if (i_satellite_PRN > 0 and i_satellite_PRN < 6)
+    if ((i_satellite_PRN > 0 and i_satellite_PRN < 6) or i_satellite_PRN > 58)
         {
             if ((flag_sf1_p1 == true) and (flag_sf1_p2 == true) and (flag_sf1_p3 == true) and
                 (flag_sf1_p4 == true) and (flag_sf1_p5 == true) and (flag_sf1_p6 == true) and

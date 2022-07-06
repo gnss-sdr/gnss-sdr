@@ -757,7 +757,7 @@ void dll_pll_veml_tracking::start_tracking()
         {
             beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // GEO Satellites use different secondary code
-            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or (d_acquisition_gnss_synchro->PRN > 58))
                 {
                     d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -790,7 +790,7 @@ void dll_pll_veml_tracking::start_tracking()
         {
             beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
-            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or (d_acquisition_gnss_synchro->PRN > 58))
                 {
                     d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;

@@ -342,7 +342,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     ############################################################################
     if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
         set_package_properties(GNSSTK PROPERTIES
-            PURPOSE "gnsstk v${GNSSSDR_GNSSTK_LOCAL_VERSION} will be automatically downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+            PURPOSE "GNSSTk v${GNSSSDR_GNSSTK_LOCAL_VERSION} will be automatically downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
         )
         if("${TOOLCHAIN_ARG}" STREQUAL "")
             set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=-Wno-deprecated")

@@ -4,8 +4,10 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+if(NOT GNSSTK_FOUND)
+    find_package(GNSSTK)
+endif()
 
-find_package(GNSSTK QUIET)
 if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
     include(GNUInstallDirs)
     if(GNSSTK_USES_GPSTK_NAMESPACE)

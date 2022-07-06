@@ -35,6 +35,13 @@ All notable changes to GNSS-SDR will be documented in this file.
   **not** applied to the computed PVT solution. In the Galileo E6B-only
   receiver, HAS messages are decoded and reported.
 
+### Improvements in Maintainability:
+
+- The now archived [GPSTk toolkit](https://github.com/SGL-UT/GPSTk), used in
+  some optional tests and applications, has been replaced by the new
+  [GNSSTk](https://github.com/SGL-UT/gnsstk) C++ Library. Compatibility with the
+  former GPSTk toolkit is maintained.
+
 ### Improvements in Portability:
 
 - Improved detection of the BLAS library under macOS / Macports (the `lapack`

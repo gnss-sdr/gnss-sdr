@@ -111,7 +111,7 @@ if(NOT GOOGLETEST_FOUND)
             MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
             MAP_IMPORTED_CONFIG_ASAN Debug
             IMPORTED_LOCATION_NONE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${DEBUG_DECORATION}${CMAKE_STATIC_LIBRARY_SUFFIX}
+            IMPORTED_LOCATION_DEBUG ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELEASE ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_RELWITHDEBINFO ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
             IMPORTED_LOCATION_MINSIZEREL ${binary_dir}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gtest${CMAKE_STATIC_LIBRARY_SUFFIX}
@@ -279,7 +279,7 @@ endif()
 
 
 ################################################################################
-# GPSTk and optional generator
+# gnsstk and optional generator
 ################################################################################
 
 if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
@@ -338,42 +338,42 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     endif()
 
     ############################################################################
-    # Local installation of GPSTk https://github.com/SGL-UT/GPSTk
+    # Local installation of gnsstk https://github.com/SGL-UT/gnsstk
     ############################################################################
-    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-        set_package_properties(GPSTK PROPERTIES
-            PURPOSE "GPSTk v${GNSSSDR_GPSTK_LOCAL_VERSION} will be automatically downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+    if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
+        set_package_properties(GNSSTK PROPERTIES
+            PURPOSE "GNSSTk v${GNSSSDR_GNSSTK_LOCAL_VERSION} will be automatically downloaded and built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
         )
         if("${TOOLCHAIN_ARG}" STREQUAL "")
             set(TOOLCHAIN_ARG "-DCMAKE_CXX_FLAGS=-Wno-deprecated")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
         endif()
-        set(GPSTK_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
+        set(GNSSTK_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
         if(CMAKE_GENERATOR STREQUAL Xcode)
-            set(GPSTK_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}")
+            set(GNSSTK_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}")
         endif()
         include(GNUInstallDirs)
         find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
         if(NOT Patch_EXECUTABLE)
-            message(FATAL_ERROR "The patch command is not found. It is required to build GPSTk. Please check your OS documentation and install the patch command.")
+            message(FATAL_ERROR "The patch command is not found. It is required to build GNSSTk. Please check your OS documentation and install the patch command.")
         endif()
-        set(GPSTK_PATCH_COMMAND
-            cd ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION} &&
-            ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gpstk_static.patch
+        set(GNSSTK_PATCH_COMMAND
+            cd ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
+            ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gnsstk_static.patch
         )
         # Patch only once
-        if(EXISTS ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/CMakeLists.txt)
-            set(GPSTK_PATCH_COMMAND "")
+        if(EXISTS ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt)
+            set(GNSSTK_PATCH_COMMAND "")
         endif()
         if(CMAKE_VERSION VERSION_LESS 3.2)
-            ExternalProject_Add(gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
-                GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                PATCH_COMMAND ${GPSTK_PATCH_COMMAND}
+            ExternalProject_Add(gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
+                GIT_TAG v${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                BINARY_DIR ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                PATCH_COMMAND ${GNSSTK_PATCH_COMMAND}
                 CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
-                    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install
+                    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install
                     -DBUILD_EXT=ON
                     -DBUILD_PYTHON=OFF
                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -381,7 +381,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                     -DCMAKE_CXX_EXTENSIONS=ON
                     -DCMAKE_C_STANDARD=11
                     -DCMAKE_C_EXTENSIONS=ON
-                BUILD_COMMAND ${GPSTK_BUILD_COMMAND}
+                BUILD_COMMAND ${GNSSTK_BUILD_COMMAND}
                 UPDATE_COMMAND ""
             )
         else()
@@ -389,18 +389,18 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                 include(ProcessorCount)
                 ProcessorCount(NUMBER_OF_PROCESSORS)
                 if(NUMBER_OF_PROCESSORS GREATER 1)
-                    set(GPSTK_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
+                    set(GNSSTK_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
                 endif()
             endif()
 
-            ExternalProject_Add(gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/SGL-UT/GPSTk
-                GIT_TAG v${GNSSSDR_GPSTK_LOCAL_VERSION}
-                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                BINARY_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}
-                PATCH_COMMAND ${GPSTK_PATCH_COMMAND}
+            ExternalProject_Add(gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
+                GIT_TAG v${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                BINARY_DIR ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                PATCH_COMMAND ${GNSSTK_PATCH_COMMAND}
                 CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
-                    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install
+                    -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install
                     -DBUILD_EXT=ON
                     -DBUILD_PYTHON=OFF
                     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -408,28 +408,28 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                     -DCMAKE_CXX_EXTENSIONS=ON
                     -DCMAKE_C_STANDARD=11
                     -DCMAKE_C_EXTENSIONS=ON
-                BUILD_COMMAND ${GPSTK_BUILD_COMMAND} ${GPSTK_PARALLEL_BUILD}
-                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX}
+                BUILD_COMMAND ${GNSSTK_BUILD_COMMAND} ${GNSSTK_PARALLEL_BUILD}
+                BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
                 UPDATE_COMMAND ""
             )
         endif()
-        set(GPSTK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GPSTK headers")
-        set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX})
-        set(GPSTK_BINDIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/bin/)
-        add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
-        add_library(Gpstk::gpstk STATIC IMPORTED)
-        add_dependencies(Gpstk::gpstk gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
-        file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS})
-        file(MAKE_DIRECTORY ${GPSTK_INCLUDE_DIRS}/gpstk)
-        set_target_properties(Gpstk::gpstk PROPERTIES
+        set(GNSSTK_INCLUDE_DIRS ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GNSSTK headers")
+        set(GNSSTK_LIBRARY ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(GNSSTK_BINDIR ${CMAKE_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/bin/)
+        add_definitions(-DGNSSTK_BINDIR="${GNSSTK_BINDIR}")
+        add_library(Gnsstk::gnsstk STATIC IMPORTED)
+        add_dependencies(Gnsstk::gnsstk gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
+        file(MAKE_DIRECTORY ${GNSSTK_INCLUDE_DIRS})
+        file(MAKE_DIRECTORY ${GNSSTK_INCLUDE_DIRS}/gnsstk)
+        set_target_properties(Gnsstk::gnsstk PROPERTIES
             IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${GPSTK_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${GPSTK_INCLUDE_DIRS};${GPSTK_INCLUDE_DIRS}/gpstk"
-            INTERFACE_LINK_LIBRARIES "${GPSTK_LIBRARY}"
+            IMPORTED_LOCATION "${GNSSTK_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${GNSSTK_INCLUDE_DIRS};${GNSSTK_INCLUDE_DIRS}/gnsstk"
+            INTERFACE_LINK_LIBRARIES "${GNSSTK_LIBRARY}"
         )
     else()
-        set(GPSTK_BINDIR ${GPSTK_INCLUDE_DIR}/../bin/)
-        add_definitions(-DGPSTK_BINDIR="${GPSTK_BINDIR}")
+        set(GNSSTK_BINDIR ${GNSSTK_INCLUDE_DIR}/../bin/)
+        add_definitions(-DGNSSTK_BINDIR="${GNSSTK_BINDIR}")
     endif()
 endif()
 
@@ -554,9 +554,12 @@ if(ENABLE_UNIT_TESTING)
         )
     endif()
     if(ENABLE_UNIT_TESTING_EXTRA)
-        target_link_libraries(run_tests PRIVATE Gpstk::gpstk)
-        if(GPSTK_OLDER_THAN_8)
+        target_link_libraries(run_tests PRIVATE Gnsstk::gnsstk)
+        if(GNSSTK_OLDER_THAN_8)
             target_compile_definitions(run_tests PRIVATE -DOLD_GPSTK=1)
+        endif()
+        if(GNSSTK_USES_GPSTK_NAMESPACE)
+            target_compile_definitions(run_tests PRIVATE -DGNSSTK_USES_GPSTK_NAMESPACE=1)
         endif()
     endif()
     if(ENABLE_STRIP)

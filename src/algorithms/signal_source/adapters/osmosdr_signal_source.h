@@ -79,6 +79,7 @@ private:
     double gain_;
     double if_gain_;
     double rf_gain_;
+    double if_bw_;
 
     size_t item_size_;
     int64_t samples_;

@@ -42,6 +42,7 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
       gain_(configuration->property(role + ".gain", 40.0)),
       if_gain_(configuration->property(role + ".if_gain", 40.0)),
       rf_gain_(configuration->property(role + ".rf_gain", 40.0)),
+      if_bw_(configuration->property(role + ".if_bw", 0.0)),
       samples_(configuration->property(role + ".samples", static_cast<int64_t>(0))),
       in_stream_(in_stream),
       out_stream_(out_stream),
@@ -116,6 +117,12 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
                                     LOG(INFO) << "Actual RX Gain: " << osmosdr_source_->get_gain() << " dB...";
                                 }
                         }
+                }
+
+            // 5. set bandwidth
+            if (if_bw_ > 0.0)
+                {
+                    osmosdr_source_->set_bandwidth(if_bw_, 0);
                 }
 
             // Get actual bandwidth

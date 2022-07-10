@@ -4,7 +4,7 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(NOT GNSSTK_FOUND)
+if(NOT GNSSTK_FOUND AND NOT ENABLE_OWN_GNSSTK)
     find_package(GNSSTK)
 endif()
 
@@ -98,10 +98,8 @@ if(Boost_FOUND)
                 ${GNSSTK_INCLUDE_DIR}
         )
     endif()
-    if(GNSSTK_VERSION)
-        if(GNSSTK_VERSION VERSION_LESS "9.0.0")
-            target_compile_definitions(rinex2assist PRIVATE -DGNSSTK_OLDER_THAN_9=1)
-        endif()
+    if(GNSSTK_OLDER_THAN_9)
+        target_compile_definitions(rinex2assist PRIVATE -DGNSSTK_OLDER_THAN_9=1)
     endif()
 
     if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)

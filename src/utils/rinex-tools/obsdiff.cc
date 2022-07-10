@@ -36,6 +36,7 @@
 #include <gpstk/GGTropModel.hpp>
 #include <gpstk/GNSSconstants.hpp>
 #include <gpstk/GPSEphemerisStore.hpp>
+#include <gpstk/GPSWeekSecond.hpp>
 #include <gpstk/PRSolution.hpp>
 #include <gpstk/Rinex3NavData.hpp>
 #include <gpstk/Rinex3NavHeader.hpp>
@@ -54,12 +55,6 @@ namespace gnsstk = gpstk;
 #include <gnsstk/Rinex3ObsHeader.hpp>
 #include <gnsstk/Rinex3ObsStream.hpp>
 
-// Classes for handling satellite navigation parameters RINEX
-// files (ephemerides)
-#include <gnsstk/Rinex3NavData.hpp>
-#include <gnsstk/Rinex3NavHeader.hpp>
-#include <gnsstk/Rinex3NavStream.hpp>
-
 // Classes for handling RINEX files with meteorological parameters
 #include <gnsstk/RinexMetBase.hpp>
 #include <gnsstk/RinexMetData.hpp>
@@ -68,15 +63,20 @@ namespace gnsstk = gpstk;
 
 // Class for handling tropospheric model
 #include <gnsstk/GGTropModel.hpp>
-
-// Class for storing >broadcast-type> ephemerides
-#include <gnsstk/GPSEphemerisStore.hpp>
-
-// Class for handling RAIM
+#include <gnsstk/GNSSconstants.hpp>
 #include <gnsstk/PRSolution.hpp>
 
-// Class defining GPS system constants
-#include <gnsstk/GNSSconstants.hpp>
+// Class for storing <broadcast-type> ephemeris
+#include <gnsstk/GPSWeekSecond.hpp>
+#if GNSSTK_OLDER_THAN_13
+#include <gnsstk/GPSEphemerisStore.hpp>
+#include <gnsstk/Rinex3NavData.hpp>
+#include <gnsstk/Rinex3NavHeader.hpp>
+#include <gnsstk/Rinex3NavStream.hpp>
+#else
+#include <gnsstk/MultiFormatNavDataFactory.hpp>
+#include <gnsstk/NavLibrary.hpp>
+#endif
 #endif
 
 #if GFLAGS_OLD_NAMESPACE
@@ -161,7 +161,13 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                         {
                             prn.id = prn_it;
                             gnsstk::CommonTime time = r_base_data.time;
+
+#if GNSSTK_OLDER_THAN_9
                             double sow(static_cast<gnsstk::GPSWeekSecond>(time).sow);
+#else
+                            gnsstk::GPSWeekSecond gws(time);
+                            double sow(gws.getSOW());
+#endif
 
                             auto pointer = r_base_data.obs.find(prn);
 
@@ -1153,8 +1159,17 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
             std::cout << "Warning: RINEX Nav file " << rinex_nav_filename << " does not exist, receiver's clock error could not be computed!\n";
             return 0.0;
         }
-    // Declaration of objects for storing ephemerides and handling RAIM
+        // Declaration of objects for storing ephemerides and handling RAIM
+#if GNSSTK_OLDER_THAN_13
     gnsstk::GPSEphemerisStore bcestore;
+#else
+    gnsstk::NavLibrary navLib;
+    // Construct a NavDataFactory object
+    gnsstk::NavDataFactoryPtr ndfp(
+        std::make_shared<gnsstk::MultiFormatNavDataFactory>());
+    // Add the NavDataFactory to the NavLibrary
+    navLib.addFactory(ndfp);
+#endif
     gnsstk::PRSolution raimSolver;
 
     // Object for void-type tropospheric model (in case no meteorological
@@ -1172,22 +1187,26 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
     double rx_clock_error_s = 0.0;
     try
         {
+#if GNSSTK_OLDER_THAN_13
             // Read nav file and store unique list of ephemerides
             gnsstk::Rinex3NavStream rnffs(rinex_nav_filename.c_str());  // Open ephemerides data file
             gnsstk::Rinex3NavData rne;
             gnsstk::Rinex3NavHeader hdr;
-
             // Let's read the header (may be skipped)
             rnffs >> hdr;
-
-            // Storing the ephemeris in "bcstore"
             while (rnffs >> rne)
                 {
                     bcestore.addEphemeris(rne);
                 }
-
             // Setting the criteria for looking up ephemeris
             bcestore.SearchNear();
+#else
+            if (!ndfp->addDataSource(rinex_nav_filename))
+                {
+                    std::cerr << "Unable to load " << rinex_nav_filename << '\n';
+                    return 0.0;
+                }
+#endif
 
             // Open and read the observation file one epoch at a time.
             // For each epoch, compute and print a position solution
@@ -1280,8 +1299,13 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                                     iret = raimSolver.RAIMCompute(rod.time, prnVec, Syss, rangeVec, invMC,
                                         &bcestore, tropModelPtr);
 #else
+#if GNSSTK_OLDER_THAN_13
                                     iret = raimSolver.RAIMCompute(rod.time, prnVec, rangeVec, invMC,
                                         &bcestore, tropModelPtr);
+#else
+                                    iret = raimSolver.RAIMCompute(rod.time, prnVec, rangeVec, invMC,
+                                        navLib, tropModelPtr);
+#endif
 #endif
                                     switch (iret)
                                         {

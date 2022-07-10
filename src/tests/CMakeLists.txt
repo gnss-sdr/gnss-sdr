@@ -359,7 +359,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
         set(GNSSTK_PATCH_COMMAND
             cd ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-            ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gnsstk_static.patch
+            ${Patch_EXECUTABLE} ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${CMAKE_SOURCE_DIR}/src/tests/data/gnsstk_static13.patch
         )
         # Patch only once
         if(EXISTS ${CMAKE_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt)
@@ -560,6 +560,9 @@ if(ENABLE_UNIT_TESTING)
         endif()
         if(GNSSTK_USES_GPSTK_NAMESPACE)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_USES_GPSTK_NAMESPACE=1)
+        endif()
+        if(GNSSTK_OLDER_THAN_9)
+            target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
     endif()
     if(ENABLE_STRIP)

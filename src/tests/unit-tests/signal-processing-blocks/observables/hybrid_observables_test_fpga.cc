@@ -67,6 +67,7 @@
 #include <utility>
 
 #if GNSSTK_USES_GPSTK_NAMESPACE
+#include <gpstk/GPSWeekSecond.hpp>
 #include <gpstk/Rinex3ObsBase.hpp>
 #include <gpstk/Rinex3ObsData.hpp>
 #include <gpstk/Rinex3ObsHeader.hpp>
@@ -74,6 +75,7 @@
 #include <gpstk/RinexUtilities.hpp>
 namespace gnsstk = gpstk;
 #else
+#include <gnsstk/GPSWeekSecond.hpp>
 #include <gnsstk/Rinex3ObsBase.hpp>
 #include <gnsstk/Rinex3ObsData.hpp>
 #include <gnsstk/Rinex3ObsHeader.hpp>
@@ -1705,7 +1707,12 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
                                 }
 
                             gnsstk::CommonTime time = r_ref_data.time;
+#if GNSSTK_OLDER_THAN_9
                             double sow(static_cast<gnsstk::GPSWeekSecond>(time).sow);
+#else
+                            gnsstk::GPSWeekSecond gws(time);
+                            double sow(gws.getSOW());
+#endif
 
                             auto pointer = r_ref_data.obs.find(prn);
                             if (pointer == r_ref_data.obs.end())

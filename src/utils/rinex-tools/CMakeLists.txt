@@ -7,7 +7,7 @@
 
 if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND) OR ENABLE_OWN_ARMADILLO)  # requires back(), introduced in Armadillo 9.800
     message(STATUS "The obsdiff utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
-    if(NOT GNSSTK_FOUND)
+    if(NOT GNSSTK_FOUND AND NOT ENABLE_OWN_GNSSTK)
         find_package(GNSSTK)
     endif()
     if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
@@ -69,6 +69,9 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     endif()
     if(GNSSTK_OLDER_THAN_9)
         target_compile_definitions(obsdiff PRIVATE -DGNSSTK_OLDER_THAN_9=1)
+    endif()
+    if(GNSSTK_OLDER_THAN_13)
+        target_compile_definitions(obsdiff PRIVATE -DGNSSTK_OLDER_THAN_13=1)
     endif()
     if(NOT TARGET Gnsstk::gnsstk)
         if(GNSSTK_USES_GPSTK_NAMESPACE)

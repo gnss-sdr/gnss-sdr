@@ -32,14 +32,12 @@
 #include <cstdlib>
 #include <iostream>
 #if GNSSTK_USES_GPSTK_NAMESPACE
-#include <gpstk/GALWeekSecond.hpp>
 #include <gpstk/GPSWeekSecond.hpp>
 #include <gpstk/Rinex3NavData.hpp>
 #include <gpstk/Rinex3NavHeader.hpp>
 #include <gpstk/Rinex3NavStream.hpp>
 namespace gnsstk = gpstk;
 #else
-#include <gnsstk/GALWeekSecond.hpp>
 #include <gnsstk/GPSWeekSecond.hpp>
 #include <gnsstk/Rinex3NavData.hpp>
 #include <gnsstk/Rinex3NavHeader.hpp>

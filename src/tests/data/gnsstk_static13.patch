@@ -1,5 +1,7 @@
---- CMakeLists_old.txt	2022-07-10 09:58:33.000000000 +0200
-+++ CMakeLists.txt	2022-07-10 10:02:36.000000000 +0200
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+--- CMakeLists.txt  2022-07-10 09:58:33.000000000 +0200
++++ CMakeLists.txt  2022-07-10 10:02:36.000000000 +0200
 @@ -6,7 +6,7 @@
  #           Is dependend on by $GNSSTK/build.sh
  #============================================================

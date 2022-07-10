@@ -663,10 +663,17 @@ endif()
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)
 if(NOT ENABLE_OWN_GNSSTK)
+    unset(Gnsstk::gnsstk CACHE)
     find_package(GNSSTK)
     set_package_properties(GNSSTK PROPERTIES
         PURPOSE "Used in some Extra Tests."
     )
+else()
+    unset(Gnsstk::gnsstk CACHE)
+    unset(GNSSTK_FOUND CACHE)
+    unset(GNSSTK_OLDER_THAN_8 CACHE)
+    unset(GNSSTK_OLDER_THAN_9 CACHE)
+    unset(GNSSTK_OLDER_THAN_13 CACHE)
 endif()
 if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURADIO_USES_SPDLOG))
     # Check if we have std::filesystem

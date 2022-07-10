@@ -91,7 +91,7 @@ if(GNSSTK_VERSION)
     endif()
 endif()
 
-if(NOT EXISTS ${GNSSTK_INCLUDE_DIR}/gnsstk/GPSEphemerisStore.hpp)
+if(EXISTS ${GNSSTK_INCLUDE_DIR}/gnsstk/GPSEphemerisStore.hpp)
     set(GNSSTK_OLDER_THAN_13 TRUE)
 endif()
 

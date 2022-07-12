@@ -38,7 +38,6 @@ constexpr double FREQ2_GLO = 1.24600e9;   //!<  GLONASS G2 base frequency (Hz)
 constexpr double DFRQ2_GLO = 0.43750e6;   //!<  GLONASS G2 bias frequency (Hz/n)
 constexpr double FREQ3_GLO = 1.202025e9;  //!<  GLONASS G3 frequency (Hz)
 constexpr double FREQ1_BDS = 1.561098e9;  //!<  BeiDou B1 frequency (Hz)
-constexpr double FREQ2_BDS = 1.20714e9;   //!<  BeiDou B2 frequency (Hz)
 constexpr double FREQ3_BDS = 1.26852e9;   //!<  BeiDou B3 frequency (Hz)
 
 

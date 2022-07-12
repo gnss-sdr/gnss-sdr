@@ -12,7 +12,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -21,6 +21,7 @@
 #ifndef GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H
 #define GNSS_SDR_GPS_L5I_PCPS_ACQUISITION_FPGA_H
 
+#include "acq_conf_fpga.h"
 #include "channel_fsm.h"
 #include "gnss_synchro.h"
 #include "pcps_acquisition_fpga.h"
@@ -185,7 +186,9 @@ public:
 private:
     static const uint32_t NUM_PRNs = 32;
 
-    const std::string acquisition_device_name = "acquisition_S00_AXI";  // UIO device name
+    static const uint32_t fpga_downsampling_factor = 1;  // downampling factor in the FPGA
+    static const uint32_t fpga_buff_num = 1;             // L5/E5a band
+    static const uint32_t fpga_blk_exp = 13;             // default block exponent
 
     // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
@@ -201,9 +204,10 @@ private:
     std::weak_ptr<ChannelFsm> channel_fsm_;
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     Gnss_Synchro* gnss_synchro_;
-    std::string item_type_;
-    std::string dump_filename_;
+    const ConfigurationInterface* configuration_;
+    Acq_Conf_Fpga acq_parameters_;
     std::string role_;
+    int64_t fs_in_;
     int32_t doppler_center_;
     uint32_t channel_;
     uint32_t doppler_max_;

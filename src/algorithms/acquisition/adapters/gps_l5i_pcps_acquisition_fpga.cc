@@ -12,7 +12,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -24,7 +24,6 @@
 #include "gnss_sdr_fft.h"
 #include "gnss_sdr_flags.h"
 #include "gps_l5_signal_replica.h"
-#include "uio_fpga.h"
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
@@ -45,51 +44,20 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    pcpsconf_fpga_t acq_parameters;
-    std::string default_dump_filename = "./data/acquisition.dat";
+    acq_parameters_.SetFromConfiguration(configuration, role, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GPS_L5I_CODE_RATE_CPS, GPS_L5I_CODE_LENGTH_CHIPS);
 
     LOG(INFO) << "role " << role;
 
-    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    int64_t fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-
-    acq_parameters.repeat_satellite = configuration->property(role + ".repeat_satellite", false);
-    DLOG(INFO) << role << " satellite repeat = " << acq_parameters.repeat_satellite;
-
-    uint32_t downsampling_factor = configuration->property(role + ".downsampling_factor", 1);
-    acq_parameters.downsampling_factor = downsampling_factor;
-
-    fs_in = fs_in / downsampling_factor;
-
-    acq_parameters.fs_in = fs_in;
-    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0)
         {
-            doppler_max_ = FLAGS_doppler_max;
+            acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
-    acq_parameters.doppler_max = doppler_max_;
+    doppler_max_ = acq_parameters_.doppler_max;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
+    fs_in_ = acq_parameters_.fs_in;
 
-    // -- Find number of samples per spreading code -------------------------
-    auto code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (GPS_L5I_CODE_RATE_CPS / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
-    acq_parameters.code_length = code_length;
-    // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0F));
-    uint32_t nsamples_total = pow(2, nbits);
-    uint32_t select_queue_Fpga = configuration->property(role + ".select_queue_Fpga", 1);
-    acq_parameters.select_queue_Fpga = select_queue_Fpga;
-
-    // UIO device file
-    std::string device_io_name;
-    // find the uio device file corresponding to the acquisition
-    if (find_uio_dev_file_name(device_io_name, acquisition_device_name, 0) < 0)
-        {
-            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << acquisition_device_name << std::endl;
-            throw std::exception();
-        }
-    acq_parameters.device_name = device_io_name;
-
-    acq_parameters.samples_per_code = nsamples_total;
-    acq_parameters.excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / GPS_L5I_CODE_RATE_CPS) * static_cast<float>(fs_in)));
+    uint32_t code_length = acq_parameters_.code_length;
+    uint32_t nsamples_total = acq_parameters_.samples_per_code;
 
     // compute all the GPS L5 PRN Codes (this is done only once upon the class constructor in order to avoid re-computing the PRN codes every time
     // a channel is assigned)
@@ -106,7 +74,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
 
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
-            gps_l5i_code_gen_complex_sampled(code, PRN, fs_in);
+            gps_l5i_code_gen_complex_sampled(code, PRN, fs_in_);
 
             for (uint32_t s = code_length; s < 2 * code_length; s++)
                 {
@@ -146,16 +114,9 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                 }
         }
 
-    acq_parameters.all_fft_codes = d_all_fft_codes_.data();
+    acq_parameters_.all_fft_codes = d_all_fft_codes_.data();
 
-    // reference for the FPGA FFT-IFFT attenuation factor
-    acq_parameters.total_block_exp = configuration->property(role + ".total_block_exp", 13);
-
-    acq_parameters.num_doppler_bins_step2 = configuration->property(role + ".second_nbins", 4);
-    acq_parameters.doppler_step2 = configuration->property(role + ".second_doppler_step", static_cast<float>(125.0));
-    acq_parameters.make_2_steps = configuration->property(role + ".make_two_steps", false);
-    acq_parameters.max_num_acqs = configuration->property(role + ".max_num_acqs", 2);
-    acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters);
+    acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters_);
 
     if (in_streams_ > 1)
         {

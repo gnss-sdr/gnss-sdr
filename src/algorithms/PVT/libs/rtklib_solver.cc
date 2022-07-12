@@ -6,6 +6,7 @@
  *          <li> 2017-2019, Javier Arribas
  *          <li> 2017-2019, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
+ *          <li> 2022, Aloha Churchill
  *          </ul>
  *
  * This is a derived work from RTKLIB http://www.rtklib.com/
@@ -32,6 +33,7 @@
 
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
+#include "Beidou_B2a.h" // possibly replace with Beidou_CNAV2.h?
 #include "gnss_sdr_filesystem.h"
 #include "rtklib_conversions.h"
 #include "rtklib_rtkpos.h"
@@ -72,6 +74,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     d_rtklib_band_index["5X"] = 2;
     d_rtklib_band_index["L5"] = 2;
     d_rtklib_band_index["E6"] = 0;
+    // adding in for B2a
+    d_rtklib_band_index["5C"] = 2;
 
     switch (d_type_of_rx)
         {
@@ -126,6 +130,10 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
             break;
+        
+        // need to add in cases for 700-707 if needed for B2a signal
+        // how do I find this type of information
+
         }
 
     // ############# ENABLE DATA FILE LOG #################
@@ -462,6 +470,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     std::map<int, Gps_CNAV_Ephemeris>::const_iterator gps_cnav_ephemeris_iter;
     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
     std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
+    std::map<int, Beidou_Cnav2_Ephemeris>::const_iterator beidou_cnav2_ephemeris_iter;
 
     const Glonass_Gnav_Utc_Model gnav_utc = this->glonass_gnav_utc_model;
 
@@ -881,6 +890,28 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 else  // the ephemeris are not available for this SV
                                     {
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
+
+                        // BEIDOU B2a
+                        if (sig_ == "5C")
+                            {
+                                beidou_cnav2_ephemeris_iter = beidou_cnav2_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (beidou_cnav2_ephemeris_iter != beidou_cnav2_ephemeris_map.cend())
+                                    {
+                                        //convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                        eph_data[valid_obs] = eph_to_rtklib(beidou_cnav2_ephemeris_iter->second);
+                                        //convert observation from GNSS-SDR class to RTKLIB structure
+                                        obsd_t newobs = {{0, 0}, '0', '0', {}, {}, {}, {}, {}, {}};
+                                        obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                            gnss_observables_iter->second,
+                                            beidou_cnav2_ephemeris_iter->second.WN + BEIDOU_CNAV2_BDT2GPST_WEEK_NUM_OFFSET,
+                                            2);
+                                        valid_obs++;
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->first;
                                     }
                             }
                         break;

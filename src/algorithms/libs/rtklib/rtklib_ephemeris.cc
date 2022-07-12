@@ -226,6 +226,15 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     double zg;
     double sino;
     double coso;
+
+    // double vars for Beidou B2a
+    double A;
+    double A0;
+    double Ak;
+    double n0;
+    double nA;
+    double delnA;
+
     int n;
     int sys;
     int prn;
@@ -244,17 +253,33 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
         case SYS_GAL:
             mu = MU_GAL;
             omge = OMGE_GAL;
+            M = eph->M0 + (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) * tk;
+            A = eph->A;
             break;
         case SYS_BDS:
             mu = MU_BDS;
             omge = OMGE_BDS;
+            if (eph->code == 7)
+            	{
+            		A0 = eph->A;
+            		Ak = eph->A + eph->Adot * tk;
+            		n0 = sqrt(mu / (A0 * A0 * A0));
+            		delnA = eph->deln + 0.5*eph->ndot*tk;
+            		nA = n0 + delnA;
+
+            		M = eph->M0 + nA * tk;
+            		A = Ak;
+
+            	}
             break;
         default:
             mu = MU_GPS;
             omge = GNSS_OMEGA_EARTH_DOT;
+            M = eph->M0 + (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) * tk;
+            A = eph->A;
             break;
         }
-    M = eph->M0 + (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) * tk;
+
 
     for (n = 0, E = M, Ek = 0.0; fabs(E - Ek) > RTOL_KEPLER && n < MAX_ITER_KEPLER; n++)
         {
@@ -272,7 +297,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     trace(4, "kepler: sat=%2d e=%8.5f n=%2d del=%10.3e\n", eph->sat, eph->e, n, E - Ek);
 
     u = atan2(sqrt(1.0 - eph->e * eph->e) * sinE, cosE - eph->e) + eph->omg;
-    r = eph->A * (1.0 - eph->e * cosE);
+    r = A * (1.0 - eph->e * cosE);
     i = eph->i0 + eph->idot * tk;
     sin2u = sin(2.0 * u);
     cos2u = cos(2.0 * u);
@@ -311,7 +336,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     *dts = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
 
     /* relativity correction */
-    *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / std::pow(SPEED_OF_LIGHT_M_S, 2.0);
+    *dts -= 2.0 * sqrt(mu * A) * eph->e * sinE / std::pow(SPEED_OF_LIGHT_M_S, 2.0);
 
     /* position and clock error variance */
     *var = var_uraeph(eph->sva);

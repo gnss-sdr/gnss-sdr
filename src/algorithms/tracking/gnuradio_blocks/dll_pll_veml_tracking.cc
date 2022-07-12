@@ -22,6 +22,7 @@
 
 #include "dll_pll_veml_tracking.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2a.h"
 #include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
@@ -36,6 +37,7 @@
 #include "galileo_e1_signal_replica.h"
 #include "galileo_e5_signal_replica.h"
 #include "galileo_e6_signal_replica.h"
+#include "beidou_b2a_signal_replica.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
@@ -162,6 +164,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
     map_signal_pretty_name["B1"] = "B1I";
     map_signal_pretty_name["B3"] = "B3I";
     map_signal_pretty_name["E6"] = "E6";
+    map_signal_pretty_name["5C"] = "B2a";
 
     d_signal_pretty_name = map_signal_pretty_name[d_signal_type];
 
@@ -417,7 +420,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_symbols_per_bit = BEIDOU_B3I_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
                     d_code_samples_per_chip = 1;
-                    d_secondary = false;
+                    d_secondary = true;
                     d_trk_parameters.track_pilot = false;
                     d_trk_parameters.slope = 1.0;
                     d_trk_parameters.spc = d_trk_parameters.early_late_space_chips;
@@ -426,6 +429,32 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     d_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
+                }
+            else if (signal_type == "5C")
+                {
+                    d_signal_carrier_freq = BEIDOU_B2a_FREQ_HZ;
+                    d_code_period = BEIDOU_B2ad_CODE_PERIOD;
+                    d_code_chip_rate = BEIDOU_B2ad_CODE_RATE_HZ;
+                    d_symbols_per_bit = BEIDOU_CNAV2_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_correlation_length_ms = 1;
+                    d_code_samples_per_chip = 1;
+                    d_code_length_chips = static_cast<uint32_t>(BEIDOU_B2ad_CODE_LENGTH_CHIPS);
+                    d_secondary = true;
+
+                    if (trk_parameters.track_pilot)
+                        {
+                            d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ap_SECONDARY_CODE_LENGTH);
+                            signal_pretty_name = signal_pretty_name + "Pilot";
+
+                            d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
+                            d_data_secondary_code_string = const_cast<std::string *>(&BEIDOU_B2ad_SECONDARY_CODE);
+                        }
+                    else
+                        {
+                            d_secondary_code_length = static_cast<uint32_t>(BEIDOU_B2ad_SECONDARY_CODE_LENGTH);
+                            d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B2ad_SECONDARY_CODE);
+                            signal_pretty_name = signal_pretty_name + "Data";
+                        }
                 }
             else
                 {
@@ -816,6 +845,23 @@ void dll_pll_veml_tracking::start_tracking()
                     d_data_secondary_code_length = static_cast<uint32_t>(BEIDOU_B3I_SECONDARY_CODE_LENGTH);
                     d_data_secondary_code_string = BEIDOU_B3I_SECONDARY_CODE_STR;
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
+                }
+        }
+        
+    else if (systemName == "Beidou" and signal_type == "5C")
+        {
+            if (trk_parameters.track_pilot)
+                {
+                    // Secondary pilot code is specific for each satellite
+                    d_secondary_code_string = const_cast<std::string *>(&BEIDOU_B2ap_SECONDARY_CODE[d_acquisition_gnss_synchro->PRN - 1]);
+                    beidou_b2ap_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+                    beidou_b2ad_code_gen_float(gsl::span<float>(d_data_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
+                    d_Prompt_Data[0] = gr_complex(0.0, 0.0);
+                    correlator_data_cpu.set_local_code_and_taps(d_code_length_chips, d_data_code, d_prompt_data_shift);
+                }
+            else
+                {
+                    beidou_b2ad_code_gen_float(gsl::span<float>(d_tracking_code, 2 * d_code_length_chips), d_acquisition_gnss_synchro->PRN);
                 }
         }
 

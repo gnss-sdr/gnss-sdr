@@ -254,6 +254,7 @@ private:
     std::list<Gnss_Signal> available_GLO_2G_signals_;
     std::list<Gnss_Signal> available_BDS_B1_signals_;
     std::list<Gnss_Signal> available_BDS_B3_signals_;
+    std::list<Gnss_Signal> available_BDS_5C_signals_;
 
     enum StringValue
     {
@@ -268,7 +269,8 @@ private:
         evGLO_1G,
         evGLO_2G,
         evBDS_B1,
-        evBDS_B3
+        evBDS_B3,
+        evBDS_5C
     };
     std::map<std::string, StringValue> mapStringValues_;
 

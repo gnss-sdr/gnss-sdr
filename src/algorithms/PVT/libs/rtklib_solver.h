@@ -6,6 +6,7 @@
  *          <li> 2017, Javier Arribas
  *          <li> 2017, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
+ *          <li> 2022, Aloha Churchill
  *          </ul>
  *
  * This is a derived work from RTKLIB http://www.rtklib.com/
@@ -39,6 +40,10 @@
 #include "beidou_dnav_ephemeris.h"
 #include "beidou_dnav_iono.h"
 #include "beidou_dnav_utc_model.h"
+#include "beidou_cnav2_almanac.h"
+#include "beidou_cnav2_ephemeris.h"
+#include "beidou_cnav2_iono.h"
+#include "beidou_cnav2_utc_model.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
@@ -99,6 +104,7 @@ public:
     std::map<int, Gps_CNAV_Ephemeris> gps_cnav_ephemeris_map;          //!< Map storing new GPS_CNAV_Ephemeris
     std::map<int, Glonass_Gnav_Ephemeris> glonass_gnav_ephemeris_map;  //!< Map storing new GLONASS GNAV Ephemeris
     std::map<int, Beidou_Dnav_Ephemeris> beidou_dnav_ephemeris_map;    //!< Map storing new BeiDou DNAV Ephmeris
+    std::map<int, Beidou_Cnav2_Ephemeris> beidou_cnav2_ephemeris_map;    //!< Map storing new BeiDou CNAV2 Ephmeris
 
     Galileo_Utc_Model galileo_utc_model;
     Galileo_Iono galileo_iono;
@@ -117,6 +123,10 @@ public:
     Beidou_Dnav_Utc_Model beidou_dnav_utc_model;
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
+
+    Beidou_Cnav2_Utc_Model beidou_cnav2_utc_model;
+    Beidou_Cnav2_Iono beidou_cnav2_iono;
+    std::map<int, Beidou_Cnav2_Almanac> beidou_cnav2_almanac_map;
 
 private:
     bool save_matfile() const;

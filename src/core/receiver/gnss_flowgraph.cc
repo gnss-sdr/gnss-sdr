@@ -6,6 +6,7 @@
  *         Carles Fernandez-Prades, 2014-2020. cfernandez(at)cttc.es
  *         Álvaro Cebrián Juan, 2018. acebrianjuan(at)gmail.com
  *         Javier Arribas, 2018. javiarribas(at)gmail.com
+ *         Aloha Churchill, as part of the 2022 GSoC Program, churchill.aloha(at)gmail.com 
  *
  *
  * -----------------------------------------------------------------------------
@@ -182,6 +183,7 @@ void GNSSFlowgraph::init()
     mapStringValues_["2G"] = evGLO_2G;
     mapStringValues_["B1"] = evBDS_B1;
     mapStringValues_["B3"] = evBDS_B3;
+    mapStringValues_["5C"] = evBDS_5C;
 
     // fill the signals queue with the satellites ID's to be searched by the acquisition
     set_signals_list();
@@ -1590,6 +1592,12 @@ int GNSSFlowgraph::assign_channels()
                             available_BDS_B3_signals_.remove(gnss_signal);
                             break;
 
+                        case evBDS_5C:
+                            gnss_system_str = "Beidou";
+                            gnss_signal = Gnss_Signal(Gnss_Satellite(gnss_system_str, sat), gnss_signal_str);
+                            available_BDS_5C_signals_.remove(gnss_signal);
+                            break;
+
                         default:
                             LOG(ERROR) << "This should not happen :-(";
                             gnss_system_str = "GPS";
@@ -1702,6 +1710,11 @@ void GNSSFlowgraph::push_back_signal(const Gnss_Signal& gs)
             available_BDS_B3_signals_.push_back(gs);
             break;
 
+        case evBDS_5C:
+            available_BDS_5C_signals_.remove(gs);
+            available_BDS_5C_signals_.push_back(gs);
+            break;
+
         default:
             LOG(ERROR) << "This should not happen :-(";
             break;
@@ -1755,6 +1768,10 @@ void GNSSFlowgraph::remove_signal(const Gnss_Signal& gs)
 
         case evBDS_B3:
             available_BDS_B3_signals_.remove(gs);
+            break;
+        
+        case evBDS_5C:
+            available_BDS_5C_signals_.remove(gs);
             break;
 
         default:
@@ -2527,6 +2544,20 @@ void GNSSFlowgraph::set_signals_list()
                         std::string("B3"));
                 }
         }
+
+    // adding in for BeiDou
+    if (configuration_->property("Channels_5C.count", 0) > 0)
+        {
+            // Loop to create the list of BeiDou B2a signals
+            for (available_gnss_prn_iter = available_beidou_prn.cbegin();
+                 available_gnss_prn_iter != available_beidou_prn.cend();
+                 available_gnss_prn_iter++)
+                {
+                    available_BDS_5C_signals_.emplace_back(
+                        Gnss_Satellite(std::string("Beidou"), *available_gnss_prn_iter),
+                        std::string("5C"));
+                }
+        }
 }
 
 
@@ -2844,6 +2875,12 @@ Gnss_Signal GNSSFlowgraph::search_next_signal(const std::string& searched_signal
             result = available_BDS_B3_signals_.front();
             available_BDS_B3_signals_.pop_front();
             available_BDS_B3_signals_.push_back(result);
+            break;
+        
+        case evBDS_5C:
+            result = available_BDS_5C_signals_.front();
+            available_BDS_5C_signals_.pop_front();
+            available_BDS_5C_signals_.push_back(result);
             break;
 
         default:

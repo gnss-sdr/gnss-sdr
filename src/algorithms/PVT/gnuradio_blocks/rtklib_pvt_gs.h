@@ -47,6 +47,8 @@
 
 class Beidou_Dnav_Almanac;
 class Beidou_Dnav_Ephemeris;
+class Beidou_Cnav2_Almanac;
+class Beidou_Cnav2_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
 class GeoJSON_Printer;
@@ -108,6 +110,16 @@ public:
      * \brief Get latest set of BeiDou DNAV almanac from PVT block
      */
     std::map<int, Beidou_Dnav_Almanac> get_beidou_dnav_almanac_map() const;
+
+    /*!
+     * \brief Get latest set of BeiDou CNAV2 ephemeris from PVT block
+     */
+    std::map<int, Beidou_Cnav2_Ephemeris> get_beidou_cnav2_ephemeris_map() const;
+
+    /*!
+     * \brief Get latest set of BeiDou CNAV2 almanac from PVT block
+     */
+    std::map<int, Beidou_Cnav2_Almanac> get_beidou_cnav2_almanac_map() const;
 
     /*!
      * \brief Clear all ephemeris information and the almanacs for GPS and Galileo
@@ -238,6 +250,13 @@ private:
     size_t d_beidou_dnav_iono_sptr_type_hash_code;
     size_t d_beidou_dnav_utc_model_sptr_type_hash_code;
     size_t d_beidou_dnav_almanac_sptr_type_hash_code;
+
+    // Adding in B2a cnav
+    size_t d_beidou_cnav2_ephemeris_sptr_type_hash_code;
+    size_t d_beidou_cnav2_iono_sptr_type_hash_code;
+    size_t d_beidou_cnav2_utc_model_sptr_type_hash_code;
+    size_t d_beidou_cnav2_almanac_sptr_type_hash_code;
+    
     size_t d_galileo_has_data_sptr_type_hash_code;
 
     double d_rinex_version;

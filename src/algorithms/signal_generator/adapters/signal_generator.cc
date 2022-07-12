@@ -18,6 +18,7 @@
 
 #include "signal_generator.h"
 #include "Beidou_B1I.h"
+#include "Beidou_B2a.h"
 #include "GLONASS_L1_L2_CA.h"
 #include "GPS_L1_CA.h"
 #include "Galileo_E1.h"
@@ -119,6 +120,10 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     else if (std::find(system.begin(), system.end(), "B") != system.end())
         {
             vector_length = static_cast<unsigned int>(round(static_cast<float>(fs_in) / (BEIDOU_B1I_CODE_RATE_CPS / BEIDOU_B1I_CODE_LENGTH_CHIPS)));
+        }
+    else if (std::find(system.begin(), system.end(), "C") != system.end())
+        {
+                vector_length = round(static_cast<float>(fs_in) / (BEIDOU_B2ad_CODE_RATE_HZ / BEIDOU_B2ad_CODE_LENGTH_CHIPS));
         }
 
     if (item_type_ == "gr_complex")

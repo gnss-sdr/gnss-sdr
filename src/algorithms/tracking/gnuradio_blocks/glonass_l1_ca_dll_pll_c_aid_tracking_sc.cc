@@ -85,7 +85,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::msg_handler_preamble_index(const p
     DLOG(INFO) << "Extended correlation enabled for Tracking CH " << d_channel << ": Satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN);
     if (d_enable_extended_integration == false)  // avoid re-setting preamble indicator
         {
-            d_preamble_timestamp_s = pmt::to_double(msg);
+            d_preamble_timestamp_samples = pmt::to_double(msg);
             d_enable_extended_integration = true;
             d_preamble_synchronized = false;
         }
@@ -134,7 +134,7 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
       d_pll_to_dll_assist_secs_Ti(0.0),
       d_carr_phase_error_secs_Ti(0.0),
       d_code_error_chips_Ti(0.0),
-      d_preamble_timestamp_s(0.0),
+      d_preamble_timestamp_samples(0.0),
       d_extend_correlation_ms(extend_correlation_ms),
       d_code_error_filt_chips_s(0.0),
       d_code_error_filt_chips_Ti(0.0),
@@ -154,8 +154,8 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
       d_dump(dump)
 {
     // Telemetry bit synchronization message port input
-    this->message_port_register_in(pmt::mp("preamble_timestamp_s"));
-    this->set_msg_handler(pmt::mp("preamble_timestamp_s"),
+    this->message_port_register_in(pmt::mp("preamble_timestamp_samples"));
+    this->set_msg_handler(pmt::mp("preamble_timestamp_samples"),
 #if HAS_GENERIC_LAMBDA
         [this](auto &&PH1) { msg_handler_preamble_index(PH1); });
 #else
@@ -209,7 +209,7 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     const double acq_trk_diff_seconds = static_cast<double>(acq_trk_diff_samples) / static_cast<double>(d_fs_in);
     // Doppler effect
     // Fd=(C/(C+Vr))*F
-    d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (GLONASS_L1_CA_FREQ_HZ * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
+    d_glonass_freq_ch = GLONASS_L1_CA_FREQ_HZ + (DFRQ1_GLO * GLONASS_PRN.at(d_acquisition_gnss_synchro->PRN));
     const double radial_velocity = (d_glonass_freq_ch + d_acq_carrier_doppler_hz) / d_glonass_freq_ch;
     // new chip and prn sequence periods based on acq Doppler
     d_code_freq_chips = radial_velocity * GLONASS_L1_CA_CODE_RATE_CPS;
@@ -273,8 +273,8 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::start_tracking()
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
-    d_enable_extended_integration = true;
-    d_preamble_synchronized = true;
+    d_enable_extended_integration = false;
+    d_preamble_synchronized = false;
 
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " Code Phase correction [samples]=" << delay_correction_samples
@@ -604,7 +604,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
             bool enable_dll_pll;
             if (d_enable_extended_integration == true)
                 {
-                    int64_t symbol_diff = round(1000.0 * ((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples) / static_cast<double>(d_fs_in) - d_preamble_timestamp_s));
+                    int64_t symbol_diff = round(1000.0 * ((static_cast<double>(d_sample_counter) + d_rem_code_phase_samples - d_preamble_timestamp_samples) / static_cast<double>(d_fs_in)));
                     if (symbol_diff > 0 and symbol_diff % d_extend_correlation_ms == 0)
                         {
                             // compute coherent integration and enable tracking loop
@@ -631,6 +631,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                                 }
                             // UPDATE INTEGRATION TIME
                             CURRENT_INTEGRATION_TIME_S = static_cast<double>(d_extend_correlation_ms) * GLONASS_L1_CA_CODE_PERIOD_S;
+                            d_code_loop_filter.set_pdi(static_cast<float>(CURRENT_INTEGRATION_TIME_S));
                             enable_dll_pll = true;
                         }
                     else

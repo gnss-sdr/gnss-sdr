@@ -26,11 +26,9 @@ const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int6
 void beidou_b1i_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip_shift)
 {
     constexpr uint32_t code_length = 2046;
-    const std::array<int32_t, 33> delays = {712 /*PRN1*/, 1581, 1414, 1550, 581, 771, 1311, 1043, 1549, 359, 710, 1579, 1548, 1103, 579, 769, 358, 709, 1411, 1547,
-        1102, 578, 357, 1577, 1410, 1546, 1101, 707, 1576, 1409, 1545, 354 /*PRN32*/,
-        705};
-    const std::array<int32_t, 37> phase1 = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10};
-    const std::array<int32_t, 37> phase2 = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11};
+    const std::array<int32_t, 63> phase1 = {1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 8, 8, 8, 9, 9, 10, 2, 3, 3, 3, 3, 3, 4, 4, 5, 5, 5, 5, 6, 8, 9, 9, 3, 5, 7, 4, 4, 5, 5, 5, 5, 6};
+    const std::array<int32_t, 63> phase2 = {3, 4, 5, 6, 8, 9, 10, 11, 7, 4, 5, 6, 8, 9, 10, 11, 5, 6, 8, 9, 10, 11, 6, 8, 9, 10, 11, 8, 9, 10, 11, 9, 10, 11, 10, 11, 11, 7, 4, 6, 8, 10, 11, 5, 9, 6, 8, 10, 11, 9, 9, 10, 11, 7, 7, 9, 5, 9, 6, 8, 10, 11, 9};
+    const std::array<int32_t, 63> phase3 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3};
 
     std::bitset<code_length> G1{};
     std::bitset<code_length> G2{};
@@ -50,7 +48,7 @@ void beidou_b1i_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip
     prn_idx = prn - 1;
 
     // A simple error check
-    if ((prn_idx < 0) || (prn_idx > 32))
+    if ((prn_idx < 0) || (prn_idx > 62))
         {
             return;
         }
@@ -59,7 +57,7 @@ void beidou_b1i_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip
     for (lcv = 0; lcv < code_length; lcv++)
         {
             G1[lcv] = G1_register[0];
-            G2[lcv] = G2_register[-(phase1[prn_idx] - 11)] xor G2_register[-(phase2[prn_idx] - 11)];
+            G2[lcv] = G2_register[-(phase1[prn_idx] - 11)] xor G2_register[-(phase2[prn_idx] - 11)] xor (phase3[prn_idx] ? G2_register[-(phase3[prn_idx] - 11)] : 0);
 
             feedback1 = G1_register[0] xor G1_register[1] xor G1_register[2] xor G1_register[3] xor G1_register[4] xor G1_register[10];
             feedback2 = G2_register[0] xor G2_register[2] xor G2_register[3] xor G2_register[6] xor G2_register[7] xor G2_register[8] xor G2_register[9] xor G2_register[10];
@@ -75,7 +73,7 @@ void beidou_b1i_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip
         }
 
     // Set the delay
-    delay = code_length - delays[prn_idx] * 0;  // *********************************
+    delay = code_length;  //**********************************
     delay += chip_shift;
     delay %= code_length;
 

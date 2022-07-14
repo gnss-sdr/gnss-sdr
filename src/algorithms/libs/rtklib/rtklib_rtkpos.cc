@@ -37,6 +37,7 @@
 #include "rtklib_tides.h"
 #include <cmath>
 #include <cstring>
+#include <vector>
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
     const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),
@@ -2029,7 +2030,7 @@ void restamb(rtk_t *rtk, const double *bias, int nb __attribute((unused)), doubl
     int n;
     int m;
     int f;
-    int index[MAXSAT];
+    std::vector<int> index(MAXSAT);
     int nv = 0;
     int nf = NF_RTK(&rtk->opt);
 
@@ -2083,7 +2084,7 @@ void holdamb(rtk_t *rtk, const double *xa)
     int m;
     int f;
     int info;
-    int index[MAXSAT];
+    std::vector<int> index(MAXSAT);
     int nb = rtk->nx - rtk->na;
     int nv = 0;
     int nf = NF_RTK(&rtk->opt);
@@ -2371,13 +2372,13 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     int ns;
     int ny;
     int nv;
-    int sat[MAXSAT];
-    int iu[MAXSAT];
-    int ir[MAXSAT];
+    std::vector<int> sat(MAXSAT);
+    std::vector<int> iu(MAXSAT);
+    std::vector<int> ir(MAXSAT);
     int niter;
     int info;
-    int vflg[MAXOBS * NFREQ * 2 + 1];
-    int svh[MAXOBS * 2];
+    std::vector<int> vflg(MAXOBS * NFREQ * 2 + 1);
+    std::vector<int> svh(MAXOBS * 2);
     int stat = rtk->opt.mode <= PMODE_DGPS ? SOLQ_DGPS : SOLQ_FLOAT;
     int nf = opt->ionoopt == IONOOPT_IFLC ? 1 : opt->nf;
 
@@ -2401,10 +2402,10 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
                 }
         }
     /* satellite positions/clocks */
-    satposs(time, obs, n, nav, opt->sateph, rs, dts, var, svh);
+    satposs(time, obs, n, nav, opt->sateph, rs, dts, var, svh.data());
 
     /* undifferenced residuals for base station */
-    if (!zdres(1, obs + nu, nr, rs + nu * 6, dts + nu * 2, svh + nu, nav, rtk->rb, opt, 1,
+    if (!zdres(1, obs + nu, nr, rs + nu * 6, dts + nu * 2, &svh[nu], nav, rtk->rb, opt, 1,
             y + nu * nf * 2, e + nu * 3, azel + nu * 2))
         {
             errmsg(rtk, "initial base station position error\n");
@@ -2423,7 +2424,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
             dt = intpres(time, obs + nu, nr, nav, rtk, y + nu * nf * 2);
         }
     /* select common satellites between rover and base-station */
-    if ((ns = selsat(obs, azel, nu, nr, opt, sat, iu, ir)) <= 0)
+    if ((ns = selsat(obs, azel, nu, nr, opt, sat.data(), iu.data(), ir.data())) <= 0)
         {
             errmsg(rtk, "no common satellite\n");
 
@@ -2436,7 +2437,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
             return 0;
         }
     /* temporal update of states */
-    udstate(rtk, obs, sat, iu, ir, ns, nav);
+    udstate(rtk, obs, sat.data(), iu.data(), ir.data(), ns, nav);
 
     trace(4, "x(0)=");
     tracemat(4, rtk->x, 1, NR_RTK(opt), 13, 4);
@@ -2458,14 +2459,14 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     for (i = 0; i < niter; i++)
         {
             /* undifferenced residuals for rover */
-            if (!zdres(0, obs, nu, rs, dts, svh, nav, xp, opt, 0, y, e, azel))
+            if (!zdres(0, obs, nu, rs, dts, svh.data(), nav, xp, opt, 0, y, e, azel))
                 {
                     errmsg(rtk, "rover initial position error\n");
                     stat = SOLQ_NONE;
                     break;
                 }
             /* double-differenced residuals and partial derivatives */
-            if ((nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, H, R, vflg)) < 1)
+            if ((nv = ddres(rtk, nav, dt, xp, Pp, sat.data(), y, e, azel, iu.data(), ir.data(), ns, v, H, R, vflg.data())) < 1)
                 {
                     errmsg(rtk, "no double-differenced residual\n");
                     stat = SOLQ_NONE;
@@ -2482,13 +2483,13 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
             trace(4, "x(%d)=", i + 1);
             tracemat(4, xp, 1, NR_RTK(opt), 13, 4);
         }
-    if (stat != SOLQ_NONE && zdres(0, obs, nu, rs, dts, svh, nav, xp, opt, 0, y, e, azel))
+    if (stat != SOLQ_NONE && zdres(0, obs, nu, rs, dts, svh.data(), nav, xp, opt, 0, y, e, azel))
         {
             /* post-fit residuals for float solution */
-            nv = ddres(rtk, nav, dt, xp, Pp, sat, y, e, azel, iu, ir, ns, v, nullptr, R, vflg);
+            nv = ddres(rtk, nav, dt, xp, Pp, sat.data(), y, e, azel, iu.data(), ir.data(), ns, v, nullptr, R, vflg.data());
 
             /* validation of float solution */
-            if (valpos(rtk, v, R, vflg, nv, 4.0))
+            if (valpos(rtk, v, R, vflg.data(), nv, 4.0))
                 {
                     /* update state and covariance matrix */
                     matcpy(rtk->x, xp, rtk->nx, 1);
@@ -2526,7 +2527,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     /* resolve integer ambiguity by WL-NL */
     if (stat != SOLQ_NONE && rtk->opt.modear == ARMODE_WLNL)
         {
-            if (resamb_WLNL(rtk, obs, sat, iu, ir, ns, nav, azel))
+            if (resamb_WLNL(rtk, obs, sat.data(), iu.data(), ir.data(), ns, nav, azel))
                 {
                     stat = SOLQ_FIX;
                 }
@@ -2534,7 +2535,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     /* resolve integer ambiguity by TCAR */
     else if (stat != SOLQ_NONE && rtk->opt.modear == ARMODE_TCAR)
         {
-            if (resamb_TCAR(rtk, obs, sat, iu, ir, ns, nav, azel))
+            if (resamb_TCAR(rtk, obs, sat.data(), iu.data(), ir.data(), ns, nav, azel))
                 {
                     stat = SOLQ_FIX;
                 }
@@ -2542,13 +2543,13 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
     /* resolve integer ambiguity by LAMBDA */
     else if (stat != SOLQ_NONE && resamb_LAMBDA(rtk, bias, xa) > 1)
         {
-            if (zdres(0, obs, nu, rs, dts, svh, nav, xa, opt, 0, y, e, azel))
+            if (zdres(0, obs, nu, rs, dts, svh.data(), nav, xa, opt, 0, y, e, azel))
                 {
                     /* post-fit reisiduals for fixed solution */
-                    nv = ddres(rtk, nav, dt, xa, nullptr, sat, y, e, azel, iu, ir, ns, v, nullptr, R, vflg);
+                    nv = ddres(rtk, nav, dt, xa, nullptr, sat.data(), y, e, azel, iu.data(), ir.data(), ns, v, nullptr, R, vflg.data());
 
                     /* validation of fixed solution */
-                    if (valpos(rtk, v, R, vflg, nv, 4.0))
+                    if (valpos(rtk, v, R, vflg.data(), nv, 4.0))
                         {
                             /* hold integer ambiguity */
                             if (++rtk->nfix >= rtk->opt.minfix &&

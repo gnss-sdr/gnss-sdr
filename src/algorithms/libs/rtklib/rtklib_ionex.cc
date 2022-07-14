@@ -39,6 +39,7 @@
 #include "rtklib_ionex.h"
 #include "rtklib_rtkcmn.h"
 #include <cstring>
+#include <vector>
 
 /* get index -----------------------------------------------------------------*/
 int getindex(double value, const double *range)
@@ -425,8 +426,8 @@ void readtec(const char *file, nav_t *nav, int opt)
     double hgts[3] = {0};
     double rb = 0.0;
     double nexp = -1.0;
-    double dcb[MAXSAT] = {0};
-    double rms[MAXSAT] = {0};
+    std::vector<double> dcb(MAXSAT, 0);
+    std::vector<double> rms(MAXSAT, 0);
     int i;
     int n;
     char *efiles[MAXEXFILE];
@@ -463,7 +464,7 @@ void readtec(const char *file, nav_t *nav, int opt)
                 }
 
             /* read ionex header */
-            if (readionexh(fp, lats, lons, hgts, &rb, &nexp, dcb, rms) <= 0.0)
+            if (readionexh(fp, lats, lons, hgts, &rb, &nexp, dcb.data(), rms.data()) <= 0.0)
                 {
                     trace(2, "ionex file format error %s\n", efiles[i]);
                     fclose(fp);

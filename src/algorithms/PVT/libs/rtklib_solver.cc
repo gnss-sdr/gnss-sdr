@@ -463,7 +463,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     std::map<int, Glonass_Gnav_Ephemeris>::const_iterator glonass_gnav_ephemeris_iter;
     std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
 
-    const Glonass_Gnav_Utc_Model gnav_utc = this->glonass_gnav_utc_model;
+    const Glonass_Gnav_Utc_Model &gnav_utc = this->glonass_gnav_utc_model;
 
     this->set_averaging_flag(flag_averaging);
 
@@ -900,89 +900,89 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     if ((valid_obs + glo_valid_obs) > 3)
         {
             int result = 0;
-            nav_t nav_data{};
-            nav_data.eph = eph_data.data();
-            nav_data.geph = geph_data.data();
-            nav_data.n = valid_obs;
-            nav_data.ng = glo_valid_obs;
+            d_nav_data = {};
+            d_nav_data.eph = eph_data.data();
+            d_nav_data.geph = geph_data.data();
+            d_nav_data.n = valid_obs;
+            d_nav_data.ng = glo_valid_obs;
             if (gps_iono.valid)
                 {
-                    nav_data.ion_gps[0] = gps_iono.alpha0;
-                    nav_data.ion_gps[1] = gps_iono.alpha1;
-                    nav_data.ion_gps[2] = gps_iono.alpha2;
-                    nav_data.ion_gps[3] = gps_iono.alpha3;
-                    nav_data.ion_gps[4] = gps_iono.beta0;
-                    nav_data.ion_gps[5] = gps_iono.beta1;
-                    nav_data.ion_gps[6] = gps_iono.beta2;
-                    nav_data.ion_gps[7] = gps_iono.beta3;
+                    d_nav_data.ion_gps[0] = gps_iono.alpha0;
+                    d_nav_data.ion_gps[1] = gps_iono.alpha1;
+                    d_nav_data.ion_gps[2] = gps_iono.alpha2;
+                    d_nav_data.ion_gps[3] = gps_iono.alpha3;
+                    d_nav_data.ion_gps[4] = gps_iono.beta0;
+                    d_nav_data.ion_gps[5] = gps_iono.beta1;
+                    d_nav_data.ion_gps[6] = gps_iono.beta2;
+                    d_nav_data.ion_gps[7] = gps_iono.beta3;
                 }
             if (!(gps_iono.valid) and gps_cnav_iono.valid)
                 {
-                    nav_data.ion_gps[0] = gps_cnav_iono.alpha0;
-                    nav_data.ion_gps[1] = gps_cnav_iono.alpha1;
-                    nav_data.ion_gps[2] = gps_cnav_iono.alpha2;
-                    nav_data.ion_gps[3] = gps_cnav_iono.alpha3;
-                    nav_data.ion_gps[4] = gps_cnav_iono.beta0;
-                    nav_data.ion_gps[5] = gps_cnav_iono.beta1;
-                    nav_data.ion_gps[6] = gps_cnav_iono.beta2;
-                    nav_data.ion_gps[7] = gps_cnav_iono.beta3;
+                    d_nav_data.ion_gps[0] = gps_cnav_iono.alpha0;
+                    d_nav_data.ion_gps[1] = gps_cnav_iono.alpha1;
+                    d_nav_data.ion_gps[2] = gps_cnav_iono.alpha2;
+                    d_nav_data.ion_gps[3] = gps_cnav_iono.alpha3;
+                    d_nav_data.ion_gps[4] = gps_cnav_iono.beta0;
+                    d_nav_data.ion_gps[5] = gps_cnav_iono.beta1;
+                    d_nav_data.ion_gps[6] = gps_cnav_iono.beta2;
+                    d_nav_data.ion_gps[7] = gps_cnav_iono.beta3;
                 }
             if (galileo_iono.ai0 != 0.0)
                 {
-                    nav_data.ion_gal[0] = galileo_iono.ai0;
-                    nav_data.ion_gal[1] = galileo_iono.ai1;
-                    nav_data.ion_gal[2] = galileo_iono.ai2;
-                    nav_data.ion_gal[3] = 0.0;
+                    d_nav_data.ion_gal[0] = galileo_iono.ai0;
+                    d_nav_data.ion_gal[1] = galileo_iono.ai1;
+                    d_nav_data.ion_gal[2] = galileo_iono.ai2;
+                    d_nav_data.ion_gal[3] = 0.0;
                 }
             if (beidou_dnav_iono.valid)
                 {
-                    nav_data.ion_cmp[0] = beidou_dnav_iono.alpha0;
-                    nav_data.ion_cmp[1] = beidou_dnav_iono.alpha1;
-                    nav_data.ion_cmp[2] = beidou_dnav_iono.alpha2;
-                    nav_data.ion_cmp[3] = beidou_dnav_iono.alpha3;
-                    nav_data.ion_cmp[4] = beidou_dnav_iono.beta0;
-                    nav_data.ion_cmp[5] = beidou_dnav_iono.beta0;
-                    nav_data.ion_cmp[6] = beidou_dnav_iono.beta0;
-                    nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
+                    d_nav_data.ion_cmp[0] = beidou_dnav_iono.alpha0;
+                    d_nav_data.ion_cmp[1] = beidou_dnav_iono.alpha1;
+                    d_nav_data.ion_cmp[2] = beidou_dnav_iono.alpha2;
+                    d_nav_data.ion_cmp[3] = beidou_dnav_iono.alpha3;
+                    d_nav_data.ion_cmp[4] = beidou_dnav_iono.beta0;
+                    d_nav_data.ion_cmp[5] = beidou_dnav_iono.beta0;
+                    d_nav_data.ion_cmp[6] = beidou_dnav_iono.beta0;
+                    d_nav_data.ion_cmp[7] = beidou_dnav_iono.beta3;
                 }
             if (gps_utc_model.valid)
                 {
-                    nav_data.utc_gps[0] = gps_utc_model.A0;
-                    nav_data.utc_gps[1] = gps_utc_model.A1;
-                    nav_data.utc_gps[2] = gps_utc_model.tot;
-                    nav_data.utc_gps[3] = gps_utc_model.WN_T;
-                    nav_data.leaps = gps_utc_model.DeltaT_LS;
+                    d_nav_data.utc_gps[0] = gps_utc_model.A0;
+                    d_nav_data.utc_gps[1] = gps_utc_model.A1;
+                    d_nav_data.utc_gps[2] = gps_utc_model.tot;
+                    d_nav_data.utc_gps[3] = gps_utc_model.WN_T;
+                    d_nav_data.leaps = gps_utc_model.DeltaT_LS;
                 }
             if (!(gps_utc_model.valid) and gps_cnav_utc_model.valid)
                 {
-                    nav_data.utc_gps[0] = gps_cnav_utc_model.A0;
-                    nav_data.utc_gps[1] = gps_cnav_utc_model.A1;
-                    nav_data.utc_gps[2] = gps_cnav_utc_model.tot;
-                    nav_data.utc_gps[3] = gps_cnav_utc_model.WN_T;
-                    nav_data.leaps = gps_cnav_utc_model.DeltaT_LS;
+                    d_nav_data.utc_gps[0] = gps_cnav_utc_model.A0;
+                    d_nav_data.utc_gps[1] = gps_cnav_utc_model.A1;
+                    d_nav_data.utc_gps[2] = gps_cnav_utc_model.tot;
+                    d_nav_data.utc_gps[3] = gps_cnav_utc_model.WN_T;
+                    d_nav_data.leaps = gps_cnav_utc_model.DeltaT_LS;
                 }
             if (glonass_gnav_utc_model.valid)
                 {
-                    nav_data.utc_glo[0] = glonass_gnav_utc_model.d_tau_c;  // ??
-                    nav_data.utc_glo[1] = 0.0;                             // ??
-                    nav_data.utc_glo[2] = 0.0;                             // ??
-                    nav_data.utc_glo[3] = 0.0;                             // ??
+                    d_nav_data.utc_glo[0] = glonass_gnav_utc_model.d_tau_c;  // ??
+                    d_nav_data.utc_glo[1] = 0.0;                             // ??
+                    d_nav_data.utc_glo[2] = 0.0;                             // ??
+                    d_nav_data.utc_glo[3] = 0.0;                             // ??
                 }
             if (galileo_utc_model.A0 != 0.0)
                 {
-                    nav_data.utc_gal[0] = galileo_utc_model.A0;
-                    nav_data.utc_gal[1] = galileo_utc_model.A1;
-                    nav_data.utc_gal[2] = galileo_utc_model.tot;
-                    nav_data.utc_gal[3] = galileo_utc_model.WNot;
-                    nav_data.leaps = galileo_utc_model.Delta_tLS;
+                    d_nav_data.utc_gal[0] = galileo_utc_model.A0;
+                    d_nav_data.utc_gal[1] = galileo_utc_model.A1;
+                    d_nav_data.utc_gal[2] = galileo_utc_model.tot;
+                    d_nav_data.utc_gal[3] = galileo_utc_model.WNot;
+                    d_nav_data.leaps = galileo_utc_model.Delta_tLS;
                 }
             if (beidou_dnav_utc_model.valid)
                 {
-                    nav_data.utc_cmp[0] = beidou_dnav_utc_model.A0_UTC;
-                    nav_data.utc_cmp[1] = beidou_dnav_utc_model.A1_UTC;
-                    nav_data.utc_cmp[2] = 0.0;  // ??
-                    nav_data.utc_cmp[3] = 0.0;  // ??
-                    nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS;
+                    d_nav_data.utc_cmp[0] = beidou_dnav_utc_model.A0_UTC;
+                    d_nav_data.utc_cmp[1] = beidou_dnav_utc_model.A1_UTC;
+                    d_nav_data.utc_cmp[2] = 0.0;  // ??
+                    d_nav_data.utc_cmp[3] = 0.0;  // ??
+                    d_nav_data.leaps = beidou_dnav_utc_model.DeltaT_LS;
                 }
 
             /* update carrier wave length using native function call in RTKlib */
@@ -990,11 +990,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                     for (int j = 0; j < NFREQ; j++)
                         {
-                            nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &nav_data);
+                            d_nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &d_nav_data);
                         }
                 }
 
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &nav_data);
+            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
 
             if (result == 0)
                 {
@@ -1095,7 +1095,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // TOW
                     d_monitor_pvt.TOW_at_current_symbol_ms = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                     // WEEK
-                    d_monitor_pvt.week = adjgpsweek(nav_data.eph[0].week, this->is_pre_2009());
+                    d_monitor_pvt.week = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
                     // PVT GPS time
                     d_monitor_pvt.RX_time = gnss_observables_map.cbegin()->second.RX_time;
                     // User clock offset [s]
@@ -1161,7 +1161,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // WEEK
-                                    tmp_uint32 = adjgpsweek(nav_data.eph[0].week, this->is_pre_2009());
+                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
                                     // PVT GPS time
                                     tmp_double = gnss_observables_map.cbegin()->second.RX_time;

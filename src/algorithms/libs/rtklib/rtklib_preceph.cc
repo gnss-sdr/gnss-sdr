@@ -43,6 +43,7 @@
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include <cstring>
+#include <vector>
 
 /* satellite code to satellite system ----------------------------------------*/
 int code2sys(char code)
@@ -390,7 +391,7 @@ void readsp3(const char *file, nav_t *nav, int opt)
     int j;
     int n;
     int ns;
-    int sats[MAXSAT] = {};
+    std::vector<int> sats(MAXSAT);
     char *efiles[MAXEXFILE];
     char *ext;
     char type = ' ';
@@ -431,10 +432,10 @@ void readsp3(const char *file, nav_t *nav, int opt)
                     continue;
                 }
             /* read sp3 header */
-            ns = readsp3h(fp, &time, &type, sats, bfact, tsys);
+            ns = readsp3h(fp, &time, &type, sats.data(), bfact, tsys);
 
             /* read sp3 body */
-            readsp3b(fp, type, sats, ns, bfact, tsys, j++, opt, nav);
+            readsp3b(fp, type, sats.data(), ns, bfact, tsys, j++, opt, nav);
 
             fclose(fp);
         }

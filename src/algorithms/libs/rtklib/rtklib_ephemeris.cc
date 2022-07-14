@@ -34,6 +34,7 @@
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
+#include <vector>
 
 /* constants -----------------------------------------------------------------*/
 
@@ -1023,7 +1024,7 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
 void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
     int ephopt, double *rs, double *dts, double *var, int *svh)
 {
-    gtime_t time[MAXOBS] = {};
+    std::vector<gtime_t> time(MAXOBS);
     double dt;
     double pr;
     int i;

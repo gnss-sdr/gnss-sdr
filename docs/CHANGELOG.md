@@ -18,6 +18,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 - Fixed bug that made the PVT block to not resolve position anymore after a loss
   of samples event.
+- Improved non-coherent acquisition when `Acquisition_XX.blocking=false`.
+- Implemented processing of BeiDou PRN 34 up to PRN 63 signals.
 
 ### Improvements in Interoperability:
 

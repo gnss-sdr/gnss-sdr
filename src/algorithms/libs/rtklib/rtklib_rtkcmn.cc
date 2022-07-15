@@ -31,6 +31,7 @@
 
 #include "rtklib_rtkcmn.h"
 #include <glog/logging.h>
+#include <array>
 #include <cassert>
 #include <cstring>
 #include <dirent.h>
@@ -40,6 +41,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <vector>
 
 
 const double GPST0[] = {1980, 1, 6, 0, 0, 0}; /* gps time reference */
@@ -4496,7 +4498,7 @@ double satazel(const double *pos, const double *e, double *azel)
  *-----------------------------------------------------------------------------*/
 void dops(int ns, const double *azel, double elmin, double *dop)
 {
-    double H[4 * MAXSAT];
+    std::vector<double> H(4 * MAXSAT);
     double Q[16];
     double cosel;
     double sinel;
@@ -4525,7 +4527,7 @@ void dops(int ns, const double *azel, double elmin, double *dop)
             return;
         }
 
-    matmul("NT", 4, 4, n, 1.0, H, H, 0.0, Q);
+    matmul("NT", 4, 4, n, 1.0, H.data(), H.data(), 0.0, Q);
     if (!matinv(Q, 4))
         {
             dop[0] = std::sqrt(Q[0] + Q[5] + Q[10] + Q[15]); /* GDOP */
@@ -5029,15 +5031,22 @@ void sunmoonpos(gtime_t tutc, const double *erpv, double *rsun,
  *-----------------------------------------------------------------------------*/
 void csmooth(obs_t *obs, int ns)
 {
-    double Ps[2][MAXSAT][NFREQ] = {};
-    double Lp[2][MAXSAT][NFREQ] = {};
+    std::vector<std::array<double, NFREQ>> Ps[2];
+    std::vector<std::array<double, NFREQ>> Lp[2];
     double dcp;
     int i;
     int j;
     int s;
     int r;
-    int n[2][MAXSAT][NFREQ] = {};
+    std::vector<std::array<int, NFREQ>> n[2];
     obsd_t *p;
+
+    Ps[0].resize(MAXSAT);
+    Ps[1].resize(MAXSAT);
+    Lp[0].resize(MAXSAT);
+    Lp[1].resize(MAXSAT);
+    n[0].resize(MAXSAT);
+    n[1].resize(MAXSAT);
 
     trace(3, "csmooth: nobs=%d,ns=%d\n", obs->n, ns);
 

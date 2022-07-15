@@ -132,6 +132,7 @@ private:
     uint32_t d_type_of_rx;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
+    nav_t d_nav_data;
 };
 
 

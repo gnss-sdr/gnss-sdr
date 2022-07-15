@@ -71,6 +71,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   `Osmosdr_Signal_Source` implementation of a `SignalSource`.
 - The `Osmosdr_Signal_Source` implementation learned a new parameter `if_bw` to
   manually set the bandwidth of the bandpass filter on the radio frontend.
+- The new configuration parameter `Channels_XX.RF_channel_ID` allows to specify
+  the signal source per channel group.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

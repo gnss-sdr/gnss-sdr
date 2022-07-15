@@ -34,6 +34,7 @@
 #include "rtklib_preceph.h"
 #include "rtklib_rtkcmn.h"
 #include "rtklib_sbas.h"
+#include <vector>
 
 /* constants -----------------------------------------------------------------*/
 
@@ -284,7 +285,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     cosi = cos(i);
 
     /* beidou geo satellite (ref [9]) */
-    if (sys == SYS_BDS && prn <= 5)
+    if (sys == SYS_BDS && (prn <= 5 || prn > 58))
         {
             O = eph->OMG0 + eph->OMGd * tk - omge * eph->toes;
             sinO = sin(O);
@@ -1023,7 +1024,7 @@ int satpos(gtime_t time, gtime_t teph, int sat, int ephopt,
 void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
     int ephopt, double *rs, double *dts, double *var, int *svh)
 {
-    gtime_t time[MAXOBS] = {};
+    std::vector<gtime_t> time(MAXOBS);
     double dt;
     double pr;
     int i;

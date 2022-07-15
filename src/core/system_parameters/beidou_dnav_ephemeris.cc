@@ -22,7 +22,7 @@ Beidou_Dnav_Ephemeris::Beidou_Dnav_Ephemeris()
 {
     auto gnss_sat = Gnss_Satellite();
     const std::string _system("Beidou");
-    for (unsigned int i = 1; i < 36; i++)
+    for (unsigned int i = 1; i < 64; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
         }

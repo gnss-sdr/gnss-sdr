@@ -37,6 +37,7 @@
 #include <cctype>
 #include <cmath>
 #include <cstring>
+#include <vector>
 
 
 /* constants and macros ------------------------------------------------------*/
@@ -1654,7 +1655,7 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
     int sat;
     int sys;
     int nsat;
-    int prn[MAXSAT];
+    std::vector<int> prn(MAXSAT);
     char *p = reinterpret_cast<char *>(buff);
     char *q;
     char *s;
@@ -1683,7 +1684,7 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
                 {
                     continue;
                 }
-            sys = satsys(sat, prn + nsat);
+            sys = satsys(sat, &prn[nsat]);
             if (sys != SYS_GPS && sys != SYS_SBS)
                 {
                     continue;
@@ -1728,7 +1729,7 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
                 {
                     continue;
                 }
-            if (satsys(sat, prn + nsat) != SYS_GLO)
+            if (satsys(sat, &prn[nsat]) != SYS_GLO)
                 {
                     continue;
                 }
@@ -1769,7 +1770,7 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
                 {
                     continue;
                 }
-            if (satsys(sat, prn + nsat) != SYS_GAL)
+            if (satsys(sat, &prn[nsat]) != SYS_GAL)
                 {
                     continue;
                 }
@@ -1809,7 +1810,7 @@ int outnmea_gsa(unsigned char *buff, const sol_t *sol,
                 {
                     continue;
                 }
-            if (satsys(sat, prn + nsat) != SYS_BDS)
+            if (satsys(sat, &prn[nsat]) != SYS_BDS)
                 {
                     continue;
                 }
@@ -1861,7 +1862,7 @@ int outnmea_gsv(unsigned char *buff, const sol_t *sol,
     int prn;
     int sys;
     int nmsg;
-    int sats[MAXSAT];
+    std::vector<int> sats(MAXSAT);
     char *p = reinterpret_cast<char *>(buff);
     char *q;
     char *s;

@@ -909,7 +909,9 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     gr::thread::scoped_lock lk(d_setlock);
     if (!d_active or d_worker_active)
         {
-            if (!d_acq_parameters.blocking_on_standby)
+            // do not consume samples while performing a non-coherent integration
+            bool consume_samples = ((!d_active) || (d_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
+            if ((!d_acq_parameters.blocking_on_standby) && consume_samples)
                 {
                     d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
                     consume_each(ninput_items[0]);

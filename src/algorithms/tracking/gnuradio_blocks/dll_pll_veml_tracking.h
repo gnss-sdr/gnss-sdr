@@ -180,6 +180,7 @@ private:
     int32_t d_n_correlator_taps;
     int32_t d_current_prn_length_samples;
     int32_t d_extend_correlation_symbols_count;
+    int32_t d_extend_correlation_symbols;
     int32_t d_current_symbol;
     int32_t d_current_data_symbol;
     int32_t d_cn0_estimation_counter;

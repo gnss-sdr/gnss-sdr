@@ -132,6 +132,7 @@ typedef enum
     INTEL_KBL,           // KABY LAKE
     INTEL_CFL,           // COFFEE LAKE
     INTEL_WHL,           // WHISKEY LAKE
+    INTEL_CML,           // COMET LAKE
     INTEL_CNL,           // CANNON LAKE
     INTEL_ICL,           // ICE LAKE
     INTEL_TGL,           // TIGER LAKE

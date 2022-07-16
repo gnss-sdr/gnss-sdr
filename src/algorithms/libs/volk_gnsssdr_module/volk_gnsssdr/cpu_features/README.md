@@ -208,7 +208,6 @@ Please check the [CMake build instructions](cmake/README.md).
 ### Quickstart
 
 - Run `list_cpu_features`
-
   ```sh
   cmake -S. -Bbuild -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
   cmake --build build --config Release -j
@@ -219,7 +218,6 @@ Please check the [CMake build instructions](cmake/README.md).
   `XCode`.
 
 - run tests
-
   ```sh
   cmake -S. -Bbuild -DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=Debug
   cmake --build build --config Debug -j
@@ -229,8 +227,7 @@ Please check the [CMake build instructions](cmake/README.md).
   _Note_: Use `--target RUN_TESTS` on the last line for `Visual Studio` and
   `--target RUN_TEST` for `XCode`.
 
-* install `cpu_features`
-
+- install `cpu_features`
   ```sh
   cmake --build build --config Release --target install -v
   ```
@@ -239,8 +236,8 @@ Please check the [CMake build instructions](cmake/README.md).
 
   _Note_: When using `Makefile` or `XCode` generator, you can use
   [`DESTDIR`](https://www.gnu.org/software/make/manual/html_node/DESTDIR.html)
-  to install on a local repository.<br> e.g.
-
+  to install on a local repository.<br>
+  e.g.
   ```sh
   cmake --build build --config Release --target install -v -- DESTDIR=install
   ```

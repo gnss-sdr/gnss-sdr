@@ -211,7 +211,7 @@ int decode_sbstype6(const sbsmsg_t *msg, sbssat_t *sbssat)
         }
     for (i = 0; i < sbssat->nsat && i < MAXSAT; i++)
         {
-            if (sbssat->sat[i].fcorr.iodf != iodf[i / 39])
+            if (sbssat->sat[i].fcorr.iodf != iodf[i / 46])
                 {
                     continue;
                 }

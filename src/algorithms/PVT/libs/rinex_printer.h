@@ -1015,7 +1015,7 @@ private:
 };
 
 
-// Implementation of inline functions (modified versions from GPSTk https://github.com/SGL-UT/GPSTk)
+// Implementation of inline functions (modified versions from GNSSTk https://github.com/SGL-UT/gnsstk)
 
 inline std::string& Rinex_Printer::leftJustify(std::string& s,
     std::string::size_type length,

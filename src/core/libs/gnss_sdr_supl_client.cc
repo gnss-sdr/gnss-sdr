@@ -839,7 +839,7 @@ bool Gnss_Sdr_Supl_Client::load_gal_almanac_xml(const std::string& file_name)
         }
     catch (std::exception& e)
         {
-            // Maybe the file is from https://www.gsc-europa.eu/product-almanacs ?
+            // Maybe the file is from https://www.gsc-europa.eu/gsc-products/almanac ?
             return this->read_gal_almanac_from_gsa(file_name);
         }
     LOG(INFO) << "Loaded Galileo almanac map data with " << this->gal_almanac_map.size() << " satellites";

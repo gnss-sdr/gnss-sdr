@@ -16,7 +16,7 @@ help()
 {
     echo "This script tries to download the most recent Galileo Almanac XML file"
     echo "published by the European GNSS Service Centre."
-    echo "More info at https://www.gsc-europa.eu/product-almanacs"
+    echo "More info at https://www.gsc-europa.eu/gsc-products/almanac"
     echo "If today there is no published file, the script will look up to one week ago."
     echo ""
     echo "Usage:"

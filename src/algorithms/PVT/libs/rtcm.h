@@ -30,17 +30,18 @@
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <glog/logging.h>
-#include <algorithm>  // for min
+#include <algorithm>  // for std::max, std::min, std::copy_n
 #include <array>
 #include <bitset>
 #include <cstddef>  // for size_t
 #include <cstdint>
-#include <cstring>  // for memcpy
 #include <deque>
+#include <iomanip>  // for std::setw
 #include <list>
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>  // for std::stringstream
 #include <string>
 #include <thread>
 #include <utility>
@@ -612,8 +613,10 @@ private:
         inline void encode_header()
         {
             char header[header_length + 1] = "";
-            std::snprintf(header, header_length + 1, "GS%4d", std::max(std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)), 0));
-            std::memcpy(data_.data(), header, header_length);
+            std::stringstream ss;
+            ss << "GS" << std::setw(4) << std::max(std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)), 0);
+            std::copy_n(ss.str().c_str(), header_length + 1, header);
+            std::copy_n(header, header_length, data_.data());
         }
 
     private:
@@ -895,7 +898,7 @@ private:
 
                     const char* char_msg = message.c_str();
                     msg.body_length(message.length());
-                    std::memcpy(msg.body(), char_msg, msg.body_length());
+                    std::copy_n(char_msg, msg.body_length(), msg.body());
                     msg.encode_header();
                     c->write(msg);
                 }

@@ -32,7 +32,6 @@
 #include <cmath>      // for std::fmod, std::lround
 #include <cstdlib>    // for strtol
 #include <iostream>   // for std::cout
-#include <sstream>    // for std::stringstream
 
 
 Rtcm::Rtcm(uint16_t port) : RTCM_port(port), server_is_running(false)

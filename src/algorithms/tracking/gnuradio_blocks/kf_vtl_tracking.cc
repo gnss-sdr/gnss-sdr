@@ -18,6 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "kf_vtl_tracking.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
@@ -39,7 +40,6 @@
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
-#include "kf_vtl_tracking.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
 #include "trackingcmd.h"
@@ -859,50 +859,29 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
 
     const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    d_F = arma::mat(4, 4);
     d_F = {{1, 0, B * Ti, B * TiTi / 2},
         {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * TiTi},
         {0, 0, 1, Ti},
         {0, 0, 0, 1}};
 
-    d_H = arma::mat(2, 4);
     d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
         {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
 
-    // Phase noise variance
-    // const double CN0_lin = pow(10.0, d_trk_parameters.expected_cn0_dbhz / 10.0);  // CN0 in Hz
-    // const double N_periods = 1;  // Only 1 interval
-    // const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
-    // const double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
-
-    // measurement covariance matrix (static)
-    // d_R = arma::mat(2, 2);
-    //    d_R << Sigma2_Tau << 0 << arma::endr
-    //      << 0 << Sigma2_Phase << arma::endr;
-
-    d_R = arma::mat(2, 2);
     d_R = {{pow(d_trk_parameters.code_disc_sd_chips, 2.0), 0},
         {0, pow(d_trk_parameters.carrier_disc_sd_rads, 2.0)}};
 
-    // system cov11ariance matrix (static)
-    d_Q = arma::mat(4, 4);
+    // system covariance matrix (static)
     d_Q = {{pow(d_trk_parameters.code_phase_sd_chips, 2.0), 0, 0, 0},
         {0, pow(d_trk_parameters.carrier_phase_sd_rad, 2.0), 0, 0},
         {0, 0, pow(d_trk_parameters.carrier_freq_sd_hz, 2.0), 0},
         {0, 0, 0, pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0)}};
 
     // initial Kalman covariance matrix
-    d_P_old_old = arma::mat(4, 4);
     d_P_old_old = {{pow(d_trk_parameters.init_code_phase_sd_chips, 2.0), 0, 0, 0},
         {0, pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0), 0, 0},
         {0, 0, pow(d_trk_parameters.init_carrier_freq_sd_hz, 2.0), 0},
         {0, 0, 0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0)}};
-    // d_R = arma::mat(2, 2);
-    //    d_R << Sigma2_Tau << 0 << arma::endr
-    //      << 0 << Sigma2_Phase << arma::endr;
 
-    // init state vector
-    d_x_old_old = arma::vec(4);
     // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
     d_x_old_old = {acq_code_phase_chips, 0, acq_doppler_hz, 0};
 
@@ -940,25 +919,14 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
     d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
         {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
 
-    // system covariance matrix (static)
-    // d_Q << pow(d_trk_parameters.narrow_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << arma::endr
-    //     << 0 << pow(d_trk_parameters.narrow_carrier_phase_sd_rad, 2.0) << 0 << 0 << arma::endr
-    //     << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_sd_hz, 2.0) << 0 << arma::endr
-    //     << 0 << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_rate_sd_hz_s, 2.0) << arma::endr;
     const double CN0_lin = pow(10.0, d_CN0_SNV_dB_Hz / 10.0);  // CN0 in Hz
     const double CN0_lin_Ti = CN0_lin * Ti;
-    // const double N_periods = 1;                                 // Only 1 interval
-    //  const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
     const double Sigma2_Phase = (1.0 / (2.0 * CN0_lin_Ti)) * (1.0 + 1.0 / (2.0 * CN0_lin_Ti));
-    // double prova = (1.0 / (CN0_lin * Ti)) * (0.5 + (0.5 / (1.0 - 0.5)) * (1.0 / (2.0 * CN0_lin * Ti)));
-    // std::cout << "Sigma2_Tau = " << Sigma2_Tau << ",  prova: " << prova << std::endl;
     const double Sigma2_Tau = (1.0 / CN0_lin_Ti) * (d_trk_parameters.spc + (d_trk_parameters.spc / (1.0 - d_trk_parameters.spc)) * (1.0 / (2.0 * CN0_lin_Ti)));
 
-    d_R = arma::mat(2, 2);
     d_R = {{Sigma2_Tau, 0},
         {0, Sigma2_Phase}};
 
-    // << 0 << 0 << 0 << 0 << pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0) << arma::endr;
     std::cout << "Fu: " << d_F << "\n";
     std::cout << "Hu: " << d_H << "\n";
     std::cout << "Ru: " << d_R << "\n";
@@ -982,14 +950,9 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
     // Phase noise variance
     const double CN0_lin = pow(10.0, current_cn0_dbhz / 10.0);  // CN0 in Hz
     const double CN0_lin_Ti = CN0_lin * Ti;
-    // const double N_periods = 1;                                 // Only 1 interval
-    //  const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
     const double Sigma2_Phase = (1.0 / (2.0 * CN0_lin_Ti)) * (1.0 + 1.0 / (2.0 * CN0_lin_Ti));
-    // double prova = (1.0 / (CN0_lin * Ti)) * (0.5 + (0.5 / (1.0 - 0.5)) * (1.0 / (2.0 * CN0_lin * Ti)));
-    // std::cout << "Sigma2_Tau = " << Sigma2_Tau << ",  prova: " << prova << std::endl;
     const double Sigma2_Tau = (1.0 / CN0_lin_Ti) * (d_trk_parameters.spc + (d_trk_parameters.spc / (1.0 - d_trk_parameters.spc)) * (1.0 / (2.0 * CN0_lin_Ti)));
-    // measurement covariance matrix (static)d_trk_parameters.spc
-    d_R = arma::mat(2, 2);
+
     d_R = {{Sigma2_Tau, 0},
         {0, Sigma2_Phase}};
 }
@@ -1331,16 +1294,6 @@ void kf_vtl_tracking::update_tracking_vars()
     d_rem_carr_phase_rad += remnant_carrier_phase;
     d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, TWO_PI);
 
-
-    // std::cout << d_carrier_phase_rate_step_rad * d_trk_parameters.fs_in * d_trk_parameters.fs_in / TWO_PI << '\n';
-    // remnant carrier phase to prevent overflow in the code NCO
-    //    d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
-    //    d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, TWO_PI);
-
-    // carrier phase accumulator
-    // double a = d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
-    // double b = 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples);
-    // std::cout << fmod(b, TWO_PI) / fmod(a, TWO_PI) << '\n';
     d_acc_carrier_phase_rad -= remnant_carrier_phase;
 
     // ################### DLL COMMANDS #################################################

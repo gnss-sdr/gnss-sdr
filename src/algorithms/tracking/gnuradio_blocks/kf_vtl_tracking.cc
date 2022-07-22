@@ -18,7 +18,6 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "kf_vtl_tracking.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
@@ -40,6 +39,7 @@
 #include "gps_l2c_signal_replica.h"
 #include "gps_l5_signal_replica.h"
 #include "gps_sdr_signal_replica.h"
+#include "kf_vtl_tracking.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
 #include "trackingcmd.h"
@@ -537,6 +537,17 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
 
     clear_tracking_vars();
 
+    if (d_trk_parameters.smoother_length > 0)
+        {
+            d_carr_ph_history.set_capacity(d_trk_parameters.smoother_length * 2);
+            d_code_ph_history.set_capacity(d_trk_parameters.smoother_length * 2);
+        }
+    else
+        {
+            d_carr_ph_history.set_capacity(1);
+            d_code_ph_history.set_capacity(1);
+        }
+
     if (d_dump)
         {
             d_dump_filename = d_trk_parameters.dump_filename;
@@ -638,6 +649,8 @@ void kf_vtl_tracking::start_tracking()
     d_carrier_doppler_kf_hz = d_acq_carrier_doppler_hz;
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_kf_hz / d_trk_parameters.fs_in;
     d_carrier_phase_rate_step_rad = 0.0;
+    d_carr_ph_history.clear();
+    d_code_ph_history.clear();
     std::array<char, 3> Signal_{};
     Signal_[0] = d_acquisition_gnss_synchro->Signal[0];
     Signal_[1] = d_acquisition_gnss_synchro->Signal[1];
@@ -732,7 +745,7 @@ void kf_vtl_tracking::start_tracking()
         {
             beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // GEO Satellites use different secondary code
-            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or d_acquisition_gnss_synchro->PRN > 58)
+            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
                     d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -765,7 +778,7 @@ void kf_vtl_tracking::start_tracking()
         {
             beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
-            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or d_acquisition_gnss_synchro->PRN > 58)
+            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
                 {
                     d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -841,20 +854,21 @@ void kf_vtl_tracking::start_tracking()
 void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz)
 {
     // Kalman Filter class variables
-    const double Ti = d_correlation_length_ms * 0.001;
-    // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz,carrier_freq_rate_hz, code_freq_chips_s
-    d_F = arma::mat(5, 5);
-    d_F = {{1, 0, 0, 0, Ti},
-        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * (Ti * Ti), 0},
-        {0, 0, 1, Ti, 0},
-        {0, 0, 0, 1, 0},
-        {0, 0, 0, 0, 1}};
+    const double Ti = d_current_correlation_time_s;
+    const double TiTi = Ti * Ti;
 
     const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    d_H = arma::mat(2, 5);
-    d_H = {{1, 0, -B * Ti / 2.0, B * (Ti * Ti) / 6.0, 0},
-        {0, 1, -GNSS_PI * Ti, GNSS_PI * (Ti * Ti) / 3.0, 0}};
+    d_F = arma::mat(4, 4);
+    d_F = {{1, 0, B * Ti, B * TiTi / 2},
+        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * TiTi},
+        {0, 0, 1, Ti},
+        {0, 0, 0, 1}};
+
+    d_H = arma::mat(2, 4);
+    d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
+        {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
+
     // Phase noise variance
     // const double CN0_lin = pow(10.0, d_trk_parameters.expected_cn0_dbhz / 10.0);  // CN0 in Hz
     // const double N_periods = 1;  // Only 1 interval
@@ -862,35 +876,42 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
     // const double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
 
     // measurement covariance matrix (static)
-    d_R = arma::mat(2, 2);
+    // d_R = arma::mat(2, 2);
     //    d_R << Sigma2_Tau << 0 << arma::endr
     //      << 0 << Sigma2_Phase << arma::endr;
+
+    d_R = arma::mat(2, 2);
     d_R = {{pow(d_trk_parameters.code_disc_sd_chips, 2.0), 0},
         {0, pow(d_trk_parameters.carrier_disc_sd_rads, 2.0)}};
-    // system covariance matrix (static)
-    d_Q = arma::mat(5, 5);
-    d_Q = {{pow(d_trk_parameters.code_phase_sd_chips, 2.0), 0, 0, 0, 0},
-        {0, pow(d_trk_parameters.carrier_phase_sd_rad, 2.0), 0, 0, 0},
-        {0, 0, pow(d_trk_parameters.carrier_freq_sd_hz, 2.0), 0, 0},
-        {0, 0, 0, pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0), 0},
-        {0, 0, 0, 0, pow(d_trk_parameters.code_rate_sd_chips_s, 2.0)}};
+
+    // system cov11ariance matrix (static)
+    d_Q = arma::mat(4, 4);
+    d_Q = {{pow(d_trk_parameters.code_phase_sd_chips, 2.0), 0, 0, 0},
+        {0, pow(d_trk_parameters.carrier_phase_sd_rad, 2.0), 0, 0},
+        {0, 0, pow(d_trk_parameters.carrier_freq_sd_hz, 2.0), 0},
+        {0, 0, 0, pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0)}};
+
     // initial Kalman covariance matrix
-    d_P_old_old = arma::mat(5, 5);
-    d_P_old_old = {{pow(d_trk_parameters.init_code_phase_sd_chips, 2.0), 0, 0, 0, 0},
-        {0, pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0), 0, 0, 0},
-        {0, 0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0), 0, 0},
-        {0, 0, 0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0), 0},
-        {0, 0, 0, 0, pow(d_trk_parameters.init_code_rate_sd_chips_s, 2.0)}};
+    d_P_old_old = arma::mat(4, 4);
+    d_P_old_old = {{pow(d_trk_parameters.init_code_phase_sd_chips, 2.0), 0, 0, 0},
+        {0, pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0), 0, 0},
+        {0, 0, pow(d_trk_parameters.init_carrier_freq_sd_hz, 2.0), 0},
+        {0, 0, 0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0)}};
+    // d_R = arma::mat(2, 2);
+    //    d_R << Sigma2_Tau << 0 << arma::endr
+    //      << 0 << Sigma2_Phase << arma::endr;
+
     // init state vector
-    d_x_old_old = arma::vec(5);
-    // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
-    d_x_old_old = {acq_code_phase_chips, 0, acq_doppler_hz, 0, 0};
-    //    std::cout << "F: " << d_F << "\n";
-    //    std::cout << "H: " << d_H << "\n";
-    //    std::cout << "R: " << d_R << "\n";
-    //    std::cout << "Q: " << d_Q << "\n";
-    //    std::cout << "P: " << d_P_old_old << "\n";
-    //    std::cout << "x: " << d_x_old_old << "\n";
+    d_x_old_old = arma::vec(4);
+    // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
+    d_x_old_old = {acq_code_phase_chips, 0, acq_doppler_hz, 0};
+
+    std::cout << "F: " << d_F << "\n";
+    std::cout << "H: " << d_H << "\n";
+    std::cout << "R: " << d_R << "\n";
+    std::cout << "Q: " << d_Q << "\n";
+    std::cout << "P: " << d_P_old_old << "\n";
+    std::cout << "x: " << d_x_old_old << "\n";
 }
 
 
@@ -898,48 +919,76 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
 {
     // Kalman Filter class variables
     const double Ti = d_current_correlation_time_s;
+    const double TiTi = Ti * Ti;
 
-    // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz,carrier_freq_rate_hz, code_freq_chips_s
-    d_F = {{1, 0, 0, 0, Ti},
-        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * (Ti * Ti), 0},
-        {0, 0, 1, Ti, 0},
-        {0, 0, 0, 1, 0},
-        {0, 0, 0, 0, 1}};
     const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
+    arma::mat Qnew = arma::zeros(4, 4);
+    for (int i = 0; i < d_trk_parameters.extend_correlation_symbols; i++)
+        {
+            Qnew += d_F * d_Q * d_F.t();
+            // d_F = d_F * d_F;
+            d_Q = d_F * d_Q * d_F.t();
+        }
+    d_Q = Qnew;
 
-    d_H = {{1, 0, -B * Ti / 2.0, B * (Ti * Ti) / 6.0, 0},
-        {0, 1, -GNSS_PI * Ti, GNSS_PI * (Ti * Ti) / 3.0, 0}};
+    // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz
+    d_F = {{1, 0, B * Ti, B * TiTi / 2.0},
+        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * TiTi},
+        {0, 0, 1, Ti},
+        {0, 0, 0, 1}};
 
-    // measurement covariance matrix (static)
-    d_R = {{pow(d_trk_parameters.code_disc_sd_chips, 2.0), 0},
-        {0, pow(d_trk_parameters.carrier_disc_sd_rads, 2.0)}};
+    d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
+        {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
 
     // system covariance matrix (static)
-    d_Q = {{pow(d_trk_parameters.narrow_code_phase_sd_chips, 2.0), 0, 0, 0, 0},
-        {0, pow(d_trk_parameters.narrow_carrier_phase_sd_rad, 2.0), 0, 0, 0},
-        {0, 0, pow(d_trk_parameters.narrow_carrier_freq_sd_hz, 2.0), 0, 0},
-        {0, 0, 0, pow(d_trk_parameters.narrow_carrier_freq_rate_sd_hz_s, 2.0), 0},
-        {0, 0, 0, 0, pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0)}};
+    // d_Q << pow(d_trk_parameters.narrow_code_phase_sd_chips, 2.0) << 0 << 0 << 0 << arma::endr
+    //     << 0 << pow(d_trk_parameters.narrow_carrier_phase_sd_rad, 2.0) << 0 << 0 << arma::endr
+    //     << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_sd_hz, 2.0) << 0 << arma::endr
+    //     << 0 << 0 << 0 << pow(d_trk_parameters.narrow_carrier_freq_rate_sd_hz_s, 2.0) << arma::endr;
+    const double CN0_lin = pow(10.0, d_CN0_SNV_dB_Hz / 10.0);  // CN0 in Hz
+    const double CN0_lin_Ti = CN0_lin * Ti;
+    // const double N_periods = 1;                                 // Only 1 interval
+    //  const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
+    const double Sigma2_Phase = (1.0 / (2.0 * CN0_lin_Ti)) * (1.0 + 1.0 / (2.0 * CN0_lin_Ti));
+    // double prova = (1.0 / (CN0_lin * Ti)) * (0.5 + (0.5 / (1.0 - 0.5)) * (1.0 / (2.0 * CN0_lin * Ti)));
+    // std::cout << "Sigma2_Tau = " << Sigma2_Tau << ",  prova: " << prova << std::endl;
+    const double Sigma2_Tau = (1.0 / CN0_lin_Ti) * (d_trk_parameters.spc + (d_trk_parameters.spc / (1.0 - d_trk_parameters.spc)) * (1.0 / (2.0 * CN0_lin_Ti)));
+
+    d_R = arma::mat(2, 2);
+    d_R = {{Sigma2_Tau, 0},
+        {0, Sigma2_Phase}};
+
+    // << 0 << 0 << 0 << 0 << pow(d_trk_parameters.narrow_code_rate_sd_chips_s, 2.0) << arma::endr;
+    std::cout << "Fu: " << d_F << "\n";
+    std::cout << "Hu: " << d_H << "\n";
+    std::cout << "Ru: " << d_R << "\n";
+    std::cout << "Qu: " << d_Q << "\n";
+    std::cout << "Pu: " << d_P_old_old << "\n";
+    std::cout << "xu: " << d_x_old_old << "\n";
 }
 
 
 void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
 {
     // Kalman Filter class variables
-    const double Ti = d_correlation_length_ms * 0.001;
+    const double Ti = d_current_correlation_time_s;  // d_correlation_length_ms * 0.001;
+    const double TiTi = Ti * Ti;
     const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    d_H = arma::mat(2, 5);
-    d_H = {{1, 0, -B * Ti / 2.0, B * (Ti * Ti) / 6.0, 0},
-        {0, 1, -GNSS_PI * Ti, GNSS_PI * (Ti * Ti) / 3.0, 0}};
+    d_H = arma::mat(2, 4);
+    d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
+        {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
 
     // Phase noise variance
     const double CN0_lin = pow(10.0, current_cn0_dbhz / 10.0);  // CN0 in Hz
-    const double N_periods = 1;                                 // Only 1 interval
-    const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
-    const double Sigma2_Phase = 1.0 / (2.0 * CN0_lin * Ti) * (1.0 + 1.0 / (2.0 * CN0_lin * Ti));
-
-    // measurement covariance matrix (static)
+    const double CN0_lin_Ti = CN0_lin * Ti;
+    // const double N_periods = 1;                                 // Only 1 interval
+    //  const double Sigma2_Tau = 0.25 * (1.0 + 2.0 * CN0_lin * Ti) / (N_periods * pow(CN0_lin * Ti, 2.0)) * (1.0 + (1.0 + 2.0 * CN0_lin * Ti) / (pow(N_periods * (CN0_lin * Ti), 2.0)));
+    const double Sigma2_Phase = (1.0 / (2.0 * CN0_lin_Ti)) * (1.0 + 1.0 / (2.0 * CN0_lin_Ti));
+    // double prova = (1.0 / (CN0_lin * Ti)) * (0.5 + (0.5 / (1.0 - 0.5)) * (1.0 / (2.0 * CN0_lin * Ti)));
+    // std::cout << "Sigma2_Tau = " << Sigma2_Tau << ",  prova: " << prova << std::endl;
+    const double Sigma2_Tau = (1.0 / CN0_lin_Ti) * (d_trk_parameters.spc + (d_trk_parameters.spc / (1.0 - d_trk_parameters.spc)) * (1.0 / (2.0 * CN0_lin_Ti)));
+    // measurement covariance matrix (static)d_trk_parameters.spc
     d_R = arma::mat(2, 2);
     d_R = {{Sigma2_Tau, 0},
         {0, Sigma2_Phase}};
@@ -1141,21 +1190,20 @@ void kf_vtl_tracking::run_Kf()
             d_code_error_disc_chips = dll_nc_e_minus_l_normalized(d_E_accu, d_L_accu, d_trk_parameters.spc, d_trk_parameters.slope, d_trk_parameters.y_intercept);  // [chips/Ti]
         }
 
-    // Kalman loop
+    //  Kalman loop
 
     // Prediction
     d_x_new_old = d_F * d_x_old_old;
+
     d_P_new_old = d_F * d_P_old_old * d_F.t() + d_Q;
 
-    // Innovation
-    arma::vec z = {d_code_error_disc_chips, d_carr_phase_error_disc_hz * TWO_PI};
-
     // Measurement update
+    arma::vec z = {d_code_error_disc_chips, d_carr_phase_error_disc_hz * TWO_PI};
     arma::mat K = d_P_new_old * d_H.t() * arma::inv(d_H * d_P_new_old * d_H.t() + d_R);  // Kalman gain
 
     d_x_new_new = d_x_new_old + K * z;
 
-    d_P_new_new = (arma::eye(5, 5) - K * d_H) * d_P_new_old;
+    d_P_new_new = (arma::eye(4, 4) - K * d_H) * d_P_new_old;
 
     // new code phase estimation
     d_code_error_kf_chips = d_x_new_new(0);
@@ -1165,30 +1213,36 @@ void kf_vtl_tracking::run_Kf()
     d_carrier_phase_kf_rad = d_x_new_new(1);
 
     // New carrier Doppler frequency estimation
-    d_carrier_doppler_kf_hz = d_x_new_new(2);  // d_carrier_loop_filter.get_carrier_error(0, static_cast<float>(d_carr_phase_error_hz), static_cast<float>(d_current_correlation_time_s));
+    d_carrier_doppler_kf_hz = d_x_new_new(2);
+    if (d_channel == 0)
+        {
+            // std::cout << "Doppler: " << d_carrier_doppler_kf_hz << '\n';
+        }
+    // d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / TWO_PI;
+    // d_x_new_new(2) = d_x_new_new(2) + fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / TWO_PI;
+    d_P_accu_old = d_P_accu;
 
     d_carrier_doppler_rate_kf_hz_s = d_x_new_new(3);
 
     // New code Doppler frequency estimation
-    if (d_trk_parameters.carrier_aiding)
+    d_code_freq_kf_chips_s = d_code_chip_rate + d_carrier_doppler_kf_hz * d_code_chip_rate / d_signal_carrier_freq;
+
+    if (d_trk_parameters.high_dyn)
         {
-            // estimate the code rate exclusively based on the carrier Doppler
-            d_code_freq_kf_chips_s = d_code_chip_rate + d_carrier_doppler_kf_hz * d_code_chip_rate / d_signal_carrier_freq;
+            // d_x_new_new(3) = 0;
+            //    std::cout << "d_carrier_doppler_rate_kf_hz_s: " << d_carrier_doppler_rate_kf_hz_s << '\n';
+            //  d_carrier_phase_rate_step_rad = TWO_PI * d_carrier_doppler_rate_kf_hz_s / d_trk_parameters.fs_in;
+            //  d_carrier_phase_rate_step_rad = d_carrier_doppler_rate_kf_hz_s / d_trk_parameters.fs_in;
         }
-    else
-        {
-            // use its own KF code rate estimation
-            d_code_freq_kf_chips_s -= d_x_new_new(4);
-        }
-    d_x_new_new(4) = 0;
-    // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
-    //    if (d_trk_parameters.enable_doppler_correction == true)
-    //        {
-    //            if (d_pull_in_transitory == false and d_corrected_doppler == false)
-    //                {
-    // todo: alforithm here...
-    //                }
-    //        }
+    // d_x_new_new(4) = 0;
+    //  Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
+    //     if (d_trk_parameters.enable_doppler_correction == true)
+    //         {
+    //             if (d_pull_in_transitory == false and d_corrected_doppler == false)
+    //                 {
+    //  todo: algorithm here...
+    //                 }
+    //         }
 
     // correct code and carrier phase
     d_rem_code_phase_samples += d_trk_parameters.fs_in * d_code_error_kf_chips / d_code_freq_kf_chips_s;
@@ -1224,6 +1278,8 @@ void kf_vtl_tracking::clear_tracking_vars()
     d_Prompt_circular_buffer.clear();
     d_carrier_phase_rate_step_rad = 0.0;
     d_code_phase_rate_step_chips = 0.0;
+    d_carr_ph_history.clear();
+    d_code_ph_history.clear();
 }
 
 
@@ -1237,8 +1293,6 @@ void kf_vtl_tracking::update_tracking_vars()
     // keep alignment parameters for the next input buffer
     // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
     d_T_prn_samples = d_T_prn_seconds * d_trk_parameters.fs_in;
-    // d_K_blk_samples = d_T_prn_samples + d_rem_code_phase_samples + d_trk_parameters.fs_in * d_code_error_kf_chips / d_code_freq_kf_chips_s;
-    // KF will update d_rem_code_phase_samples
     d_K_blk_samples = d_T_prn_samples + d_rem_code_phase_samples;
     d_current_prn_length_samples = static_cast<int32_t>(std::floor(d_K_blk_samples));  // round to a discrete number of samples
 
@@ -1247,16 +1301,37 @@ void kf_vtl_tracking::update_tracking_vars()
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_kf_hz / d_trk_parameters.fs_in;
     // d_rem_carr_phase_rad = d_carrier_phase_kf_rad;
 
-    // remnant carrier phase to prevent overflow in the code NCO
-    d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) +
-                                               0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
-    d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, TWO_PI);
-
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
     if (d_trk_parameters.high_dyn)
         {
-            d_carrier_phase_rate_step_rad = TWO_PI * d_carrier_doppler_rate_kf_hz_s / d_trk_parameters.fs_in;
+            // d_carrier_phase_rate_step_rad = TWO_PI * d_carrier_doppler_rate_kf_hz_s / d_trk_parameters.fs_in;
+
+            // d_carrier_doppler_rate_kf_hz_s = d_carrier_phase_rate_step_rad * d_trk_parameters.fs_in / TWO_PI;
+            d_carr_ph_history.push_back(std::pair<double, double>(d_carrier_phase_step_rad, static_cast<double>(d_current_prn_length_samples)));
+            if (d_carr_ph_history.full())
+                {
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < d_trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_carr_ph_history[k].first;
+                            tmp_cp2 += d_carr_ph_history[d_trk_parameters.smoother_length * 2 - k - 1].first;
+                            tmp_samples += d_carr_ph_history[d_trk_parameters.smoother_length * 2 - k - 1].second;
+                        }
+                    tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
+                    d_carrier_phase_rate_step_rad = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                    d_x_old_old(3) = d_carrier_phase_rate_step_rad * d_trk_parameters.fs_in / TWO_PI;
+                }
         }
+    // remnant carrier phase to prevent overflow in the code NCO
+    auto remnant_carrier_phase = static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) +
+                                                    0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
+    d_rem_carr_phase_rad += remnant_carrier_phase;
+    d_rem_carr_phase_rad = fmod(d_rem_carr_phase_rad, TWO_PI);
+
+
     // std::cout << d_carrier_phase_rate_step_rad * d_trk_parameters.fs_in * d_trk_parameters.fs_in / TWO_PI << '\n';
     // remnant carrier phase to prevent overflow in the code NCO
     //    d_rem_carr_phase_rad += static_cast<float>(d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) + 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
@@ -1266,17 +1341,31 @@ void kf_vtl_tracking::update_tracking_vars()
     // double a = d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
     // double b = 0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples);
     // std::cout << fmod(b, TWO_PI) / fmod(a, TWO_PI) << '\n';
-    d_acc_carrier_phase_rad -= (d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples) +
-                                0.5 * d_carrier_phase_rate_step_rad * static_cast<double>(d_current_prn_length_samples) * static_cast<double>(d_current_prn_length_samples));
+    d_acc_carrier_phase_rad -= remnant_carrier_phase;
 
     // ################### DLL COMMANDS #################################################
     // code phase step (Code resampler phase increment per sample) [chips/sample]
     d_code_phase_step_chips = d_code_freq_kf_chips_s / d_trk_parameters.fs_in;
     // todo: extend kf to estimate code rate
-    //    if (d_trk_parameters.high_dyn)
-    //        {
-    //            d_code_phase_rate_step_chips = d_code_freq_kf_rate_chips_s / d_trk_parameters.fs_in;
-    //        }
+    if (d_trk_parameters.high_dyn)
+        {
+            d_code_ph_history.push_back(std::pair<double, double>(d_code_phase_step_chips, static_cast<double>(d_current_prn_length_samples)));
+            if (d_code_ph_history.full())
+                {
+                    double tmp_cp1 = 0.0;
+                    double tmp_cp2 = 0.0;
+                    double tmp_samples = 0.0;
+                    for (unsigned int k = 0; k < d_trk_parameters.smoother_length; k++)
+                        {
+                            tmp_cp1 += d_code_ph_history[k].first;
+                            tmp_cp2 += d_code_ph_history[d_trk_parameters.smoother_length * 2 - k - 1].first;
+                            tmp_samples += d_code_ph_history[d_trk_parameters.smoother_length * 2 - k - 1].second;
+                        }
+                    tmp_cp1 /= static_cast<double>(d_trk_parameters.smoother_length);
+                    tmp_cp2 /= static_cast<double>(d_trk_parameters.smoother_length);
+                    d_code_phase_rate_step_chips = (tmp_cp2 - tmp_cp1) / tmp_samples;
+                }
+        }
 
     // remnant code phase [chips]
     d_rem_code_phase_samples = d_K_blk_samples - static_cast<double>(d_current_prn_length_samples);  // rounding error < 1 sample
@@ -1792,17 +1881,6 @@ int kf_vtl_tracking::general_work(int noutput_items __attribute__((unused)), gr_
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
 
-                // init KF
-                //                d_T_chip_seconds = 1.0 / d_code_freq_chips;
-                //                d_T_prn_seconds = d_T_chip_seconds * static_cast<double>(samples_offset);
-                //                // keep alignment parameters for the next input buffer
-                //                // Compute the next buffer length based in the new period of the PRN sequence and the code phase error estimation
-                //                d_T_prn_samples = d_T_prn_seconds * d_trk_parameters.fs_in;
-                //                d_K_blk_samples = d_T_prn_samples + d_rem_code_phase_samples;
-                //                // remnant code phase [chips]
-                //                d_rem_code_phase_samples = d_K_blk_samples - static_cast<double>(d_current_prn_length_samples);  // rounding error < 1 sample
-                //                d_rem_code_phase_chips = d_code_freq_chips * d_rem_code_phase_samples / d_trk_parameters.fs_in;
-
                 init_kf(0, d_carrier_doppler_kf_hz);
 
                 LOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
@@ -1956,7 +2034,8 @@ int kf_vtl_tracking::general_work(int noutput_items __attribute__((unused)), gr_
                 // perform a correlation step
                 do_correlation_step(in);
                 save_correlation_results();
-                update_tracking_vars();
+                // run_Kf();
+                update_tracking_vars();  // ?
                 if (d_current_data_symbol == 0)
                     {
                         log_data();
@@ -2003,13 +2082,7 @@ int kf_vtl_tracking::general_work(int noutput_items __attribute__((unused)), gr_
                     }
                 else
                     {
-                        if (d_trk_parameters.use_estimated_cn0 == true)
-                            {
-                                if (d_CN0_SNV_dB_Hz > 0)
-                                    {
-                                        update_kf_cn0(d_CN0_SNV_dB_Hz);
-                                    }
-                            }
+                        update_kf_cn0(d_CN0_SNV_dB_Hz);
                         run_Kf();
                         update_tracking_vars();
                         check_carrier_phase_coherent_initialization();

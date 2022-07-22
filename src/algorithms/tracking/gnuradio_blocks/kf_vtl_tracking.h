@@ -112,6 +112,8 @@ private:
     volk_gnsssdr::vector<gr_complex> d_Prompt_buffer;
 
     boost::circular_buffer<gr_complex> d_Prompt_circular_buffer;
+    boost::circular_buffer<std::pair<double, double>> d_code_ph_history;
+    boost::circular_buffer<std::pair<double, double>> d_carr_ph_history;
 
     const size_t d_int_type_hash_code = typeid(int).hash_code();
 

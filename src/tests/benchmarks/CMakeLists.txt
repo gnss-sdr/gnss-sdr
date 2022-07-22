@@ -37,6 +37,7 @@ if(NOT benchmark_FOUND)
         BINARY_DIR ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}
         CMAKE_ARGS ${BENCHMARK_COMPILER}
             -DBENCHMARK_ENABLE_TESTING=OFF
+            -DBENCHMARK_USE_BUNDLED_GTEST=OFF
             ${BENCHMARK_TOOLCHAIN_ARG}
             -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
         BUILD_COMMAND "${BENCHMARK_BUILD_COMMAND} ${BENCHMARK_PARALLEL_BUILD}"
@@ -49,6 +50,7 @@ if(NOT benchmark_FOUND)
     add_library(benchmark::benchmark STATIC IMPORTED)
     add_dependencies(benchmark::benchmark google-benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION})
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/benchmark/include)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/include)
     set_target_properties(benchmark::benchmark PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
         IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"
@@ -62,7 +64,7 @@ if(NOT benchmark_FOUND)
         IMPORTED_LOCATION_RELEASE ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}
         IMPORTED_LOCATION_RELWITHDEBINFO ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}
         IMPORTED_LOCATION_MINSIZEREL ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX}
-        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR}/thirdparty/benchmark/include
+        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_BINARY_DIR}/thirdparty/benchmark/include;${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/include"
         INTERFACE_LINK_LIBRARIES "${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark${CMAKE_STATIC_LIBRARY_SUFFIX};${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/src/${CMAKE_FIND_LIBRARY_PREFIXES}benchmark_main${CMAKE_STATIC_LIBRARY_SUFFIX}"
     )
     if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
@@ -78,7 +80,6 @@ if(NOT benchmark_FOUND)
     set_target_properties(benchmark::benchmark PROPERTIES
         INTERFACE_LINK_LIBRARIES Threads::Threads
     )
-
 endif()
 
 macro(add_benchmark)

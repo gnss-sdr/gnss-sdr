@@ -56,6 +56,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed running time error if the binary is built with the
   `-Wp,-D_GLIBCXX_ASSERTIONS` compiler option. This is added by default in some
   GNU/Linux distributions.
+- Fixed linking against libunwind when the glog library is built locally.
 
 ### Improvements in Usability:
 

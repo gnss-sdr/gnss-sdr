@@ -308,14 +308,16 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
             set(GNSS_SIM_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}" "-target" "gnss_sim")
         endif()
         if(TOOLCHAIN_ARG)
-            set(TOOLCHAIN_ARG_GNSS_SIM "${TOOLCHAIN_ARG} -DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
+            set(TOOLCHAIN_ARG_GNSS_SIM "-DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
+        else()
+            set(TOOLCHAIN_ARG_GNSS_SIM "")
         endif()
         ExternalProject_Add(gnss-sim
             GIT_REPOSITORY https://bitbucket.org/jarribas/gnss-simulator
             GIT_TAG ${GNSSSDR_GNSS_SIM_LOCAL_VERSION}
             SOURCE_DIR ${CMAKE_BINARY_DIR}/thirdparty/gnss-sim
             BINARY_DIR ${CMAKE_BINARY_DIR}/gnss-sim
-            CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG_GNSS_SIM} ${CROSS_INSTALL_DIR}
+            CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG} ${CROSS_INSTALL_DIR} ${TOOLCHAIN_ARG_GNSS_SIM}
             BUILD_COMMAND ${GNSS_SIM_BUILD_COMMAND}
             UPDATE_COMMAND ""
             PATCH_COMMAND ""

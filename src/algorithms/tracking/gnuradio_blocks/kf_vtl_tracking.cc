@@ -905,7 +905,6 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
     for (int i = 0; i < d_trk_parameters.extend_correlation_symbols; i++)
         {
             Qnew += d_F * d_Q * d_F.t();
-            // d_F = d_F * d_F;
             d_Q = d_F * d_Q * d_F.t();
         }
     d_Q = Qnew;

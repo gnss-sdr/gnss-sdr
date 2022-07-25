@@ -39,8 +39,8 @@ find_library(LIBUNWIND_GENERIC_LIBRARY
         /opt/local
     PATH_SUFFIXES lib lib64
     PATHS
-     "${LIBUNWIND_ROOT}/lib"
-     "${LIBUNWIND_ROOT}/lib64"
+        "${LIBUNWIND_ROOT}/lib"
+        "${LIBUNWIND_ROOT}/lib64"
 )
 
 if(LIBUNWIND_INCLUDE_DIR)
@@ -74,7 +74,7 @@ if(LIBUNWIND_INCLUDE_DIR)
                     /usr
                     /usr/local
                     /opt/local
-	            PATH_SUFFIXES lib lib64
+                PATH_SUFFIXES lib lib64
                 PATHS "${LIBUNWIND_ROOT}"
             )
             if(NOT LIBUNWIND_SPECIFIC_LIBRARY)

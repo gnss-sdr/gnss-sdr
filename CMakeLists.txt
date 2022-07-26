@@ -341,8 +341,8 @@ set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "13.4.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.12")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.3")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.6.2")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.4")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.7.0")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 if(CMAKE_VERSION VERSION_LESS "3.16")
@@ -1528,6 +1528,11 @@ if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
     endif()
     message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded, built, and statically linked automatically")
     message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
+    find_package(LIBUNWIND)
+    set_package_properties(LIBUNWIND PROPERTIES
+        PURPOSE "Needed by glog."
+        TYPE OPTIONAL
+    )
     if(NOT ${LOCAL_GFLAGS})
         if(NOT TARGET gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
             add_library(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} UNKNOWN IMPORTED)
@@ -1776,6 +1781,9 @@ ${CMAKE_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure
         endif()
     endif()
 
+    if(LIBUNWIND_FOUND)
+        target_link_libraries(Glog::glog INTERFACE Libunwind::libunwind)
+    endif()
     set(LOCAL_GLOG TRUE CACHE STRING "Glog downloaded, built, and statically linked automatically" FORCE)
 
     set_package_properties(GLOG PROPERTIES

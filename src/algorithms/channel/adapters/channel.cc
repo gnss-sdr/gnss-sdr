@@ -104,6 +104,9 @@ Channel::Channel(const ConfigurationInterface* configuration,
     gnss_signal_ = Gnss_Signal(signal_str);
 
     channel_msg_rx_ = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
+
+    glonass_extend_correlation_ms_ = 0;
+    glonass_extend_correlation_ms_ = configuration->property("Tracking_1G.extend_correlation_ms", 0) + configuration->property("Tracking_2G.extend_correlation_ms", 0);
 }
 
 
@@ -128,7 +131,7 @@ void Channel::connect(gr::top_block_sptr top_block)
 
     // Message ports
     top_block->msg_connect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
-    if ((trk_->get_right_block()->name() == "glonass_l1_ca_dll_pll_c_aid_tracking_cc") || (trk_->get_right_block()->name() == "glonass_l2_ca_dll_pll_c_aid_tracking_cc"))
+    if (glonass_dll_pll_c_aid_tracking_check())
         {
             top_block->msg_connect(nav_->get_left_block(), pmt::mp("preamble_timestamp_samples"), trk_->get_right_block(), pmt::mp("preamble_timestamp_samples"));
         }
@@ -162,7 +165,7 @@ void Channel::disconnect(gr::top_block_sptr top_block)
     nav_->disconnect(top_block);
 
     top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("telemetry_to_trk"), trk_->get_right_block(), pmt::mp("telemetry_to_trk"));
-    if ((trk_->get_right_block()->name() == "glonass_l1_ca_dll_pll_c_aid_tracking_cc") || (trk_->get_right_block()->name() == "glonass_l2_ca_dll_pll_c_aid_tracking_cc"))
+    if (glonass_dll_pll_c_aid_tracking_check())
         {
             top_block->msg_disconnect(nav_->get_left_block(), pmt::mp("preamble_timestamp_samples"), trk_->get_right_block(), pmt::mp("preamble_timestamp_samples"));
         }
@@ -269,4 +272,29 @@ void Channel::start_acquisition()
             return;
         }
     DLOG(INFO) << "Channel start_acquisition()";
+}
+
+bool Channel::glonass_dll_pll_c_aid_tracking_check()
+{
+    if (glonass_extend_correlation_ms_)
+        {
+            const pmt::pmt_t nav_ports_out = nav_->get_left_block()->message_ports_out();
+            const pmt::pmt_t trk_ports_in = trk_->get_right_block()->message_ports_in();
+            const pmt::pmt_t symbol = pmt::mp("preamble_timestamp_samples");
+            for (unsigned k = 0; k < pmt::length(nav_ports_out); k++)
+                {
+                    if (pmt::vector_ref(nav_ports_out, k) == symbol)
+                        {
+                            for (unsigned j = 0; j < pmt::length(trk_ports_in); j++)
+                                {
+                                    if (pmt::vector_ref(trk_ports_in, j) == symbol)
+                                        {
+                                            return true;
+                                        }
+                                }
+                            return false;
+                        }
+                }
+        }
+    return false;
 }

@@ -50,6 +50,7 @@ if(NOT benchmark_FOUND)
     add_library(benchmark::benchmark STATIC IMPORTED)
     add_dependencies(benchmark::benchmark google-benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION})
     file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/benchmark/include)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/benchmark-${GNSSSDR_BENCHMARK_LOCAL_VERSION}/include)
     set_target_properties(benchmark::benchmark PROPERTIES
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
         IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"

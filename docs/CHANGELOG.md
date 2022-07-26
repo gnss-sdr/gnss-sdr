@@ -57,6 +57,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   `-Wp,-D_GLIBCXX_ASSERTIONS` compiler option. This is added by default in some
   GNU/Linux distributions.
 - Fixed linking against libunwind when the glog library is built locally.
+- The configuration options at building time `-DENABLE_OWN_GLOG`,
+  `-DENABLE_OWN_ARMADILLO`, and `-DENABLE_OWN_GNSSTK` can now be switched `ON`
+  and `OFF` without the need to start from an empty buiding folder.
 
 ### Improvements in Usability:
 

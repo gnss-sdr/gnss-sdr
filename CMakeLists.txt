@@ -116,6 +116,8 @@ option(ENABLE_OWN_GNSSTK "Force to download, build and link gnsstk for system te
 if(NOT ENABLE_OWN_GNSSTK)
     option(ENABLE_OWN_GPSTK "Force to download, build and link gnsstk for system tests, even if it is already installed" OFF)
     if(ENABLE_OWN_GPSTK)
+        unset(Gnsstk:gnsstk CACHE)
+        unset(GNSSTK_FOUND CACHE)
         message(STATUS "WARNING: Option ENABLE_OWN_GPSTK is deprecated, please use ENABLE_OWN_GNSSTK")
         set(ENABLE_OWN_GNSSTK ON)
     endif()
@@ -664,6 +666,10 @@ endif()
 set(FILESYSTEM_FOUND FALSE)
 if(NOT ENABLE_OWN_GNSSTK)
     unset(Gnsstk::gnsstk CACHE)
+    unset(GNSSTK_FOUND CACHE)
+    unset(GNSSTK_OLDER_THAN_8 CACHE)
+    unset(GNSSTK_OLDER_THAN_9 CACHE)
+    unset(GNSSTK_OLDER_THAN_13 CACHE)
     find_package(GNSSTK)
     set_package_properties(GNSSTK PROPERTIES
         PURPOSE "Used in some Extra Tests."
@@ -1372,9 +1378,18 @@ endif()
 # gflags - https://github.com/gflags/gflags
 ################################################################################
 set(LOCAL_GFLAGS FALSE)
-if(NOT ENABLE_OWN_GLOG)
+if(ENABLE_OWN_GLOG)
+    unset(Glog::glog CACHE)
+    unset(GLOG_FOUND CACHE)
+    unset(Gflags::gflags CACHE)
+    unset(GLAGS_FOUND CACHE)
+    set(GFLAGS_GREATER_20 TRUE)
+else()
+    unset(Glog::glog CACHE)
+    unset(GLOG_FOUND CACHE)
     find_package(GLOG)
     if(GLOG_FOUND)
+        unset(GFLAGS_GREATER_20 CACHE)
         find_package(GFLAGS)
     endif()
 endif()
@@ -1886,7 +1901,15 @@ endif()
 ################################################################################
 # Armadillo - http://arma.sourceforge.net/
 ################################################################################
-find_package(Armadillo)
+if(ENABLE_OWN_ARMADILLO)
+    unset(Armadillo::armadillo CACHE)
+    unset(ARMADILLO_FOUND CACHE)
+else()
+    unset(Armadillo::armadillo CACHE)
+    unset(ARMADILLO_FOUND CACHE)
+    find_package(Armadillo)
+endif()
+
 set_package_properties(Armadillo PROPERTIES
     URL "http://arma.sourceforge.net/"
     PURPOSE "Used for matrix computations."
@@ -1897,7 +1920,8 @@ if(ARMADILLO_FOUND)
         DESCRIPTION "C++ library for linear algebra and scientific computing (found: v${ARMADILLO_VERSION_STRING})"
     )
     if(${ARMADILLO_VERSION_STRING} VERSION_LESS ${GNSSSDR_ARMADILLO_MIN_VERSION})
-        set(ARMADILLO_FOUND FALSE)
+        unset(Armadillo::armadillo CACHE)
+        unset(ARMADILLO_FOUND CACHE)
         set(ENABLE_OWN_ARMADILLO ON)
         message(STATUS " Armadillo >= v${GNSSSDR_ARMADILLO_MIN_VERSION} has not been found.")
     else()
@@ -1974,6 +1998,8 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             BINARY_DIR ${CMAKE_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DBUILD_SHARED_LIBS=OFF
+                -DBUILD_SMOKE_TEST=OFF
+                -DALLOW_BLAS_LAPACK_MACOS=ON
                 ${ARMADILLO_CXX_VERSION}
                 ${DARWIN_DISABLE_HDF5}
                 ${ARMADILLO_TOOLCHAIN_FILE}
@@ -1994,6 +2020,8 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             BINARY_DIR ${CMAKE_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DBUILD_SHARED_LIBS=OFF
+                -DBUILD_SMOKE_TEST=OFF
+                -DALLOW_BLAS_LAPACK_MACOS=ON
                 ${ARMADILLO_CXX_VERSION}
                 ${DARWIN_DISABLE_HDF5}
                 ${ARMADILLO_TOOLCHAIN_FILE}
@@ -2045,6 +2073,14 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         DESCRIPTION "C++ library for linear algebra and scientific computing"
         PURPOSE "Armadillo ${GNSSSDR_ARMADILLO_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
     )
+    # Fix for macOS
+    find_library(ARPACK_LIBRARY
+        NAMES arpack
+        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} /opt/local/lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/local/lib64
+    )
+    if(ARPACK_LIBRARY)
+        target_link_libraries(Armadillo::armadillo INTERFACE ARPACK_LIBRARY)
+    endif()
 endif()
 
 

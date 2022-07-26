@@ -221,7 +221,7 @@ target_link_libraries(gnss_sdr_flags
         Gflags::gflags
 )
 
-if(${GFLAGS_GREATER_20})
+if(GFLAGS_GREATER_20 OR ${LOCAL_GFLAGS})
     target_compile_definitions(gnss_sdr_flags PRIVATE -DGFLAGS_GREATER_2_0=1)
 endif()
 

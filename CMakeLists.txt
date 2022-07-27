@@ -2079,7 +2079,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} /opt/local/lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/local/lib64
     )
     if(ARPACK_LIBRARY)
-        target_link_libraries(Armadillo::armadillo INTERFACE ARPACK_LIBRARY)
+        target_link_libraries(Armadillo::armadillo INTERFACE ${ARPACK_LIBRARY})
     endif()
 endif()
 

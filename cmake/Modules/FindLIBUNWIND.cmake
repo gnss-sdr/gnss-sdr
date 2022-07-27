@@ -31,7 +31,7 @@ find_path(LIBUNWIND_INCLUDE_DIR
 
 find_library(LIBUNWIND_GENERIC_LIBRARY
     NAMES
-        libunwind.a
+        libunwind
         unwind
     HINTS
         /usr
@@ -68,7 +68,7 @@ if(LIBUNWIND_INCLUDE_DIR)
         if(LIBUNWIND_ARCH)
             find_library(LIBUNWIND_SPECIFIC_LIBRARY
                 NAMES
-                    libunwind-${LIBUNWIND_ARCH}.a
+                    libunwind-${LIBUNWIND_ARCH}
                     "unwind-${LIBUNWIND_ARCH}"
                 HINTS
                     /usr
@@ -113,13 +113,20 @@ if(LIBUNWIND_FOUND)
 endif()
 
 if(LIBUNWIND_FOUND AND NOT TARGET Libunwind::libunwind)
-    add_library(Libunwind::libunwind INTERFACE IMPORTED)
-    set_target_properties(Libunwind::libunwind PROPERTIES
-        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-        IMPORTED_LOCATION "${LIBUNWIND_LIBRARIES}"
-        INTERFACE_INCLUDE_DIRECTORIES "${LIBUNWIND_INCLUDE_DIR}"
-        INTERFACE_LINK_LIBRARIES "${LIBUNWIND_LIBRARIES}"
-    )
+    if(LIBUNWIND_GENERIC_LIBRARY)
+        add_library(Libunwind::libunwind SHARED IMPORTED)
+        set_target_properties(Libunwind::libunwind PROPERTIES
+            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+            IMPORTED_LOCATION "${LIBUNWIND_GENERIC_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${LIBUNWIND_INCLUDE_DIR}"
+            INTERFACE_LINK_LIBRARIES "${LIBUNWIND_LIBRARIES}"
+        )
+    else()
+        add_library(Libunwind::libunwind INTERFACE IMPORTED)
+        set_target_properties(Libunwind::libunwind PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${LIBUNWIND_INCLUDE_DIR}"
+        )
+    endif()
 endif()
 
 set_package_properties(LIBUNWIND PROPERTIES

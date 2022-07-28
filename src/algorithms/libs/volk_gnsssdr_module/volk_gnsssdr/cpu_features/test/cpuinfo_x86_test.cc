@@ -77,9 +77,9 @@ private:
     uint32_t xcr0_eax_;
 };
 
-static FakeCpu* g_fake_cpu_instance = nullptr;
+static FakeCpu *g_fake_cpu_instance = nullptr;
 
-static FakeCpu& cpu()
+static FakeCpu &cpu()
 {
     assert(g_fake_cpu_instance != nullptr);
     return *g_fake_cpu_instance;
@@ -93,7 +93,7 @@ extern "C" Leaf GetCpuidLeaf(uint32_t leaf_id, int ecx)
 extern "C" uint32_t GetXCR0Eax(void) { return cpu().GetXCR0Eax(); }
 
 #if defined(CPU_FEATURES_OS_MACOS)
-extern "C" bool GetDarwinSysCtlByName(const char* name)
+extern "C" bool GetDarwinSysCtlByName(const char *name)
 {
     return cpu().GetDarwinSysCtlByName(name);
 }
@@ -123,6 +123,34 @@ protected:
         g_fake_cpu_instance = nullptr;
     }
 };
+
+TEST_F(CpuidX86Test, X86MicroarchitectureEnum)
+{
+    const char *last_name = GetX86MicroarchitectureName(X86_MICROARCHITECTURE_LAST_);
+    EXPECT_STREQ(last_name, "unknown microarchitecture");
+    for (int i = static_cast<int>(X86_UNKNOWN); i != static_cast<int>(X86_MICROARCHITECTURE_LAST_); ++i)
+        {
+            const auto micro = static_cast<X86Microarchitecture>(i);
+            const char *name = GetX86MicroarchitectureName(micro);
+            ASSERT_FALSE(name == nullptr);
+            EXPECT_STRNE(name, "");
+            EXPECT_STRNE(name, last_name);
+        }
+}
+
+TEST_F(CpuidX86Test, X86FeaturesEnum)
+{
+    const char *last_name = GetX86FeaturesEnumName(X86_LAST_);
+    EXPECT_STREQ(last_name, "unknown_feature");
+    for (int i = static_cast<int>(X86_FPU); i != static_cast<int>(X86_LAST_); ++i)
+        {
+            const auto feature = static_cast<X86FeaturesEnum>(i);
+            const char *name = GetX86FeaturesEnumName(feature);
+            ASSERT_FALSE(name == nullptr);
+            EXPECT_STRNE(name, "");
+            EXPECT_STRNE(name, last_name);
+        }
+}
 
 TEST_F(CpuidX86Test, SandyBridge)
 {
@@ -835,7 +863,7 @@ TEST_F(CpuidX86Test, Nehalem)
     cpu().SetDarwinSysCtlByName("hw.optional.sse4_1");
     cpu().SetDarwinSysCtlByName("hw.optional.sse4_2");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
-    auto& fs = GetEmptyFilesystem();
+    auto &fs = GetEmptyFilesystem();
     fs.CreateFile("/var/run/dmesg.boot", R"(
   ---<<BOOT>>---
 Copyright (c) 1992-2020 The FreeBSD Project.
@@ -845,7 +873,7 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
 real memory  = 2147418112 (2047 MB)
 )");
 #elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
-    auto& fs = GetEmptyFilesystem();
+    auto &fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(processor       :
 flags           : fpu mmx sse sse2 pni ssse3 sse4_1 sse4_2
 )");
@@ -915,7 +943,7 @@ TEST_F(CpuidX86Test, Atom)
     cpu().SetDarwinSysCtlByName("hw.optional.sse4_1");
     cpu().SetDarwinSysCtlByName("hw.optional.sse4_2");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
-    auto& fs = GetEmptyFilesystem();
+    auto &fs = GetEmptyFilesystem();
     fs.CreateFile("/var/run/dmesg.boot", R"(
   ---<<BOOT>>---
 Copyright (c) 1992-2020 The FreeBSD Project.
@@ -925,7 +953,7 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
 real memory  = 2147418112 (2047 MB)
 )");
 #elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
-    auto& fs = GetEmptyFilesystem();
+    auto &fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(
 flags           : fpu mmx sse sse2 pni ssse3 sse4_1 sse4_2
 )");
@@ -1038,7 +1066,7 @@ TEST_F(CpuidX86Test, P3)
 #elif defined(CPU_FEATURES_OS_MACOS)
     cpu().SetDarwinSysCtlByName("hw.optional.sse");
 #elif defined(CPU_FEATURES_OS_FREEBSD)
-    auto& fs = GetEmptyFilesystem();
+    auto &fs = GetEmptyFilesystem();
     fs.CreateFile("/var/run/dmesg.boot", R"(
   ---<<BOOT>>---
 Copyright (c) 1992-2020 The FreeBSD Project.
@@ -1047,7 +1075,7 @@ FreeBSD is a registered trademark of The FreeBSD Foundation.
 real memory  = 2147418112 (2047 MB)
 )");
 #elif defined(CPU_FEATURES_OS_LINUX) || defined(CPU_FEATURES_OS_ANDROID)
-    auto& fs = GetEmptyFilesystem();
+    auto &fs = GetEmptyFilesystem();
     fs.CreateFile("/proc/cpuinfo", R"(
 flags           : fpu mmx sse
 )");

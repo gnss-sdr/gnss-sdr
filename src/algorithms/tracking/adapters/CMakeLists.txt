@@ -105,7 +105,7 @@ target_link_libraries(tracking_adapters
 
 target_include_directories(tracking_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(ENABLE_FPGA)

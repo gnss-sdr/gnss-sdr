@@ -40,7 +40,7 @@ endif()
 
 target_include_directories(pvt_gr_blocks
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(USE_GENERIC_LAMBDAS)

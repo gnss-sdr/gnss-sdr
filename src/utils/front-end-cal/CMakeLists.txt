@@ -134,8 +134,8 @@ find_program(GZIP gzip
 )
 
 if(NOT GZIP_NOTFOUND)
-    execute_process(COMMAND gzip -9 -c ${CMAKE_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_FILE "${CMAKE_BINARY_DIR}/front-end-cal.1.gz"
+    execute_process(COMMAND gzip -9 -c ${GNSSSDR_SOURCE_DIR}/docs/manpage/front-end-cal-manpage
+        WORKING_DIRECTORY ${GNSSSDR_BINARY_DIR} OUTPUT_FILE "${GNSSSDR_BINARY_DIR}/front-end-cal.1.gz"
     )
-    install(FILES ${CMAKE_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
+    install(FILES ${GNSSSDR_BINARY_DIR}/front-end-cal.1.gz DESTINATION share/man/man1)
 endif()

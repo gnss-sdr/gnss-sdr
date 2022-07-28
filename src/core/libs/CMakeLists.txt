@@ -4,7 +4,7 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/nav_message.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${GNSSSDR_SOURCE_DIR}/docs/protobuf/nav_message.proto)
 
 add_subdirectory(supl)
 
@@ -114,7 +114,7 @@ endif()
 
 target_include_directories(core_libs
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(USE_GENERIC_LAMBDAS)
@@ -172,5 +172,5 @@ endif()
 set_property(TARGET core_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/interfaces>
+        $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/src/core/interfaces>
 )

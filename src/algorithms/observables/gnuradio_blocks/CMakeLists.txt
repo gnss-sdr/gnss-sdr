@@ -20,7 +20,7 @@ endif()
 
 target_include_directories(obs_gr_blocks
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
 )
 
 target_link_libraries(obs_gr_blocks
@@ -47,7 +47,7 @@ endif()
 
 target_include_directories(obs_gr_blocks
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(GNURADIO_USES_STD_POINTERS)

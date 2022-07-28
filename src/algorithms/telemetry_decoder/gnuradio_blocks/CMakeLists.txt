@@ -79,12 +79,12 @@ endif()
 
 target_include_directories(telemetry_decoder_gr_blocks
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 target_include_directories(telemetry_decoder_gr_blocks
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique.h
+        ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique.h
 )
 
 if(has_rotl)

@@ -77,6 +77,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   manually set the bandwidth of the bandpass filter on the radio frontend.
 - The new configuration parameter `Channels_XX.RF_channel_ID` allows to specify
   the signal source per channel group.
+- Allowed the CMake project to be a sub-project.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

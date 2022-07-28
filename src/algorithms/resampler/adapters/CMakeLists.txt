@@ -45,7 +45,7 @@ target_link_libraries(resampler_adapters
 
 target_include_directories(resampler_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(GNURADIO_IS_38_OR_GREATER)

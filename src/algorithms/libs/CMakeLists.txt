@@ -94,7 +94,7 @@ endif()
 if(NOT has_span)
     target_include_directories(algorithms_libs
         PUBLIC
-            ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
+            ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/gsl/include
     )
 endif()
 
@@ -164,7 +164,7 @@ endif()
 
 target_include_directories(algorithms_libs
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 target_compile_definitions(algorithms_libs

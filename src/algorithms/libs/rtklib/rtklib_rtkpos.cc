@@ -124,7 +124,7 @@ static gtime_t time_stat = {0, 0}; /* rtk status file time */
 int rtkopenstat(const char *file, int level)
 {
     gtime_t time = utc2gpst(timeget());
-    char path[1024];
+    std::string path;
 
     trace(3, "rtkopenstat: file=%s level=%d\n", file, level);
 
@@ -135,9 +135,9 @@ int rtkopenstat(const char *file, int level)
 
     reppath(file, path, time, "", "");
 
-    if (!(fp_stat = fopen(path, "we")))
+    if (!(fp_stat = fopen(path.data(), "we")))
         {
-            trace(1, "rtkopenstat: file open error path=%s\n", path);
+            trace(1, "rtkopenstat: file open error path=%s\n", path.data());
             return 0;
         }
     if (strlen(file) < 1025)
@@ -191,7 +191,6 @@ void rtkoutstat(rtk_t *rtk, char *buff __attribute__((unused)))
     int est;
     int nfreq;
     int nf = NF_RTK(&rtk->opt);
-    char id[32];
 
     if (statlevel <= 0 || !fp_stat)
         {
@@ -264,11 +263,11 @@ void rtkoutstat(rtk_t *rtk, char *buff __attribute__((unused)))
                         {
                             continue;
                         }
-                    satno2id(i + 1, id);
+                    auto id = satno2id(i + 1);
                     j = II_RTK(i + 1, &rtk->opt);
                     xa[0] = j < rtk->na ? rtk->xa[j] : 0.0;
                     fprintf(fp_stat, "$ION,%d,%.3f,%d,%s,%.1f,%.1f,%.4f,%.4f\n", week, tow, rtk->sol.stat,
-                        id, ssat->azel[0] * R2D, ssat->azel[1] * R2D, rtk->x[j], xa[0]);
+                        id.data(), ssat->azel[0] * R2D, ssat->azel[1] * R2D, rtk->x[j], xa[0]);
                 }
         }
     /* tropospheric parameters */
@@ -306,11 +305,11 @@ void rtkoutstat(rtk_t *rtk, char *buff __attribute__((unused)))
                 {
                     continue;
                 }
-            satno2id(i + 1, id);
+            auto id = satno2id(i + 1);
             for (j = 0; j < nfreq; j++)
                 {
                     fprintf(fp_stat, "$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d\n",
-                        week, tow, id, j + 1, ssat->azel[0] * R2D, ssat->azel[1] * R2D,
+                        week, tow, id.data(), j + 1, ssat->azel[0] * R2D, ssat->azel[1] * R2D,
                         ssat->resp[j], ssat->resc[j], ssat->vsat[j], ssat->snr[j] * 0.25,
                         ssat->fix[j], ssat->slip[j] & 3, ssat->lock[j], ssat->outc[j],
                         ssat->slipc[j], ssat->rejc[j]);
@@ -323,7 +322,7 @@ void rtkoutstat(rtk_t *rtk, char *buff __attribute__((unused)))
 void swapsolstat()
 {
     gtime_t time = utc2gpst(timeget());
-    char path[1024];
+    std::string path;
 
     if (static_cast<int>(time2gpst(time, nullptr) / INT_SWAP_STAT) ==
         static_cast<int>(time2gpst(time_stat, nullptr) / INT_SWAP_STAT))
@@ -341,12 +340,12 @@ void swapsolstat()
             fclose(fp_stat);
         }
 
-    if (!(fp_stat = fopen(path, "we")))
+    if (!(fp_stat = fopen(path.data(), "we")))
         {
-            trace(2, "swapsolstat: file open error path=%s\n", path);
+            trace(2, "swapsolstat: file open error path=%s\n", path.data());
             return;
         }
-    trace(3, "swapsolstat: path=%s\n", path);
+    trace(3, "swapsolstat: path=%s\n", path.data());
 }
 
 
@@ -367,7 +366,6 @@ void outsolstat(rtk_t *rtk)
     int est;
     int nfreq;
     int nf = NF_RTK(&rtk->opt);
-    char id[32];
 
     if (statlevel <= 0 || !fp_stat)
         {
@@ -440,11 +438,11 @@ void outsolstat(rtk_t *rtk)
                         {
                             continue;
                         }
-                    satno2id(i + 1, id);
+                    auto id = satno2id(i + 1);
                     j = II_RTK(i + 1, &rtk->opt);
                     xa[0] = j < rtk->na ? rtk->xa[j] : 0.0;
                     fprintf(fp_stat, "$ION,%d,%.3f,%d,%s,%.1f,%.1f,%.4f,%.4f\n", week, tow, rtk->sol.stat,
-                        id, ssat->azel[0] * R2D, ssat->azel[1] * R2D, rtk->x[j], xa[0]);
+                        id.data(), ssat->azel[0] * R2D, ssat->azel[1] * R2D, rtk->x[j], xa[0]);
                 }
         }
     /* tropospheric parameters */
@@ -482,11 +480,11 @@ void outsolstat(rtk_t *rtk)
                 {
                     continue;
                 }
-            satno2id(i + 1, id);
+            auto id = satno2id(i + 1);
             for (j = 0; j < nfreq; j++)
                 {
                     fprintf(fp_stat, "$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d\n",
-                        week, tow, id, j + 1, ssat->azel[0] * R2D, ssat->azel[1] * R2D,
+                        week, tow, id.data(), j + 1, ssat->azel[0] * R2D, ssat->azel[1] * R2D,
                         ssat->resp[j], ssat->resc[j], ssat->vsat[j], ssat->snr[j] * 0.25,
                         ssat->fix[j], ssat->slip[j] & 3, ssat->lock[j], ssat->outc[j],
                         ssat->slipc[j], ssat->rejc[j]);

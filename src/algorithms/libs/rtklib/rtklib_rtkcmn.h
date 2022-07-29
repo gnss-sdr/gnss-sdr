@@ -59,6 +59,7 @@
 #define GNSS_SDR_RTKLIB_RTKCMN_H
 
 #include "rtklib.h"
+#include <filesystem>
 #include <cstddef>
 #include <string>
 
@@ -102,7 +103,7 @@ void fatalerr(const char *format, ...);
 int satno(int sys, int prn);
 int satsys(int sat, int *prn);
 int satid2no(const char *id);
-void satno2id(int sat, char *id);
+std::string satno2id(int sat);
 int satexclude(int sat, int svh, const prcopt_t *opt);
 int testsnr(int base, int freq, double el, double snr, const snrmask_t *mask);
 unsigned char obs2code(const char *obs, int *freq);
@@ -229,12 +230,9 @@ void traceobs(int level, const obsd_t *obs, int n);
 // void traceb  (int level, const unsigned char *p, int n);
 
 int execcmd(const char *cmd);
-void createdir(const char *path);
-int repstr(char *str, const char *pat, const char *rep);
-int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
-    const char *base);
-int reppaths(const char *path, char *rpath[], int nmax, gtime_t ts,
-    gtime_t te, const char *rov, const char *base);
+void createdir(std::filesystem::path const& path);
+int reppath(std::string const &path, std::string &rpath, gtime_t time, const char *rov,
+	    const char *base);
 double satwavelen(int sat, int frq, const nav_t *nav);
 double geodist(const double *rs, const double *rr, double *e);
 double satazel(const double *pos, const double *e, double *azel);

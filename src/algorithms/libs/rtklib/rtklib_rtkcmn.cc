@@ -35,14 +35,13 @@
 #include <cassert>
 #include <cstring>
 #include <dirent.h>
-#include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <vector>
-
 
 const double GPST0[] = {1980, 1, 6, 0, 0, 0}; /* gps time reference */
 const double GST0[] = {1999, 8, 22, 0, 0, 0}; /* galileo system time reference */
@@ -460,37 +459,50 @@ int satid2no(const char *id)
  *          char   *id       O   satellite id (Gnn,Rnn,Enn,Jnn,Cnn,Inn or nnn)
  * return : none
  *-----------------------------------------------------------------------------*/
-void satno2id(int sat, char *id)
+std::string satno2id(int sat)
 {
+    std::ostringstream ss;
+    ss << std::setfill('0');  // all PRNs are 0-filled
+    std::string prefix;
+    int width = 2;
+
     int prn;
-    char id_aux[16];
     switch (satsys(sat, &prn))
         {
         case SYS_GPS:
-            std::snprintf(id, sizeof(id_aux), "G%02d", prn - MINPRNGPS + 1);
-            return;
+            prefix = "G";
+            prn = prn - MINPRNGPS + 1;
+            break;
         case SYS_GLO:
-            snprintf(id, sizeof(id_aux), "R%02d", prn - MINPRNGLO + 1);
-            return;
+            prefix = "R";
+            prn = prn - MINPRNGLO + 1;
+            break;
         case SYS_GAL:
-            std::snprintf(id, sizeof(id_aux), "E%02d", prn - MINPRNGAL + 1);
-            return;
+            prefix = "E";
+            prn = prn - MINPRNGAL + 1;
+            break;
         case SYS_QZS:
-            std::snprintf(id, sizeof(id_aux), "J%02d", prn - MINPRNQZS + 1);
-            return;
+            prefix = "J";
+            prn = prn - MINPRNQZS + 1;
+            break;
         case SYS_BDS:
-            std::snprintf(id, sizeof(id_aux), "C%02d", prn - MINPRNBDS + 1);
-            return;
+            prefix = "C";
+            prn = prn - MINPRNBDS + 1;
+            break;
         case SYS_IRN:
-            std::snprintf(id, sizeof(id_aux), "I%02d", prn - MINPRNIRN + 1);
-            return;
+            prefix = "I";
+            prn = prn - MINPRNIRN + 1;
+            break;
         case SYS_LEO:
-            std::snprintf(id, sizeof(id_aux), "L%02d", prn - MINPRNLEO + 1);
-            return;
+            prefix = "L";
+            prn = prn - MINPRNLEO + 1;
+            break;
         case SYS_SBS:
-            std::snprintf(id, sizeof(id_aux), "%03d", prn);
-            return;
+            width = 3;
+            break;
         }
+    ss << prefix << std::setw(width) << prn;
+    return ss.str();
 }
 
 
@@ -2833,9 +2845,9 @@ int readantex(const char *file, pcvs_t *pcvs)
 
             if (strstr(buff + 60, "TYPE / SERIAL NO"))
                 {
-                    strncpy(pcv.type, buff, 20);
+                    strncpy(pcv.type, buff, 20);  // MAXANT (64)
                     pcv.type[20] = '\0';
-                    strncpy(pcv.code, buff + 20, 20);
+                    strncpy(pcv.code, buff + 20, 20);  // MAXANT (64)
                     pcv.code[20] = '\0';
                     if (!strncmp(pcv.code + 3, "        ", 8))
                         {
@@ -3090,9 +3102,9 @@ void readpos(const char *file, const char *rcv, double *pos)
                 {
                     continue;
                 }
-            // strncpy(stas[np], str, 15); This line triggers a warning. Replaced by:
-            memcpy(stas[np], str, 15 * sizeof(stas[np][0]));
-            stas[np++][15] = '\0';
+            auto sta = stas[np++];
+            std::strncpy(sta, str, 16);
+            sta[15] = '\0';
         }
     fclose(fp);
     len = static_cast<int>(strlen(rcv));
@@ -3700,7 +3712,6 @@ int savenav(const char *file, const nav_t *nav)
 {
     FILE *fp;
     int i;
-    char id[32];
 
     trace(3, "savenav: file=%s\n", file);
 
@@ -3715,12 +3726,12 @@ int savenav(const char *file, const nav_t *nav)
                 {
                     continue;
                 }
-            satno2id(nav->eph[i].sat, id);
+            auto id = satno2id(nav->eph[i].sat);
             fprintf(fp,
                 "%s,%d,%d,%d,%d,%d,%d,%d,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%d,%d\n",
-                id, nav->eph[i].iode, nav->eph[i].iodc, nav->eph[i].sva,
+                id.data(), nav->eph[i].iode, nav->eph[i].iodc, nav->eph[i].sva,
                 nav->eph[i].svh, static_cast<int>(nav->eph[i].toe.time),
                 static_cast<int>(nav->eph[i].toc.time), static_cast<int>(nav->eph[i].ttr.time),
                 nav->eph[i].A, nav->eph[i].e, nav->eph[i].i0, nav->eph[i].OMG0,
@@ -3736,11 +3747,11 @@ int savenav(const char *file, const nav_t *nav)
                 {
                     continue;
                 }
-            satno2id(nav->geph[i].sat, id);
+            auto id = satno2id(nav->geph[i].sat);
             fprintf(fp,
                 "%s,%d,%d,%d,%d,%d,%d,%d,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%.14E\n",
-                id, nav->geph[i].iode, nav->geph[i].frq, nav->geph[i].svh,
+                id.data(), nav->geph[i].iode, nav->geph[i].frq, nav->geph[i].svh,
                 nav->geph[i].sva, nav->geph[i].age, static_cast<int>(nav->geph[i].toe.time),
                 static_cast<int>(nav->geph[i].tof.time),
                 nav->geph[i].pos[0], nav->geph[i].pos[1], nav->geph[i].pos[2],
@@ -3841,7 +3852,7 @@ void freenav(nav_t *nav, int opt)
 // #ifdef TRACE
 //
 FILE *fp_trace = nullptr;      /* file pointer of trace */
-char file_trace[1024];         /* trace file */
+std::string file_trace;        /* trace file */
 static int level_trace = 0;    /* level of trace */
 unsigned int tick_trace = 0;   /* tick time at traceopen (ms) */
 gtime_t time_trace = {0, 0.0}; /* time at traceopen */
@@ -3850,7 +3861,7 @@ pthread_mutex_t lock_trace;    /* lock for trace */
 void traceswap()
 {
     gtime_t time = utc2gpst(timeget());
-    char path[1024];
+    std::string path;
 
     rtk_lock(&lock_trace);
 
@@ -3872,7 +3883,7 @@ void traceswap()
             fclose(fp_trace);
         }
 
-    if (!(fp_trace = fopen(path, "we")))
+    if (!(fp_trace = fopen(path.data(), "we")))
         {
             fp_trace = stderr;
         }
@@ -3883,22 +3894,15 @@ void traceswap()
 void traceopen(const char *file)
 {
     gtime_t time = utc2gpst(timeget());
-    char path[1024];
+    std::string path;
 
     reppath(file, path, time, "", "");
-    if (!*path || !(fp_trace = fopen(path, "we")))
+    if (path.empty() or (fp_trace = fopen(path.data(), "we")) == nullptr)
         {
             fp_trace = stderr;
         }
-    if (strlen(file) < 1025)
-        {
-            std::strncpy(file_trace, file, 1024);
-            file_trace[1023] = '\0';
-        }
-    else
-        {
-            trace(1, "file array is too long");
-        }
+
+    file_trace = file;
     tick_trace = tickget();
     time_trace = time;
     initlock(&lock_trace);
@@ -3912,7 +3916,7 @@ void traceclose()
             fclose(fp_trace);
         }
     fp_trace = nullptr;
-    file_trace[0] = '\0';
+    file_trace.clear();
 }
 
 
@@ -3967,9 +3971,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
     //    if (!fp_trace||level>level_trace) return;
     //    for (i=0;i<n;i++) {
     //        time2str(obs[i].time,str,3);
-    //        satno2id(obs[i].sat,id);
+    //        auto id = satno2id(obs[i].sat);
     //        fprintf(fp_trace," (%2d) %s %-3s rcv%d %13.3f %13.3f %13.3f %13.3f %d %d %d %d %3.1f %3.1f\n",
-    //              i+1,str,id,obs[i].rcv,obs[i].L[0],obs[i].L[1],obs[i].P[0],
+    //              i+1,str,id.data(),obs[i].rcv,obs[i].L[0],obs[i].L[1],obs[i].P[0],
     //              obs[i].P[1],obs[i].LLI[0],obs[i].LLI[1],obs[i].code[0],
     //              obs[i].code[1],obs[i].SNR[0]*0.25,obs[i].SNR[1]*0.25);
     //    }
@@ -3985,9 +3989,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //    for (i=0;i<nav->n;i++) {
 //        time2str(nav->eph[i].toe,s1,0);
 //        time2str(nav->eph[i].ttr,s2,0);
-//        satno2id(nav->eph[i].sat,id);
+//        auto id = satno2id(nav->eph[i].sat);
 //        fprintf(fp_trace,"(%3d) %-3s : %s %s %3d %3d %02x\n",i+1,
-//                id,s1,s2,nav->eph[i].iode,nav->eph[i].iodc,nav->eph[i].svh);
+//                id.data(),s1,s2,nav->eph[i].iode,nav->eph[i].iodc,nav->eph[i].svh);
 //    }
 //    fprintf(fp_trace,"(ion) %9.4e %9.4e %9.4e %9.4e\n",nav->ion_gps[0],
 //            nav->ion_gps[1],nav->ion_gps[2],nav->ion_gps[3]);
@@ -4005,9 +4009,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //    for (i=0;i<nav->ng;i++) {
 //        time2str(nav->geph[i].toe,s1,0);
 //        time2str(nav->geph[i].tof,s2,0);
-//        satno2id(nav->geph[i].sat,id);
+//        auto id = satno2id(nav->geph[i].sat);
 //        fprintf(fp_trace,"(%3d) %-3s : %s %s %2d %2d %8.3f\n",i+1,
-//                id,s1,s2,nav->geph[i].frq,nav->geph[i].svh,nav->geph[i].taun*1e6);
+//                id.data(),s1,s2,nav->geph[i].frq,nav->geph[i].svh,nav->geph[i].taun*1e6);
 //    }
 // }
 // extern void tracehnav(int level, const nav_t *nav)
@@ -4019,14 +4023,14 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //    for (i=0;i<nav->ns;i++) {
 //        time2str(nav->seph[i].t0,s1,0);
 //        time2str(nav->seph[i].tof,s2,0);
-//        satno2id(nav->seph[i].sat,id);
+//        auto id = satno2id(nav->seph[i].sat);
 //        fprintf(fp_trace,"(%3d) %-3s : %s %s %2d %2d\n",i+1,
-//                id,s1,s2,nav->seph[i].svh,nav->seph[i].sva);
+//                id.data(),s1,s2,nav->seph[i].svh,nav->seph[i].sva);
 //    }
 // }
 // extern void tracepeph(int level, const nav_t *nav)
 // {
-//    char s[64],id[16];
+//    char s[64];
 //    int i,j;
 //
 //    if (!fp_trace||level>level_trace) return;
@@ -4034,9 +4038,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //    for (i=0;i<nav->ne;i++) {
 //        time2str(nav->peph[i].time,s,0);
 //        for (j=0;j<MAXSAT;j++) {
-//            satno2id(j+1,id);
+//            auto id = satno2id(j+1);
 //            fprintf(fp_trace,"%-3s %d %-3s %13.3f %13.3f %13.3f %13.3f %6.3f %6.3f %6.3f %6.3f\n",
-//                    s,nav->peph[i].index,id,
+//                    s,nav->peph[i].index,id.data(),
 //                    nav->peph[i].pos[j][0],nav->peph[i].pos[j][1],
 //                    nav->peph[i].pos[j][2],nav->peph[i].pos[j][3]*1e9,
 //                    nav->peph[i].std[j][0],nav->peph[i].std[j][1],
@@ -4046,7 +4050,7 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 // }
 // extern void tracepclk(int level, const nav_t *nav)
 // {
-//    char s[64],id[16];
+//    char s[64];
 //    int i,j;
 //
 //    if (!fp_trace||level>level_trace) return;
@@ -4054,9 +4058,9 @@ void traceobs(int level __attribute__((unused)), const obsd_t *obs __attribute__
 //    for (i=0;i<nav->nc;i++) {
 //        time2str(nav->pclk[i].time,s,0);
 //        for (j=0;j<MAXSAT;j++) {
-//            satno2id(j+1,id);
+//            auto id = satno2id(j+1);
 //            fprintf(fp_trace,"%-3s %d %-3s %13.3f %6.3f\n",
-//                    s,nav->pclk[i].index,id,
+//                    s,nav->pclk[i].index,id.data(),
 //                    nav->pclk[i].clk[j][0]*1e9,nav->pclk[i].std[j][0]*1e9);
 //        }
 //    }
@@ -4114,69 +4118,31 @@ int execcmd(const char *cmd)
  * return : none
  * notes  : not recursive. only one level
  *-----------------------------------------------------------------------------*/
-void createdir(const char *path)
+void createdir(std::filesystem::path const& path)
 {
-    char buff[1024];
-    char *p;
-    // tracet(3, "createdir: path=%s\n", path);
+  std::error_code ec;
 
-    if (strlen(path) < 1025)
-        {
-            std::strncpy(buff, path, 1024);
-            buff[1023] = '\0';
-        }
-    else
-        {
-            trace(1, "path is too long");
-        }
-    if (!(p = strrchr(buff, FILEPATHSEP)))
-        {
-            return;
-        }
-    *p = '\0';
-
-    if (mkdir(buff, 0777) != 0)
-        {
-            trace(1, "Error creating folder");
-        }
+  auto created = std::filesystem::create_directory(path, ec);
+  if (not created)
+    {
+      trace(1, "Error creating folder: %s", path.c_str());
+    }
 }
 
 
 /* replace string ------------------------------------------------------------*/
-int repstr(char *str, const char *pat, const char *rep)
+int repstr(std::string &str, std::string const &pat, std::string const &rep)
 {
-    int len = static_cast<int>(strlen(pat));
-    char buff[1024];
-    char *p;
-    char *q;
-    char *r;
+    int replaced = 0;
 
-    for (p = str, r = buff; *p; p = q + len)
+    auto pos = str.find(pat);
+    if (pos != std::string::npos)
         {
-            if (!(q = strstr(p, pat)))
-                {
-                    break;
-                }
-            strncpy(r, p, q - p);
-            r += q - p;
-            r += std::snprintf(r, sizeof(buff), "%s", rep);
-        }
-    if (p <= str)
-        {
-            return 0;
+            str.replace(pos, pat.length(), rep);
+            replaced = 1;
         }
 
-    if (strlen(p) < 1025)
-        {
-            std::strncpy(r, p, 1024);
-            r[1023] = '\0';
-        }
-    else
-        {
-            trace(1, "pat array is too long");
-        }
-    std::strncpy(str, buff, 1024);
-    return 1;
+    return replaced;
 }
 
 
@@ -4208,23 +4174,19 @@ int repstr(char *str, const char *pat, const char *rep)
  *              %r -> rrrr : rover id
  *              %b -> bbbb : base station id
  *-----------------------------------------------------------------------------*/
-int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
+int reppath(std::string const &path, std::string &rpath, gtime_t time, const char *rov,
     const char *base)
 {
-    double ep[6];
-    double ep0[6] = {2000, 1, 1, 0, 0, 0};
-    int week;
-    int dow;
-    int doy;
     int stat = 0;
-    char rep[64];
 
-    std::strncpy(rpath, path, 1024);
+    rpath = path;
 
-    if (!strstr(rpath, "%"))
-        {
-            return 0;
-        }
+    // synctactic sugar; implements C++23 std::string::contains()
+    auto patFind = [](std::string const &s, std::string const &pat) -> bool {
+        auto pos = s.find(pat);
+        return pos != s.npos;
+    };
+
     if (*rov)
         {
             stat |= repstr(rpath, "%r", rov);
@@ -4235,10 +4197,17 @@ int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
         }
     if (time.time != 0)
         {
+            char rep[64];  // scratch space for replacement string
+
+            double ep[6];
             time2epoch(time, ep);
-            ep0[0] = ep[0];
-            dow = static_cast<int>(floor(time2gpst(time, &week) / 86400.0));
-            doy = static_cast<int>(floor(timediff(time, epoch2time(ep0)) / 86400.0)) + 1;
+
+            int week = 0;
+            auto dow = static_cast<int>(floor(time2gpst(time, &week) / 86400.0));
+
+            double ep0[6] = {ep[0], 1, 1, 0, 0, 0};
+            auto doy = static_cast<int>(floor(timediff(time, epoch2time(ep0)) / 86400.0)) + 1;
+
             std::snprintf(rep, sizeof(rep), "%02d", (static_cast<int>(ep[3]) / 3) * 3);
             stat |= repstr(rpath, "%ha", rep);
             std::snprintf(rep, sizeof(rep), "%02d", (static_cast<int>(ep[3]) / 6) * 6);
@@ -4270,75 +4239,15 @@ int reppath(const char *path, char *rpath, gtime_t time, const char *rov,
             std::snprintf(rep, sizeof(rep), "%02d", (static_cast<int>(ep[4]) / 15) * 15);
             stat |= repstr(rpath, "%t", rep);
         }
-    else if (strstr(rpath, "%ha") || strstr(rpath, "%hb") || strstr(rpath, "%hc") ||
-             strstr(rpath, "%Y") || strstr(rpath, "%y") || strstr(rpath, "%m") ||
-             strstr(rpath, "%d") || strstr(rpath, "%h") || strstr(rpath, "%M") ||
-             strstr(rpath, "%S") || strstr(rpath, "%n") || strstr(rpath, "%W") ||
-             strstr(rpath, "%D") || strstr(rpath, "%H") || strstr(rpath, "%t"))
+    else if (patFind(rpath, "%ha") || patFind(rpath, "%hb") || patFind(rpath, "%hc") ||
+             patFind(rpath, "%Y") || patFind(rpath, "%y") || patFind(rpath, "%m") ||
+             patFind(rpath, "%d") || patFind(rpath, "%h") || patFind(rpath, "%M") ||
+             patFind(rpath, "%S") || patFind(rpath, "%n") || patFind(rpath, "%W") ||
+             patFind(rpath, "%D") || patFind(rpath, "%H") || patFind(rpath, "%t"))
         {
-            return -1; /* no valid time */
+            stat = -1; /* no valid time */
         }
     return stat;
-}
-
-
-/* replace keywords in file path and generate multiple paths -------------------
- * replace keywords in file path with date, time, rover and base station id
- * generate multiple keywords-replaced paths
- * args   : char   *path     I   file path (see below)
- *          char   *rpath[]  O   file paths in which keywords replaced
- *          int    nmax      I   max number of output file paths
- *          gtime_t ts       I   time start (gpst)
- *          gtime_t te       I   time end   (gpst)
- *          char   *rov      I   rover id string        ("": not replaced)
- *          char   *base     I   base station id string ("": not replaced)
- * return : number of replaced file paths
- * notes  : see reppath() for replacements of keywords.
- *          minimum interval of time replaced is 900s.
- *-----------------------------------------------------------------------------*/
-int reppaths(const char *path, char *rpath[], int nmax, gtime_t ts,
-    gtime_t te, const char *rov, const char *base)
-{
-    gtime_t time;
-    double tow;
-    double tint = 86400.0;
-    int i;
-    int n = 0;
-    int week;
-
-    trace(3, "reppaths: path =%s nmax=%d rov=%s base=%s\n", path, nmax, rov, base);
-
-    if (ts.time == 0 || te.time == 0 || timediff(ts, te) > 0.0)
-        {
-            return 0;
-        }
-
-    if (strstr(path, "%S") || strstr(path, "%M") || strstr(path, "%t"))
-        {
-            tint = 900.0;
-        }
-    else if (strstr(path, "%h") || strstr(path, "%H"))
-        {
-            tint = 3600.0;
-        }
-
-    tow = time2gpst(ts, &week);
-    time = gpst2time(week, floor(tow / tint) * tint);
-
-    while (timediff(time, te) <= 0.0 && n < nmax)
-        {
-            reppath(path, rpath[n], time, rov, base);
-            if (n == 0 || strcmp(rpath[n], rpath[n - 1]) != 0)
-                {
-                    n++;
-                }
-            time = timeadd(time, tint);
-        }
-    for (i = 0; i < n; i++)
-        {
-            trace(3, "reppaths: rpath=%s\n", rpath[i]);
-        }
-    return n;
 }
 
 

@@ -38,7 +38,9 @@
 #include <cerrno>
 #include <cinttypes>
 #include <cstring>
+#include <deque>
 #include <fcntl.h>
+#include <memory>
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <regex>

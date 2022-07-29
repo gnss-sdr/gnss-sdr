@@ -37,6 +37,7 @@
 #include "rtklib_tides.h"
 #include <cmath>
 #include <cstring>
+#include <string>
 #include <vector>
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),

@@ -44,6 +44,7 @@
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -235,7 +236,7 @@ int openfile_(file_t *file, gtime_t time, char *msg)
     char tagpath[MAXSTRPATH + 4] = "";
     char tagh[TIMETAGH_LEN + 1] = "";
 
-    tracet(3, "openfile_: path=%s time=%s\n", file->path, time_str(time, 0));
+    tracet(3, "openfile_: path=%s time=%s\n", file->path.data(), time_str(time, 0));
 
     file->time = utc2gpst(timeget());
     file->tick = file->tick_f = tickget();
@@ -331,7 +332,7 @@ int openfile_(file_t *file, gtime_t time, char *msg)
 /* close file ----------------------------------------------------------------*/
 void closefile_(file_t *file)
 {
-    tracet(3, "closefile_: path=%s\n", file->path);
+    tracet(3, "closefile_: path=%s\n", file->path.data());
     if (file->fp)
         {
             fclose(file->fp);
@@ -358,7 +359,7 @@ void closefile_(file_t *file)
 /* open file (path=filepath[::T[::+<off>][::x<speed>]][::S=swapintv]) --------*/
 file_t *openfile(std::string const &path, int mode, char *msg)
 {
-    tracet(3, "openfile: path=%s mode=%d\n", path, mode);
+    tracet(3, "openfile: path=%s mode=%d\n", path.data(), mode);
 
     if ((mode & (STR_MODE_R | STR_MODE_W)) == 0)
         {

@@ -1108,7 +1108,7 @@ typedef struct
 } serial_t;
 
 
-typedef struct
+struct file_t
 {                               /* file control type */
     FILE *fp = nullptr;         /* file pointer */
     FILE *fp_tag = nullptr;     /* file pointer of tag file */
@@ -1129,7 +1129,7 @@ typedef struct
     double speed = 0;           /* replay speed (time factor) */
     double swapintv = 0;        /* swap interval (hr) (0: no swap) */
     lock_t lock;                /* lock flag */
-} file_t;
+};
 
 
 typedef struct

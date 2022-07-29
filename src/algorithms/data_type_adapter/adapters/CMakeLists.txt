@@ -44,7 +44,7 @@ endif()
 
 target_include_directories(data_type_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 target_link_libraries(data_type_adapters

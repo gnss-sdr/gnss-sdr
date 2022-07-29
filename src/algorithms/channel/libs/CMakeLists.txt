@@ -45,7 +45,7 @@ target_link_libraries(channel_libs
 
 target_include_directories(channel_libs
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${GNSSSDR_SOURCE_DIR}/src/core/receiver
 )
 
 if(GNURADIO_USES_STD_POINTERS)

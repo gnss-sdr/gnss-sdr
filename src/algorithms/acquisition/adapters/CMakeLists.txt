@@ -129,7 +129,7 @@ endif()
 
 target_include_directories(acquisition_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(ENABLE_CLANG_TIDY)

@@ -59,8 +59,8 @@
 #define GNSS_SDR_RTKLIB_RTKCMN_H
 
 #include "rtklib.h"
-#include <filesystem>
 #include <cstddef>
+#include <filesystem>
 #include <string>
 
 
@@ -230,9 +230,9 @@ void traceobs(int level, const obsd_t *obs, int n);
 // void traceb  (int level, const unsigned char *p, int n);
 
 int execcmd(const char *cmd);
-void createdir(std::filesystem::path const& path);
+void createdir(std::filesystem::path const &path);
 int reppath(std::string const &path, std::string &rpath, gtime_t time, const char *rov,
-	    const char *base);
+    const char *base);
 double satwavelen(int sat, int frq, const nav_t *nav);
 double geodist(const double *rs, const double *rr, double *e);
 double satazel(const double *pos, const double *e, double *azel);

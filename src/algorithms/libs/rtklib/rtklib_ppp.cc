@@ -807,7 +807,7 @@ void pppoutsolstat(rtk_t *rtk, int level, FILE *fp)
             for (j = 0; j < nfreq; j++)
                 {
                     fprintf(fp, "$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d\n",
-			    week, tow, id.data(), j + 1, ssat->azel[0] * R2D, ssat->azel[1] * R2D,
+                        week, tow, id.data(), j + 1, ssat->azel[0] * R2D, ssat->azel[1] * R2D,
                         ssat->resp[j], ssat->resc[j], ssat->vsat[j], ssat->snr[j] * 0.25,
                         ssat->fix[j], ssat->slip[j] & 3, ssat->lock[j], ssat->outc[j],
                         ssat->slipc[j], ssat->rejc[j]);

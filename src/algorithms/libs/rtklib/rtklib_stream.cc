@@ -1976,9 +1976,9 @@ void *ftpthread(void *arg)
     auto proxyopt = std::string();
     if (*proxyaddr)
         {
-	  auto proto = "ftp"s;
-	  if (ftp->proto) proto = "http"s;
-	    env = "set "s + proto + "_proxy=http://"s + std::string(proxyaddr) + " % ";
+            auto proto = "ftp"s;
+            if (ftp->proto) proto = "http"s;
+            env = "set "s + proto + "_proxy=http://"s + std::string(proxyaddr) + " % ";
             proxyopt = "--proxy=on ";
         }
 
@@ -2025,7 +2025,7 @@ void *ftpthread(void *arg)
         {
             if (local.extension() == ext)
                 {
-		  char tmpfile_arg[1024];
+                    char tmpfile_arg[1024];
                     ret = rtk_uncompress(local.c_str(), tmpfile_arg);
                     if (ret != 0)  // success
                         {

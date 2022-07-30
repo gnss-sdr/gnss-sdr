@@ -109,6 +109,7 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
       d_code_phase_rate_step_chips(0.0),
       d_rem_code_phase_chips(0.0),
       d_rem_code_phase_samples(0.0),
+      d_beta(0.0),
       d_sample_counter(0ULL),
       d_acq_sample_stamp(0ULL),
       d_rem_carr_phase_rad(0.0),
@@ -437,12 +438,14 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
             std::cerr << "Invalid System argument when instantiating tracking blocks\n";
             d_correlation_length_ms = 1;
             d_secondary = false;
-            d_signal_carrier_freq = 0.0;
+            d_signal_carrier_freq = 1.0;
             d_code_period = 0.0;
             d_code_length_chips = 0;
             d_code_samples_per_chip = 0U;
             d_symbols_per_bit = 0;
         }
+
+    d_beta = d_code_chip_rate / d_signal_carrier_freq;
 
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
@@ -857,33 +860,31 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
     const double Ti = d_current_correlation_time_s;
     const double TiTi = Ti * Ti;
 
-    const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
+    d_F = {{1.0, 0.0, d_beta * Ti, d_beta * TiTi / 2.0},
+        {0.0, 1.0, 2.0 * GNSS_PI * Ti, GNSS_PI * TiTi},
+        {0.0, 0.0, 1.0, Ti},
+        {0.0, 0.0, 0.0, 1.0}};
 
-    d_F = {{1, 0, B * Ti, B * TiTi / 2},
-        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * TiTi},
-        {0, 0, 1, Ti},
-        {0, 0, 0, 1}};
+    d_H = {{1.0, 0.0, -d_beta * Ti / 2.0, d_beta * TiTi / 6.0},
+        {0.0, 1.0, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
 
-    d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
-        {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
-
-    d_R = {{pow(d_trk_parameters.code_disc_sd_chips, 2.0), 0},
-        {0, pow(d_trk_parameters.carrier_disc_sd_rads, 2.0)}};
+    d_R = {{pow(d_trk_parameters.code_disc_sd_chips, 2.0), 0.0},
+        {0.0, pow(d_trk_parameters.carrier_disc_sd_rads, 2.0)}};
 
     // system covariance matrix (static)
-    d_Q = {{pow(d_trk_parameters.code_phase_sd_chips, 2.0), 0, 0, 0},
-        {0, pow(d_trk_parameters.carrier_phase_sd_rad, 2.0), 0, 0},
-        {0, 0, pow(d_trk_parameters.carrier_freq_sd_hz, 2.0), 0},
-        {0, 0, 0, pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0)}};
+    d_Q = {{pow(d_trk_parameters.code_phase_sd_chips, 2.0), 0.0, 0.0, 0.0},
+        {0.0, pow(d_trk_parameters.carrier_phase_sd_rad, 2.0), 0.0, 0.0},
+        {0.0, 0.0, pow(d_trk_parameters.carrier_freq_sd_hz, 2.0), 0.0},
+        {0.0, 0.0, 0.0, pow(d_trk_parameters.carrier_freq_rate_sd_hz_s, 2.0)}};
 
     // initial Kalman covariance matrix
-    d_P_old_old = {{pow(d_trk_parameters.init_code_phase_sd_chips, 2.0), 0, 0, 0},
-        {0, pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0), 0, 0},
-        {0, 0, pow(d_trk_parameters.init_carrier_freq_sd_hz, 2.0), 0},
-        {0, 0, 0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0)}};
+    d_P_old_old = {{pow(d_trk_parameters.init_code_phase_sd_chips, 2.0), 0.0, 0.0, 0.0},
+        {0.0, pow(d_trk_parameters.init_carrier_phase_sd_rad, 2.0), 0.0, 0.0},
+        {0.0, 0.0, pow(d_trk_parameters.init_carrier_freq_sd_hz, 2.0), 0.0},
+        {0.0, 0.0, 0.0, pow(d_trk_parameters.init_carrier_freq_rate_sd_hz_s, 2.0)}};
 
     // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
-    d_x_old_old = {acq_code_phase_chips, 0, acq_doppler_hz, 0};
+    d_x_old_old = {acq_code_phase_chips, 0.0, acq_doppler_hz, 0.0};
 
     std::cout << "F: " << d_F << "\n";
     std::cout << "H: " << d_H << "\n";
@@ -900,7 +901,6 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
     const double Ti = d_current_correlation_time_s;
     const double TiTi = Ti * Ti;
 
-    const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
     arma::mat Qnew = arma::zeros(4, 4);
     for (int i = 0; i < d_trk_parameters.extend_correlation_symbols; i++)
         {
@@ -910,21 +910,21 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
     d_Q = Qnew;
 
     // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz
-    d_F = {{1, 0, B * Ti, B * TiTi / 2.0},
-        {0, 1, 2.0 * GNSS_PI * Ti, GNSS_PI * TiTi},
-        {0, 0, 1, Ti},
-        {0, 0, 0, 1}};
+    d_F = {{1.0, 0.0, d_beta * Ti, d_beta * TiTi / 2.0},
+        {0.0, 1.0, 2.0 * GNSS_PI * Ti, GNSS_PI * TiTi},
+        {0.0, 0.0, 1.0, Ti},
+        {0.0, 0.0, 0.0, 1.0}};
 
-    d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
-        {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
+    d_H = {{1.0, 0.0, -d_beta * Ti / 2.0, d_beta * TiTi / 6.0},
+        {0.0, 1.0, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
 
     const double CN0_lin = pow(10.0, d_CN0_SNV_dB_Hz / 10.0);  // CN0 in Hz
     const double CN0_lin_Ti = CN0_lin * Ti;
     const double Sigma2_Phase = (1.0 / (2.0 * CN0_lin_Ti)) * (1.0 + 1.0 / (2.0 * CN0_lin_Ti));
     const double Sigma2_Tau = (1.0 / CN0_lin_Ti) * (d_trk_parameters.spc + (d_trk_parameters.spc / (1.0 - d_trk_parameters.spc)) * (1.0 / (2.0 * CN0_lin_Ti)));
 
-    d_R = {{Sigma2_Tau, 0},
-        {0, Sigma2_Phase}};
+    d_R = {{Sigma2_Tau, 0.0},
+        {0.0, Sigma2_Phase}};
 
     std::cout << "Fu: " << d_F << "\n";
     std::cout << "Hu: " << d_H << "\n";
@@ -940,11 +940,9 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
     // Kalman Filter class variables
     const double Ti = d_current_correlation_time_s;  // d_correlation_length_ms * 0.001;
     const double TiTi = Ti * Ti;
-    const double B = d_code_chip_rate / d_signal_carrier_freq;  // carrier to code rate factor
 
-    d_H = arma::mat(2, 4);
-    d_H = {{1, 0, -B * Ti / 2.0, B * TiTi / 6.0},
-        {0, 1, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
+    d_H = {{1.0, 0.0, -d_beta * Ti / 2.0, d_beta * TiTi / 6.0},
+        {0.0, 1.0, -GNSS_PI * Ti, GNSS_PI * TiTi / 3.0}};
 
     // Phase noise variance
     const double CN0_lin = pow(10.0, current_cn0_dbhz / 10.0);  // CN0 in Hz
@@ -952,8 +950,8 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
     const double Sigma2_Phase = (1.0 / (2.0 * CN0_lin_Ti)) * (1.0 + 1.0 / (2.0 * CN0_lin_Ti));
     const double Sigma2_Tau = (1.0 / CN0_lin_Ti) * (d_trk_parameters.spc + (d_trk_parameters.spc / (1.0 - d_trk_parameters.spc)) * (1.0 / (2.0 * CN0_lin_Ti)));
 
-    d_R = {{Sigma2_Tau, 0},
-        {0, Sigma2_Phase}};
+    d_R = {{Sigma2_Tau, 0.0},
+        {0.0, Sigma2_Phase}};
 }
 
 
@@ -1833,7 +1831,7 @@ int kf_vtl_tracking::general_work(int noutput_items __attribute__((unused)), gr_
                 d_cn0_smoother.reset();
                 d_carrier_lock_test_smoother.reset();
 
-                init_kf(0, d_carrier_doppler_kf_hz);
+                init_kf(0.0, d_carrier_doppler_kf_hz);
 
                 LOG(INFO) << "Number of samples between Acquisition and Tracking = " << acq_trk_diff_samples << " ( " << acq_trk_diff_seconds << " s)";
                 DLOG(INFO) << "PULL-IN Doppler [Hz] = " << d_carrier_doppler_kf_hz

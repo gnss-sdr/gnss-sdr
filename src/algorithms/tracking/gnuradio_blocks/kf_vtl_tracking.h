@@ -195,6 +195,8 @@ private:
     double d_rem_code_phase_chips;
     double d_rem_code_phase_samples;
 
+    double d_beta;
+
     uint64_t d_sample_counter;
     uint64_t d_acq_sample_stamp;
 

@@ -1956,7 +1956,7 @@ void *ftpthread(void *arg)
 
     /* if local file exist, skip download */
     auto tmpfile = local;
-    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})
+    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"}) // NOLINT(readability-qualified-auto): auto decoration is less readable
         {
             if (tmpfile.extension() == ext)
                 {
@@ -1980,7 +1980,7 @@ void *ftpthread(void *arg)
     if (*proxyaddr)
         {
             auto proto = "ftp"s;
-            if (ftp->proto) proto = "http"s;
+            if (ftp->proto) proto = "http"s; // NOLINT(readability-braces-around-statements): adding braces reduces readability
             env = "set "s + proto + "_proxy=http://"s + std::string(proxyaddr) + " % ";
             proxyopt = "--proxy=on ";
         }
@@ -1991,18 +1991,18 @@ void *ftpthread(void *arg)
         { /* ftp */
             auto opt_str = "--ftp-user="s + std::string(ftp->user) + " --ftp-password="s + std::string(ftp->passwd) +
                            " --glob=off --passive-ftp "s + proxyopt + "s-t 1 -T "s + std::to_string(FTP_TIMEOUT) +
-                           " -O \"" + local.native() + "\""s;
+                           R"( -O ")" + local.native() + R"(")"s;
 
             // TODO: this uses shell syntax; consider escaping paths
             cmd_str = env + std::string(FTP_CMD) + " "s + opt_str + " "s +
-                      "\"ftp://"s + std::string(ftp->addr) + "/"s + remotePath.native() + "\" 2> \""s + errfile.native() + "\"\n"s;
+                      R"("ftp://)"s + std::string(ftp->addr) + "/"s + remotePath.native() + R"(" 2> ")"s + errfile.native() + "\"\n"s;
         }
     else
         { /* http */
             auto opt_str = proxyopt + " -t 1 -T "s + std::to_string(FTP_TIMEOUT) + " -O \""s + local.native() + "\""s;
 
             cmd_str = env + std::string(FTP_CMD) + " "s + opt_str + " "s +
-                      "\"http://"s + std::string(ftp->addr) + "/"s + remotePath.native() + "\" 2> \""s + errfile.native() + "\"\n";
+                      R"("http://)"s + std::string(ftp->addr) + "/"s + remotePath.native() + R"(" 2> ")"s + errfile.native() + "\"\n";
         }
     /* execute download command */
     std::error_code ec;  // prevent exceptions
@@ -2024,7 +2024,7 @@ void *ftpthread(void *arg)
         }
 
     /* uncompress downloaded file */
-    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})
+    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})	// NOLINT(readability-qualified-auto): auto decoration is less readable
         {
             if (local.extension() == ext)
                 {
@@ -2074,7 +2074,7 @@ ftp_t *openftp(const char *path, int type, char *msg)
     ftp->state = 0;
     ftp->proto = type;
     ftp->error = 0;
-    ftp->thread = 0;  // NOLINT
+    ftp->thread = pthread_t();
     ftp->local[0] = '\0';
 
     /* decode ftp path */

@@ -3102,7 +3102,7 @@ void readpos(const char *file, const char *rcv, double *pos)
                 {
                     continue;
                 }
-            auto sta = stas[np++];
+            auto sta = stas[np++]; // NOLINT(readability-qualified-auto)
             std::strncpy(sta, str, 16);
             sta[15] = '\0';
         }

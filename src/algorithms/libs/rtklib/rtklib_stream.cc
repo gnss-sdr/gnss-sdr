@@ -1956,7 +1956,7 @@ void *ftpthread(void *arg)
 
     /* if local file exist, skip download */
     auto tmpfile = local;
-    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"}) // NOLINT(readability-qualified-auto): auto decoration is less readable
+    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})  // NOLINT(readability-qualified-auto): auto decoration is less readable
         {
             if (tmpfile.extension() == ext)
                 {
@@ -1980,7 +1980,7 @@ void *ftpthread(void *arg)
     if (*proxyaddr)
         {
             auto proto = "ftp"s;
-            if (ftp->proto) proto = "http"s; // NOLINT(readability-braces-around-statements): adding braces reduces readability
+            if (ftp->proto) proto = "http"s;  // NOLINT(readability-braces-around-statements): adding braces reduces readability
             env = "set "s + proto + "_proxy=http://"s + std::string(proxyaddr) + " % ";
             proxyopt = "--proxy=on ";
         }
@@ -2024,7 +2024,7 @@ void *ftpthread(void *arg)
         }
 
     /* uncompress downloaded file */
-    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})	// NOLINT(readability-qualified-auto): auto decoration is less readable
+    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})  // NOLINT(readability-qualified-auto): auto decoration is less readable
         {
             if (local.extension() == ext)
                 {

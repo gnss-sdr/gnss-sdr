@@ -962,9 +962,8 @@ compile time if they are not detected in your machine.
   [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr)
   for instructions.
 
-- **Snap package**: [Snaps](https://snapcraft.io) are universal Linux packages
-  aimed to work on any distribution or device, from IoT devices to servers,
-  desktops to mobile devices. Visit
+- **Snap package**: [Snaps](https://snapcraft.io) are Linux packages aimed for
+  Ubuntu or Ubuntu-like distros. Visit
   [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox)
   for instructions, or directly
   [get the software from the Snap Store](https://snapcraft.io/gnss-sdr-next):

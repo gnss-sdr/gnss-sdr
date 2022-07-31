@@ -882,7 +882,7 @@ $ brew update && brew upgrade
 $ brew install armadillo cmake hdf5 gflags glog gnuradio lapack libmatio log4cpp \
     openssl pkg-config protobuf pugixml
 $ pip3 install mako
-$ brew cask install mactex  # when completed, restart Terminal
+$ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
 ```
 

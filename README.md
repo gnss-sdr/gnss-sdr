@@ -882,7 +882,7 @@ $ brew update && brew upgrade
 $ brew install armadillo cmake hdf5 gflags glog gnuradio lapack libmatio log4cpp \
     openssl pkg-config protobuf pugixml
 $ pip3 install mako
-$ brew cask install mactex  # when completed, restart Terminal
+$ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
 ```
 
@@ -969,9 +969,8 @@ compile time if they are not detected in your machine.
   [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr)
   for instructions.
 
-- **Snap package**: [Snaps](https://snapcraft.io) are universal Linux packages
-  aimed to work on any distribution or device, from IoT devices to servers,
-  desktops to mobile devices. Visit
+- **Snap package**: [Snaps](https://snapcraft.io) are Linux packages aimed for
+  Ubuntu or Ubuntu-like distros. Visit
   [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox)
   for instructions, or directly
   [get the software from the Snap Store](https://snapcraft.io/gnss-sdr-next):

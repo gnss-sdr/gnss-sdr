@@ -4,14 +4,20 @@
 # SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-
-find_package(GPSTK QUIET)
-if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-    include(GNUInstallDirs)
-    set(GPSTK_LIBRARY ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(GPSTK_INCLUDE_DIR ${CMAKE_BINARY_DIR}/gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION}/install/include)
+if(NOT GNSSTK_FOUND AND NOT ENABLE_OWN_GNSSTK)
+    find_package(GNSSTK)
 endif()
 
+if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
+    include(GNUInstallDirs)
+    if(GNSSTK_USES_GPSTK_NAMESPACE)
+        set(GNSSTK_LIBRARY ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gpstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(GNSSTK_INCLUDE_DIR ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include)
+    else()
+        set(GNSSTK_LIBRARY ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/${CMAKE_INSTALL_LIBDIR}/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})
+        set(GNSSTK_INCLUDE_DIR ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include)
+    endif()
+endif()
 
 find_package(Boost COMPONENTS iostreams serialization QUIET)
 if(CMAKE_VERSION VERSION_LESS 3.5)
@@ -34,7 +40,6 @@ if(CMAKE_VERSION VERSION_LESS 3.5)
             IMPORTED_LOCATION ${Boost_SERIALIZARION_LIBRARIES})
     endif()
 endif()
-
 
 find_program(UNCOMPRESS_EXECUTABLE uncompress
     PATHS /bin
@@ -65,7 +70,7 @@ if(Boost_FOUND)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(rinex2assist
             PRIVATE
-                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare
+                -Wno-deprecated -Wno-unused-parameter -Wno-sign-compare -Wno-switch -Wno-inconsistent-missing-override
         )
     endif()
 
@@ -73,17 +78,29 @@ if(Boost_FOUND)
         PRIVATE
             Boost::iostreams
             Boost::serialization
-            ${GPSTK_LIBRARY}
+            ${GNSSTK_LIBRARY}
             Gflags::gflags
             Threads::Threads
             core_system_parameters
     )
 
-    target_include_directories(rinex2assist
-        PRIVATE
-            ${GPSTK_INCLUDE_DIR}/gpstk
-            ${GPSTK_INCLUDE_DIR}
-    )
+    if(GNSSTK_USES_GPSTK_NAMESPACE)
+        target_compile_definitions(rinex2assist PUBLIC -DGNSSTK_USES_GPSTK_NAMESPACE=1)
+        target_include_directories(rinex2assist
+            PRIVATE
+                ${GNSSTK_INCLUDE_DIR}/gpstk
+                ${GNSSTK_INCLUDE_DIR}
+        )
+    else()
+        target_include_directories(rinex2assist
+            PRIVATE
+                ${GNSSTK_INCLUDE_DIR}/gnsstk
+                ${GNSSTK_INCLUDE_DIR}
+        )
+    endif()
+    if(GNSSTK_OLDER_THAN_9)
+        target_compile_definitions(rinex2assist PRIVATE -DGNSSTK_OLDER_THAN_9=1)
+    endif()
 
     if(NOT UNCOMPRESS_EXECUTABLE-NOTFOUND)
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="${UNCOMPRESS_EXECUTABLE}")
@@ -91,8 +108,8 @@ if(Boost_FOUND)
         target_compile_definitions(rinex2assist PRIVATE -DUNCOMPRESS_EXECUTABLE="")
     endif()
 
-    if(NOT GPSTK_FOUND OR ENABLE_OWN_GPSTK)
-        add_dependencies(rinex2assist gpstk-${GNSSSDR_GPSTK_LOCAL_VERSION})
+    if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
+        add_dependencies(rinex2assist gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
     endif()
 
     if(ENABLE_STRIP)

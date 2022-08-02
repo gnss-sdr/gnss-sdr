@@ -94,7 +94,7 @@ endif()
 if(NOT has_span)
     target_include_directories(algorithms_libs
         PUBLIC
-            ${CMAKE_SOURCE_DIR}/src/algorithms/libs/gsl/include
+            ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/gsl/include
     )
 endif()
 
@@ -164,7 +164,7 @@ endif()
 
 target_include_directories(algorithms_libs
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 target_compile_definitions(algorithms_libs
@@ -221,7 +221,7 @@ target_link_libraries(gnss_sdr_flags
         Gflags::gflags
 )
 
-if(${GFLAGS_GREATER_20})
+if(GFLAGS_GREATER_20 OR ${LOCAL_GFLAGS})
     target_compile_definitions(gnss_sdr_flags PRIVATE -DGFLAGS_GREATER_2_0=1)
 endif()
 

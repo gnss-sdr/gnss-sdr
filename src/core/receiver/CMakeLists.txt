@@ -29,14 +29,14 @@ list(SORT GNSS_RECEIVER_HEADERS)
 list(SORT GNSS_RECEIVER_SOURCES)
 
 set(GNSS_RECEIVER_INTERFACE_HEADERS
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/acquisition_interface.h
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/channel_interface.h
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/configuration_interface.h
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/gnss_block_interface.h
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/observables_interface.h
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/pvt_interface.h
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/telemetry_decoder_interface.h
-    ${CMAKE_SOURCE_DIR}/src/core/interfaces/tracking_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/acquisition_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/channel_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/configuration_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/gnss_block_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/observables_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/pvt_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/telemetry_decoder_interface.h
+    ${GNSSSDR_SOURCE_DIR}/src/core/interfaces/tracking_interface.h
 )
 
 list(SORT GNSS_RECEIVER_INTERFACE_HEADERS)
@@ -252,6 +252,6 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 set_property(TARGET core_receiver APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/receiver>
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/core/interfaces>
+    $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/src/core/receiver>
+    $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/src/core/interfaces>
 )

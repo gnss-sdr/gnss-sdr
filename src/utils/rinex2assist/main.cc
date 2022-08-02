@@ -28,12 +28,21 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/serialization/map.hpp>
 #include <gflags/gflags.h>
-#include <gpstk/Rinex3NavData.hpp>
-#include <gpstk/Rinex3NavHeader.hpp>
-#include <gpstk/Rinex3NavStream.hpp>
 #include <cstddef>  // for size_t
 #include <cstdlib>
 #include <iostream>
+#if GNSSTK_USES_GPSTK_NAMESPACE
+#include <gpstk/GPSWeekSecond.hpp>
+#include <gpstk/Rinex3NavData.hpp>
+#include <gpstk/Rinex3NavHeader.hpp>
+#include <gpstk/Rinex3NavStream.hpp>
+namespace gnsstk = gpstk;
+#else
+#include <gnsstk/GPSWeekSecond.hpp>
+#include <gnsstk/Rinex3NavData.hpp>
+#include <gnsstk/Rinex3NavHeader.hpp>
+#include <gnsstk/Rinex3NavStream.hpp>
+#endif
 
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
@@ -155,9 +164,9 @@ int main(int argc, char** argv)
     try
         {
             // Read nav file
-            gpstk::Rinex3NavStream rnffs(input_filename.c_str());  // Open navigation data file
-            gpstk::Rinex3NavData rne;
-            gpstk::Rinex3NavHeader hdr;
+            gnsstk::Rinex3NavStream rnffs(input_filename.c_str());  // Open navigation data file
+            gnsstk::Rinex3NavData rne;
+            gnsstk::Rinex3NavHeader hdr;
 
             // Read header
             rnffs >> hdr;
@@ -176,8 +185,17 @@ int main(int argc, char** argv)
                     gps_utc_model.valid = (hdr.valid > 2147483648) ? true : false;
                     gps_utc_model.A1 = hdr.mapTimeCorr["GPUT"].A0;
                     gps_utc_model.A0 = hdr.mapTimeCorr["GPUT"].A1;
+#if GNSSTK_OLDER_THAN_9
                     gps_utc_model.tot = hdr.mapTimeCorr["GPUT"].refSOW;
                     gps_utc_model.WN_T = hdr.mapTimeCorr["GPUT"].refWeek;
+#else
+                    if (hdr.mapTimeCorr["GPUT"].refTime != gnsstk::CommonTime::BEGINNING_OF_TIME)
+                        {
+                            gnsstk::GPSWeekSecond gws(hdr.mapTimeCorr["GPUT"].refTime);
+                            gps_utc_model.tot = gws.getSOW();
+                            gps_utc_model.WN_T = gws.getWeek();
+                        }
+#endif
                     gps_utc_model.DeltaT_LS = hdr.leapSeconds;
                     gps_utc_model.WN_LSF = hdr.leapWeek;
                     gps_utc_model.DN = hdr.leapDay;
@@ -199,8 +217,17 @@ int main(int argc, char** argv)
                     gal_utc_model.A0 = hdr.mapTimeCorr["GAUT"].A0;
                     gal_utc_model.A1 = hdr.mapTimeCorr["GAUT"].A1;
                     gal_utc_model.Delta_tLS = hdr.leapSeconds;
+#if GNSSTK_OLDER_THAN_9
                     gal_utc_model.tot = hdr.mapTimeCorr["GAUT"].refSOW;
                     gal_utc_model.WNot = hdr.mapTimeCorr["GAUT"].refWeek;
+#else
+                    if (hdr.mapTimeCorr["GAUT"].refTime != gnsstk::CommonTime::BEGINNING_OF_TIME)
+                        {
+                            gnsstk::GPSWeekSecond gws(hdr.mapTimeCorr["GAUT"].refTime);
+                            gal_utc_model.tot = gws.getSOW();
+                            gal_utc_model.WNot = gws.getWeek();
+                        }
+#endif
                     gal_utc_model.WN_LSF = hdr.leapWeek;
                     gal_utc_model.DN = hdr.leapDay;
                     gal_utc_model.Delta_tLSF = hdr.leapDelta;

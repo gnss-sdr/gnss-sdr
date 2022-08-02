@@ -31,8 +31,8 @@ target_link_libraries(channel_adapters
 
 target_include_directories(channel_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
-        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/receiver
 )
 
 if(ENABLE_CLANG_TIDY)

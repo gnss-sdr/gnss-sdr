@@ -21,34 +21,6 @@
 #include "gnuplot_i.h"
 #include "obsdiff_flags.h"
 #include <armadillo>
-// Classes for handling observations RINEX files (data)
-#include <gpstk/Rinex3ObsData.hpp>
-#include <gpstk/Rinex3ObsHeader.hpp>
-#include <gpstk/Rinex3ObsStream.hpp>
-
-// Classes for handling satellite navigation parameters RINEX
-// files (ephemerides)
-#include <gpstk/Rinex3NavData.hpp>
-#include <gpstk/Rinex3NavHeader.hpp>
-#include <gpstk/Rinex3NavStream.hpp>
-
-// Classes for handling RINEX files with meteorological parameters
-#include <gpstk/RinexMetBase.hpp>
-#include <gpstk/RinexMetData.hpp>
-#include <gpstk/RinexMetHeader.hpp>
-#include <gpstk/RinexMetStream.hpp>
-
-// Class for handling tropospheric model
-#include <gpstk/GGTropModel.hpp>
-
-// Class for storing >broadcast-type> ephemerides
-#include <gpstk/GPSEphemerisStore.hpp>
-
-// Class for handling RAIM
-#include <gpstk/PRSolution.hpp>
-
-// Class defining GPS system constants
-#include <gpstk/GNSSconstants.hpp>
 #include <matio.h>
 #include <algorithm>
 #include <array>
@@ -59,6 +31,53 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#if GNSSTK_USES_GPSTK_NAMESPACE
+#include <gpstk/GGTropModel.hpp>
+#include <gpstk/GNSSconstants.hpp>
+#include <gpstk/GPSEphemerisStore.hpp>
+#include <gpstk/GPSWeekSecond.hpp>
+#include <gpstk/PRSolution.hpp>
+#include <gpstk/Rinex3NavData.hpp>
+#include <gpstk/Rinex3NavHeader.hpp>
+#include <gpstk/Rinex3NavStream.hpp>
+#include <gpstk/Rinex3ObsData.hpp>
+#include <gpstk/Rinex3ObsHeader.hpp>
+#include <gpstk/Rinex3ObsStream.hpp>
+#include <gpstk/RinexMetBase.hpp>
+#include <gpstk/RinexMetData.hpp>
+#include <gpstk/RinexMetHeader.hpp>
+#include <gpstk/RinexMetStream.hpp>
+namespace gnsstk = gpstk;
+#else
+// Classes for handling observations RINEX files (data)
+#include <gnsstk/Rinex3ObsData.hpp>
+#include <gnsstk/Rinex3ObsHeader.hpp>
+#include <gnsstk/Rinex3ObsStream.hpp>
+
+// Classes for handling RINEX files with meteorological parameters
+#include <gnsstk/RinexMetBase.hpp>
+#include <gnsstk/RinexMetData.hpp>
+#include <gnsstk/RinexMetHeader.hpp>
+#include <gnsstk/RinexMetStream.hpp>
+
+// Class for handling tropospheric model
+#include <gnsstk/GGTropModel.hpp>
+#include <gnsstk/GNSSconstants.hpp>
+#include <gnsstk/PRSolution.hpp>
+
+// Class for storing <broadcast-type> ephemeris
+#include <gnsstk/GPSWeekSecond.hpp>
+#if GNSSTK_OLDER_THAN_13
+#include <gnsstk/GPSEphemerisStore.hpp>
+#include <gnsstk/Rinex3NavData.hpp>
+#include <gnsstk/Rinex3NavHeader.hpp>
+#include <gnsstk/Rinex3NavStream.hpp>
+#else
+#include <gnsstk/MultiFormatNavDataFactory.hpp>
+#include <gnsstk/NavLibrary.hpp>
+#endif
+#endif
 
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
@@ -97,40 +116,40 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
     // Open and read _baseerence RINEX observables file
     try
         {
-            gpstk::Rinex3ObsStream r_base(rinex_file);
+            gnsstk::Rinex3ObsStream r_base(rinex_file);
 
-            gpstk::Rinex3ObsData r_base_data;
-            gpstk::Rinex3ObsHeader r_base_header;
+            gnsstk::Rinex3ObsData r_base_data;
+            gnsstk::Rinex3ObsHeader r_base_header;
 
-            gpstk::RinexDatum dataobj;
+            gnsstk::RinexDatum dataobj;
 
             r_base >> r_base_header;
 
             std::set<int> PRN_set;
-            gpstk::SatID prn;
+            gnsstk::SatID prn;
             switch (system)
                 {
                 case 'G':
 #if OLD_GPSTK
-                    prn.system = gpstk::SatID::systemGPS;
+                    prn.system = gnsstk::SatID::systemGPS;
 #else
-                    prn.system = gpstk::SatelliteSystem::GPS;
+                    prn.system = gnsstk::SatelliteSystem::GPS;
 #endif
                     PRN_set = available_gps_prn;
                     break;
                 case 'E':
 #if OLD_GPSTK
-                    prn.system = gpstk::SatID::systemGalileo;
+                    prn.system = gnsstk::SatID::systemGalileo;
 #else
-                    prn.system = gpstk::SatelliteSystem::Galileo;
+                    prn.system = gnsstk::SatelliteSystem::Galileo;
 #endif
                     PRN_set = available_galileo_prn;
                     break;
                 default:
 #if OLD_GPSTK
-                    prn.system = gpstk::SatID::systemGPS;
+                    prn.system = gnsstk::SatID::systemGPS;
 #else
-                    prn.system = gpstk::SatelliteSystem::GPS;
+                    prn.system = gnsstk::SatelliteSystem::GPS;
 #endif
                     PRN_set = available_gps_prn;
                 }
@@ -141,8 +160,14 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                     for (const auto& prn_it : PRN_set)
                         {
                             prn.id = prn_it;
-                            gpstk::CommonTime time = r_base_data.time;
-                            double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
+                            gnsstk::CommonTime time = r_base_data.time;
+
+#if GNSSTK_OLDER_THAN_9
+                            double sow(static_cast<gnsstk::GPSWeekSecond>(time).sow);
+#else
+                            gnsstk::GPSWeekSecond gws(time);
+                            double sow(gws.getSOW());
+#endif
 
                             auto pointer = r_base_data.obs.find(prn);
 
@@ -220,12 +245,12 @@ std::map<int, arma::mat> ReadRinexObs(const std::string& rinex_file, char system
                         }
                 }  // end while
         }          // End of 'try' block
-    catch (const gpstk::FFStreamError& e)
+    catch (const gnsstk::FFStreamError& e)
         {
             std::cout << e;
             return obs_map;
         }
-    catch (const gpstk::Exception& e)
+    catch (const gnsstk::Exception& e)
         {
             std::cout << e;
             return obs_map;
@@ -906,7 +931,7 @@ void coderate_phaserate_consistence(
     arma::vec prange = measured_ch0.col(1);
 
     // todo: This code is only valid for L1/E1 carrier frequency.
-    arma::vec phase = measured_ch0.col(3) * (gpstk::C_MPS / gpstk::L1_FREQ_GPS);
+    arma::vec phase = measured_ch0.col(3) * (gnsstk::C_MPS / gnsstk::L1_FREQ_GPS);
 
     double mincodeval = 5000000.0;
     double maxcodeval = 40000000.0;
@@ -1051,7 +1076,7 @@ void code_phase_diff(
     arma::interp1(measured_ch1.col(0), measured_ch1.col(3), measurement_time, carrier_phase_ch1_obs_interp);
 
     // generate Code - Phase vector
-    arma::vec code_minus_phase = (measured_ch0.col(1) - code_range_ch1_obs_interp) - (measured_ch0.col(3) - carrier_phase_ch1_obs_interp) * (gpstk::C_MPS / gpstk::L1_FREQ_GPS);
+    arma::vec code_minus_phase = (measured_ch0.col(1) - code_range_ch1_obs_interp) - (measured_ch0.col(3) - carrier_phase_ch1_obs_interp) * (gnsstk::C_MPS / gnsstk::L1_FREQ_GPS);
 
     // remove NaN
     arma::uvec NaN_in_measured_data = arma::find_nonfinite(code_minus_phase);
@@ -1134,48 +1159,61 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
             std::cout << "Warning: RINEX Nav file " << rinex_nav_filename << " does not exist, receiver's clock error could not be computed!\n";
             return 0.0;
         }
-    // Declaration of objects for storing ephemerides and handling RAIM
-    gpstk::GPSEphemerisStore bcestore;
-    gpstk::PRSolution raimSolver;
+        // Declaration of objects for storing ephemerides and handling RAIM
+#if GNSSTK_OLDER_THAN_13
+    gnsstk::GPSEphemerisStore bcestore;
+#else
+    gnsstk::NavLibrary navLib;
+    // Construct a NavDataFactory object
+    gnsstk::NavDataFactoryPtr ndfp(
+        std::make_shared<gnsstk::MultiFormatNavDataFactory>());
+    // Add the NavDataFactory to the NavLibrary
+    navLib.addFactory(ndfp);
+#endif
+    gnsstk::PRSolution raimSolver;
 
     // Object for void-type tropospheric model (in case no meteorological
     // RINEX is available)
-    gpstk::ZeroTropModel noTropModel;
+    gnsstk::ZeroTropModel noTropModel;
 
     // Object for GG-type tropospheric model (Goad and Goodman, 1974)
     // Default constructor => default values for model
-    gpstk::GGTropModel ggTropModel;
+    gnsstk::GGTropModel ggTropModel;
 
     // Pointer to one of the two available tropospheric models. It points
     // to the void model by default
-    gpstk::TropModel* tropModelPtr = &noTropModel;
+    gnsstk::TropModel* tropModelPtr = &noTropModel;
 
     double rx_clock_error_s = 0.0;
     try
         {
+#if GNSSTK_OLDER_THAN_13
             // Read nav file and store unique list of ephemerides
-            gpstk::Rinex3NavStream rnffs(rinex_nav_filename.c_str());  // Open ephemerides data file
-            gpstk::Rinex3NavData rne;
-            gpstk::Rinex3NavHeader hdr;
-
+            gnsstk::Rinex3NavStream rnffs(rinex_nav_filename.c_str());  // Open ephemerides data file
+            gnsstk::Rinex3NavData rne;
+            gnsstk::Rinex3NavHeader hdr;
             // Let's read the header (may be skipped)
             rnffs >> hdr;
-
-            // Storing the ephemeris in "bcstore"
             while (rnffs >> rne)
                 {
                     bcestore.addEphemeris(rne);
                 }
-
             // Setting the criteria for looking up ephemeris
             bcestore.SearchNear();
+#else
+            if (!ndfp->addDataSource(rinex_nav_filename))
+                {
+                    std::cerr << "Unable to load " << rinex_nav_filename << '\n';
+                    return 0.0;
+                }
+#endif
 
             // Open and read the observation file one epoch at a time.
             // For each epoch, compute and print a position solution
-            gpstk::Rinex3ObsStream roffs(rinex_obs_file.c_str());  // Open observations data file
+            gnsstk::Rinex3ObsStream roffs(rinex_obs_file.c_str());  // Open observations data file
 
-            gpstk::Rinex3ObsHeader roh;
-            gpstk::Rinex3ObsData rod;
+            gnsstk::Rinex3ObsHeader roh;
+            gnsstk::Rinex3ObsData rod;
 
             // Let's read the header
             roffs >> roh;
@@ -1197,14 +1235,14 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                     // Apply editing criteria
                     if (rod.epochFlag == 0 || rod.epochFlag == 1)  // Begin usable data
                         {
-                            std::vector<gpstk::SatID> prnVec;
+                            std::vector<gnsstk::SatID> prnVec;
                             std::vector<double> rangeVec;
 
                             // Define the "it" iterator to visit the observations PRN map.
                             // Rinex3ObsData::DataMap is a map from RinexSatID to
                             // vector<RinexDatum>:
                             //      std::map<RinexSatID, vector<RinexDatum> >
-                            gpstk::Rinex3ObsData::DataMap::const_iterator it;
+                            gnsstk::Rinex3ObsData::DataMap::const_iterator it;
 
                             // This part gets the PRN numbers and ionosphere-corrected
                             // pseudoranges for the current epoch. They are correspondly fed
@@ -1254,15 +1292,20 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
 #if OLD_GPSTK
                                     std::vector<gpstk::SatID::SatelliteSystem> Syss;
 #endif
-                                    gpstk::Matrix<double> invMC;
+                                    gnsstk::Matrix<double> invMC;
                                     int iret;
                                     // Call RAIMCompute
 #if OLD_GPSTK
                                     iret = raimSolver.RAIMCompute(rod.time, prnVec, Syss, rangeVec, invMC,
                                         &bcestore, tropModelPtr);
 #else
+#if GNSSTK_OLDER_THAN_13
                                     iret = raimSolver.RAIMCompute(rod.time, prnVec, rangeVec, invMC,
                                         &bcestore, tropModelPtr);
+#else
+                                    iret = raimSolver.RAIMCompute(rod.time, prnVec, rangeVec, invMC,
+                                        navLib, tropModelPtr);
+#endif
 #endif
                                     switch (iret)
                                         {
@@ -1294,7 +1337,7 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                                         }
                                     // return iret;
                                 }
-                            catch (const gpstk::Exception& e)
+                            catch (const gnsstk::Exception& e)
                                 {
                                 }
 
@@ -1307,14 +1350,14 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                                               << std::setw(12) << raimSolver.Solution(2) << "\n";
 
                                     std::cout << "RX CLK " << std::fixed << std::setprecision(16)
-                                              << raimSolver.Solution(3) / gpstk::C_MPS << " [s] \n";
+                                              << raimSolver.Solution(3) / gnsstk::C_MPS << " [s] \n";
 
                                     std::cout << "NSATS, DOPs " << std::setw(2) << raimSolver.Nsvs << std::fixed
                                               << std::setprecision(2) << " "
                                               << std::setw(4) << raimSolver.PDOP << " " << std::setw(4) << raimSolver.GDOP
                                               << " " << std::setw(8) << raimSolver.RMSResidual << "\n";
-                                    gpstk::Position rx_pos;
-                                    rx_pos.setECEF(gpstk::Triple(raimSolver.Solution(0), raimSolver.Solution(1), raimSolver.Solution(2)));
+                                    gnsstk::Position rx_pos;
+                                    rx_pos.setECEF(gnsstk::Triple(raimSolver.Solution(0), raimSolver.Solution(1), raimSolver.Solution(2)));
 
                                     double lat_deg = rx_pos.geodeticLatitude();
                                     double lon_deg = rx_pos.longitude();
@@ -1325,17 +1368,17 @@ double compute_rx_clock_error(const std::string& rinex_nav_filename, const std::
                                               << std::setw(12) << Alt_m << " [deg],[deg],[m]\n";
 
                                     // set computed RX clock error and stop iterating obs epochs
-                                    rx_clock_error_s = raimSolver.Solution(3) / gpstk::C_MPS;
+                                    rx_clock_error_s = raimSolver.Solution(3) / gnsstk::C_MPS;
                                     break;
                                 }  // End of 'if( raimSolver.isValid() )'
                         }          // End of 'if( rod.epochFlag == 0 || rod.epochFlag == 1 )'
                 }                  // End of 'while( roffs >> rod )'
         }
-    catch (const gpstk::FFStreamError& e)
+    catch (const gnsstk::FFStreamError& e)
         {
             std::cout << "GPSTK exception: " << e << '\n';
         }
-    catch (const gpstk::Exception& e)
+    catch (const gnsstk::Exception& e)
         {
             std::cout << "GPSTK exception: " << e << '\n';
         }

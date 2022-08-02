@@ -76,7 +76,7 @@ target_link_libraries(signal_source_gr_blocks
 
 target_include_directories(signal_source_gr_blocks
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/receiver
+        ${GNSSSDR_SOURCE_DIR}/src/core/receiver
 )
 
 if(GNURADIO_USES_STD_POINTERS)

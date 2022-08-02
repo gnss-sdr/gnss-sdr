@@ -65,7 +65,7 @@ typedef struct
     int avx512bitalg : 1;
     int avx512vpopcntdq : 1;
     int avx512_4vnniw : 1;
-    int avx512_4vbmi2 : 1;
+    int avx512_4vbmi2 : 1;  // Note: this is an alias to avx512_4fmaps.
     int avx512_second_fma : 1;
     int avx512_4fmaps : 1;
     int avx512_bf16 : 1;
@@ -132,6 +132,7 @@ typedef enum
     INTEL_KBL,           // KABY LAKE
     INTEL_CFL,           // COFFEE LAKE
     INTEL_WHL,           // WHISKEY LAKE
+    INTEL_CML,           // COMET LAKE
     INTEL_CNL,           // CANNON LAKE
     INTEL_ICL,           // ICE LAKE
     INTEL_TGL,           // TIGER LAKE
@@ -158,6 +159,7 @@ typedef enum
     AMD_ZEN_PLUS,        // K17 ZEN+
     AMD_ZEN2,            // K17 ZEN 2
     AMD_ZEN3,            // K19 ZEN 3
+    AMD_ZEN4,            // K19 ZEN 4
     X86_MICROARCHITECTURE_LAST_,
 } X86Microarchitecture;
 
@@ -218,7 +220,7 @@ typedef enum
     X86_AVX512BITALG,
     X86_AVX512VPOPCNTDQ,
     X86_AVX512_4VNNIW,
-    X86_AVX512_4VBMI2,
+    X86_AVX512_4VBMI2,  // Note: this is an alias to X86_AVX512_4FMAPS.
     X86_AVX512_SECOND_FMA,
     X86_AVX512_4FMAPS,
     X86_AVX512_BF16,

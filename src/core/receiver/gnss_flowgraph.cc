@@ -1010,7 +1010,8 @@ int GNSSFlowgraph::connect_signal_conditioners_to_channels()
 
             try
                 {
-                    selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", 0);
+                    selected_signal_conditioner_ID = configuration_->property("Channels_" + channels_.at(i)->get_signal().get_signal_str() + ".RF_channel_ID", 0);
+                    selected_signal_conditioner_ID = configuration_->property("Channel" + std::to_string(i) + ".RF_channel_ID", selected_signal_conditioner_ID);
                 }
             catch (const std::exception& e)
                 {

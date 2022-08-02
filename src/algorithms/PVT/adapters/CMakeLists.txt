@@ -29,7 +29,7 @@ target_link_libraries(pvt_adapters
 
 target_include_directories(pvt_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(USE_OLD_BOOST_MATH_COMMON_FACTOR)

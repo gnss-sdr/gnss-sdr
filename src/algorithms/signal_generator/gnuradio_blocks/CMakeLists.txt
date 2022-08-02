@@ -38,7 +38,7 @@ endif()
 
 target_include_directories(signal_generator_gr_blocks
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 # Workaround for CentOS 7

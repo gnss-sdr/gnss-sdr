@@ -56,11 +56,6 @@
 #include <gnuradio/blocks/null_sink.h>
 #include <gnuradio/filter/firdes.h>
 #include <gnuradio/top_block.h>
-#include <gpstk/Rinex3ObsBase.hpp>
-#include <gpstk/Rinex3ObsData.hpp>
-#include <gpstk/Rinex3ObsHeader.hpp>
-#include <gpstk/Rinex3ObsStream.hpp>
-#include <gpstk/RinexUtilities.hpp>
 #include <gtest/gtest.h>
 #include <matio.h>
 #include <pmt/pmt.h>
@@ -70,6 +65,23 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <utility>
+
+#if GNSSTK_USES_GPSTK_NAMESPACE
+#include <gpstk/GPSWeekSecond.hpp>
+#include <gpstk/Rinex3ObsBase.hpp>
+#include <gpstk/Rinex3ObsData.hpp>
+#include <gpstk/Rinex3ObsHeader.hpp>
+#include <gpstk/Rinex3ObsStream.hpp>
+#include <gpstk/RinexUtilities.hpp>
+namespace gnsstk = gpstk;
+#else
+#include <gnsstk/GPSWeekSecond.hpp>
+#include <gnsstk/Rinex3ObsBase.hpp>
+#include <gnsstk/Rinex3ObsData.hpp>
+#include <gnsstk/Rinex3ObsHeader.hpp>
+#include <gnsstk/Rinex3ObsStream.hpp>
+#include <gnsstk/RinexUtilities.hpp>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -1648,17 +1660,17 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
     // Open and read reference RINEX observables file
     try
         {
-            gpstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
+            gnsstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
             r_ref.exceptions(std::ios::failbit);
-            gpstk::Rinex3ObsData r_ref_data;
-            gpstk::Rinex3ObsHeader r_ref_header;
+            gnsstk::Rinex3ObsData r_ref_data;
+            gnsstk::Rinex3ObsHeader r_ref_header;
 
-            gpstk::RinexDatum dataobj;
+            gnsstk::RinexDatum dataobj;
 
             r_ref >> r_ref_header;
 
             std::vector<bool> first_row;
-            gpstk::SatID prn;
+            gnsstk::SatID prn;
             for (unsigned int n = 0; n < gnss_synchro_vec.size(); n++)
                 {
                     first_row.push_back(true);
@@ -1674,28 +1686,33 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
                                 {
                                 case 'G':
 #if OLD_GPSTK
-                                    prn = gpstk::SatID(myprn, gpstk::SatID::systemGPS);
+                                    prn = gnsstk::SatID(myprn, gnsstk::SatID::systemGPS);
 #else
-                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::GPS);
+                                    prn = gnsstk::SatID(myprn, gnsstk::SatelliteSystem::GPS);
 #endif
                                     break;
                                 case 'E':
 #if OLD_GPSTK
-                                    prn = gpstk::SatID(myprn, gpstk::SatID::systemGalileo);
+                                    prn = gnsstk::SatID(myprn, gnsstk::SatID::systemGalileo);
 #else
-                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::Galileo);
+                                    prn = gnsstk::SatID(myprn, gnsstk::SatelliteSystem::Galileo);
 #endif
                                     break;
                                 default:
 #if OLD_GPSTK
-                                    prn = gpstk::SatID(myprn, gpstk::SatID::systemGPS);
+                                    prn = gnsstk::SatID(myprn, gnsstk::SatID::systemGPS);
 #else
-                                    prn = gpstk::SatID(myprn, gpstk::SatelliteSystem::GPS);
+                                    prn = gnsstk::SatID(myprn, gnsstk::SatelliteSystem::GPS);
 #endif
                                 }
 
-                            gpstk::CommonTime time = r_ref_data.time;
-                            double sow(static_cast<gpstk::GPSWeekSecond>(time).sow);
+                            gnsstk::CommonTime time = r_ref_data.time;
+#if GNSSTK_OLDER_THAN_9
+                            double sow(static_cast<gnsstk::GPSWeekSecond>(time).sow);
+#else
+                            gnsstk::GPSWeekSecond gws(time);
+                            double sow(gws.getSOW());
+#endif
 
                             auto pointer = r_ref_data.obs.find(prn);
                             if (pointer == r_ref_data.obs.end())
@@ -1773,12 +1790,12 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
                 }  // end while
         }          // End of 'try' block
 
-    catch (const gpstk::FFStreamError& e)
+    catch (const gnsstk::FFStreamError& e)
         {
             std::cout << e;
             return false;
         }
-    catch (const gpstk::Exception& e)
+    catch (const gnsstk::Exception& e)
         {
             std::cout << e;
             return false;

@@ -38,6 +38,7 @@
 #include "rtklib_sbas.h"
 #include "rtklib_tides.h"
 #include <cstring>
+#include <vector>
 
 /* wave length of LC (m) -----------------------------------------------------*/
 double lam_LC(int i, int j, int k)
@@ -351,7 +352,7 @@ int sel_amb(int *sat1, int *sat2, double *N, double *var, int n)
 {
     int i;
     int j;
-    int flgs[MAXSAT] = {0};
+    std::vector<int> flgs(MAXSAT, 0);
     int max_flg = 0;
 
     /* sort by variance */
@@ -372,7 +373,7 @@ int sel_amb(int *sat1, int *sat2, double *N, double *var, int n)
     /* select linearly independent satellite pair */
     for (i = j = 0; i < n; i++)
         {
-            if (!is_depend(sat1[i], sat2[i], flgs, &max_flg))
+            if (!is_depend(sat1[i], sat2[i], flgs.data(), &max_flg))
                 {
                     continue;
                 }
@@ -546,7 +547,7 @@ int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
     int m = 0;
     int info;
     int stat;
-    int flgs[MAXSAT] = {0};
+    std::vector<int> flgs(MAXSAT, 0);
     int max_flg = 0;
 
     lam1 = LAM_CARR[0];
@@ -565,7 +566,7 @@ int fix_amb_ILS(rtk_t *rtk, int *sat1, int *sat2, int *NW, int n)
     for (i = 0; i < n; i++)
         {
             /* check linear independency */
-            if (!is_depend(sat1[i], sat2[i], flgs, &max_flg))
+            if (!is_depend(sat1[i], sat2[i], flgs.data(), &max_flg))
                 {
                     continue;
                 }
@@ -1362,7 +1363,7 @@ void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
     double meas[2];
     double var[2];
-    double bias[MAXOBS] = {0};
+    std::vector<double> bias(MAXOBS, 0.0);
     double offset = 0.0;
     double pos[3] = {0};
     int i;
@@ -1562,7 +1563,7 @@ int res_ppp(int iter __attribute__((unused)), const obsd_t *obs, int n, const do
     double dtdx[3];
     double dantr[NFREQ] = {0};
     double dants[NFREQ] = {0};
-    double var[MAXOBS * 2];
+    std::vector<double> var(MAXOBS * 2, 0.0);
     double dtrp = 0.0;
     double vart = 0.0;
     double varm[2] = {0};
@@ -1781,7 +1782,7 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     int i;
     int nv;
     int info;
-    int svh[MAXOBS];
+    std::vector<int> svh(MAXOBS);
     int stat = SOLQ_SINGLE;
 
     trace(3, "pppos   : nx=%d n=%d\n", rtk->nx, n);
@@ -1803,7 +1804,7 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     tracemat(4, rtk->x, 1, NR_PPP(opt), 13, 4);
 
     /* satellite positions and clocks */
-    satposs(obs[0].time, obs, n, nav, rtk->opt.sateph, rs, dts, var, svh);
+    satposs(obs[0].time, obs, n, nav, rtk->opt.sateph, rs, dts, var, svh.data());
 
     /* exclude measurements of eclipsing satellite */
     if (rtk->opt.posopt[3])
@@ -1821,7 +1822,7 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     for (i = 0; i < rtk->opt.niter; i++)
         {
             /* phase and code residuals */
-            if ((nv = res_ppp(i, obs, n, rs, dts, var, svh, nav, xp, rtk, v, H, R, azel)) <= 0)
+            if ((nv = res_ppp(i, obs, n, rs, dts, var, svh.data(), nav, xp, rtk, v, H, R, azel)) <= 0)
                 {
                     break;
                 }
@@ -1842,7 +1843,7 @@ void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     if (stat == SOLQ_PPP)
         {
             /* postfit residuals */
-            res_ppp(1, obs, n, rs, dts, var, svh, nav, xp, rtk, v, H, R, azel);
+            res_ppp(1, obs, n, rs, dts, var, svh.data(), nav, xp, rtk, v, H, R, azel);
 
             /* update state and covariance matrix */
             matcpy(rtk->x, xp, rtk->nx, 1);

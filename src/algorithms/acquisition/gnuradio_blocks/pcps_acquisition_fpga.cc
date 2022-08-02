@@ -11,7 +11,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -27,14 +27,14 @@
 #include <utility>   // for move
 
 
-pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(pcpsconf_fpga_t conf_)
+pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga& conf_)
 {
-    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(std::move(conf_)));
+    return pcps_acquisition_fpga_sptr(new pcps_acquisition_fpga(conf_));
 }
 
 
-pcps_acquisition_fpga::pcps_acquisition_fpga(pcpsconf_fpga_t conf_)
-    : d_acq_parameters(std::move(conf_)),
+pcps_acquisition_fpga::pcps_acquisition_fpga(Acq_Conf_Fpga& conf_)
+    : d_acq_parameters(conf_),
       d_gnss_synchro(nullptr),
       d_sample_counter(0ULL),
       d_threshold(0.0),

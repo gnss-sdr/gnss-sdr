@@ -385,9 +385,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-11.1.1.tar.xz
-$ tar xvfz armadillo-11.1.1.tar.xz
-$ cd armadillo-11.1.1
+$ wget https://sourceforge.net/projects/arma/files/armadillo-11.2.1.tar.xz
+$ tar xvfz armadillo-11.2.1.tar.xz
+$ cd armadillo-11.2.1
 $ cmake .
 $ make
 $ sudo make install
@@ -428,8 +428,8 @@ $ sudo ldconfig
 #### Download the [Google C++ Testing Framework](https://github.com/google/googletest "Googletest Homepage"), also known as Google Test:
 
 ```
-$ wget https://github.com/google/googletest/archive/release-1.12.0.zip
-$ unzip release-1.12.0.zip
+$ wget https://github.com/google/googletest/archive/release-1.12.1.zip
+$ unzip release-1.12.1.zip
 ```
 
 Please **DO NOT build or install** Google Test. Every user needs to compile
@@ -453,10 +453,10 @@ downloaded resides. Just type in your terminal (or add it to your
 `$HOME/.bashrc` file for a permanent solution) the following line:
 
 ```
-export GTEST_DIR=/home/username/googletest-release-1.12.0
+export GTEST_DIR=/home/username/googletest-release-1.12.1
 ```
 
-changing `/home/username/googletest-release-1.12.0` by the actual path where you
+changing `/home/username/googletest-release-1.12.1` by the actual path where you
 unpacked Google Test. If the CMake script does not find that folder, or the
 environment variable is not defined, or the source code is not installed by a
 package, then it will download a fresh copy of the Google Test source code and
@@ -882,7 +882,7 @@ $ brew update && brew upgrade
 $ brew install armadillo cmake hdf5 gflags glog gnuradio lapack libmatio log4cpp \
     openssl pkg-config protobuf pugixml
 $ pip3 install mako
-$ brew cask install mactex  # when completed, restart Terminal
+$ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
 ```
 
@@ -969,9 +969,8 @@ compile time if they are not detected in your machine.
   [https://github.com/carlesfernandez/docker-pybombs-gnsssdr](https://github.com/carlesfernandez/docker-pybombs-gnsssdr)
   for instructions.
 
-- **Snap package**: [Snaps](https://snapcraft.io) are universal Linux packages
-  aimed to work on any distribution or device, from IoT devices to servers,
-  desktops to mobile devices. Visit
+- **Snap package**: [Snaps](https://snapcraft.io) are Linux packages aimed for
+  Ubuntu or Ubuntu-like distros. Visit
   [https://github.com/carlesfernandez/snapcraft-sandbox](https://github.com/carlesfernandez/snapcraft-sandbox)
   for instructions, or directly
   [get the software from the Snap Store](https://snapcraft.io/gnss-sdr-next):
@@ -2048,10 +2047,10 @@ PVT.rtcm_MT1077_rate_ms=1000
   the user to post-process the received data to produce a more accurate result
   (usually with other data unknown to the original receiver, such as better
   models of the atmospheric conditions at time of measurement). RINEX files can
-  be used by software packages such as [GPSTk](https://github.com/SGL-UT/GPSTk),
-  [RTKLIB](http://www.rtklib.com/), and [gLAB](https://gage.upc.edu/gLAB/).
-  GNSS-SDR by default generates RINEX version
-  [3.02](ftp://igs.org/pub/data/format/rinex302.pdf). If
+  be used by software packages such as
+  [GNSSTK](https://github.com/SGL-UT/gnsstk), [RTKLIB](http://www.rtklib.com/),
+  and [gLAB](https://gage.upc.edu/gLAB/). GNSS-SDR by default generates RINEX
+  version [3.02](ftp://igs.org/pub/data/format/rinex302.pdf). If
   [2.11](ftp://igs.org/pub/data/format/rinex211.txt) is needed, it can be
   requested through the `rinex_version` parameter in the configuration file:
 

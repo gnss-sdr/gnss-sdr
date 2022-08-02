@@ -109,6 +109,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_state(0),                 // initial state: standby
       d_current_prn_length_samples(static_cast<int32_t>(d_trk_parameters.vector_length)),
       d_extend_correlation_symbols_count(0),
+      d_extend_correlation_symbols(d_trk_parameters.extend_correlation_symbols),
       d_cn0_estimation_counter(0),
       d_carrier_lock_fail_counter(0),
       d_code_lock_fail_counter(0),
@@ -652,6 +653,7 @@ void dll_pll_veml_tracking::start_tracking()
     Signal_[0] = d_acquisition_gnss_synchro->Signal[0];
     Signal_[1] = d_acquisition_gnss_synchro->Signal[1];
     Signal_[2] = d_acquisition_gnss_synchro->Signal[2];
+    d_extend_correlation_symbols = d_trk_parameters.extend_correlation_symbols;
 
     if (d_systemName == "GPS" and d_signal_type == "1C")
         {
@@ -757,7 +759,7 @@ void dll_pll_veml_tracking::start_tracking()
         {
             beidou_b1i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // GEO Satellites use different secondary code
-            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or (d_acquisition_gnss_synchro->PRN > 58))
                 {
                     d_symbols_per_bit = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -769,6 +771,10 @@ void dll_pll_veml_tracking::start_tracking()
                     d_secondary_code_string = BEIDOU_B1I_GEO_PREAMBLE_SYMBOLS_STR;
                     d_data_secondary_code_length = 0;
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
+                    if (d_extend_correlation_symbols > BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT)
+                        {
+                            d_extend_correlation_symbols = BEIDOU_B1I_GEO_TELEMETRY_SYMBOLS_PER_BIT;
+                        }
                 }
             else
                 {
@@ -790,7 +796,7 @@ void dll_pll_veml_tracking::start_tracking()
         {
             beidou_b3i_code_gen_float(d_tracking_code, d_acquisition_gnss_synchro->PRN, 0);
             // Update secondary code settings for geo satellites
-            if (d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6)
+            if ((d_acquisition_gnss_synchro->PRN > 0 and d_acquisition_gnss_synchro->PRN < 6) or (d_acquisition_gnss_synchro->PRN > 58))
                 {
                     d_symbols_per_bit = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;  // todo: enable after fixing beidou symbol synchronization
                     d_correlation_length_ms = 1;
@@ -802,6 +808,10 @@ void dll_pll_veml_tracking::start_tracking()
                     d_secondary_code_string = BEIDOU_B3I_GEO_PREAMBLE_SYMBOLS_STR;
                     d_data_secondary_code_length = 0;
                     d_Prompt_circular_buffer.set_capacity(d_secondary_code_length);
+                    if (d_extend_correlation_symbols > BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT)
+                        {
+                            d_extend_correlation_symbols = BEIDOU_B3I_GEO_TELEMETRY_SYMBOLS_PER_BIT;
+                        }
                 }
             else
                 {
@@ -1876,12 +1886,12 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                     {
                                         // UPDATE INTEGRATION TIME
                                         d_extend_correlation_symbols_count = 0;
-                                        d_current_correlation_time_s = static_cast<float>(d_trk_parameters.extend_correlation_symbols) * static_cast<float>(d_code_period);
+                                        d_current_correlation_time_s = static_cast<float>(d_extend_correlation_symbols) * static_cast<float>(d_code_period);
                                         d_state = 3;  // next state is the extended correlator integrator
-                                        LOG(INFO) << "Enabled " << d_trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                        LOG(INFO) << "Enabled " << d_extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                        std::cout << "Enabled " << d_trk_parameters.extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                        std::cout << "Enabled " << d_extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
                                                   << d_channel
                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                                         // Set narrow taps delay values [chips]
@@ -1947,7 +1957,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         d_P_data_accu = gr_complex(0.0, 0.0);
                     }
                 d_extend_correlation_symbols_count++;
-                if (d_extend_correlation_symbols_count == (d_trk_parameters.extend_correlation_symbols - 1))
+                if (d_extend_correlation_symbols_count == (d_extend_correlation_symbols - 1))
                     {
                         d_extend_correlation_symbols_count = 0;
                         d_state = 4;
@@ -1961,7 +1971,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                 save_correlation_results();
 
                 // check lock status
-                if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(d_trk_parameters.extend_correlation_symbols)))
+                if (!cn0_and_tracking_lock_status(d_code_period * static_cast<double>(d_extend_correlation_symbols)))
                     {
                         clear_tracking_vars();
                         d_state = 0;                                         // loss-of-lock detected

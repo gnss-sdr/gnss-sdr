@@ -510,9 +510,9 @@ bool Gnss_Sdr_Supl_Client::load_gnav_ephemeris_xml(const std::string& file_name)
         {
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            gps_cnav_ephemeris_map.clear();
+            glonass_gnav_ephemeris_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", this->glonass_gnav_ephemeris_map);
-            LOG(INFO) << "Loaded GLONASS ephemeris map data with " << this->gps_cnav_ephemeris_map.size() << " satellites";
+            LOG(INFO) << "Loaded GLONASS ephemeris map data with " << this->glonass_gnav_ephemeris_map.size() << " satellites";
         }
     catch (std::exception& e)
         {

@@ -182,6 +182,16 @@ jobs:
       run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
 
 
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install dependencies
+      run: sudo apt install shellcheck
+    - name: check scripts
+      run: shellcheck src/utils/scripts/*
+
+
   REUSE-compliance:
     runs-on: ubuntu-latest
     steps:

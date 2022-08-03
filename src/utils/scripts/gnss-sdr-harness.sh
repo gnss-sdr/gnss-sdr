@@ -5,10 +5,10 @@
 # SPDX-FileCopyrightText: Javier Arribas <javier.arribas(at)cttc.es>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-echo $@
-$@
+echo "Executing" "$@"
+"$@"
 while [ $? -eq 42 ]
 do
- echo "restarting GNSS-SDR..."
- $@
+  echo "Restarting GNSS-SDR..."
+  "$@"
 done

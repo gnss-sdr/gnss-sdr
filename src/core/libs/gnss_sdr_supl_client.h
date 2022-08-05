@@ -122,7 +122,7 @@ public:
     /*!
      * \brief Save GPS CNAV ephemeris map to XML file.
      */
-    bool save_cnav_ephemeris_map_xml(const std::string file_name,
+    bool save_cnav_ephemeris_map_xml(const std::string& file_name,
         std::map<int, Gps_CNAV_Ephemeris> eph_map);
 
     /*!
@@ -133,7 +133,7 @@ public:
     /*!
      * \brief Save Galileo ephemeris map to XML file.
      */
-    bool save_gal_ephemeris_map_xml(const std::string file_name,
+    bool save_gal_ephemeris_map_xml(const std::string& file_name,
         std::map<int, Galileo_Ephemeris> eph_map);
 
     /*!
@@ -144,7 +144,7 @@ public:
     /*!
      * \brief Save GLONASS GNAV ephemeris map to XML file.
      */
-    bool save_gnav_ephemeris_map_xml(const std::string file_name,
+    bool save_gnav_ephemeris_map_xml(const std::string& file_name,
         std::map<int, Glonass_Gnav_Ephemeris> eph_map);
 
     /*!

@@ -206,9 +206,18 @@ void beidou_b1i_telemetry_decoder_gs::decode_word(
 
     if (word_counter == 1)
         {
-            for (uint32_t j = 0; j < 30; j++)
+            for (uint32_t j = 0; j < 15; j++)
                 {
                     dec_word_symbols[j] = static_cast<int32_t>(enc_word_symbols[j] > 0) ? (1) : (-1);
+                }
+            for (uint32_t j = 0; j < 15; j++)
+                {
+                    bitsbch[j] = static_cast<int32_t>(enc_word_symbols[j + 15] > 0) ? (1) : (-1);
+                }
+            decode_bch15_11_01(&bitsbch[0], first_branch);
+            for (uint32_t j = 0; j < 11; j++)
+                {
+                    dec_word_symbols[j + 15] = first_branch[j];
                 }
         }
     else

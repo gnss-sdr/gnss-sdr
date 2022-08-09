@@ -419,7 +419,7 @@ file_t *openfile(std::string const &path, int mode, char *msg)
                     std::istringstream ss(tag);
                     ss.ignore(1, 'S').ignore(1, '=') >> swapintv;
                     // do we care if there are extra characters?
-                    if (swapintv < 0) swapintv = 0;
+                    if (swapintv < 0) swapintv = 0;  // NOLINT(readability-braces-around-statements)
                     file->swapintv = swapintv;
                 }
             else

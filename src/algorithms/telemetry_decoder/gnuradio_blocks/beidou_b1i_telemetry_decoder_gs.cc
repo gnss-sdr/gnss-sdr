@@ -649,7 +649,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                         }
                     catch (const std::ifstream::failure &e)
                         {
-                            LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
+                            LOG(WARNING) << "Exception writing Telemetry BeiDou B1I dump file " << e.what();
                         }
                 }
 

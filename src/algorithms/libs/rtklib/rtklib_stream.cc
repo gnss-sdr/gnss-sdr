@@ -386,7 +386,7 @@ file_t *openfile(std::string const &path, int mode, char *msg)
             tokens.pop_front();
 
             // edge case that may not be possible, but I don't want to test for right now
-            if (tag.empty()) continue;
+            if (tag.empty()) continue;  // NOLINT(readability-braces-around-statements)
 
             if (tag == "T")
                 {

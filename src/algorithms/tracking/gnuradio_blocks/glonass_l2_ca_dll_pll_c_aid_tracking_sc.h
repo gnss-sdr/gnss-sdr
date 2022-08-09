@@ -165,7 +165,7 @@ private:
     double d_pll_to_dll_assist_secs_Ti;
     double d_carr_phase_error_secs_Ti;
     double d_code_error_chips_Ti;
-    double d_preamble_timestamp_s;
+    double d_preamble_timestamp_samples;
     int32_t d_extend_correlation_ms;
     double d_code_error_filt_chips_s;
     double d_code_error_filt_chips_Ti;

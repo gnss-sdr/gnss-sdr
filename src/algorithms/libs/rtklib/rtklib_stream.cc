@@ -1946,12 +1946,12 @@ void *ftpthread(void *arg)
 
     std::string remote;
     reppath(ftp->file, remote, time, "", "");
-    auto remotePath = std::filesystem::path(remote);
+    auto remotePath = fs::path(remote);
 
-    auto local = std::filesystem::path(localdir);
+    auto local = fs::path(localdir);
     local /= remotePath.filename();
 
-    auto errfile = std::filesystem::path(local);
+    auto errfile = fs::path(local);
     errfile.replace_extension("err");
 
     /* if local file exist, skip download */
@@ -1964,7 +1964,7 @@ void *ftpthread(void *arg)
                     break;
                 }
         }
-    if (std::filesystem::exists(tmpfile))
+    if (fs::exists(tmpfile))
         {
             std::strncpy(ftp->local, tmpfile.c_str(), 1024);
             ftp->local[1023] = '\0';
@@ -2005,11 +2005,11 @@ void *ftpthread(void *arg)
                       R"("http://)"s + std::string(ftp->addr) + "/"s + remotePath.native() + R"(" 2> ")"s + errfile.native() + "\"\n";
         }
     /* execute download command */
-    std::error_code ec;  // prevent exceptions
+    errorlib::error_code ec;  // prevent exceptions
     auto ret = execcmd(cmd_str.c_str());
     if ((ret != 0))
         {
-            if (std::filesystem::remove(local, ec) == false)
+            if (fs::remove(local, ec) == false)
                 {
                     trace(1, "Error removing file %s", local.c_str());
                 }
@@ -2018,7 +2018,7 @@ void *ftpthread(void *arg)
             ftp->state = 3;
             return nullptr;
         }
-    if (std::filesystem::remove(errfile, ec) == false)
+    if (fs::remove(errfile, ec) == false)
         {
             trace(1, "Error removing file %s", errfile.c_str());
         }
@@ -2032,7 +2032,7 @@ void *ftpthread(void *arg)
                     ret = rtk_uncompress(local.c_str(), tmpfile_arg);
                     if (ret != 0)  // success
                         {
-                            if (std::filesystem::remove(local, ec) == false)
+                            if (fs::remove(local, ec) == false)
                                 {
                                     trace(1, "Error removing file %s", local.c_str());
                                 }

@@ -60,9 +60,26 @@
 
 #include "rtklib.h"
 #include <cstddef>
-#include <filesystem>
 #include <string>
 
+#if HAS_STD_FILESYSTEM
+#include <system_error>
+namespace errorlib = std;
+#if HAS_STD_FILESYSTEM_EXPERIMENTAL
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#include <filesystem>
+namespace fs = std::filesystem;
+#endif
+#else
+#include <boost/filesystem/operations.hpp>   // for create_directories, exists
+#include <boost/filesystem/path.hpp>         // for path, operator<<
+#include <boost/filesystem/path_traits.hpp>  // for filesystem
+#include <boost/system/error_code.hpp>       // for error_code
+namespace fs = boost::filesystem;
+namespace errorlib = boost::system;
+#endif
 
 /* coordinate rotation matrix ------------------------------------------------*/
 #define Rx(t, X)                                     \
@@ -230,7 +247,7 @@ void traceobs(int level, const obsd_t *obs, int n);
 // void traceb  (int level, const unsigned char *p, int n);
 
 int execcmd(const char *cmd);
-void createdir(std::filesystem::path const &path);
+void createdir(fs::path const &path);
 int reppath(std::string const &path, std::string &rpath, gtime_t time, const char *rov,
     const char *base);
 double satwavelen(int sat, int frq, const nav_t *nav);

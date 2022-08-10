@@ -4118,11 +4118,11 @@ int execcmd(const char *cmd)
  * return : none
  * notes  : not recursive. only one level
  *-----------------------------------------------------------------------------*/
-void createdir(std::filesystem::path const &path)
+void createdir(fs::path const &path)
 {
-    std::error_code ec;
+    errorlib::error_code ec;
 
-    auto created = std::filesystem::create_directory(path, ec);
+    auto created = fs::create_directory(path, ec);
     if (not created)
         {
             trace(1, "Error creating folder: %s", path.c_str());

@@ -1108,28 +1108,28 @@ typedef struct
 } serial_t;
 
 
-typedef struct
-{                              /* file control type */
-    FILE *fp;                  /* file pointer */
-    FILE *fp_tag;              /* file pointer of tag file */
-    FILE *fp_tmp;              /* temporary file pointer for swap */
-    FILE *fp_tag_tmp;          /* temporary file pointer of tag file for swap */
-    char path[MAXSTRPATH];     /* file path */
-    char openpath[MAXSTRPATH]; /* open file path */
-    int mode;                  /* file mode */
-    int timetag;               /* time tag flag (0:off,1:on) */
-    int repmode;               /* replay mode (0:master,1:slave) */
-    int offset;                /* time offset (ms) for slave */
-    gtime_t time;              /* start time */
-    gtime_t wtime;             /* write time */
-    unsigned int tick;         /* start tick */
-    unsigned int tick_f;       /* start tick in file */
-    unsigned int fpos;         /* current file position */
-    double start;              /* start offset (s) */
-    double speed;              /* replay speed (time factor) */
-    double swapintv;           /* swap interval (hr) (0: no swap) */
-    lock_t lock;               /* lock flag */
-} file_t;
+struct file_t
+{                               /* file control type */
+    FILE *fp = nullptr;         /* file pointer */
+    FILE *fp_tag = nullptr;     /* file pointer of tag file */
+    FILE *fp_tmp = nullptr;     /* temporary file pointer for swap */
+    FILE *fp_tag_tmp = nullptr; /* temporary file pointer of tag file for swap */
+    std::string path;           /* file path */
+    std::string openpath;       /* open file path */
+    int mode = 0;               /* file mode */
+    int timetag;                /* time tag flag (0:off,1:on) */
+    int repmode = 0;            /* replay mode (0:master,1:slave) */
+    int offset = 0;             /* time offset (ms) for slave */
+    gtime_t time = {};          /* start time */
+    gtime_t wtime = {};         /* write time */
+    unsigned int tick = 0;      /* start tick */
+    unsigned int tick_f = 0;    /* start tick in file */
+    unsigned int fpos = 0;      /* current file position */
+    double start = 0;           /* start offset (s) */
+    double speed = 0;           /* replay speed (time factor) */
+    double swapintv = 0;        /* swap interval (hr) (0: no swap) */
+    lock_t lock;                /* lock flag */
+};
 
 
 typedef struct

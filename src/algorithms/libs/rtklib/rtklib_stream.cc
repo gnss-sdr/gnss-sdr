@@ -38,9 +38,13 @@
 #include <cerrno>
 #include <cinttypes>
 #include <cstring>
+#include <deque>
 #include <fcntl.h>
+#include <memory>
 #include <netdb.h>
 #include <netinet/tcp.h>
+#include <regex>
+#include <sstream>
 #include <string>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -48,6 +52,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+using namespace std::string_literals;
 
 /* global options ------------------------------------------------------------*/
 
@@ -118,7 +123,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
         }
     parity = static_cast<char>(toupper(static_cast<int>(parity)));
 
-    std::string s_aux = "/dev/" + std::string(port);
+    std::string s_aux = "/dev/"s + std::string(port);
     s_aux.resize(128, '\0');
     int n = s_aux.length();
     for (i = 0; i < n; i++)
@@ -228,18 +233,17 @@ int stateserial(serial_t *serial)
 int openfile_(file_t *file, gtime_t time, char *msg)
 {
     FILE *fp;
-    char *rw;
     char tagpath[MAXSTRPATH + 4] = "";
     char tagh[TIMETAGH_LEN + 1] = "";
 
-    tracet(3, "openfile_: path=%s time=%s\n", file->path, time_str(time, 0));
+    tracet(3, "openfile_: path=%s time=%s\n", file->path.data(), time_str(time, 0));
 
     file->time = utc2gpst(timeget());
     file->tick = file->tick_f = tickget();
     file->fpos = 0;
 
-    /* use stdin or stdout if file path is null */
-    if (!*file->path)
+    /* use stdin or stdout if file path is empty */
+    if (file->path.empty())
         {
             file->fp = file->mode & STR_MODE_R ? stdin : stdout;
             return 1;
@@ -250,37 +254,39 @@ int openfile_(file_t *file, gtime_t time, char *msg)
     /* create directory */
     if ((file->mode & STR_MODE_W) && !(file->mode & STR_MODE_R))
         {
-            createdir(file->openpath);
+            createdir(file->openpath.data());
         }
+
+    char const *mode;
     if (file->mode & STR_MODE_R)
         {
-            rw = const_cast<char *>("rb");
+            mode = "rb";
         }
     else
         {
-            rw = const_cast<char *>("wb");
+            mode = "wb";
         }
 
-    if (!(file->fp = fopen(file->openpath, rw)))
+    if (!(file->fp = fopen(file->openpath.data(), mode)))
         {
             std::snprintf(msg, MAXSTRMSG, "file open error");
             tracet(1, "openfile: %s\n", msg);
             return 0;
         }
-    tracet(4, "openfile_: open file %s (%s)\n", file->openpath, rw);
+    tracet(4, "openfile_: open file %s (%s)\n", file->openpath.data(), mode);
 
-    std::snprintf(tagpath, MAXSTRPATH + 4, "%s.tag", file->openpath);
+    std::snprintf(tagpath, MAXSTRPATH + 4, "%s.tag", file->openpath.data());
 
     if (file->timetag)
         { /* output/sync time-tag */
-            if (!(file->fp_tag = fopen(tagpath, rw)))
+            if (!(file->fp_tag = fopen(tagpath, mode)))
                 {
                     std::snprintf(msg, MAXSTRMSG, "tag open error");
                     tracet(1, "openfile: %s\n", msg);
                     fclose(file->fp);
                     return 0;
                 }
-            tracet(4, "openfile_: open tag file %s (%s)\n", tagpath, rw);
+            tracet(4, "openfile_: open tag file %s (%s)\n", tagpath, mode);
 
             if (file->mode & STR_MODE_R)
                 {
@@ -326,131 +332,132 @@ int openfile_(file_t *file, gtime_t time, char *msg)
 /* close file ----------------------------------------------------------------*/
 void closefile_(file_t *file)
 {
-    tracet(3, "closefile_: path=%s\n", file->path);
+    tracet(3, "closefile_: path=%s\n", file->path.data());
     if (file->fp)
         {
             fclose(file->fp);
+            file->fp = nullptr;
         }
     if (file->fp_tag)
         {
             fclose(file->fp_tag);
+            file->fp_tag = nullptr;
         }
     if (file->fp_tmp)
         {
             fclose(file->fp_tmp);
+            file->fp_tmp = nullptr;
         }
     if (file->fp_tag_tmp)
         {
             fclose(file->fp_tag_tmp);
+            file->fp_tag_tmp = nullptr;
         }
-    file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = nullptr;
 }
 
 
 /* open file (path=filepath[::T[::+<off>][::x<speed>]][::S=swapintv]) --------*/
-file_t *openfile(const char *path, int mode, char *msg)
+file_t *openfile(std::string const &path, int mode, char *msg)
 {
-    file_t *file;
-    gtime_t time;
-    gtime_t time0 = {0, 0.0};
-    double speed = 0.0;
-    double start = 0.0;
-    double swapintv = 0.0;
-    char *p;
-    int timetag = 0;
+    tracet(3, "openfile: path=%s mode=%d\n", path.data(), mode);
 
-    tracet(3, "openfile: path=%s mode=%d\n", path, mode);
-
-    if (!(mode & (STR_MODE_R | STR_MODE_W)))
+    if ((mode & (STR_MODE_R | STR_MODE_W)) == 0)
         {
             return nullptr;
         }
+
+    // Split the string by regular expression (in this case, the trivial "::" string)
+    std::regex re("::");
+    auto first = std::sregex_token_iterator(path.begin(), path.end(), re, -1);
+    auto last = std::sregex_token_iterator();
+    std::deque<std::string> tokens(first, last);
+
+    auto file = std::make_unique<file_t>();
+
+    file->mode = mode;
+    file->path = tokens.front();  // first token is the path
+    tokens.pop_front();
+
 
     /* file options */
-    for (p = const_cast<char *>(path); (p = strstr(p, "::")); p += 2)
-        { /* file options */
-            if (*(p + 2) == 'T')
-                {
-                    timetag = 1;
-                }
-            else if (*(p + 2) == '+')
-                {
-                    sscanf(p + 2, "+%lf", &start);
-                }
-            else if (*(p + 2) == 'x')
-                {
-                    sscanf(p + 2, "x%lf", &speed);
-                }
-            else if (*(p + 2) == 'S')
-                {
-                    sscanf(p + 2, "S=%lf", &swapintv);
-                }
-        }
-    if (start <= 0.0)
+    while (not tokens.empty())
         {
-            start = 0.0;
-        }
-    if (swapintv <= 0.0)
-        {
-            swapintv = 0.0;
+            auto tag = tokens.front();
+            tokens.pop_front();
+
+            // edge case that may not be possible, but I don't want to test for right now
+            if (tag.empty()) continue;  // NOLINT(readability-braces-around-statements)
+
+            if (tag == "T")
+                {
+                    file->timetag = 1;
+                }
+            else if (tag[0] == '+')
+                {
+                    double start = 0.0;
+                    std::istringstream ss(tag);
+                    ss.ignore(1, '+') >> start;
+                    // do we care if there are extra characters?
+
+                    if (start < 0)
+                        {
+                            start = 0;
+                        }
+                    file->start = start;
+                }
+            else if (tag[0] == 'x')
+                {
+                    double speed = 0.0;
+                    std::istringstream ss(tag);
+                    ss.ignore(1, 'x') >> speed;
+                    // do we care if there are extra characters?
+                    file->speed = speed;
+                }
+            else if (tag[0] == 'S')
+                {
+                    double swapintv = 0.0;
+                    std::istringstream ss(tag);
+                    ss.ignore(1, 'S').ignore(1, '=') >> swapintv;
+                    // do we care if there are extra characters?
+                    if (swapintv < 0) swapintv = 0;  // NOLINT(readability-braces-around-statements)
+                    file->swapintv = swapintv;
+                }
+            else
+                {
+                    // unexpected value ... not previously handled
+                }
         }
 
-    if (!(file = static_cast<file_t *>(malloc(sizeof(file_t)))))
-        {
-            return nullptr;
-        }
-
-    file->fp = file->fp_tag = file->fp_tmp = file->fp_tag_tmp = nullptr;
-    if (strlen(path) < MAXSTRPATH)
-        {
-            std::strncpy(file->path, path, MAXSTRPATH);
-            file->path[MAXSTRPATH - 1] = '\0';
-        }
-    if ((p = strstr(file->path, "::")))
-        {
-            *p = '\0';
-        }
-    file->openpath[0] = '\0';
-    file->mode = mode;
-    file->timetag = timetag;
-    file->repmode = 0;
-    file->offset = 0;
-    file->time = file->wtime = time0;
-    file->tick = file->tick_f = file->fpos = 0;
-    file->start = start;
-    file->speed = speed;
-    file->swapintv = swapintv;
     initlock(&file->lock);
 
-    time = utc2gpst(timeget());
+    auto time = utc2gpst(timeget());
 
     /* open new file */
-    if (!openfile_(file, time, msg))
+    if (!openfile_(file.get(), time, msg))
         {
-            free(file);
-            return nullptr;
+            file.reset();
         }
-    return file;
+    return file.release();  // ownership belongs to the caller now
 }
 
 
 /* close file ----------------------------------------------------------------*/
 void closefile(file_t *file)
 {
-    if (!file)
+    if (file)
         {
-            return;
+            std::unique_ptr<file_t> fileH(file);
+            tracet(3, "closefile: fp=%p \n", fileH->fp);
+
+            closefile_(fileH.get());
         }
-    tracet(3, "closefile: fp=%p \n", file->fp);
-    closefile_(file);
-    free(file);
 }
 
 
 /* open new swap file --------------------------------------------------------*/
 void swapfile(file_t *file, gtime_t time, char *msg)
 {
-    char openpath[MAXSTRPATH];
+    std::string openpath;
 
     tracet(3, "swapfile: fp=%p \n time=%s\n", file->fp, time_str(time, 0));
 
@@ -463,9 +470,9 @@ void swapfile(file_t *file, gtime_t time, char *msg)
     /* check path of new swap file */
     reppath(file->path, openpath, time, "", "");
 
-    if (!strcmp(openpath, file->openpath))
+    if (openpath == file->openpath)
         {
-            tracet(2, "swapfile: no need to swap %s\n", openpath);
+            tracet(2, "swapfile: no need to swap %s\n", openpath.data());
             return;
         }
     /* save file pointer to temporary pointer */
@@ -1739,7 +1746,7 @@ ntrip_t *openntrip(const char *path, int type, char *msg)
     /* ntrip access via proxy server */
     if (*proxyaddr)
         {
-            std::string s_aux = "http://" + std::string(tpath);
+            std::string s_aux = "http://"s + std::string(tpath);
             int n = s_aux.length();
             if (n < 256)
                 {
@@ -1924,19 +1931,6 @@ gtime_t nextdltime(const int *topts, int stat)
 void *ftpthread(void *arg)
 {
     auto *ftp = static_cast<ftp_t *>(arg);
-    FILE *fp;
-    gtime_t time;
-    char remote[1024];
-    char local[1024];
-    char tmpfile[1024];
-    char errfile[1024];
-    char *p;
-    char cmd[2048];
-    char env[1024] = "";
-    char opt[1024];
-    char *proxyopt = const_cast<char *>("");
-    char *proto;
-    int ret;
 
     tracet(3, "ftpthread:\n");
 
@@ -1948,152 +1942,117 @@ void *ftpthread(void *arg)
             return nullptr;
         }
     /* replace keyword in file path and local path */
-    time = timeadd(utc2gpst(timeget()), ftp->topts[0]);
+    auto time = timeadd(utc2gpst(timeget()), ftp->topts[0]);
+
+    std::string remote;
     reppath(ftp->file, remote, time, "", "");
+    auto remotePath = std::filesystem::path(remote);
 
-    if ((p = strrchr(remote, '/')))
-        {
-            p++;
-        }
-    else
-        {
-            p = remote;
-        }
-    std::string s_aux = std::string(localdir) + std::to_string(FILEPATHSEP) + std::string(p);
-    int n = s_aux.length();
-    if (n < 1024)
-        {
-            for (int i = 0; i < n; i++)
-                {
-                    local[i] = s_aux[i];
-                }
-        }
+    auto local = std::filesystem::path(localdir);
+    local /= remotePath.filename();
 
-    std::string s_aux2 = std::string(local) + ".err";
-    n = s_aux2.length();
-    if (n < 1024)
-        {
-            for (int i = 0; i < n; i++)
-                {
-                    errfile[i] = s_aux2[i];
-                }
-        }
+    auto errfile = std::filesystem::path(local);
+    errfile.replace_extension("err");
 
     /* if local file exist, skip download */
-    std::strncpy(tmpfile, local, 1024);
-    tmpfile[1023] = '\0';
-    if ((p = strrchr(tmpfile, '.')) &&
-        (!strcmp(p, ".z") || !strcmp(p, ".gz") || !strcmp(p, ".zip") ||
-            !strcmp(p, ".Z") || !strcmp(p, ".GZ") || !strcmp(p, ".ZIP")))
+    auto tmpfile = local;
+    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})  // NOLINT(readability-qualified-auto): auto decoration is less readable
         {
-            *p = '\0';
+            if (tmpfile.extension() == ext)
+                {
+                    tmpfile.replace_extension("");
+                    break;
+                }
         }
-    if ((fp = fopen(tmpfile, "rbe")))
+    if (std::filesystem::exists(tmpfile))
         {
-            fclose(fp);
-            std::strncpy(ftp->local, tmpfile, 1024);
+            std::strncpy(ftp->local, tmpfile.c_str(), 1024);
             ftp->local[1023] = '\0';
             tracet(3, "ftpthread: file exists %s\n", ftp->local);
             ftp->state = 2;
             return nullptr;
         }
+
+    std::string env;
+
     /* proxy settings for wget (ref [2]) */
+    auto proxyopt = std::string();
     if (*proxyaddr)
         {
-            proto = ftp->proto ? const_cast<char *>("http") : const_cast<char *>("ftp");
-            std::snprintf(env, sizeof(env), "set %s_proxy=http://%s & ", proto, proxyaddr);
-            proxyopt = const_cast<char *>("--proxy=on ");
+            auto proto = "ftp"s;
+            if (ftp->proto) proto = "http"s;  // NOLINT(readability-braces-around-statements): adding braces reduces readability
+            env = "set "s + proto + "_proxy=http://"s + std::string(proxyaddr) + " % ";
+            proxyopt = "--proxy=on ";
         }
+
     /* download command (ref [2]) */
+    auto cmd_str = std::string();
     if (ftp->proto == 0)
         { /* ftp */
-            s_aux = "--ftp-user=" + std::string(ftp->user) + " --ftp-password=" + std::string(ftp->passwd) +
-                    " --glob=off --passive-ftp " + std::string(proxyopt) + "s-t 1 -T " + std::to_string(FTP_TIMEOUT) +
-                    " -O \"" + std::string(local) + "\"";
-            int k = s_aux.length();
-            if (k < 1024)
-                {
-                    for (int i = 0; i < k; i++)
-                        {
-                            opt[i] = s_aux[i];
-                        }
-                }
+            auto opt_str = "--ftp-user="s + std::string(ftp->user) + " --ftp-password="s + std::string(ftp->passwd) +
+                           " --glob=off --passive-ftp "s + proxyopt + "s-t 1 -T "s + std::to_string(FTP_TIMEOUT) +
+                           R"( -O ")" + local.native() + R"(")"s;
 
-            s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
-                     "\"ftp://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
-            k = s_aux2.length();
-            for (int i = 0; (i < k) && (i < 1024); i++)
-                {
-                    cmd[i] = s_aux2[i];
-                }
+            // TODO: this uses shell syntax; consider escaping paths
+            cmd_str = env + std::string(FTP_CMD) + " "s + opt_str + " "s +
+                      R"("ftp://)"s + std::string(ftp->addr) + "/"s + remotePath.native() + R"(" 2> ")"s + errfile.native() + "\"\n"s;
         }
     else
         { /* http */
-            s_aux = std::string(proxyopt) + " -t 1 -T " + std::to_string(FTP_TIMEOUT) + " -O \"" + std::string(local) + "\"";
-            int l = s_aux.length();
-            for (int i = 0; (i < l) && (i < 1024); i++)
-                {
-                    opt[i] = s_aux[i];
-                }
+            auto opt_str = proxyopt + " -t 1 -T "s + std::to_string(FTP_TIMEOUT) + " -O \""s + local.native() + "\""s;
 
-            s_aux2 = std::string(env) + std::string(FTP_CMD) + " " + std::string(opt) + " " +
-                     "\"http://" + std::string(ftp->addr) + "/" + std::string(remote) + "\" 2> \"" + std::string(errfile) + "\"\n";
-            l = s_aux2.length();
-            for (int i = 0; (i < l) && (i < 1024); i++)
-                {
-                    cmd[i] = s_aux2[i];
-                }
+            cmd_str = env + std::string(FTP_CMD) + " "s + opt_str + " "s +
+                      R"("http://)"s + std::string(ftp->addr) + "/"s + remotePath.native() + R"(" 2> ")"s + errfile.native() + "\"\n";
         }
     /* execute download command */
-    if ((ret = execcmd(cmd)))
+    std::error_code ec;  // prevent exceptions
+    auto ret = execcmd(cmd_str.c_str());
+    if ((ret != 0))
         {
-            if (remove(local) != 0)
+            if (std::filesystem::remove(local, ec) == false)
                 {
-                    trace(1, "Error removing file");
+                    trace(1, "Error removing file %s", local.c_str());
                 }
-            tracet(1, "execcmd error: cmd=%s ret=%d\n", cmd, ret);
+            tracet(1, "execcmd error: cmd=%s ret=%d\n", cmd_str.data(), ret);
             ftp->error = ret;
             ftp->state = 3;
             return nullptr;
         }
-    if (remove(errfile) != 0)
+    if (std::filesystem::remove(errfile, ec) == false)
         {
-            trace(1, "Error removing file");
+            trace(1, "Error removing file %s", errfile.c_str());
         }
 
     /* uncompress downloaded file */
-    if ((p = strrchr(local, '.')) &&
-        (!strcmp(p, ".z") || !strcmp(p, ".gz") || !strcmp(p, ".zip") ||
-            !strcmp(p, ".Z") || !strcmp(p, ".GZ") || !strcmp(p, ".ZIP")))
+    for (auto ext : {".z", ".gz", ".zip", ".Z", ".GZ", ".ZIP"})  // NOLINT(readability-qualified-auto): auto decoration is less readable
         {
-            if (rtk_uncompress(local, tmpfile))
+            if (local.extension() == ext)
                 {
-                    if (remove(local) != 0)
+                    char tmpfile_arg[1024];
+                    ret = rtk_uncompress(local.c_str(), tmpfile_arg);
+                    if (ret != 0)  // success
                         {
-                            trace(1, "Error removing file");
+                            if (std::filesystem::remove(local, ec) == false)
+                                {
+                                    trace(1, "Error removing file %s", local.c_str());
+                                }
+                            local = tmpfile_arg;
                         }
-                    if (strlen(tmpfile) < 1024)
+                    else
                         {
-                            std::strncpy(local, tmpfile, 1024);
-                            local[1023] = '\0';
+                            tracet(1, "file uncompact error: %s\n", local.c_str());
+                            ftp->error = 12;
+                            ftp->state = 3;
+                            return nullptr;
                         }
-                }
-            else
-                {
-                    tracet(1, "file uncompact error: %s\n", local);
-                    ftp->error = 12;
-                    ftp->state = 3;
-                    return nullptr;
+                    break;
                 }
         }
-    if (strlen(local) < 1024)
-        {
-            std::strncpy(ftp->local, local, 1024);
-            ftp->local[1023] = '\0';
-        }
+    std::strncpy(ftp->local, local.c_str(), 1024);
+    ftp->local[1023] = '\0';
     ftp->state = 2; /* ftp completed */
 
-    tracet(3, "ftpthread: complete cmd=%s\n", cmd);
+    tracet(3, "ftpthread: complete cmd=%s\n", cmd_str.data());
     return nullptr;
 }
 
@@ -2115,7 +2074,7 @@ ftp_t *openftp(const char *path, int type, char *msg)
     ftp->state = 0;
     ftp->proto = type;
     ftp->error = 0;
-    ftp->thread = 0;  // NOLINT
+    ftp->thread = pthread_t();
     ftp->local[0] = '\0';
 
     /* decode ftp path */

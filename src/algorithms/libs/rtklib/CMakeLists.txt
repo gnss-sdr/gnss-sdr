@@ -68,6 +68,7 @@ endif()
 target_link_libraries(algorithms_libs_rtklib
     PRIVATE
         core_system_parameters
+        algorithms_libs
         Gflags::gflags
         Glog::glog
         LAPACK::LAPACK

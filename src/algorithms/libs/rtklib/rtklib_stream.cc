@@ -31,6 +31,7 @@
  */
 
 #include "rtklib_stream.h"
+#include "gnss_sdr_string_literals.h"  // for std::string_literals
 #include "rtklib_rtkcmn.h"
 #include "rtklib_solution.h"
 #include <arpa/inet.h>

@@ -720,7 +720,6 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     obsd_t *obs_e;
     sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
     char tstr[32];
-    char name[16];
     char msg_e[128];
     double *rs_e;
     double *dts_e;
@@ -819,8 +818,8 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     if (stat)
         {
             time2str(obs[0].time, tstr, 2);
-            satno2id(sat, name);
-            trace(2, "%s: %s excluded by raim\n", tstr + 11, name);
+            auto name = satno2id(sat);
+            trace(2, "%s: %s excluded by raim\n", tstr + 11, name.data());
         }
     free(obs_e);
     free(rs_e);

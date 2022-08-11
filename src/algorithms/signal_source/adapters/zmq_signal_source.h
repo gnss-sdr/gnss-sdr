@@ -23,6 +23,7 @@
 #include <gnuradio/blocks/file_sink.h>  // for dump
 #include <gnuradio/zeromq/sub_source.h>
 #include <pmt/pmt.h>
+#include <string>
 
 /** \addtogroup Signal_Source
  * \{ */

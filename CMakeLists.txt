@@ -48,7 +48,7 @@ option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Tele
 
 option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal source (experimental)" OFF)
 
-option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging" OFF)
+option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging, requires gr-zeromq" OFF)
 
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
@@ -613,7 +613,7 @@ if(ENABLE_UHD)
 endif()
 
 if(ENABLE_ZMQ)
-        list(APPEND GR_REQUIRED_COMPONENTS ZEROMQ)
+    list(APPEND GR_REQUIRED_COMPONENTS ZEROMQ)
 endif()
 
 find_package(GNURADIO)
@@ -3407,7 +3407,7 @@ add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source 
 add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
 add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
-add_feature_info(ENABLE_ZMQ ENABLE_ZMQ "Enables GNU Radio ZeroMQ message blocks.")
+add_feature_info(ENABLE_ZMQ ENABLE_ZMQ "Enables ZMQ_Signal_Source for GNU Radio ZeroMQ messages. Requires gr-zeromq.")
 add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
 add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
 add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")

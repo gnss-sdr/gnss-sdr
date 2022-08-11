@@ -20,6 +20,7 @@
 #include "signal_source_base.h"
 //
 #include "concurrent_queue.h"
+#include <gnuradio/blocks/file_sink.h>  // for dump
 #include <gnuradio/zeromq/sub_source.h>
 #include <pmt/pmt.h>
 
@@ -30,18 +31,18 @@
 
 //! This class supports the following properties:
 //!
+//!   .endpoint   - the ZMQ endpoint to be connected to
+//!   .vlen       - vector length of the input items (default 1, one item)
+//!                 this must match the size of the publisher!
 //!   .pass_tags  - boolean flag if tags should be propagated (default false)
 //!   .timeout_ms - receive timeout, in milliseconds (default 100)
 //!   .hwm        - ZMQ high water mark (default -1, ZMQ default)
-//!   .vlen       - vector length of the input items (default 1, one item)
-//!   .endpointN  - the ZMQ endpoint to be connected to (repeat for each channel)
 //!
 //!   .item_type - data type of the samples (default "gr_complex")
 //!
 //! (probably should be abstracted to the base class)
 //!
-//!   .dump     - whether to archive input data
-//!
+//!   .dump          - whether to archive input data
 //!   .dump_filename - if dumping, path to file for output
 //!
 
@@ -61,12 +62,14 @@ public:
     auto connect(gr::top_block_sptr top_block) -> void override;
     auto disconnect(gr::top_block_sptr top_block) -> void override;
     auto get_right_block() -> gr::basic_block_sptr override;
-    auto get_right_block(int RF_channel) -> gr::basic_block_sptr override;
 
 private:
-    std::vector<gr::zeromq::sub_source::sptr> d_source_blocks;
+    gr::zeromq::sub_source::sptr d_source_block;
+    gr::blocks::file_sink::sptr d_dump_sink;
 
     size_t d_item_size;
+    std::string d_dump_filename;
+    bool d_dump;
 };
 
 /** \} */

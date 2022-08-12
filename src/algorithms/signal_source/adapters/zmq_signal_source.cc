@@ -18,6 +18,7 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
+#include <vector>
 
 using namespace std::string_literals;
 
@@ -38,11 +39,12 @@ ZmqSignalSource::ZmqSignalSource(const ConfigurationInterface* configuration,
 
     auto property = role + ".endpoint"s;
     auto endpoint = configuration->property(property, ""s);
+    std::vector<char> address(endpoint.c_str(), endpoint.c_str() + endpoint.size() + 1);
 
-    if (not endpoint.empty())
+    if (!endpoint.empty())
         {
             LOG(INFO) << "Connecting to ZMQ pub at " << endpoint;
-            d_source_block = gr::zeromq::sub_source::make(d_item_size, vlen, endpoint.data(), timeout_ms, pass_tags, hwm);
+            d_source_block = gr::zeromq::sub_source::make(d_item_size, vlen, address.data(), timeout_ms, pass_tags, hwm);
         }
     else
         {
@@ -54,6 +56,7 @@ ZmqSignalSource::ZmqSignalSource(const ConfigurationInterface* configuration,
 
 auto ZmqSignalSource::item_size() -> size_t { return d_item_size; }
 
+
 auto ZmqSignalSource::connect(gr::top_block_sptr top_block) -> void
 {
     if (d_dump)
@@ -63,6 +66,7 @@ auto ZmqSignalSource::connect(gr::top_block_sptr top_block) -> void
         }
 }
 
+
 auto ZmqSignalSource::disconnect(gr::top_block_sptr top_block) -> void
 {
     if (d_dump)
@@ -70,6 +74,7 @@ auto ZmqSignalSource::disconnect(gr::top_block_sptr top_block) -> void
             top_block->disconnect(d_dump_sink);
         }
 }
+
 
 auto ZmqSignalSource::get_right_block() -> gr::basic_block_sptr
 {

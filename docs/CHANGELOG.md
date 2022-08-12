@@ -36,6 +36,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   and IGM05 (SSR Code Bias). Please note that the content of the HAS messages is
   **not** applied to the computed PVT solution. In the Galileo E6B-only
   receiver, HAS messages are decoded and reported.
+- Added a `ZMQ_Signal_Source` for working with streams of samples published via
+  [ZeroMQ](https://zeromq.org/).
 
 ### Improvements in Maintainability:
 
@@ -78,8 +80,6 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The new configuration parameter `Channels_XX.RF_channel_ID` allows to specify
   the signal source per channel group.
 - Allowed the CMake project to be a sub-project.
-- Added a `ZMQ_Signal_Source` for working with streams of samples published via
-  [ZeroMQ](https://zeromq.org/).
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

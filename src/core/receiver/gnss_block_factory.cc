@@ -16,7 +16,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -171,6 +171,10 @@
 
 #if FLEXIBAND_DRIVER
 #include "flexiband_signal_source.h"
+#endif
+
+#if ZEROMQ_DRIVER
+#include "zmq_signal_source.h"
 #endif
 
 #if CUDA_GPU_ACCEL
@@ -812,6 +816,16 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     block = std::move(block_);
                 }
 #endif
+
+#if ZEROMQ_DRIVER
+            else if (implementation == "ZMQ_Signal_Source")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<ZmqSignalSource>(configuration, role, in_streams,
+                        out_streams, queue);
+                    block = std::move(block_);
+                }
+#endif
+
 
             // DATA TYPE ADAPTER -----------------------------------------------------------
             else if (implementation == "Byte_To_Short")

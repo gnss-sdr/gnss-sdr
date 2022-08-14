@@ -1,16 +1,14 @@
 /*!
  * \file ad936x_iio_source.cc
- *
- * \brief Unpacks capture files in the LabSat 2 (ls2), LabSat 3 (ls3), or LabSat
- * 3 Wideband (LS3W) formats.
- * \author Javier Arribas jarribas (at) cttc.es
+ * \brief A direct IIO custom front-end gnss-sdr signal gnuradio block for the AD936x AD front-end family with special FPGA custom functionalities.
+ * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2021  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2022  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -19,12 +17,13 @@
 
 #include "ad936x_iio_source.h"
 #include "INIReader.h"
+#include "ad936x_iio_samples.h"
 #include "command_event.h"
 #include "gnss_sdr_make_unique.h"
+#include "pps_samplestamp.h"
 #include <gnuradio/io_signature.h>
 #include <algorithm>
 #include <array>
-#include <bitset>
 #include <exception>
 #include <iomanip>
 #include <iostream>
@@ -33,64 +32,245 @@
 #include <utility>
 
 
-ad936x_iio_source_sptr ad936x_iio_make_source_sptr(Concurrent_Queue<pmt::pmt_t> *queue,
-    std::string pluto_device_uri,
-    std::string board_type,
+ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
+    std::string pluto_uri_,
+    std::string board_type_,
     long long bandwidth_,
     long long sample_rate_,
-    std::vector<std::string> ch_list,
-    std::vector<std::string> ch_gain_mode,
-    std::vector<double> ch_gain_db,
-    std::vector<long int> ch_freq_hz,
-    int ch_sample_size,
-    int ch_sample_bits_shift)
+    long long freq_,
+    std::string rf_port_select_,
+    std::string rf_filter,
+    std::string gain_mode_rx0_,
+    std::string gain_mode_rx1_,
+    double rf_gain_rx0_,
+    double rf_gain_rx1_,
+    bool enable_ch0,
+    bool enable_ch1,
+    long long freq_2ch,
+    bool ppsmode_,
+    bool customsamplesize_,
+    std::string fe_ip_,
+    int fe_ctlport_,
+    int ssize_,
+    int bshift_,
+    bool spattern_)
 {
-    return ad936x_iio_source_sptr(new ad936x_iio_source(*queue,
-        pluto_device_uri,
-        board_type,
+    return ad936x_iio_source_sptr(new ad936x_iio_source(
+        pluto_uri_,
+        board_type_,
         bandwidth_,
         sample_rate_,
-        ch_list,
-        ch_gain_mode,
-        ch_gain_db,
-        ch_freq_hz,
-        ch_sample_size,
-        ch_sample_bits_shift));
+        freq_,
+        rf_port_select_,
+        rf_filter,
+        gain_mode_rx0_,
+        gain_mode_rx1_,
+        rf_gain_rx0_,
+        rf_gain_rx1_,
+        enable_ch0,
+        enable_ch1,
+        freq_2ch,
+        ppsmode_,
+        customsamplesize_,
+        fe_ip_,
+        fe_ctlport_,
+        ssize_,
+        bshift_,
+        spattern_));
 }
 
 
-ad936x_iio_source::ad936x_iio_source(Concurrent_Queue<pmt::pmt_t> *queue,
-    std::string pluto_device_uri,
-    std::string board_type,
+ad936x_iio_source::ad936x_iio_source(
+    std::string pluto_uri_,
+    std::string board_type_,
     long long bandwidth_,
     long long sample_rate_,
-    std::vector<std::string> ch_list,
-    std::vector<std::string> ch_gain_mode,
-    std::vector<double> ch_gain_db,
-    std::vector<long int> ch_freq_hz,
-    int ch_sample_size,
-    int ch_sample_bits_shift) : gr::block("ad936x_iio_source",
-                                    gr::io_signature::make(0, 0, 0),
-                                    gr::io_signature::make(1, 3, sizeof(gr_complex)))
+    long long freq_,
+    std::string rf_port_select_,
+    std::string rf_filter,
+    std::string gain_mode_rx0_,
+    std::string gain_mode_rx1_,
+    double rf_gain_rx0_,
+    double rf_gain_rx1_,
+    bool enable_ch0,
+    bool enable_ch1,
+    long long freq_2ch,
+    bool ppsmode_,
+    bool customsamplesize_,
+    std::string fe_ip_,
+    int fe_ctlport_,
+    int ssize_,
+    int bshift_,
+    bool spattern_) : gr::block("ad936x_iio_source",
+                          gr::io_signature::make(0, 0, 0),
+                          gr::io_signature::make(1, 4, sizeof(int16_t)))
 {
-}
+    ad936x_custom = std::make_unique<ad936x_iio_custom>(0, 0);
+    try
+        {
+            if (ad936x_custom->initialize_device(pluto_uri_, board_type_) == true)
+                {
+                    //configure channels
+                    if (ad936x_custom->init_config_ad9361_rx(bandwidth_,
+                            sample_rate_,
+                            freq_,
+                            rf_port_select_,
+                            rf_filter,
+                            gain_mode_rx0_,
+                            gain_mode_rx1_,
+                            rf_gain_rx0_,
+                            rf_gain_rx1_,
+                            enable_ch0,
+                            enable_ch1,
+                            freq_2ch) == true)
+                        {
+                            std::cout << "ad936x_iio_source HW configured OK!\n";
 
+                            //PPS FPGA Samplestamp information from TCP server
+                            pps_rx = std::make_shared<pps_tcp_rx>();
+                            ppsqueue = std::shared_ptr<Concurrent_Queue<PpsSamplestamp>>(new Concurrent_Queue<PpsSamplestamp>());
+
+                            pps_rx->set_pps_samplestamp_queue(ppsqueue);
+                            ad936x_custom->set_pps_samplestamp_queue(ppsqueue);
+
+                            //start PPS RX thread
+                            if (ppsmode_ == true or customsamplesize_ == true)
+                                {
+                                    pps_rx_thread = std::thread(&pps_tcp_rx::receive_pps, pps_rx, fe_ip_, fe_ctlport_);
+                                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                                    //configure custom FPGA options
+                                    switch (ssize_)
+                                        {
+                                        case 16:
+                                            {
+                                                std::cout << "FPGA sample size set to 16 bits per sample.\n";
+                                                if (pps_rx->send_cmd("ssize=16\n") == false) std::cout << "cmd send error!\n";
+                                                break;
+                                            }
+                                        case 8:
+                                            {
+                                                std::cout << "FPGA sample size set to 8 bits per sample.\n";
+                                                if (pps_rx->send_cmd("ssize=8\n") == false) std::cout << "cmd send error!\n";
+                                                break;
+                                            }
+                                        case 4:
+                                            {
+                                                std::cout << "FPGA sample size set to 4 bits per sample.\n";
+                                                if (pps_rx->send_cmd("ssize=4\n") == false) std::cout << "cmd send error!\n";
+                                                break;
+                                            }
+                                        case 2:
+                                            {
+                                                std::cout << "FPGA sample size set to 2 bits per sample.\n";
+                                                if (pps_rx->send_cmd("ssize=2\n") == false) std::cout << "cmd send error!\n";
+                                                break;
+                                            }
+                                        default:
+                                            {
+                                                std::cout << "WARNING: Unsupported ssize. FPGA sample size set to 16 bits per sample.\n";
+                                                if (pps_rx->send_cmd("ssize=16") == false) std::cout << "cmd send error!\n";
+                                            }
+                                        }
+
+                                    if (bshift_ >= 0 and bshift_ <= 14)
+                                        {
+                                            std::cout << "FPGA sample bits shift left set to " + std::to_string(bshift_) + " positions.\n";
+                                            if (pps_rx->send_cmd("bshift=" + std::to_string(bshift_) + "\n") == false) std::cout << "cmd send error!\n";
+                                        }
+                                    else
+                                        {
+                                            std::cout << "WARNING: Unsupported bshift. FPGA sample bits shift left set to 0.\n";
+                                            if (pps_rx->send_cmd("bshift=0\n") == false) std::cout << "cmd send error!\n";
+                                        }
+
+                                    if (spattern_ == true)
+                                        {
+                                            std::cout << "FPGA debug sample pattern is active!.\n";
+                                            if (pps_rx->send_cmd("spattern=1\n") == false) std::cout << "cmd send error!\n";
+                                        }
+                                    else
+                                        {
+                                            std::cout << "FPGA debug sample pattern disabled.\n";
+                                            if (pps_rx->send_cmd("spattern=0\n") == false) std::cout << "cmd send error!\n";
+                                        }
+                                }
+                            else
+                                {
+                                    std::cout << "PPS mode NOT enabled, not configuring PlutoSDR custom timestamping FPGA IP.\n";
+                                }
+                        }
+                    else
+                        {
+                            std::cerr << "ad936x_iio_source IIO initialization error." << std::endl;
+                            exit(1);
+                        }
+                }
+            else
+                {
+                    std::cerr << "ad936x_iio_source IIO initialization error." << std::endl;
+                    exit(1);
+                }
+        }
+    catch (std::exception const &ex)
+        {
+            std::cerr << "STD exception: " << ex.what() << std::endl;
+            exit(1);
+        }
+    catch (...)
+        {
+            std::cerr << "Unexpected catch" << std::endl;
+            exit(1);
+        }
+
+    //set_min_noutput_items(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2);
+    set_min_output_buffer(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2);
+    //std::cout << "max_output_buffer " << min_output_buffer(0) << " min_noutput_items: " << min_noutput_items() << "\n";
+}
 
 ad936x_iio_source::~ad936x_iio_source()
 {
+    // Terminate PPS thread
+    if (pps_rx_thread.joinable())
+        {
+            pthread_t id = pps_rx_thread.native_handle();
+            pps_rx_thread.detach();
+            pthread_cancel(id);
+        }
 }
 
+
+bool ad936x_iio_source::start()
+{
+    return ad936x_custom->start_sample_rx(false);
+}
+
+bool ad936x_iio_source::stop()
+{
+    ad936x_custom->stop_record();
+    return true;
+}
 
 int ad936x_iio_source::general_work(int noutput_items,
     __attribute__((unused)) gr_vector_int &ninput_items,
     __attribute__((unused)) gr_vector_const_void_star &input_items,
     gr_vector_void_star &output_items)
 {
-    std::vector<gr_complex *> out;
-    for (auto &output_item : output_items)
+    std::shared_ptr<ad936x_iio_samples> current_buffer;
+    ad936x_iio_samples *current_samples;
+    ad936x_custom->pop_sample_buffer(current_buffer);
+    current_samples = current_buffer.get();
+
+    //I and Q samples are interleaved in buffer: IQIQIQ...
+
+    for (size_t n = 0; n < ad936x_custom->n_channels; n++)
         {
-            out.push_back(reinterpret_cast<gr_complex *>(output_item));
+            if (output_items.size() > n)  // check if the output channel is connected
+                {
+                    memcpy(reinterpret_cast<void *>(output_items[n]), reinterpret_cast<void *>(current_samples->buffer[n]), current_samples->n_bytes[n]);
+                    produce(n, current_samples->n_samples[n]);
+                }
         }
-    std::cout << "Warning!!\n";
-    return 0;
+
+    ad936x_custom->push_sample_buffer(current_buffer);
+    return this->WORK_CALLED_PRODUCE;
 }

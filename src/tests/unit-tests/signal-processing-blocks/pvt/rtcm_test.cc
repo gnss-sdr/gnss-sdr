@@ -274,13 +274,13 @@ TEST(RtcmTest, MT1020)
     Glonass_Gnav_Utc_Model gnav_utc_model_read = Glonass_Gnav_Utc_Model();
 
     // Perform data read and print of special values types
-    gnav_ephemeris.d_P_1 = 15;
+    gnav_ephemeris.d_P_1 = 0.;
     // Bit distribution per fields
-    gnav_ephemeris.d_t_k = 7560;
+    gnav_ephemeris.d_t_k = 7560.;
     // Glonass signed values
     gnav_ephemeris.d_VXn = -0.490900039672852;
     // Bit distribution per fields dependent on other factors
-    gnav_ephemeris.d_t_b = 8100;
+    gnav_ephemeris.d_t_b = 8100.;
     // Binary flag representation
     gnav_ephemeris.d_P_3 = true;
 

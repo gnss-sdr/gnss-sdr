@@ -629,6 +629,17 @@ endif()
 
 
 ################################################################################
+# Log4cpp - http://log4cpp.sourceforge.net/
+################################################################################
+if(GNURADIO_USES_LOG4CPP)
+    find_package(LOG4CPP)
+    set_package_properties(LOG4CPP PROPERTIES
+        PURPOSE "Required by GNU Radio."
+        TYPE REQUIRED
+    )
+endif()
+
+################################################################################
 # Detect availability of std::filesystem and set C++ standard accordingly
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)

@@ -629,45 +629,6 @@ endif()
 
 
 ################################################################################
-# Log4cpp - http://log4cpp.sourceforge.net/
-################################################################################
-if(GNURADIO_USES_LOG4CPP)
-    find_package(LOG4CPP)
-    set_package_properties(LOG4CPP PROPERTIES
-        PURPOSE "Required by GNU Radio."
-        TYPE REQUIRED
-    )
-endif()
-
-
-
-################################################################################
-# spdlog - https://github.com/gabime/spdlog
-################################################################################
-if(GNURADIO_USES_SPDLOG)
-    find_package(SPDLOG REQUIRED)
-    set_package_properties(SPDLOG PROPERTIES
-        PURPOSE "Required by GNU Radio."
-        TYPE REQUIRED
-    )
-endif()
-
-
-
-################################################################################
-# fmt - https://github.com/fmtlib/fmt
-################################################################################
-if(GNURADIO_USES_SPDLOG)
-    find_package(FMT REQUIRED)
-    set_package_properties(FMT PROPERTIES
-        PURPOSE "Required by GNU Radio."
-        TYPE REQUIRED
-    )
-endif()
-
-
-
-################################################################################
 # Detect availability of std::filesystem and set C++ standard accordingly
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)

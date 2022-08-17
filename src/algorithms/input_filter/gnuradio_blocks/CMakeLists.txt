@@ -55,14 +55,6 @@ if(LOG4CPP_FOUND)
     )
 endif()
 
-if(GNURADIO_USES_SPDLOG)
-    target_link_libraries(input_filter_gr_blocks
-        PUBLIC
-            fmt::fmt
-            spdlog::spdlog
-    )
-endif()
-
 target_include_directories(input_filter_gr_blocks
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces

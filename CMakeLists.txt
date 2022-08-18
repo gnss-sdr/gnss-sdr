@@ -16,7 +16,7 @@ endif()
 # Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
-cmake_minimum_required(VERSION 2.8.12...3.23)
+cmake_minimum_required(VERSION 3.7...3.23)
 project(gnss-sdr CXX C)
 
 set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
@@ -132,9 +132,6 @@ if(ENABLE_FPGA)
 endif()
 
 option(ENABLE_BENCHMARKS "Build code snippets benchmarks" OFF)
-if(CMAKE_VERSION VERSION_LESS 3.5.1)
-    set(ENABLE_BENCHMARKS OFF)
-endif()
 
 option(ENABLE_EXTERNAL_MATHJAX "Use MathJax from an external CDN in HTML docs" ON)
 
@@ -336,8 +333,7 @@ set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "11.2.x")
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
-  (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
-  CMAKE_VERSION VERSION_LESS 3.5)
+  (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) )
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
 else()
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.12.1")
@@ -352,15 +348,6 @@ set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 if(CMAKE_VERSION VERSION_LESS "3.16")
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.5.0")
-endif()
-
-if(CMAKE_VERSION VERSION_LESS "3.3")
-    set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")    # Fix for Debian 8
-endif()
-
-if(CMAKE_VERSION VERSION_LESS "3.0.2")
-    set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
-    set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.4")    # Fix for Ubuntu 14.04
 endif()
 
 
@@ -438,42 +425,9 @@ endif()
 ################################################################################
 # Set minimal C and C++ standards
 ################################################################################
-if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
-    set(CMAKE_C_STANDARD 11)
-    set(CMAKE_CXX_STANDARD 14)
-    set(CMAKE_CXX_EXTENSIONS OFF)
-else()
-    add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,C>:-std=gnu11>")
-    set(CMAKE_C_STANDARD 11)   # set variable just for reporting
-    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.1.1")
-            add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
-            set(CMAKE_CXX_STANDARD 11)   # set variable just for reporting
-        else()
-            add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
-            set(CMAKE_CXX_STANDARD 14)   # set variable just for reporting
-        endif()
-    endif()
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-            if(CLANG_VERSION VERSION_LESS "600")
-                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
-                set(CMAKE_CXX_STANDARD 11)
-            else()
-                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
-                set(CMAKE_CXX_STANDARD 14)
-            endif()
-        else()
-            if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "3.5.0")
-                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++11>")
-                set(CMAKE_CXX_STANDARD 11)
-            else()
-                add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,CXX>:-std=c++14>")
-                set(CMAKE_CXX_STANDARD 14)
-            endif()
-        endif()
-    endif()
-endif()
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Visibility
 # See https://gcc.gnu.org/wiki/Visibility
@@ -521,31 +475,14 @@ find_package(PkgConfig)
 ################################################################################
 # Find the POSIX thread (pthread) libraries
 ################################################################################
-if(CMAKE_VERSION VERSION_LESS 3.1)
-    # Workaround for CMake < 3.1
-    find_package(Threads REQUIRED)
-    add_library(Threads::Threads SHARED IMPORTED)
-    set_property(TARGET Threads::Threads PROPERTY INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
-    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LINK_INTERFACE_LANGUAGES "CXX")
-    include(GNUInstallDirs)
-    # Fix bug in Debian 8.11
-    if(${LINUX_DISTRIBUTION} MATCHES "Debian")
-        if(${LINUX_VER} VERSION_LESS 8.12)
-            if(ARCH_64BITS)
-                set(FIX_PTHREADS_LOCATION "x86_64-linux-gnu/")
-            endif()
-        endif()
-    endif()
-    set_property(TARGET Threads::Threads PROPERTY IMPORTED_LOCATION /usr/${CMAKE_INSTALL_LIBDIR}/${FIX_PTHREADS_LOCATION}${CMAKE_FIND_LIBRARY_PREFIXES}pthread${CMAKE_SHARED_LIBRARY_SUFFIX})
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+if(CMAKE_CROSSCOMPILING)
+    set(THREADS_PREFER_PTHREAD_FLAG FALSE)
 else()
-    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-    if(CMAKE_CROSSCOMPILING)
-        set(THREADS_PREFER_PTHREAD_FLAG FALSE)
-    else()
-        set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-    endif()
-    find_package(Threads REQUIRED)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 endif()
+find_package(Threads REQUIRED)
+
 set_package_properties(Threads PROPERTIES
     URL "https://computing.llnl.gov/tutorials/pthreads/"
     DESCRIPTION "Implements the POSIX Threads execution model"
@@ -584,11 +521,11 @@ endif()
 ################################################################################
 # VOLK - Vector-Optimized Library of Kernels
 ################################################################################
-find_package(VOLK)
+find_package(Volk CONFIG)
 if(NOT VOLK_FOUND)
     message(FATAL_ERROR "*** VOLK is required to build gnss-sdr")
 endif()
-set_package_properties(VOLK PROPERTIES
+set_package_properties(Volk PROPERTIES
     PURPOSE "Provides an abstraction of optimized math routines targeting several SIMD processors."
     TYPE REQUIRED
 )
@@ -598,6 +535,7 @@ set_package_properties(VOLK PROPERTIES
 ################################################################################
 # GNU Radio - https://www.gnuradio.org
 ################################################################################
+# move into FindGNURADIO.cmake?
 list(APPEND GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 find_package(UHD)
 set_package_properties(UHD PROPERTIES
@@ -616,13 +554,18 @@ if(ENABLE_ZMQ)
     list(APPEND GR_REQUIRED_COMPONENTS ZEROMQ)
 endif()
 
-find_package(GNURADIO)
+find_package(GNURADIO ${GNSSSDR_GNURADIO_MIN_VERSION}
+		      COMPONENTS ${GR_REQUIRED_COMPONENTS}
+)
+
 set_package_properties(GNURADIO PROPERTIES
     PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
     TYPE REQUIRED
 )
 
-if(NOT (GNURADIO_VERSION VERSION_LESS "3.8"))
+# GNU Radio 3.8 changed include file names
+# move into FindGNURADIO.cmake?
+if(GNURADIO_VERSION VERSION_GREATER_EQUAL "3.8")
     set(GNURADIO_IS_38_OR_GREATER ON)
 endif()
 
@@ -631,13 +574,14 @@ endif()
 ################################################################################
 # Log4cpp - http://log4cpp.sourceforge.net/
 ################################################################################
-if(GNURADIO_USES_LOG4CPP)
-    find_package(LOG4CPP)
-    set_package_properties(LOG4CPP PROPERTIES
-        PURPOSE "Required by GNU Radio."
-        TYPE REQUIRED
-    )
-endif()
+# move into FindGNURADIO.cmake?
+#if(GNURADIO_USES_LOG4CPP)
+#    find_package(LOG4CPP)
+#    set_package_properties(LOG4CPP PROPERTIES
+#        PURPOSE "Required by GNU Radio."
+#        TYPE REQUIRED
+#    )
+#endif()
 
 ################################################################################
 # Detect availability of std::filesystem and set C++ standard accordingly
@@ -660,7 +604,13 @@ else()
     unset(GNSSTK_OLDER_THAN_9 CACHE)
     unset(GNSSTK_OLDER_THAN_13 CACHE)
 endif()
-if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURADIO_USES_SPDLOG))
+
+# Proper CMake support added in 3.10.x
+# should this be hidden in FindGNURADIO.cmake?
+if( GNURADIO_VERSION VERSION_GREATER 3.10 )
+    include(GrMinReq)
+    include(GrCompilerSettings)
+elseif((GNURADIO_VERSION VERSION_GREATER_EQUAL 3.8) AND LOG4CPP_READY_FOR_CXX17)
     # Check if we have std::filesystem
     if(NOT (CMAKE_VERSION VERSION_LESS 3.8))
         if(NOT GNSSTK_FOUND OR NOT (GNSSTK_FOUND AND GNSSTK_OLDER_THAN_8))  # Fix for GNSSTk < 8.0.0
@@ -688,8 +638,8 @@ if(NOT (GNURADIO_VERSION VERSION_LESS 3.8) AND (LOG4CPP_READY_FOR_CXX17 OR GNURA
                 # endif()
             # endif()
             set(CMAKE_CXX_STANDARD_REQUIRED ON)
-        endif()
-    endif()
+        endif() # GNURADIO > 3.8
+    endif() # GNURADIO > 3.10
 endif()
 if((NOT PMT_USES_BOOST_ANY) AND (CMAKE_CXX_STANDARD VERSION_LESS 17))
     message(FATAL_ERROR "GNU Radio v${GNURADIO_VERSION} requires C++17. Please update your environment.")

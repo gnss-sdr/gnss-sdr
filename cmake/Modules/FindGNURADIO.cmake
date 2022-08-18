@@ -26,6 +26,7 @@ endif()
 # Allows us to use all .cmake files in this directory
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_LIST_DIR})
 
+
 # Easily access all libraries and includes of GNU Radio
 set(GNURADIO_ALL_LIBRARIES "")
 set(GNURADIO_ALL_INCLUDE_DIRS "")
@@ -67,6 +68,32 @@ set(GNURADIO_INSTALL_PREFIX_USER_PROVIDED
     ${CMAKE_INSTALL_PREFIX}
 )
 
+# Maintainer note:
+# Most of this is to support older GNU Radio without CMake support. Better to use CMake than to fight against it.
+# GNU Radio exposes its components in lower-case ("runtime" and "pmt" are always provided, and cannot be selected)
+# Convert the list of required components to lower case, and see if find_package() can find them. We want to use
+# find_package() because it adds the GNU Radio cmake directory to the path.
+# TODO if FPHSA still adds value here
+set(find_GR_REQUIRED_COMPONENTS ${GR_REQUIRED_COMPONENTS})
+list(TRANSFORM find_GR_REQUIRED_COMPONENTS TOLOWER)
+list(REMOVE_ITEM find_GR_REQUIRED_COMPONENTS runtime pmt)
+
+find_package(Gnuradio QUIET NO_MODULE COMPONENTS ${find_GR_REQUIRED_COMPONENTS})
+
+# These are a given, if the package is found, but if I don't set them, GNURADIO_FOUND will be false
+set(PC_GNURADIO_RUNTIME_FOUND ${Gnuradio_FOUND})
+set(PC_GNURADIO_PMT_FOUND ${Gnuradio_FOUND})
+
+find_package_handle_standard_args(GNURADIO
+	DEFAULT_MSG
+#	HANDLE_VERSION_RANGE
+#	HANDLE_COMPONENTS
+)
+
+# This legacy function exists among other reasons to create the "Gnuradio::" targets use in GNSS-SDR
+# Where possible, it's better to use the "gnuradio::" targets provided by GNU Radio, because all of
+# the dependency linkage is built in. When we abandon support for non-CMake GNU Radio, this should be
+# removed and our CMakeLists.txt files updated to use the "gnuradio::gnuradio-xxx" targets
 function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     list_contains(REQUIRED_MODULE ${EXTVAR} ${GR_REQUIRED_COMPONENTS})
     if(NOT REQUIRED_MODULE)
@@ -75,6 +102,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     endif()
 
     message(STATUS "Checking for GNU Radio Module: ${EXTVAR}")
+    string(TOLOWER ${EXTVAR} gnuradio_component)
 
     # check for .pc hints
     pkg_check_modules(PC_GNURADIO_${EXTVAR} QUIET ${PCNAME})
@@ -161,18 +189,23 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     endif()
 
     # Create imported target
-    string(TOLOWER ${EXTVAR} gnuradio_component)
     if(NOT TARGET Gnuradio::${gnuradio_component})
-        add_library(Gnuradio::${gnuradio_component} SHARED IMPORTED)
-        set(GNURADIO_LIBRARY ${GNURADIO_${EXTVAR}_LIBRARIES})
-        list(GET GNURADIO_LIBRARY 0 FIRST_DIR)
-        get_filename_component(GNURADIO_DIR ${FIRST_DIR} ABSOLUTE)
-        set_target_properties(Gnuradio::${gnuradio_component} PROPERTIES
-            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${GNURADIO_DIR}"
-            INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_${EXTVAR}_INCLUDE_DIRS}"
-            INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
-        )
+        if(TARGET gnuradio::gnuradio-${gnuradio_component})
+	    # maintain legacy targets by creating an alias
+            add_library(Gnuradio::${gnuradio_component} ALIAS gnuradio::gnuradio-${gnuradio_component})
+	else()
+	    # legacy targets
+            add_library(Gnuradio::${gnuradio_component} SHARED IMPORTED)
+            set(GNURADIO_LIBRARY ${GNURADIO_${EXTVAR}_LIBRARIES})
+            list(GET GNURADIO_LIBRARY 0 FIRST_DIR)
+            get_filename_component(GNURADIO_DIR ${FIRST_DIR} ABSOLUTE)
+            set_target_properties(Gnuradio::${gnuradio_component} PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNURADIO_DIR}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_${EXTVAR}_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
+            )
+	endif()
     endif()
 
     mark_as_advanced(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)
@@ -271,8 +304,6 @@ else()
         DESCRIPTION "The free and open software radio ecosystem"
     )
 endif()
-
-find_package_handle_standard_args(GNURADIO DEFAULT_MSG GNURADIO_RUNTIME_FOUND)
 
 # Detect if using standard pointers
 set(GNURADIO_USES_STD_POINTERS FALSE)
@@ -396,6 +427,7 @@ if(GNURADIO_PMT_INCLUDE_DIRS)
 endif()
 
 # Check if GNU Radio uses log4cpp or spdlog
+# Seems like this should just be a version_less 3.10?
 if(GNURADIO_RUNTIME_INCLUDE_DIRS)
     if(EXISTS "${GNURADIO_RUNTIME_INCLUDE_DIRS}/gnuradio/logger.h")
         file(STRINGS ${GNURADIO_RUNTIME_INCLUDE_DIRS}/gnuradio/logger.h _logger_content)

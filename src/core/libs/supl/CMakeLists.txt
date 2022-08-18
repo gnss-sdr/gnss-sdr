@@ -56,6 +56,14 @@ target_link_libraries(core_libs_supl
         ${GNUTLS_OPENSSL_LIBRARY}
 )
 
+# This is ancient and unmaintained code. As the project migrates to modern compilers,
+# non-standards-conforming constructs will be flagged as errors. This should be
+# upgraded, but until then, allow non-standards-conforming constructs
+set_target_properties(core_libs_supl
+    PROPERTIES
+	  C_EXTENSIONS on
+)
+
 target_include_directories(core_libs_supl
     PUBLIC
         ${GNUTLS_INCLUDE_DIR}

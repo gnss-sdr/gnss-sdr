@@ -85,9 +85,9 @@ set(PC_GNURADIO_RUNTIME_FOUND ${Gnuradio_FOUND})
 set(PC_GNURADIO_PMT_FOUND ${Gnuradio_FOUND})
 
 find_package_handle_standard_args(GNURADIO
-	DEFAULT_MSG
-#	HANDLE_VERSION_RANGE
-#	HANDLE_COMPONENTS
+        DEFAULT_MSG
+#       HANDLE_VERSION_RANGE
+#       HANDLE_COMPONENTS
 )
 
 # This legacy function exists among other reasons to create the "Gnuradio::" targets use in GNSS-SDR
@@ -191,10 +191,10 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
     # Create imported target
     if(NOT TARGET Gnuradio::${gnuradio_component})
         if(TARGET gnuradio::gnuradio-${gnuradio_component})
-	    # maintain legacy targets by creating an alias
+            # maintain legacy targets by creating an alias
             add_library(Gnuradio::${gnuradio_component} ALIAS gnuradio::gnuradio-${gnuradio_component})
-	else()
-	    # legacy targets
+        else()
+            # legacy targets
             add_library(Gnuradio::${gnuradio_component} SHARED IMPORTED)
             set(GNURADIO_LIBRARY ${GNURADIO_${EXTVAR}_LIBRARIES})
             list(GET GNURADIO_LIBRARY 0 FIRST_DIR)
@@ -205,7 +205,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
                 INTERFACE_INCLUDE_DIRECTORIES "${GNURADIO_${EXTVAR}_INCLUDE_DIRS}"
                 INTERFACE_LINK_LIBRARIES "${GNURADIO_LIBRARY}"
             )
-	endif()
+        endif()
     endif()
 
     mark_as_advanced(GNURADIO_${EXTVAR}_LIBRARIES GNURADIO_${EXTVAR}_INCLUDE_DIRS)

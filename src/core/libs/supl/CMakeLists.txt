@@ -61,7 +61,7 @@ target_link_libraries(core_libs_supl
 # upgraded, but until then, allow non-standards-conforming constructs
 set_target_properties(core_libs_supl
     PROPERTIES
-	  C_EXTENSIONS on
+          C_EXTENSIONS on
 )
 
 target_include_directories(core_libs_supl

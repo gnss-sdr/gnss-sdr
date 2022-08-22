@@ -558,11 +558,6 @@ find_package(GNURADIO ${GNSSSDR_GNURADIO_MIN_VERSION}
 		      COMPONENTS ${GR_REQUIRED_COMPONENTS}
 )
 
-set_package_properties(GNURADIO PROPERTIES
-    PURPOSE "Implements flowgraph scheduler, provides some processing blocks and classes to create new ones."
-    TYPE REQUIRED
-)
-
 # GNU Radio 3.8 changed include file names
 # move into FindGNURADIO.cmake?
 if(GNURADIO_VERSION VERSION_GREATER_EQUAL "3.8")
@@ -570,18 +565,6 @@ if(GNURADIO_VERSION VERSION_GREATER_EQUAL "3.8")
 endif()
 
 
-
-################################################################################
-# Log4cpp - http://log4cpp.sourceforge.net/
-################################################################################
-# move into FindGNURADIO.cmake?
-#if(GNURADIO_USES_LOG4CPP)
-#    find_package(LOG4CPP)
-#    set_package_properties(LOG4CPP PROPERTIES
-#        PURPOSE "Required by GNU Radio."
-#        TYPE REQUIRED
-#    )
-#endif()
 
 ################################################################################
 # Detect availability of std::filesystem and set C++ standard accordingly

@@ -555,7 +555,7 @@ if(ENABLE_ZMQ)
 endif()
 
 find_package(GNURADIO ${GNSSSDR_GNURADIO_MIN_VERSION}
-		      COMPONENTS ${GR_REQUIRED_COMPONENTS}
+                      COMPONENTS ${GR_REQUIRED_COMPONENTS}
 )
 
 # GNU Radio 3.8 changed include file names

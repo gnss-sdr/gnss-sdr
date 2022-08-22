@@ -216,10 +216,10 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
             # maintain legacy targets by creating an alias
             if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
                 add_library(${_target} ALIAS ${_component})
-	    else()
+            else()
                 # CMake < 3.18 doesn't allow ALIAS targets on non-global symbols
                 add_library(${_target} INTERFACE IMPORTED)
-		set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES ${_component})
+                set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES ${_component})
             endif()
         else()
             # legacy targets

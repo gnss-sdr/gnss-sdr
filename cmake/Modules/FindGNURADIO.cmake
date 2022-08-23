@@ -416,7 +416,11 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
                 PURPOSE "Required by GNU Radio."
                 TYPE REQUIRED
             )
-            target_link_libraries(Gnuradio::filter INTERFACE Log4cpp::log4cpp)
+            if(CMAKE_VERSION VERSION_GREATER 3.0)
+                target_link_libraries(Gnuradio::filter INTERFACE Log4cpp::log4cpp)
+            else()
+                set(LOG4CPP_WITH_OLD_CMAKE TRUE)
+            endif()
         endif()
         if(${_uses_spdlog})
             find_package(spdlog REQUIRED CONFIG)

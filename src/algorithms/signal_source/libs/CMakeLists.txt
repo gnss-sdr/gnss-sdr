@@ -80,14 +80,6 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(GNURADIO_USES_SPDLOG)
-    target_link_libraries(signal_source_libs
-        PUBLIC
-            fmt::fmt
-            spdlog::spdlog
-    )
-endif()
-
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     target_link_libraries(signal_source_libs
         PUBLIC

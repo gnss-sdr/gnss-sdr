@@ -60,6 +60,7 @@
 #include <cstdlib>
 #include <ctime>  // for ctime
 #include <exception>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <memory>

@@ -629,35 +629,6 @@ endif()
 
 
 ################################################################################
-# Log4cpp - http://log4cpp.sourceforge.net/
-################################################################################
-if(GNURADIO_USES_LOG4CPP)
-    find_package(LOG4CPP)
-    set_package_properties(LOG4CPP PROPERTIES
-        PURPOSE "Required by GNU Radio."
-        TYPE REQUIRED
-    )
-endif()
-
-
-
-################################################################################
-# spdlog - https://github.com/gabime/spdlog
-################################################################################
-if(GNURADIO_USES_SPDLOG)
-    find_package(spdlog REQUIRED CONFIG)
-    set_package_properties(spdlog PROPERTIES
-        URL "https://github.com/gabime/spdlog"
-        DESCRIPTION "Very fast, header-only/compiled, C++ logging library"
-        PURPOSE "Required by GNU Radio."
-        TYPE REQUIRED
-    )
-    target_link_libraries(Gnuradio::runtime INTERFACE spdlog::spdlog)
-endif()
-
-
-
-################################################################################
 # Detect availability of std::filesystem and set C++ standard accordingly
 ################################################################################
 set(FILESYSTEM_FOUND FALSE)

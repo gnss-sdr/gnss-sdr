@@ -62,6 +62,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The configuration options at building time `-DENABLE_OWN_GLOG`,
   `-DENABLE_OWN_ARMADILLO`, and `-DENABLE_OWN_GNSSTK` can now be switched `ON`
   and `OFF` without the need to start from an empty buiding folder.
+- Improved CMake handling of the spdlog library used by GNU Radio >= 3.10.
 
 ### Improvements in Usability:
 

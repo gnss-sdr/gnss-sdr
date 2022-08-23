@@ -411,10 +411,28 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
             endif()
         endforeach()
         if(${_uses_log4cpp})
-            set(GNURADIO_USES_LOG4CPP TRUE)
+            find_package(LOG4CPP)
+            set_package_properties(LOG4CPP PROPERTIES
+                PURPOSE "Required by GNU Radio."
+                TYPE REQUIRED
+            )
+            if(CMAKE_VERSION VERSION_GREATER 3.13)
+                target_link_libraries(Gnuradio::filter INTERFACE Log4cpp::log4cpp)
+            else()
+                set(LOG4CPP_WITH_OLD_CMAKE TRUE)
+            endif()
         endif()
         if(${_uses_spdlog})
+            find_package(spdlog REQUIRED CONFIG)
+            set_package_properties(spdlog PROPERTIES
+                URL "https://github.com/gabime/spdlog"
+                DESCRIPTION "Very fast, header-only/compiled, C++ logging library"
+                PURPOSE "Required by GNU Radio."
+                TYPE REQUIRED
+            )
             set(GNURADIO_USES_SPDLOG TRUE)
+            target_link_libraries(Gnuradio::runtime INTERFACE spdlog::spdlog)
+            target_link_libraries(Gnuradio::blocks INTERFACE spdlog::spdlog)
         endif()
     endif()
 endif()

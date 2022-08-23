@@ -416,7 +416,7 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
                 PURPOSE "Required by GNU Radio."
                 TYPE REQUIRED
             )
-            if(CMAKE_VERSION VERSION_GREATER 3.0)
+            if(CMAKE_VERSION VERSION_GREATER 3.8)
                 target_link_libraries(Gnuradio::filter INTERFACE Log4cpp::log4cpp)
             else()
                 set(LOG4CPP_WITH_OLD_CMAKE TRUE)

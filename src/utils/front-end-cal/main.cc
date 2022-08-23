@@ -60,6 +60,7 @@
 #include <cstdlib>
 #include <ctime>  // for ctime
 #include <exception>
+#include <iomanip>  // for std::setiosflags, std::setprecision
 #include <iostream>
 #include <map>
 #include <memory>

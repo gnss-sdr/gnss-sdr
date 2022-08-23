@@ -645,24 +645,14 @@ endif()
 # spdlog - https://github.com/gabime/spdlog
 ################################################################################
 if(GNURADIO_USES_SPDLOG)
-    find_package(SPDLOG REQUIRED)
-    set_package_properties(SPDLOG PROPERTIES
+    find_package(spdlog REQUIRED CONFIG)
+    set_package_properties(spdlog PROPERTIES
+        URL "https://github.com/gabime/spdlog"
+        DESCRIPTION "Very fast, header-only/compiled, C++ logging library"
         PURPOSE "Required by GNU Radio."
         TYPE REQUIRED
     )
-endif()
-
-
-
-################################################################################
-# fmt - https://github.com/fmtlib/fmt
-################################################################################
-if(GNURADIO_USES_SPDLOG)
-    find_package(FMT REQUIRED)
-    set_package_properties(FMT PROPERTIES
-        PURPOSE "Required by GNU Radio."
-        TYPE REQUIRED
-    )
+    target_link_libraries(Gnuradio::runtime INTERFACE spdlog::spdlog)
 endif()
 
 

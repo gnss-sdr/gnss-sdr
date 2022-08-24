@@ -20,7 +20,7 @@ include(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list
 if(NOT GR_REQUIRED_COMPONENTS)
-  set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
+    set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 endif()
 
 # Allows us to use all .cmake files in this directory
@@ -426,7 +426,7 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
             find_package(spdlog REQUIRED CONFIG)
             set_package_properties(spdlog PROPERTIES
                 URL "https://github.com/gabime/spdlog"
-                DESCRIPTION "Very fast, header-only/compiled, C++ logging library"
+                DESCRIPTION "Very fast, header-only/compiled, C++ logging library (found: v${spdlog_VERSION})"
                 PURPOSE "Required by GNU Radio."
                 TYPE REQUIRED
             )

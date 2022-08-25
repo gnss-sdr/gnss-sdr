@@ -74,7 +74,9 @@ beidou_b3i_telemetry_decoder_gs::beidou_b3i_telemetry_decoder_gs(
       d_enable_navdata_monitor(conf.enable_navdata_monitor),
       d_dump_crc_stats(conf.dump_crc_stats),
       d_ecc_errors_reject(conf.ecc_errors_reject),
-      d_ecc_errors_resync(conf.ecc_errors_resync)
+      d_ecc_errors_resync(conf.ecc_errors_resync),
+      d_validator_thr(conf.validator_thr),
+      d_validator_accept_first(conf.validator_accept_first)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -308,11 +310,18 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj =
                 std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel"
-                      << d_channel << " from satellite " << d_satellite;
-            std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV message received in channel " << d_channel
-                      << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
+            static Gnss_Ephemeris::history_set prev(63);
+            if (tmp_obj->PRN == d_satellite.get_PRN())
+                {
+                    if (Gnss_Ephemeris::validate(prev, tmp_obj, d_validator_thr, d_validator_accept_first))
+                        {
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel"
+                                      << d_channel << " from satellite " << d_satellite;
+                            std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV message received in channel " << d_channel
+                                      << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
+                        }
+                }
         }
     if (d_nav.have_new_utc_model() == true && crc_ok)
         {
@@ -580,7 +589,6 @@ int beidou_b3i_telemetry_decoder_gs::general_work(
                             d_flag_frame_sync = false;
                             d_stat = 0;
                             d_flag_SOW_set = false;
-                            DLOG(INFO) << "BeiDou DNAV preamble sync lost for SAT " << this->d_satellite << "\n";
                         }
                 }
         }

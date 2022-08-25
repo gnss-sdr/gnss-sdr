@@ -124,6 +124,8 @@ private:
     bool d_dump_crc_stats;
     int32_t d_ecc_errors_reject;
     int32_t d_ecc_errors_resync;
+    uint32_t d_validator_thr;
+    bool d_validator_accept_first;
 };
 
 

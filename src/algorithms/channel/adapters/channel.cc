@@ -40,6 +40,8 @@ Channel::Channel(const ConfigurationInterface* configuration,
                                            role_(role),
                                            channel_(channel)
 {
+    glonass_extend_correlation_ms_ = configuration->property("Tracking_1G.extend_correlation_ms", 0) + configuration->property("Tracking_2G.extend_correlation_ms", 0);
+
     channel_fsm_ = std::make_shared<ChannelFsm>();
 
     flag_enable_fpga_ = configuration->property("GNSS-SDR.enable_FPGA", false);
@@ -104,9 +106,6 @@ Channel::Channel(const ConfigurationInterface* configuration,
     gnss_signal_ = Gnss_Signal(signal_str);
 
     channel_msg_rx_ = channel_msg_receiver_make_cc(channel_fsm_, repeat_);
-
-    glonass_extend_correlation_ms_ = 0;
-    glonass_extend_correlation_ms_ = configuration->property("Tracking_1G.extend_correlation_ms", 0) + configuration->property("Tracking_2G.extend_correlation_ms", 0);
 }
 
 

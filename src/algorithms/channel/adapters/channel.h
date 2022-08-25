@@ -107,10 +107,10 @@ private:
     std::string role_;
     std::mutex mx_;
     uint32_t channel_;
+    int glonass_extend_correlation_ms_;
     bool connected_;
     bool repeat_;
     bool flag_enable_fpga_;
-    int glonass_extend_correlation_ms_;
 };
 
 

@@ -21,9 +21,9 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <iostream>
 #include <numeric>
 #include <vector>
-
 
 double Gnss_Ephemeris::sv_clock_drift(double transmitTime)
 {
@@ -165,8 +165,37 @@ void Gnss_Ephemeris::satellitePosition(double transmitTime)
     this->dtr = pos_vel_dtr[6];
 }
 
+double Gnss_Ephemeris::max_deviation(Common_Ephemeris &from)
+{
+    const Gnss_Ephemeris &tmp = dynamic_cast<Gnss_Ephemeris &>(from);
+    double dev = 0.0;
+    update_eph_deviation(PRN);
+    update_eph_deviation(M_0);
+    update_eph_deviation(delta_n);
+    update_eph_deviation(ecc);
+    update_eph_deviation(sqrtA);
+    update_eph_deviation(OMEGA_0);
+    update_eph_deviation(i_0);
+    update_eph_deviation(omega);
+    update_eph_deviation(OMEGAdot);
+    update_eph_deviation(idot);
+    update_eph_deviation(Cuc);
+    update_eph_deviation(Cus);
+    update_eph_deviation(Crc);
+    update_eph_deviation(Crs);
+    update_eph_deviation(Cic);
+    update_eph_deviation(Cis);
+    // update_eph_deviation(toe);
+    // update_eph_deviation(toc);
+    update_eph_deviation(af0);
+    update_eph_deviation(af1);
+    update_eph_deviation(af2);
+    update_eph_deviation(satClkDrift);
+    update_eph_deviation(dtr);
+    return dev;
+}
 
-void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<double, 7>& pos_vel_dtr) const
+void Gnss_Ephemeris::satellitePosVelComputation(double transmitTime, std::array<double, 7> &pos_vel_dtr) const
 {
     // Restore semi-major axis
     const double a = this->sqrtA * this->sqrtA;

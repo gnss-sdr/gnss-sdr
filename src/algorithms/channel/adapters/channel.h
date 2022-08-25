@@ -96,6 +96,7 @@ public:
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() const { return nav_; }
 
 private:
+    bool glonass_dll_pll_c_aid_tracking_check();
     std::shared_ptr<ChannelFsm> channel_fsm_;
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;
@@ -106,6 +107,7 @@ private:
     std::string role_;
     std::mutex mx_;
     uint32_t channel_;
+    int glonass_extend_correlation_ms_;
     bool connected_;
     bool repeat_;
     bool flag_enable_fpga_;

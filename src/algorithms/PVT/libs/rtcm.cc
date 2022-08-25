@@ -1873,8 +1873,8 @@ int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& gl
         {
         }  // Avoid compiler warning
 
-    glonass_gnav_eph.d_P_1 = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
-    glonass_gnav_eph.d_P_1 = (glonass_gnav_eph.d_P_1 + 1) * 15;
+    uint32_t P_1_tmp = Rtcm::bin_to_uint(message_bin.substr(index, 2));
+    glonass_gnav_eph.d_P_1 = (P_1_tmp == 0) ? 0. : (P_1_tmp + 1) * 15;
     index += 2;
 
     glonass_gnav_eph.d_t_k += static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 5))) * 3600;
@@ -5102,8 +5102,9 @@ int32_t Rtcm::set_DF105(uint32_t glonass_gnav_alm_health_ind)
 
 int32_t Rtcm::set_DF106(const Glonass_Gnav_Ephemeris& glonass_gnav_eph)
 {
-    // Convert the value from (15, 30, 45, 60) to (00, 01, 10, 11)
-    const auto P_1 = static_cast<uint32_t>(std::round(glonass_gnav_eph.d_P_1 / 15.0 - 1.0));
+    // Convert the value from (0, 30, 45, 60) to (00, 01, 10, 11)
+    uint32_t P_1_tmp = std::round(glonass_gnav_eph.d_P_1 / 15.);
+    uint32_t P_1 = (P_1_tmp == 0) ? 0 : P_1_tmp - 1;
     DF106 = std::bitset<2>(P_1);
     return 0;
 }

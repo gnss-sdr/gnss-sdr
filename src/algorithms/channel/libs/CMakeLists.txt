@@ -54,14 +54,6 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(GNURADIO_USES_SPDLOG)
-    target_link_libraries(channel_libs
-        PUBLIC
-            fmt::fmt
-            spdlog::spdlog
-    )
-endif()
-
 if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)

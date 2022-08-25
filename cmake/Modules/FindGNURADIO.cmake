@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2011-2022 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ########################################################################
@@ -20,7 +20,7 @@ include(FindPackageHandleStandardArgs)
 
 # if GR_REQUIRED_COMPONENTS is not defined, it will be set to the following list
 if(NOT GR_REQUIRED_COMPONENTS)
-  set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
+    set(GR_REQUIRED_COMPONENTS RUNTIME PMT BLOCKS FFT FILTER ANALOG)
 endif()
 
 # Allows us to use all .cmake files in this directory
@@ -193,6 +193,7 @@ gr_module(TRELLIS gnuradio-trellis gnuradio/trellis/api.h gnuradio-trellis)
 gr_module(UHD gnuradio-uhd gnuradio/uhd/api.h gnuradio-uhd)
 gr_module(VOCODER gnuradio-vocoder gnuradio/vocoder/api.h gnuradio-vocoder)
 gr_module(WAVELET gnuradio-wavelet gnuradio/wavelet/api.h gnuradio-wavelet)
+gr_module(ZEROMQ gnuradio-zeromq gnuradio/zeromq/api.h gnuradio-zeromq)
 
 
 list(REMOVE_DUPLICATES GNURADIO_ALL_INCLUDE_DIRS)
@@ -410,10 +411,28 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
             endif()
         endforeach()
         if(${_uses_log4cpp})
-            set(GNURADIO_USES_LOG4CPP TRUE)
+            find_package(LOG4CPP)
+            set_package_properties(LOG4CPP PROPERTIES
+                PURPOSE "Required by GNU Radio."
+                TYPE REQUIRED
+            )
+            if(CMAKE_VERSION VERSION_GREATER 3.13)
+                target_link_libraries(Gnuradio::filter INTERFACE Log4cpp::log4cpp)
+            else()
+                set(LOG4CPP_WITH_OLD_CMAKE TRUE)
+            endif()
         endif()
         if(${_uses_spdlog})
+            find_package(spdlog REQUIRED CONFIG)
+            set_package_properties(spdlog PROPERTIES
+                URL "https://github.com/gabime/spdlog"
+                DESCRIPTION "Very fast, header-only/compiled, C++ logging library (found: v${spdlog_VERSION})"
+                PURPOSE "Required by GNU Radio."
+                TYPE REQUIRED
+            )
             set(GNURADIO_USES_SPDLOG TRUE)
+            target_link_libraries(Gnuradio::runtime INTERFACE spdlog::spdlog)
+            target_link_libraries(Gnuradio::blocks INTERFACE spdlog::spdlog)
         endif()
     endif()
 endif()

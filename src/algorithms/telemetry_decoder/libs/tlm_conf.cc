@@ -34,4 +34,10 @@ void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
         {
             there_are_e6_channels = true;
         }
+    ecc_errors_reject = configuration->property(role + ".ecc_reject", 1);
+    ecc_errors_reject = (ecc_errors_reject < 1) ? 1 : ecc_errors_reject;
+    ecc_errors_resync = configuration->property(role + ".ecc_resync", 6);
+    ecc_errors_resync = (ecc_errors_resync < 1) ? 1 : ecc_errors_resync;
+    validator_thr = configuration->property(role + ".validator_thr", 2);
+    validator_accept_first = configuration->property(role + ".validator_accept_first", true);
 }

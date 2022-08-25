@@ -171,9 +171,9 @@ private:
     double d_carr_phase_error_secs_Ti;
     double d_code_error_chips_Ti;
     double d_preamble_timestamp_samples;
-    int32_t d_extend_correlation_ms;
     double d_code_error_filt_chips_s;
     double d_code_error_filt_chips_Ti;
+    int32_t d_extend_correlation_ms;
 
     // Integration period in samples
     int32_t d_correlation_length_samples;

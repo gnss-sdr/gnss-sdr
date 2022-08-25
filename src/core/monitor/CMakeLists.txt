@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_SOURCE_DIR}/docs/protobuf/gnss_synchro.proto)
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${GNSSSDR_SOURCE_DIR}/docs/protobuf/gnss_synchro.proto)
 
 set(CORE_MONITOR_LIBS_SOURCES
     gnss_synchro_monitor.cc
@@ -56,9 +56,9 @@ get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 
 target_include_directories(core_monitor
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique
+        ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs  # for gnss_sdr_make_unique
 )
 
 # Do not apply clang-tidy fixes to protobuf generated headers

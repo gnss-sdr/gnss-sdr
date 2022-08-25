@@ -146,7 +146,7 @@ endif()
 
 target_include_directories(signal_source_adapters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(ENABLE_FPGA OR ENABLE_AD9361)

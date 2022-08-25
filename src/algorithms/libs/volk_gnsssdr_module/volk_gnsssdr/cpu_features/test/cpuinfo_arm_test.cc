@@ -10,6 +10,21 @@ namespace cpu_features
 {
 namespace
 {
+
+TEST(CpuinfoArmTest, ArmFeaturesEnum)
+{
+    const char* last_name = GetArmFeaturesEnumName(ARM_LAST_);
+    EXPECT_STREQ(last_name, "unknown_feature");
+    for (int i = static_cast<int>(ARM_SWP); i != static_cast<int>(ARM_LAST_); ++i)
+        {
+            const auto feature = static_cast<ArmFeaturesEnum>(i);
+            const char* name = GetArmFeaturesEnumName(feature);
+            ASSERT_FALSE(name == nullptr);
+            EXPECT_STRNE(name, "");
+            EXPECT_STRNE(name, last_name);
+        }
+}
+
 TEST(CpuinfoArmTest, FromHardwareCap)
 {
     ResetHwcaps();

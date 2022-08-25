@@ -122,7 +122,7 @@ target_link_libraries(core_system_parameters
 # for gnss_sdr_make_unique.h
 target_include_directories(core_system_parameters
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/algorithms/libs
+        ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
 )
 
 if(ENABLE_CLANG_TIDY)

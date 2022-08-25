@@ -54,7 +54,7 @@ target_link_libraries(telemetry_decoder_libs
 
 target_include_directories(telemetry_decoder_libs
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src/core/interfaces
+        ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
 if(ENABLE_CLANG_TIDY)

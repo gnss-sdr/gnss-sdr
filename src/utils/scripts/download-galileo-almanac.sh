@@ -35,14 +35,9 @@ help()
     echo "  ./download-galileo-almanac.sh -rd 2022-03-15 # Gets Galileo Almanac XML file for that day, stores it as gal_almanac.xml"
 }
 
-if (([ "$1" = "-h" ]) || ([ "$1" = "--help" ])) ; then
+if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
     help
     exit 0
-fi
-
-RENAME=""
-if (([ "$1" = "-r" ]) || ([ "$1" = "--rename" ])) ; then
-    RENAME=" -O gal_almanac.xml "
 fi
 
 BASE_URL="https://www.gsc-europa.eu/sites/default/files/sites/all/files/"
@@ -57,7 +52,7 @@ TERMINATION2=".xml"
 COUNTER=1
 MAX_COUNTER=7
 
-if (([ "$1" = "-d" ]) || ([ "$1" = "--date" ])) ; then
+if [ "$1" = "-d" ] || [ "$1" = "--date" ] ; then
     if wget "$BASE_URL$2$TERMINATION2" >/dev/null 2>&1 ; then
         echo "Downloaded latest Galileo almanac from $BASE_URL$2$TERMINATION2"
         exit 0
@@ -78,12 +73,16 @@ else
     echo "According to system time, today is $(date '+%Y-%m-%d'). Searching for the latest Galileo almanac ..."
 fi
 
+if [ "$1" = "-r" ] || [ "$1" = "--rename" ]; then
+    RENAME="yes"
+fi
+
 lowercase()
 {
     echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
 }
 
-OS=`lowercase \`uname\``
+OS=$(lowercase "$(uname)")
 
 date_before()
 {
@@ -96,16 +95,21 @@ date_before()
         MONTH=$(date -d "$COUNTER day ago" '+%m')
         DAY=$(date -d "$COUNTER day ago" '+%d')
     fi
-    COUNTER=$(($COUNTER+1))
+    COUNTER=$((COUNTER+1))
 }
 
+download_rename_file()
+{
+    [ "$RENAME" = "yes" ] && set -- -O gal_almanac.xml "$@"
+    wget "$@"
+}
 
 try_download()
 {
     while [ $COUNTER -le $MAX_COUNTER ]
     do
         url="$BASE_URL$YEAR$SPACING$MONTH$SPACING$DAY$TERMINATION2"
-        if wget $RENAME $url >/dev/null 2>&1 ; then
+        if download_rename_file "$url" >/dev/null 2>&1 ; then
         	echo "Downloaded latest Galileo almanac from $url"
             exit 0
         else
@@ -115,9 +119,8 @@ try_download()
     done
 }
 
-
 url="$BASE_URL$YEAR$SPACING$MONTH$SPACING$DAY$TERMINATION1"
-if wget $RENAME $url >/dev/null 2>&1 ; then
+if download_rename_file "$url" >/dev/null 2>&1 ; then
 	echo "Downloaded latest Galileo almanac from $url"
 else
     try_download

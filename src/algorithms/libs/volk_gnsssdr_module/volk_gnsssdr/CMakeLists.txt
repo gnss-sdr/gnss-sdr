@@ -491,8 +491,8 @@ endif()
 ########################################################################
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake.in
-    ${CMAKE_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
+    ${PROJECT_SOURCE_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake.in
+    ${PROJECT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
     @ONLY
 )
 

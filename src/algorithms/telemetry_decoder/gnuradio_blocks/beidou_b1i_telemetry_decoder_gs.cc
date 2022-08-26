@@ -36,8 +36,6 @@
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
 
-#define CRC_ERROR_LIMIT 8
-
 
 beidou_b1i_telemetry_decoder_gs_sptr
 beidou_b1i_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
@@ -74,7 +72,10 @@ beidou_b1i_telemetry_decoder_gs::beidou_b1i_telemetry_decoder_gs(
                             d_dump_mat(conf.dump_mat),
                             d_remove_dat(conf.remove_dat),
                             d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                            d_dump_crc_stats(conf.dump_crc_stats)
+                            d_dump_crc_stats(conf.dump_crc_stats),
+                            d_ecc_errors_reject(conf.ecc_errors_reject),
+                            d_ecc_errors_resync(conf.ecc_errors_resync)
+
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -191,6 +192,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_bch15_11_01(const int32_t *bits, st
     if (err > 0 && err < 16)
         {
             decbits[errind[err - 1]] *= -1;
+            d_CRC_error_counter++;
         }
 }
 
@@ -219,6 +221,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_word(
                 {
                     dec_word_symbols[j + 15] = first_branch[j];
                 }
+            d_CRC_error_counter *= d_ecc_errors_reject;
         }
     else
         {
@@ -283,7 +286,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
         }
 
     // 3. Check operation executed correctly
-    bool crc_ok = d_nav.get_flag_CRC_test();
+    bool crc_ok = d_CRC_error_counter < d_ecc_errors_reject;
     if (crc_ok)
         {
             DLOG(INFO) << "BeiDou DNAV CRC correct in channel " << d_channel
@@ -292,7 +295,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
     else
         {
             DLOG(INFO) << "BeiDou DNAV CRC error in channel " << d_channel
-                       << " from satellite " << d_satellite;
+                       << " from satellite " << d_satellite << "\n";
         }
     if (d_dump_crc_stats)
         {
@@ -300,7 +303,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             d_Tlm_CRC_Stats->update_CRC_stats(crc_ok);
         }
     // 4. Push the new navigation data to the queues
-    if (d_nav.have_new_ephemeris() == true)
+    if (d_nav.have_new_ephemeris() == true && crc_ok)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj = std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
@@ -308,7 +311,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
             std::cout << "New BEIDOU B1I DNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
         }
-    if (d_nav.have_new_utc_model() == true)
+    if (d_nav.have_new_utc_model() == true && crc_ok)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj = std::make_shared<Beidou_Dnav_Utc_Model>(d_nav.get_utc_model());
@@ -316,7 +319,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite;
             std::cout << "New BEIDOU B1I DNAV utc model message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
         }
-    if (d_nav.have_new_iono() == true)
+    if (d_nav.have_new_iono() == true && crc_ok)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Iono> tmp_obj = std::make_shared<Beidou_Dnav_Iono>(d_nav.get_iono());
@@ -324,7 +327,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel << " from satellite " << d_satellite;
             std::cout << "New BEIDOU B1I DNAV Iono message received in channel " << d_channel << ": Iono model parameters from satellite " << d_satellite << '\n';
         }
-    if (d_nav.have_new_almanac() == true)
+    if (d_nav.have_new_almanac() == true && crc_ok)
         {
             // uint32_t slot_nbr = d_nav.i_alm_satellite_PRN;
             // std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
@@ -344,8 +347,11 @@ void beidou_b1i_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satell
 
     // Update satellite information for DNAV decoder
     sat_prn = d_satellite.get_PRN();
+    d_nav = Beidou_Dnav_Navigation_Message();
     d_nav.set_satellite_PRN(sat_prn);
     d_nav.set_signal_type(1);  // BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
+    d_symbol_history.clear();
+    d_stat = 0;
 
     // Update tel dec parameters for D2 NAV Messages
     if ((sat_prn > 0 && sat_prn < 6) || sat_prn > 58)
@@ -436,6 +442,11 @@ void beidou_b1i_telemetry_decoder_gs::reset()
     d_TOW_at_current_symbol_ms = 0;
     d_sent_tlm_failed_msg = false;
     d_flag_valid_word = false;
+    d_symbol_history.clear();
+    d_stat = 0;
+    d_nav = Beidou_Dnav_Navigation_Message();
+    d_nav.set_satellite_PRN(d_satellite.get_PRN());
+    d_nav.set_signal_type(1);  // BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
     DLOG(INFO) << "Beidou B1I Telemetry decoder reset for satellite " << d_satellite;
 }
 
@@ -443,8 +454,8 @@ void beidou_b1i_telemetry_decoder_gs::reset()
 int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
-    int32_t corr_value = 0;
-    int32_t preamble_diff = 0;
+    int32_t corr_value0 = 0;
+    int32_t corr_value1 = 0;
 
     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
     const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
@@ -464,42 +475,45 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                 {
                     if (d_symbol_history[i] < 0)  // symbols clipping
                         {
-                            corr_value -= d_preamble_samples[i];
+                            corr_value0 -= d_preamble_samples[i];
                         }
                     else
                         {
-                            corr_value += d_preamble_samples[i];
+                            corr_value0 += d_preamble_samples[i];
+                        }
+                }
+            for (int32_t i = 0; i < d_samples_per_preamble; i++)
+                {
+                    if (d_symbol_history[i + BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS] < 0)  // symbols clipping
+                        {
+                            corr_value1 -= d_preamble_samples[i];
+                        }
+                    else
+                        {
+                            corr_value1 += d_preamble_samples[i];
                         }
                 }
         }
     // ******* frame sync ******************
     if (d_stat == 0)  // no preamble information
         {
-            if (abs(corr_value) >= d_samples_per_preamble)
+            if (abs(corr_value0) >= d_samples_per_preamble && abs(corr_value1) >= d_samples_per_preamble)
                 {
                     // Record the preamble sample stamp
-                    d_preamble_index = d_sample_counter;
+                    d_preamble_index = d_sample_counter - BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS;
                     DLOG(INFO) << "Preamble detection for BEIDOU B1I SAT " << this->d_satellite;
                     // Enter into frame pre-detection status
                     d_stat = 1;
                 }
         }
-    else if (d_stat == 1)  // possible preamble lock
+    if (d_stat == 1)  // possible preamble lock
         {
-            if (abs(corr_value) >= d_samples_per_preamble)
+            if (d_sample_counter - d_preamble_index >= BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS)
                 {
-                    // check preamble separation
-                    preamble_diff = static_cast<int32_t>(d_sample_counter - d_preamble_index);
-                    if (abs(preamble_diff - d_preamble_period_samples) == 0)
+                    if (abs(corr_value0) + abs(corr_value1) >= d_samples_per_preamble * 2)
                         {
-                            // try to decode frame
-                            DLOG(INFO) << "Starting BeiDou DNAV frame decoding for BeiDou B1I SAT " << this->d_satellite;
-                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-
-                            d_stat = 2;
-
                             // ******* SAMPLES TO SYMBOLS *******
-                            if (corr_value > 0)  // normal PLL lock
+                            if (corr_value0 > 0)  // normal PLL lock
                                 {
                                     for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
                                         {
@@ -515,11 +529,11 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                                 }
 
                             // call the decoder
+                            d_CRC_error_counter = 0;
                             decode_subframe(d_subframe_symbols.data());
 
-                            if (d_nav.get_flag_CRC_test() == true)
+                            if (d_CRC_error_counter < d_ecc_errors_resync)
                                 {
-                                    d_CRC_error_counter = 0;
                                     d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
                                     d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
                                     if (!d_flag_frame_sync)
@@ -530,78 +544,25 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                                 }
                             else
                                 {
-                                    d_CRC_error_counter++;
                                     d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                                    if (d_CRC_error_counter > CRC_ERROR_LIMIT)
-                                        {
-                                            DLOG(INFO) << "BeiDou DNAV frame sync lost for SAT " << this->d_satellite;
-                                            d_flag_frame_sync = false;
-                                            d_stat = 0;
-                                            d_flag_SOW_set = false;
-                                        }
-                                }
-                        }
-                    else
-                        {
-                            if (preamble_diff > d_preamble_period_samples)
-                                {
-                                    d_stat = 0;  // start again
-                                }
-                            DLOG(INFO) << "Failed BeiDou DNAV frame decoding for BeiDou B1I SAT " << this->d_satellite;
-                        }
-                }
-        }
-    else if (d_stat == 2)  // preamble acquired
-        {
-            if (d_sample_counter == d_preamble_index + static_cast<uint64_t>(d_preamble_period_samples))
-                {
-                    // ******* SAMPLES TO SYMBOLS *******
-                    if (corr_value > 0)  // normal PLL lock
-                        {
-                            for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
-                                {
-                                    d_subframe_symbols[i] = d_symbol_history[i];
-                                }
-                        }
-                    else  // 180 deg. inverted carrier phase PLL lock
-                        {
-                            for (uint32_t i = 0; i < BEIDOU_DNAV_PREAMBLE_PERIOD_SYMBOLS; i++)
-                                {
-                                    d_subframe_symbols[i] = -d_symbol_history[i];
-                                }
-                        }
-
-                    // call the decoder
-                    decode_subframe(d_subframe_symbols.data());
-
-                    if (d_nav.get_flag_CRC_test() == true)
-                        {
-                            d_CRC_error_counter = 0;
-                            d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
-                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-                            if (!d_flag_frame_sync)
-                                {
-                                    d_flag_frame_sync = true;
-                                    DLOG(INFO) << "BeiDou DNAV frame sync found for SAT " << this->d_satellite;
-                                }
-                        }
-                    else
-                        {
-                            d_CRC_error_counter++;
-                            d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                            if (d_CRC_error_counter > CRC_ERROR_LIMIT)
-                                {
-                                    DLOG(INFO) << "BeiDou DNAV frame sync lost for SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
                                     d_stat = 0;
                                     d_flag_SOW_set = false;
+                                    DLOG(INFO) << "BeiDou DNAV frame sync lost for SAT " << this->d_satellite << ". Too many CRC errors\n";
                                 }
+                        }
+                    else
+                        {
+                            d_flag_frame_sync = false;
+                            d_stat = 0;
+                            d_flag_SOW_set = false;
+                            DLOG(INFO) << "BeiDou DNAV preamble sync lost for SAT " << this->d_satellite << "\n";
                         }
                 }
         }
     // UPDATE GNSS SYNCHRO DATA
     // 2. Add the telemetry decoder information
-    if (this->d_flag_preamble == true && d_nav.get_flag_new_SOW_available() == true)
+    if (this->d_flag_preamble == true && d_nav.get_flag_new_SOW_available() == true && d_CRC_error_counter < d_ecc_errors_reject)
         // update TOW at the preamble instant
         {
             // Reporting sow as gps time of week
@@ -620,6 +581,12 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
 
                     d_TOW_at_current_symbol_ms = 0;
                     d_flag_valid_word = false;
+                    d_flag_frame_sync = false;
+                    d_stat = 0;
+                    d_flag_SOW_set = false;
+                    d_nav = Beidou_Dnav_Navigation_Message();
+                    d_nav.set_satellite_PRN(d_satellite.get_PRN());
+                    d_nav.set_signal_type(1);  // BDS: data source (0:unknown,1:B1I,2:B1Q,3:B2I,4:B2Q,5:B3I,6:B3Q)
                 }
             else
                 {

@@ -270,6 +270,7 @@ private:
     uint32_t d_type_of_rx;
     uint32_t d_observable_interval_ms;
     uint32_t d_pvt_errors_counter;
+    uint32_t d_averaging_depth;
 
     bool d_dump;
     bool d_dump_mat;

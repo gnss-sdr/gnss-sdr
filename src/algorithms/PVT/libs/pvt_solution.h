@@ -114,8 +114,8 @@ private:
     double d_avg_longitude_d{0.0};  // Averaged longitude in degrees
     double d_avg_height_m{0.0};     // Averaged height [m]
 
-    int d_averaging_depth{0};     // Length of averaging window
-    int d_valid_observations{0};  // Number of valid observations in this epoch
+    unsigned d_averaging_depth{0};  // Length of averaging window
+    int d_valid_observations{0};    // Number of valid observations in this epoch
 
     bool d_pre_2009_file{false};  // Flag to correct week rollover in post processing mode for signals older than 2009
     bool d_valid_position{false};

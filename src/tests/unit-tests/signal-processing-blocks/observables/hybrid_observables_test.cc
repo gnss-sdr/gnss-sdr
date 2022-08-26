@@ -63,6 +63,7 @@
 #include <chrono>
 #include <cmath>
 #include <exception>
+#include <iomanip>
 #include <unistd.h>
 #include <utility>
 #if GNSSTK_USES_GPSTK_NAMESPACE

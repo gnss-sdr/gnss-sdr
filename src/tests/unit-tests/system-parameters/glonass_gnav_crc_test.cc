@@ -17,14 +17,14 @@
 
 #include "glonass_gnav_navigation_message.h"
 #include <bitset>
-#include <string>
+#include <iostream>
 
 TEST(GlonassCrcTest, GnssSdrCRCTest)
 {
     // test data
     std::string string1Real_14_18_00("0000100000111001001001000011101010101100010101001000001001011101010101110011110110101");
     std::string string1Real_14_18_30("0000100000111001001011000011101010101100010101001000001001011101010101110011100001010");
-    std::string string1Wrong_14_18_00("0000100000111001001001000011101010101100010101001000001001011101010101110011100001010");
+    std::string string1Wrong_14_18_00("0000100000111001001001100011101010101100010101001000001001011101010101110011100001010");
 
     auto gnav_msg = Glonass_Gnav_Navigation_Message();
     std::bitset<GLONASS_GNAV_STRING_BITS> bits;
@@ -34,4 +34,12 @@ TEST(GlonassCrcTest, GnssSdrCRCTest)
     ASSERT_TRUE(gnav_msg.CRC_test(bits));
     bits = std::bitset<GLONASS_GNAV_STRING_BITS>(string1Wrong_14_18_00);
     ASSERT_FALSE(gnav_msg.CRC_test(bits));
+    bits = std::bitset<GLONASS_GNAV_STRING_BITS>(string1Real_14_18_30);
+    for (int k = 8; k < 85; k++)
+        {
+            std::bitset<GLONASS_GNAV_STRING_BITS> corrupt_bits = bits;
+            corrupt_bits[k] = corrupt_bits[k] ? false : true;
+            ASSERT_TRUE(gnav_msg.CRC_test(corrupt_bits));
+            ASSERT_TRUE(corrupt_bits == bits);
+        }
 }

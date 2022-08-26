@@ -120,6 +120,9 @@ private:
     bool d_remove_dat;
     bool d_enable_navdata_monitor;
     bool d_dump_crc_stats;
+    int32_t d_ecc_errors_resync;
+    uint32_t d_validator_thr;
+    bool d_validator_accept_first;
 };
 
 

@@ -23,6 +23,51 @@
 #include <cmath>
 #include <string>
 
+double Glonass_Gnav_Ephemeris::max_deviation(Common_Ephemeris &from)
+{
+    const Glonass_Gnav_Ephemeris &tmp = dynamic_cast<Glonass_Gnav_Ephemeris &>(from);
+    double dev = 0.0;
+    update_eph_deviation(PRN);
+    // TODO: compare to previous value?
+    // update_eph_deviation(d_t_k);
+    update_eph_deviation(d_t_b);
+    update_eph_deviation(d_gamma_n);
+    update_eph_deviation(d_tau_n);
+    update_eph_deviation(d_Xn);
+    update_eph_deviation(d_Yn);
+    update_eph_deviation(d_Zn);
+    update_eph_deviation(d_VXn);
+    update_eph_deviation(d_VYn);
+    update_eph_deviation(d_VZn);
+    update_eph_deviation(d_AXn);
+    update_eph_deviation(d_AYn);
+    update_eph_deviation(d_AZn);
+    update_eph_deviation(d_B_n);
+    update_eph_deviation(d_P);
+    update_eph_deviation(d_N_T);
+    update_eph_deviation(d_F_T);
+    update_eph_deviation(d_n);
+    update_eph_deviation(d_Delta_tau_n);
+    update_eph_deviation(d_E_n);
+    update_eph_deviation(d_P_1);
+    update_eph_deviation(d_yr);
+    update_eph_deviation(d_satClkDrift);
+    update_eph_deviation(d_dtr);
+    update_eph_deviation(d_iode);
+    update_eph_deviation(d_tau_c);
+    // update_eph_deviation(d_TOW);
+    // update_eph_deviation(d_tod);
+
+    update_eph_deviation(i_satellite_freq_channel);
+    update_eph_deviation(i_satellite_slot_number);
+    update_eph_deviation(d_WN);
+    // d_P_2
+    // d_P_3
+    // d_P_4
+    // d_l3rd_n
+    // d_l5th_n
+    return dev;
+}
 
 boost::posix_time::ptime Glonass_Gnav_Ephemeris::compute_GLONASS_time(double offset_time) const
 {
@@ -84,7 +129,7 @@ boost::posix_time::ptime Glonass_Gnav_Ephemeris::glot_to_utc(double offset_time,
 }
 
 
-void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, int32_t* wn, double* tow) const
+void Glonass_Gnav_Ephemeris::glot_to_gpst(double tod_offset, double glot2utc_corr, double glot2gpst_corr, int32_t *wn, double *tow) const
 {
     const double glot2utc = 3 * 3600;
     double days = 0.0;

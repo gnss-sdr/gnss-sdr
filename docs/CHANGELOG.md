@@ -69,18 +69,19 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed large GLONASS velocity errors and the extended correlator when using the
   `GLONASS_L1_CA_DLL_PLL_C_Aid_Tracking` and
   `GLONASS_L2_CA_DLL_PLL_C_Aid_Tracking` implementations.
-- Added a over-the-wire sample format (that is, the format used between the
-  device and the UHD) configuration parameter for the `UHD_Signal_Source`, thus
-  allowing to select the `sc8` format instead of the default `sc16`. This would
-  reduce the dynamic range and increase quantization noise, but also reduce the
-  load on the data link and thus allow more bandwidth.
+- The `UHD_Signal_Source` learned a new parameter `otw_format` for setting the
+  [over-the-wire data format](https://files.ettus.com/manual/page_configuration.html#config_stream_args_otw_format)
+  (that is, the format used between the device and the UHD) in some devices,
+  thus allowing to select the `sc8` format instead of the default `sc16`. This
+  would reduce the dynamic range and increase quantization noise, but also
+  reduce the load on the data link and thus allow more bandwidth.
+- The `UHD_Signal_Source` learned another two optional parameters:
+  `device_recv_frame_size` and `device_num_recv_frames` for overriding
+  [transport layer defaults](https://files.ettus.com/manual/page_transport.html).
 - Added gain setting and reading for the XTRX board when using the
   `Osmosdr_Signal_Source` implementation of a `SignalSource`.
 - The `Osmosdr_Signal_Source` implementation learned a new parameter `if_bw` to
   manually set the bandwidth of the bandpass filter on the radio frontend.
-- The `UHD_Signal_Source` learned two new optional parameters
-  `device_recv_frame_size` and `device_num_recv_frames` for overriding
-  [transport layer defaults](https://files.ettus.com/manual/page_transport.html).
 - The new configuration parameter `Channels_XX.RF_channel_ID` allows to specify
   the signal source per channel group.
 - Allowed the CMake project to be a sub-project.

@@ -36,6 +36,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   and IGM05 (SSR Code Bias). Please note that the content of the HAS messages is
   **not** applied to the computed PVT solution. In the Galileo E6B-only
   receiver, HAS messages are decoded and reported.
+- Added a `ZMQ_Signal_Source` for working with streams of samples published via
+  [ZeroMQ](https://zeromq.org/).
 
 ### Improvements in Maintainability:
 
@@ -60,6 +62,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The configuration options at building time `-DENABLE_OWN_GLOG`,
   `-DENABLE_OWN_ARMADILLO`, and `-DENABLE_OWN_GNSSTK` can now be switched `ON`
   and `OFF` without the need to start from an empty buiding folder.
+- Improved CMake handling of the spdlog library used by GNU Radio >= 3.10.
 
 ### Improvements in Usability:
 
@@ -75,6 +78,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   `Osmosdr_Signal_Source` implementation of a `SignalSource`.
 - The `Osmosdr_Signal_Source` implementation learned a new parameter `if_bw` to
   manually set the bandwidth of the bandpass filter on the radio frontend.
+- The `UHD_Signal_Source` learned two new optional parameters
+  `device_recv_frame_size` and `device_num_recv_frames` for overriding
+  [transport layer defaults](https://files.ettus.com/manual/page_transport.html).
 - The new configuration parameter `Channels_XX.RF_channel_ID` allows to specify
   the signal source per channel group.
 - Allowed the CMake project to be a sub-project.

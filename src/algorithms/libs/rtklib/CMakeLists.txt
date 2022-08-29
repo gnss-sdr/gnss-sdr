@@ -68,11 +68,22 @@ endif()
 target_link_libraries(algorithms_libs_rtklib
     PRIVATE
         core_system_parameters
+        algorithms_libs
         Gflags::gflags
         Glog::glog
         LAPACK::LAPACK
         BLAS::BLAS
 )
+
+if(FILESYSTEM_FOUND)
+    target_compile_definitions(algorithms_libs_rtklib PUBLIC -DHAS_STD_FILESYSTEM=1)
+    if(find_experimental)
+        target_compile_definitions(algorithms_libs_rtklib PUBLIC -DHAS_STD_FILESYSTEM_EXPERIMENTAL=1)
+    endif()
+    target_link_libraries(algorithms_libs_rtklib PUBLIC std::filesystem)
+else()
+    target_link_libraries(algorithms_libs_rtklib PUBLIC Boost::filesystem Boost::system)
+endif()
 
 set_property(TARGET algorithms_libs_rtklib
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

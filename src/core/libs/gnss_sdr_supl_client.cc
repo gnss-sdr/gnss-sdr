@@ -429,7 +429,7 @@ bool Gnss_Sdr_Supl_Client::load_gal_ephemeris_xml(const std::string& file_name)
 }
 
 
-bool save_gal_ephemeris_map_xml(const std::string& file_name, std::map<int, Galileo_Ephemeris> eph_map)
+bool Gnss_Sdr_Supl_Client::save_gal_ephemeris_map_xml(const std::string& file_name, std::map<int, Galileo_Ephemeris> eph_map)
 {
     if (eph_map.empty() == false)
         {
@@ -476,7 +476,7 @@ bool Gnss_Sdr_Supl_Client::load_cnav_ephemeris_xml(const std::string& file_name)
 }
 
 
-bool save_cnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Gps_CNAV_Ephemeris> eph_map)
+bool Gnss_Sdr_Supl_Client::save_cnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Gps_CNAV_Ephemeris> eph_map)
 {
     if (eph_map.empty() == false)
         {
@@ -510,9 +510,9 @@ bool Gnss_Sdr_Supl_Client::load_gnav_ephemeris_xml(const std::string& file_name)
         {
             ifs.open(file_name.c_str(), std::ifstream::binary | std::ifstream::in);
             boost::archive::xml_iarchive xml(ifs);
-            gps_cnav_ephemeris_map.clear();
+            glonass_gnav_ephemeris_map.clear();
             xml >> boost::serialization::make_nvp("GNSS-SDR_gnav_ephemeris_map", this->glonass_gnav_ephemeris_map);
-            LOG(INFO) << "Loaded GLONASS ephemeris map data with " << this->gps_cnav_ephemeris_map.size() << " satellites";
+            LOG(INFO) << "Loaded GLONASS ephemeris map data with " << this->glonass_gnav_ephemeris_map.size() << " satellites";
         }
     catch (std::exception& e)
         {
@@ -523,7 +523,7 @@ bool Gnss_Sdr_Supl_Client::load_gnav_ephemeris_xml(const std::string& file_name)
 }
 
 
-bool save_gnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Glonass_Gnav_Ephemeris> eph_map)
+bool Gnss_Sdr_Supl_Client::save_gnav_ephemeris_map_xml(const std::string& file_name, std::map<int, Glonass_Gnav_Ephemeris> eph_map)
 {
     if (eph_map.empty() == false)
         {

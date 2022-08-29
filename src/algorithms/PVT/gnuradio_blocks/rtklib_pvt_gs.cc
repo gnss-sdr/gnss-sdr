@@ -86,12 +86,17 @@
 #include <boost/bind/bind.hpp>
 #endif
 
+#if USE_STD_COMMON_FACTOR
+#include <numeric>
+namespace bc = std;
+#else
 #if USE_OLD_BOOST_MATH_COMMON_FACTOR
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
 #else
 #include <boost/integer/common_factor_rt.hpp>
 namespace bc = boost::integer;
+#endif
 #endif
 
 #if PMT_USES_BOOST_ANY

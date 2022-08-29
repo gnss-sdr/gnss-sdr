@@ -65,6 +65,20 @@ UhdSignalSource::UhdSignalSource(const ConfigurationInterface* configuration,
     sample_rate_ = configuration->property(role + ".sampling_frequency", 4.0e6);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
+    // UHD TRANSPORT PARAMETERS
+    // option to manually set device "num_recv_frames"
+    std::string device_num_recv_frames = configuration->property(role + ".device_num_recv_frames", empty);
+    if (empty != device_num_recv_frames)  // if not empty
+        {
+            dev_addr["num_recv_frames"] = device_num_recv_frames;
+        }
+    // option to manually set device "recv_frame_size"
+    std::string device_recv_frame_size = configuration->property(role + ".device_recv_frame_size", empty);
+    if (empty != device_recv_frame_size)  // if not empty
+        {
+            dev_addr["recv_frame_size"] = device_recv_frame_size;
+        }
+
     if (RF_channels_ == 1)
         {
             // Single RF channel UHD operation (backward compatible config file format)

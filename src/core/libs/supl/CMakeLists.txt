@@ -65,6 +65,15 @@ target_include_directories(core_libs_supl
         ${CMAKE_CURRENT_SOURCE_DIR}/types
 )
 
+# This is ancient and unmaintained code. As the project migrates to modern
+# compilers, non-standards-conforming constructs will be flagged as errors. This
+# should be upgraded, but until then, allow non-standards-conforming constructs
+if(NOT (CMAKE_VERSION VERSION_LESS "3.1"))
+    set_target_properties(core_libs_supl
+        PROPERTIES C_EXTENSIONS ON
+    )
+endif()
+
 set_property(TARGET core_libs_supl
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

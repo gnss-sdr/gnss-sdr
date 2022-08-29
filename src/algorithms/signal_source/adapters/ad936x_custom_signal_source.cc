@@ -109,16 +109,19 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
                     else if (ssize_ == 8)
                         {
                             gr_interleaved_char_to_complex_.push_back(gr::blocks::interleaved_char_to_complex::make());
+                            unpack_short_byte.push_back(make_unpack_short_byte_samples());
                         }
                     else if (ssize_ == 4)
                         {
                             gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, false));
                             unpack_byte_fourbits.push_back(make_unpack_byte_4bit_samples());
+                            unpack_short_byte.push_back(make_unpack_short_byte_samples());
                         }
                     else if (ssize_ == 2)
                         {
                             gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, false));
                             unpack_byte_twobits.push_back(make_unpack_byte_2bit_cpx_samples());
+                            unpack_short_byte.push_back(make_unpack_short_byte_samples());
                         }
                 }
         }
@@ -165,7 +168,8 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                 }
             else if (ssize_ == 8)
                 {
-                    top_block->connect(ad936x_iio_source, n, gr_interleaved_char_to_complex_.at(n), 0);
+                    top_block->connect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
+                    top_block->connect(unpack_short_byte.at(n), 0, gr_interleaved_char_to_complex_.at(n), 0);
                     DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_char_to_complex_ for channel " << n;
                     if (dump_)
                         {
@@ -175,7 +179,8 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                 }
             else if (ssize_ == 4)
                 {
-                    top_block->connect(ad936x_iio_source, n, unpack_byte_fourbits.at(n), 0);
+                    top_block->connect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
+                    top_block->connect(unpack_short_byte.at(n), 0, unpack_byte_fourbits.at(n), 0);
                     top_block->connect(unpack_byte_fourbits.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
                     DLOG(INFO) << "connected ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
                     if (dump_)
@@ -186,7 +191,8 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                 }
             else if (ssize_ == 2)
                 {
-                    top_block->connect(ad936x_iio_source, n, unpack_byte_twobits.at(n), 0);
+                    top_block->connect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
+                    top_block->connect(unpack_short_byte.at(n), 0, unpack_byte_twobits.at(n), 0);
                     top_block->connect(unpack_byte_twobits.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
                     DLOG(INFO) << "connected ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
                     if (dump_)
@@ -216,53 +222,56 @@ void Ad936xCustomSignalSource::disconnect(gr::top_block_sptr top_block)
             if (ssize_ == 16)
                 {
                     top_block->disconnect(ad936x_iio_source, n, gr_interleaved_short_to_complex_.at(n), 0);
-                    DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_short_to_complex for channel " << n;
+                    DLOG(INFO) << "disconnect ad936x_iio_source source to gr_interleaved_short_to_complex for channel " << n;
                     if (dump_)
                         {
                             top_block->disconnect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            DLOG(INFO) << "disconnect source to file sink";
                         }
                 }
             else if (ssize_ == 8)
                 {
-                    top_block->disconnect(ad936x_iio_source, n, gr_interleaved_char_to_complex_.at(n), 0);
-                    DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_char_to_complex_ for channel " << n;
+                    top_block->connect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
+                    top_block->connect(unpack_short_byte.at(n), 0, unpack_byte_fourbits.at(n), 0);
+                    DLOG(INFO) << "disconnect ad936x_iio_source source to gr_interleaved_char_to_complex_ for channel " << n;
                     if (dump_)
                         {
                             top_block->disconnect(gr_interleaved_char_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            DLOG(INFO) << "disconnect source to file sink";
                         }
                 }
             else if (ssize_ == 4)
                 {
-                    top_block->disconnect(ad936x_iio_source, n, unpack_byte_fourbits.at(n), 0);
+                    top_block->disconnect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
+                    top_block->disconnect(unpack_short_byte.at(n), 0, unpack_byte_fourbits.at(n), 0);
                     top_block->disconnect(unpack_byte_fourbits.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
-                    DLOG(INFO) << "connected ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
+                    DLOG(INFO) << "disconnect ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
                     if (dump_)
                         {
-                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            top_block->disconnect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                            DLOG(INFO) << "disconnect source to file sink";
                         }
                 }
             else if (ssize_ == 2)
                 {
-                    top_block->disconnect(ad936x_iio_source, n, unpack_byte_twobits.at(n), 0);
+                    top_block->disconnect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
+                    top_block->disconnect(unpack_short_byte.at(n), 0, unpack_byte_twobits.at(n), 0);
                     top_block->disconnect(unpack_byte_twobits.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
-                    DLOG(INFO) << "connected ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
+                    DLOG(INFO) << "disconnect ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
                     if (dump_)
                         {
                             top_block->disconnect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            DLOG(INFO) << "disconnect source to file sink";
                         }
                 }
             else
                 {
                     top_block->disconnect(ad936x_iio_source, n, gr_interleaved_short_to_complex_.at(n), 0);
-                    DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_short_to_complex for channel " << n;
+                    DLOG(INFO) << "disconnect ad936x_iio_source source to gr_interleaved_short_to_complex for channel " << n;
                     if (dump_)
                         {
                             top_block->disconnect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            DLOG(INFO) << "disconnect source to file sink";
                         }
                 }
         }

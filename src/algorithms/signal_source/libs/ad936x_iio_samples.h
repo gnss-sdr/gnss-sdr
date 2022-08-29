@@ -18,12 +18,9 @@
 #ifndef SRC_LIBS_ad936x_iio_samples_H_
 #define SRC_LIBS_ad936x_iio_samples_H_
 
-#define IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES 32768 * 2
+#define IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES 32768
 
-#define IIO_INPUTRAMFIFOSIZE 512
-
-#define IIO_MAX_CH 4
-#define IIO_MAX_BYTES_PER_CHANNEL IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2 * 2  //(2-bytes per I + 2-bytes per Q)
+#define IIO_INPUTRAMFIFOSIZE 256
 
 #include <memory>
 #include <stdint.h>
@@ -33,9 +30,11 @@ class ad936x_iio_samples
 {
 public:
     ad936x_iio_samples();
-    uint32_t n_bytes[IIO_MAX_CH];
-    uint32_t n_samples[IIO_MAX_CH];
-    int16_t buffer[IIO_MAX_CH][IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2];  //16 bits I,Q samples buffers
+    uint32_t n_bytes;
+    uint32_t n_interleaved_iq_samples;
+    uint16_t n_channels;
+    uint16_t step_bytes;
+    char buffer[IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 4 * 4];  //max 16 bits samples per buffer (4 channels, 2-bytes per I + 2-bytes per Q)
 };
 
 #endif

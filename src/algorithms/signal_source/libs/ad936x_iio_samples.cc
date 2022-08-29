@@ -18,9 +18,8 @@
 
 ad936x_iio_samples::ad936x_iio_samples()
 {
-    for (int n = 0; n < IIO_MAX_CH; n++)
-        {
-            n_bytes[n] = 0;
-            n_samples[n] = 0;
-        }
+    n_bytes = 0;
+    n_interleaved_iq_samples = 0;
+    step_bytes = 0;
+    n_channels = 0;
 }

@@ -247,7 +247,8 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
     double tx_attenuation_db_,
     int64_t freq_dds_tx_hz_,
     double scale_dds_,
-    double phase_dds_deg_)
+    double phase_dds_deg_,
+    int channel)
 {
     // TX stream config
     std::cout << "Start of AD9361 TX Oscillator DDS configuration\n";
@@ -260,52 +261,60 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
 
     params_phy.push_back("out_altvoltage1_TX_LO_frequency=" +
                          std::to_string(freq_rf_tx_hz_));
-
-    params_phy.push_back("out_voltage0_hardwaregain=" +
-                         std::to_string(-tx_attenuation_db_));
-
-    //disable the other TX
-    params_phy.push_back("out_voltage1_hardwaregain=" +
-                         std::to_string(-tx_attenuation_db_));
-
-
+    double disabled_tx_attenuation = 89.75;
+    if (channel == 1)
+        {
+            params_phy.push_back("out_voltage0_hardwaregain=" +
+                                 std::to_string(-tx_attenuation_db_));
+            //disable the other TX
+            params_phy.push_back("out_voltage1_hardwaregain=" +
+                                 std::to_string(-disabled_tx_attenuation));
+        }
+    else
+        {
+            params_phy.push_back("out_voltage1_hardwaregain=" +
+                                 std::to_string(-tx_attenuation_db_));
+            //disable the other TX
+            params_phy.push_back("out_voltage0_hardwaregain=" +
+                                 std::to_string(-disabled_tx_attenuation));
+        }
     configure_params(phy, params_phy);
 
     std::vector<std::string> params_dds;
 
     //DDS TX CH1 I (tone #1)
-    params_dds.push_back("out_altvoltage0_TX1_I_F1_frequency=" +
-                         std::to_string(freq_dds_tx_hz_));
-    params_dds.push_back("out_altvoltage0_TX1_I_F1_phase=" +
-                         std::to_string(phase_dds_deg_ * 1000.0));
-    params_dds.push_back("out_altvoltage0_TX1_I_F1_scale=" +
-                         std::to_string(scale_dds_));
-    params_dds.push_back("out_altvoltage0_TX1_I_F1_raw=1");
-    //DDS TX CH1 Q (tone #1)
-    params_dds.push_back("out_altvoltage2_TX1_Q_F1_frequency=" +
-                         std::to_string(freq_dds_tx_hz_));
-    params_dds.push_back("out_altvoltage2_TX1_Q_F1_phase=" +
-                         std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
-    params_dds.push_back("out_altvoltage2_TX1_Q_F1_scale=" +
-                         std::to_string(scale_dds_));
-    params_dds.push_back("out_altvoltage2_TX1_Q_F1_raw=1");
-
-    //DDS TX CH1 I (tone #1)
-    //    params_dds.push_back("out_altvoltage4_TX2_I_F1_frequency=" +
+    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_frequency=" +
     //                         std::to_string(freq_dds_tx_hz_));
-    //    params_dds.push_back("out_altvoltage4_TX2_I_F1_phase=" +
+    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_phase=" +
     //                         std::to_string(phase_dds_deg_ * 1000.0));
-    //    params_dds.push_back("out_altvoltage4_TX2_I_F1_scale=" +
+    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_scale=" +
     //                         std::to_string(scale_dds_));
-    //    params_dds.push_back("out_altvoltage4_TX2_I_F1_raw=1");
+    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_raw=1");
     //    //DDS TX CH1 Q (tone #1)
-    //    params_dds.push_back("out_altvoltage6_TX2_Q_F1_frequency=" +
+    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_frequency=" +
     //                         std::to_string(freq_dds_tx_hz_));
-    //    params_dds.push_back("out_altvoltage6_TX2_Q_F1_phase=" +
+    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_phase=" +
     //                         std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
-    //    params_dds.push_back("out_altvoltage6_TX2_Q_F1_scale=" +
+    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_scale=" +
     //                         std::to_string(scale_dds_));
-    //    params_dds.push_back("out_altvoltage6_TX2_Q_F1_raw=1");
+    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_raw=1");
+
+    //DDS TX CH2 I (tone #1)
+    params_dds.push_back("out_altvoltage4_TX2_I_F1_frequency=" +
+                         std::to_string(freq_dds_tx_hz_));
+    params_dds.push_back("out_altvoltage4_TX2_I_F1_phase=" +
+                         std::to_string(phase_dds_deg_ * 1000.0));
+    params_dds.push_back("out_altvoltage4_TX2_I_F1_scale=" +
+                         std::to_string(scale_dds_));
+    params_dds.push_back("out_altvoltage4_TX2_I_F1_raw=1");
+    //DDS TX CH2 Q (tone #1)
+    params_dds.push_back("out_altvoltage6_TX2_Q_F1_frequency=" +
+                         std::to_string(freq_dds_tx_hz_));
+    params_dds.push_back("out_altvoltage6_TX2_Q_F1_phase=" +
+                         std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
+    params_dds.push_back("out_altvoltage6_TX2_Q_F1_scale=" +
+                         std::to_string(scale_dds_));
+    params_dds.push_back("out_altvoltage6_TX2_Q_F1_raw=1");
 
     configure_params(dds_dev, params_dds);
 
@@ -511,10 +520,11 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
             std::cout << "Configuring DDS Local Oscillator generation. LO Freq. is " << delta_freq_hz << " [Hz]\n";
             PlutoTxEnable(true);
             config_ad9361_dds(delta_freq_hz,
-                30,
-                100000,
+                0,
+                0,
                 0.9,
-                0);
+                0,
+                2);
             std::cout << "Configuring DDS Local Oscillator generation DONE\n";
         }
     else
@@ -633,6 +643,7 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     //        }
 
     std::cout << "AD936x Front-end configuration summary: \n";
+    std::cout << "RF frequency tunned in AD936x: " << freq_ << " [Hz]\n";
     std::cout << "Baseband sampling frequency: " << sample_rate_sps << " [SPS]\n";
     std::cout << "RX chain gain: " << rf_gain_rx0_ << " [dB][only valid in manual mode]\n";
     std::cout << "RX chain gain mode: " << gain_mode_rx0_ << "\n";
@@ -812,13 +823,13 @@ void ad936x_iio_custom::stop_record()
 {
     receive_samples = false;
 
-    if (capture_time_thread.joinable() == true)
+    if (capture_samples_thread.joinable() == true)
         {
             std::cout << "Joining sample cature thread...\n";
             capture_samples_thread.join();
         }
 
-    if (capture_time_thread.joinable() == true)
+    if (overflow_monitor_thread.joinable() == true)
         {
             std::cout << "Joining overflow monitor thread...\n";
             overflow_monitor_thread.join();
@@ -1153,7 +1164,7 @@ void ad936x_iio_custom::capture(const std::vector<std::string> &channels)
     unsigned long items_in_buffer;
     std::cerr << "Enter capture loop...\n";
     int ret;
-    int bytes_per_channel = static_cast<int>(channels.size()) * 2;  //each channel has two items in channels vector (I,Q). Each component has two bytes.
+    int bytes_to_interleaved_iq_samples = n_channels * sizeof(int16_t);
     while (receive_samples == true)
         {
             free_buffers.wait_and_pop(current_buffer);
@@ -1173,21 +1184,16 @@ void ad936x_iio_custom::capture(const std::vector<std::string> &channels)
                             return;
                         }
                 }
+            memcpy(&current_samples->buffer[0], iio_buffer_start(rxbuf), ret);
 
-            // Demultiplex the samples of a given channel
-            int n_ch = 0;
-            for (auto it = std::begin(channel_list); it != std::end(channel_list); ++it)
-                {
-                    current_samples->n_bytes[n_ch] = iio_channel_read_raw(*it, rxbuf, &current_samples->buffer[n_ch][0], IIO_MAX_BYTES_PER_CHANNEL);
-                    current_samples->n_samples[n_ch] = current_samples->n_bytes[n_ch] / sizeof(short);
-                    n_ch++;
-                }
+            items_in_buffer = static_cast<unsigned long>(ret) / bytes_to_interleaved_iq_samples;
 
-            // old, valid only for one channel
-            //memcpy(&current_samples->buffer[0], iio_buffer_start(rxbuf), ret);
+            if (items_in_buffer == 0) return;
 
-            if (current_samples->n_bytes[0] == 0) return;
-
+            current_samples->n_channels = n_channels;
+            current_samples->n_interleaved_iq_samples = items_in_buffer;
+            current_samples->n_bytes = ret;
+            current_samples->step_bytes = iio_buffer_step(rxbuf);
             used_buffers.push(current_buffer);
         }
 

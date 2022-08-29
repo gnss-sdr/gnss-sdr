@@ -79,6 +79,21 @@ ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
         spattern_));
 }
 
+void ad936x_iio_source::ad9361_channel_demux_and_record(ad936x_iio_samples *samples_in, int nchannels, std::vector<std::fstream> *files_out)
+{
+    int32_t current_byte = 0;
+    int16_t ch = 0;
+    // std::cout << "nbytes: " << samples_in->n_bytes << " nsamples: " << samples_in->n_samples << " nch: " << nchannels << "\n";
+    while (current_byte < samples_in->n_bytes)
+        {
+            for (ch = 0; ch < nchannels; ch++)
+                {
+                    //std::cout << current_byte << " of " << samples_in->n_bytes << " test: " << (int)samples_in->buffer[current_byte] << "\n";
+                    (*files_out).at(ch).write(&samples_in->buffer[current_byte], 4);  //two bytes I + two bytes Q per channel
+                    current_byte += 4;
+                }
+        }
+}
 
 ad936x_iio_source::ad936x_iio_source(
     std::string pluto_uri_,
@@ -222,9 +237,22 @@ ad936x_iio_source::ad936x_iio_source(
             exit(1);
         }
 
-    //set_min_noutput_items(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2);
-    set_min_output_buffer(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2);
+    set_min_noutput_items(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2);  // multiplexed I,Q, so, two samples per complex sample
+    set_min_output_buffer(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * sizeof(int16_t) * 2);
     //std::cout << "max_output_buffer " << min_output_buffer(0) << " min_noutput_items: " << min_noutput_items() << "\n";
+
+    //    for (int n = 0; n < ad936x_custom->n_channels; n++)
+    //        {
+    //            std::string cap_file_root_name = "./debug_cap_ch";
+    //            samplesfile.push_back(std::fstream(cap_file_root_name + std::to_string(n) + ".dat", std::ios::out | std::ios::binary));
+    //            //samplesfile.back().exceptions(std::ios_base::badbit | std::ios_base::failbit); //this will enable exceptions for debug
+    //
+    //            if (samplesfile.back().is_open() == false)
+    //                {
+    //                    std::cout << "ERROR: Could not open " << cap_file_root_name + "_ch" + std::to_string(n) + ".dat"
+    //                              << " for record samples!\n";
+    //                }
+    //        }
 }
 
 ad936x_iio_source::~ad936x_iio_source()
@@ -246,6 +274,7 @@ bool ad936x_iio_source::start()
 
 bool ad936x_iio_source::stop()
 {
+    std::cout << "stopping ad936x_iio_source...\n";
     ad936x_custom->stop_record();
     return true;
 }
@@ -261,16 +290,46 @@ int ad936x_iio_source::general_work(int noutput_items,
     current_samples = current_buffer.get();
 
     //I and Q samples are interleaved in buffer: IQIQIQ...
-
-    for (size_t n = 0; n < ad936x_custom->n_channels; n++)
+    int32_t n_interleaved_iq_samples_per_channel = current_samples->n_bytes / (ad936x_custom->n_channels * 2);
+    if (noutput_items < n_interleaved_iq_samples_per_channel)
         {
-            if (output_items.size() > n)  // check if the output channel is connected
-                {
-                    memcpy(reinterpret_cast<void *>(output_items[n]), reinterpret_cast<void *>(current_samples->buffer[n]), current_samples->n_bytes[n]);
-                    produce(n, current_samples->n_samples[n]);
-                }
+            std::cout << "ad936x_iio_source output buffer overflow! noutput_items: " << noutput_items << " vs. " << n_interleaved_iq_samples_per_channel << "\n";
+            return 0;
         }
+    else
+        {
+            //ad9361_channel_demux_and_record(current_samples, ad936x_custom->n_channels, &samplesfile);
 
-    ad936x_custom->push_sample_buffer(current_buffer);
-    return this->WORK_CALLED_PRODUCE;
+            uint32_t current_byte = 0;
+            uint32_t current_byte_in_gr = 0;
+            int16_t ch = 0;
+            //std::cout << "nbytes: " << samples_in->n_bytes << " nsamples: " << samples_in->n_samples << " nch: " << nchannels << "\n";
+            if (ad936x_custom->n_channels == 1)
+                {
+                    memcpy(&((char *)output_items[0])[0], &current_samples->buffer[current_byte], current_samples->n_bytes);
+                }
+            else
+                {
+                    while (current_byte < current_samples->n_bytes)
+
+                        {
+                            for (ch = 0; ch < ad936x_custom->n_channels; ch++)
+                                {
+                                    memcpy(&((char *)output_items[ch])[current_byte_in_gr], &current_samples->buffer[current_byte], 4);  // two bytes I + two bytes Q per channel: 4 bytes
+                                    current_byte += 4;
+                                }
+                            current_byte_in_gr += 4;
+                        }
+                }
+            ad936x_custom->push_sample_buffer(current_buffer);
+            return n_interleaved_iq_samples_per_channel;  // always int16_t samples interleaved (I,Q,I,Q)
+
+            //    for (size_t n = 0; n < ad936x_custom->n_channels; n++)
+            //        {
+            //            produce(n, current_samples->n_samples[n]);
+            //        }
+            //
+            //
+            //    return this->WORK_CALLED_PRODUCE;
+        }
 }

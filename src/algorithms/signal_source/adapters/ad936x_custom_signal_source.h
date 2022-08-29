@@ -23,6 +23,7 @@
 #include "signal_source_base.h"
 #include "unpack_byte_2bit_cpx_samples.h"
 #include "unpack_byte_4bit_samples.h"
+#include "unpack_short_byte_samples.h"
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
@@ -74,6 +75,7 @@ private:
 
     std::vector<gr::blocks::interleaved_short_to_complex::sptr> gr_interleaved_short_to_complex_;
     std::vector<gr::blocks::interleaved_char_to_complex::sptr> gr_interleaved_char_to_complex_;
+    std::vector<unpack_short_byte_samples_sptr> unpack_short_byte;
     std::vector<unpack_byte_4bit_samples_sptr> unpack_byte_fourbits;
     std::vector<unpack_byte_2bit_cpx_samples_sptr> unpack_byte_twobits;
 

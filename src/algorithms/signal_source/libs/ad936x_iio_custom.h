@@ -99,7 +99,8 @@ private:
         double tx_attenuation_db_,
         int64_t freq_dds_tx_hz_,
         double scale_dds_,
-        double phase_dds_deg_);
+        double phase_dds_deg_,
+        int channel);
 
     void get_PPS_timestamp();
     void capture(const std::vector<std::string> &channels);

@@ -235,6 +235,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
 {
     int32_t J = 0;
     d_frame_ID = 0U;
+    uint64_t P_1_tmp = 0;
 
     // Unpack bytes to bits
     const std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(frame_string);
@@ -252,7 +253,8 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
         {
         case 1:
             // --- It is string 1 -----------------------------------------------
-            gnav_ephemeris.d_P_1 = (static_cast<double>(read_navigation_unsigned(string_bits, P1)) + 1) * 15;
+            P_1_tmp = read_navigation_unsigned(string_bits, P1);
+            gnav_ephemeris.d_P_1 = (P_1_tmp == 0) ? 0. : (P_1_tmp + 1) * 15;
             gnav_ephemeris.d_t_k = static_cast<double>(read_navigation_unsigned(string_bits, T_K_HR)) * 3600 +
                                    static_cast<double>(read_navigation_unsigned(string_bits, T_K_MIN)) * 60 +
                                    static_cast<double>(read_navigation_unsigned(string_bits, T_K_SEC)) * 30;

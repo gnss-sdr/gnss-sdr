@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
@@ -131,12 +132,16 @@ private:
         int bshift_,
         bool spattern_);
 
+
+    void ad9361_channel_demux_to_buffer(ad936x_iio_samples *samples_in, int nchannels, gr_vector_void_star &output_items);
+    void ad9361_channel_demux_and_record(ad936x_iio_samples *samples_in, int nchannels, std::vector<std::fstream> *files_out);
+
     std::thread pps_rx_thread;
-
-
     std::unique_ptr<ad936x_iio_custom> ad936x_custom;
     std::shared_ptr<pps_tcp_rx> pps_rx;
     std::shared_ptr<Concurrent_Queue<PpsSamplestamp>> ppsqueue;
+
+    std::vector<std::fstream> samplesfile;
 };
 
 

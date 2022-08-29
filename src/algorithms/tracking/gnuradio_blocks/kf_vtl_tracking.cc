@@ -886,12 +886,12 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
     // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
     d_x_old_old = {acq_code_phase_chips, 0.0, acq_doppler_hz, 0.0};
 
-    std::cout << "F: " << d_F << "\n";
-    std::cout << "H: " << d_H << "\n";
-    std::cout << "R: " << d_R << "\n";
-    std::cout << "Q: " << d_Q << "\n";
-    std::cout << "P: " << d_P_old_old << "\n";
-    std::cout << "x: " << d_x_old_old << "\n";
+    DLOG(INFO) << "F: " << d_F;
+    DLOG(INFO) << "H: " << d_H;
+    DLOG(INFO) << "R: " << d_R;
+    DLOG(INFO) << "Q: " << d_Q;
+    DLOG(INFO) << "P: " << d_P_old_old;
+    DLOG(INFO) << "x: " << d_x_old_old;
 }
 
 
@@ -926,12 +926,12 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
     d_R = {{Sigma2_Tau, 0.0},
         {0.0, Sigma2_Phase}};
 
-    std::cout << "Fu: " << d_F << "\n";
-    std::cout << "Hu: " << d_H << "\n";
-    std::cout << "Ru: " << d_R << "\n";
-    std::cout << "Qu: " << d_Q << "\n";
-    std::cout << "Pu: " << d_P_old_old << "\n";
-    std::cout << "xu: " << d_x_old_old << "\n";
+    DLOG(INFO) << "Fu: " << d_F;
+    DLOG(INFO) << "Hu: " << d_H;
+    DLOG(INFO) << "Ru: " << d_R;
+    DLOG(INFO) << "Qu: " << d_Q;
+    DLOG(INFO) << "Pu: " << d_P_old_old;
+    DLOG(INFO) << "xu: " << d_x_old_old;
 }
 
 
@@ -1174,10 +1174,7 @@ void kf_vtl_tracking::run_Kf()
 
     // New carrier Doppler frequency estimation
     d_carrier_doppler_kf_hz = d_x_new_new(2);
-    if (d_channel == 0)
-        {
-            // std::cout << "Doppler: " << d_carrier_doppler_kf_hz << '\n';
-        }
+
     // d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / TWO_PI;
     // d_x_new_new(2) = d_x_new_new(2) + fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / TWO_PI;
     d_P_accu_old = d_P_accu;
@@ -1187,13 +1184,6 @@ void kf_vtl_tracking::run_Kf()
     // New code Doppler frequency estimation
     d_code_freq_kf_chips_s = d_code_chip_rate + d_carrier_doppler_kf_hz * d_code_chip_rate / d_signal_carrier_freq;
 
-    if (d_trk_parameters.high_dyn)
-        {
-            // d_x_new_new(3) = 0;
-            //    std::cout << "d_carrier_doppler_rate_kf_hz_s: " << d_carrier_doppler_rate_kf_hz_s << '\n';
-            //  d_carrier_phase_rate_step_rad = TWO_PI * d_carrier_doppler_rate_kf_hz_s / d_trk_parameters.fs_in;
-            //  d_carrier_phase_rate_step_rad = d_carrier_doppler_rate_kf_hz_s / d_trk_parameters.fs_in;
-        }
     // d_x_new_new(4) = 0;
     //  Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
     //     if (d_trk_parameters.enable_doppler_correction == true)

@@ -42,6 +42,7 @@
 #include <chrono>
 #include <cstdio>  // FPGA read input file
 #include <fcntl.h>
+#include <iomanip>
 #include <iostream>
 #include <unistd.h>
 #include <utility>

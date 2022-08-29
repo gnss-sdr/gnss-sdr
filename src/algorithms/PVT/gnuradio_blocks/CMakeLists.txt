@@ -74,11 +74,18 @@ if(ENABLE_CLANG_TIDY)
     endif()
 endif()
 
-if(USE_OLD_BOOST_MATH_COMMON_FACTOR)
+if((NOT (CMAKE_VERSION VERSION_LESS "3.1")) AND NOT (CMAKE_CXX_STANDARD VERSION_LESS 17))
     target_compile_definitions(pvt_gr_blocks
         PRIVATE
-            -DUSE_OLD_BOOST_MATH_COMMON_FACTOR=1
+            -DUSE_STD_COMMON_FACTOR=1
     )
+else()
+    if(USE_OLD_BOOST_MATH_COMMON_FACTOR)
+        target_compile_definitions(pvt_gr_blocks
+            PRIVATE
+                -DUSE_OLD_BOOST_MATH_COMMON_FACTOR=1
+        )
+    endif()
 endif()
 
 if(USE_BOOST_BIND_PLACEHOLDERS)

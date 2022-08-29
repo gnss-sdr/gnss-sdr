@@ -28,12 +28,17 @@
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
 #include <glog/logging.h>              // for LOG
 #include <iostream>                    // for std::cout
+#if USE_STD_COMMON_FACTOR
+#include <numeric>
+namespace bc = std;
+#else
 #if USE_OLD_BOOST_MATH_COMMON_FACTOR
 #include <boost/math/common_factor_rt.hpp>
 namespace bc = boost::math;
 #else
 #include <boost/integer/common_factor_rt.hpp>
 namespace bc = boost::integer;
+#endif
 #endif
 
 using namespace std::string_literals;

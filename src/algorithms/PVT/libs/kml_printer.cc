@@ -24,6 +24,7 @@
 #include <cstdlib>    // for mkstemp
 #include <ctime>      // for tm
 #include <exception>  // for exception
+#include <iomanip>    // for std::setprecision
 #include <iostream>   // for cout, cerr
 #include <sstream>
 #include <sys/stat.h>   // for S_IXUSR | S_IRWXG | S_IRWXO

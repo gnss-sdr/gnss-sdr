@@ -549,12 +549,17 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
             PlutoTxEnable(false);  //power down the TX LO to reduce interferences
         }
 
-
-    int set_filter_ret = ad9361_set_bb_rate_custom_filter_auto(phy, sample_rate_sps);
+    int set_filter_ret = ad9361_set_bb_rate(phy, sample_rate_sps);
     if (set_filter_ret != 0)
         {
-            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
+            std::cout << "Warning: Unable to set AD936x ad9361_set_bb_rate parameters!\n";
         }
+
+    //    int set_filter_ret = ad9361_set_bb_rate_custom_filter_auto(phy, sample_rate_sps);
+    //    if (set_filter_ret != 0)
+    //        {
+    //            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
+    //        }
 
     //testing: set manual RX filter chain
     //    unsigned long RX_analog_bb_lpf_stop_hz = 1000000;

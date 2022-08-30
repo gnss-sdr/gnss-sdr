@@ -64,7 +64,9 @@ ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
     int fe_ctlport_,
     int ssize_,
     int bshift_,
-    bool spattern_);
+    bool spattern_,
+    double lo_attenuation_db_,
+    bool high_side_lo_);
 
 /*!
  * \brief This class implements conversion between Labsat 2, 3 and 3 Wideband
@@ -107,7 +109,9 @@ private:
         int fe_ctlport_,
         int ssize_,
         int bshift_,
-        bool spattern_);
+        bool spattern_,
+        double lo_attenuation_db_,
+        bool high_side_lo_);
 
     ad936x_iio_source(
         std::string pluto_uri_,
@@ -130,7 +134,9 @@ private:
         int fe_ctlport_,
         int ssize_,
         int bshift_,
-        bool spattern_);
+        bool spattern_,
+        double lo_attenuation_db_,
+        bool high_side_lo_);
 
 
     void ad9361_channel_demux_to_buffer(ad936x_iio_samples *samples_in, int nchannels, gr_vector_void_star &output_items);

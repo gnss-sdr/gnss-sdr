@@ -410,7 +410,9 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     double rf_gain_rx1_,
     bool enable_ch0,
     bool enable_ch1,
-    long long freq_2ch)
+    long long freq_2ch,
+    double lo_attenuation_db_,
+    bool high_side_lo_)
 
 {
     if (check_device() == false) return false;
@@ -510,17 +512,32 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     if (enable_ch1 == true and enable_ch0 == true and freq_ != freq_2ch)
         {
             std::cout << "Two channels enabled with different frequencies, enabling the external RF transverter board:\n";
-            long long int delta_freq_hz = freq_2ch - freq_;
-            if (delta_freq_hz < 0)
+            long long int lo_freq_hz = 0;
+            if (high_side_lo_ == false)
                 {
-                    std::cout << "Configuration problem: 2nd channel frequency is " << freq_2ch << " [Hz], must be higher than main channel (" << freq_ << " [Hz])\n";
-                    return false;
+                    std::cout << "Using LOW SIDE Local Oscillator (F_RF > F_LO)\n";
+                    lo_freq_hz = freq_2ch - freq_;
+                    if (lo_freq_hz < 0)
+                        {
+                            std::cout << "Configuration problem: 2nd channel frequency is " << freq_2ch << " [Hz], must be higher than main channel (" << freq_ << " [Hz])\n";
+                            return false;
+                        }
+                }
+            else
+                {
+                    std::cout << "Using HIGH SIDE Local Oscillator (F_RF < F_LO), consider baseband spectrum inversion.\n";
+                    lo_freq_hz = freq_2ch + freq_;
+                    if (lo_freq_hz < 0)
+                        {
+                            std::cout << "Configuration problem: 2nd channel frequency is " << freq_2ch << " [Hz], must be higher than main channel (" << freq_ << " [Hz])\n";
+                            return false;
+                        }
                 }
 
-            std::cout << "Configuring DDS Local Oscillator generation. LO Freq. is " << delta_freq_hz << " [Hz]\n";
+            std::cout << "Configuring DDS Local Oscillator generation. LO Freq. is " << lo_freq_hz << " [Hz]\n";
             PlutoTxEnable(true);
-            config_ad9361_dds(delta_freq_hz,
-                0,
+            config_ad9361_dds(lo_freq_hz,
+                lo_attenuation_db_,
                 0,
                 0.9,
                 0,
@@ -531,6 +548,30 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
         {
             PlutoTxEnable(false);  //power down the TX LO to reduce interferences
         }
+
+
+    int set_filter_ret = ad9361_set_bb_rate_custom_filter_auto(phy, sample_rate_sps);
+    if (set_filter_ret != 0)
+        {
+            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
+        }
+
+    //testing: set manual RX filter chain
+    //    unsigned long RX_analog_bb_lpf_stop_hz = 1000000;
+    //    unsigned long TX_analog_bb_lpf_stop_hz = 1000000;
+    //
+    //    unsigned long FIR_lpf_passband_hz = 1000000;
+    //    unsigned long FIR_lpf_stopband_hz = 1200000;
+    //    int set_filter_ret = ad9361_set_bb_rate_custom_filter_manual(phy,
+    //        sample_rate_sps,
+    //        FIR_lpf_passband_hz,
+    //        FIR_lpf_stopband_hz,
+    //        RX_analog_bb_lpf_stop_hz,
+    //        TX_analog_bb_lpf_stop_hz);
+    //    if (set_filter_ret != 0)
+    //        {
+    //            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
+    //        }
 
     if (enable_ch0 == true)
         {
@@ -555,12 +596,12 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                     no_errors = false;
                 }
 
-            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
-            if (ret < 0)
-                {
-                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
-                    no_errors = false;
-                }
+            //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
+            //            if (ret < 0)
+            //                {
+            //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
+            //                    no_errors = false;
+            //                }
 
             long long set_rf_bw;
             ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
@@ -605,11 +646,23 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                     no_errors = false;
                 }
 
-            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
+            //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
+            //            if (ret < 0)
+            //                {
+            //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
+            //                    no_errors = false;
+            //                }
+
+            long long set_rf_bw;
+            ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
             if (ret < 0)
                 {
-                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
+                    std::cerr << "Warning: rf_bandwidth read returned: " << ret << "\n";
                     no_errors = false;
+                }
+            else
+                {
+                    std::cerr << "Info: rf_bandwidth read returned: " << set_rf_bw << " Hz \n";
                 }
 
             if (setRXGain(1, gain_mode_rx1_, rf_gain_rx1_) == false)
@@ -618,29 +671,6 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                     no_errors = false;
                 }
         }
-
-    int set_filter_ret = ad9361_set_bb_rate_custom_filter_auto(phy, sample_rate_sps);
-    if (set_filter_ret != 0)
-        {
-            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
-        }
-
-    //testing: set manual RX filter chain
-    //    unsigned long RX_analog_bb_lpf_stop_hz = 1000000;
-    //    unsigned long TX_analog_bb_lpf_stop_hz = 1000000;
-    //
-    //    unsigned long FIR_lpf_passband_hz = 1000000;
-    //    unsigned long FIR_lpf_stopband_hz = 1200000;
-    //  int set_filter_ret = ad9361_set_bb_rate_custom_filter_manual(phy,
-    //        sample_rate_sps,
-    //        FIR_lpf_passband_hz,
-    //        FIR_lpf_stopband_hz,
-    //        RX_analog_bb_lpf_stop_hz,
-    //        TX_analog_bb_lpf_stop_hz);
-    //    if (set_filter_ret != 0)
-    //        {
-    //            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
-    //        }
 
     std::cout << "AD936x Front-end configuration summary: \n";
     std::cout << "RF frequency tunned in AD936x: " << freq_ << " [Hz]\n";

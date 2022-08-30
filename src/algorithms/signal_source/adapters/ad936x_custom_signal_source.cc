@@ -56,12 +56,13 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
       PPS_mode_(configuration->property(role + ".PPS_mode", false)),
       fe_ip_(configuration->property(role + ".fe_ip", std::string("192.168.2.1"))),
       fe_ctlport_(configuration->property(role + ".fe_ctlport", int32_t(10000))),
-      ssize_(configuration->property(role + ".ssize", int32_t(16))),
+      ssize_(configuration->property(role + ".ssize", int32_t(12))),
       bshift_(configuration->property(role + ".bshift", int64_t(0))),
       spattern_(configuration->property(role + ".spattern", false)),
       inverted_spectrum_ch0_(configuration->property(role + ".inverted_spectrum_ch0", false)),
-      inverted_spectrum_ch1_(configuration->property(role + ".inverted_spectrum_ch1", false))
-
+      inverted_spectrum_ch1_(configuration->property(role + ".inverted_spectrum_ch1", false)),
+      lo_attenuation_db_(configuration->property(role + ".lo_attenuation_db", 6.0)),
+      high_side_lo_(configuration->property(role + ".high_side_lo", false))
 
 {
     if (item_type_ == "gr_complex")
@@ -69,7 +70,11 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
             bool customsamplesize = false;
-            if (ssize_ != 16 or spattern_ == true) customsamplesize = true;
+            if (ssize_ != 12 or spattern_ == true) customsamplesize = true;  // custom FPGA DMA firmware
+            if (ssize_ == 12)                                                // default original FPGA DMA firmware
+                {
+                    ssize_ = 16;  // set to 16 bits and do not try to change sample size
+                }
 
             ad936x_iio_source = ad936x_iio_make_source_sptr(
                 pluto_uri_,
@@ -92,7 +97,9 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
                 fe_ctlport_,
                 ssize_,
                 bshift_,
-                spattern_);
+                spattern_,
+                lo_attenuation_db_,
+                high_side_lo_);
 
             n_channels = 1;
             if (enable_ch0 == true and enable_ch1 == true)
@@ -100,26 +107,34 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
                     n_channels = 2;
                 }
 
+
+            for (int n = 0; n < n_channels; n++)
+                {
+                    if (n == 0) inverted_spectrum_vec.push_back(inverted_spectrum_ch0_);
+                    if (n == 1) inverted_spectrum_vec.push_back(inverted_spectrum_ch1_);
+                }
+
             for (int n = 0; n < n_channels; n++)
                 {
                     if (ssize_ == 16)
                         {
-                            gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make());
+                            gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, inverted_spectrum_vec.at(n)));
                         }
                     else if (ssize_ == 8)
                         {
-                            gr_interleaved_char_to_complex_.push_back(gr::blocks::interleaved_char_to_complex::make());
                             unpack_short_byte.push_back(make_unpack_short_byte_samples());
+                            gr_char_to_short_.push_back(gr::blocks::char_to_short::make());
+                            gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, inverted_spectrum_vec.at(n)));
                         }
                     else if (ssize_ == 4)
                         {
-                            gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, false));
+                            gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, inverted_spectrum_vec.at(n)));
                             unpack_byte_fourbits.push_back(make_unpack_byte_4bit_samples());
                             unpack_short_byte.push_back(make_unpack_short_byte_samples());
                         }
                     else if (ssize_ == 2)
                         {
-                            gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, false));
+                            gr_interleaved_short_to_complex_.push_back(gr::blocks::interleaved_short_to_complex::make(false, inverted_spectrum_vec.at(n)));
                             unpack_byte_twobits.push_back(make_unpack_byte_2bit_cpx_samples());
                             unpack_short_byte.push_back(make_unpack_short_byte_samples());
                         }
@@ -169,11 +184,12 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
             else if (ssize_ == 8)
                 {
                     top_block->connect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
-                    top_block->connect(unpack_short_byte.at(n), 0, gr_interleaved_char_to_complex_.at(n), 0);
-                    DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_char_to_complex_ for channel " << n;
+                    top_block->connect(unpack_short_byte.at(n), 0, gr_char_to_short_.at(n), 0);
+                    top_block->connect(gr_char_to_short_.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
+                    DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_short_to_complex_ for channel " << n;
                     if (dump_)
                         {
-                            top_block->connect(gr_interleaved_char_to_complex_.at(n), 0, sink_.at(n), 0);
+                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
                             DLOG(INFO) << "connected source to file sink";
                         }
                 }
@@ -231,13 +247,14 @@ void Ad936xCustomSignalSource::disconnect(gr::top_block_sptr top_block)
                 }
             else if (ssize_ == 8)
                 {
-                    top_block->connect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
-                    top_block->connect(unpack_short_byte.at(n), 0, unpack_byte_fourbits.at(n), 0);
-                    DLOG(INFO) << "disconnect ad936x_iio_source source to gr_interleaved_char_to_complex_ for channel " << n;
+                    top_block->disconnect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
+                    top_block->disconnect(unpack_short_byte.at(n), 0, gr_char_to_short_.at(n), 0);
+                    top_block->disconnect(gr_char_to_short_.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
+                    DLOG(INFO) << "disconnect ad936x_iio_source source to gr_interleaved_short_to_complex_ for channel " << n;
                     if (dump_)
                         {
-                            top_block->disconnect(gr_interleaved_char_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "disconnect source to file sink";
+                            top_block->disconnect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                            DLOG(INFO) << "connected source to file sink";
                         }
                 }
             else if (ssize_ == 4)
@@ -293,7 +310,7 @@ gr::basic_block_sptr Ad936xCustomSignalSource::get_right_block()
         }
     else if (ssize_ == 8)
         {
-            return gr_interleaved_char_to_complex_.at(0);
+            return gr_interleaved_short_to_complex_.at(0);
         }
     else if (ssize_ == 4)
         {
@@ -317,7 +334,7 @@ gr::basic_block_sptr Ad936xCustomSignalSource::get_right_block(int RF_channel)
         }
     else if (ssize_ == 8)
         {
-            return gr_interleaved_char_to_complex_.at(RF_channel);
+            return gr_interleaved_short_to_complex_.at(RF_channel);
         }
     else if (ssize_ == 4)
         {

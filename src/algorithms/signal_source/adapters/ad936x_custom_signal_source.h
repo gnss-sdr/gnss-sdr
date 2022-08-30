@@ -24,8 +24,9 @@
 #include "unpack_byte_2bit_cpx_samples.h"
 #include "unpack_byte_4bit_samples.h"
 #include "unpack_short_byte_samples.h"
+#include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/blocks/file_sink.h>
-#include <gnuradio/blocks/interleaved_char_to_complex.h>
+// #include <gnuradio/blocks/interleaved_char_to_complex.h>
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <pmt/pmt.h>
 #include <cstdint>
@@ -73,8 +74,9 @@ private:
     std::vector<gr::blocks::file_sink::sptr> sink_;
     std::vector<std::string> filename_vec_;
 
+    std::vector<gr::blocks::char_to_short::sptr> gr_char_to_short_;
     std::vector<gr::blocks::interleaved_short_to_complex::sptr> gr_interleaved_short_to_complex_;
-    std::vector<gr::blocks::interleaved_char_to_complex::sptr> gr_interleaved_char_to_complex_;
+    //    std::vector<gr::blocks::interleaved_char_to_complex::sptr> gr_interleaved_char_to_complex_;
     std::vector<unpack_short_byte_samples_sptr> unpack_short_byte;
     std::vector<unpack_byte_4bit_samples_sptr> unpack_byte_fourbits;
     std::vector<unpack_byte_2bit_cpx_samples_sptr> unpack_byte_twobits;
@@ -109,8 +111,10 @@ private:
     bool spattern_;
     bool inverted_spectrum_ch0_;
     bool inverted_spectrum_ch1_;
+    double lo_attenuation_db_;
+    bool high_side_lo_;
 
-
+    std::vector<bool> inverted_spectrum_vec;
     int n_channels;
 };
 

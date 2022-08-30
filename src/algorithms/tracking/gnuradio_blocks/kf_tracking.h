@@ -1,5 +1,5 @@
 /*!
- * \file kf_vtl_tracking.cc
+ * \file kf_tracking.cc
  * \brief Implementation of a Kalman filter based tracking with optional Vector
  * Tracking Loop message receiver block.
  * \author Javier Arribas, 2020. jarribas(at)cttc.es
@@ -18,8 +18,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_KF_VTL_TRACKING_H
-#define GNSS_SDR_KF_VTL_TRACKING_H
+#ifndef GNSS_SDR_KF_TRACKING_H
+#define GNSS_SDR_KF_TRACKING_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
@@ -48,19 +48,19 @@
 #include <utility>   // for pair
 
 class Gnss_Synchro;
-class kf_vtl_tracking;
+class kf_tracking;
 
-using kf_vtl_tracking_sptr = gnss_shared_ptr<kf_vtl_tracking>;
+using kf_tracking_sptr = gnss_shared_ptr<kf_tracking>;
 
-kf_vtl_tracking_sptr kf_vtl_make_tracking(const Kf_Conf &conf_);
+kf_tracking_sptr kf_make_tracking(const Kf_Conf &conf_);
 
 /*!
  * \brief This class implements a code DLL + carrier PLL tracking block.
  */
-class kf_vtl_tracking : public gr::block
+class kf_tracking : public gr::block
 {
 public:
-    ~kf_vtl_tracking();
+    ~kf_tracking();
 
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro *p_gnss_synchro);
@@ -73,8 +73,8 @@ public:
     void forecast(int noutput_items, gr_vector_int &ninput_items_required);
 
 private:
-    friend kf_vtl_tracking_sptr kf_vtl_make_tracking(const Kf_Conf &conf_);
-    explicit kf_vtl_tracking(const Kf_Conf &conf_);
+    friend kf_tracking_sptr kf_make_tracking(const Kf_Conf &conf_);
+    explicit kf_tracking(const Kf_Conf &conf_);
 
     void init_kf(double acq_code_phase_chips, double acq_doppler_hz);
     void update_kf_narrow_integration_time();
@@ -233,4 +233,4 @@ private:
     bool d_enable_extended_integration;
 };
 
-#endif  // GNSS_SDR_KF_VTL_TRACKING_H
+#endif  // GNSS_SDR_KF_TRACKING_H

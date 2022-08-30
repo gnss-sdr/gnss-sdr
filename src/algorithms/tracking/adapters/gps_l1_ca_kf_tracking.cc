@@ -1,6 +1,7 @@
 /*!
- * \file gps_l1_ca_kf_vtl_tracking.h
- * \brief  Interface of an adapter of a code + carrier Kalman Filter tracking loop with VTL capabilities block
+ * \file gps_l1_ca_kf_tracking.h
+ * \brief  Interface of an adapter of a code + carrier Kalman Filter tracking
+ * loop with VTL capabilities block
  * for GPS L1 C/A to a TrackingInterface
  * \author  Javier Arribas, 2020. jarribas(at)cttc.es
  *
@@ -20,7 +21,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_kf_vtl_tracking.h"
+#include "gps_l1_ca_kf_tracking.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "display.h"
@@ -30,7 +31,7 @@
 #include <algorithm>
 #include <array>
 
-GpsL1CaKfVtlTracking::GpsL1CaKfVtlTracking(
+GpsL1CaKfTracking::GpsL1CaKfTracking(
     const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -65,7 +66,7 @@ GpsL1CaKfVtlTracking::GpsL1CaKfVtlTracking(
     if (trk_params.item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = kf_vtl_make_tracking(trk_params);
+            tracking_ = kf_make_tracking(trk_params);
         }
     else
         {
@@ -85,13 +86,13 @@ GpsL1CaKfVtlTracking::GpsL1CaKfVtlTracking(
 }
 
 
-void GpsL1CaKfVtlTracking::stop_tracking()
+void GpsL1CaKfTracking::stop_tracking()
 {
     tracking_->stop_tracking();
 }
 
 
-void GpsL1CaKfVtlTracking::start_tracking()
+void GpsL1CaKfTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
@@ -100,20 +101,20 @@ void GpsL1CaKfVtlTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void GpsL1CaKfVtlTracking::set_channel(unsigned int channel)
+void GpsL1CaKfTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void GpsL1CaKfVtlTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GpsL1CaKfTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
-void GpsL1CaKfVtlTracking::connect(gr::top_block_sptr top_block)
+void GpsL1CaKfTracking::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -122,7 +123,7 @@ void GpsL1CaKfVtlTracking::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL1CaKfVtlTracking::disconnect(gr::top_block_sptr top_block)
+void GpsL1CaKfTracking::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -131,13 +132,13 @@ void GpsL1CaKfVtlTracking::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GpsL1CaKfVtlTracking::get_left_block()
+gr::basic_block_sptr GpsL1CaKfTracking::get_left_block()
 {
     return tracking_;
 }
 
 
-gr::basic_block_sptr GpsL1CaKfVtlTracking::get_right_block()
+gr::basic_block_sptr GpsL1CaKfTracking::get_right_block()
 {
     return tracking_;
 }

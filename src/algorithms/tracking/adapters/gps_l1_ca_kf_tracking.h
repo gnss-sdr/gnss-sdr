@@ -1,6 +1,7 @@
 /*!
- * \file gps_l1_ca_kf_vtl_tracking.h
- * \brief  Interface of an adapter of a code + carrier Kalman Filter tracking loop with VTL capabilities block
+ * \file gps_l1_ca_kf_tracking.h
+ * \brief  Interface of an adapter of a code + carrier Kalman Filter tracking
+ * loop with VTL capabilities block
  * for GPS L1 C/A to a TrackingInterface
  * \author  Javier Arribas, 2020. jarribas(at)cttc.es
  *
@@ -19,38 +20,39 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_kf_vtl_TRACKING_H
-#define GNSS_SDR_GPS_L1_CA_kf_vtl_TRACKING_H
+#ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_H
+#define GNSS_SDR_GPS_L1_CA_KF_TRACKING_H
 
-#include "kf_vtl_tracking.h"
+#include "kf_tracking.h"
 #include "tracking_interface.h"
 #include <string>
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a code + carrier Kalman Filter tracking loop with VTL capabilities
+ * \brief This class implements a code + carrier Kalman Filter tracking loop
+ * with VTL capabilities
  */
-class GpsL1CaKfVtlTracking : public TrackingInterface
+class GpsL1CaKfTracking : public TrackingInterface
 {
 public:
-    GpsL1CaKfVtlTracking(
+    GpsL1CaKfTracking(
         const ConfigurationInterface* configuration,
         const std::string& role,
         unsigned int in_streams,
         unsigned int out_streams);
 
-    ~GpsL1CaKfVtlTracking() = default;
+    ~GpsL1CaKfTracking() = default;
 
     inline std::string role() override
     {
         return role_;
     }
 
-    //! Returns "GPS_L1_CA_kf_vtl_Tracking"
+    //! Returns "GPS_L1_CA_KF_Tracking"
     inline std::string implementation() override
     {
-        return "GPS_L1_CA_KF_VTL_Tracking";
+        return "GPS_L1_CA_KF_Tracking";
     }
 
     inline size_t item_size() override
@@ -70,7 +72,8 @@ public:
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-     * to efficiently exchange synchronization data between acquisition and tracking blocks
+     * to efficiently exchange synchronization data between acquisition
+     * and tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
@@ -82,7 +85,7 @@ public:
     void stop_tracking() override;
 
 private:
-    kf_vtl_tracking_sptr tracking_;
+    kf_tracking_sptr tracking_;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
@@ -90,4 +93,4 @@ private:
     unsigned int out_streams_;
 };
 
-#endif  // GNSS_SDR_GPS_L1_CA_kf_vtl_TRACKING_H
+#endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_H

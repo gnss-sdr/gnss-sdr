@@ -1,5 +1,5 @@
 /*!
- * \file kf_vtl_tracking.cc
+ * \file kf_tracking.cc
  * \brief Implementation of a Kalman filter based tracking with optional Vector
  * Tracking Loop message receiver block.
  * \author Javier Arribas, 2020. jarribas(at)cttc.es
@@ -18,7 +18,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "kf_vtl_tracking.h"
+#include "kf_tracking.h"
 #include "Beidou_B1I.h"
 #include "Beidou_B3I.h"
 #include "GPS_L1_CA.h"
@@ -71,14 +71,14 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-kf_vtl_tracking_sptr kf_vtl_make_tracking(const Kf_Conf &conf_)
+kf_tracking_sptr kf_make_tracking(const Kf_Conf &conf_)
 {
-    return kf_vtl_tracking_sptr(new kf_vtl_tracking(conf_));
+    return kf_tracking_sptr(new kf_tracking(conf_));
 }
 
 
-kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
-    : gr::block("kf_vtl_tracking",
+kf_tracking::kf_tracking(const Kf_Conf &conf_)
+    : gr::block("kf_tracking",
           gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
       d_trk_parameters(conf_),
@@ -146,9 +146,9 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
         [this](auto &&PH1) { msg_handler_telemetry_to_trk(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&kf_vtl_tracking::msg_handler_telemetry_to_trk, this, boost::placeholders::_1));
+        boost::bind(&kf_tracking::msg_handler_telemetry_to_trk, this, boost::placeholders::_1));
 #else
-        boost::bind(&kf_vtl_tracking::msg_handler_telemetry_to_trk, this, _1));
+        boost::bind(&kf_tracking::msg_handler_telemetry_to_trk, this, _1));
 #endif
 #endif
 
@@ -160,9 +160,9 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
         [this](auto &&PH1) { msg_handler_pvt_to_trk(PH1); });
 #else
 #if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&kf_vtl_tracking::msg_handler_pvt_to_trk, this, boost::placeholders::_1));
+        boost::bind(&kf_tracking::msg_handler_pvt_to_trk, this, boost::placeholders::_1));
 #else
-        boost::bind(&kf_vtl_tracking::msg_handler_pvt_to_trk, this, _1));
+        boost::bind(&kf_tracking::msg_handler_pvt_to_trk, this, _1));
 #endif
 #endif
 
@@ -587,7 +587,7 @@ kf_vtl_tracking::kf_vtl_tracking(const Kf_Conf &conf_)
 }
 
 
-void kf_vtl_tracking::forecast(int noutput_items,
+void kf_tracking::forecast(int noutput_items,
     gr_vector_int &ninput_items_required)
 {
     if (noutput_items != 0)
@@ -597,7 +597,7 @@ void kf_vtl_tracking::forecast(int noutput_items,
 }
 
 
-void kf_vtl_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
+void kf_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 {
     try
         {
@@ -619,7 +619,7 @@ void kf_vtl_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
 }
 
 
-void kf_vtl_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
+void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
 {
     try
         {
@@ -641,7 +641,7 @@ void kf_vtl_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
 }
 
 
-void kf_vtl_tracking::start_tracking()
+void kf_tracking::start_tracking()
 {
     gr::thread::scoped_lock l(d_setlock);
     // correct the code phase according to the delay between acq and trk
@@ -854,7 +854,7 @@ void kf_vtl_tracking::start_tracking()
 }
 
 
-void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz)
+void kf_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz)
 {
     // Kalman Filter class variables
     const double Ti = d_current_correlation_time_s;
@@ -895,7 +895,7 @@ void kf_vtl_tracking::init_kf(double acq_code_phase_chips, double acq_doppler_hz
 }
 
 
-void kf_vtl_tracking::update_kf_narrow_integration_time()
+void kf_tracking::update_kf_narrow_integration_time()
 {
     // Kalman Filter class variables
     const double Ti = d_current_correlation_time_s;
@@ -935,7 +935,7 @@ void kf_vtl_tracking::update_kf_narrow_integration_time()
 }
 
 
-void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
+void kf_tracking::update_kf_cn0(double current_cn0_dbhz)
 {
     // Kalman Filter class variables
     const double Ti = d_current_correlation_time_s;  // d_correlation_length_ms * 0.001;
@@ -955,7 +955,7 @@ void kf_vtl_tracking::update_kf_cn0(double current_cn0_dbhz)
 }
 
 
-kf_vtl_tracking::~kf_vtl_tracking()
+kf_tracking::~kf_tracking()
 {
     if (d_dump_file.is_open())
         {
@@ -994,7 +994,7 @@ kf_vtl_tracking::~kf_vtl_tracking()
 }
 
 
-bool kf_vtl_tracking::acquire_secondary()
+bool kf_tracking::acquire_secondary()
 {
     // ******* preamble correlation ********
     int32_t corr_value = 0;
@@ -1033,7 +1033,7 @@ bool kf_vtl_tracking::acquire_secondary()
 }
 
 
-bool kf_vtl_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
+bool kf_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s)
 {
     // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
     if (d_cn0_estimation_counter < d_trk_parameters.cn0_samples)
@@ -1098,7 +1098,7 @@ bool kf_vtl_tracking::cn0_and_tracking_lock_status(double coh_integration_time_s
 // - updated remnant code phase in samples (d_rem_code_phase_samples)
 // - d_code_freq_chips
 // - d_carrier_doppler_hz
-void kf_vtl_tracking::do_correlation_step(const gr_complex *input_samples)
+void kf_tracking::do_correlation_step(const gr_complex *input_samples)
 {
     // ################# CARRIER WIPEOFF AND CORRELATORS ##############################
     // perform carrier wipe-off and compute Early, Prompt and Late correlation
@@ -1126,7 +1126,7 @@ void kf_vtl_tracking::do_correlation_step(const gr_complex *input_samples)
 }
 
 
-void kf_vtl_tracking::run_Kf()
+void kf_tracking::run_Kf()
 {
     // Carrier discriminator
     if (d_cloop)
@@ -1204,7 +1204,7 @@ void kf_vtl_tracking::run_Kf()
 }
 
 
-void kf_vtl_tracking::check_carrier_phase_coherent_initialization()
+void kf_tracking::check_carrier_phase_coherent_initialization()
 {
     if (d_acc_carrier_phase_initialized == false)
         {
@@ -1214,7 +1214,7 @@ void kf_vtl_tracking::check_carrier_phase_coherent_initialization()
 }
 
 
-void kf_vtl_tracking::clear_tracking_vars()
+void kf_tracking::clear_tracking_vars()
 {
     std::fill_n(d_correlator_outs.begin(), d_n_correlator_taps, gr_complex(0.0, 0.0));
     if (d_trk_parameters.track_pilot)
@@ -1234,7 +1234,7 @@ void kf_vtl_tracking::clear_tracking_vars()
 
 
 // todo: IT DOES NOT WORK WHEN NO KF IS RUNNING (extended correlation epochs!!)
-void kf_vtl_tracking::update_tracking_vars()
+void kf_tracking::update_tracking_vars()
 {
     d_T_chip_seconds = 1.0 / d_code_freq_kf_chips_s;
     d_T_prn_seconds = d_T_chip_seconds * static_cast<double>(d_code_length_chips);
@@ -1313,7 +1313,7 @@ void kf_vtl_tracking::update_tracking_vars()
 }
 
 
-void kf_vtl_tracking::save_correlation_results()
+void kf_tracking::save_correlation_results()
 {
     if (d_secondary)
         {
@@ -1426,7 +1426,7 @@ void kf_vtl_tracking::save_correlation_results()
 }
 
 
-void kf_vtl_tracking::log_data()
+void kf_tracking::log_data()
 {
     if (d_dump)
         {
@@ -1525,7 +1525,7 @@ void kf_vtl_tracking::log_data()
 }
 
 
-int32_t kf_vtl_tracking::save_matfile() const
+int32_t kf_tracking::save_matfile() const
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
@@ -1725,7 +1725,7 @@ int32_t kf_vtl_tracking::save_matfile() const
 }
 
 
-void kf_vtl_tracking::set_channel(uint32_t channel)
+void kf_tracking::set_channel(uint32_t channel)
 {
     gr::thread::scoped_lock l(d_setlock);
     d_channel = channel;
@@ -1756,21 +1756,21 @@ void kf_vtl_tracking::set_channel(uint32_t channel)
 }
 
 
-void kf_vtl_tracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
+void kf_tracking::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 {
     gr::thread::scoped_lock l(d_setlock);
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
 
-void kf_vtl_tracking::stop_tracking()
+void kf_tracking::stop_tracking()
 {
     gr::thread::scoped_lock l(d_setlock);
     d_state = 0;
 }
 
 
-int kf_vtl_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
+int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items,
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     gr::thread::scoped_lock l(d_setlock);

@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_kf_tracking.cc
+ * \file gps_l1_ca_gaussian_tracking.cc
  * \brief Implementation of an adapter of a DLL + Kalman carrier
  * tracking loop block for GPS L1 C/A signals
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
@@ -24,14 +24,14 @@
  */
 
 
-#include "gps_l1_ca_kf_tracking.h"
+#include "gps_l1_ca_gaussian_tracking.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include <glog/logging.h>
 
 
-GpsL1CaKfTracking::GpsL1CaKfTracking(
+GpsL1CaGaussianTracking::GpsL1CaGaussianTracking(
     const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
@@ -63,7 +63,7 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
     if (item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = gps_l1_ca_kf_make_tracking_cc(
+            tracking_ = gps_l1_ca_gaussian_make_tracking_cc(
                 order,
                 fs_in,
                 vector_length,
@@ -97,12 +97,12 @@ GpsL1CaKfTracking::GpsL1CaKfTracking(
 }
 
 
-void GpsL1CaKfTracking::stop_tracking()
+void GpsL1CaGaussianTracking::stop_tracking()
 {
 }
 
 
-void GpsL1CaKfTracking::start_tracking()
+void GpsL1CaGaussianTracking::start_tracking()
 {
     tracking_->start_tracking();
 }
@@ -111,20 +111,20 @@ void GpsL1CaKfTracking::start_tracking()
 /*
  * Set tracking channel unique ID
  */
-void GpsL1CaKfTracking::set_channel(unsigned int channel)
+void GpsL1CaGaussianTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
     tracking_->set_channel(channel);
 }
 
 
-void GpsL1CaKfTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
+void GpsL1CaGaussianTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
     tracking_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
-void GpsL1CaKfTracking::connect(gr::top_block_sptr top_block)
+void GpsL1CaGaussianTracking::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -133,7 +133,7 @@ void GpsL1CaKfTracking::connect(gr::top_block_sptr top_block)
 }
 
 
-void GpsL1CaKfTracking::disconnect(gr::top_block_sptr top_block)
+void GpsL1CaGaussianTracking::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -142,13 +142,13 @@ void GpsL1CaKfTracking::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr GpsL1CaKfTracking::get_left_block()
+gr::basic_block_sptr GpsL1CaGaussianTracking::get_left_block()
 {
     return tracking_;
 }
 
 
-gr::basic_block_sptr GpsL1CaKfTracking::get_right_block()
+gr::basic_block_sptr GpsL1CaGaussianTracking::get_right_block()
 {
     return tracking_;
 }

@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_kf_tracking_cc.cc
+ * \file gps_l1_ca_gaussian_tracking_cc.cc
  * \brief Implementation of a processing block of a DLL + Kalman carrier
  * tracking loop for GPS L1 C/A signals
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
@@ -23,7 +23,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gps_l1_ca_kf_tracking_cc.h"
+#include "gps_l1_ca_gaussian_tracking_cc.h"
 #include "GPS_L1_CA.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_flags.h"
@@ -45,7 +45,7 @@
 #include <vector>
 
 
-gps_l1_ca_kf_tracking_cc_sptr gps_l1_ca_kf_make_tracking_cc(
+gps_l1_ca_gaussian_tracking_cc_sptr gps_l1_ca_gaussian_make_tracking_cc(
     uint32_t order,
     int64_t fs_in,
     uint32_t vector_length,
@@ -59,13 +59,13 @@ gps_l1_ca_kf_tracking_cc_sptr gps_l1_ca_kf_make_tracking_cc(
     int32_t bce_nu,
     int32_t bce_kappa)
 {
-    return gps_l1_ca_kf_tracking_cc_sptr(new Gps_L1_Ca_Kf_Tracking_cc(order,
+    return gps_l1_ca_gaussian_tracking_cc_sptr(new Gps_L1_Ca_Gaussian_Tracking_cc(order,
         fs_in, vector_length, dump, dump_filename, dll_bw_hz, early_late_space_chips,
         bce_run, bce_ptrans, bce_strans, bce_nu, bce_kappa));
 }
 
 
-void Gps_L1_Ca_Kf_Tracking_cc::forecast(int noutput_items,
+void Gps_L1_Ca_Gaussian_Tracking_cc::forecast(int noutput_items,
     gr_vector_int &ninput_items_required)
 {
     if (noutput_items != 0)
@@ -75,7 +75,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::forecast(int noutput_items,
 }
 
 
-Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
+Gps_L1_Ca_Gaussian_Tracking_cc::Gps_L1_Ca_Gaussian_Tracking_cc(
     uint32_t order,
     int64_t fs_in,
     uint32_t vector_length,
@@ -88,7 +88,7 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
     uint32_t bce_strans,
     int32_t bce_nu,
     int32_t bce_kappa)
-    : gr::block("Gps_L1_Ca_Kf_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
+    : gr::block("Gps_L1_Ca_Gaussian_Tracking_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)),
           gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
       d_order(order),
       d_vector_length(vector_length),
@@ -222,14 +222,14 @@ Gps_L1_Ca_Kf_Tracking_cc::Gps_L1_Ca_Kf_Tracking_cc(
             kf_x(2, 0) = 0.0;
         }
 
-    // Bayesian covariance estimator initialization
+    // Gaussian covariance estimator initialization
     kf_R_est = kf_R;
 
     bayes_estimator.init(arma::zeros(1, 1), bayes_kappa, bayes_nu, (kf_H * kf_P_x_ini * kf_H.t() + kf_R) * (bayes_nu + 2));
 }
 
 
-void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
+void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
 {
     /*
      *  correct the code phase according to the delay between acq and trk
@@ -318,7 +318,7 @@ void Gps_L1_Ca_Kf_Tracking_cc::start_tracking()
 }
 
 
-Gps_L1_Ca_Kf_Tracking_cc::~Gps_L1_Ca_Kf_Tracking_cc()
+Gps_L1_Ca_Gaussian_Tracking_cc::~Gps_L1_Ca_Gaussian_Tracking_cc()
 {
     if (d_dump_file.is_open())
         {
@@ -339,7 +339,7 @@ Gps_L1_Ca_Kf_Tracking_cc::~Gps_L1_Ca_Kf_Tracking_cc()
                 }
             try
                 {
-                    Gps_L1_Ca_Kf_Tracking_cc::save_matfile();
+                    Gps_L1_Ca_Gaussian_Tracking_cc::save_matfile();
                 }
             catch (const std::exception &ex)
                 {
@@ -362,7 +362,7 @@ Gps_L1_Ca_Kf_Tracking_cc::~Gps_L1_Ca_Kf_Tracking_cc()
 }
 
 
-int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
+int32_t Gps_L1_Ca_Gaussian_Tracking_cc::save_matfile()
 {
     // READ DUMP FILE
     std::ifstream::pos_type size;
@@ -557,7 +557,7 @@ int32_t Gps_L1_Ca_Kf_Tracking_cc::save_matfile()
 }
 
 
-void Gps_L1_Ca_Kf_Tracking_cc::set_channel(uint32_t channel)
+void Gps_L1_Ca_Gaussian_Tracking_cc::set_channel(uint32_t channel)
 {
     gr::thread::scoped_lock l(d_setlock);
     d_channel = channel;
@@ -584,13 +584,13 @@ void Gps_L1_Ca_Kf_Tracking_cc::set_channel(uint32_t channel)
 }
 
 
-void Gps_L1_Ca_Kf_Tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
+void Gps_L1_Ca_Gaussian_Tracking_cc::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
 {
     d_acquisition_gnss_synchro = p_gnss_synchro;
 }
 
 
-int Gps_L1_Ca_Kf_Tracking_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
     // process vars

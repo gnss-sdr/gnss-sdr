@@ -141,7 +141,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
 // #include "unit-tests/signal-processing-blocks/pvt/rtklib_solver_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_dll_pll_tracking_test.cc"
-#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_kf_tracking_test.cc"
+#include "unit-tests/signal-processing-blocks/tracking/gps_l1_ca_gaussian_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #include "unit-tests/signal-processing-blocks/tracking/tracking_pull-in_test.cc"
 #if FPGA_BLOCKS_TEST

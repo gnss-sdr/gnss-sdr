@@ -1,23 +1,20 @@
 /*!
  * \file gps_l1_ca_kf_tracking.h
- * \brief Interface of an adapter of a DLL + Kalman carrier
- * tracking loop block for GPS L1 C/A signals
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
- * \author Jordi Vila-Valls 2018. jvila(at)cttc.es
- * \author Carles Fernandez-Prades 2018. cfernandez(at)cttc.es
+ * \brief  Interface of an adapter of a code + carrier Kalman Filter tracking
+ * loop with VTL capabilities block
+ * for GPS L1 C/A to a TrackingInterface
+ * \author  Javier Arribas, 2020. jarribas(at)cttc.es
  *
- * Reference:
- * J. Vila-Valls, P. Closas, M. Navarro and C. Fernandez-Prades,
- * "Are PLLs Dead? A Tutorial on Kalman Filter-based Techniques for Digital
- * Carrier Synchronization", IEEE Aerospace and Electronic Systems Magazine,
- * Vol. 32, No. 7, pp. 28–45, July 2017. DOI: 10.1109/MAES.2017.150260
  *
  * -----------------------------------------------------------------------------
  *
- * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -26,20 +23,15 @@
 #ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_H
 #define GNSS_SDR_GPS_L1_CA_KF_TRACKING_H
 
-#include "gps_l1_ca_kf_tracking_cc.h"
+#include "kf_tracking.h"
 #include "tracking_interface.h"
 #include <string>
-
-/** \addtogroup Tracking
- * \{ */
-/** \addtogroup Tracking_adapters
- * \{ */
-
 
 class ConfigurationInterface;
 
 /*!
- * \brief This class implements a code DLL + carrier PLL tracking loop
+ * \brief This class implements a code + carrier Kalman Filter tracking loop
+ * with VTL capabilities
  */
 class GpsL1CaKfTracking : public TrackingInterface
 {
@@ -80,7 +72,8 @@ public:
 
     /*!
      * \brief Set acquisition/tracking common Gnss_Synchro object pointer
-     * to efficiently exchange synchronization data between acquisition and tracking blocks
+     * to efficiently exchange synchronization data between acquisition
+     * and tracking blocks
      */
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro) override;
 
@@ -92,7 +85,7 @@ public:
     void stop_tracking() override;
 
 private:
-    gps_l1_ca_kf_tracking_cc_sptr tracking_;
+    kf_tracking_sptr tracking_;
     size_t item_size_;
     unsigned int channel_;
     std::string role_;
@@ -100,7 +93,4 @@ private:
     unsigned int out_streams_;
 };
 
-
-/** \} */
-/** \} */
 #endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_H

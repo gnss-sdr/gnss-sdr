@@ -38,33 +38,18 @@ public:
     double carrier_lock_th;
 
     // KF statistics
-    // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s, code_freq_rate_chips_s
     // Measurement covariances (R)
-    double expected_cn0_dbhz;
-
     double code_disc_sd_chips;
     double carrier_disc_sd_rads;
 
     // System covariances (Q)
     double code_phase_sd_chips;
-    double code_rate_sd_chips_s;
-
     double carrier_phase_sd_rad;
     double carrier_freq_sd_hz;
     double carrier_freq_rate_sd_hz_s;
 
-    // System covariances (narrow) (Q)
-    double narrow_code_phase_sd_chips;
-    double narrow_code_rate_sd_chips_s;
-
-    double narrow_carrier_phase_sd_rad;
-    double narrow_carrier_freq_sd_hz;
-    double narrow_carrier_freq_rate_sd_hz_s;
-
     // initial Kalman covariance matrix (P)
     double init_code_phase_sd_chips;
-    double init_code_rate_sd_chips_s;
-
     double init_carrier_phase_sd_rad;
     double init_carrier_freq_sd_hz;
     double init_carrier_freq_rate_sd_hz_s;
@@ -93,13 +78,9 @@ public:
     char system;
     bool track_pilot;
     bool enable_doppler_correction;
-    bool carrier_aiding;
     bool high_dyn;
     bool dump;
     bool dump_mat;
-
-    bool enable_dynamic_measurement_covariance;
-    bool use_estimated_cn0;
 };
 
 #endif

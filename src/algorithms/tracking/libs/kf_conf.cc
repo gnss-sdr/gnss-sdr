@@ -28,24 +28,16 @@ Kf_Conf::Kf_Conf() : item_type("gr_complex"),
                      dump_filename("./Kf_dump.dat"),
                      fs_in(2000000.0),
                      carrier_lock_th(FLAGS_carrier_lock_th),
-                     expected_cn0_dbhz(42.0),
-                     code_disc_sd_chips(0.01),
-                     carrier_disc_sd_rads(0.1),
-                     code_phase_sd_chips(0.001),
-                     code_rate_sd_chips_s(0.001),
-                     carrier_phase_sd_rad(0.001),
-                     carrier_freq_sd_hz(0.1),
-                     carrier_freq_rate_sd_hz_s(1),
-                     narrow_code_phase_sd_chips(0.001),
-                     narrow_code_rate_sd_chips_s(0.001),
-                     narrow_carrier_phase_sd_rad(0.001),
-                     narrow_carrier_freq_sd_hz(0.1),
-                     narrow_carrier_freq_rate_sd_hz_s(1),
-                     init_code_phase_sd_chips(1),
-                     init_code_rate_sd_chips_s(100),
-                     init_carrier_phase_sd_rad(10),
-                     init_carrier_freq_sd_hz(1000),
-                     init_carrier_freq_rate_sd_hz_s(1000),
+                     code_disc_sd_chips(0.2),
+                     carrier_disc_sd_rads(0.3),
+                     code_phase_sd_chips(0.15),
+                     carrier_phase_sd_rad(0.25),
+                     carrier_freq_sd_hz(0.6),
+                     carrier_freq_rate_sd_hz_s(0.01),
+                     init_code_phase_sd_chips(0.5),
+                     init_carrier_phase_sd_rad(0.7),
+                     init_carrier_freq_sd_hz(5),
+                     init_carrier_freq_rate_sd_hz_s(1),
                      early_late_space_chips(0.25),
                      very_early_late_space_chips(0.5),
                      early_late_space_narrow_chips(0.15),
@@ -69,12 +61,9 @@ Kf_Conf::Kf_Conf() : item_type("gr_complex"),
                      system('G'),
                      track_pilot(true),
                      enable_doppler_correction(false),
-                     carrier_aiding(true),
                      high_dyn(false),
                      dump(false),
-                     dump_mat(true),
-                     enable_dynamic_measurement_covariance(false),
-                     use_estimated_cn0(false)
+                     dump_mat(true)
 {
     signal[0] = '1';
     signal[1] = 'C';
@@ -112,7 +101,6 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     max_code_lock_fail = configuration->property(role + ".max_lock_fail", max_code_lock_fail);
     max_carrier_lock_fail = configuration->property(role + ".max_carrier_lock_fail", max_carrier_lock_fail);
     carrier_lock_th = configuration->property(role + ".carrier_lock_th", carrier_lock_th);
-    carrier_aiding = configuration->property(role + ".carrier_aiding", carrier_aiding);
 
     // tracking lock tests smoother parameters
     cn0_smoother_samples = configuration->property(role + ".cn0_smoother_samples", cn0_smoother_samples);
@@ -129,34 +117,17 @@ void Kf_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     // Kalman filter covariances
 
     // Measurement covariances (R)
-    expected_cn0_dbhz = configuration->property(role + ".expected_cn0_dbhz", expected_cn0_dbhz);
-
     code_disc_sd_chips = configuration->property(role + ".code_disc_sd_chips", code_disc_sd_chips);
     carrier_disc_sd_rads = configuration->property(role + ".carrier_disc_sd_rads", carrier_disc_sd_rads);
 
-    enable_dynamic_measurement_covariance = configuration->property(role + ".enable_dynamic_measurement_covariance", enable_dynamic_measurement_covariance);
-    use_estimated_cn0 = configuration->property(role + ".use_estimated_cn0", use_estimated_cn0);
-
     // System covariances (Q)
     code_phase_sd_chips = configuration->property(role + ".code_phase_sd_chips", code_phase_sd_chips);
-    code_rate_sd_chips_s = configuration->property(role + ".code_rate_sd_chips_s", code_rate_sd_chips_s);
-
     carrier_phase_sd_rad = configuration->property(role + ".carrier_phase_sd_rad", carrier_phase_sd_rad);
     carrier_freq_sd_hz = configuration->property(role + ".carrier_freq_sd_hz", carrier_freq_sd_hz);
     carrier_freq_rate_sd_hz_s = configuration->property(role + ".carrier_freq_rate_sd_hz_s", carrier_freq_rate_sd_hz_s);
 
-    // System covariances (narrow) (Q)
-    narrow_code_phase_sd_chips = configuration->property(role + ".narrow_code_phase_sd_chips", narrow_code_phase_sd_chips);
-    narrow_code_rate_sd_chips_s = configuration->property(role + ".narrow_code_rate_sd_chips_s", narrow_code_rate_sd_chips_s);
-
-    narrow_carrier_phase_sd_rad = configuration->property(role + ".narrow_carrier_phase_sd_rad", narrow_carrier_phase_sd_rad);
-    narrow_carrier_freq_sd_hz = configuration->property(role + ".narrow_carrier_freq_sd_hz", narrow_carrier_freq_sd_hz);
-    narrow_carrier_freq_rate_sd_hz_s = configuration->property(role + ".narrow_carrier_freq_rate_sd_hz_s", narrow_carrier_freq_rate_sd_hz_s);
-
     // initial Kalman covariance matrix (P)
     init_code_phase_sd_chips = configuration->property(role + ".init_code_phase_sd_chips", init_code_phase_sd_chips);
-    init_code_rate_sd_chips_s = configuration->property(role + ".init_code_rate_sd_chips_s", init_code_rate_sd_chips_s);
-
     init_carrier_phase_sd_rad = configuration->property(role + ".init_carrier_phase_sd_rad", init_carrier_phase_sd_rad);
     init_carrier_freq_sd_hz = configuration->property(role + ".init_carrier_freq_sd_hz", init_carrier_freq_sd_hz);
     init_carrier_freq_rate_sd_hz_s = configuration->property(role + ".init_carrier_freq_rate_sd_hz_s", init_carrier_freq_rate_sd_hz_s);

@@ -1,5 +1,5 @@
 /*!
- * \file gps_l1_ca_kf_tracking_cc.h
+ * \file gps_l1_ca_gaussian_tracking_cc.h
  * \brief Interface of a processing block of a DLL + Kalman carrier
  * tracking loop for GPS L1 C/A signals
  * \author Javier Arribas, 2018. jarribas(at)cttc.es
@@ -23,8 +23,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
-#define GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+#ifndef GNSS_SDR_GPS_L1_CA_GAUSSIAN_TRACKING_CC_H
+#define GNSS_SDR_GPS_L1_CA_GAUSSIAN_TRACKING_CC_H
 
 #if ARMA_NO_BOUND_CHECKING
 #define ARMA_NO_DEBUG 1
@@ -49,12 +49,12 @@
  * \{ */
 
 
-class Gps_L1_Ca_Kf_Tracking_cc;
+class Gps_L1_Ca_Gaussian_Tracking_cc;
 
-using gps_l1_ca_kf_tracking_cc_sptr = gnss_shared_ptr<Gps_L1_Ca_Kf_Tracking_cc>;
+using gps_l1_ca_gaussian_tracking_cc_sptr = gnss_shared_ptr<Gps_L1_Ca_Gaussian_Tracking_cc>;
 
-gps_l1_ca_kf_tracking_cc_sptr
-gps_l1_ca_kf_make_tracking_cc(uint32_t order,
+gps_l1_ca_gaussian_tracking_cc_sptr
+gps_l1_ca_gaussian_make_tracking_cc(uint32_t order,
     int64_t fs_in,
     uint32_t vector_length,
     bool dump,
@@ -71,10 +71,10 @@ gps_l1_ca_kf_make_tracking_cc(uint32_t order,
 /*!
  * \brief This class implements a DLL + PLL tracking loop block
  */
-class Gps_L1_Ca_Kf_Tracking_cc : public gr::block
+class Gps_L1_Ca_Gaussian_Tracking_cc : public gr::block
 {
 public:
-    ~Gps_L1_Ca_Kf_Tracking_cc();
+    ~Gps_L1_Ca_Gaussian_Tracking_cc();
 
     void set_channel(uint32_t channel);
     void set_gnss_synchro(Gnss_Synchro* p_gnss_synchro);
@@ -86,8 +86,8 @@ public:
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
 
 private:
-    friend gps_l1_ca_kf_tracking_cc_sptr
-    gps_l1_ca_kf_make_tracking_cc(uint32_t order,
+    friend gps_l1_ca_gaussian_tracking_cc_sptr
+    gps_l1_ca_gaussian_make_tracking_cc(uint32_t order,
         int64_t fs_in,
         uint32_t vector_length,
         bool dump,
@@ -100,7 +100,7 @@ private:
         int32_t bce_nu,
         int32_t bce_kappa);
 
-    Gps_L1_Ca_Kf_Tracking_cc(uint32_t order,
+    Gps_L1_Ca_Gaussian_Tracking_cc(uint32_t order,
         int64_t fs_in,
         uint32_t vector_length,
         bool dump,
@@ -148,7 +148,7 @@ private:
     arma::colvec kf_y;      // measurement vector
     arma::mat kf_K;         // Kalman gain matrix
 
-    // Bayesian estimator
+    // Gaussian estimator
     Bayesian_estimator bayes_estimator;
     arma::mat kf_R_est;  // measurement error covariance
     uint32_t bayes_ptrans;
@@ -218,4 +218,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_GPS_L1_CA_KF_TRACKING_CC_H
+#endif  // GNSS_SDR_GPS_L1_CA_GAUSSIAN_TRACKING_CC_H

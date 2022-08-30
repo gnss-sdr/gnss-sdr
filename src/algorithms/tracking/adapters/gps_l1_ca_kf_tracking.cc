@@ -1,104 +1,94 @@
 /*!
- * \file gps_l1_ca_kf_tracking.cc
- * \brief Implementation of an adapter of a DLL + Kalman carrier
- * tracking loop block for GPS L1 C/A signals
- * \author Javier Arribas, 2018. jarribas(at)cttc.es
- * \author Jordi Vila-Valls 2018. jvila(at)cttc.es
- * \author Carles Fernandez-Prades 2018. cfernandez(at)cttc.es
+ * \file gps_l1_ca_kf_tracking.h
+ * \brief  Interface of an adapter of a code + carrier Kalman Filter tracking
+ * loop with VTL capabilities block
+ * for GPS L1 C/A to a TrackingInterface
+ * \author  Javier Arribas, 2020. jarribas(at)cttc.es
  *
- * Reference:
- * J. Vila-Valls, P. Closas, M. Navarro and C. Fernández-Prades,
- * "Are PLLs Dead? A Tutorial on Kalman Filter-based Techniques for Digital
- * Carrier Synchronization", IEEE Aerospace and Electronic Systems Magazine,
- * Vol. 32, No. 7, pp. 28–45, July 2017. DOI: 10.1109/MAES.2017.150260
+ *
  *
  * -----------------------------------------------------------------------------
  *
- * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ *
+ * GNSS-SDR is a software defined Global Navigation
+ *          Satellite Systems receiver
+ *
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-
 #include "gps_l1_ca_kf_tracking.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
+#include "display.h"
 #include "gnss_sdr_flags.h"
+#include "kf_conf.h"
 #include <glog/logging.h>
-
+#include <algorithm>
+#include <array>
 
 GpsL1CaKfTracking::GpsL1CaKfTracking(
     const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
+    Kf_Conf trk_params = Kf_Conf();
     DLOG(INFO) << "role " << role;
-    // ################# CONFIGURATION PARAMETERS ########################
-    const std::string default_item_type("gr_complex");
-    std::string item_type = configuration->property(role + ".item_type", default_item_type);
-    int order = configuration->property(role + ".order", 2);
-    int fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
-    int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    bool dump = configuration->property(role + ".dump", false);
-    float dll_bw_hz = configuration->property(role + ".dll_bw_hz", static_cast<float>(2.0));
-    if (FLAGS_dll_bw_hz != 0.0)
+    trk_params.SetFromConfiguration(configuration, role);
+
+    const auto vector_length = static_cast<int>(std::round(trk_params.fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    trk_params.vector_length = vector_length;
+    if (trk_params.extend_correlation_symbols < 1)
         {
-            dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+            trk_params.extend_correlation_symbols = 1;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be bigger than 1. Coherent integration has been set to 1 symbol (1 ms)" << TEXT_RESET << '\n';
         }
-    float early_late_space_chips = configuration->property(role + ".early_late_space_chips", static_cast<float>(0.5));
-    const std::string default_dump_filename("./track_ch");
-    std::string dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);
-    const auto vector_length = static_cast<int>(std::round(fs_in / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
+    else if (trk_params.extend_correlation_symbols > 20)
+        {
+            trk_params.extend_correlation_symbols = 20;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A. extend_correlation_symbols must be lower than 21. Coherent integration has been set to 20 symbols (20 ms)" << TEXT_RESET << '\n';
+        }
+    trk_params.track_pilot = configuration->property(role + ".track_pilot", false);
+    if (trk_params.track_pilot)
+        {
+            trk_params.track_pilot = false;
+            std::cout << TEXT_RED << "WARNING: GPS L1 C/A does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << '\n';
+        }
 
-    bool bce_run = configuration->property(role + ".bce_run", false);
-    unsigned int bce_ptrans = configuration->property(role + ".p_transient", 0);
-    unsigned int bce_strans = configuration->property(role + ".s_transient", 0);
-    int bce_nu = configuration->property(role + ".bce_nu", 0);
-    int bce_kappa = configuration->property(role + ".bce_kappa", 0);
+    trk_params.system = 'G';
+    const std::array<char, 3> sig_{'1', 'C', '\0'};
+    std::copy_n(sig_.data(), 3, trk_params.signal);
 
-    // ################# MAKE TRACKING GNURadio object ###################
-    if (item_type == "gr_complex")
+    // ################# Make a GNU Radio Tracking block object ################
+    if (trk_params.item_type == "gr_complex")
         {
             item_size_ = sizeof(gr_complex);
-            tracking_ = gps_l1_ca_kf_make_tracking_cc(
-                order,
-                fs_in,
-                vector_length,
-                dump,
-                dump_filename,
-                dll_bw_hz,
-                early_late_space_chips,
-                bce_run,
-                bce_ptrans,
-                bce_strans,
-                bce_nu,
-                bce_kappa);
+            tracking_ = kf_make_tracking(trk_params);
         }
     else
         {
-            item_size_ = 0;
-            LOG(WARNING) << item_type << " unknown tracking item type.";
+            item_size_ = sizeof(gr_complex);
+            LOG(WARNING) << trk_params.item_type << " unknown tracking item type.";
         }
     channel_ = 0;
     DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
-    if (in_streams_ == 0)
+    if (in_streams_ > 1)
         {
-            in_streams_ = 1;
-            // Avoid compiler warning
+            LOG(ERROR) << "This implementation only supports one input stream";
         }
-    if (out_streams_ == 0)
+    if (out_streams_ > 1)
         {
-            out_streams_ = 1;
-            // Avoid compiler warning
+            LOG(ERROR) << "This implementation only supports one output stream";
         }
 }
 
 
 void GpsL1CaKfTracking::stop_tracking()
 {
+    tracking_->stop_tracking();
 }
 
 

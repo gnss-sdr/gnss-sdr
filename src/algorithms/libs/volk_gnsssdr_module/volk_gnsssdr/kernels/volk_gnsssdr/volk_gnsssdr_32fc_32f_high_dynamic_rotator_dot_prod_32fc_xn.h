@@ -61,6 +61,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_complex.h>
 #include <volk_gnsssdr/volk_gnsssdr_malloc.h>
 #include <math.h>
+#include <complex.h>
 
 
 #ifdef LV_HAVE_GENERIC

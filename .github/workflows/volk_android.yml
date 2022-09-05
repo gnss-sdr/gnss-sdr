@@ -10,7 +10,7 @@ on:
       - 'src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**'
     workflow_dispatch:
 
-name: Build on Android NDK
+name: Build volk-gnssdr on Android NDK
 jobs:
   build:
     name: Build on Android NDK ${{ matrix.arch.name }}

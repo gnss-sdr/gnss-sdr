@@ -8,7 +8,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.12...3.23)
+cmake_minimum_required(VERSION 2.8.12...3.24)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
@@ -209,7 +209,7 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}.")
 
 set(VERSION_INFO_MAJOR_VERSION 0)
 set(VERSION_INFO_MINOR_VERSION 0)
-set(VERSION_INFO_MAINT_VERSION 17)
+set(VERSION_INFO_MAINT_VERSION 17.git)
 include(VolkGnsssdrVersion) # setup version info
 
 
@@ -362,16 +362,7 @@ endif()
 ########################################################################
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    configure_file(
-        ${PROJECT_SOURCE_DIR}/Doxyfile.in
-        ${PROJECT_BINARY_DIR}/Doxyfile
-        @ONLY
-    )
-    add_custom_target(doc
-        ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-        COMMENT "Generating documentation with Doxygen" VERBATIM
-    )
+    add_subdirectory(docs)
 endif()
 
 
@@ -396,13 +387,13 @@ set(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
 set(includedir "\${prefix}/include")
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr.pc.in
-    ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr.pc
+    ${PROJECT_SOURCE_DIR}/tmpl/volk_gnsssdr.pc.in
+    ${PROJECT_BINARY_DIR}/volk_gnsssdr.pc
     @ONLY
 )
 
 install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/volk_gnsssdr.pc
+    FILES ${PROJECT_BINARY_DIR}/volk_gnsssdr.pc
     DESTINATION lib${LIB_SUFFIX}/pkgconfig
     COMPONENT "volk_gnsssdr_devel"
 )
@@ -471,14 +462,14 @@ endif()
 ########################################################################
 configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+    ${PROJECT_BINARY_DIR}/cmake_uninstall.cmake
     @ONLY
 )
 
 # Only add the target if there isn't one defined already
 if(NOT TARGET uninstall)
     add_custom_target(uninstall
-        ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+        ${CMAKE_COMMAND} -P ${PROJECT_BINARY_DIR}/cmake_uninstall.cmake
     )
 endif()
 
@@ -513,8 +504,8 @@ endif()
 
 install(
     FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
+    ${PROJECT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfig.cmake
+    ${PROJECT_BINARY_DIR}/cmake/Modules/VolkGnsssdrConfigVersion.cmake
     DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
     COMPONENT "volk_gnsssdr_devel"
 )

@@ -47,7 +47,7 @@ jobs:
     # Setup build directory
     - name: Setup ${{ matrix.arch.name }}
       shell: bash
-      run: cd $GITHUB_WORKSPACE/ && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/android-sdk-linux/ndk/24.0.8215888/build/cmake/android.toolchain.cmake -DANDROID_ABI=${{ matrix.arch.name }} -DANDROID_PLATFORM=android-23 ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+      run: cd $GITHUB_WORKSPACE/ && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/android-sdk-linux/ndk/24.0.8215888/build/cmake/android.toolchain.cmake -DANDROID_ABI=${{ matrix.arch.name }} -DANDROID_PLATFORM=android-24 ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
 
     # Build
     - name: Build ${{ matrix.arch.name }}

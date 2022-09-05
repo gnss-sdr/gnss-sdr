@@ -3,11 +3,11 @@
 on:
   push:
     paths:
-      - src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+      - 'src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**'
     workflow_dispatch:
   pull_request:
     paths:
-      - src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+      - 'src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**'
     workflow_dispatch:
 
 name: Build on Android NDK

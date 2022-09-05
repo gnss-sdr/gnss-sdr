@@ -72,7 +72,7 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
     lv_32fc_t phase_doppler = (*phase);
     int n_vec;
     unsigned int n;
-#if _WIN32
+#if _WIN32 || __ANDROID_API__
     const float arga = cargf(phase_inc_rate);
 #endif
     for (n_vec = 0; n_vec < num_a_vectors; n_vec++)
@@ -92,7 +92,7 @@ static inline void volk_gnsssdr_32fc_32f_high_dynamic_rotator_dot_prod_32fc_xn_g
                 }
             tmp32_1 = *in_common++ * (*phase);
             phase_doppler *= phase_inc;
-#if _WIN32
+#if _WIN32 || __ANDROID_API__
             const float theta = (float)(n * n) * arga;
             phase_doppler_rate = lv_cmake(cosf(theta), sinf(theta));
 #else

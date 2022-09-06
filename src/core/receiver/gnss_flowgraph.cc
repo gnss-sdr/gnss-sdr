@@ -814,8 +814,12 @@ int GNSSFlowgraph::connect_galileo_tow_map()
         {
             for (int i = 0; i < channels_count_; i++)
                 {
-                    top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("TOW_from_TLM"), galileo_tow_map_, pmt::mp("TOW_from_TLM"));
-                    top_block_->msg_connect(galileo_tow_map_, pmt::mp("TOW_to_TLM"), channels_.at(i)->get_right_block(), pmt::mp("TOW_to_TLM"));
+                    std::string sig = channels_.at(i)->get_signal().get_signal_str();
+                    if (sig == "1B" || sig == "E6" || sig == "5X" || sig == "7X")
+                        {
+                            top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("TOW_from_TLM"), galileo_tow_map_, pmt::mp("TOW_from_TLM"));
+                            top_block_->msg_connect(galileo_tow_map_, pmt::mp("TOW_to_TLM"), channels_.at(i)->get_right_block(), pmt::mp("TOW_to_TLM"));
+                        }
                 }
         }
     catch (const std::exception& e)

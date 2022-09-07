@@ -55,11 +55,13 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
 
 void gnss_synchro_monitor::forecast(int noutput_items __attribute__((unused)), gr_vector_int& ninput_items_required)
 {
-    for (int32_t channel_index = 0; channel_index < d_nchannels; channel_index++)
+    for (int32_t channel_index = 0; channel_index < d_nchannels - 1; channel_index++)
         {
             // Set the required number of inputs to 0 so that a lone input on any channel can be pushed to UDP
             ninput_items_required[channel_index] = 0;
         }
+    // last input channel is the sample counter, triggered each ms
+    ninput_items_required[d_nchannels - 1] = 1;
 }
 
 
@@ -70,7 +72,7 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
     const auto** in = reinterpret_cast<const Gnss_Synchro**>(&input_items[0]);
 
     // Loop through each input stream channel
-    for (int channel_index = 0; channel_index < d_nchannels; channel_index++)
+    for (int channel_index = 0; channel_index < d_nchannels - 1; channel_index++)
         {
             // Loop through each item in each input stream channel
             int count = 0;
@@ -91,6 +93,7 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
                         }
                 }
         }
+    consume(d_nchannels - 1, ninput_items[d_nchannels - 1]);
 
     // Not producing any outputs
     return 0;

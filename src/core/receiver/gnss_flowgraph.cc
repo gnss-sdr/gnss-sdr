@@ -206,7 +206,8 @@ void GNSSFlowgraph::init()
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
             // Instantiate monitor object
-            GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
+            // last input channel is the sample counter, triggered each ms
+            GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_ + 1,
                 configuration_->property("Monitor.decimation_factor", 1),
                 configuration_->property("Monitor.udp_port", 1234),
                 udp_addr_vec, enable_protobuf);
@@ -1216,6 +1217,7 @@ int GNSSFlowgraph::connect_gnss_synchro_monitor()
                 {
                     top_block_->connect(observables_->get_right_block(), i, GnssSynchroMonitor_, i);
                 }
+            top_block_->connect(ch_out_sample_counter_, 0, GnssSynchroMonitor_, channels_count_);  // extra port for the sample counter pulse
         }
     catch (const std::exception& e)
         {

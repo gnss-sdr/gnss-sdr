@@ -20,6 +20,9 @@
 #include "glonass_gnav_navigation_message.h"
 #include "gnss_signal_replica.h"
 
+// A valid GLONASS GNAV message string
+std::string valid_msg("0001110000000001001101001110100011111011010011001101001101110110010011110011100100011");
+
 /*!
  * \brief Testing CRC computation for GLONASS GNAV data bits of a string
  * \test The provided string was generated with a version of MATLAB GNSS-SDR that
@@ -60,6 +63,70 @@ TEST(GlonassGnavNavigationMessageTest, CRCTestFailure)
     ASSERT_FALSE(test_result);
 }
 
+/*!
+ * \brief Testing Hamming code correction method for GLONASS GNAV data.
+ * \test A single-bit error is introduced into each bit of a valid string
+ * and the result of error correction is compared to the original string
+ */
+TEST(GlonassGnavNavigationMessageTest, hamming_correct_1bit)
+{
+    bool test_result;
+    std::bitset<GLONASS_GNAV_STRING_BITS> bits(valid_msg);
+    const std::bitset<GLONASS_GNAV_STRING_BITS> bits_original = bits;
+
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
+
+    test_result = gnav_nav_message.hamming_correct(bits);
+
+    // check correct return value for a valid string
+    ASSERT_TRUE(test_result);
+
+    // check that a valid string is not being changed
+    ASSERT_EQ(bits, bits_original);
+
+    for (int i = 0; i < GLONASS_GNAV_STRING_BITS; ++i)
+        {
+            bits[i] = 1 - bits[i];
+            test_result = gnav_nav_message.hamming_correct(bits);
+
+            // check correct return value for a string with a single bit error
+            ASSERT_TRUE(test_result);
+
+            // check that a string is restored correctly
+            ASSERT_EQ(bits, bits_original);
+        }
+}
+
+/*!
+ * \brief Testing Hamming code correction method for GLONASS GNAV data.
+ * \test A two-bit error is introduced into each possible pair of bits of
+ * a valid string in order to check that the error correction method
+ * returns correction result as 'false'.
+ */
+TEST(GlonassGnavNavigationMessageTest, hamming_correct_2bits)
+{
+    std::bitset<GLONASS_GNAV_STRING_BITS> bits(valid_msg);
+    auto gnav_nav_message = Glonass_Gnav_Navigation_Message();
+
+    for (int i = 0; i < GLONASS_GNAV_STRING_BITS - 1; ++i)
+        {
+            bits[i] = 1 - bits[i];
+            for (int j = i + 1; j < GLONASS_GNAV_STRING_BITS; ++j)
+                {
+                    bits[j] = 1 - bits[j];
+                    std::bitset<GLONASS_GNAV_STRING_BITS> bits_with_errors = bits;
+                    bool test_result = gnav_nav_message.hamming_correct(bits);
+
+                    // check correct return value for a string with 2 wrong bits
+                    ASSERT_FALSE(test_result);
+
+                    // check that a string with 2 wrong bits is not being changed
+                    ASSERT_EQ(bits, bits_with_errors);
+                    bits[j] = 1 - bits[j];
+                }
+            bits[i] = 1 - bits[i];
+        }
+}
 
 /*!
  * \brief Testing string decoding for GLONASS GNAV messages

@@ -55,7 +55,8 @@ ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
     int bshift_,
     bool spattern_,
     double lo_attenuation_db_,
-    bool high_side_lo_)
+    bool high_side_lo_,
+    int tx_lo_channel_)
 {
     return ad936x_iio_source_sptr(new ad936x_iio_source(
         pluto_uri_,
@@ -80,7 +81,8 @@ ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
         bshift_,
         spattern_,
         lo_attenuation_db_,
-        high_side_lo_));
+        high_side_lo_,
+        tx_lo_channel_));
 }
 
 void ad936x_iio_source::ad9361_channel_demux_and_record(ad936x_iio_samples *samples_in, int nchannels, std::vector<std::fstream> *files_out)
@@ -122,7 +124,8 @@ ad936x_iio_source::ad936x_iio_source(
     int bshift_,
     bool spattern_,
     double lo_attenuation_db_,
-    bool high_side_lo_) : gr::block("ad936x_iio_source",
+    bool high_side_lo_,
+    int tx_lo_channel_) : gr::block("ad936x_iio_source",
                               gr::io_signature::make(0, 0, 0),
                               gr::io_signature::make(1, 4, sizeof(int16_t)))
 {
@@ -145,7 +148,8 @@ ad936x_iio_source::ad936x_iio_source(
                             enable_ch1,
                             freq_2ch,
                             lo_attenuation_db_,
-                            high_side_lo_) == true)
+                            high_side_lo_,
+                            tx_lo_channel_) == true)
                         {
                             std::cout << "ad936x_iio_source HW configured OK!\n";
 

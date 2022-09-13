@@ -62,7 +62,10 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
       inverted_spectrum_ch0_(configuration->property(role + ".inverted_spectrum_ch0", false)),
       inverted_spectrum_ch1_(configuration->property(role + ".inverted_spectrum_ch1", false)),
       lo_attenuation_db_(configuration->property(role + ".lo_attenuation_db", 6.0)),
-      high_side_lo_(configuration->property(role + ".high_side_lo", false))
+      high_side_lo_(configuration->property(role + ".high_side_lo", false)),
+      tx_lo_channel_(configuration->property(role + ".tx_lo_channel", 1)),
+      rx0_to_rx1_delay_ns_(configuration->property(role + ".rx0_to_rx1_delay_ns", 0.0))
+
 
 {
     if (item_type_ == "gr_complex")
@@ -99,7 +102,8 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
                 bshift_,
                 spattern_,
                 lo_attenuation_db_,
-                high_side_lo_);
+                high_side_lo_,
+                tx_lo_channel_);
 
             n_channels = 1;
             if (enable_ch0 == true and enable_ch1 == true)
@@ -107,6 +111,42 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
                     n_channels = 2;
                 }
 
+            int delay_samples = 0;
+            if (n_channels == 2 and rx0_to_rx1_delay_ns_ != 0.0)
+                {
+                    double ts = 1.0 / static_cast<double>(sample_rate_);
+                    delay_samples = std::round(ts * rx0_to_rx1_delay_ns_ * 1e-9);
+                    if (delay_samples != 0)
+                        {
+                            delay_enabled = true;
+                            if (delay_samples > 0)
+                                {
+                                    apply_delay_on_rx0 = true;
+                                    LOG(INFO) << " Instantiating delay of rx0 equal to " << delay_samples << " samples.";
+                                }
+                            else
+                                {
+                                    // delay applied to rx1 instead.
+                                    apply_delay_on_rx0 = false;
+                                    delay_samples = -delay_samples;
+                                    LOG(INFO) << " Instantiating delay of rx1 equal to " << delay_samples << " samples.";
+                                }
+                        }
+                    else
+                        {
+                            LOG(INFO) << " Specified rx0_to_rx1 delay is smaller than the front-end sample period.";
+                        }
+                }
+            else
+                {
+                    apply_delay_on_rx0 = false;
+                    delay_enabled = false;
+                }
+
+            if (delay_enabled == true)
+                {
+                    gr_delay = gr::blocks::delay::make(sizeof(gr_complex), delay_samples);
+                }
 
             for (int n = 0; n < n_channels; n++)
                 {
@@ -175,10 +215,44 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                 {
                     top_block->connect(ad936x_iio_source, n, gr_interleaved_short_to_complex_.at(n), 0);
                     DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_short_to_complex for channel " << n;
-                    if (dump_)
+                    if (delay_enabled == true)
                         {
-                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            if (n == 0 and apply_delay_on_rx0 == true)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else if (n == 1 and apply_delay_on_rx0 == false)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else
+                                {
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected source to file sink";
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            if (dump_)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                    DLOG(INFO) << "connected source to file sink";
+                                }
                         }
                 }
             else if (ssize_ == 8)
@@ -186,11 +260,44 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                     top_block->connect(ad936x_iio_source, n, unpack_short_byte.at(n), 0);
                     top_block->connect(unpack_short_byte.at(n), 0, gr_char_to_short_.at(n), 0);
                     top_block->connect(gr_char_to_short_.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
-                    DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_short_to_complex_ for channel " << n;
-                    if (dump_)
+                    if (delay_enabled == true)
                         {
-                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            if (n == 0 and apply_delay_on_rx0 == true)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else if (n == 1 and apply_delay_on_rx0 == false)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else
+                                {
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected source to file sink";
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            if (dump_)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                    DLOG(INFO) << "connected source to file sink";
+                                }
                         }
                 }
             else if (ssize_ == 4)
@@ -199,10 +306,45 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                     top_block->connect(unpack_short_byte.at(n), 0, unpack_byte_fourbits.at(n), 0);
                     top_block->connect(unpack_byte_fourbits.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
                     DLOG(INFO) << "connected ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
-                    if (dump_)
+
+                    if (delay_enabled == true)
                         {
-                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            if (n == 0 and apply_delay_on_rx0 == true)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else if (n == 1 and apply_delay_on_rx0 == false)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else
+                                {
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected source to file sink";
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            if (dump_)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                    DLOG(INFO) << "connected source to file sink";
+                                }
                         }
                 }
             else if (ssize_ == 2)
@@ -211,20 +353,91 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                     top_block->connect(unpack_short_byte.at(n), 0, unpack_byte_twobits.at(n), 0);
                     top_block->connect(unpack_byte_twobits.at(n), 0, gr_interleaved_short_to_complex_.at(n), 0);
                     DLOG(INFO) << "connected ad936x_iio_source source to unpack_byte_fourbits for channel " << n;
-                    if (dump_)
+
+                    if (delay_enabled == true)
                         {
-                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            if (n == 0 and apply_delay_on_rx0 == true)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else if (n == 1 and apply_delay_on_rx0 == false)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else
+                                {
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected source to file sink";
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            if (dump_)
+
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                    DLOG(INFO) << "connected source to file sink";
+                                }
                         }
                 }
             else
                 {
                     top_block->connect(ad936x_iio_source, n, gr_interleaved_short_to_complex_.at(n), 0);
                     DLOG(INFO) << "connected ad936x_iio_source source to gr_interleaved_short_to_complex for channel " << n;
-                    if (dump_)
+
+                    if (delay_enabled == true)
                         {
-                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
-                            DLOG(INFO) << "connected source to file sink";
+                            if (n == 0 and apply_delay_on_rx0 == true)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else if (n == 1 and apply_delay_on_rx0 == false)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, gr_delay, 0);
+                                    DLOG(INFO) << "connected gr_interleaved_short_to_complex to gr_delay for channel " << n;
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_delay, 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected delayed source to file sink";
+                                        }
+                                }
+                            else
+                                {
+                                    if (dump_)
+                                        {
+                                            top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                            DLOG(INFO) << "connected source to file sink";
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            if (dump_)
+                                {
+                                    top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
+                                    DLOG(INFO) << "connected source to file sink";
+                                }
                         }
                 }
         }
@@ -304,45 +517,25 @@ gr::basic_block_sptr Ad936xCustomSignalSource::get_left_block()
 
 gr::basic_block_sptr Ad936xCustomSignalSource::get_right_block()
 {
-    if (ssize_ == 16)
-        {
-            return gr_interleaved_short_to_complex_.at(0);
-        }
-    else if (ssize_ == 8)
-        {
-            return gr_interleaved_short_to_complex_.at(0);
-        }
-    else if (ssize_ == 4)
-        {
-            return gr_interleaved_short_to_complex_.at(0);
-        }
-    else if (ssize_ == 2)
-        {
-            return gr_interleaved_short_to_complex_.at(0);
-        }
-    else
-        {
-            return gr_interleaved_short_to_complex_.at(0);
-        }
+    return gr_interleaved_short_to_complex_.at(0);
 }
 
 gr::basic_block_sptr Ad936xCustomSignalSource::get_right_block(int RF_channel)
 {
-    if (ssize_ == 16)
+    if (delay_enabled == true)
         {
-            return gr_interleaved_short_to_complex_.at(RF_channel);
-        }
-    else if (ssize_ == 8)
-        {
-            return gr_interleaved_short_to_complex_.at(RF_channel);
-        }
-    else if (ssize_ == 4)
-        {
-            return gr_interleaved_short_to_complex_.at(RF_channel);
-        }
-    else if (ssize_ == 2)
-        {
-            return gr_interleaved_short_to_complex_.at(RF_channel);
+            if (RF_channel == 0 and apply_delay_on_rx0 == true)
+                {
+                    return gr_delay;
+                }
+            else if (RF_channel == 1 and apply_delay_on_rx0 == false)
+                {
+                    return gr_delay;
+                }
+            else
+                {
+                    return gr_interleaved_short_to_complex_.at(RF_channel);
+                }
         }
     else
         {

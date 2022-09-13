@@ -27,6 +27,7 @@
 #include <gnuradio/blocks/char_to_short.h>
 #include <gnuradio/blocks/file_sink.h>
 // #include <gnuradio/blocks/interleaved_char_to_complex.h>
+#include <gnuradio/blocks/delay.h>
 #include <gnuradio/blocks/interleaved_short_to_complex.h>
 #include <pmt/pmt.h>
 #include <cstdint>
@@ -74,6 +75,7 @@ private:
     std::vector<gr::blocks::file_sink::sptr> sink_;
     std::vector<std::string> filename_vec_;
 
+    gr::blocks::delay::sptr gr_delay;
     std::vector<gr::blocks::char_to_short::sptr> gr_char_to_short_;
     std::vector<gr::blocks::interleaved_short_to_complex::sptr> gr_interleaved_short_to_complex_;
     //    std::vector<gr::blocks::interleaved_char_to_complex::sptr> gr_interleaved_char_to_complex_;
@@ -113,6 +115,10 @@ private:
     bool inverted_spectrum_ch1_;
     double lo_attenuation_db_;
     bool high_side_lo_;
+    int tx_lo_channel_;
+    double rx0_to_rx1_delay_ns_;
+    bool delay_enabled;
+    bool apply_delay_on_rx0;
 
     std::vector<bool> inverted_spectrum_vec;
     int n_channels;

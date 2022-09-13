@@ -258,17 +258,39 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
     // ENABLE DDS on TX1
     // Configure LO channel
     std::vector<std::string> params_phy;
+    std::vector<std::string> params_dds;
 
     params_phy.push_back("out_altvoltage1_TX_LO_frequency=" +
                          std::to_string(freq_rf_tx_hz_));
     double disabled_tx_attenuation = 89.75;
-    if (channel == 1)
+    if (channel == 0)
         {
             params_phy.push_back("out_voltage0_hardwaregain=" +
                                  std::to_string(-tx_attenuation_db_));
             //disable the other TX
             params_phy.push_back("out_voltage1_hardwaregain=" +
                                  std::to_string(-disabled_tx_attenuation));
+
+            configure_params(phy, params_phy);
+
+            //DDS TX CH1 I (tone #1)
+            params_dds.push_back("out_altvoltage0_TX1_I_F1_frequency=" +
+                                 std::to_string(freq_dds_tx_hz_));
+            params_dds.push_back("out_altvoltage0_TX1_I_F1_phase=" +
+                                 std::to_string(phase_dds_deg_ * 1000.0));
+            params_dds.push_back("out_altvoltage0_TX1_I_F1_scale=" +
+                                 std::to_string(scale_dds_));
+            params_dds.push_back("out_altvoltage0_TX1_I_F1_raw=1");
+            //DDS TX CH1 Q (tone #1)
+            params_dds.push_back("out_altvoltage2_TX1_Q_F1_frequency=" +
+                                 std::to_string(freq_dds_tx_hz_));
+            params_dds.push_back("out_altvoltage2_TX1_Q_F1_phase=" +
+                                 std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
+            params_dds.push_back("out_altvoltage2_TX1_Q_F1_scale=" +
+                                 std::to_string(scale_dds_));
+            params_dds.push_back("out_altvoltage2_TX1_Q_F1_raw=1");
+
+            configure_params(dds_dev, params_dds);
         }
     else
         {
@@ -277,46 +299,29 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
             //disable the other TX
             params_phy.push_back("out_voltage0_hardwaregain=" +
                                  std::to_string(-disabled_tx_attenuation));
+
+            configure_params(phy, params_phy);
+
+            //DDS TX CH2 I (tone #1)
+            params_dds.push_back("out_altvoltage4_TX2_I_F1_frequency=" +
+                                 std::to_string(freq_dds_tx_hz_));
+            params_dds.push_back("out_altvoltage4_TX2_I_F1_phase=" +
+                                 std::to_string(phase_dds_deg_ * 1000.0));
+            params_dds.push_back("out_altvoltage4_TX2_I_F1_scale=" +
+                                 std::to_string(scale_dds_));
+            params_dds.push_back("out_altvoltage4_TX2_I_F1_raw=1");
+            //DDS TX CH2 Q (tone #1)
+            params_dds.push_back("out_altvoltage6_TX2_Q_F1_frequency=" +
+                                 std::to_string(freq_dds_tx_hz_));
+            params_dds.push_back("out_altvoltage6_TX2_Q_F1_phase=" +
+                                 std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
+            params_dds.push_back("out_altvoltage6_TX2_Q_F1_scale=" +
+                                 std::to_string(scale_dds_));
+            params_dds.push_back("out_altvoltage6_TX2_Q_F1_raw=1");
+
+            configure_params(dds_dev, params_dds);
         }
-    configure_params(phy, params_phy);
 
-    std::vector<std::string> params_dds;
-
-    //DDS TX CH1 I (tone #1)
-    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_frequency=" +
-    //                         std::to_string(freq_dds_tx_hz_));
-    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_phase=" +
-    //                         std::to_string(phase_dds_deg_ * 1000.0));
-    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_scale=" +
-    //                         std::to_string(scale_dds_));
-    //    params_dds.push_back("out_altvoltage0_TX1_I_F1_raw=1");
-    //    //DDS TX CH1 Q (tone #1)
-    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_frequency=" +
-    //                         std::to_string(freq_dds_tx_hz_));
-    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_phase=" +
-    //                         std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
-    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_scale=" +
-    //                         std::to_string(scale_dds_));
-    //    params_dds.push_back("out_altvoltage2_TX1_Q_F1_raw=1");
-
-    //DDS TX CH2 I (tone #1)
-    params_dds.push_back("out_altvoltage4_TX2_I_F1_frequency=" +
-                         std::to_string(freq_dds_tx_hz_));
-    params_dds.push_back("out_altvoltage4_TX2_I_F1_phase=" +
-                         std::to_string(phase_dds_deg_ * 1000.0));
-    params_dds.push_back("out_altvoltage4_TX2_I_F1_scale=" +
-                         std::to_string(scale_dds_));
-    params_dds.push_back("out_altvoltage4_TX2_I_F1_raw=1");
-    //DDS TX CH2 Q (tone #1)
-    params_dds.push_back("out_altvoltage6_TX2_Q_F1_frequency=" +
-                         std::to_string(freq_dds_tx_hz_));
-    params_dds.push_back("out_altvoltage6_TX2_Q_F1_phase=" +
-                         std::to_string(phase_dds_deg_ * 1000.0 + 270000.0));
-    params_dds.push_back("out_altvoltage6_TX2_Q_F1_scale=" +
-                         std::to_string(scale_dds_));
-    params_dds.push_back("out_altvoltage6_TX2_Q_F1_raw=1");
-
-    configure_params(dds_dev, params_dds);
 
     return true;
 }
@@ -412,7 +417,8 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     bool enable_ch1,
     long long freq_2ch,
     double lo_attenuation_db_,
-    bool high_side_lo_)
+    bool high_side_lo_,
+    int tx_lo_channel_)
 
 {
     if (check_device() == false) return false;
@@ -541,7 +547,7 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                 0,
                 0.9,
                 0,
-                2);
+                tx_lo_channel_);
             std::cout << "Configuring DDS Local Oscillator generation DONE\n";
         }
     else

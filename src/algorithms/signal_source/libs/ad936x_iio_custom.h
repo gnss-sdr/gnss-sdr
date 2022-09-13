@@ -55,7 +55,8 @@ public:
         bool enable_ch1,
         long long freq_2ch,
         double lo_attenuation_db_,
-        bool high_side_lo_);
+        bool high_side_lo_,
+        int tx_lo_channel_);
 
     bool calibrate(int ch, double bw_hz);
 
@@ -79,7 +80,6 @@ public:
     void pop_sample_buffer(std::shared_ptr<ad936x_iio_samples> &current_buffer);
 
     void push_sample_buffer(std::shared_ptr<ad936x_iio_samples> &current_buffer);
-
     int n_channels;
 
 private:

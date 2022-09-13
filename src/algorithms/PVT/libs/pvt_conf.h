@@ -48,6 +48,7 @@ public:
     std::string rtcm_output_file_path = std::string(".");
     std::string udp_addresses;
     std::string udp_eph_addresses;
+    std::string log_source_timetag_file;
 
     uint32_t type_of_receiver = 0;
     uint32_t observable_interval_ms = 20;
@@ -90,7 +91,7 @@ public:
     bool dump = false;
     bool dump_mat = true;
     bool log_source_timetag;
-    std::string log_source_timetag_file;
+    bool use_e6_for_pvt = true;
 };
 
 

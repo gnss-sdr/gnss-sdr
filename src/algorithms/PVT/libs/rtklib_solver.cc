@@ -47,11 +47,13 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const std::string &dump_filename,
     uint32_t type_of_rx,
     bool flag_dump_to_file,
-    bool flag_dump_to_mat) : d_dump_filename(dump_filename),
-                             d_rtk(rtk),
-                             d_type_of_rx(type_of_rx),
-                             d_flag_dump_enabled(flag_dump_to_file),
-                             d_flag_dump_mat_enabled(flag_dump_to_mat)
+    bool flag_dump_to_mat,
+    bool use_e6_for_pvt) : d_dump_filename(dump_filename),
+                           d_rtk(rtk),
+                           d_type_of_rx(type_of_rx),
+                           d_flag_dump_enabled(flag_dump_to_file),
+                           d_flag_dump_mat_enabled(flag_dump_to_mat),
+                           d_use_e6_for_pvt(use_e6_for_pvt)
 {
     this->set_averaging_flag(false);
 
@@ -585,7 +587,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
-                        if (sig_ == "E6")
+                        if (sig_ == "E6" && d_use_e6_for_pvt)
                             {
                                 galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())

@@ -80,7 +80,8 @@ public:
         const std::string& dump_filename,
         uint32_t type_of_rx,
         bool flag_dump_to_file,
-        bool flag_dump_to_mat);
+        bool flag_dump_to_mat,
+        bool use_e6_for_pvt = true);
     ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
@@ -133,6 +134,7 @@ private:
     uint32_t d_type_of_rx;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
+    bool d_use_e6_for_pvt;
 };
 
 

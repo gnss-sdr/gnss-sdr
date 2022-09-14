@@ -1373,7 +1373,7 @@ void Rinex_Printer::log_rinex_nav_gps_nav(int type_of_rx, const std::map<int32_t
             log_rinex_nav(navMixFile, new_eph, new_gal_eph);
             break;
         case 107:  // GPS L1 C/A + Galileo E6B
-            if (navMixFile.is_open())
+            if (navMixFile.tellp() != 0)
                 {
                     log_rinex_nav(navMixFile, new_eph, new_gal_eph);
                 }
@@ -1440,7 +1440,7 @@ void Rinex_Printer::log_rinex_nav_gal_nav(int type_of_rx, const std::map<int32_t
             log_rinex_nav(navMixFile, new_eph, new_gal_eph);
             break;
         case 107:  // GPS L1 C/A + Galileo E6B
-            if (navMixFile.is_open())
+            if (navMixFile.tellp() != 0)
                 {
                     log_rinex_nav(navMixFile, new_eph, new_gal_eph);
                 }

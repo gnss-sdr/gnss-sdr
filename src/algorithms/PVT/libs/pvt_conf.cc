@@ -59,6 +59,7 @@ Pvt_Conf::Pvt_Conf()
     kml_output_path = std::string(".");
     xml_output_path = std::string(".");
     rtcm_output_file_path = std::string(".");
+    log_source_timetag_file = "PVT_timetag.dat";
 
     enable_rx_clock_correction = true;
     monitor_enabled = false;
@@ -70,5 +71,4 @@ Pvt_Conf::Pvt_Conf()
     show_local_time_zone = false;
 
     log_source_timetag = false;
-    log_source_timetag_file = "PVT_timetag.dat";
 }

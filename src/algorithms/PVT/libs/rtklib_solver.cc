@@ -125,6 +125,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             d_rtklib_freq_index[1] = 3;
             break;
         case 106:  // GPS L1 C/A + Galileo E1B + Galileo E6B
+        case 107:  // GPS L1 C/A + Galileo E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
             break;

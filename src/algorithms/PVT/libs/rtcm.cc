@@ -3994,6 +3994,8 @@ std::map<std::string, int> Rtcm::galileo_signal_map = [] {
     galileo_signal_map_["5I"] = 22;
     galileo_signal_map_["5Q"] = 23;
     galileo_signal_map_["5X"] = 24;
+
+    galileo_signal_map_["E6"] = 10;
     return galileo_signal_map_;
 }();
 

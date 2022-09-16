@@ -781,13 +781,6 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                             Print_Rtcm_MT1019(gps_eph_iter.second);
                                         }
                                 }
-                            if (flag_write_RTCM_1045_output == true)
-                                {
-                                    for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_map)
-                                        {
-                                            Print_Rtcm_MT1045(gal_eph_iter.second);
-                                        }
-                                }
                             if (flag_write_RTCM_MSM_output == true)
                                 {
                                     auto gps_eph_iter = pvt_solver->gps_ephemeris_map.cbegin();
@@ -1391,13 +1384,6 @@ void Rtcm_Printer::Print_Rtcm_Messages(const Rtklib_Solver* pvt_solver,
                                     for (const auto& gps_eph_iter : pvt_solver->gps_ephemeris_map)
                                         {
                                             Print_Rtcm_MT1019(gps_eph_iter.second);
-                                        }
-                                }
-                            if (rtcm_MT1045_rate_ms != 0)
-                                {
-                                    for (const auto& gal_eph_iter : pvt_solver->galileo_ephemeris_map)
-                                        {
-                                            Print_Rtcm_MT1045(gal_eph_iter.second);
                                         }
                                 }
                             if (rtcm_MSM_rate_ms != 0)

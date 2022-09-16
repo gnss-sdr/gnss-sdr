@@ -7226,6 +7226,12 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
             number_of_observations_gal = number_of_observations_gal + 4;
         }
 
+    signal_ = "E6";
+    const std::size_t found_E6 = galileo_bands.find(signal_);
+    if (found_E6 != std::string::npos)
+        {
+            number_of_observations_gal = number_of_observations_gal + 4;
+        }
 
     line += satelliteSystem.find("Galileo")->second;
     line += std::string(2, ' ');
@@ -7277,6 +7283,22 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
             line += std::string(1, ' ');
             line += observationType["SIGNAL_STRENGTH"];
             line += observationCode["GALILEO_E5b_IQ"];
+        }
+
+    if (found_E6 != std::string::npos)
+        {
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GALILEO_E56_B"];
         }
 
     line += std::string(60 - line.size(), ' ');
@@ -8441,6 +8463,13 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
             number_of_observations_gal = number_of_observations_gal + 4;
         }
+
+    signal_ = "E6";
+    const std::size_t found_E6 = galileo_bands.find(signal_);
+    if (found_E6 != std::string::npos)
+        {
+            number_of_observations_gal = number_of_observations_gal + 4;
+        }
     line += satelliteSystem.find("Galileo")->second;
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
@@ -8488,6 +8517,21 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             line += std::string(1, ' ');
             line += observationType["SIGNAL_STRENGTH"];
             line += observationCode["GALILEO_E5b_IQ"];
+        }
+    if (found_E6 != std::string::npos)
+        {
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GALILEO_E56_B"];
         }
     line += std::string(60 - line.size(), ' ');
     line += Rinex_Printer::leftJustify("SYS / # / OBS TYPES", 20);
@@ -8766,6 +8810,12 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
         {
             number_of_observations_gal = number_of_observations_gal + 4;
         }
+    signal_ = "E6";
+    const std::size_t found_E6 = galileo_bands.find(signal_);
+    if (found_E6 != std::string::npos)
+        {
+            number_of_observations_gal = number_of_observations_gal + 4;
+        }
     line += satelliteSystem.find("Galileo")->second;
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
@@ -8814,6 +8864,22 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
             line += observationType["SIGNAL_STRENGTH"];
             line += observationCode["GALILEO_E5b_IQ"];
         }
+    if (found_E6 != std::string::npos)
+        {
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GALILEO_E56_B"];
+        }
+
     line += std::string(60 - line.size(), ' ');
     line += Rinex_Printer::leftJustify("SYS / # / OBS TYPES", 20);
     Rinex_Printer::lengthCheck(line);
@@ -9348,7 +9414,6 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             number_of_observations_gal = number_of_observations_gal + 4;
         }
 
-    line.clear();
     signal_ = "7X";
     const std::size_t found_7X = galileo_bands.find(signal_);
     if (found_7X != std::string::npos)
@@ -9356,6 +9421,14 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             number_of_observations_gal = number_of_observations_gal + 4;
         }
 
+    signal_ = "E6";
+    const std::size_t found_E6 = galileo_bands.find(signal_);
+    if (found_E6 != std::string::npos)
+        {
+            number_of_observations_gal = number_of_observations_gal + 4;
+        }
+
+    line.clear();
     line += satelliteSystem.find("Galileo")->second;
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
@@ -9406,6 +9479,22 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             line += std::string(1, ' ');
             line += observationType["SIGNAL_STRENGTH"];
             line += observationCode["GALILEO_E5b_IQ"];
+        }
+
+    if (found_E6 != std::string::npos)
+        {
+            line += std::string(1, ' ');
+            line += observationType["PSEUDORANGE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["CARRIER_PHASE"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["DOPPLER"];
+            line += observationCode["GALILEO_E56_B"];
+            line += std::string(1, ' ');
+            line += observationType["SIGNAL_STRENGTH"];
+            line += observationCode["GALILEO_E56_B"];
         }
 
     line += std::string(60 - line.size(), ' ');

@@ -55,7 +55,7 @@ endif()
 
 set_property(TARGET acquisition_libs
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-        $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/sr/core/interfaces>
+        $<BUILD_INTERFACE:${GNSSSDR_SOURCE_DIR}/src/core/interfaces>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 

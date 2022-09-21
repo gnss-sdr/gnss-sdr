@@ -18,7 +18,6 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_string_literals.h"
 #include <glog/logging.h>
-#include <vector>
 
 using namespace std::string_literals;
 
@@ -39,17 +38,22 @@ ZmqSignalSource::ZmqSignalSource(const ConfigurationInterface* configuration,
 
     auto property = role + ".endpoint"s;
     auto endpoint = configuration->property(property, ""s);
-    std::vector<char> address(endpoint.c_str(), endpoint.c_str() + endpoint.size() + 1);
 
     if (!endpoint.empty())
         {
             LOG(INFO) << "Connecting to ZMQ pub at " << endpoint;
-            d_source_block = gr::zeromq::sub_source::make(d_item_size, vlen, address.data(), timeout_ms, pass_tags, hwm);
+            // work around gnuradio interface deficiency
+            d_source_block = gr::zeromq::sub_source::make(d_item_size, vlen, const_cast<char*>(endpoint.data()), timeout_ms, pass_tags, hwm);
         }
     else
         {
             std::cerr << "For ZMQ_Signal_Source " << property << " must be defined" << std::endl;
             throw std::invalid_argument(property + ": undefined");
+        }
+
+    if (vlen > 1)
+        {
+            d_vec_block = gr::blocks::vector_to_stream::make(item_size(), vlen);
         }
 }
 
@@ -59,10 +63,14 @@ auto ZmqSignalSource::item_size() -> size_t { return d_item_size; }
 
 auto ZmqSignalSource::connect(gr::top_block_sptr top_block) -> void
 {
+    if (d_vec_block)
+        {
+            top_block->connect(d_source_block, 0, d_vec_block, 0);
+        }
     if (d_dump)
         {
             d_dump_sink = gr::blocks::file_sink::make(item_size(), d_dump_filename.data());
-            top_block->connect(d_source_block, 0, d_dump_sink, 0);
+            top_block->connect(get_right_block(), 0, d_dump_sink, 0);
         }
 }
 
@@ -73,10 +81,22 @@ auto ZmqSignalSource::disconnect(gr::top_block_sptr top_block) -> void
         {
             top_block->disconnect(d_dump_sink);
         }
+
+    if (d_vec_block)
+        {
+            top_block->disconnect(d_vec_block);
+        }
 }
 
 
 auto ZmqSignalSource::get_right_block() -> gr::basic_block_sptr
 {
-    return d_source_block;
+    auto result = gr::basic_block_sptr();
+
+    if (d_vec_block)
+        result = d_vec_block;  // NOLINT
+    else
+        result = d_source_block;  // NOLINT
+
+    return result;
 }

@@ -21,6 +21,7 @@
 //
 #include "concurrent_queue.h"
 #include <gnuradio/blocks/file_sink.h>  // for dump
+#include <gnuradio/blocks/vector_to_stream.h>
 #include <gnuradio/zeromq/sub_source.h>
 #include <pmt/pmt.h>
 #include <string>
@@ -66,6 +67,7 @@ public:
 
 private:
     gr::zeromq::sub_source::sptr d_source_block;
+    gr::blocks::vector_to_stream::sptr d_vec_block;
     gr::blocks::file_sink::sptr d_dump_sink;
 
     size_t d_item_size;

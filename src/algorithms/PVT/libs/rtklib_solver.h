@@ -57,6 +57,8 @@
 #include "monitor_pvt.h"
 #include "pvt_solution.h"
 #include "rtklib.h"
+#include "vtl_data.h"
+#include "vtl_engine.h"
 #include <array>
 #include <cstdint>
 #include <fstream>
@@ -84,7 +86,11 @@ public:
         bool use_e6_for_pvt = true);
     ~Rtklib_Solver();
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging, bool get_vtl_data);
+
+    void get_vtl_data();
+    Vtl_Data vtl_data;
+
 
     double get_hdop() const override;
     double get_vdop() const override;
@@ -135,6 +141,7 @@ private:
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
     bool d_use_e6_for_pvt;
+    Vtl_Engine vtl_engine;
 };
 
 

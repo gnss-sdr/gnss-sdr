@@ -34,6 +34,7 @@
 #include "Beidou_DNAV.h"
 #include "gnss_sdr_filesystem.h"
 #include "rtklib_conversions.h"
+#include "rtklib_ephemeris.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
 #include <glog/logging.h>
@@ -55,6 +56,14 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                            d_flag_dump_mat_enabled(flag_dump_to_mat),
                            d_use_e6_for_pvt(use_e6_for_pvt)
 {
+    // TODO: temporal VTL config parameters are hardcoded here. Move it to PVT adapter config (javi)
+    Vtl_Conf new_vtl_conf;
+    //TODO: new_vtl_conf.parameter1=blablabla
+
+    vtl_engine.configure(new_vtl_conf);
+    vtl_engine.reset();
+
+
     this->set_averaging_flag(false);
 
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
@@ -457,7 +466,11 @@ Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
 }
 
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
+void get_vtl_data()
+{
+}
+
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging, bool get_vtl_data)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -995,6 +1008,63 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         {
                             d_nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &d_nav_data);
                         }
+                }
+
+
+            if (get_vtl_data == true)
+                {
+                    //VTL input data extraction from rtklib structures
+                    /* satellite positions, velocities and clocks */
+                    prcopt_t *opt = &d_rtk.opt;
+                    /* count rover/base station observations */
+                    int n_sats = valid_obs + glo_valid_obs;
+                    int nu;
+                    int nr;
+                    for (nu = 0; nu < n_sats && d_obs_data.data()[nu].rcv == 1; nu++)
+                        {
+                        }
+                    for (nr = 0; nu + nr < n_sats && d_obs_data.data()[nu + nr].rcv == 2; nr++)
+                        {
+                        }
+
+                    double *rs;
+                    double *dts;
+                    double *var;
+
+                    std::vector<int> svh(MAXOBS * 2);
+                    rs = mat(6, n_sats);
+                    dts = mat(2, n_sats);
+                    var = mat(1, n_sats);
+                    /* satellite positions, velocities and clocks */
+                    satposs(d_rtk.sol.time, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, opt->sateph, rs, dts, var, svh.data());
+
+                    Vtl_Data new_vtl_data;
+                    new_vtl_data.init_storage(n_sats);
+                    new_vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
+
+                    for (int n = 0; n < n_sats; n++)
+                        {
+                            new_vtl_data.sat_p(n, 0) = rs[0 + 6 * n];
+                            new_vtl_data.sat_p(n, 1) = rs[1 + 6 * n];
+                            new_vtl_data.sat_p(n, 2) = rs[2 + 6 * n];
+                            new_vtl_data.sat_v(n, 0) = rs[3 + 6 * n];
+                            new_vtl_data.sat_v(n, 1) = rs[4 + 6 * n];
+                            new_vtl_data.sat_v(n, 2) = rs[5 + 6 * n];
+
+                            new_vtl_data.sat_dts(n, 0) = dts[0 + 2 * n];
+                            new_vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
+                            new_vtl_data.sat_var(n) = var[n];
+                            new_vtl_data.sat_health_flag(n) = svh.at(n);
+
+                            // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
+                            new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0];
+                            new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
+                            new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
+                        }
+                    new_vtl_data.debug_print();
+
+                    //Call the VTL engine loop
+                    vtl_engine.vtl_loop(new_vtl_data);
                 }
 
             result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);

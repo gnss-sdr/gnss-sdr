@@ -512,9 +512,6 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
             no_errors = false;
         }
 
-
-    std::cout << "no_errors: " << no_errors << "\n";
-
     if (enable_ch1 == true and enable_ch0 == true and freq_ != freq_2ch)
         {
             std::cout << "Two channels enabled with different frequencies, enabling the external RF transverter board:\n";
@@ -583,10 +580,8 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     //        {
     //            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
     //        }
-
     if (enable_ch0 == true)
         {
-            n_channels++;
             std::cerr << "* Get AD9361 Phy RX channel 0...\n";
             std::stringstream name;
             name.str("");
@@ -599,44 +594,45 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                     std::cerr << "Could not find AD9361 phy channel: " << name.str() << "\n";
                     no_errors = false;
                 }
-
-            ret = iio_channel_attr_write(phy_ch, "rf_port_select", rf_port_select_.c_str());
-            if (ret < 0)
-                {
-                    std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
-                    no_errors = false;
-                }
-
-            //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
-            //            if (ret < 0)
-            //                {
-            //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
-            //                    no_errors = false;
-            //                }
-
-            long long set_rf_bw;
-            ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
-            if (ret < 0)
-                {
-                    std::cerr << "Warning: rf_bandwidth read returned: " << ret << "\n";
-                    no_errors = false;
-                }
             else
                 {
-                    std::cerr << "Info: rf_bandwidth read returned: " << set_rf_bw << " Hz \n";
-                }
+                    ret = iio_channel_attr_write(phy_ch, "rf_port_select", rf_port_select_.c_str());
+                    if (ret < 0)
+                        {
+                            std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
+                            no_errors = false;
+                        }
+
+                    //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
+                    //            if (ret < 0)
+                    //                {
+                    //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
+                    //                    no_errors = false;
+                    //                }
+
+                    long long set_rf_bw;
+                    ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
+                    if (ret < 0)
+                        {
+                            std::cerr << "Warning: rf_bandwidth read returned: " << ret << "\n";
+                            no_errors = false;
+                        }
+                    else
+                        {
+                            std::cerr << "Info: rf_bandwidth read returned: " << set_rf_bw << " Hz \n";
+                        }
 
 
-            if (setRXGain(0, gain_mode_rx0_, rf_gain_rx0_) == false)
-                {
-                    std::cerr << "Info: setRXGain read returned false \n";
-                    no_errors = false;
+                    if (setRXGain(0, gain_mode_rx0_, rf_gain_rx0_) == false)
+                        {
+                            std::cerr << "Info: setRXGain read returned false \n";
+                            no_errors = false;
+                        }
                 }
         }
 
     if (enable_ch1 == true)
         {
-            n_channels++;
             std::cerr << "* Get AD9361 Phy RX channel 1...\n";
             std::stringstream name;
             name.str("");
@@ -649,37 +645,39 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                     std::cerr << "Could not find AD9361 phy channel: " << name.str() << "\n";
                     no_errors = false;
                 }
-
-            ret = iio_channel_attr_write(phy_ch, "rf_port_select", rf_port_select_.c_str());
-            if (ret < 0)
-                {
-                    std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
-                    no_errors = false;
-                }
-
-            //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
-            //            if (ret < 0)
-            //                {
-            //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
-            //                    no_errors = false;
-            //                }
-
-            long long set_rf_bw;
-            ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
-            if (ret < 0)
-                {
-                    std::cerr << "Warning: rf_bandwidth read returned: " << ret << "\n";
-                    no_errors = false;
-                }
             else
                 {
-                    std::cerr << "Info: rf_bandwidth read returned: " << set_rf_bw << " Hz \n";
-                }
+                    ret = iio_channel_attr_write(phy_ch, "rf_port_select", rf_port_select_.c_str());
+                    if (ret < 0)
+                        {
+                            std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
+                            no_errors = false;
+                        }
 
-            if (setRXGain(1, gain_mode_rx1_, rf_gain_rx1_) == false)
-                {
-                    std::cerr << "Info: setRXGain read returned false \n";
-                    no_errors = false;
+                    //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
+                    //            if (ret < 0)
+                    //                {
+                    //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
+                    //                    no_errors = false;
+                    //                }
+
+                    long long set_rf_bw;
+                    ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
+                    if (ret < 0)
+                        {
+                            std::cerr << "Warning: rf_bandwidth read returned: " << ret << "\n";
+                            no_errors = false;
+                        }
+                    else
+                        {
+                            std::cerr << "Info: rf_bandwidth read returned: " << set_rf_bw << " Hz \n";
+                        }
+
+                    if (setRXGain(1, gain_mode_rx1_, rf_gain_rx1_) == false)
+                        {
+                            std::cerr << "Info: setRXGain read returned false \n";
+                            no_errors = false;
+                        }
                 }
         }
 

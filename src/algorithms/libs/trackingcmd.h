@@ -28,8 +28,6 @@
 class TrackingCmd
 {
 public:
-    TrackingCmd();
-
     bool enable_carrier_nco_cmd = false;
     bool enable_code_nco_cmd = false;
     double code_freq_chips = 0.0;

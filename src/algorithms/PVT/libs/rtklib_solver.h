@@ -88,9 +88,7 @@ public:
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging, bool get_vtl_data);
 
-    void get_vtl_data();
     Vtl_Data vtl_data;
-
 
     double get_hdop() const override;
     double get_vdop() const override;

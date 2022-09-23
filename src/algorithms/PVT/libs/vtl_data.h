@@ -19,7 +19,6 @@
 
 #include <armadillo>
 #include <cstdint>
-#include <map>
 #include <string>
 
 /** \addtogroup PVT
@@ -34,17 +33,19 @@ public:
     Vtl_Data();
     void init_storage(int n_sats);
 
-    arma::mat sat_p;            //Satellite ECEF Position [m]
-    arma::mat sat_v;            //Satellite Velocity [m/s]
-    arma::mat sat_dts;          //Satellite clock bias and drift [s,s/s]
-    arma::vec sat_var;          //sat position and clock error variance [m^2]
-    arma::vec sat_health_flag;  //sat health flag (0 is ok)
+    arma::mat sat_p;            // Satellite ECEF Position [m]
+    arma::mat sat_v;            // Satellite Velocity [m/s]
+    arma::mat sat_dts;          // Satellite clock bias and drift [s,s/s]
+    arma::vec sat_var;          // sat position and clock error variance [m^2]
+    arma::vec sat_health_flag;  // sat health flag (0 is ok)
 
-    arma::vec pr_m;                //Satellite Code pseudoranges [m]
-    arma::vec doppler_hz;          //satellite Carrier Dopplers [Hz]
-    arma::vec carrier_phase_rads;  //satellite accumulated carrier phases [rads]
+    arma::vec pr_m;                // Satellite Code pseudoranges [m]
+    arma::vec doppler_hz;          // satellite Carrier Dopplers [Hz]
+    arma::vec carrier_phase_rads;  // satellite accumulated carrier phases [rads]
 
-    double epoch_tow_s;  //current observation RX time [s]
+    // time handling
+    double epoch_tow_s;       // current observation RX time [s]
+    uint64_t sample_counter;  // current sample counter associated with RX time [samples from start]
     void debug_print();
 };
 

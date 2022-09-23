@@ -20,6 +20,7 @@
 Vtl_Data::Vtl_Data()
 {
     epoch_tow_s = 0;
+    sample_counter = 0;
 }
 
 void Vtl_Data::init_storage(int n_sats)
@@ -33,11 +34,12 @@ void Vtl_Data::init_storage(int n_sats)
     doppler_hz = arma::vec(n_sats);
     carrier_phase_rads = arma::vec(n_sats);
     epoch_tow_s = 0;
+    sample_counter = 0;
 }
 
 void Vtl_Data::debug_print()
 {
-    std::cout << "vtl_data debug print at TOW: " << epoch_tow_s << "\n ";
+    std::cout << "vtl_data debug print at RX TOW: " << epoch_tow_s << ", TRK sample counter: " << sample_counter << "\n";
     sat_p.print("VTL Sat Positions");
     sat_v.print("VTL Sat Velocities");
     sat_dts.print("VTL Sat clocks");

@@ -465,11 +465,6 @@ Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
     return d_monitor_pvt;
 }
 
-
-void get_vtl_data()
-{
-}
-
 bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging, bool get_vtl_data)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
@@ -1041,7 +1036,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     Vtl_Data new_vtl_data;
                     new_vtl_data.init_storage(n_sats);
                     new_vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
-
+                    new_vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
                     for (int n = 0; n < n_sats; n++)
                         {
                             new_vtl_data.sat_p(n, 0) = rs[0 + 6 * n];

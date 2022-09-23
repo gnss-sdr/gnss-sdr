@@ -17,11 +17,13 @@
 #ifndef GNSS_SDR_VTL_ENGINE_H
 #define GNSS_SDR_VTL_ENGINE_H
 
+#include "trackingcmd.h"
 #include "vtl_conf.h"
 #include "vtl_data.h"
 #include <armadillo>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 /** \addtogroup PVT
  * \{ */
@@ -42,6 +44,8 @@ public:
     bool vtl_loop(Vtl_Data new_data);
     void reset();        // reset all internal states
     void debug_print();  // print debug information
+
+    std::vector<TrackingCmd> trk_cmd_outs;  // vector holding the Tracking command states updates to be sent to tracking KFs
 
 private:
     Vtl_Conf config;

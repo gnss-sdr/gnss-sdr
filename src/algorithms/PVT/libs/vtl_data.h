@@ -43,6 +43,10 @@ public:
     arma::vec doppler_hz;          // satellite Carrier Dopplers [Hz]
     arma::vec carrier_phase_rads;  // satellite accumulated carrier phases [rads]
 
+    arma::mat rx_p;            // Receiver ENU Position [m]
+    arma::mat rx_v;            // Receiver Velocity [m/s]
+    arma::mat rx_dts;          // Receiver clock bias and drift [s,s/s]
+    arma::vec rx_var;          // Receiver position and clock error variance [m^2]
     // time handling
     double epoch_tow_s;       // current observation RX time [s]
     uint64_t sample_counter;  // current sample counter associated with RX time [samples from start]

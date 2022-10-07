@@ -30,9 +30,16 @@ void Vtl_Data::init_storage(int n_sats)
     sat_dts = arma::mat(n_sats, 2);
     sat_var = arma::vec(n_sats);
     sat_health_flag = arma::vec(n_sats);
+    
     pr_m = arma::vec(n_sats);
     doppler_hz = arma::vec(n_sats);
     carrier_phase_rads = arma::vec(n_sats);
+
+    rx_p = arma::mat(1, 3);
+    rx_v = arma::mat(1, 3);
+    rx_dts = arma::mat(1, 2);
+    rx_var = arma::vec(1);
+
     epoch_tow_s = 0;
     sample_counter = 0;
 }

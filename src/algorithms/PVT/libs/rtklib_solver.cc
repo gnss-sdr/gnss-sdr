@@ -1005,63 +1005,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                 }
 
-
-            if (get_vtl_data == true)
-                {
-                    //VTL input data extraction from rtklib structures
-                    /* satellite positions, velocities and clocks */
-                    prcopt_t *opt = &d_rtk.opt;
-                    /* count rover/base station observations */
-                    int n_sats = valid_obs + glo_valid_obs;
-                    int nu;
-                    int nr;
-                    for (nu = 0; nu < n_sats && d_obs_data.data()[nu].rcv == 1; nu++)
-                        {
-                        }
-                    for (nr = 0; nu + nr < n_sats && d_obs_data.data()[nu + nr].rcv == 2; nr++)
-                        {
-                        }
-
-                    double *rs;
-                    double *dts;
-                    double *var;
-
-                    std::vector<int> svh(MAXOBS * 2);
-                    rs = mat(6, n_sats);
-                    dts = mat(2, n_sats);
-                    var = mat(1, n_sats);
-                    /* satellite positions, velocities and clocks */
-                    satposs(d_rtk.sol.time, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, opt->sateph, rs, dts, var, svh.data());
-
-                    Vtl_Data new_vtl_data;
-                    new_vtl_data.init_storage(n_sats);
-                    new_vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
-                    new_vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
-                    for (int n = 0; n < n_sats; n++)
-                        {
-                            new_vtl_data.sat_p(n, 0) = rs[0 + 6 * n];
-                            new_vtl_data.sat_p(n, 1) = rs[1 + 6 * n];
-                            new_vtl_data.sat_p(n, 2) = rs[2 + 6 * n];
-                            new_vtl_data.sat_v(n, 0) = rs[3 + 6 * n];
-                            new_vtl_data.sat_v(n, 1) = rs[4 + 6 * n];
-                            new_vtl_data.sat_v(n, 2) = rs[5 + 6 * n];
-
-                            new_vtl_data.sat_dts(n, 0) = dts[0 + 2 * n];
-                            new_vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
-                            new_vtl_data.sat_var(n) = var[n];
-                            new_vtl_data.sat_health_flag(n) = svh.at(n);
-
-                            // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
-                            new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0];
-                            new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
-                            new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
-                        }
-                    new_vtl_data.debug_print();
-
-                    //Call the VTL engine loop
-                    vtl_engine.vtl_loop(new_vtl_data);
-                }
-
             result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
 
             if (result == 0)
@@ -1121,7 +1064,75 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             rx_position_and_time[3] = pvt_sol.dtr[2] + pvt_sol.dtr[0] / SPEED_OF_LIGHT_M_S;
                         }
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
+                    
+                    if (get_vtl_data == true)
+                    {
+                        
+                        //VTL input data extraction from rtklib structures
+                        /* satellite positions, velocities and clocks */
+                        prcopt_t *opt = &d_rtk.opt;
+                        /* count rover/base station observations */
+                        int n_sats = valid_obs + glo_valid_obs;
+                        int nu;
+                        int nr;
+                        for (nu = 0; nu < n_sats && d_obs_data.data()[nu].rcv == 1; nu++)
+                            {
+                            }
+                        for (nr = 0; nu + nr < n_sats && d_obs_data.data()[nu + nr].rcv == 2; nr++)
+                            {
+                            }
 
+                        double *rs;
+                        double *dts;
+                        double *var;
+
+                        std::vector<int> svh(MAXOBS * 2);
+                        rs = mat(6, n_sats);
+                        dts = mat(2, n_sats);
+                        var = mat(1, n_sats);
+                        /* satellite positions, velocities and clocks */
+                        satposs(d_rtk.sol.time, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, opt->sateph, rs, dts, var, svh.data());
+
+                        Vtl_Data new_vtl_data;
+                        new_vtl_data.init_storage(n_sats);
+                        new_vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
+                        new_vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
+                        for (int n = 0; n < n_sats; n++)
+                            {
+                                new_vtl_data.sat_p(n, 0) = rs[0 + 6 * n];
+                                new_vtl_data.sat_p(n, 1) = rs[1 + 6 * n];
+                                new_vtl_data.sat_p(n, 2) = rs[2 + 6 * n];
+                                new_vtl_data.sat_v(n, 0) = rs[3 + 6 * n];
+                                new_vtl_data.sat_v(n, 1) = rs[4 + 6 * n];
+                                new_vtl_data.sat_v(n, 2) = rs[5 + 6 * n];
+
+                                new_vtl_data.sat_dts(n, 0) = dts[0 + 2 * n];
+                                new_vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
+                                new_vtl_data.sat_var(n) = var[n];
+                                new_vtl_data.sat_health_flag(n) = svh.at(n);
+
+                                // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
+                                new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0];
+                                new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
+                                new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
+                            }
+                            //VTL input data extraction from rtklib structures
+                            /* Receiver position, velocitie and clock */
+                            /* position/velocity (m|m/s):{x,y,z,vx,vy,vz} or {e,n,u,ve,vn,vu} */
+                            new_vtl_data.rx_p(0)  =pvt_sol.rr[0]; 
+                            new_vtl_data.rx_p(1)  =pvt_sol.rr[1];
+                            new_vtl_data.rx_p(2)  =pvt_sol.rr[2];
+                            new_vtl_data.rx_v(0)  =pvt_sol.rr[3] ;
+                            new_vtl_data.rx_v(1)  =pvt_sol.rr[4] ;
+                            new_vtl_data.rx_v(2)  =pvt_sol.rr[5] ;
+                            //receiver clock offset and receiver clock drift
+                            new_vtl_data.rx_dts(0)=rx_position_and_time[3];
+                            new_vtl_data.rx_dts(1)=pvt_sol.dtr[5];
+                            
+                            new_vtl_data.debug_print();
+                            //Call the VTL engine loop: miguel: Should we wait until valid PVT solution?
+                            vtl_engine.vtl_loop(new_vtl_data);
+                    }
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
                     std::array<double, 3> pos{};

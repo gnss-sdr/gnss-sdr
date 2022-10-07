@@ -50,6 +50,24 @@ public:
 private:
     Vtl_Conf config;
     //TODO: Internal VTL persistent variables here
+    // Kalman filter variables
+    arma::mat kf_P_x_ini;  // initial state error covariance matrix
+    arma::mat kf_P_x;      // state error covariance matrix
+    arma::mat kf_P_x_pre;  // Predicted state error covariance matrix
+    arma::mat kf_P_y;      // innovation covariance matrix
+
+    arma::mat kf_F;  // state transition matrix
+    arma::mat kf_H;  // system matrix
+    arma::mat kf_R;  // measurement error covariance matrix
+    arma::mat kf_Q;  // system error covariance matrix
+
+    arma::colvec kf_x;      // state vector
+    arma::colvec kf_x_pre;  // predicted state vector
+    arma::colvec kf_y;      // measurement vector
+    arma::mat kf_K;         // Kalman gain matrix
+
+    // Gaussian estimator
+    arma::mat kf_R_est;  // measurement error covariance
 };
 
 

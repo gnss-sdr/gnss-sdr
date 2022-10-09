@@ -36,17 +36,18 @@ public:
     arma::mat sat_p;            // Satellite ECEF Position [m]
     arma::mat sat_v;            // Satellite Velocity [m/s]
     arma::mat sat_dts;          // Satellite clock bias and drift [s,s/s]
-    arma::vec sat_var;          // sat position and clock error variance [m^2]
-    arma::vec sat_health_flag;  // sat health flag (0 is ok)
-
-    arma::vec pr_m;                // Satellite Code pseudoranges [m]
-    arma::vec doppler_hz;          // satellite Carrier Dopplers [Hz]
-    arma::vec carrier_phase_rads;  // satellite accumulated carrier phases [rads]
+    arma::colvec sat_var;          // sat position and clock error variance [m^2]
+    arma::colvec sat_health_flag;  // sat health flag (0 is ok)
+    int sat_number;             // on-view sat number
+    
+    arma::colvec pr_m;                // Satellite Code pseudoranges [m]
+    arma::colvec doppler_hz;          // satellite Carrier Dopplers [Hz]
+    arma::colvec carrier_phase_rads;  // satellite accumulated carrier phases [rads]
 
     arma::mat rx_p;            // Receiver ENU Position [m]
     arma::mat rx_v;            // Receiver Velocity [m/s]
     arma::mat rx_dts;          // Receiver clock bias and drift [s,s/s]
-    arma::vec rx_var;          // Receiver position and clock error variance [m^2]
+    arma::colvec rx_var;          // Receiver position and clock error variance [m^2]
     // time handling
     double epoch_tow_s;       // current observation RX time [s]
     uint64_t sample_counter;  // current sample counter associated with RX time [samples from start]

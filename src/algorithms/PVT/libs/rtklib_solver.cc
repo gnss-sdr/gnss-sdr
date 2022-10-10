@@ -1105,19 +1105,19 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 new_vtl_data.sat_v(n, 0) = rs[3 + 6 * n];
                                 new_vtl_data.sat_v(n, 1) = rs[4 + 6 * n];
                                 new_vtl_data.sat_v(n, 2) = rs[5 + 6 * n];
-
+                                
                                 new_vtl_data.sat_dts(n, 0) = dts[0 + 2 * n];
                                 new_vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
                                 new_vtl_data.sat_var(n) = var[n];
                                 new_vtl_data.sat_health_flag(n) = svh.at(n);
-
+                                new_vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0];
                                 // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
                                 new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0];
                                 new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
                                 new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
                             }
                             //VTL input data extraction from rtklib structures
-                            /* Receiver position, velocitie and clock */
+                            /* Receiver position, velocity and clock */
                             /* position/velocity (m|m/s):{x,y,z,vx,vy,vz} or {e,n,u,ve,vn,vu} */
                             new_vtl_data.rx_p(0)  =pvt_sol.rr[0]; 
                             new_vtl_data.rx_p(1)  =pvt_sol.rr[1];
@@ -1125,6 +1125,16 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             new_vtl_data.rx_v(0)  =pvt_sol.rr[3] ;
                             new_vtl_data.rx_v(1)  =pvt_sol.rr[4] ;
                             new_vtl_data.rx_v(2)  =pvt_sol.rr[5] ;
+                            /* Receiver position, velocity and clock variances*/
+                            new_vtl_data.rx_pvt_var[0] = pvt_sol.qr[0];
+                            new_vtl_data.rx_pvt_var[1] = pvt_sol.qr[1];
+                            new_vtl_data.rx_pvt_var[2] = pvt_sol.qr[2];
+                            //TODO: get direct estimations for V T variances, instead:
+                            new_vtl_data.rx_pvt_var[3] = pvt_sol.qr[0]*0.1; //in general minor than position.
+                            new_vtl_data.rx_pvt_var[4] = pvt_sol.qr[1]*0.1;
+                            new_vtl_data.rx_pvt_var[5] = pvt_sol.qr[2]*0.1;
+                            new_vtl_data.rx_pvt_var[6] = pvt_sol.qr[0]; //time
+                            new_vtl_data.rx_pvt_var[7] = pvt_sol.qr[0]; //doppler
                             //receiver clock offset and receiver clock drift
                             new_vtl_data.rx_dts(0)=rx_position_and_time[3];
                             new_vtl_data.rx_dts(1)=pvt_sol.dtr[5];

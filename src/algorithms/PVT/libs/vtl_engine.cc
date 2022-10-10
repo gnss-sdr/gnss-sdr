@@ -28,7 +28,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 {
     //TODO: Implement main VTL loop here
     using arma::as_scalar;
-    // using arma::dot;
     // ################## Kalman filter initialization ######################################
     // covariances (static)
     kf_P_x  = arma::zeros(8, 8); //TODO: use a real value.
@@ -72,26 +71,16 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 //     // Kalman state prediction (time update)
     kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
-
-//     //from error state variables to variables
-//     //x_u=x_u0+kf_x_pri(0);
-//     //y_u=y_u0+kf_x_pri(1);
-//     //z_u=z_u0+kf_x_pri(2);
-//     //xDot_u=xDot_u0+kf_x_pri(3);
-//     //yDot_u=yDot_u0+kf_x_pri(4);
-//     //zDot_u=zDot_u0+kf_x_pri(5);
-//     //cdeltat_u=cdeltat_u0+kf_x_pri(6);
-//     //cdeltatDot_u=cdeltatDot_u+kf_x_pri(7);
-// //     //from error state variables to variables
-// //     //x_u=x_u0+kf_x_pri(0);
-// //     //y_u=y_u0+kf_x_pri(1);
-// //     //z_u=z_u0+kf_x_pri(2);
-// //     //xDot_u=xDot_u0+kf_x_pri(3);
-// //     //yDot_u=yDot_u0+kf_x_pri(4);
-// //     //zDot_u=zDot_u0+kf_x_pri(5);
-// //     //cdeltat_u=cdeltat_u0+kf_x_pri(6);
-// //     //cdeltatDot_u=cdeltatDot_u+kf_x_pri(7);
-// From state variables definition
+    //from error state variables to variables
+    //x_u=x_u0+kf_x_pri(0);
+    //y_u=y_u0+kf_x_pri(1);
+    //z_u=z_u0+kf_x_pri(2);
+    //xDot_u=xDot_u0+kf_x_pri(3);
+    //yDot_u=yDot_u0+kf_x_pri(4);
+    //zDot_u=zDot_u0+kf_x_pri(5);
+    //cdeltat_u=cdeltat_u0+kf_x_pri(6);
+    //cdeltatDot_u=cdeltatDot_u+kf_x_pri(7);
+    // From state variables definition
     x_u=kf_x(0);
     y_u=kf_x(1);
     z_u=kf_x(2);

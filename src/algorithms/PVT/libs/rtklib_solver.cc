@@ -1097,6 +1097,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         new_vtl_data.init_storage(n_sats);
                         new_vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
                         new_vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
+                        new_vtl_data.sat_number=n_sats;
                         for (int n = 0; n < n_sats; n++)
                             {
                                 new_vtl_data.sat_p(n, 0) = rs[0 + 6 * n];
@@ -1139,9 +1140,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             new_vtl_data.rx_dts(0)=rx_position_and_time[3];
                             new_vtl_data.rx_dts(1)=pvt_sol.dtr[5];
                             
-                            new_vtl_data.debug_print();
                             //Call the VTL engine loop: miguel: Should we wait until valid PVT solution?
                             vtl_engine.vtl_loop(new_vtl_data);
+
+                            new_vtl_data.debug_print();
                     }
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;

@@ -64,6 +64,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_x(6)=new_data.rx_dts(0);
     kf_x(7)=new_data.rx_dts(1);
 
+    for (int32_t i = 0; i < 8; i++) // State error Covariance Matrix Q (PVT)
+    {
+        // It is diagonal 8x8 matrix 
+        kf_Q(i, i) = new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
+    }
+
 //     // Kalman state prediction (time update)
     kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
@@ -128,7 +134,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement error Covariance Matrix R assembling
     {
         // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error) 
-        kf_R(i, i) = 1.0; //TODO: use a real value.
+        kf_R(i, i) = 1.0; //TODO: use a valid value.
         kf_R(i+new_data.sat_number, i+new_data.sat_number) = 1.0;
     }
 
@@ -143,7 +149,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     //}
 
     //kf_delta_x = kf_K * kf_delta_y;                                   // updated error state estimation
-    kf_x = kf_K * (kf_y-dot(kf_H,kf_x));                                // updated error state estimation
+    kf_x = kf_x + kf_K * (kf_y-dot(kf_H,kf_x));                         // updated state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;          // update state estimation error covariance matrix
 
 //   //  kf_x = kf_x_pri+kf_delta_x;                                         // compute PVT  from priori and error estimation (neccesary?)

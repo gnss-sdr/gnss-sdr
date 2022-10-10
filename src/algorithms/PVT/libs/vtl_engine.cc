@@ -15,6 +15,9 @@
  */
 
 #include "vtl_engine.h"
+#include "iostream"
+
+using namespace std;
 
 Vtl_Engine::Vtl_Engine()
 {
@@ -30,7 +33,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     using arma::as_scalar;
     // ################## Kalman filter initialization ######################################
     // covariances (static)
-    kf_P_x  = arma::zeros(8, 8); //TODO: use a real value.
+    kf_P_x  = arma::eye(8, 8); //TODO: use a real value.
     kf_x    = arma::zeros(8, 1);
     kf_R    = arma::zeros(2*new_data.sat_number, 2*new_data.sat_number);
     double kf_dt=1e-1;
@@ -69,8 +72,11 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     }
 
 //     // Kalman state prediction (time update)
+    cout << " KF RTKlib STATE" << kf_x;
     kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
+    new_data.kf_state=kf_x;
+    cout << " KF priori STATE" << kf_x;
     //from error state variables to variables
     //x_u=x_u0+kf_x_pri(0);
     //y_u=y_u0+kf_x_pri(1);
@@ -148,7 +154,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     //kf_delta_x = kf_K * kf_delta_y;                                   // updated error state estimation
     kf_x = kf_x + kf_K * (kf_y-kf_H*kf_x);                         // updated state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;          // update state estimation error covariance matrix
-
+    cout << " KF posteriori STATE" << kf_x;
 // //   //  kf_x = kf_x_pri+kf_delta_x;                                         // compute PVT  from priori and error estimation (neccesary?)
 
 

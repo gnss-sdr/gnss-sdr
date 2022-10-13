@@ -129,7 +129,9 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
       d_cloop(true),
       d_dump(d_trk_parameters.dump),
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
-      d_acc_carrier_phase_initialized(false)
+      d_acc_carrier_phase_initialized(false),
+      d_vtl_cmd_applied_now(false),
+      d_vtl_cmd_samplestamp(0LL)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -626,8 +628,23 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
             if (pmt::any_ref(msg).type().hash_code() == typeid(const std::shared_ptr<TrackingCmd>).hash_code())
                 {
                     const auto cmd = wht::any_cast<const std::shared_ptr<TrackingCmd>>(pmt::any_ref(msg));
-                    // std::cout << "RX pvt-to-trk cmd with delay: "
-                    //           << static_cast<double>(nitems_read(0) - cmd->sample_counter) / d_trk_parameters.fs_in << " [s]\n";
+                    if (cmd->channel_id == this->d_channel)
+                        {
+                            gr::thread::scoped_lock lock(d_setlock);
+                            //To.Do: apply VTL corrections to the KF states
+                            // code
+                            //                        d_code_error_kf_chips;
+                            //                        d_code_freq_kf_chips_s;
+                            //                        // carrier
+                            //                        d_carrier_phase_kf_rad;
+                            //                        d_carrier_doppler_kf_hz;
+                            //                        d_carrier_doppler_rate_kf_hz_s;
+                            // set vtl corrections flag to inform VTL from gnss_synchro object
+                            d_vtl_cmd_applied_now = true;
+                            d_vtl_cmd_samplestamp = cmd->sample_counter;
+                            std::cout << "CH " << this->d_channel << " RX pvt-to-trk cmd with delay: "
+                                      << static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in << " [s]\n";
+                        }
                 }
             else
                 {
@@ -2071,6 +2088,11 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
+            if (d_vtl_cmd_applied_now == true)
+                {
+                    d_vtl_cmd_applied_now = false;
+                }
+            current_synchro_data.last_vtl_cmd_sample_counter = d_vtl_cmd_samplestamp;
             *out[0] = current_synchro_data;
             return 1;
         }

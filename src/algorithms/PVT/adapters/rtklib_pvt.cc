@@ -879,6 +879,9 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Use E6 for PVT
     pvt_output_parameters.use_e6_for_pvt = configuration->property(role + ".use_e6_for_pvt", pvt_output_parameters.use_e6_for_pvt);
 
+    // Vector Tracking Loop (VTL)
+    pvt_output_parameters.enable_vtl = configuration->property(role + ".enable_vtl", pvt_output_parameters.enable_vtl);
+    pvt_output_parameters.close_vtl_loop = configuration->property(role + ".close_vtl_loop", pvt_output_parameters.close_vtl_loop);
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

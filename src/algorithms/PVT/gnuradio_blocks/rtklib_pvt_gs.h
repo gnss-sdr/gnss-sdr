@@ -289,6 +289,9 @@ private:
     bool d_an_printer_enabled;
     bool d_log_timetag;
     bool d_use_e6_for_pvt;
+    bool d_enable_vtl;
+    bool d_close_vtl_loop;
+    std::map<int, uint64_t> d_last_sent_vtl_cmd_samplestamp_map;
 };
 
 

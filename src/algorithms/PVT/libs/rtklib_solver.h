@@ -86,7 +86,7 @@ public:
         bool use_e6_for_pvt = true);
     ~Rtklib_Solver();
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging, bool get_vtl_data);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging, bool enable_vtl, bool close_vtl_loop);
 
     Vtl_Data vtl_data;
 

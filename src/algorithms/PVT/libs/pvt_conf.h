@@ -92,6 +92,8 @@ public:
     bool dump_mat = true;
     bool log_source_timetag;
     bool use_e6_for_pvt = true;
+    bool enable_vtl = false;
+    bool close_vtl_loop = true;
 };
 
 

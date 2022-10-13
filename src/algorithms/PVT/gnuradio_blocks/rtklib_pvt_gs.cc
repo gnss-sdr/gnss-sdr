@@ -176,7 +176,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_enable_rx_clock_correction(conf_.enable_rx_clock_correction),
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
-      d_use_e6_for_pvt(conf_.use_e6_for_pvt)
+      d_use_e6_for_pvt(conf_.use_e6_for_pvt),
+      d_enable_vtl(conf_.enable_vtl),
+      d_close_vtl_loop(conf_.close_vtl_loop)
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
@@ -2131,9 +2133,57 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // old_time_debug = d_gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
                     // #### solve PVT and store the corrected observable set
-                    bool get_vtl_data = true;
-                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, false, get_vtl_data))
+                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, false, d_enable_vtl, d_close_vtl_loop))
                         {
+                            // ****** experimental VTL tests
+                            if (d_close_vtl_loop == true)
+                                {
+                                    std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
+                                    for (gnss_observables_iter = d_gnss_observables_map.cbegin();
+                                         gnss_observables_iter != d_gnss_observables_map.cend();
+                                         ++gnss_observables_iter)  // CHECK INCONSISTENCY when combining GLONASS + other system
+                                        {
+                                            // test complete loop
+                                            if (gnss_observables_iter->second.last_vtl_cmd_sample_counter == 0)
+                                                {
+                                                    // send new tracking command
+                                                    const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
+                                                    trk_cmd_test->carrier_freq_hz = 12345.4;
+                                                    trk_cmd_test->sample_counter = gnss_observables_iter->second.Tracking_sample_counter;
+                                                    trk_cmd_test->channel_id = gnss_observables_iter->second.Channel_ID;
+                                                    this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
+                                                    d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID] = gnss_observables_iter->second.Tracking_sample_counter;
+                                                    //std::cout << "msg pvt_to_trk sent.\n";
+                                                }
+                                            else
+                                                {
+                                                    //                                                    std::cout << "CH " << gnss_observables_iter->second.Channel_ID
+                                                    //                                                              << " T_RX: " << static_cast<float>(gnss_observables_iter->second.Tracking_sample_counter) / static_cast<float>(gnss_observables_iter->second.fs)
+                                                    //                                                              << " T_last_vtl_trk: " << static_cast<float>(gnss_observables_iter->second.last_vtl_cmd_sample_counter) / static_cast<float>(gnss_observables_iter->second.fs)
+                                                    //                                                              << " T_map: " << static_cast<float>(d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID]) / static_cast<float>(gnss_observables_iter->second.fs)
+                                                    //                                                              << " T2: " << static_cast<float>(gnss_observables_iter->second.last_vtl_cmd_sample_counter) - static_cast<float>(d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID])
+                                                    //                                                              << " T3: " << static_cast<float>(gnss_observables_iter->second.Tracking_sample_counter) - static_cast<float>(d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID]) << "\n";
+
+                                                    // To.Do: check if satellite change, check if there is a possibility to not find the last cmd timestamp in the map...
+                                                    if (gnss_observables_iter->second.last_vtl_cmd_sample_counter >= d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID])
+                                                        {
+                                                            std::cout << "CH " << gnss_observables_iter->second.Channel_ID << " processed VTL cmd, total loop time is "
+                                                                      << ((static_cast<float>(gnss_observables_iter->second.Tracking_sample_counter) - static_cast<float>(d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID])) / static_cast<float>(gnss_observables_iter->second.fs)) * 1000.0
+                                                                      << " [ms]!\n";
+                                                            // send new tracking command
+                                                            const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
+                                                            trk_cmd_test->carrier_freq_hz = 12345.4;
+                                                            trk_cmd_test->sample_counter = gnss_observables_iter->second.Tracking_sample_counter;
+                                                            trk_cmd_test->channel_id = gnss_observables_iter->second.Channel_ID;
+                                                            this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
+                                                            d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID] = gnss_observables_iter->second.Tracking_sample_counter;
+                                                            //std::cout << "msg pvt_to_trk sent.\n";
+                                                        }
+                                                }
+                                        }
+                                }
+                            // *****************************
+
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 
@@ -2246,18 +2296,13 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)
                         {
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, false, false);
+                            // VTP To.Do: Check why get_PVT is triggered twice. Leave only one get_PVT.
+
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, false, false, false);
                         }
 
                     if (flag_pvt_valid == true)
                         {
-                            // experimental VTL tests
-                            // send tracking command
-                            //                            const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(TrackingCmd());
-                            //                            trk_cmd_test->carrier_freq_hz = 12345.4;
-                            //                            trk_cmd_test->sample_counter = d_gnss_observables_map.begin()->second.Tracking_sample_counter;
-                            //                            this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
-
                             // initialize (if needed) the accumulated phase offset and apply it to the active channels
                             // required to report accumulated phase cycles comparable to pseudoranges
                             initialize_and_apply_carrier_phase_offset();

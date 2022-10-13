@@ -34,6 +34,7 @@ public:
     double carrier_freq_hz = 0.0;
     double carrier_freq_rate_hz_s = 0.0;
     uint64_t sample_counter = 0UL;
+    uint32_t channel_id = 0;
 };
 
 /** \} */

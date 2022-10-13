@@ -42,7 +42,9 @@
 #include <exception>
 #include <utility>
 #include <vector>
+#include "iostream"
 
+using namespace std;
 
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const std::string &dump_filename,
@@ -1138,7 +1140,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             new_vtl_data.rx_pvt_var[7] = pvt_sol.qr[0]; //doppler
                             //receiver clock offset and receiver clock drift
                             new_vtl_data.rx_dts(0)=rx_position_and_time[3];
-                            new_vtl_data.rx_dts(1)=pvt_sol.dtr[5];
+                            new_vtl_data.rx_dts(1)=pvt_sol.dtr[5]/1e6; // [ppm] to [s]
                             
                             //Call the VTL engine loop: miguel: Should we wait until valid PVT solution?
                             vtl_engine.vtl_loop(new_vtl_data);

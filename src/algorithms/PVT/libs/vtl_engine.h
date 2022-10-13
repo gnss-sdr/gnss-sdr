@@ -20,6 +20,7 @@
 #include "trackingcmd.h"
 #include "vtl_conf.h"
 #include "vtl_data.h"
+#include "MATH_CONSTANTS.h"
 #include <armadillo>
 #include <cstdint>
 #include <string>
@@ -83,6 +84,8 @@ private:
     arma::colvec kf_x;      // state vector
     arma::colvec kf_x_pre;  // predicted state vector
     arma::colvec kf_y;      // measurement vector
+    arma::colvec kf_yerr;   // ERROR measurement vector
+    arma::colvec kf_xerr;   // ERROR state vector
     arma::mat kf_K;         // Kalman gain matrix
 
     // Gaussian estimator

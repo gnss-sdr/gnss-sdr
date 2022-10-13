@@ -101,13 +101,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     {
         d(i)=sqrt((new_data.sat_p(i, 0)-x_u)*(new_data.sat_p(i, 0)-x_u)+(new_data.sat_p(i, 1)-y_u)*(new_data.sat_p(i, 1)-y_u)+(new_data.sat_p(i, 2)-z_u)*(new_data.sat_p(i, 2)-z_u));
         //compute pseudorange estimation 
-        rho_pri(i)=d(i);//+cdeltat_u;
+        rho_pri(i)=d(i)+cdeltat_u;
         //compute LOS sat-receiver vector components 
         a_x(i)=-(new_data.sat_p(i, 0)-x_u)/d(i);
         a_y(i)=-(new_data.sat_p(i, 1)-y_u)/d(i);
         a_z(i)=-(new_data.sat_p(i, 2)-z_u)/d(i);
         //compute pseudorange rate estimation
-        rhoDot_pri(i)=(new_data.sat_v(i, 0)-xDot_u)*a_x(i)+(new_data.sat_v(i, 1)-yDot_u)*a_y(i)+(new_data.sat_v(i, 2)-zDot_u)*a_z(i)+cdeltatDot_u;
+        rhoDot_pri(i)=(new_data.sat_v(i, 0)-xDot_u)*a_x(i)+(new_data.sat_v(i, 1)-yDot_u)*a_y(i)+(new_data.sat_v(i, 2)-zDot_u)*a_z(i);
     }
 
     kf_H = arma::zeros(2*new_data.sat_number,8);
@@ -122,17 +122,19 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
    for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement vector
    {
         //kf_y(i) = delta_rho(i); // i-Satellite 
-        kf_y(i)=new_data.pr_m(i);
-        kf_yerr(i)=kf_y(i)-rho_pri(i);
         //kf_y(i+new_data.sat_number) = delta_rhoDot(i);  // i-Satellite
-        kf_y(i+new_data.sat_number)=-new_data.doppler_hz(i)/0.1902937+cdeltatDot_u;
+        kf_y(i)=new_data.pr_m(i);
+        kf_yerr(i)=kf_y(i)-rho_pri(i)-0.000157*SPEED_OF_LIGHT_M_S;
+        
+        float Lambda_GPS_L1=0.1902937;
+        kf_y(i+new_data.sat_number)=-new_data.doppler_hz(i)*Lambda_GPS_L1;
         kf_yerr(i+new_data.sat_number)=kf_y(i+new_data.sat_number)-rhoDot_pri(i);
    }
-    //cout << " KF yerr" << kf_yerr;
+    cout << " KF measurement vector difference" << kf_yerr;
     for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement error Covariance Matrix R assembling
     {
         // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error) 
-        kf_R(i, i) = 1.0; //TODO: use a valid value.
+        kf_R(i, i) = 0.1; //TODO: use a valid value.
         kf_R(i+new_data.sat_number, i+new_data.sat_number) = 1.0;
     }
 
@@ -140,22 +142,11 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_S = kf_H * kf_P_x* kf_H.t() + kf_R;                       // innovation covariance matrix (S)
     kf_K = (kf_P_x * kf_H.t()) * arma::inv(kf_S);                // Kalman gain
         
-    //for (int32_t i = 0; i < new_data.sat_number; i++) //Error measurement vector
-    //{
-    //   kf_delta_y(i)=new_data.pr_m(i)+delta_rho(i)-rho_pri(i); // pseudorange error
-    //   kf_delta_y(i+new_data.sat_number)=new_data.doppler_hz(i)+delta_F*(-lambdaC)-rhoDot_pri(i); // pseudorange rate error
-    //}
-
-    //kf_delta_x = kf_K * kf_delta_y;                                   // updated error state estimation
     //cout << " KF measures ERROR" << kf_yerr;
-    //cout << " KF measure ERROR stimation" << kf_H*kf_x;
-    cout << " KF innovation" << kf_yerr-kf_H*kf_xerr;
-    kf_x = kf_x + kf_K * (kf_yerr-kf_H*kf_xerr);                         // updated state estimation
+    kf_x = kf_x + kf_K * (kf_yerr);                             // updated state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
-    cout << " KF posteriori STATE" << kf_x;
-    //cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
-    // kf_x = kf_x_pri+kf_delta_x;                                         // compute PVT  from priori and error estimation (neccesary?)
-
+    //cout << " KF posteriori STATE" << kf_x;
+    cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
 
 //     // ################## Geometric Transformation ######################################
 

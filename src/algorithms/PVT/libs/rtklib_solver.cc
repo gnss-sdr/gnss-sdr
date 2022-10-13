@@ -39,10 +39,10 @@
 #include "rtklib_solution.h"
 #include <glog/logging.h>
 #include <matio.h>
+#include "iostream"
 #include <exception>
 #include <utility>
 #include <vector>
-#include "iostream"
 
 using namespace std;
 
@@ -1006,8 +1006,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             d_nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &d_nav_data);
                         }
                 }
-
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
+            std::vector<double> tropo_vec;
+            std::vector<double> iono_vec;
+            std::vector<double> pr_corrected_code_bias_vec;
+            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, tropo_vec,
+                iono_vec, pr_corrected_code_bias_vec);
 
             if (result == 0)
                 {
@@ -1114,7 +1117,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     new_vtl_data.sat_health_flag(n) = svh.at(n);
                                     new_vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0];
                                     // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
-                                    new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0];
+                                    //new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0]; //RAW pseudoranges
+                                    //To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
+                                    //corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)
+                                    new_vtl_data.pr_m(n) = pr_corrected_code_bias_vec[n] - tropo_vec[n] - iono_vec[n];
                                     new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
                                     new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
                                 }
@@ -1138,9 +1144,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             new_vtl_data.rx_pvt_var[6] = pvt_sol.qr[0];  //time
                             new_vtl_data.rx_pvt_var[7] = pvt_sol.qr[0];  //doppler
                             //receiver clock offset and receiver clock drift
-                            new_vtl_data.rx_dts(0)=rx_position_and_time[3];
-                            new_vtl_data.rx_dts(1)=pvt_sol.dtr[5]/1e6; // [ppm] to [s]
-                            
+                            new_vtl_data.rx_dts(0) = rx_position_and_time[3];
+                            new_vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
+
                             //Call the VTL engine loop: miguel: Should we wait until valid PVT solution?
                             vtl_engine.vtl_loop(new_vtl_data);
 

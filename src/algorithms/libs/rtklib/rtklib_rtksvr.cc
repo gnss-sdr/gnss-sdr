@@ -38,6 +38,7 @@
 #include "rtklib_solution.h"
 #include "rtklib_stream.h"
 #include <cstring>
+#include <vector>
 
 /* write solution header to output stream ------------------------------------*/
 void writesolhead(stream_t *stream, const solopt_t *solopt)
@@ -595,7 +596,11 @@ void *rtksvrthread(void *arg)
                         }
                     /* rtk positioning */
                     rtksvrlock(svr);
-                    rtkpos(&svr->rtk, obs.data, obs.n, &svr->nav);
+                    std::vector<double> tropo_vec;
+                    std::vector<double> iono_vec;
+                    std::vector<double> pr_corrected_code_bias_vec;
+                    rtkpos(&svr->rtk, obs.data, obs.n, &svr->nav, tropo_vec,
+                        iono_vec, pr_corrected_code_bias_vec);
                     rtksvrunlock(svr);
 
                     if (svr->rtk.sol.stat != SOLQ_NONE)

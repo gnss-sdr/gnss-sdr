@@ -38,7 +38,6 @@
 #include <cmath>
 #include <cstring>
 #include <string>
-#include <vector>
 
 static int resamb_WLNL(rtk_t *rtk __attribute((unused)), const obsd_t *obs __attribute((unused)), const int *sat __attribute((unused)),
     const int *iu __attribute((unused)), const int *ir __attribute((unused)), int ns __attribute__((unused)), const nav_t *nav __attribute((unused)),
@@ -2762,7 +2761,10 @@ void rtkfree(rtk_t *rtk)
  * notes  : before calling function, base station position rtk->sol.rb[] should
  *          be properly set for relative mode except for moving-baseline
  *-----------------------------------------------------------------------------*/
-int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
+int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
+    std::vector<double> &tropo_vec,
+    std::vector<double> &iono_vec,
+    std::vector<double> &pr_corrected_code_bias_vec)
 {
     prcopt_t *opt = &rtk->opt;
     sol_t solb = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
@@ -2797,7 +2799,8 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     time = rtk->sol.time; /* previous epoch */
 
     /* rover position by single point positioning */
-    if (!pntpos(obs, nu, nav, &rtk->opt, &rtk->sol, nullptr, rtk->ssat, msg))
+    if (!pntpos(obs, nu, nav, &rtk->opt, &rtk->sol, nullptr, rtk->ssat, msg, tropo_vec,
+            iono_vec, pr_corrected_code_bias_vec))
         {
             errmsg(rtk, "point pos error (%s)\n", msg);
             if (!rtk->opt.dynamics)
@@ -2839,7 +2842,8 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     if (opt->mode == PMODE_MOVEB)
         { /*  moving baseline */
             /* estimate position/velocity of base station */
-            if (!pntpos(obs + nu, nr, nav, &rtk->opt, &solb, nullptr, nullptr, msg))
+            if (!pntpos(obs + nu, nr, nav, &rtk->opt, &solb, nullptr, nullptr, msg, tropo_vec,
+                    iono_vec, pr_corrected_code_bias_vec))
                 {
                     errmsg(rtk, "base station position error (%s)\n", msg);
                     return 0;

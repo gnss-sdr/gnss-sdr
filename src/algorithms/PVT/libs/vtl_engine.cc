@@ -76,12 +76,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 //     // Kalman state prediction (time update)
     cout << " KF RTKlib STATE" << kf_x;
     new_data.kf_state=kf_x;
-    kf_x = kf_F * kf_x;                        // state prediction
+    //kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
     // cout << " KF priori STATE diference" << kf_x-new_data.kf_state;
     //from error state variables to variables
     kf_xerr=kf_x-new_data.kf_state;
     // From state variables definition
+    // TODO: cast to type properly
     x_u=kf_x(0);
     y_u=kf_x(1);
     z_u=kf_x(2);
@@ -99,16 +100,27 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     a_z = arma::zeros(new_data.sat_number, 1);
     for (int32_t i = 0; i < new_data.sat_number; i++) //neccesary quantities
     {
-        d(i)=sqrt((new_data.sat_p(i, 0)-x_u)*(new_data.sat_p(i, 0)-x_u)+(new_data.sat_p(i, 1)-y_u)*(new_data.sat_p(i, 1)-y_u)+(new_data.sat_p(i, 2)-z_u)*(new_data.sat_p(i, 2)-z_u));
+        //d(i) is the distance sat(i) to receiver
+        d(i)=(new_data.sat_p(i, 0)-x_u)*(new_data.sat_p(i, 0)-x_u);
+        d(i)=d(i)+(new_data.sat_p(i, 1)-y_u)*(new_data.sat_p(i, 1)-y_u);
+        d(i)=d(i)+(new_data.sat_p(i, 2)-z_u)*(new_data.sat_p(i, 2)-z_u);
+        d(i)=sqrt(d(i)); 
+
         //compute pseudorange estimation 
         rho_pri(i)=d(i)+cdeltat_u;
         //compute LOS sat-receiver vector components 
         a_x(i)=-(new_data.sat_p(i, 0)-x_u)/d(i);
         a_y(i)=-(new_data.sat_p(i, 1)-y_u)/d(i);
         a_z(i)=-(new_data.sat_p(i, 2)-z_u)/d(i);
+        new_data.sat_LOS(i,0)=a_x(i);
+        new_data.sat_LOS(i,1)=a_y(i);
+        new_data.sat_LOS(i,2)=a_z(i);
         //compute pseudorange rate estimation
         rhoDot_pri(i)=(new_data.sat_v(i, 0)-xDot_u)*a_x(i)+(new_data.sat_v(i, 1)-yDot_u)*a_y(i)+(new_data.sat_v(i, 2)-zDot_u)*a_z(i);
+        //rhoDot_pri(i)=(new_data.sat_v(i, 0)-0)*a_x(i)+(new_data.sat_v(i, 1)-0)*a_y(i)+(new_data.sat_v(i, 2)-0)*a_z(i);
+
     }
+    cout << " V_LOS sat" << rhoDot_pri;
 
     kf_H = arma::zeros(2*new_data.sat_number,8);
 
@@ -124,13 +136,18 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         //kf_y(i) = delta_rho(i); // i-Satellite 
         //kf_y(i+new_data.sat_number) = delta_rhoDot(i);  // i-Satellite
         kf_y(i)=new_data.pr_m(i);
-        kf_yerr(i)=kf_y(i)-rho_pri(i)-0.000157*SPEED_OF_LIGHT_M_S;
+        kf_yerr(i)=kf_y(i)-rho_pri(i);//-0.000157*SPEED_OF_LIGHT_M_S;
         
         float Lambda_GPS_L1=0.1902937;
-        kf_y(i+new_data.sat_number)=-new_data.doppler_hz(i)*Lambda_GPS_L1;
-        kf_yerr(i+new_data.sat_number)=kf_y(i+new_data.sat_number)-rhoDot_pri(i);
+        kf_y(i+new_data.sat_number)=(rhoDot_pri(i))/Lambda_GPS_L1;
+        kf_yerr(i+new_data.sat_number)=kf_y(i+new_data.sat_number)-new_data.doppler_hz(i);
+
+        //rhoDot_pri(i)=(rhoDot_pri(i))/Lambda_GPS_L1;
    }
-    cout << " KF measurement vector difference" << kf_yerr;
+    //cout << " KF measurement vector difference" << kf_yerr;
+    cout << " kf_yerr" << kf_yerr;
+    //rhoDot_pri.print("DOPPLER stimated [Hz]");
+
     for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement error Covariance Matrix R assembling
     {
         // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error) 
@@ -146,7 +163,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_x = kf_x + kf_K * (kf_yerr);                             // updated state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
     //cout << " KF posteriori STATE" << kf_x;
-    cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
+    //cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
 
 //     // ################## Geometric Transformation ######################################
 
@@ -189,6 +206,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     trk_cmd.enable_code_nco_cmd = true;
     trk_cmd.sample_counter = new_data.sample_counter;
     trk_cmd_outs.push_back(trk_cmd);
+    new_data.debug_print();
     return true;
 }
 

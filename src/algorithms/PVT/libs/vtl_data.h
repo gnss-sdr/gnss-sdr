@@ -39,6 +39,7 @@ public:
     arma::colvec sat_var;          // sat position and clock error variance [m^2]
     arma::colvec sat_health_flag;  // sat health flag (0 is ok)
     arma::colvec sat_CN0_dB_hz;     // sat CN0 in dB-Hz
+    arma::mat sat_LOS;          // sat LOS
     int sat_number;             // on-view sat number
     
     arma::colvec pr_m;                // Satellite Code pseudoranges [m]

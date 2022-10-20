@@ -74,7 +74,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     }
 
 //     // Kalman state prediction (time update)
-    cout << " KF RTKlib STATE" << kf_x;
+    kf_x.print(" KF RTKlib STATE");
     new_data.kf_state=kf_x;
     //kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
@@ -120,7 +120,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         //rhoDot_pri(i)=(new_data.sat_v(i, 0)-0)*a_x(i)+(new_data.sat_v(i, 1)-0)*a_y(i)+(new_data.sat_v(i, 2)-0)*a_z(i);
 
     }
-    cout << " V_LOS sat" << rhoDot_pri;
+    rhoDot_pri.print("V_LOS sat");
 
     kf_H = arma::zeros(2*new_data.sat_number,8);
 
@@ -145,8 +145,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         //rhoDot_pri(i)=(rhoDot_pri(i))/Lambda_GPS_L1;
    }
     //cout << " KF measurement vector difference" << kf_yerr;
-    cout << " kf_yerr" << kf_yerr;
     //rhoDot_pri.print("DOPPLER stimated [Hz]");
+    kf_yerr.print("KF measurement vector difference");
 
     for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement error Covariance Matrix R assembling
     {

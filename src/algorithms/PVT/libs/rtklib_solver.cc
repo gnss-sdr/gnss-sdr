@@ -1117,11 +1117,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     new_vtl_data.sat_health_flag(n) = svh.at(n);
                                     new_vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0];
                                     // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
-                                    new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0]; //RAW pseudoranges
+                                    //new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0]; //RAW pseudoranges
                                     //To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
                                     //corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)
                                     //cout<<"dtr "<<rx_position_and_time[3]*SPEED_OF_LIGHT_M_S<<"m";
-                                    //new_vtl_data.pr_m(n) = pr_corrected_code_bias_vec[n] - tropo_vec[n] - iono_vec[n]+SPEED_OF_LIGHT_M_S * dts[n * 2];
+                                    new_vtl_data.pr_m(n) = pr_corrected_code_bias_vec[n] - tropo_vec[n] - iono_vec[n]+SPEED_OF_LIGHT_M_S * dts[n * 2];
                                     new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
                                     new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
                                 }

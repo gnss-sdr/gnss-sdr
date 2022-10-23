@@ -76,7 +76,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 //     // Kalman state prediction (time update)
     kf_x.print(" KF RTKlib STATE");
     new_data.kf_state=kf_x;
-    //kf_x = kf_F * kf_x;                        // state prediction
+    kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
     // cout << " KF priori STATE diference" << kf_x-new_data.kf_state;
     //from error state variables to variables

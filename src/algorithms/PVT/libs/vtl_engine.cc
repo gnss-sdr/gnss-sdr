@@ -73,14 +73,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         kf_Q(i, i) = new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
     }
 
-//     // Kalman state prediction (time update)
+    // Kalman state prediction (time update)
     kf_x.print(" KF RTKlib STATE");
     new_data.kf_state=kf_x;
     kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
-    // cout << " KF priori STATE diference" << kf_x-new_data.kf_state;
     //from error state variables to variables
-    kf_xerr=kf_x-new_data.kf_state;
     // From state variables definition
     // TODO: cast to type properly
     x_u=kf_x(0);
@@ -133,37 +131,38 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     // Kalman estimation (measurement update)
    for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement vector
    {
-        //kf_y(i) = delta_rho(i); // i-Satellite 
-        //kf_y(i+new_data.sat_number) = delta_rhoDot(i);  // i-Satellite
-        kf_y(i)=new_data.pr_m(i);
-        kf_yerr(i)=kf_y(i)-rho_pri(i);//-0.000157*SPEED_OF_LIGHT_M_S;
-        
-        float Lambda_GPS_L1=0.1902937;
-        kf_y(i+new_data.sat_number)=(rhoDot_pri(i))/Lambda_GPS_L1;
-        kf_yerr(i+new_data.sat_number)=kf_y(i+new_data.sat_number)-new_data.doppler_hz(i);
-
-        //rhoDot_pri(i)=(rhoDot_pri(i))/Lambda_GPS_L1;
+        //kf_y(i) = new_data.pr_m(i); // i-Satellite 
+        //kf_y(i+new_data.sat_number) = rhoDot_pri(i)/Lambda_GPS_L1; // i-Satellite
+        kf_yerr(i)=new_data.pr_m(i)-rho_pri(i);//-0.000157*SPEED_OF_LIGHT_M_S;
+        kf_yerr(i+new_data.sat_number)=rhoDot_pri(i)/Lambda_GPS_L1-new_data.doppler_hz(i);
    }
-    //cout << " KF measurement vector difference" << kf_yerr;
-    //rhoDot_pri.print("DOPPLER stimated [Hz]");
     kf_yerr.print("KF measurement vector difference");
 
+     // DOUBLES DIFFERENCES
+    // kf_yerr = arma::zeros(2*new_data.sat_number, 1);
+    // for (int32_t i = 1; i < new_data.sat_number; i++) // Measurement vector
+    // {
+    //     kf_y(i)=new_data.pr_m(i)-new_data.pr_m(i-1);
+    //     kf_yerr(i)=kf_y(i)-(rho_pri(i)+rho_pri(i-1));
+    //     kf_y(i+new_data.sat_number)=(rhoDot_pri(i)-rhoDot_pri(i-1))/Lambda_GPS_L1;
+    //     kf_yerr(i+new_data.sat_number)=kf_y(i+new_data.sat_number)-(new_data.doppler_hz(i)-new_data.doppler_hz(i-1));
+    // }
+    // kf_yerr.print("DOUBLES DIFFERENCES");
+    
     for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement error Covariance Matrix R assembling
     {
         // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error) 
-        kf_R(i, i) = 0.1; //TODO: use a valid value.
+        kf_R(i, i) = 0.1; //TODO: fill with real values.
         kf_R(i+new_data.sat_number, i+new_data.sat_number) = 1.0;
     }
 
     // Kalman filter update step
-    kf_S = kf_H * kf_P_x* kf_H.t() + kf_R;                       // innovation covariance matrix (S)
-    kf_K = (kf_P_x * kf_H.t()) * arma::inv(kf_S);                // Kalman gain
-        
-    //cout << " KF measures ERROR" << kf_yerr;
+    kf_S = kf_H * kf_P_x* kf_H.t() + kf_R;                      // innovation covariance matrix (S)
+    kf_K = (kf_P_x * kf_H.t()) * arma::inv(kf_S);               // Kalman gain  
     kf_x = kf_x + kf_K * (kf_yerr);                             // updated state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
-    //cout << " KF posteriori STATE" << kf_x;
-    //cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
+
+    cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
 
 //     // ################## Geometric Transformation ######################################
 

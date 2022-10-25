@@ -16,6 +16,8 @@
 
 #ifndef GNSS_SDR_VTL_DATA_H
 #define GNSS_SDR_VTL_DATA_H
+// constants definition
+#define Lambda_GPS_L1 0.1902937
 
 #include <armadillo>
 #include <cstdint>

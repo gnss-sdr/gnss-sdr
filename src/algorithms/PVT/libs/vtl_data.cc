@@ -52,11 +52,11 @@ void Vtl_Data::debug_print()
 {
     std::cout << "vtl_data debug print at RX TOW: " << epoch_tow_s << ", TRK sample counter: " << sample_counter << "\n";
     // sat_p.print("VTL Sat Positions");
-    sat_v.print("VTL Sat Velocities");
+    //sat_v.print("VTL Sat Velocities");
     // sat_dts.print("VTL Sat clocks");
     // sat_var.print("VTL Sat clock variances");
     // sat_health_flag.print("VTL Sat health");
-    sat_LOS.print("VTL SAT LOS");
+    //sat_LOS.print("VTL SAT LOS");
     // kf_state.print("EKF STATE");
     
     pr_m.print("Satellite Code pseudoranges [m]");

@@ -64,7 +64,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_x(3)=new_data.rx_v(0);
     kf_x(4)=new_data.rx_v(1);
     kf_x(5)=new_data.rx_v(2);
-    kf_x(6)=new_data.rx_dts(0);
+    kf_x(6)=new_data.rx_dts(0); 
     kf_x(7)=new_data.rx_dts(1);
 
     for (int32_t i = 0; i < 8; i++) // State error Covariance Matrix Q (PVT)
@@ -74,7 +74,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     }
 
     // Kalman state prediction (time update)
-    kf_x.print(" KF RTKlib STATE");
+    //kf_x.print(" KF RTKlib STATE");
     new_data.kf_state=kf_x;
     kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
@@ -114,11 +114,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         new_data.sat_LOS(i,1)=a_y(i);
         new_data.sat_LOS(i,2)=a_z(i);
         //compute pseudorange rate estimation
-        rhoDot_pri(i)=(new_data.sat_v(i, 0)-xDot_u)*a_x(i)+(new_data.sat_v(i, 1)-yDot_u)*a_y(i)+(new_data.sat_v(i, 2)-zDot_u)*a_z(i);
-        //rhoDot_pri(i)=(new_data.sat_v(i, 0)-0)*a_x(i)+(new_data.sat_v(i, 1)-0)*a_y(i)+(new_data.sat_v(i, 2)-0)*a_z(i);
-
+        rhoDot_pri(i)=(new_data.sat_v(i, 0)-xDot_u)*a_x(i)+(new_data.sat_v(i, 1)-yDot_u)*a_y(i)+(new_data.sat_v(i, 2)-zDot_u)*a_z(i)+cdeltatDot_u;
     }
-    rhoDot_pri.print("V_LOS sat");
 
     kf_H = arma::zeros(2*new_data.sat_number,8);
 
@@ -134,7 +131,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         //kf_y(i) = new_data.pr_m(i); // i-Satellite 
         //kf_y(i+new_data.sat_number) = rhoDot_pri(i)/Lambda_GPS_L1; // i-Satellite
         kf_yerr(i)=new_data.pr_m(i)-rho_pri(i);//-0.000157*SPEED_OF_LIGHT_M_S;
-        kf_yerr(i+new_data.sat_number)=rhoDot_pri(i)/Lambda_GPS_L1-new_data.doppler_hz(i);
+        //kf_yerr(i+new_data.sat_number)=(rhoDot_pri(i)-cdeltatDot_u)/Lambda_GPS_L1-new_data.doppler_hz(i);
+        kf_yerr(i+new_data.sat_number)=(new_data.doppler_hz(i)*Lambda_GPS_L1+cdeltatDot_u)-rhoDot_pri(i);
+
    }
     kf_yerr.print("KF measurement vector difference");
 
@@ -162,7 +161,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_x = kf_x + kf_K * (kf_yerr);                             // updated state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
 
-    cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
+    //cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
 
 //     // ################## Geometric Transformation ######################################
 
@@ -205,7 +204,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     trk_cmd.enable_code_nco_cmd = true;
     trk_cmd.sample_counter = new_data.sample_counter;
     trk_cmd_outs.push_back(trk_cmd);
-    new_data.debug_print();
+    //new_data.debug_print();
     return true;
 }
 

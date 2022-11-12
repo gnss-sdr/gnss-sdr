@@ -157,8 +157,10 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     // Kalman filter update step
     kf_S = kf_H * kf_P_x* kf_H.t() + kf_R;                      // innovation covariance matrix (S)
     kf_K = (kf_P_x * kf_H.t()) * arma::inv(kf_S);               // Kalman gain  
-    kf_x = kf_x + kf_K * (kf_yerr);                             // updated state estimation
+    kf_xerr = kf_K * (kf_yerr);                                 // Error state estimation
+    kf_x = kf_x + kf_xerr;                                      // updated state estimation (a priori + error)
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
+    
 
     // States related tu USER clock adjust from m/s to s (by /SPEED_OF_LIGHT_M_S)
 
@@ -170,34 +172,55 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 
 //     // ################## Geometric Transformation ######################################
 
-//     for (int32_t i = 0; i < new_data.sat_number; n++) //neccesary quantities at posteriori
-//     {
-//         //compute pseudorange posteriori estimation 
-//        // rho_est(i)=;
-//         //compute LOS sat-receiver vector components posteriori 
-//        // a_x(i)=;
-//        // a_y(i)=;
-//        // a_z(i)=;
-//         //compute pseudorange rate posteriori estimation
-//        // rhoDot_est(i)=;
-//     }
+//     // x_u=kf_x(0);
+//     // y_u=kf_x(1);
+//     // z_u=kf_x(2);
+//     // xDot_u=kf_x(3);
+//     // yDot_u=kf_x(4);
+//     // zDot_u=kf_x(5);
+//     // cdeltat_u=kf_x(6)*SPEED_OF_LIGHT_M_S;
+//     // cdeltatDot_u=kf_x(7)*SPEED_OF_LIGHT_M_S;
 
-//     kf_H = arma::zeros(8, 2*new_data.sat_number);
+   for (int32_t i = 0; i < new_data.sat_number; i++) //neccesary quantities
+    {
+        //d(i) is the distance sat(i) to receiver
+        d(i)=(new_data.sat_p(i, 0)-kf_x(0))*(new_data.sat_p(i, 0)-kf_x(0));
+        d(i)=d(i)+(new_data.sat_p(i, 1)-kf_x(1))*(new_data.sat_p(i, 1)-kf_x(1));
+        d(i)=d(i)+(new_data.sat_p(i, 2)-kf_x(2))*(new_data.sat_p(i, 2)-kf_x(2));
+        d(i)=sqrt(d(i)); 
 
-//     for (int32_t i = 0; i < new_data.sat_number; n++) // Measurement matrix H posteriori assembling
-//     {
-//         // It has 8 columns (8 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error) 
-//         kf_H(i, 0) = a_x(i); kf_H(i, 1) = a_y(i); kf_H(i, 2) = a_z(i); kf_H(i, 6) = 1.0;
-//         kf_H(i+new_data.sat_number, 3) = a_x(i); kf_H(i+new_data.sat_number, 4) = a_y(i); kf_H(i+new_data.sat_number, 5) = a_z(i); kf_H(i+new_data.sat_number, 7) = 1.0;
-//     }
+        //compute pseudorange estimation 
+        rho_pri(i)=d(i)+kf_x(6)*SPEED_OF_LIGHT_M_S;
+        //compute LOS sat-receiver vector components 
+        a_x(i)=-(new_data.sat_p(i, 0)-kf_x(0))/d(i);
+        a_y(i)=-(new_data.sat_p(i, 1)-kf_x(1))/d(i);
+        a_z(i)=-(new_data.sat_p(i, 2)-kf_x(2))/d(i);
+        //compute pseudorange rate estimation
+        rhoDot_pri(i)=(new_data.sat_v(i, 0)-kf_x(3))*a_x(i)+(new_data.sat_v(i, 1)-kf_x(4))*a_y(i)+(new_data.sat_v(i, 2)-kf_x(5))*a_z(i)+kf_x(7)*SPEED_OF_LIGHT_M_S;
+    }
 
-//     //Re-calculate error measurement vector with the most recent data available
-//     //kf_delta_y=kf_H*kf_delta_x 
-//     //Filtered pseudorange error measurement (in m):
-//     //delta_rho_filt=;
-//     //Filtered Doppler error measurement (in Hz):
-//     //delta_doppler_filt=;
+    kf_H = arma::zeros(2*new_data.sat_number,8);
 
+    for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement matrix H assembling
+    {
+        // It has 8 columns (8 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error) 
+        kf_H(i, 0) = a_x(i); kf_H(i, 1) = a_y(i); kf_H(i, 2) = a_z(i); kf_H(i, 6) = 1.0;
+        kf_H(i+new_data.sat_number, 3) = a_x(i); kf_H(i+new_data.sat_number, 4) = a_y(i); kf_H(i+new_data.sat_number, 5) = a_z(i); kf_H(i+new_data.sat_number, 7) = 1.0;
+    }
+
+//  Re-calculate error measurement vector with the most recent data available: kf_delta_y=kf_H*kf_delta_x 
+    kf_yerr=kf_H*kf_xerr;
+//  Filtered pseudorange error measurement (in m) AND Filtered Doppler shift measurements (in Hz):
+
+   for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement vector
+   {
+
+        rho_pri(i)=new_data.pr_m(i)-kf_yerr(i); // now filtered
+        rhoDot_pri(i)=(new_data.doppler_hz(i)*Lambda_GPS_L1+cdeltatDot_u)-kf_yerr(i+new_data.sat_number); // now filtered
+        // TO DO: convert rhoDot_pri to doppler shift!
+        // Doppler shift defined as pseudorange rate measurement divided by the negative of carrier wavelength.
+        rhoDot_pri(i)=-rhoDot_pri(i)/Lambda_GPS_L1; 
+   }
     //TODO: Fill the tracking commands outputs
     // Notice: keep the same satellite order as in the Vtl_Data matrices
     // sample code

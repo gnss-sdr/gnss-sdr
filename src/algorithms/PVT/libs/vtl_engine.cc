@@ -74,7 +74,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     }
 
     // Kalman state prediction (time update)
-    kf_x.print(" KF RTKlib STATE");
+    //kf_x.print(" KF RTKlib STATE");
     new_data.kf_state=kf_x;
     kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
@@ -164,8 +164,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 
     kf_x(6) =kf_x(6) /SPEED_OF_LIGHT_M_S;
     kf_x(7) =kf_x(7) /SPEED_OF_LIGHT_M_S;
-
+    new_data.kf_state.print(" KF RTKlib STATE");
     cout << " KF posteriori STATE diference" << kf_x-new_data.kf_state;
+    cout << " KF posteriori STATE diference %" << (kf_x-new_data.kf_state)/new_data.kf_state*100;
 
 //     // ################## Geometric Transformation ######################################
 
@@ -208,7 +209,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     trk_cmd.enable_code_nco_cmd = true;
     trk_cmd.sample_counter = new_data.sample_counter;
     trk_cmd_outs.push_back(trk_cmd);
-    //new_data.debug_print();
+    new_data.debug_print();
     return true;
 }
 

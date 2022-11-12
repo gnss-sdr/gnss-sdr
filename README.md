@@ -108,8 +108,8 @@ information about this open-source, software-defined GNSS receiver.
          1. [Acquisition](#acquisition)
          2. [Tracking](#tracking)
          3. [Decoding of the navigation message](#decoding-of-the-navigation-message)
-         4. [Observables](#observables)
-         5. [Computation of Position, Velocity and Time](#computation-of-position-velocity-and-time)
+      4. [Observables](#observables)
+      5. [Computation of Position, Velocity, and Time](#computation-of-position-velocity-and-time)
 6. [About the software license](#about-the-software-license)
 7. [Publications and Credits](#publications-and-credits)
 8. [Ok, now what?](#ok-now-what)
@@ -1926,7 +1926,7 @@ TelemetryDecoder_1B.dump=false
 More documentation at the
 [Telemetry Decoder Blocks page](https://gnss-sdr.org/docs/sp-blocks/telemetry-decoder/).
 
-#### Observables
+### Observables
 
 GNSS systems provide different kinds of observations. The most commonly used are
 the code observations, also called pseudoranges. The _pseudo_ comes from the
@@ -1954,7 +1954,7 @@ Observables.dump_filename=./observables.dat
 More documentation at the
 [Observables Blocks page](https://gnss-sdr.org/docs/sp-blocks/observables/).
 
-#### Computation of Position, Velocity and Time
+### Computation of Position, Velocity, and Time
 
 Although data processing for obtaining high-accuracy PVT solutions is out of the
 scope of GNSS-SDR, we provide a module that can compute position fixes (stored

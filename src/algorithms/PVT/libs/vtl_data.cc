@@ -37,6 +37,7 @@ void Vtl_Data::init_storage(int n_sats)
     pr_m = arma::vec(n_sats);
     doppler_hz = arma::vec(n_sats);
     carrier_phase_rads = arma::vec(n_sats);
+    pr_res = arma::vec(n_sats);
 
     rx_p = arma::mat(1, 3);
     rx_v = arma::mat(1, 3);

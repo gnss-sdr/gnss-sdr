@@ -609,7 +609,11 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
     double *resp, char *msg,
-    std::vector<double> &tropo_vec, std::vector<double> &iono_vec, std::vector<double> &pr_corrected_code_bias_vec)
+    std::vector<double> &tropo_vec, 
+    std::vector<double> &iono_vec, 
+    std::vector<double> &pr_corrected_code_bias_vec,
+    std::vector<double> &pr_residual_vec,
+    std::vector<double> &doppler_residual_vec)
 {
     double x[NX] = {0};
     double dx[NX];
@@ -630,6 +634,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     double *tropo_m, *iono_m, *pr_corrected_code_bias;
     tropo_m = mat(n + 4, 1);
     iono_m = mat(n + 4, 1);
+    resp = mat(n + 4, 1);
     pr_corrected_code_bias = mat(n + 4, 1);
 
     trace(3, "estpos  : n=%d\n", n);
@@ -708,6 +713,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                             tropo_vec.push_back(tropo_m[k]);
                             iono_vec.push_back(iono_m[k]);
                             pr_corrected_code_bias_vec.push_back(pr_corrected_code_bias[k]);
+                            pr_residual_vec.push_back(resp[k]);
                         }
                     free(v);
                     free(H);
@@ -788,9 +794,11 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
             std::vector<double> tropo_vec;
             std::vector<double> iono_vec;
             std::vector<double> pr_corrected_code_bias_vec;
+            std::vector<double> pr_residual_vec;
+            std::vector<double> doppler_residual_vec;
             /* estimate receiver position without a satellite */
-            if (!estpos(obs_e, n - 1, rs_e, dts_e, vare_e, svh_e, nav, opt, &sol_e, azel_e,
-                    vsat_e, resp_e, msg_e, iono_vec, tropo_vec, pr_corrected_code_bias_vec))
+             if (!estpos(obs_e, n - 1, rs_e, dts_e, vare_e, svh_e, nav, opt, &sol_e, azel_e,
+                     vsat_e, resp_e, msg_e, iono_vec, tropo_vec, pr_corrected_code_bias_vec,pr_residual_vec,doppler_residual_vec))
                 {
                     trace(3, "raim_fde: exsat=%2d (%s)\n", obs[i].sat, msg);
                     continue;
@@ -1002,7 +1010,9 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
     char *msg, std::vector<double> &tropo_vec,
     std::vector<double> &iono_vec,
-    std::vector<double> &pr_corrected_code_bias_vec)
+    std::vector<double> &pr_corrected_code_bias_vec,
+    std::vector<double> &pr_residual_vec,
+    std::vector<double> &doppler_residual_vec)
 {
     prcopt_t opt_ = *opt;
     double *rs;
@@ -1047,8 +1057,7 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
 
     /* estimate receiver position with pseudorange */
     stat = estpos(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg,
-        iono_vec, tropo_vec, pr_corrected_code_bias_vec);
-
+        iono_vec, tropo_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec);
     /* raim fde */
     if (!stat && n >= 6 && opt->posopt[4])
         {

@@ -47,7 +47,8 @@ public:
     arma::colvec pr_m;                // Satellite Code pseudoranges [m]
     arma::colvec doppler_hz;          // satellite Carrier Dopplers [Hz]
     arma::colvec carrier_phase_rads;  // satellite accumulated carrier phases [rads]
-
+    arma::colvec pr_res;              // pseudorange residual
+    
     arma::mat rx_p;            // Receiver ENU Position [m]
     arma::mat rx_v;            // Receiver Velocity [m/s]
     arma::mat rx_pvt_var;      // Receiver position, velocity and time VARIANCE [m/s]

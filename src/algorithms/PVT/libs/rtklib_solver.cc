@@ -1009,9 +1009,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
             std::vector<double> tropo_vec;
             std::vector<double> iono_vec;
             std::vector<double> pr_corrected_code_bias_vec;
+            std::vector<double> pr_residual_vec;
+            std::vector<double> doppler_residual_vec;
             result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, tropo_vec,
-                iono_vec, pr_corrected_code_bias_vec);
-
+                iono_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec);
+            
             if (result == 0)
                 {
                     LOG(INFO) << "RTKLIB rtkpos error: " << d_rtk.errbuf;
@@ -1124,6 +1126,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     new_vtl_data.pr_m(n) = pr_corrected_code_bias_vec[n] - tropo_vec[n] - iono_vec[n]+SPEED_OF_LIGHT_M_S * dts[n * 2];
                                     new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
                                     new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
+                                    new_vtl_data.pr_res(n)  = pr_residual_vec[n];
                                 }
                             //VTL input data extraction from rtklib structures
                             /* Receiver position, velocity and clock */

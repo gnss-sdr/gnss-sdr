@@ -178,7 +178,9 @@ void rtkfree(rtk_t *rtk);
 int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
     std::vector<double> &tropo_vec,
     std::vector<double> &iono_vec,
-    std::vector<double> &pr_corrected_code_bias_vec);
+    std::vector<double> &pr_corrected_code_bias_vec,
+    std::vector<double> &pr_residual_vec,
+    std::vector<double> &doppler_residual_vec);
 
 
 /** \} */

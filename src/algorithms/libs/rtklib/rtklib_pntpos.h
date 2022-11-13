@@ -144,6 +144,8 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
     char *msg, std::vector<double> &tropo_vec,
     std::vector<double> &iono_vec,
-    std::vector<double> &pr_corrected_code_bias_vec);
+    std::vector<double> &pr_corrected_code_bias_vec,
+    std::vector<double> &pr_residual,
+    std::vector<double> &doppler_residual);
 
 #endif  // GNSS_SDR_RTKLIB_PNTPOS_H

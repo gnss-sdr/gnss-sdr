@@ -62,7 +62,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     counter=counter+1; //uint64_t 
     cout << "counter" << counter;
 
-    if(counter<500){ //
+    if(counter<3000){ //
         // receiver solution from rtklib_solver
         kf_x(0)=new_data.rx_p(0);
         kf_x(1)=new_data.rx_p(1);
@@ -161,8 +161,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     for (int32_t i = 0; i < new_data.sat_number; i++) // Measurement error Covariance Matrix R assembling
     {
         // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error) 
-        kf_R(i, i) = 0.1; //TODO: fill with real values.
-        kf_R(i+new_data.sat_number, i+new_data.sat_number) = 1.0;
+        kf_R(i, i) = 20.0; //TODO: fill with real values.
+        kf_R(i+new_data.sat_number, i+new_data.sat_number) = 10.0;
     }
 
     // Kalman filter update step

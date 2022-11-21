@@ -44,7 +44,7 @@ void Vtl_Data::init_storage(int n_sats)
     rx_dts = arma::mat(1, 2);
     rx_var = arma::vec(1);
     rx_pvt_var = arma::vec(8);
-    kf_state = arma::vec(8);
+    kf_state = arma::mat(8,1);
     kf_P = arma::mat(8,8);
     epoch_tow_s = 0;
     sample_counter = 0;

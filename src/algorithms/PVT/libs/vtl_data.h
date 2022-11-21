@@ -54,9 +54,10 @@ public:
     arma::mat rx_pvt_var;      // Receiver position, velocity and time VARIANCE [m/s]
     arma::mat rx_dts;          // Receiver clock bias and drift [s,s/s]
     arma::colvec rx_var;       // Receiver position and clock error variance [m^2]
-    arma::colvec kf_state;     // KF STATE
-    arma::mat kf_P;     // KF STATE
+    arma::mat kf_state;     // KF STATE
+    arma::mat kf_P;     // KF STATE covariance
     // time handling
+    double PV[6];    // position and Velocity
     double epoch_tow_s;       // current observation RX time [s]
     uint64_t sample_counter;  // current sample counter associated with RX time [samples from start]
     void debug_print();

@@ -81,11 +81,11 @@ private:
     arma::mat kf_R;  // measurement error covariance matrix
     arma::mat kf_Q;  // system error covariance matrix
 
-    arma::colvec kf_x;      // state vector
-    arma::colvec kf_x_pre;  // predicted state vector
-    arma::colvec kf_y;      // measurement vector
-    arma::colvec kf_yerr;   // ERROR measurement vector
-    arma::colvec kf_xerr;   // ERROR state vector
+    arma::mat kf_x;      // state vector
+    arma::mat kf_x_pre;  // predicted state vector
+    arma::mat kf_y;      // measurement vector
+    arma::mat kf_yerr;   // ERROR measurement vector
+    arma::mat kf_xerr;   // ERROR state vector
     arma::mat kf_K;         // Kalman gain matrix
 
     // Gaussian estimator

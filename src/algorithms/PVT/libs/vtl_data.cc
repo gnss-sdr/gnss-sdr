@@ -45,6 +45,7 @@ void Vtl_Data::init_storage(int n_sats)
     rx_var = arma::vec(1);
     rx_pvt_var = arma::vec(8);
     kf_state = arma::vec(8);
+    kf_P = arma::mat(8,8);
     epoch_tow_s = 0;
     sample_counter = 0;
 }
@@ -60,7 +61,7 @@ void Vtl_Data::debug_print()
     //sat_LOS.print("VTL SAT LOS");
     // kf_state.print("EKF STATE");
     
-    pr_m.print("Satellite Code pseudoranges [m]");
-    doppler_hz.print("satellite Carrier Dopplers [Hz]");
+    //pr_m.print("Satellite Code pseudoranges [m]");
+    //doppler_hz.print("satellite Carrier Dopplers [Hz]");
     // carrier_phase_rads.print("satellite accumulated carrier phases [rads]");
 }

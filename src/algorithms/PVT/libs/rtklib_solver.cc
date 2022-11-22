@@ -1157,12 +1157,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                             pvt_sol.rr[0]=PVT[0];
                             pvt_sol.rr[1]=PVT[1];
-                            // pvt_sol.rr[1]=new_vtl_data.rx_p(1);
-                            // pvt_sol.rr[2]=new_vtl_data.rx_p(2);
-                            // pvt_sol.rr[3]=new_vtl_data.rx_v(0); 
-                            // pvt_sol.rr[4]=new_vtl_data.rx_v(1); 
-                            // pvt_sol.rr[5]=new_vtl_data.rx_v(2); 
-                            //new_vtl_data.debug_print();
+                            pvt_sol.rr[2]=PVT[2];
+                            pvt_sol.rr[3]=PVT[3];
+                            pvt_sol.rr[4]=PVT[4];
+                            pvt_sol.rr[5]=PVT[5];
                         }
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;

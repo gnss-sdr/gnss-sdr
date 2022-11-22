@@ -1152,9 +1152,11 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             new_vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
 
                             //new_vtl_data.debug_print();
-                            pvt_sol.rr[0]=vtl_engine.vtl_loop(new_vtl_data);
+                            double PVT[6]={0};
+                            vtl_engine.vtl_loop(new_vtl_data, PVT);
 
-                            // pvt_sol.rr[0]=new_vtl_data.rx_p(0);
+                            pvt_sol.rr[0]=PVT[0];
+                            pvt_sol.rr[1]=PVT[1];
                             // pvt_sol.rr[1]=new_vtl_data.rx_p(1);
                             // pvt_sol.rr[2]=new_vtl_data.rx_p(2);
                             // pvt_sol.rr[3]=new_vtl_data.rx_v(0); 

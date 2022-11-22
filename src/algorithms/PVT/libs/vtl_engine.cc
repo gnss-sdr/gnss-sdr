@@ -27,7 +27,7 @@ Vtl_Engine::~Vtl_Engine()
 {
 }
 
-bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
+bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
 {
     //TODO: Implement main VTL loop here
     using arma::as_scalar;
@@ -174,7 +174,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     new_data.kf_state=kf_x; //updated state estimation
     new_data.kf_P=kf_P_x; //update state estimation error covariance 
     // States related tu USER clock adjust from m/s to s (by /SPEED_OF_LIGHT_M_S)
-
+    PVT_out[0]=kf_x(0);
+    PVT_out[1]=kf_x(1);
+    PVT_out[2]=kf_x(2);
+    PVT_out[3]=kf_x(3);
+    PVT_out[4]=kf_x(4);
+    PVT_out[5]=kf_x(5);
     // kf_x(6) =kf_x(6) /SPEED_OF_LIGHT_M_S;
     // kf_x(7) =kf_x(7) /SPEED_OF_LIGHT_M_S;
 

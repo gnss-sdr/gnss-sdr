@@ -1154,13 +1154,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             //new_vtl_data.debug_print();
                             double PVT[6]={0};
                             vtl_engine.vtl_loop(new_vtl_data, PVT);
-
                             pvt_sol.rr[0]=PVT[0];
                             pvt_sol.rr[1]=PVT[1];
                             pvt_sol.rr[2]=PVT[2];
                             pvt_sol.rr[3]=PVT[3];
                             pvt_sol.rr[4]=PVT[4];
                             pvt_sol.rr[5]=PVT[5];
+                        }
+                        else{
+                            //MAGL: the code should not enter here once the vtl has started
+                            // .. but it does!
+                            //and not only that but pvt_sol.rr seems to have NOT reasonable values
+                    pvt_sol.rr[0]=rx_position_and_time[0];  // [m]
+                    pvt_sol.rr[1]=rx_position_and_time[1];  // [m]
+                    pvt_sol.rr[2]=rx_position_and_time[2];  // [m]
+                            pvt_sol.rr[3]=4.2e6;
+                            pvt_sol.rr[4]=4.2e6;
+                            pvt_sol.rr[5]=4.2e6;
                         }
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;

@@ -728,13 +728,13 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
             double K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
             d_current_prn_length_samples = static_cast<int>(round(K_blk_samples));  // round to a discrete number of samples
 
-            //################### NCO COMMANDS #################################################
+            // ################### NCO COMMANDS #################################################
             // carrier phase step (NCO phase increment per sample) [rads/sample]
             d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / static_cast<double>(d_fs_in);
             // carrier phase accumulator
             d_acc_carrier_phase_rad -= d_carrier_phase_step_rad * static_cast<double>(d_current_prn_length_samples);
 
-            //################### DLL COMMANDS #################################################
+            // ################### DLL COMMANDS #################################################
             // code phase step (Code resampler phase increment per sample) [chips/sample]
             d_code_phase_step_chips = d_code_freq_chips / static_cast<double>(d_fs_in);
             // remnant code phase [chips]

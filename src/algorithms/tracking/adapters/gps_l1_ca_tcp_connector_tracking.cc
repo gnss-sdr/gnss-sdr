@@ -33,7 +33,7 @@ GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     const std::string default_item_type("gr_complex");
     std::string item_type = configuration->property(role + ".item_type", default_item_type);
     // vector_length = configuration->property(role + ".vector_length", 2048);

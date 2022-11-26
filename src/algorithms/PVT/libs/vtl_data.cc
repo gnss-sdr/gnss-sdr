@@ -21,6 +21,8 @@ Vtl_Data::Vtl_Data()
 {
     epoch_tow_s = 0;
     sample_counter = 0;
+    kf_state = arma::mat(8,1);
+    kf_P = arma::mat(8,8);
 }
 
 void Vtl_Data::init_storage(int n_sats)
@@ -44,8 +46,7 @@ void Vtl_Data::init_storage(int n_sats)
     rx_dts = arma::mat(1, 2);
     rx_var = arma::vec(1);
     rx_pvt_var = arma::vec(8);
-    kf_state = arma::mat(8,1);
-    kf_P = arma::mat(8,8);
+    
     epoch_tow_s = 0;
     sample_counter = 0;
 }
@@ -59,7 +60,7 @@ void Vtl_Data::debug_print()
     // sat_var.print("VTL Sat clock variances");
     // sat_health_flag.print("VTL Sat health");
     //sat_LOS.print("VTL SAT LOS");
-    // kf_state.print("EKF STATE");
+    kf_state.print("EKF STATE");
     
     //pr_m.print("Satellite Code pseudoranges [m]");
     //doppler_hz.print("satellite Carrier Dopplers [Hz]");

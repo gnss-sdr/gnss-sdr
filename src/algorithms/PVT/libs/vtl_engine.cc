@@ -28,7 +28,7 @@ Vtl_Engine::~Vtl_Engine()
 {
 }
 
-bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
+bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
 {
     //TODO: Implement main VTL loop here
     using arma::as_scalar;
@@ -59,31 +59,31 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
     kf_S = arma::zeros(2*new_data.sat_number, 2*new_data.sat_number); // kf_P_y innovation covariance matrix
     
     // ################## Kalman Tracking ######################################
-    static uint32_t  counter=0; //counter  
-    static double  prueba[6]={0}; //counter
-    counter=counter+1; //uint64_t 
+    static uint32_t counter=0; //counter  
+    counter = counter+1; //uint64_t 
     cout << "counter" << counter<<endl;
-
+    //new_data.kf_state.print("new_data kf initial");
     if(counter<3000){ //
         // receiver solution from rtklib_solver
-        kf_x(0)=new_data.rx_p(0);
-        kf_x(1)=new_data.rx_p(1);
-        kf_x(2)=new_data.rx_p(2);
-        kf_x(3)=new_data.rx_v(0);
-        kf_x(4)=new_data.rx_v(1);
-        kf_x(5)=new_data.rx_v(2);
-        kf_x(6)=new_data.rx_dts(0); 
-        kf_x(7)=new_data.rx_dts(1);
-    }
-    else{
-    kf_x(0)=prueba[0];
-    kf_x(1)=prueba[1];
-    kf_x(2)=prueba[2];
-    kf_x(3)=prueba[3];
-    kf_x(4)=prueba[4];
-    kf_x(5)=prueba[5];
-    kf_x(6)=new_data.rx_dts(0); 
-    kf_x(7)=new_data.rx_dts(1);
+        kf_x(0) = new_data.rx_p(0);
+        kf_x(1) = new_data.rx_p(1);
+        kf_x(2) = new_data.rx_p(2);
+        kf_x(3) = new_data.rx_v(0);
+        kf_x(4) = new_data.rx_v(1);
+        kf_x(5) = new_data.rx_v(2);
+        kf_x(6) = new_data.rx_dts(0); 
+        kf_x(7) = new_data.rx_dts(1);
+    } else {
+        // receiver solution from previous KF step
+        kf_x(0) = new_data.kf_state[0];
+        kf_x(1) = new_data.kf_state[1];
+        kf_x(2) = new_data.kf_state[2];
+        kf_x(3) = new_data.kf_state[3];
+        kf_x(4) = new_data.kf_state[4];
+        kf_x(5) = new_data.kf_state[5];
+        kf_x(6) = new_data.rx_dts(0); 
+        kf_x(7) = new_data.rx_dts(1);
+            
         kf_P_x=new_data.kf_P;
     }
     // State error Covariance Matrix Q (PVT)
@@ -93,7 +93,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
         kf_Q(i, i) = 50.0;//new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
     }
     // Measurement error Covariance Matrix R assembling
-        for (int32_t i = 0; i < new_data.sat_number; i++) 
+    for (int32_t i = 0; i < new_data.sat_number; i++) 
     {
         // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error) 
         kf_R(i, i) = 5.0; //TODO: fill with real values.
@@ -101,12 +101,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
     }
 
     // Kalman state prediction (time update)
-    kf_x.print(" KF RTKlib STATE");
-    // cout<<"state_fed"<<endl;
-    //     for(int i=0;i<6;i++){
-    // cout<<prueba[i]<<endl;
-    // }    
-
     new_data.kf_state=kf_x; 
     kf_x = kf_F * kf_x;                        // state prediction
     kf_P_x= kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
@@ -166,7 +160,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
         kf_yerr(i+new_data.sat_number)=(new_data.doppler_hz(i)*Lambda_GPS_L1+cdeltatDot_u)-rhoDot_pri(i);
 
    }
-    kf_yerr.print("KF innovation");
 
      // DOUBLES DIFFERENCES
     // kf_yerr = arma::zeros(2*new_data.sat_number, 1);
@@ -183,37 +176,28 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
     kf_S = kf_H * kf_P_x* kf_H.t() + kf_R;                      // innovation covariance matrix (S)
     kf_K = (kf_P_x * kf_H.t()) * arma::inv(kf_S);               // Kalman gain  
     kf_xerr = kf_K * (kf_yerr);                                 // Error state estimation
-    //kf_xerr.print(" kf_xerr");
-    kf_x = kf_x + kf_xerr;                                      // updated state estimation (a priori + error)
+    //kf_x = kf_x + kf_xerr;                                      // updated state estimation (a priori + error)
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
-    kf_x.print(" KF STATE");
+    new_data.kf_state=kf_x; //updated state estimation
+    //new_data.kf_state.print("computed kf_state");
     // TODO: compare how KF state diverges from RTKLIB solution!
 
 	fstream dump_vtl_file;
 	dump_vtl_file.open("dump_vtl_file.csv", ios::out|ios::app);
+    dump_vtl_file.precision(15);
 	if (!dump_vtl_file) {
 		cout << "File not created!";
 	}
 	else {
-        dump_vtl_file << "kf_state"<< ","<<kf_x(0)<< ","<<kf_x(1)<< ","<<kf_x(2)<< ","<<kf_x(3)<< ","<<kf_x(4)<< ","<<kf_x(5)<< ","<<kf_x(6)<< ","<<kf_x(7)<<endl;
-		dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p(2)<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;       
+        dump_vtl_file << "kf_xerr"<< ","<<kf_xerr(0)<< ","<<kf_xerr(1)<< ","<<kf_xerr(2)<< ","<<kf_xerr(3)<< ","<<kf_xerr(4)<< ","<<kf_xerr(5)<< ","<<kf_xerr(6)<< ","<<kf_xerr(7)<<endl;
+        dump_vtl_file << "kf_state"<< ","<<new_data.kf_state(0)<< ","<<new_data.kf_state(1)<< ","<<new_data.kf_state(2)<< ","<<new_data.kf_state(3)<< ","<<new_data.kf_state(4)<< ","<<new_data.kf_state(5)<< ","<<new_data.kf_state(6)<< ","<<new_data.kf_state(7)<<endl;
+		dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p[2]<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;       
         dump_vtl_file.close(); 
 	}
 
-    PVT_out[0]=kf_x(0);
-    PVT_out[1]=kf_x(1);
-    PVT_out[2]=kf_x(2);
-    PVT_out[3]=kf_x(3);
-    PVT_out[4]=kf_x(4);
-    PVT_out[5]=kf_x(5);
+    
 
     // States related tu USER clock adjust from m/s to s (by /SPEED_OF_LIGHT_M_S)
-    prueba[0]=kf_x(0);
-    prueba[1]=kf_x(1);
-    prueba[2]=kf_x(2);
-    prueba[3]=kf_x(3);
-    prueba[4]=kf_x(4);
-    prueba[5]=kf_x(5);
     // kf_x(6) =kf_x(6) /SPEED_OF_LIGHT_M_S;
     // kf_x(7) =kf_x(7) /SPEED_OF_LIGHT_M_S;
 
@@ -222,7 +206,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
 
     //new_data.pr_res.print(" pr RESIDUALS");
     //!new_data.kf_state.print(" KF RTKlib STATE");
-    cout << " KF posteriori STATE diference %100" << (kf_x-new_data.kf_state)/new_data.kf_state*100;
+    // cout << " KF posteriori STATE diference %100" << (kf_x-new_data.kf_state)/new_data.kf_state*100;
 
 //     // ################## Geometric Transformation ######################################
 
@@ -286,7 +270,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data, double PVT_out[6])
     trk_cmd.enable_code_nco_cmd = true;
     trk_cmd.sample_counter = new_data.sample_counter;
     trk_cmd_outs.push_back(trk_cmd);
-    new_data.debug_print();
     return true;
 }
 

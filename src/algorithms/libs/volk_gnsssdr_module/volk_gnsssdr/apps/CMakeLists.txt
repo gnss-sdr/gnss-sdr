@@ -35,6 +35,8 @@ add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc
 )
 
+add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
+
 if(MSVC)
     target_include_directories(volk_gnsssdr_profile
         PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cmake/msvc>

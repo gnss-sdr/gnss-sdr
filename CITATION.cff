@@ -82,6 +82,11 @@ authors:
     email: cillian.odriscoll@gmail.com
     family-names: "O'Driscoll"
     given-names: Cillian
+  - affiliation: "Finnish Geospatial Research Institute"
+    alias: IntoPa
+    email: into.paakkonen@aalto.fi
+    family-names: "Pääkkönen"
+    given-names: Into
   - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
     email: david.pubill@cttc.cat
     family-names: Pubill
@@ -309,22 +314,6 @@ references:
     title: "Design patterns for GNSS software receivers"
     type: conference-paper
     year: 2010
-  - authors:
-    - name: "The GNU Radio Project team"
-    doi: 10.5281/zenodo.2704343
-    repository-code: "https://github.com/gnuradio/gnuradio"
-    scope: "Software dependency: the SDR framework."
-    title: "GNU Radio: The Free & Open Software Radio Ecosystem"
-    type: software
-    url: "https://www.gnuradio.org"
-  - authors:
-    - name: "The VOLK Project team"
-    doi: 10.5281/zenodo.3360942
-    repository-code: "https://github.com/gnuradio/volk"
-    scope: "Software dependency: the portable SIMD library."
-    title: "VOLK: The Vector-Optimized Library of Kernels"
-    type: software
-    url: "https://www.libvolk.org"
 repository-code: "https://github.com/gnss-sdr/gnss-sdr"
 title: GNSS-SDR
 type: software

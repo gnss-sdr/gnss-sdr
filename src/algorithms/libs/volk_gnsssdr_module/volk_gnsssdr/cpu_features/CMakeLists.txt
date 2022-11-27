@@ -17,11 +17,12 @@ if(CMAKE_VERSION LESS "3.1")
 endif()
 
 # Default Build Type to be Release
+# Default Build Type to be Release
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING
       "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
-endif()
+endif(NOT CMAKE_BUILD_TYPE)
 
 # BUILD_SHARED_LIBS is a standard CMake variable, but we declare it here to make
 # it prominent in the GUI.
@@ -55,6 +56,7 @@ set(PROCESSOR_IS_ARM FALSE)
 set(PROCESSOR_IS_AARCH64 FALSE)
 set(PROCESSOR_IS_X86 FALSE)
 set(PROCESSOR_IS_POWER FALSE)
+set(PROCESSOR_IS_S390X FALSE)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
   set(PROCESSOR_IS_MIPS TRUE)
@@ -66,6 +68,8 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(^i.86$)")
   set(PROCESSOR_IS_X86 TRUE)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
   set(PROCESSOR_IS_POWER TRUE)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(s390x)")
+  set(PROCESSOR_IS_S390X TRUE)
 endif()
 
 macro(add_cpu_features_headers_and_sources HDRS_LIST_NAME SRCS_LIST_NAME)
@@ -85,6 +89,8 @@ macro(add_cpu_features_headers_and_sources HDRS_LIST_NAME SRCS_LIST_NAME)
       list(APPEND ${SRCS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/internal/windows_utils.h)
   elseif(PROCESSOR_IS_POWER)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_ppc.h)
+  elseif(PROCESSOR_IS_S390X)
+      list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_s390x.h)
   else()
     message(FATAL_ERROR "Unsupported architectures ${CMAKE_SYSTEM_PROCESSOR}")
   endif()
@@ -128,8 +134,8 @@ endif()
 #
 # library : cpu_features
 #
-set(CPU_FEATURES_HDRS)
-set(CPU_FEATURES_SRCS)
+set (CPU_FEATURES_HDRS)
+set (CPU_FEATURES_SRCS)
 add_cpu_features_headers_and_sources(CPU_FEATURES_HDRS CPU_FEATURES_SRCS)
 list(APPEND CPU_FEATURES_SRCS $<TARGET_OBJECTS:utils>)
 if(NOT PROCESSOR_IS_X86 AND UNIX)
@@ -211,8 +217,8 @@ if(BUILD_TESTING)
     # Add googletest directly to our build. This defines the gtest and
     # gtest_main targets.
     add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
-        ${CMAKE_BINARY_DIR}/googletest-build
-        EXCLUDE_FROM_ALL)
+                     ${CMAKE_BINARY_DIR}/googletest-build
+                     EXCLUDE_FROM_ALL)
   endif()
 
   add_subdirectory(test)

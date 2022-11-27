@@ -158,21 +158,21 @@ flags           : aes,avx,cx16,smx,sse4_1,sse4_2,ssse3
 
 ## What's supported
 
-|         | x86³ |   ARM   | AArch64 |  MIPS⁴  |  POWER  |
-| ------- | :--: | :-----: | :-----: | :-----: | :-----: |
-| Android | yes² |  yes¹   |  yes¹   |  yes¹   |   N/A   |
-| iOS     | N/A  | not yet | not yet |   N/A   |   N/A   |
-| Linux   | yes² |  yes¹   |  yes¹   |  yes¹   |  yes¹   |
-| MacOS   | yes² |   N/A   |  yes²   |   N/A   |   no    |
-| Windows | yes² | not yet | not yet |   N/A   |   N/A   |
-| FreeBSD | yes² | not yet | not yet | not yet | not yet |
+|         | x86³  | AArch64 |   ARM   |  MIPS⁴  |  s390x  |  POWER  |
+| ------- | :---: | :-----: | :-----: | :-----: | :-----: | :-----: |
+| Linux   | yes²  |  yes¹   |  yes¹   |  yes¹   |  yes¹   |  yes¹   |
+| FreeBSD | yes²  | not yet | not yet | not yet | not yet | not yet |
+| MacOs   | yes²  | not yet |   N/A   |   N/A   |   no    |   no    |
+| Windows | yes²  | not yet | not yet |   N/A   |   N/A   |   N/A   |
+| Android | yes²  |  yes¹   |  yes¹   |  yes¹   |   N/A   |   N/A   |
+| iOS     |  N/A  | not yet | not yet |   N/A   |   N/A   |   N/A   |
 
 1.  **Features revealed from Linux.** We gather data from several sources
     depending on availability:
-    - from glibc's
-      [getauxval](https://www.gnu.org/software/libc/manual/html_node/Auxiliary-Vector.html)
-    - by parsing `/proc/self/auxv`
-    - by parsing `/proc/cpuinfo`
+    +   from glibc's
+        [getauxval](https://www.gnu.org/software/libc/manual/html_node/Auxiliary-Vector.html)
+    +   by parsing `/proc/self/auxv`
+    +   by parsing `/proc/cpuinfo`
 2.  **Features revealed from CPU.** features are retrieved by using the `cpuid`
     instruction.
 3.  **Microarchitecture detection.** On x86 some features are not always

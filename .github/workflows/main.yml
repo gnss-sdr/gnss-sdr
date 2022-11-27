@@ -14,7 +14,7 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y ninja-build cmake libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev python3-mako liborc-0.4-dev
       - name: configure
@@ -109,8 +109,8 @@ jobs:
   volk-gnsssdr-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -174,7 +174,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: sudo apt install shellcheck
       - name: check scripts
@@ -183,7 +183,7 @@ jobs:
   REUSE-compliance:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: Check REUSE compliance
         uses: docker://fsfe/reuse
         with:

@@ -41,6 +41,21 @@ jobs:
       - name: default position_test
         run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
 
+  build-macos-xcode:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: brew update && brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog gnuradio log4cpp openssl pugixml protobuf && pip3 install mako
+      - name: configure
+        run: cd build && cmake -GXcode ..
+      - name: build
+        run: cd build && xcodebuild -configuration Release
+      - name: check
+        run: cd build && xcodebuild -configuration Release -target check && ../install/volk_gnsssdr_profile && ../install/run_tests
+      - name: default position_test
+        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && xcodebuild -configuration Release -target position_test && ../install/position_test
+
   clang-format:
     runs-on: macos-latest
     steps:

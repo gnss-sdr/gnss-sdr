@@ -35,8 +35,6 @@ add_executable(volk_gnsssdr_profile
     ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc
 )
 
-add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
-
 if(MSVC)
     target_include_directories(volk_gnsssdr_profile
         PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/cmake/msvc>
@@ -59,7 +57,6 @@ if(NOT FILESYSTEM_FOUND)
     target_link_libraries(volk_gnsssdr_profile PRIVATE ${Boost_LIBRARIES})
 endif()
 
-
 if(FILESYSTEM_FOUND)
     add_definitions(-DHAS_STD_FILESYSTEM=1)
     if(${find_experimental})
@@ -72,9 +69,7 @@ if(ENABLE_STATIC_LIBS)
     target_link_libraries(volk_gnsssdr_profile PRIVATE volk_gnsssdr_static ${orc_lib})
 else()
     target_link_libraries(volk_gnsssdr_profile PRIVATE volk_gnsssdr ${orc_lib})
-    add_dependencies(volk_gnsssdr_profile volk_gnsssdr)
 endif()
-
 
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
@@ -84,23 +79,19 @@ if(ENABLE_STRIP)
     endif()
 endif()
 
-
 install(
     TARGETS volk_gnsssdr_profile
     DESTINATION bin
     COMPONENT "volk_gnsssdr"
 )
 
-
 # MAKE volk_gnsssdr-config-info
 add_executable(volk_gnsssdr-config-info volk_gnsssdr-config-info.cc ${CMAKE_CURRENT_SOURCE_DIR}/volk_gnsssdr_option_helpers.cc)
-
 
 if(ENABLE_STATIC_LIBS)
     target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${orc_lib})
 else()
     target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${orc_lib})
-    add_dependencies(volk_gnsssdr-config-info volk_gnsssdr)
 endif()
 
 if(ENABLE_STRIP)
@@ -116,7 +107,6 @@ install(
     DESTINATION bin
     COMPONENT "volk_gnsssdr"
 )
-
 
 # Launch volk_gnsssdr_profile if requested to do so
 if(ENABLE_PROFILING)

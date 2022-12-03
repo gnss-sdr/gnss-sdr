@@ -274,7 +274,11 @@ endif()
 
 # allow 'large' files in 32 bit builds
 if(UNIX)
-    add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
+    if(CMAKE_VERSION VERSION_GREATER 3.12.0)
+        add_compile_definitions(_LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES)
+    else()
+        add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
+    endif()
 endif()
 
 # If this is an out-of-tree build, do not pollute the original source directory
@@ -1115,13 +1119,11 @@ if(NOT VOLKGNSSSDR_FOUND)
     if(PYTHON_EXECUTABLE)
         set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
     endif()
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        if(CMAKE_GENERATOR STREQUAL Xcode)
-            set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild"
-                "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
-                "-alltargets"
-            )
-        endif()
+
+    if(CMAKE_GENERATOR STREQUAL Xcode)
+        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild"
+            "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
+        )
     endif()
 
     if(CMAKE_TOOLCHAIN_FILE)
@@ -1155,11 +1157,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         ${STRIP_VOLK_GNSSSDR_PROFILE}
         ${USE_THIS_PYTHON}
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.18.99 AND CMAKE_GENERATOR STREQUAL Xcode)
-        if(XCODE_VERSION VERSION_GREATER 11)
-            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -T buildsystem=1)
-        endif()
-    endif()
+
     if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             -DCROSSCOMPILE_MULTILIB=TRUE

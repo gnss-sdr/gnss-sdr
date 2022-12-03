@@ -159,7 +159,11 @@ Gps_L1_Ca_Gaussian_Tracking_cc::Gps_L1_Ca_Gaussian_Tracking_cc(
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
 
-    set_relative_rate(1.0 / static_cast<double>(d_vector_length));
+#if GNURADIO_GREATER_THAN_38
+    this->set_relative_rate(1, static_cast<uint64_t>(d_vector_length));
+#else
+    this->set_relative_rate(1.0 / static_cast<double>(d_vector_length));
+#endif
 
     // Kalman filter initialization (receiver initialization)
 

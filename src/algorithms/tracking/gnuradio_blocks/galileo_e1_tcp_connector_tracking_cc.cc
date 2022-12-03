@@ -117,8 +117,12 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
       d_pull_in(false),
       d_dump_filename(dump_filename)
 {
+#if GNURADIO_GREATER_THAN_38
+    this->set_relative_rate(1, static_cast<uint64_t>(vector_length));
+#else
+    this->set_relative_rate(1.0 / static_cast<double>(vector_length));
+#endif
     this->message_port_register_out(pmt::mp("events"));
-    this->set_relative_rate(1.0 / vector_length);
     // Telemetry message port input
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
 

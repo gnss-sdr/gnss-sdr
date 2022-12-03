@@ -135,7 +135,11 @@ Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc(
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
 
-    set_relative_rate(1.0 / (static_cast<double>(d_vector_length) * 2.0));
+#if GNURADIO_GREATER_THAN_38
+    this->set_relative_rate(1, static_cast<uint64_t>(d_vector_length * 2));
+#else
+    this->set_relative_rate(1.0 / static_cast<double>(d_vector_length * 2));
+#endif
 
     d_acquisition_gnss_synchro = 0;
     d_channel = 0;

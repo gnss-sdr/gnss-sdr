@@ -131,12 +131,16 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
       d_acc_carrier_phase_initialized(false)
 {
+#if GNURADIO_GREATER_THAN_38
+    this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
+#else
+    this->set_relative_rate(1.0 / static_cast<double>(d_trk_parameters.vector_length));
+#endif
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
 
     // Telemetry bit synchronization message port input
     this->message_port_register_out(pmt::mp("events"));
-    this->set_relative_rate(1.0 / static_cast<double>(d_trk_parameters.vector_length));
 
     // Telemetry message port input
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));

@@ -9,9 +9,6 @@
 # Project setup
 ########################################################################
 cmake_minimum_required(VERSION 2.8.12...3.25)
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
-endif()
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose build type: None Debug Release RelWithDebInfo MinSizeRel")
 project(volk_gnsssdr)
 enable_language(CXX)
@@ -227,7 +224,11 @@ endif()
 set(CROSSCOMPILE_MULTILIB ${CROSSCOMPILE_MULTILIB} CACHE STRING "Define \"true\" if you have and want to use multiple C development libs installed for cross compile")
 
 if(MSVC)
-    add_definitions(-D_USE_MATH_DEFINES) # enables math constants on all supported versions of MSVC
+    if(CMAKE_VERSION VERSION_GREATER 3.12.0)
+        add_compile_definitions(_USE_MATH_DEFINES) # enables math constants on all supported versions of MSVC
+    else()
+        add_definitions(-D_USE_MATH_DEFINES) # enables math constants on all supported versions of MSVC
+    endif()
     add_compile_options(/W1) # reduce warnings
     add_compile_options(/wo4309)
     add_compile_options(/wd4752)
@@ -237,11 +238,11 @@ endif()
 
 # allow 'large' files in 32 bit builds
 if(UNIX)
-    add_definitions(-D_LARGEFILE_SOURCE
-        -D_FILE_OFFSET_BITS=64
-        -D_LARGE_FILES
-        -D_FORTIFY_SOURCE=2
-    )
+    if(CMAKE_VERSION VERSION_GREATER 3.12.0)
+        add_compile_definitions(_LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES)
+    else()
+        add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
+    endif()
 endif()
 
 
@@ -319,7 +320,11 @@ if(MSVC)
     endif()
     set(BOOST_ALL_DYN_LINK "${BOOST_ALL_DYN_LINK}" CACHE BOOL "boost enable dynamic linking")
     if(BOOST_ALL_DYN_LINK)
-        add_definitions(-DBOOST_ALL_DYN_LINK) # setup boost auto-linking in msvc
+        if(CMAKE_VERSION VERSION_GREATER 3.12.0)
+            add_compile_definitions(BOOST_ALL_DYN_LINK) # enables math constants on all supported versions of MSVC
+        else()
+            add_definitions(-DBOOST_ALL_DYN_LINK) # setup boost auto-linking in msvc
+        endif()
     else()
         unset(BOOST_REQUIRED_COMPONENTS) # empty components list for static link
     endif()

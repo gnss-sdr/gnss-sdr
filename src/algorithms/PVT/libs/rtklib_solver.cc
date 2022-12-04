@@ -204,11 +204,13 @@ bool Rtklib_Solver::save_matfile() const
 {
     // READ DUMP FILE
     const std::string dump_filename = d_dump_filename;
-    const int32_t number_of_double_vars = 21;
+    const int32_t number_of_double_vars = 22; //+1 MAGL
+    const int32_t number_of_double_vars_sat = 6; //+ pos/vel por satelite
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 3;
     const int32_t number_of_float_vars = 2;
     const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
+                                     sizeof(double) * number_of_double_vars_sat*5+ 
                                      sizeof(uint32_t) * number_of_uint32_vars +
                                      sizeof(uint8_t) * number_of_uint8_vars +
                                      sizeof(float) * number_of_float_vars;
@@ -253,6 +255,15 @@ bool Rtklib_Solver::save_matfile() const
     auto cov_xy = std::vector<double>(num_epoch);
     auto cov_yz = std::vector<double>(num_epoch);
     auto cov_zx = std::vector<double>(num_epoch);
+    
+    auto vel_z2 = std::vector<double>(num_epoch);
+    auto sat_posX_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+    auto sat_posY_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+    auto sat_posZ_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+    auto sat_velX = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+    auto sat_velY = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+    auto sat_velZ = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+
     auto latitude = std::vector<double>(num_epoch);
     auto longitude = std::vector<double>(num_epoch);
     auto height = std::vector<double>(num_epoch);
@@ -288,6 +299,17 @@ bool Rtklib_Solver::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&cov_xy[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&cov_yz[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&cov_zx[i]), sizeof(double));
+
+                            dump_file.read(reinterpret_cast<char *>(&vel_z2[i]), sizeof(double));
+                            for (uint32_t chan = 0; chan < 5; chan++)
+                                {
+                                dump_file.read(reinterpret_cast<char *>(&sat_posX_m[chan][i]), sizeof(double));
+                                dump_file.read(reinterpret_cast<char *>(&sat_posY_m[chan][i]), sizeof(double));
+                                dump_file.read(reinterpret_cast<char *>(&sat_posZ_m[chan][i]), sizeof(double));
+                                dump_file.read(reinterpret_cast<char *>(&sat_velX[chan][i]), sizeof(double));
+                                dump_file.read(reinterpret_cast<char *>(&sat_velY[chan][i]), sizeof(double));
+                                dump_file.read(reinterpret_cast<char *>(&sat_velZ[chan][i]), sizeof(double));           
+                                } 
                             dump_file.read(reinterpret_cast<char *>(&latitude[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&longitude[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&height[i]), sizeof(double));
@@ -308,6 +330,28 @@ bool Rtklib_Solver::save_matfile() const
         {
             std::cerr << "Problem reading dump file:" << e.what() << '\n';
             return false;
+        }
+    
+    auto sat_posX_m_aux = std::vector<double>(5 * num_epoch);
+    auto sat_posY_m_aux = std::vector<double>(5 * num_epoch);
+    auto sat_posZ_m_aux = std::vector<double>(5 * num_epoch);
+    auto sat_velX_aux = std::vector<double>(5 * num_epoch);
+    auto sat_velY_aux = std::vector<double>(5 * num_epoch);
+    auto sat_velZ_aux = std::vector<double>(5 * num_epoch);
+
+        uint32_t k = 0U;
+    for (int64_t j = 0; j < num_epoch; j++)
+        {
+            for (uint32_t i = 0; i < 5; i++)
+                {
+                    sat_posX_m_aux[k] = sat_posX_m[i][j];
+                    sat_posY_m_aux[k] = sat_posY_m[i][j];
+                    sat_posZ_m_aux[k] = sat_posZ_m[i][j];
+                    sat_velX_aux[k] = sat_velX[i][j];
+                    sat_velY_aux[k] = sat_velY[i][j];
+                    sat_velZ_aux[k] = sat_velZ[i][j];
+                    k++;
+                }
         }
 
     // WRITE MAT FILE
@@ -381,6 +425,30 @@ bool Rtklib_Solver::save_matfile() const
             Mat_VarFree(matvar);
 
             matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zx.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_z2", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_z2.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            std::array<size_t, 2> dims_sat{static_cast<size_t>(5), static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("sat_posX_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_posX_m_aux.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+            matvar = Mat_VarCreate("sat_posY_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_posY_m_aux.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+            matvar = Mat_VarCreate("sat_posZ_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_posZ_m_aux.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+            matvar = Mat_VarCreate("sat_velX", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_velX_aux.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+            matvar = Mat_VarCreate("sat_velY", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_velY_aux.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+            matvar = Mat_VarCreate("sat_velZ", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_velZ_aux.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -1318,6 +1386,24 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_double = pvt_sol.qr[5];
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
+                                    tmp_double = pvt_sol.rr[5];
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    for (int n = 0; n<5; n++)
+                                    {
+                                    tmp_double = vtl_data.sat_p(n, 0);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));    
+                                    tmp_double = vtl_data.sat_p(n, 1);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = vtl_data.sat_p(n, 2);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));     
+                                    tmp_double = vtl_data.sat_v(n, 0);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double)); 
+                                    tmp_double = vtl_data.sat_v(n, 1);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double)); 
+                                    tmp_double = vtl_data.sat_v(n, 2);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double)); 
+                                    }
+                                    
                                     // GEO user position Latitude [deg]
                                     tmp_double = this->get_latitude();
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));

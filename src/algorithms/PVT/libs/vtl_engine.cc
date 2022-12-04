@@ -191,7 +191,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
 	else {
         dump_vtl_file << "kf_xerr"<< ","<<kf_xerr(0)<< ","<<kf_xerr(1)<< ","<<kf_xerr(2)<< ","<<kf_xerr(3)<< ","<<kf_xerr(4)<< ","<<kf_xerr(5)<< ","<<kf_xerr(6)<< ","<<kf_xerr(7)<<endl;
         dump_vtl_file << "kf_state"<< ","<<new_data.kf_state(0)<< ","<<new_data.kf_state(1)<< ","<<new_data.kf_state(2)<< ","<<new_data.kf_state(3)<< ","<<new_data.kf_state(4)<< ","<<new_data.kf_state(5)<< ","<<new_data.kf_state(6)<< ","<<new_data.kf_state(7)<<endl;
-		dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p[2]<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;       
+		dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p[2]<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;
+        dump_vtl_file << "sat_first_LOS"<< ","<<new_data.sat_LOS(1,0)<< ","<< new_data.sat_LOS(1,1)<<","<< new_data.sat_LOS(1,2)<<endl;       
         dump_vtl_file.close(); 
 	}
 

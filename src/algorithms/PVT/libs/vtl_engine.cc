@@ -35,7 +35,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
 
     // ################## Kalman filter initialization ######################################
     // covariances (static)
-    kf_P_x  = arma::eye(8, 8); //TODO: use a real value.
+    kf_P_x  = arma::eye(8, 8)*100.0; //TODO: use a real value.
     kf_x    = arma::zeros(8, 1);
     kf_R    = arma::zeros(2*new_data.sat_number, 2*new_data.sat_number);
     double kf_dt=0.1;
@@ -90,13 +90,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     for (int32_t i = 0; i < 8; i++) 
     {
         // It is diagonal 8x8 matrix 
-        kf_Q(i, i) = 50.0;//new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
+        kf_Q(i, i) = 1.0;//new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
     }
     // Measurement error Covariance Matrix R assembling
     for (int32_t i = 0; i < new_data.sat_number; i++) 
     {
         // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error) 
-        kf_R(i, i) = 5.0; //TODO: fill with real values.
+        kf_R(i, i) = 40.0; //TODO: fill with real values.
         kf_R(i+new_data.sat_number, i+new_data.sat_number) = 10.0;
     }
 

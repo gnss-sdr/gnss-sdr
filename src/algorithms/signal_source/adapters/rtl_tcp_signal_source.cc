@@ -34,29 +34,30 @@ RtlTcpSignalSource::RtlTcpSignalSource(const ConfigurationInterface* configurati
     unsigned int in_stream,
     unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t>* queue)
-    : SignalSourceBase(configuration, role, "RtlTcp_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
+    : SignalSourceBase(configuration, role, "RtlTcp_Signal_Source"s),
+      samples_(configuration->property(role + ".samples", static_cast<uint64_t>(0))),
+      rf_gain_(configuration->property(role + ".rf_gain", 40.0)),
+      sample_rate_(configuration->property(role + ".sampling_frequency", 2000000)),
+      freq_(configuration->property(role + ".freq", static_cast<int>(GPS_L1_FREQ_HZ))),
+      gain_(configuration->property(role + ".gain", 40)),
+      if_gain_(configuration->property(role + ".if_gain", 40)),
+      in_stream_(in_stream),
+      out_stream_(out_stream),
+      AGC_enabled_(configuration->property(role + ".AGC_enabled", true)),
+      flip_iq_(configuration->property(role + ".flip_iq", false)),
+      dump_(configuration->property(role + ".dump", false))
 {
     // DUMP PARAMETERS
     const std::string default_dump_file("./data/signal_source.dat");
     const std::string default_item_type("gr_complex");
-    samples_ = configuration->property(role + ".samples", static_cast<uint64_t>(0));
-    dump_ = configuration->property(role + ".dump", false);
-    dump_filename_ = configuration->property(role + ".dump_filename",
-        default_dump_file);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     // rtl_tcp PARAMETERS
     const std::string default_address("127.0.0.1");
     const int16_t default_port = 1234;
-    AGC_enabled_ = configuration->property(role + ".AGC_enabled", true);
-    freq_ = configuration->property(role + ".freq", static_cast<int>(GPS_L1_FREQ_HZ));
-    gain_ = configuration->property(role + ".gain", 40);
-    rf_gain_ = configuration->property(role + ".rf_gain", 40.0);
-    if_gain_ = configuration->property(role + ".if_gain", 40);
-    sample_rate_ = configuration->property(role + ".sampling_frequency", 2000000);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
     address_ = configuration->property(role + ".address", default_address);
     port_ = configuration->property(role + ".port", default_port);
-    flip_iq_ = configuration->property(role + ".flip_iq", false);
 
     if (item_type_ == "short")
         {

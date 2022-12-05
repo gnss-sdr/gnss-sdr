@@ -55,7 +55,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration_->property(role + ".item_type", default_item_type);
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000LL);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
     if (FLAGS_doppler_max != 0)

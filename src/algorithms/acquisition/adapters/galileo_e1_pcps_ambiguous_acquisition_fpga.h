@@ -197,7 +197,6 @@ private:
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     std::weak_ptr<ChannelFsm> channel_fsm_;
     Gnss_Synchro* gnss_synchro_;
-    const ConfigurationInterface* configuration_;
     Acq_Conf_Fpga acq_parameters_;
     std::string role_;
     int64_t fs_in_;

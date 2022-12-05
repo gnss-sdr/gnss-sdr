@@ -610,7 +610,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
     // rx signal vectors
     std::vector<int8_t> input_samples(sample_block_size * 2);  // complex samples
     // pointer to DMA buffer
-    std::array<int8_t, BUFFER_SIZE> *dma_buffer;
+    int8_t *dma_buffer;
     int nread_elements = 0;  // num bytes read from the file corresponding to frequency band 1
     bool run_DMA = true;
 
@@ -631,8 +631,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
             // if only one file is enabled then clear the samples corresponding to the frequency band that is not used.
             for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                 {
-                    (*dma_buffer)[dma_index + (2 - dma_buff_offset_pos)] = 0;
-                    (*dma_buffer)[dma_index + 1 + (2 - dma_buff_offset_pos)] = 0;
+                    dma_buffer[dma_index + (2 - dma_buff_offset_pos)] = 0;
+                    dma_buffer[dma_index + 1 + (2 - dma_buff_offset_pos)] = 0;
                     dma_index += 4;
                 }
         }
@@ -673,8 +673,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
             for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                 {
                     // dma_buff_offset_pos is 1 for the L1 band and 0 for the other bands
-                    (*dma_buffer)[dma_index + dma_buff_offset_pos] = input_samples[index0];
-                    (*dma_buffer)[dma_index + 1 + dma_buff_offset_pos] = input_samples[index0 + 1];
+                    dma_buffer[dma_index + dma_buff_offset_pos] = input_samples[index0];
+                    dma_buffer[dma_index + 1 + dma_buff_offset_pos] = input_samples[index0 + 1];
                     dma_index += 4;
                 }
 
@@ -704,8 +704,8 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
                     for (int index0 = 0; index0 < (nread_elements); index0 += 2)
                         {
                             // filename2 is never the L1 band
-                            (*dma_buffer)[dma_index] = input_samples[index0];
-                            (*dma_buffer)[dma_index + 1] = input_samples[index0 + 1];
+                            dma_buffer[dma_index] = input_samples[index0];
+                            dma_buffer[dma_index + 1] = input_samples[index0 + 1];
                             dma_index += 4;
                         }
                 }

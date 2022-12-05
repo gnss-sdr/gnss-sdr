@@ -1,5 +1,5 @@
 /*!
- * \file fpga_dma.cc
+ * \file fpga_dma-proxy.cc
  * \brief FPGA DMA control. This code is based in the Xilinx DMA proxy test application:
  * https://github.com/Xilinx-Wiki-Projects/software-prototypes/tree/master/linux-user-space-dma/Software
  * \author Marc Majoral, mmajoral(at)cttc.es
@@ -15,7 +15,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "fpga_dma.h"
+#include "fpga_dma-proxy.h"
 #include <fcntl.h>
 #include <iostream>     // for std::cerr
 #include <sys/ioctl.h>  // for ioctl()
@@ -24,7 +24,6 @@
 
 int Fpga_DMA::DMA_open()
 {
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     tx_channel.fd = open("/dev/dma_proxy_tx", O_RDWR);
     if (tx_channel.fd < 1)
         {
@@ -40,61 +39,29 @@ int Fpga_DMA::DMA_open()
             return -1;
         }
 
-#else  // 32-bit processor architecture
-    tx_fd = open("/dev/loop_tx", O_WRONLY);
-    if (tx_fd < 1)
-        {
-            return tx_fd;
-        }
-    // note: a problem was identified with the DMA: when switching from tx to rx or rx to tx mode
-    // the DMA transmission may hang. This problem will be fixed soon.
-    // for the moment this problem can be avoided by closing and opening the DMA a second time
-    if (close(tx_fd) < 0)
-        {
-            std::cerr << "Error closing loop device " << '\n';
-            return -1;
-        }
-    // open the DMA  a second time
-    tx_fd = open("/dev/loop_tx", O_WRONLY);
-    if (tx_fd < 1)
-        {
-            std::cerr << "Cannot open loop device\n";
-            // stop the receiver
-            return tx_fd;
-        }
-#endif
-
     return 0;
 }
 
-
-std::array<int8_t, BUFFER_SIZE> *Fpga_DMA::get_buffer_address()  // NOLINT(readability-make-member-function-const)
+int8_t *Fpga_DMA::get_buffer_address()  // NOLINT(readability-make-member-function-const)
 {
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
-    return &tx_channel.buf_ptr[0].buffer;
-#else  // 32-bit processor architecture
-    return &buffer;
-#endif
+    return tx_channel.buf_ptr[0].buffer;
 }
-
 
 int Fpga_DMA::DMA_write(int nbytes) const
 {
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
-
     int buffer_id = 0;
 
     tx_channel.buf_ptr[0].length = nbytes;
 
     // start DMA transfer
-    if (ioctl(tx_channel.fd, START_XFER, &buffer_id))
+    if (ioctl(tx_channel.fd, _IOW('a', 'b', int32_t *), &buffer_id))  // start transfer
         {
             std::cerr << "Error starting tx DMA transfer " << '\n';
             return -1;
         }
 
     // wait for completion of DMA transfer
-    if (ioctl(tx_channel.fd, FINISH_XFER, &buffer_id))
+    if (ioctl(tx_channel.fd, _IOW('a', 'a', int32_t *), &buffer_id))  // finish transfer
         {
             std::cerr << "Error detecting end of DMA transfer " << '\n';
             return -1;
@@ -105,27 +72,16 @@ int Fpga_DMA::DMA_write(int nbytes) const
             std::cerr << "Proxy DMA Tx transfer error " << '\n';
             return -1;
         }
-#else  // 32-bit processor architecture
-    const int num_bytes_sent = write(tx_fd, buffer.data(), nbytes);
-    if (num_bytes_sent != nbytes)
-        {
-            return -1;
-        }
-#endif
     return 0;
 }
 
 
 int Fpga_DMA::DMA_close() const
 {
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
     if (munmap(tx_channel.buf_ptr, sizeof(struct channel_buffer)))
         {
             std::cerr << "Failed to unmap DMA tx channel " << '\n';
             return -1;
         }
     return close(tx_channel.fd);
-#else  // 32-bit processor architecture
-    return close(tx_fd);
-#endif
 }

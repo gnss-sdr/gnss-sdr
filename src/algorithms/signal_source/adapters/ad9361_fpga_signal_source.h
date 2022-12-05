@@ -23,7 +23,11 @@
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
-#include "fpga_dma.h"
+#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+#include "fpga_dma-proxy.h"
+#else
+#include "fpga_ezdma.h"
+#endif
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"

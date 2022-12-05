@@ -63,7 +63,6 @@ private:
     // channel buffer structure
     struct channel_buffer
     {
-        //std::array<int8_t, BUFFER_SIZE> buffer;
         int8_t buffer[DMA_MAX_BUFFER_SIZE];
         enum proxy_status
         {

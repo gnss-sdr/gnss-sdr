@@ -32,8 +32,10 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
+                                doppler_max_(configuration->property(role + ".doppler_max", 5000)),
                                 in_streams_(in_streams),
-                                out_streams_(out_streams)
+                                out_streams_(out_streams),
+                                dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./acquisition.mat";
@@ -42,15 +44,13 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     Acq_Conf acq_parameters = Acq_Conf();
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000LL);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(acq_parameters.fs_in)));
-    dump_ = configuration->property(role + ".dump", false);
     acq_parameters.dump = dump_;
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
-    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;

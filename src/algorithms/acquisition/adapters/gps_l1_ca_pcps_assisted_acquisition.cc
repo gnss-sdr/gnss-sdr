@@ -31,8 +31,10 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
+                                doppler_max_(configuration->property(role + ".doppler_max", 5000)),
                                 in_streams_(in_streams),
-                                out_streams_(out_streams)
+                                out_streams_(out_streams),
+                                dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./data/acquisition.dat";
@@ -40,10 +42,9 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     DLOG(INFO) << "role " << role;
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000LL);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_ = configuration->property(role + ".dump", false);
-    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
+
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;

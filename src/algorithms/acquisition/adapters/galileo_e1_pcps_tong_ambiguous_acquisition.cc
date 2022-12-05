@@ -42,9 +42,11 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
       role_(role),
       threshold_(0.0),
       channel_(0),
-      doppler_max_(configuration_->property(role + ".doppler_max", 5000)), doppler_step_(0),
+      doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
+      doppler_step_(0),
       in_streams_(in_streams),
-      out_streams_(out_streams), dump_(configuration_->property(role + ".dump", false))
+      out_streams_(out_streams),
+      dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("../data/acquisition.dat");
@@ -54,10 +56,9 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     item_type_ = configuration_->property(role + ".item_type",
         default_item_type);
 
-    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
+    int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000LL);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    
-    
+
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;

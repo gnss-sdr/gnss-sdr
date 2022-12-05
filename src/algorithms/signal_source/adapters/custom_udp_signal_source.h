@@ -74,9 +74,8 @@ private:
     int channels_in_udp_;
     unsigned int in_stream_;
     unsigned int out_stream_;
-
-    bool dump_;
     bool IQ_swap_;
+    bool dump_;
 };
 
 

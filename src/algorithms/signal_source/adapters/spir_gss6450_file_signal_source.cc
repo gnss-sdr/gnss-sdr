@@ -190,7 +190,6 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
 
             if (n_channels_ > 1)
                 {
-                    uint32_t aux = 0;
                     for (int32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
@@ -204,8 +203,6 @@ void SpirGSS6450FileSignalSource::connect(gr::top_block_sptr top_block)
                                         {
                                             top_block->connect(deint_, i, unpack_spir_vec_.at(i), 0);
                                         }
-
-                                    aux++;
                                 }
                         }
                 }
@@ -251,7 +248,6 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
                 }
             if (n_channels_ > 1)
                 {
-                    uint32_t aux = 0;
                     for (int32_t i = 0; i < n_channels_; i++)
                         {
                             if (i != (sel_ch_ - 1))
@@ -265,8 +261,6 @@ void SpirGSS6450FileSignalSource::disconnect(gr::top_block_sptr top_block)
                                         {
                                             top_block->disconnect(deint_, i, unpack_spir_vec_.at(i), 0);
                                         }
-
-                                    aux++;
                                 }
                         }
                 }

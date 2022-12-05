@@ -44,7 +44,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     Acq_Conf acq_parameters = Acq_Conf();
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000LL);
+    int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(acq_parameters.fs_in)));

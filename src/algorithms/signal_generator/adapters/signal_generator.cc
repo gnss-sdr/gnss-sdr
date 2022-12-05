@@ -33,7 +33,10 @@
 SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream,
     unsigned int out_stream,
-    Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused))) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused))) : role_(role),
+                                                                   in_stream_(in_stream),
+                                                                   out_stream_(out_stream),
+                                                                   dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/gen_source.dat");
@@ -41,7 +44,6 @@ SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     const std::string default_signal("1C");
 
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     const unsigned int fs_in = configuration->property("SignalSource.fs_hz", static_cast<unsigned>(4e6));

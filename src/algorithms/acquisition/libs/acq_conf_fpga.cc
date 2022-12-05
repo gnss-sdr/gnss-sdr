@@ -34,7 +34,6 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
 
     // downsampling factor
     uint32_t downsampling_factor = configuration->property(role + ".downsampling_factor", downs_factor);
-    downsampling_factor = downsampling_factor;
     fs_in = fs_in / downsampling_factor;
 
     // code length in samples

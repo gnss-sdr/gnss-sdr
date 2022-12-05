@@ -1,5 +1,5 @@
 /*!
- * \file fpga_dma.h
+ * \file fpga_dma-proxy.h
  * \brief FPGA DMA control. This code is based in the Xilinx DMA proxy test application:
  * https://github.com/Xilinx-Wiki-Projects/software-prototypes/tree/master/linux-user-space-dma/Software
  * \author Marc Majoral, mmajoral(at)cttc.es
@@ -15,44 +15,10 @@
  * -----------------------------------------------------------------------------
  */
 
+#ifndef GNSS_SDR_FPGA_DMA_PROXY_H
+#define GNSS_SDR_FPGA_DMA_PROXY_H
 
-#ifndef GNSS_SDR_FPGA_DMA_H
-#define GNSS_SDR_FPGA_DMA_H
-
-#include <array>    // for std::array
 #include <cstdint>  // for std::int8_t
-
-#define BUFFER_SIZE (128 * 1024) /* must match driver exactly */
-
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
-
-#define TX_BUFFER_COUNT 1 /* app only, must be <= to the number in the driver */
-
-#define FINISH_XFER _IOW('a', 'a', int32_t *)
-#define START_XFER _IOW('a', 'b', int32_t *)
-
-// channel buffer structure
-struct channel_buffer
-{
-    std::array<int8_t, BUFFER_SIZE> buffer;
-    enum proxy_status
-    {
-        PROXY_NO_ERROR = 0,
-        PROXY_BUSY = 1,
-        PROXY_TIMEOUT = 2,
-        PROXY_ERROR = 3
-    } status;
-    unsigned int length;
-} __attribute__((aligned(1024))); /* 64 byte alignment required for DMA, but 1024 handy for viewing memory */
-
-// internal DMA channel data structure
-struct channel
-{
-    struct channel_buffer *buf_ptr;
-    int fd;
-};
-
-#endif
 
 /*!
  * \brief Class that controls the switch DMA in the FPGA
@@ -78,7 +44,7 @@ public:
     /*!
      * \brief Obtain DMA buffer address.
      */
-    std::array<int8_t, BUFFER_SIZE> *get_buffer_address(void);  // NOLINT(readability-make-member-function-const)
+    int8_t *get_buffer_address(void);  // NOLINT(readability-make-member-function-const)
 
     /*!
      * \brief Transfer DMA data
@@ -91,11 +57,30 @@ public:
     int DMA_close(void) const;
 
 private:
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
+    static const uint32_t DMA_MAX_BUFFER_SIZE = (128 * 1024); /* must match driver exactly */
+    static const uint32_t TX_BUFFER_COUNT = 1;
+
+    // channel buffer structure
+    struct channel_buffer
+    {
+        int8_t buffer[DMA_MAX_BUFFER_SIZE];
+        enum proxy_status
+        {
+            PROXY_NO_ERROR = 0,
+            PROXY_BUSY = 1,
+            PROXY_TIMEOUT = 2,
+            PROXY_ERROR = 3
+        } status;
+        unsigned int length;
+    } __attribute__((aligned(1024))); /* 64 byte alignment required for DMA, but 1024 handy for viewing memory */
+
+    // internal DMA channel data structure
+    struct channel
+    {
+        struct channel_buffer *buf_ptr;
+        int fd;
+    };
+
     channel tx_channel;
-#else  // 32-bit processor architecture
-    std::array<int8_t, BUFFER_SIZE> buffer;
-    int tx_fd;
-#endif
 };
-#endif  // GNSS_SDR_FPGA_DMA_H
+#endif  // GNSS_SDR_FPGA_DMA_PROXY_H

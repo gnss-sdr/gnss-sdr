@@ -38,13 +38,13 @@ Channel::Channel(const ConfigurationInterface* configuration,
                                            trk_(std::move(trk)),
                                            nav_(std::move(nav)),
                                            role_(role),
-                                           channel_(channel)
+                                           channel_(channel), flag_enable_fpga_(configuration->property("GNSS-SDR.enable_FPGA", false)), glonass_extend_correlation_ms_(configuration->property("Tracking_1G.extend_correlation_ms", 0) + configuration->property("Tracking_2G.extend_correlation_ms", 0))
 {
-    glonass_extend_correlation_ms_ = configuration->property("Tracking_1G.extend_correlation_ms", 0) + configuration->property("Tracking_2G.extend_correlation_ms", 0);
+    
 
     channel_fsm_ = std::make_shared<ChannelFsm>();
 
-    flag_enable_fpga_ = configuration->property("GNSS-SDR.enable_FPGA", false);
+    
 
     acq_->set_channel(channel_);
     acq_->set_channel_fsm(channel_fsm_);
@@ -273,7 +273,7 @@ void Channel::start_acquisition()
     DLOG(INFO) << "Channel start_acquisition()";
 }
 
-bool Channel::glonass_dll_pll_c_aid_tracking_check()
+bool Channel::glonass_dll_pll_c_aid_tracking_check() const
 {
     if (glonass_extend_correlation_ms_)
         {

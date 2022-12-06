@@ -131,7 +131,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
  *  \f$NBP=(\sum^{N-1}_{i=0}Im(Pc(i)))^2+(\sum^{N-1}_{i=0}Re(Pc(i)))^2\f$, and
  *  \f$Pc(i)\f$ is the prompt correlator output for the sample index i.
  */
-float carrier_lock_detector(gr_complex* Prompt_buffer, int length)
+float carrier_lock_detector(const gr_complex* Prompt_buffer, int length)
 {
     float tmp_sum_I = 0.0;
     float tmp_sum_Q = 0.0;

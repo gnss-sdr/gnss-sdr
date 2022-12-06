@@ -31,7 +31,8 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
     unsigned int out_streams)
     : role_(std::move(role)),
       in_streams_(in_streams),
-      out_streams_(out_streams)
+      out_streams_(out_streams),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_input_item_type("gr_complex");
     const std::string default_output_item_type("gr_complex");
@@ -59,7 +60,6 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
     intermediate_freq_ = configuration->property(role_ + ".IF", default_intermediate_freq);
     sampling_freq_ = configuration->property(role_ + ".sampling_frequency", default_sampling_freq);
     decimation_factor_ = configuration->property(role_ + ".decimation_factor", default_decimation_factor);
-    dump_ = configuration->property(role_ + ".dump", false);
 
     if (filter_type != "lowpass")
         {

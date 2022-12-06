@@ -68,7 +68,7 @@ public:
     /*!
      * \brief Decodes the GPS NAV message
      */
-    int32_t subframe_decoder(char* subframe);
+    int32_t subframe_decoder(const char* subframe);
 
     /*!
      * \brief Computes the Coordinated Universal Time (UTC) and

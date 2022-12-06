@@ -96,7 +96,7 @@ public:
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() const { return nav_; }
 
 private:
-    bool glonass_dll_pll_c_aid_tracking_check();
+    bool glonass_dll_pll_c_aid_tracking_check() const;
     std::shared_ptr<ChannelFsm> channel_fsm_;
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;

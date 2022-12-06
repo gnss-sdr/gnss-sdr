@@ -27,15 +27,14 @@ SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(
     unsigned int in_streams,
     unsigned int out_streams) : role_(role),
                                 in_streams_(in_streams),
-                                out_streams_(out_streams)
+                                out_streams_(out_streams),
+                                dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_dump_filename("./navigation.dat");
-    DLOG(INFO) << "role " << role;
-    dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
     // make telemetry decoder object
     telemetry_decoder_ = sbas_l1_make_telemetry_decoder_gs(satellite_, dump_);  // TODO fix me
-
+    DLOG(INFO) << "role " << role;
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";
     if (in_streams_ > 1)
         {

@@ -23,7 +23,7 @@ clearvars
 % end
 SPEED_OF_LIGHT_M_S=299792458.0;
 Lambda_GPS_L1=0.1902937;
-point_of_closure=6000;
+point_of_closure=5;
 %%
 samplingFreq=5000000;
 channels=6;
@@ -40,9 +40,9 @@ load observables\observable_raw.mat
 % refSatData = SpirentSatData2struct('..\log_spirent\sat_data_V1A1_SPF_LD_05.csv');
 rx_PRN=[28 4 17 15 27 9]; % for SPF_LD_05.
 load('PVT_raw.mat','sat_posX_m','sat_posY_m','sat_posZ_m','sat_velX','sat_velY'...
-        ,'sat_velZ','sat_prg_m','clk_bias_s','sat_dopp_hz')
+        ,'sat_velZ','sat_prg_m','clk_bias_s','clk_drift','sat_dopp_hz','user_clk_offset')
+%%
 vtlSolution = Vtl2struct('dump_vtl_file.csv');
-
 %% calculate LOS Rx-sat
 
 % for chan=1:5
@@ -102,6 +102,22 @@ legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
 %%
 %general_raw_plot
 vtl_general_plot
+%%
+close all
+figure;plot(kf_xerr(7,:),'.');title('clk bias err')
+figure;plot(kf_xerr(8,:),'.');title('clk drift err')
+figure;plot(kf_x(7,:),'.');title('clk bias state')
+figure;plot(kf_x(8,:),'.');title('clk drift state')
+figure;plot(corr_kf_state(7,:),'.');title('clk bias corrected state')
+figure;plot(corr_kf_state(8,:),'.');title('clk drift corrected state')
+%%
+% close all
+% kferr_pos_all=[vtlSolution.kferr.X vtlSolution.kferr.Y vtlSolution.kferr.Z];
+% kferr_vel_all=[vtlSolution.kferr.vX vtlSolution.kferr.vY vtlSolution.kferr.vZ];
+% figure;plot(kferr_pos_all,'.');title('original pos err') 
+% figure;plot(kf_xerr(1:3,:)','.');title('calc pos err')
+% figure;plot(kferr_vel_all,'.');title('original vel err')
+% figure;plot(kf_xerr(4:6,:)','.');title('calc vel err')
 %% ============================================== ==============================================
 % time_reference_spirent_obs=129780;%s
 % if(load_observables)

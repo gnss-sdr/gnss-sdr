@@ -3,16 +3,25 @@
 sat_number=5;
 %% ################## Kalman filter initialization ######################################
 % covariances (static)
-kf_P_x  = eye(8)*10.0; %TODO: use a real value.
+kf_P_x  = eye(8); %TODO: use a real value.
 kf_x    = zeros(8, 1);
 kf_R    = zeros(2*sat_number, 2*sat_number);
 kf_dt=0.1;
-kf_F = eye(8, 8);
-kf_F(1, 4) = kf_dt;
-kf_F(2, 5) = kf_dt;
-kf_F(3, 6) = kf_dt;
-kf_F(7, 8) = kf_dt;
+% kf_F = eye(8, 8);
+% kf_F(1, 4) = kf_dt;
+% kf_F(2, 5) = kf_dt;
+% kf_F(3, 6) = kf_dt;
+% kf_F(7, 8) = kf_dt;
 
+kf_F=[      1     0     0     kf_dt     0           0     0     0
+            0     1     0     0         kf_dt       0     0     0
+            0     0     1     0         0           kf_dt 0     0
+            0     0     0     1         0           0     0     0
+            0     0     0     0         1           0     0     0
+            0     0     0     0         0           1     0     0
+            0     0     0     0         0           0     1     kf_dt
+            0     0     0     0         0           0     0     1];
+ 
 kf_H = zeros(2*sat_number,8);
 kf_y = zeros(2*sat_number, 1);
 kf_yerr = zeros(2*sat_number, 1);
@@ -20,18 +29,41 @@ kf_yerr = zeros(2*sat_number, 1);
 kf_S = zeros(2*sat_number, 2*sat_number); % kf_P_y innovation covariance matrix
 
 %% State error Covariance Matrix Q (PVT)
-kf_Q = eye(8);%new_data.rx_pvt_var(i); %careful, values for V and T could not be adecuate.
+kf_Q = [    1     0     0     0     0     0     0     0
+            0     1     0     0     0     0     0     0
+            0     0     1     0     0     0     0     0
+            0     0     0     1     0     0     0     0
+            0     0     0     0     1     0     0     0
+            0     0     0     0     0     1     0     0
+            0     0     0     0     0     0     1e-7     0
+            0     0     0     0     0     0     0     1e-4];%new_data.rx_pvt_var(i); %careful, values for V and T could not be adecuate.
 %%
 
-% Measurement error Covariance Matrix R assembling
-for chan=1:5 %neccesary quantities
-    for t=1:length(navSolution.RX_time)
-        % It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error)
-        kf_R(chan, chan) = 40.0; %TODO: fill with real values.
-        kf_R(chan+sat_number, chan+sat_number) = 10.0;
-    end
-end
+% % Measurement error Covariance Matrix R assembling
+% for chan=1:5 %neccesary quantities
+%     % It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error)
+%     kf_R(chan, chan) = 40.0; %TODO: fill with real values.
+%     kf_R(chan+sat_number, chan+sat_number) = 10.0;
+% end
 
+kf_R=[  3     0     0     0     0     0     0     0     0     0
+        0     3     0     0     0     0     0     0     0     0
+        0     0     3     0     0     0     0     0     0     0
+        0     0     0     3     0     0     0     0     0     0
+        0     0     0     0     3     0     0     0     0     0
+        0     0     0     0     0     30     0     0     0     0
+        0     0     0     0     0     0     30     0     0     0
+        0     0     0     0     0     0     0     30     0     0
+        0     0     0     0     0     0     0     0     30     0
+        0     0     0     0     0     0     0     0     0     30];
+    
+        d = zeros(sat_number, 1);
+    rho_pri = zeros(sat_number, 1);
+    rhoDot_pri = zeros(sat_number, 1);
+    a_x = zeros(sat_number, 1);
+    a_y = zeros(sat_number, 1);
+    a_z = zeros(sat_number, 1);
+    c_pr_m=zeros(sat_number,length(navSolution.RX_time));
 %% ################## Kalman Tracking ######################################
 % receiver solution from rtklib_solver
 for t=1:length(navSolution.RX_time)
@@ -44,17 +76,7 @@ for t=1:length(navSolution.RX_time)
         kf_x(5,t) = navSolution.vY(t);
         kf_x(6,t) = navSolution.vZ(t);
         kf_x(7,t) = clk_bias_s(t);
-        kf_x(8,t) = 1e-6;%new_data.rx_dts(1);
-        x_u=kf_x(1,t);
-        y_u=kf_x(2,t);
-        z_u=kf_x(3,t);
-        xDot_u=kf_x(4,t);
-        yDot_u=kf_x(5,t);
-        zDot_u=kf_x(6,t);
-        cdeltat_u=kf_x(7,t)*SPEED_OF_LIGHT_M_S;
-        cdeltatDot_u=1e-8*SPEED_OF_LIGHT_M_S;
-    else
-        kf_x(:,t)=corr_kf_state(:,t-1);
+        kf_x(8,t) = clk_drift(t);%new_data.rx_dts(1);
         
         x_u=kf_x(1,t);
         y_u=kf_x(2,t);
@@ -62,23 +84,27 @@ for t=1:length(navSolution.RX_time)
         xDot_u=kf_x(4,t);
         yDot_u=kf_x(5,t);
         zDot_u=kf_x(6,t);
-        cdeltat_u=kf_x(7,t)*SPEED_OF_LIGHT_M_S;
-        cdeltatDot_u=1e-8*SPEED_OF_LIGHT_M_S;
+        cdeltat_u(t)=kf_x(7,t)*SPEED_OF_LIGHT_M_S;
+        cdeltatDot_u=kf_x(8,t)*SPEED_OF_LIGHT_M_S;
+        kf_P_x  = eye(8); %TODO: use a real value.
+
+    else
+        kf_x(:,t)=corr_kf_state(:,t-1);    
+        x_u=kf_x(1,t);
+        y_u=kf_x(2,t);
+        z_u=kf_x(3,t);
+        xDot_u=kf_x(4,t);
+        yDot_u=kf_x(5,t);
+        zDot_u=kf_x(6,t);
+        cdeltat_u(t)=kf_x(7,t)*SPEED_OF_LIGHT_M_S;% 
+        cdeltatDot_u=kf_x(8,t)*SPEED_OF_LIGHT_M_S;% 
     end
     % Kalman state prediction (time update)
     kf_x(:,t) = kf_F * kf_x(:,t);                        % state prediction
     kf_P_x= kf_F * kf_P_x * kf_F' + kf_Q;  % state error covariance prediction
     %from error state variables to variables
     % From state variables definition
-    % TODO: cast to type properly
-    
-    d = zeros(sat_number, 1);
-    rho_pri = zeros(sat_number, 1);
-    rhoDot_pri = zeros(sat_number, 1);
-    a_x = zeros(sat_number, 1);
-    a_y = zeros(sat_number, 1);
-    a_z = zeros(sat_number, 1);
-    c_pr_m=zeros(sat_number,length(navSolution.RX_time));
+    % TODO: cast to type properly 
     
     for chan=1:5 %neccesary quantities
             d(chan)=(sat_posX_m(chan,t)-kf_x(1,t))^2;
@@ -86,7 +112,7 @@ for t=1:length(navSolution.RX_time)
             d(chan)=d(chan)+(sat_posZ_m(chan,t)-kf_x(3,t))^2;
             d(chan)=sqrt(d(chan));
             
-            c_pr_m(chan,t)=d(chan)+clk_bias_s(t)*SPEED_OF_LIGHT_M_S;
+            c_pr_m(chan,t)=d(chan)+cdeltat_u(t);
             
             a_x(chan,t)=-(sat_posX_m(chan,t)-kf_x(1,t))/d(chan);
             a_y(chan,t)=-(sat_posY_m(chan,t)-kf_x(2,t))/d(chan);
@@ -94,7 +120,7 @@ for t=1:length(navSolution.RX_time)
             
             rhoDot_pri(chan,t)=(sat_velX(chan,t)-kf_x(4,t))*a_x(chan,t)...
                 +(sat_velY(chan,t)-kf_x(5,t))*a_y(chan,t)...
-                +(sat_velZ(chan,t)-kf_x(6,t))*a_z(chan,t);
+                +(sat_velZ(chan,t)-kf_x(6,t))*a_z(chan,t)+cdeltatDot_u;
     end
     
     
@@ -110,7 +136,7 @@ for t=1:length(navSolution.RX_time)
             %kf_y(i) = new_data.pr_m(i); % i-Satellite
             %kf_y(i+sat_number) = rhoDot_pri(i)/Lambda_GPS_L1; % i-Satellite
             kf_yerr(chan,t)=c_pr_m(chan,t)-sat_prg_m(chan,t);%-0.000157*SPEED_OF_LIGHT_M_S;
-            kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1)-rhoDot_pri(chan,t);
+            kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+cdeltatDot_u)-rhoDot_pri(chan,t);
     end
     
     % DOUBLES DIFFERENCES
@@ -138,5 +164,5 @@ for t=1:length(navSolution.RX_time)
     % kf_x(6) =kf_x(6) /SPEED_OF_LIGHT_M_S;
     % kf_x(7) =kf_x(7) /SPEED_OF_LIGHT_M_S;
     corr_kf_state(7,t)=corr_kf_state(7,t)/SPEED_OF_LIGHT_M_S;
-    corr_kf_state(8,t)=1e-8/SPEED_OF_LIGHT_M_S;
+    corr_kf_state(8,t)=corr_kf_state(8,t)/SPEED_OF_LIGHT_M_S;% forced !!!!!
 end

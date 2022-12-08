@@ -24,25 +24,30 @@
 #include <vector>
 
 MmseResamplerConditioner::MmseResamplerConditioner(
-    const ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_stream, unsigned int out_stream) : role_(role), in_stream_(in_stream), out_stream_(out_stream)
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream)
+    : role_(role),
+      in_stream_(in_stream),
+      out_stream_(out_stream),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/signal_conditioner.dat");
     const double fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000.0);
     const double fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
+    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     sample_freq_in_ = configuration->property(role_ + ".sample_freq_in", 4000000.0);
     sample_freq_out_ = configuration->property(role_ + ".sample_freq_out", fs_in);
+
     if (std::fabs(fs_in - sample_freq_out_) > std::numeric_limits<double>::epsilon())
         {
             std::string aux_warn = "CONFIGURATION WARNING: Parameters GNSS-SDR.internal_fs_sps and " + role_ + ".sample_freq_out are not set to the same value!";
             LOG(WARNING) << aux_warn;
             std::cout << aux_warn << '\n';
         }
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
-    DLOG(INFO) << "dump_ is " << dump_;
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
 
     if (item_type_ == "gr_complex")
         {

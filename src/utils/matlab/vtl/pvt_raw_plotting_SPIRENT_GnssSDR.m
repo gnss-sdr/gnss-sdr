@@ -46,7 +46,7 @@ end
 
 if(advance_vtl_data_available)
     load('PVT_raw.mat','sat_posX_m','sat_posY_m','sat_posZ_m','sat_velX','sat_velY'...
-        ,'sat_velZ','sat_prg_m','clk_bias_s','sat_dopp_hz')
+        ,'sat_velZ','sat_prg_m','clk_bias_s','clk_drift','sat_dopp_hz')
 end
 
 if(load_vtl)
@@ -231,7 +231,6 @@ legend ('raw RTKlib','raw kf','kferr','Location','east')
 
 sgtitle('VTL UTM COORD CENTERED IN 1^{ST} POSITION') 
 %%
-close all
 % --- 'VTL errPV correction --------------------------------------
 
 VTL_errPV=figure('Name','VTL errPV correction');

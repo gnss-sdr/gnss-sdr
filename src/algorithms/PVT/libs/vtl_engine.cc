@@ -80,7 +80,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         kf_x(3) = new_data.kf_state[3];
         kf_x(4) = new_data.kf_state[4];
         kf_x(5) = new_data.kf_state[5];
-        kf_x(6) = new_data.rx_dts(0); 
+        kf_x(6) = new_data.kf_state[6];//new_data.rx_dts(0); 
         kf_x(7) = new_data.rx_dts(1);
             
         kf_P_x=new_data.kf_P;
@@ -175,7 +175,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_S = kf_H * kf_P_x* kf_H.t() + kf_R;                      // innovation covariance matrix (S)
     kf_K = (kf_P_x * kf_H.t()) * arma::inv(kf_S);               // Kalman gain  
     kf_xerr = kf_K * (kf_yerr);                                 // Error state estimation
-    //kf_x = kf_x + kf_xerr;                                      // updated state estimation (a priori + error)
+    kf_x = kf_x - kf_xerr;                                      // updated state estimation (a priori + error)
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
     new_data.kf_state=kf_x; //updated state estimation
     //new_data.kf_state.print("computed kf_state");

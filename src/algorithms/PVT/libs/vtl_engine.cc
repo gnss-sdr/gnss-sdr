@@ -58,7 +58,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     counter = counter+1; //uint64_t 
     cout << "counter" << counter<<endl;
     //new_data.kf_state.print("new_data kf initial");
-    if(counter<3000){ //
+    if(counter<100){ //
         // receiver solution from rtklib_solver
         kf_x(0) = new_data.rx_p(0);
         kf_x(1) = new_data.rx_p(1);
@@ -176,18 +176,18 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     new_data.kf_P=kf_P_x;
     new_data.kf_state=kf_x; //updated state estimation
     //new_data.kf_state.print("computed kf_state");
- 	fstream dump_vtl_file;
-	dump_vtl_file.open("dump_vtl_file.csv", ios::out|ios::app);
-    dump_vtl_file.precision(15);
-	if (!dump_vtl_file) {
-		cout << "File not created!";
-	}
-	else {
-        dump_vtl_file << "kf_xerr"<< ","<<kf_xerr(0)<< ","<<kf_xerr(1)<< ","<<kf_xerr(2)<< ","<<kf_xerr(3)<< ","<<kf_xerr(4)<< ","<<kf_xerr(5)<< ","<<kf_xerr(6)<< ","<<kf_xerr(7)<<endl;
-        dump_vtl_file << "kf_state"<< ","<<new_data.kf_state(0)<< ","<<new_data.kf_state(1)<< ","<<new_data.kf_state(2)<< ","<<new_data.kf_state(3)<< ","<<new_data.kf_state(4)<< ","<<new_data.kf_state(5)<< ","<<new_data.kf_state(6)<< ","<<new_data.kf_state(7)<<endl;
-		dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p[2]<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;    
-        dump_vtl_file.close(); 
-	}
+ 	// fstream dump_vtl_file;
+	// dump_vtl_file.open("dump_vtl_file.csv", ios::out|ios::app);
+    // dump_vtl_file.precision(15);
+	// if (!dump_vtl_file) {
+	// 	cout << "File not created!";
+	// }
+	// else {
+    //     dump_vtl_file << "kf_xerr"<< ","<<kf_xerr(0)<< ","<<kf_xerr(1)<< ","<<kf_xerr(2)<< ","<<kf_xerr(3)<< ","<<kf_xerr(4)<< ","<<kf_xerr(5)<< ","<<kf_xerr(6)<< ","<<kf_xerr(7)<<endl;
+    //     dump_vtl_file << "kf_state"<< ","<<new_data.kf_state(0)<< ","<<new_data.kf_state(1)<< ","<<new_data.kf_state(2)<< ","<<new_data.kf_state(3)<< ","<<new_data.kf_state(4)<< ","<<new_data.kf_state(5)<< ","<<new_data.kf_state(6)<< ","<<new_data.kf_state(7)<<endl;
+	// 	dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p[2]<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;    
+    //     dump_vtl_file.close(); 
+	// }
     //new_data.pr_res.print(" pr RESIDUALS");
     //!new_data.kf_state.print(" KF RTKlib STATE");
     // cout << " KF posteriori STATE diference %100" << (kf_x-new_data.kf_state)/new_data.kf_state*100;

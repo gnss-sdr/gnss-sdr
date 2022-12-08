@@ -35,21 +35,17 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
 
     // ################## Kalman filter initialization ######################################
     // covariances (static)
-    kf_P_x  = arma::eye(8, 8)*100.0; //TODO: use a real value.
+    kf_P_x  = arma::eye(8, 8); //TODO: use a real value.
     kf_x    = arma::zeros(8, 1);
     kf_R    = arma::zeros(2*new_data.sat_number, 2*new_data.sat_number);
     double kf_dt=0.1;
-    kf_Q = arma::zeros(8, 8);
+    kf_Q = arma::eye(8, 8);
 
-    kf_F = arma::zeros(8, 8);
-    kf_F(0, 0) = 1.0; kf_F(0, 3) = kf_dt;
-    kf_F(1, 1) = 1.0; kf_F(1, 4) = kf_dt;
-    kf_F(2, 2) = 1.0; kf_F(2, 5) = kf_dt;
-    kf_F(3, 3) = 1.0; 
-    kf_F(4, 4) = 1.0; 
-    kf_F(5, 5) = 1.0;
-    kf_F(6, 6) = 1.0; kf_F(6, 7) = kf_dt;
-    kf_F(7, 7) = 1.0;
+    kf_F = arma::eye(8, 8);
+    kf_F(0, 3) = kf_dt;
+    kf_F(1, 4) = kf_dt;
+    kf_F(2, 5) = kf_dt;
+    kf_F(6, 7) = kf_dt;
 
     kf_H = arma::zeros(2*new_data.sat_number,8);
     kf_y = arma::zeros(2*new_data.sat_number, 1);
@@ -71,7 +67,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         kf_x(4) = new_data.rx_v(1);
         kf_x(5) = new_data.rx_v(2);
         kf_x(6) = new_data.rx_dts(0); 
-        kf_x(7) = new_data.rx_dts(1);
+        kf_x(7) = 1e-8;
+
     } else {
         // receiver solution from previous KF step
         kf_x(0) = new_data.kf_state[0];
@@ -81,16 +78,15 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         kf_x(4) = new_data.kf_state[4];
         kf_x(5) = new_data.kf_state[5];
         kf_x(6) = new_data.kf_state[6];//new_data.rx_dts(0); 
-        kf_x(7) = new_data.rx_dts(1);
-            
+        kf_x(7) = 1e-8;    
         kf_P_x=new_data.kf_P;
     }
     // State error Covariance Matrix Q (PVT)
-    for (int32_t i = 0; i < 8; i++) 
-    {
-        // It is diagonal 8x8 matrix 
-        kf_Q(i, i) = 1.0;//new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
-    }
+    // for (int32_t i = 0; i < 8; i++) 
+    // {
+    //     // It is diagonal 8x8 matrix 
+    //     kf_Q(i, i) = 1.0;//new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
+    // }
     // Measurement error Covariance Matrix R assembling
     for (int32_t i = 0; i < new_data.sat_number; i++) 
     {
@@ -112,8 +108,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     xDot_u=kf_x(3);
     yDot_u=kf_x(4);
     zDot_u=kf_x(5);
-    cdeltat_u=kf_x(6)*SPEED_OF_LIGHT_M_S;
-    cdeltatDot_u=kf_x(7)*SPEED_OF_LIGHT_M_S;
+    cdeltat_u=new_data.rx_dts(0)*SPEED_OF_LIGHT_M_S;
+    cdeltatDot_u=1e-8*SPEED_OF_LIGHT_M_S;
 
     d = arma::zeros(new_data.sat_number, 1);
     rho_pri = arma::zeros(new_data.sat_number, 1);
@@ -139,7 +135,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         new_data.sat_LOS(i,1)=a_y(i);
         new_data.sat_LOS(i,2)=a_z(i);
         //compute pseudorange rate estimation
-        rhoDot_pri(i)=(new_data.sat_v(i, 0)-xDot_u)*a_x(i)+(new_data.sat_v(i, 1)-yDot_u)*a_y(i)+(new_data.sat_v(i, 2)-zDot_u)*a_z(i)+cdeltatDot_u;
+        rhoDot_pri(i)=(new_data.sat_v(i, 0)-xDot_u)*a_x(i)+(new_data.sat_v(i, 1)-yDot_u)*a_y(i)+(new_data.sat_v(i, 2)-zDot_u)*a_z(i);
     }
 
     kf_H = arma::zeros(2*new_data.sat_number,8);
@@ -155,8 +151,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
    {
         //kf_y(i) = new_data.pr_m(i); // i-Satellite 
         //kf_y(i+new_data.sat_number) = rhoDot_pri(i)/Lambda_GPS_L1; // i-Satellite
-        kf_yerr(i)=new_data.pr_m(i)-rho_pri(i);//-0.000157*SPEED_OF_LIGHT_M_S;
-        kf_yerr(i+new_data.sat_number)=(new_data.doppler_hz(i)*Lambda_GPS_L1+cdeltatDot_u)-rhoDot_pri(i);
+        kf_yerr(i)=rho_pri(i)-new_data.pr_m(i);//-0.000157*SPEED_OF_LIGHT_M_S;
+        kf_yerr(i+new_data.sat_number)=(new_data.doppler_hz(i)*Lambda_GPS_L1)-rhoDot_pri(i);
 
    }
 
@@ -177,8 +173,16 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_xerr = kf_K * (kf_yerr);                                 // Error state estimation
     kf_x = kf_x - kf_xerr;                                      // updated state estimation (a priori + error)
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
+    new_data.kf_P=kf_P_x;
     new_data.kf_state=kf_x; //updated state estimation
     //new_data.kf_state.print("computed kf_state");
+
+    // States related tu USER clock adjust from m/s to s (by /SPEED_OF_LIGHT_M_S)
+    // kf_x(6) =kf_x(6) /SPEED_OF_LIGHT_M_S;
+    // kf_x(7) =kf_x(7) /SPEED_OF_LIGHT_M_S;
+
+    new_data.kf_state(6)=new_data.kf_state(6)/SPEED_OF_LIGHT_M_S;
+    new_data.kf_state(7)=1e-8/SPEED_OF_LIGHT_M_S; 
     // TODO: compare how KF state diverges from RTKLIB solution!
 
 	fstream dump_vtl_file;
@@ -190,20 +194,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
 	else {
         dump_vtl_file << "kf_xerr"<< ","<<kf_xerr(0)<< ","<<kf_xerr(1)<< ","<<kf_xerr(2)<< ","<<kf_xerr(3)<< ","<<kf_xerr(4)<< ","<<kf_xerr(5)<< ","<<kf_xerr(6)<< ","<<kf_xerr(7)<<endl;
         dump_vtl_file << "kf_state"<< ","<<new_data.kf_state(0)<< ","<<new_data.kf_state(1)<< ","<<new_data.kf_state(2)<< ","<<new_data.kf_state(3)<< ","<<new_data.kf_state(4)<< ","<<new_data.kf_state(5)<< ","<<new_data.kf_state(6)<< ","<<new_data.kf_state(7)<<endl;
-		dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p[2]<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;
-        dump_vtl_file << "sat_first_LOS"<< ","<<new_data.sat_LOS(1,0)<< ","<< new_data.sat_LOS(1,1)<<","<< new_data.sat_LOS(1,2)<<endl;       
+		dump_vtl_file << "rtklib_state"<< ","<<new_data.rx_p(0)<< ","<< new_data.rx_p(1)<<","<< new_data.rx_p[2]<<","<< new_data.rx_v(0)<<","<< new_data.rx_v(1)<<","<< new_data.rx_v(2)<<","<< new_data.rx_dts(0)<<","<< new_data.rx_dts(1)<<endl;    
         dump_vtl_file.close(); 
 	}
-
-    
-
-    // States related tu USER clock adjust from m/s to s (by /SPEED_OF_LIGHT_M_S)
-    // kf_x(6) =kf_x(6) /SPEED_OF_LIGHT_M_S;
-    // kf_x(7) =kf_x(7) /SPEED_OF_LIGHT_M_S;
-
-    kf_x(6)=cdeltat_u/SPEED_OF_LIGHT_M_S;
-    kf_x(7)=cdeltatDot_u/SPEED_OF_LIGHT_M_S; 
-
     //new_data.pr_res.print(" pr RESIDUALS");
     //!new_data.kf_state.print(" KF RTKlib STATE");
     // cout << " KF posteriori STATE diference %100" << (kf_x-new_data.kf_state)/new_data.kf_state*100;

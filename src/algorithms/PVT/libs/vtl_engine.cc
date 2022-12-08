@@ -51,8 +51,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_F(6, 6) = 1.0; kf_F(6, 7) = kf_dt;
     kf_F(7, 7) = 1.0;
 
-    kf_H = arma::zeros(8, 2*new_data.sat_number);
-    kf_x = arma::zeros(8, 1);
+    kf_H = arma::zeros(2*new_data.sat_number,8);
     kf_y = arma::zeros(2*new_data.sat_number, 1);
     kf_yerr = arma::zeros(2*new_data.sat_number, 1);
     kf_xerr = arma::zeros(8, 1);

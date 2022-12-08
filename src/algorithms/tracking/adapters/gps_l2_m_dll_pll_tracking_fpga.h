@@ -93,17 +93,16 @@ public:
 
 private:
     const std::string default_device_name_GPS_L2 = "multicorrelator_resampler_S00_AXI";  // UIO device name
-
-    std::string device_name;
-    uint32_t num_prev_assigned_ch;
-
     static const uint32_t NUM_PRNs = 32;
-    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    unsigned int channel_;
+
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc_sptr_;
     std::string role_;
+    std::string device_name_;
+    int* prn_codes_ptr_;
+    uint32_t num_prev_assigned_ch_;
+    unsigned int channel_;
     unsigned int in_streams_;
     unsigned int out_streams_;
-    int* d_ca_codes;
 };
 
 

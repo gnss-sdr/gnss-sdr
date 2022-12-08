@@ -31,12 +31,18 @@
 #include <array>
 
 GpsL5DllPllTracking::GpsL5DllPllTracking(
-    const ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams)
+    : role_(role),
+      item_size_(sizeof(gr_complex)),
+      channel_(0),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
     Dll_Pll_Conf trk_params = Dll_Pll_Conf();
-    DLOG(INFO) << "role " << role;
-    trk_params.SetFromConfiguration(configuration, role);
+    trk_params.SetFromConfiguration(configuration, role_);
 
     const auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params.fs_in) / (static_cast<double>(GPS_L5I_CODE_RATE_CPS) / static_cast<double>(GPS_L5I_CODE_LENGTH_CHIPS))));
     trk_params.vector_length = vector_length;
@@ -55,22 +61,23 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
             std::cout << TEXT_RED << "WARNING: GPS L5. PLL or DLL narrow tracking bandwidth is higher than wide tracking one" << TEXT_RESET << '\n';
         }
     trk_params.system = 'G';
-    const std::array<char, 3> sig_{'L', '5', '\0'};
-    std::copy_n(sig_.data(), 3, trk_params.signal);
+    const std::array<char, 3> sig{'L', '5', '\0'};
+    std::copy_n(sig.data(), 3, trk_params.signal);
 
     // ################# Make a GNU Radio Tracking block object ################
+    DLOG(INFO) << "role " << role_;
     if (trk_params.item_type == "gr_complex")
         {
-            item_size_ = sizeof(gr_complex);
-            tracking_ = dll_pll_veml_make_tracking(trk_params);
+            tracking_sptr_ = dll_pll_veml_make_tracking(trk_params);
+            DLOG(INFO) << "tracking(" << tracking_sptr_->unique_id() << ")";
         }
     else
         {
             item_size_ = 0;
+            tracking_sptr_ = nullptr;
             LOG(WARNING) << trk_params.item_type << " unknown tracking item type.";
         }
-    channel_ = 0;
-    DLOG(INFO) << "tracking(" << tracking_->unique_id() << ")";
+
     if (in_streams_ > 1)
         {
             LOG(ERROR) << "This implementation only supports one input stream";
@@ -84,13 +91,13 @@ GpsL5DllPllTracking::GpsL5DllPllTracking(
 
 void GpsL5DllPllTracking::stop_tracking()
 {
-    tracking_->stop_tracking();
+    tracking_sptr_->stop_tracking();
 }
 
 
 void GpsL5DllPllTracking::start_tracking()
 {
-    tracking_->start_tracking();
+    tracking_sptr_->start_tracking();
 }
 
 
@@ -100,13 +107,13 @@ void GpsL5DllPllTracking::start_tracking()
 void GpsL5DllPllTracking::set_channel(unsigned int channel)
 {
     channel_ = channel;
-    tracking_->set_channel(channel);
+    tracking_sptr_->set_channel(channel);
 }
 
 
 void GpsL5DllPllTracking::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    tracking_->set_gnss_synchro(p_gnss_synchro);
+    tracking_sptr_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
@@ -130,11 +137,11 @@ void GpsL5DllPllTracking::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL5DllPllTracking::get_left_block()
 {
-    return tracking_;
+    return tracking_sptr_;
 }
 
 
 gr::basic_block_sptr GpsL5DllPllTracking::get_right_block()
 {
-    return tracking_;
+    return tracking_sptr_;
 }

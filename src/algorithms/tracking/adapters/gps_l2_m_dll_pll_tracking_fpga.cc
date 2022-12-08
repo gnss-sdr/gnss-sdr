@@ -38,60 +38,64 @@
 #include <iostream>
 
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
-    const ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+    const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams)
+    : role_(role),
+      channel_(0),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
     Dll_Pll_Conf_Fpga trk_params_fpga = Dll_Pll_Conf_Fpga();
-    DLOG(INFO) << "role " << role;
-    trk_params_fpga.SetFromConfiguration(configuration, role);
+    trk_params_fpga.SetFromConfiguration(configuration, role_);
 
     const auto vector_length = static_cast<int>(std::round(static_cast<double>(trk_params_fpga.fs_in) / (static_cast<double>(GPS_L2_M_CODE_RATE_CPS) / static_cast<double>(GPS_L2_M_CODE_LENGTH_CHIPS))));
     trk_params_fpga.vector_length = vector_length;
-    trk_params_fpga.extend_correlation_symbols = configuration->property(role + ".extend_correlation_symbols", 1);
+    trk_params_fpga.extend_correlation_symbols = configuration->property(role_ + ".extend_correlation_symbols", 1);
     if (trk_params_fpga.extend_correlation_symbols != 1)
         {
             trk_params_fpga.extend_correlation_symbols = 1;
             std::cout << TEXT_RED << "WARNING: Extended coherent integration is not allowed in GPS L2. Coherent integration has been set to 20 ms (1 symbol)" << TEXT_RESET << '\n';
         }
 
-    trk_params_fpga.track_pilot = configuration->property(role + ".track_pilot", false);
+    trk_params_fpga.track_pilot = configuration->property(role_ + ".track_pilot", false);
     if (trk_params_fpga.track_pilot)
         {
             trk_params_fpga.track_pilot = false;
             std::cout << TEXT_RED << "WARNING: GPS L2 does not have pilot signal. Data tracking has been enabled" << TEXT_RESET << '\n';
         }
     trk_params_fpga.system = 'G';
-    const std::array<char, 3> sig_{'2', 'S', '\0'};
-    std::copy_n(sig_.data(), 3, trk_params_fpga.signal);
+    const std::array<char, 3> sig{'2', 'S', '\0'};
+    std::copy_n(sig.data(), 3, trk_params_fpga.signal);
 
     // UIO device file
-    device_name = configuration->property(role + ".devicename", default_device_name_GPS_L2);
+    device_name_ = configuration->property(role_ + ".devicename", default_device_name_GPS_L2);
 
     // compute the number of tracking channels that have already been instantiated. The order in which
     // GNSS-SDR instantiates the tracking channels i L1, L2, L5, E1, E5a
-    num_prev_assigned_ch = configuration->property("Channels_1C.count", 0);
+    num_prev_assigned_ch_ = configuration->property("Channels_1C.count", 0);
 
-    volk_gnsssdr::vector<float> ca_codes_f(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS), 0.0);
     // ################# PRE-COMPUTE ALL THE CODES #################
-    d_ca_codes = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
+    volk_gnsssdr::vector<float> ca_codes_f(static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS), 0.0);
+    prn_codes_ptr_ = static_cast<int*>(volk_gnsssdr_malloc(static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS * NUM_PRNs) * sizeof(int), volk_gnsssdr_get_alignment()));
     for (uint32_t PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l2c_m_code_gen_float(ca_codes_f, PRN);
             for (unsigned int s = 0; s < 2 * static_cast<unsigned int>(GPS_L2_M_CODE_LENGTH_CHIPS); s++)
                 {
-                    d_ca_codes[static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS) * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
+                    prn_codes_ptr_[static_cast<int>(GPS_L2_M_CODE_LENGTH_CHIPS) * (PRN - 1) + s] = static_cast<int>(ca_codes_f[s]);
                 }
         }
 
-    trk_params_fpga.ca_codes = d_ca_codes;
+    trk_params_fpga.ca_codes = prn_codes_ptr_;
     trk_params_fpga.code_length_chips = GPS_L2_M_CODE_LENGTH_CHIPS;
     trk_params_fpga.code_samples_per_chip = 1;  // 1 sample per chip
 
     // ################# MAKE TRACKING GNU Radio object ###################
-    tracking_fpga_sc = dll_pll_veml_make_tracking_fpga(trk_params_fpga);
-
-    channel_ = 0;
-    DLOG(INFO) << "tracking(" << tracking_fpga_sc->unique_id() << ")";
+    DLOG(INFO) << "role " << role_;
+    tracking_fpga_sc_sptr_ = dll_pll_veml_make_tracking_fpga(trk_params_fpga);
+    DLOG(INFO) << "tracking(" << tracking_fpga_sc_sptr_->unique_id() << ")";
 
     if (in_streams_ > 1)
         {
@@ -106,19 +110,19 @@ GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
 
 GpsL2MDllPllTrackingFpga::~GpsL2MDllPllTrackingFpga()
 {
-    volk_gnsssdr_free(d_ca_codes);
+    volk_gnsssdr_free(prn_codes_ptr_);
 }
 
 
 void GpsL2MDllPllTrackingFpga::start_tracking()
 {
-    tracking_fpga_sc->start_tracking();
+    tracking_fpga_sc_sptr_->start_tracking();
 }
 
 
 void GpsL2MDllPllTrackingFpga::stop_tracking()
 {
-    tracking_fpga_sc->stop_tracking();
+    tracking_fpga_sc_sptr_->stop_tracking();
 }
 
 
@@ -132,19 +136,19 @@ void GpsL2MDllPllTrackingFpga::set_channel(unsigned int channel)
     // UIO device file
     std::string device_io_name;
     // find the uio device file corresponding to the tracking multicorrelator
-    if (find_uio_dev_file_name(device_io_name, device_name, channel - num_prev_assigned_ch) < 0)
+    if (find_uio_dev_file_name(device_io_name, device_name_, channel_ - num_prev_assigned_ch_) < 0)
         {
-            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name << std::endl;
+            std::cout << "Cannot find the FPGA uio device file corresponding to device name " << device_name_ << std::endl;
             throw std::exception();
         }
 
-    tracking_fpga_sc->set_channel(channel, device_io_name);
+    tracking_fpga_sc_sptr_->set_channel(channel_, device_io_name);
 }
 
 
 void GpsL2MDllPllTrackingFpga::set_gnss_synchro(Gnss_Synchro* p_gnss_synchro)
 {
-    tracking_fpga_sc->set_gnss_synchro(p_gnss_synchro);
+    tracking_fpga_sc_sptr_->set_gnss_synchro(p_gnss_synchro);
 }
 
 
@@ -168,11 +172,11 @@ void GpsL2MDllPllTrackingFpga::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr GpsL2MDllPllTrackingFpga::get_left_block()
 {
-    return tracking_fpga_sc;
+    return tracking_fpga_sc_sptr_;
 }
 
 
 gr::basic_block_sptr GpsL2MDllPllTrackingFpga::get_right_block()
 {
-    return tracking_fpga_sc;
+    return tracking_fpga_sc_sptr_;
 }

@@ -66,8 +66,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         kf_x(3) = new_data.rx_v(0);
         kf_x(4) = new_data.rx_v(1);
         kf_x(5) = new_data.rx_v(2);
-        kf_x(6) = new_data.rx_dts(0); 
-        kf_x(7) = 1e-8;
+        kf_x(6) = new_data.rx_dts(0)*SPEED_OF_LIGHT_M_S; 
+        kf_x(7) = new_data.rx_dts(1)*SPEED_OF_LIGHT_M_S;
 
     } else {
         // receiver solution from previous KF step
@@ -77,8 +77,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         kf_x(3) = new_data.kf_state[3];
         kf_x(4) = new_data.kf_state[4];
         kf_x(5) = new_data.kf_state[5];
-        kf_x(6) = new_data.kf_state[6];//new_data.rx_dts(0); 
-        kf_x(7) = 1e-8;    
+        kf_x(6) = new_data.kf_state[6]; 
+        kf_x(7) = new_data.kf_state[7];   
         kf_P_x=new_data.kf_P;
     }
     // State error Covariance Matrix Q (PVT)
@@ -108,8 +108,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     xDot_u=kf_x(3);
     yDot_u=kf_x(4);
     zDot_u=kf_x(5);
-    cdeltat_u=new_data.rx_dts(0)*SPEED_OF_LIGHT_M_S;
-    cdeltatDot_u=1e-8*SPEED_OF_LIGHT_M_S;
+    cdeltat_u=kf_x(6);
+    cdeltatDot_u=kf_x(7);
 
     d = arma::zeros(new_data.sat_number, 1);
     rho_pri = arma::zeros(new_data.sat_number, 1);

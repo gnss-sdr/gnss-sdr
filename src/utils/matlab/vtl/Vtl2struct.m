@@ -48,17 +48,14 @@ vtlSolution.rtklibpvt=[];
 [indKF,~]= find(strcmp(dumpvtlfile, 'kf_state'));
 [indRTKlib,~]= find(strcmp(dumpvtlfile, 'rtklib_state'));
 [indkf_err,~]= find(strcmp(dumpvtlfile, 'kf_xerr'));
-[ind_LOS,~]= find(strcmp(dumpvtlfile, 'sat_first_LOS'));
 
 kfpvt=dumpvtlfile(indKF,:);kfpvt(:,1)=[];
 rtklibpvt=dumpvtlfile(indRTKlib,:); rtklibpvt(:,1)=[];
 kferr=dumpvtlfile(indkf_err,:); kferr(:,1)=[];
-LOS=dumpvtlfile(ind_LOS,:); LOS(:,1)=[];
 
 kfpvt=cell2mat(kfpvt);
 rtklibpvt=cell2mat(rtklibpvt);
 kferr=cell2mat(kferr);
-LOS=cell2mat(LOS);
 
 vtlSolution.kfpvt.X=kfpvt(:,1);
 vtlSolution.kfpvt.Y=kfpvt(:,2);
@@ -87,7 +84,4 @@ vtlSolution.kferr.vZ=kferr(:,6);
 vtlSolution.kferr.biasclock=kferr(:,7);
 vtlSolution.kferr.rateblock=kferr(:,8);
 
-vtlSolution.LOSx=LOS(:,1);
-vtlSolution.LOSy=LOS(:,2);
-vtlSolution.LOSz=LOS(:,3);
 end

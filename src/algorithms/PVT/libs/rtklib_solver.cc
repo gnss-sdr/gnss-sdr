@@ -204,7 +204,7 @@ bool Rtklib_Solver::save_matfile() const
 {
     // READ DUMP FILE
     const std::string dump_filename = d_dump_filename;
-    const int32_t number_of_double_vars = 22; //+1 MAGL
+    const int32_t number_of_double_vars = 23; //+2 MAGL
     const int32_t number_of_double_vars_sat = 8; //+ pos/vel/psrange/doppler for sat
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 3;
@@ -256,7 +256,8 @@ bool Rtklib_Solver::save_matfile() const
     auto cov_yz = std::vector<double>(num_epoch);
     auto cov_zx = std::vector<double>(num_epoch);
     
-    auto vel_z2 = std::vector<double>(num_epoch);
+    auto clk_bias = std::vector<double>(num_epoch);
+    auto clk_rate = std::vector<double>(num_epoch);
     auto sat_posX_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
     auto sat_posY_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
     auto sat_posZ_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
@@ -302,7 +303,8 @@ bool Rtklib_Solver::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&cov_yz[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&cov_zx[i]), sizeof(double));
 
-                            dump_file.read(reinterpret_cast<char *>(&vel_z2[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&clk_bias[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&clk_rate[i]), sizeof(double));
                             for (uint32_t chan = 0; chan < 5; chan++)
                                 {
                                 dump_file.read(reinterpret_cast<char *>(&sat_posX_m[chan][i]), sizeof(double));
@@ -436,7 +438,11 @@ bool Rtklib_Solver::save_matfile() const
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            matvar = Mat_VarCreate("clk_bias_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_z2.data(), 0);
+            matvar = Mat_VarCreate("clk_bias_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), clk_bias.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("clk_rate_s", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), clk_rate.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -1402,6 +1408,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     tmp_double = vtl_data.rx_dts(0);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = vtl_data.rx_dts(1);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     for (int n = 0; n<5; n++)
                                     {

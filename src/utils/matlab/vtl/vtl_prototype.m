@@ -23,7 +23,7 @@ clearvars
 % end
 SPEED_OF_LIGHT_M_S=299792458.0;
 Lambda_GPS_L1=0.1902937;
-point_of_closure=5;
+point_of_closure=6000;
 %%
 samplingFreq=5000000;
 channels=6;
@@ -103,13 +103,13 @@ legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
 %general_raw_plot
 vtl_general_plot
 %%
-close all
-figure;plot(kf_xerr(7,:),'.');title('clk bias err')
-figure;plot(kf_xerr(8,:),'.');title('clk drift err')
-figure;plot(kf_x(7,:),'.');title('clk bias state')
-figure;plot(kf_x(8,:),'.');title('clk drift state')
-figure;plot(corr_kf_state(7,:),'.');title('clk bias corrected state')
-figure;plot(corr_kf_state(8,:),'.');title('clk drift corrected state')
+% close all
+% figure;plot(kf_xerr(7,:),'.');title('clk bias err')
+% figure;plot(kf_xerr(8,:),'.');title('clk drift err')
+% figure;plot(kf_x(7,:),'.');title('clk bias state')
+% figure;plot(kf_x(8,:),'.');title('clk drift state')
+% figure;plot(corr_kf_state(7,:),'.');title('clk bias corrected state')
+% figure;plot(corr_kf_state(8,:),'.');title('clk drift corrected state')
 %%
 % close all
 % kferr_pos_all=[vtlSolution.kferr.X vtlSolution.kferr.Y vtlSolution.kferr.Z];

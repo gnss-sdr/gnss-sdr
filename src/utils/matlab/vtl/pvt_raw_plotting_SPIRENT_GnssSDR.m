@@ -130,7 +130,19 @@ utmstruct.geoid = wgs84Ellipsoid;
 %         navSolution.N(k), ...
 %         navSolution.U(k)]=cart2utm(navSolution.X(k), navSolution.Y(k), navSolution.Z(k), utmZone);
 % end
+%% ====== FILTERING =======================================================
+moving_avg_factor= 500;
+LAT_FILT = movmean(navSolution.latitude,moving_avg_factor);
+LON_FILT = movmean(navSolution.longitude,moving_avg_factor);
+HEIGH_FILT = movmean(navSolution.height,moving_avg_factor);
 
+X_FILT = movmean(navSolution.X,moving_avg_factor);
+Y_FILT = movmean(navSolution.Y,moving_avg_factor);
+Z_FILT = movmean(navSolution.Z,moving_avg_factor);
+
+vX_FILT = movmean(navSolution.vX,moving_avg_factor);
+vY_FILT = movmean(navSolution.vY,moving_avg_factor);
+vZ_FILT = movmean(navSolution.vZ,moving_avg_factor);
 %%
 general_raw_plot
 %%

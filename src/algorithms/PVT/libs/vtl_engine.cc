@@ -176,16 +176,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     new_data.kf_P=kf_P_x;
     new_data.kf_state=kf_x; //updated state estimation
     //new_data.kf_state.print("computed kf_state");
-
-    // States related tu USER clock adjust from m/s to s (by /SPEED_OF_LIGHT_M_S)
-    // kf_x(6) =kf_x(6) /SPEED_OF_LIGHT_M_S;
-    // kf_x(7) =kf_x(7) /SPEED_OF_LIGHT_M_S;
-
-    new_data.kf_state(6)=new_data.kf_state(6)/SPEED_OF_LIGHT_M_S;
-    new_data.kf_state(7)=1e-8/SPEED_OF_LIGHT_M_S; 
-    // TODO: compare how KF state diverges from RTKLIB solution!
-
-	fstream dump_vtl_file;
+ 	fstream dump_vtl_file;
 	dump_vtl_file.open("dump_vtl_file.csv", ios::out|ios::app);
     dump_vtl_file.precision(15);
 	if (!dump_vtl_file) {

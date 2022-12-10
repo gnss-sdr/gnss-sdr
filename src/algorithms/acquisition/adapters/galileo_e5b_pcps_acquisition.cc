@@ -43,7 +43,6 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
       threshold_(0.0),
       doppler_center_(0),
       channel_(0),
-      doppler_step_(0),
       in_streams_(in_streams),
       out_streams_(out_streams),
       acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
@@ -52,20 +51,15 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
     acq_parameters_.ms_per_code = 1;
     acq_parameters_.SetFromConfiguration(configuration, role_, GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_OPT_ACQ_FS_SPS);
 
-    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-    item_type_ = acq_parameters_.item_type;
-    item_size_ = acq_parameters_.it_size;
-    fs_in_ = acq_parameters_.fs_in;
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-
-    if (acq_iq_)
-        {
-            acq_pilot_ = false;
-        }
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
+    item_type_ = acq_parameters_.item_type;
+    item_size_ = acq_parameters_.it_size;
+    fs_in_ = acq_parameters_.fs_in;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E5B_CODE_CHIP_RATE_CPS / GALILEO_E5B_CODE_LENGTH_CHIPS)));
     vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0F : 1.0F));
@@ -76,6 +70,11 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
     DLOG(INFO) << "role " << role_;
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
+
+    if (acq_iq_)
+        {
+            acq_pilot_ = false;
+        }
 
     if (in_streams_ > 1)
         {

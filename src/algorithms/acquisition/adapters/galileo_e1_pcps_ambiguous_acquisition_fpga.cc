@@ -46,13 +46,13 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 {
     acq_parameters_.SetFromConfiguration(configuration, role_, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS);
 
-    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-    fs_in_ = acq_parameters_.fs_in;
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
+    fs_in_ = acq_parameters_.fs_in;
 
     uint32_t code_length = acq_parameters_.code_length;
     uint32_t nsamples_total = acq_parameters_.samples_per_code;

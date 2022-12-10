@@ -44,19 +44,13 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
       acq_iq_(configuration->property(role + ".acquire_iq", false))
 {
     acq_parameters_.SetFromConfiguration(configuration, role_, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_CODE_LENGTH_CHIPS);
-
-    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-    fs_in_ = acq_parameters_.fs_in;
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
-
-    if (acq_iq_)
-        {
-            acq_pilot_ = false;
-        }
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
+    fs_in_ = acq_parameters_.fs_in;
 
     uint32_t code_length = acq_parameters_.code_length;
     uint32_t nsamples_total = acq_parameters_.samples_per_code;
@@ -67,6 +61,11 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);  // Buffer for local code
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
     d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * GALILEO_E5B_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
+
+    if (acq_iq_)
+        {
+            acq_pilot_ = false;
+        }
 
     float max;  // temporary maxima search
     int32_t tmp;

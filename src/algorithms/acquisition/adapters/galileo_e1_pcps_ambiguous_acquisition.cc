@@ -44,7 +44,6 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
       threshold_(0.0),
       doppler_center_(0),
       channel_(0),
-      doppler_step_(0),
       in_streams_(in_streams),
       out_streams_(out_streams),
       acquire_pilot_(configuration->property(role + ".acquire_pilot", false))
@@ -52,16 +51,15 @@ GalileoE1PcpsAmbiguousAcquisition::GalileoE1PcpsAmbiguousAcquisition(
     acq_parameters_.ms_per_code = 4;
     acq_parameters_.SetFromConfiguration(configuration_, role_, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_OPT_ACQ_FS_SPS);
 
-    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
-    item_type_ = acq_parameters_.item_type;
-    item_size_ = acq_parameters_.it_size;
-    fs_in_ = acq_parameters_.fs_in;
-
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
     doppler_max_ = acq_parameters_.doppler_max;
+    doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
+    item_type_ = acq_parameters_.item_type;
+    item_size_ = acq_parameters_.it_size;
+    fs_in_ = acq_parameters_.fs_in;
 
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E1_CODE_CHIP_RATE_CPS / GALILEO_E1_B_CODE_LENGTH_CHIPS)));
     vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0 : 1.0));

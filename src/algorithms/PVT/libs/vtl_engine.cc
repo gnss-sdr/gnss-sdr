@@ -58,7 +58,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     counter = counter+1; //uint64_t 
     cout << "counter" << counter<<endl;
     //new_data.kf_state.print("new_data kf initial");
-    if(counter<3000){ //
+    if(counter<1000){ //
         // receiver solution from rtklib_solver
         kf_x(0) = new_data.rx_p(0);
         kf_x(1) = new_data.rx_p(1);
@@ -84,11 +84,16 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         kf_P_x=new_data.kf_P;
     }
     // State error Covariance Matrix Q (PVT)
-    // for (int32_t i = 0; i < 8; i++) 
-    // {
-    //     // It is diagonal 8x8 matrix 
-    //     kf_Q(i, i) = 1.0;//new_data.rx_pvt_var(i); //careful, values for V and T could not be adecuate.
-    // }
+    //careful, values for V and T could not be adecuate.
+    kf_Q(0,0) = 100.0;
+    kf_Q(1,1) = 100.0;
+    kf_Q(2,2) = 100.0;
+    kf_Q(3,3) = 10.0;
+    kf_Q(4,4) = 10.0;
+    kf_Q(5,5) = 10.0;
+    kf_Q(6,6) = 40.0;
+    kf_Q(7,7) = 1500.0;
+  
     // Measurement error Covariance Matrix R assembling
     for (int32_t i = 0; i < new_data.sat_number; i++) 
     {

@@ -16,7 +16,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install dependencies
-        run: sudo apt-get update && sudo apt-get install -y ninja-build cmake libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev python3-mako liborc-0.4-dev
+        run: |
+          sudo apt-get update -y
+          sudo apt install -y libunwind-dev
+          sudo apt-get install -y --no-install-recommends ninja-build cmake \
+          libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
+          libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
+          liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
+          liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
+          libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
+          python3-mako liborc-0.4-dev
       - name: configure
         run: cd build && cmake -GNinja ..
       - name: build

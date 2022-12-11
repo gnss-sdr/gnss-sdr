@@ -66,6 +66,9 @@ private:
     arma::colvec d;
     arma::colvec rho_pri;
     arma::colvec rhoDot_pri;
+    arma::colvec rho_pri_filt;
+    arma::colvec rhoDot_pri_filt;
+    arma::colvec doppler_hz_filt;
     arma::colvec a_x;
     arma::colvec a_y;
     arma::colvec a_z;

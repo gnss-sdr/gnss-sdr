@@ -48,14 +48,18 @@ vtlSolution.rtklibpvt=[];
 [indKF,~]= find(strcmp(dumpvtlfile, 'kf_state'));
 [indRTKlib,~]= find(strcmp(dumpvtlfile, 'rtklib_state'));
 [indkf_err,~]= find(strcmp(dumpvtlfile, 'kf_xerr'));
+[ind_filt_dop_sat,~]= find(strcmp(dumpvtlfile, 'filt_dopp_sat'));
+
 
 kfpvt=dumpvtlfile(indKF,:);kfpvt(:,1)=[];
 rtklibpvt=dumpvtlfile(indRTKlib,:); rtklibpvt(:,1)=[];
 kferr=dumpvtlfile(indkf_err,:); kferr(:,1)=[];
+filt_dop_sat=dumpvtlfile(ind_filt_dop_sat,:); filt_dop_sat(:,1)=[];
 
 kfpvt=cell2mat(kfpvt);
 rtklibpvt=cell2mat(rtklibpvt);
 kferr=cell2mat(kferr);
+filt_dop_sat=cell2mat(filt_dop_sat);
 
 vtlSolution.kfpvt.X=kfpvt(:,1);
 vtlSolution.kfpvt.Y=kfpvt(:,2);
@@ -83,5 +87,11 @@ vtlSolution.kferr.vY=kferr(:,5);
 vtlSolution.kferr.vZ=kferr(:,6);
 vtlSolution.kferr.biasclock=kferr(:,7);
 vtlSolution.kferr.rateblock=kferr(:,8);
+
+vtlSolution.filt_dop_sat(1,:)=filt_dop_sat(:,1);
+vtlSolution.filt_dop_sat(2,:)=filt_dop_sat(:,2);
+vtlSolution.filt_dop_sat(3,:)=filt_dop_sat(:,3);
+vtlSolution.filt_dop_sat(4,:)=filt_dop_sat(:,4);
+vtlSolution.filt_dop_sat(5,:)=filt_dop_sat(:,5);
 
 end

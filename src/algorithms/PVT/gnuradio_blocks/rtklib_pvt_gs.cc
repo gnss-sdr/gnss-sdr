@@ -2153,7 +2153,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     trk_cmd_test->channel_id = gnss_observables_iter->second.Channel_ID;
                                                     this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
                                                     d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID] = gnss_observables_iter->second.Tracking_sample_counter;
-                                                    //std::cout << "msg pvt_to_trk sent.\n";
+                                                    std::cout << "msg pvt_to_trk sent.\n";
                                                 }
                                             else
                                                 {
@@ -2177,7 +2177,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                             trk_cmd_test->channel_id = gnss_observables_iter->second.Channel_ID;
                                                             this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
                                                             d_last_sent_vtl_cmd_samplestamp_map[gnss_observables_iter->second.Channel_ID] = gnss_observables_iter->second.Tracking_sample_counter;
-                                                            //std::cout << "msg pvt_to_trk sent.\n";
+                                                            std::cout << "msg pvt_to_trk sent.\n";
                                                         }
                                                 }
                                         }

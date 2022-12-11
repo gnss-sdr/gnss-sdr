@@ -1228,7 +1228,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[3]), sizeof(double));
                                 }
-                            catch (const std::ifstream::failure &e)
+                            catch (const std::ofstream::failure &e)
                                 {
                                     LOG(WARNING) << "Exception writing RTKLIB dump file " << e.what();
                                 }

@@ -149,13 +149,13 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
                     std::cerr << "GNSS-SDR cannot create dump file for the Observables block. Wrong permissions?\n";
                     d_dump = false;
                 }
-            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
             try
                 {
                     d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                     LOG(INFO) << "Observables dump enabled Log file: " << d_dump_filename.c_str();
                 }
-            catch (const std::ifstream::failure &e)
+            catch (const std::ofstream::failure &e)
                 {
                     LOG(WARNING) << "Exception opening observables dump file " << e.what();
                     d_dump = false;
@@ -871,7 +871,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                 }
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception writing observables dump file " << e.what();
                             d_dump = false;

@@ -29,7 +29,7 @@ channels=6;
 TTFF_sec=41.48;
 
 %% ============================ PARSER TO STRUCT ============================
-plot_skyplot=0;
+plot_skyplot=0; % not yet implemented
 plot_reference=1;
 load_observables=1;
 advance_vtl_data_available=1;
@@ -146,168 +146,163 @@ vZ_FILT = movmean(navSolution.vZ,moving_avg_factor);
 %%
 general_raw_plot
 %%
-
-%---VTL VELOCITY: GNSS SDR plot --------------------------------------
-VTL_VEL=figure('Name','velocities and heigh');
-subplot(2,2,1);
-plot(vtlSolution.rtklibpvt.vX,'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.vX,'.');
-plot(vtlSolution.kferr.vX,'.');
-ylabel('vX (m/s)')
-xlabel('time U.A.')
-ylim([-5 5])
-title('Subplot 1: vX ')
-legend ('raw RTKlib','raw kf','kferr','Location','east')
-
-subplot(2,2,2);
-plot(vtlSolution.rtklibpvt.vY,'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.vY,'.');
-plot(vtlSolution.kferr.vY,'.');
-ylabel('vY (m/s)')
-xlabel('time U.A.')
-ylim([-5 5])
-title('Subplot 1: vY ')
-legend ('raw RTKlib','raw kf','kferr','Location','east')
-
-subplot(2,2,3);
-plot(vtlSolution.rtklibpvt.vZ,'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.vZ,'.');
-plot(vtlSolution.kferr.vZ,'.');
-ylabel('vZ (m/s)')
-xlabel('time U.A.')
-ylim([-5 5])
-title('Subplot 1: vZ ')
-legend ('raw RTKlib','raw kf','kferr','Location','east')
-
-subplot(2,2,4);
-plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.height,'.');
-hold on;grid on
-plot(navSolution.RX_time-navSolution.RX_time(1),HEIGH_FILT,'r.');
-ylabel('HEIGH (m)')
-xlabel('time from First FIX in (seconds)')
-title('Subplot 4: HEIGH')
-legend ('raw',['moving avg:' num2str(moving_avg_factor)],'Location','southeast')
-
-sgtitle('velocities and heigh') 
-
-% --- VTL UTM centered POSITION: GNSS SDR  plot --------------------------------------
-
-VTL_POS=figure('Name','VTL UTM COORD CENTERED IN 1^{ST} POSITION');
-subplot(2,2,1);
-plot(vtlSolution.rtklibpvt.X-vtlSolution.rtklibpvt.X(1),'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.X-vtlSolution.kfpvt.X(1),'.');
-plot(vtlSolution.kferr.X,'.');
-ylabel('X (m)')
-xlabel('time U.A.')
-ylim([-200 800])
-title('Subplot 1: X ')
-legend ('raw RTKlib','raw kf','kferr','Location','east')
-
-subplot(2,2,2);
-plot(vtlSolution.rtklibpvt.Y-vtlSolution.rtklibpvt.Y(1),'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.Y-vtlSolution.kfpvt.Y(1),'.');
-plot(vtlSolution.kferr.Y,'.');
-ylabel('Y (m)')
-xlabel('time U.A.')
-ylim([-200 50])
-title('Subplot 1: Y ')
-legend ('raw RTKlib','raw kf','kferr','Location','east')
-
-subplot(2,2,3);
-plot(vtlSolution.rtklibpvt.Z-vtlSolution.rtklibpvt.Z(1),'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.Z-vtlSolution.kfpvt.Z(1),'.');
-plot(vtlSolution.kferr.Z,'.');
-ylabel('Z (m)')
-xlabel('time U.A.')
-ylim([-350 50])
-title('Subplot 1: Z ')
-legend ('raw RTKlib','raw kf','kferr','Location','east')
-
-sgtitle('VTL UTM COORD CENTERED IN 1^{ST} POSITION') 
-%%
-% --- 'VTL errPV correction --------------------------------------
-
-VTL_errPV=figure('Name','VTL errPV correction');
-subplot(2,3,1);
-plot(vtlSolution.rtklibpvt.X-vtlSolution.rtklibpvt.X(1),'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.X-vtlSolution.kfpvt.X(1),'.');
-plot(vtlSolution.kferr.X,'.');
-plot(vtlSolution.kfpvt.X-vtlSolution.rtklibpvt.X(1)+vtlSolution.kferr.X,'.');
-ylabel('X (m)')
-xlabel('time U.A.')
-ylim([-200 800])
-title('Subplot 1: X ')
-legend ('raw RTKlib','raw kf','kferr','added err+raw','Location','eastoutside')
-
-subplot(2,3,2);
-plot(vtlSolution.rtklibpvt.Y-vtlSolution.rtklibpvt.Y(1),'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.Y-vtlSolution.kfpvt.Y(1),'.');
-plot(vtlSolution.kferr.Y,'.');
-plot(vtlSolution.kfpvt.Y-vtlSolution.rtklibpvt.Y(1)+vtlSolution.kferr.Y,'.');
-ylabel('Y (m)')
-xlabel('time U.A.')
-ylim([-200 50])
-title('Subplot 1: Y ')
-legend ('raw RTKlib','raw kf','kferr','added err+raw','Location','eastoutside')
-
-subplot(2,3,3);
-plot(vtlSolution.rtklibpvt.Z-vtlSolution.rtklibpvt.Z(1),'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.Z-vtlSolution.kfpvt.Z(1),'.');
-plot(vtlSolution.kferr.Z,'.');
-plot(vtlSolution.kfpvt.Z-vtlSolution.rtklibpvt.Z(1)+vtlSolution.kferr.Z,'.');
-ylabel('Z (m)')
-xlabel('time U.A.')
-ylim([-350 50])
-title('Subplot 1: Z ')
-legend ('raw RTKlib','raw kf','kferr','added err+raw','Location','eastoutside')
-
-subplot(2,3,4);
-plot(vtlSolution.rtklibpvt.vX,'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.vX,'.');
-plot(vtlSolution.kferr.vX,'.');
-plot(vtlSolution.kfpvt.vX+vtlSolution.kferr.vX,'.');
-ylabel('vX (m/s)')
-xlabel('time U.A.')
-ylim([-5 5])
-title('Subplot 1: vX ')
-legend ('raw RTKlib','raw kf','kferr','added err+raw','Location','eastoutside')
-
-subplot(2,3,5);
-plot(vtlSolution.rtklibpvt.vY,'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.vY,'.');
-plot(vtlSolution.kferr.vY,'.');
-plot(vtlSolution.kfpvt.vY+vtlSolution.kferr.vY,'.');
-ylabel('vY (m/s)')
-xlabel('time U.A.')
-ylim([-5 5])
-title('Subplot 1: vY ')
-legend ('raw RTKlib','raw kf','kferr','added err+raw','Location','eastoutside')
-
-subplot(2,3,6);
-plot(vtlSolution.rtklibpvt.vZ,'.');
-hold on;grid on
-plot(vtlSolution.kfpvt.vZ,'.');
-plot(vtlSolution.kferr.vZ,'.');
-plot(vtlSolution.kfpvt.vZ+vtlSolution.kferr.vZ,'.');
-ylabel('vZ (m/s)')
-xlabel('time U.A.')
-ylim([-5 5])
-title('Subplot 1: vZ ')
-legend ('raw RTKlib','raw kf','kferr','added err+raw','Location','eastoutside')
-
-
-sgtitle('VTL errPV correction') 
+if(load_vtl)
+    %---VTL VELOCITY: GNSS SDR plot --------------------------------------
+    VTL_VEL=figure('Name','velocities and heigh');
+    subplot(2,2,1);
+    plot(vtlSolution.rtklibpvt.vX,'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.vX,'.');
+    plot(vtlSolution.kferr.vX,'.');
+    ylabel('vX (m/s)')
+    xlabel('time U.A.')
+    ylim([-5 5])
+    title('Subplot 1: vX ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','east')
+    
+    subplot(2,2,2);
+    plot(vtlSolution.rtklibpvt.vY,'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.vY,'.');
+    plot(vtlSolution.kferr.vY,'.');
+    ylabel('vY (m/s)')
+    xlabel('time U.A.')
+    ylim([-5 5])
+    title('Subplot 1: vY ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','east')
+    
+    subplot(2,2,3);
+    plot(vtlSolution.rtklibpvt.vZ,'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.vZ,'.');
+    plot(vtlSolution.kferr.vZ,'.');
+    ylabel('vZ (m/s)')
+    xlabel('time U.A.')
+    ylim([-5 5])
+    title('Subplot 1: vZ ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','east')
+    
+    subplot(2,2,4);
+    plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.height,'.');
+    hold on;grid on
+    plot(navSolution.RX_time-navSolution.RX_time(1),HEIGH_FILT,'r.');
+    ylabel('HEIGH (m)')
+    xlabel('time from First FIX in (seconds)')
+    title('Subplot 4: HEIGH')
+    legend ('raw',['moving avg:' num2str(moving_avg_factor)],'Location','southeast')
+    
+    sgtitle('velocities and heigh')
+    
+    % --- VTL UTM centered POSITION: GNSS SDR  plot --------------------------------------
+    
+    VTL_POS=figure('Name','VTL UTM COORD CENTERED IN 1^{ST} POSITION');
+    subplot(2,2,1);
+    plot(vtlSolution.rtklibpvt.X-vtlSolution.rtklibpvt.X(1),'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.X-vtlSolution.kfpvt.X(1),'.');
+    plot(vtlSolution.kferr.X,'.');
+    ylabel('X (m)')
+    xlabel('time U.A.')
+    ylim([-200 800])
+    title('Subplot 1: X ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','east')
+    
+    subplot(2,2,2);
+    plot(vtlSolution.rtklibpvt.Y-vtlSolution.rtklibpvt.Y(1),'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.Y-vtlSolution.kfpvt.Y(1),'.');
+    plot(vtlSolution.kferr.Y,'.');
+    ylabel('Y (m)')
+    xlabel('time U.A.')
+    ylim([-200 50])
+    title('Subplot 1: Y ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','east')
+    
+    subplot(2,2,3);
+    plot(vtlSolution.rtklibpvt.Z-vtlSolution.rtklibpvt.Z(1),'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.Z-vtlSolution.kfpvt.Z(1),'.');
+    plot(vtlSolution.kferr.Z,'.');
+    ylabel('Z (m)')
+    xlabel('time U.A.')
+    ylim([-350 50])
+    title('Subplot 1: Z ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','east')
+    
+    sgtitle('VTL UTM COORD CENTERED IN 1^{ST} POSITION')
+    %%
+    % --- 'VTL errPV correction --------------------------------------
+    
+    VTL_errPV=figure('Name','VTL errPV correction');
+    subplot(2,3,1);
+    plot(vtlSolution.rtklibpvt.X-vtlSolution.rtklibpvt.X(1),'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.X-vtlSolution.kfpvt.X(1),'.');
+    plot(vtlSolution.kferr.X,'.');
+    ylabel('X (m)')
+    xlabel('time U.A.')
+    ylim([-200 800])
+    title('Subplot 1: X ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','eastoutside')
+    
+    subplot(2,3,2);
+    plot(vtlSolution.rtklibpvt.Y-vtlSolution.rtklibpvt.Y(1),'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.Y-vtlSolution.kfpvt.Y(1),'.');
+    plot(vtlSolution.kferr.Y,'.');
+    ylabel('Y (m)')
+    xlabel('time U.A.')
+    ylim([-200 50])
+    title('Subplot 1: Y ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','eastoutside')
+    
+    subplot(2,3,3);
+    plot(vtlSolution.rtklibpvt.Z-vtlSolution.rtklibpvt.Z(1),'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.Z-vtlSolution.kfpvt.Z(1),'.');
+    plot(vtlSolution.kferr.Z,'.');
+    ylabel('Z (m)')
+    xlabel('time U.A.')
+    ylim([-350 50])
+    title('Subplot 1: Z ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','eastoutside')
+    
+    subplot(2,3,4);
+    plot(vtlSolution.rtklibpvt.vX,'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.vX,'.');
+    plot(vtlSolution.kferr.vX,'.');
+    ylabel('vX (m/s)')
+    xlabel('time U.A.')
+    ylim([-5 5])
+    title('Subplot 1: vX ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','eastoutside')
+    
+    subplot(2,3,5);
+    plot(vtlSolution.rtklibpvt.vY,'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.vY,'.');
+    plot(vtlSolution.kferr.vY,'.');
+    ylabel('vY (m/s)')
+    xlabel('time U.A.')
+    ylim([-5 5])
+    title('Subplot 1: vY ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','eastoutside')
+    
+    subplot(2,3,6);
+    plot(vtlSolution.rtklibpvt.vZ,'.');
+    hold on;grid on
+    plot(vtlSolution.kfpvt.vZ,'.');
+    plot(vtlSolution.kferr.vZ,'.');
+    ylabel('vZ (m/s)')
+    xlabel('time U.A.')
+    ylim([-5 5])
+    title('Subplot 1: vZ ')
+    legend ('raw RTKlib','VTL_engine kf','kferr','Location','eastoutside')
+    
+    
+    sgtitle('VTL errPV correction')
+end
 %% ============================================== ==============================================
 time_reference_spirent_obs=129780;%s
 if(load_observables)

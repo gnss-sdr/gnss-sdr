@@ -37,7 +37,7 @@ end
 %     legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','PRN 9','Location','eastoutside')
 %     hold off
 %     grid on
-% 
+%
 %     Rx_pseudo_one=figure('Name','RX_pr_m');plot(RX_time(1,:)-time_reference_spirent_obs, Pseudorange_m(1,:)','s')
 %     xlim([0,140]);
 %     xlabel('')
@@ -46,7 +46,7 @@ end
 %     grid on
 %     hold on
 %     legend('PRN 28 GNSS-SDR','Location','eastoutside')
-%     plot(refSatData.GPS.SIM_time/1000, Pseudorange_m_sim(:,1)','.','DisplayName','reference')
+%     plot(refSatData.GPS.SIM_time/1000, Pseudorange_m_sim(:,1)','.','DisplayName','SPIRENT reference')
 %     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, pr_m_filt(1,:),'o','DisplayName','filtered VTL')
 %     hold off
 %     grid on
@@ -58,13 +58,13 @@ plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.vX,'.');
 hold on;grid on
 plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(4,:),'.');
 plot(refSolution.SIM_time/1000-TTFF_sec,refSolution.vX...
-    ,'.','DisplayName','reference')
+    ,'.','DisplayName','SPIRENT reference')
 % plot(navSolution.RX_time-navSolution.RX_time(1),kf_xerr(4,:),'.');
 ylabel('vX (m/s)')
 xlabel('time U.A.')
 ylim([-5 5])
 title('Subplot 1: vX ')
-legend ('raw navSolution','raw kf state','reference','Location','eastoutside')
+legend ('raw navSolution','raw kf state','SPIRENT reference','Location','eastoutside')
 
 subplot(2,2,2);
 plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.vY,'.');
@@ -72,12 +72,12 @@ hold on;grid on
 plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(5,:),'.');
 % plot(navSolution.RX_time-navSolution.RX_time(1),kf_xerr(5,:),'.');
 plot(refSolution.SIM_time/1000-TTFF_sec,refSolution.vY...
-    ,'.','DisplayName','reference')
+    ,'.','DisplayName','SPIRENT reference')
 ylabel('vY (m/s)')
 xlabel('time U.A.')
 ylim([-5 5])
 title('Subplot 1: vY ')
-legend ('raw navSolution','raw kf state','reference','Location','eastoutside')
+legend ('raw navSolution','raw kf state','SPIRENT reference','Location','eastoutside')
 
 subplot(2,2,3);
 plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.vZ,'.');
@@ -85,14 +85,14 @@ hold on;grid on
 plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(6,:),'.');
 % plot(navSolution.RX_time-navSolution.RX_time(1),kf_xerr(6,:),'.');
 plot(refSolution.SIM_time/1000-TTFF_sec,refSolution.vZ...
-    ,'.','DisplayName','reference')
+    ,'.','DisplayName','SPIRENT reference')
 ylabel('vZ (m/s)')
 xlabel('time U.A.')
 ylim([-5 5])
 title('Subplot 1: vZ ')
-legend ('raw navSolution','raw kf state','reference','Location','eastoutside')
+legend ('raw navSolution','raw kf state','SPIRENT reference','Location','eastoutside')
 
-sgtitle('velocities') 
+sgtitle('velocities')
 
 %% --- VTL UTM centered POSITION: GNSS SDR  plot --------------------------------------
 
@@ -130,23 +130,25 @@ ylim([-350 50])
 title('Subplot 1: Z ')
 legend ('raw navSolution','raw kf state','kferr','Location','eastoutside')
 
-sgtitle('VTL UTM COORD CENTERED IN 1^{ST} POSITION') 
+sgtitle('VTL UTM COORD CENTERED IN 1^{ST} POSITION')
 %%
 if(load_observables)
-%     Rx_Dopp_all=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz','s')
-%     xlim([0,140]);
-%     xlabel('')
-%     ylabel('Doppler (Hz)')
-%     xlabel('time from simulation init (seconds)')
-%     grid on
-%     hold on
-%     plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim','.')
-%     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt,'o')
-%     legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','PRN 9','Location','eastoutside')
-%     hold off
-%     grid on
+    %     Rx_Dopp_all=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz','s')
+    %     xlim([0,140]);
+    %     xlabel('')
+    %     ylabel('Doppler (Hz)')
+    %     xlabel('time from simulation init (seconds)')
+    %     grid on
+    %     hold on
+    %     plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim','.')
+    %     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt,'o')
+    %     legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','PRN 9','Location','eastoutside')
+    %     hold off
+    %     grid on
 
-    Rx_Dopp_28=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(1,:)','s')
+    Rx_Dopp_28=figure('Name','RX_Carrier_Doppler_hz');
+    subplot(2,2,1)
+    plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(1,:)','s')
     xlim([0,140]);
     ylim([-2340,-2220]);
     xlabel('')
@@ -155,12 +157,14 @@ if(load_observables)
     grid on
     hold on
     legend('PRN 28 GNSS-SDR','Location','eastoutside')
-    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,1)','.','DisplayName','reference')
+    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,1)','.','DisplayName','SPIRENT reference')
     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt(1,:),'o','DisplayName','filtered VTL')
     hold off;grid minor
 
-    Rx_Dopp_4=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(2,:)','s')
-    xlim([0,140]);  
+    %     Rx_Dopp_4=figure('Name','RX_Carrier_Doppler_hz');
+    subplot(2,2,2)
+    plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(2,:)','s')
+    xlim([0,140]);
     ylim([2540,2640]);
     xlabel('')
     ylabel('Doppler (Hz)')
@@ -168,12 +172,14 @@ if(load_observables)
     grid on
     hold on
     legend('PRN 4 GNSS-SDR','Location','eastoutside')
-    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,2)','.','DisplayName','reference')
+    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,2)','.','DisplayName','SPIRENT reference')
     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt(2,:),'o','DisplayName','filtered VTL')
     hold off;grid minor
 
-        Rx_Dopp_17=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(3,:)','s')
-    xlim([0,140]);  
+    %     Rx_Dopp_17=figure('Name','RX_Carrier_Doppler_hz');
+    subplot(2,2,3)
+    plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(3,:)','s')
+    xlim([0,140]);
     ylim([-1800,-1730]);
     xlabel('')
     ylabel('Doppler (Hz)')
@@ -181,12 +187,14 @@ if(load_observables)
     grid on
     hold on
     legend('PRN 17 GNSS-SDR','Location','eastoutside')
-    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,3)','.','DisplayName','reference')
+    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,3)','.','DisplayName','SPIRENT reference')
     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt(3,:),'o','DisplayName','filtered VTL')
     hold off;grid minor
 
-        Rx_Dopp_15=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(4,:)','s')
-    xlim([0,140]);  
+    %     Rx_Dopp_15=figure('Name','RX_Carrier_Doppler_hz');
+    subplot(2,2,4)
+    plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(4,:)','s')
+    xlim([0,140]);
     ylim([-2680,-2620]);
     xlabel('')
     ylabel('Doppler (Hz)')
@@ -194,54 +202,66 @@ if(load_observables)
     grid on
     hold on
     legend('PRN 15 GNSS-SDR','Location','eastoutside')
-    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,4)','.','DisplayName','reference')
+    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,4)','.','DisplayName','SPIRENT reference')
     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt(4,:),'o','DisplayName','filtered VTL')
     hold off;grid minor
 end
 %% STATE PLOT
 VTL_STATE=figure('Name','VTL STATE');
 subplot(2,2,1);
-plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(1:3,:)'-corr_kf_state(1:3,3)','.');
+plot(navSolution.RX_time-navSolution.RX_time(1),[navSolution.X-navSolution.X(1);...
+    navSolution.Y-navSolution.Y(1) ;navSolution.Z-navSolution.Z(1)],...
+    'b.','DisplayName','RTKLIB solution');
 hold on;grid on
+plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(1:3,:)'-corr_kf_state(1:3,3)',...
+    'k.','DisplayName','filt VTL');
 plot(refSolution.SIM_time/1000-TTFF_sec,[refSolution.X-refSolution.X(1)...
     refSolution.Y-refSolution.Y(1) refSolution.Z-refSolution.Z(1)],...
-    '.','DisplayName','reference');
+    'r.','DisplayName','SPIRENT reference');
+legend('Location','eastoutside');
 ylim([-200,200])
 xlim([0,120])
 ylabel('X Y Z (m)')
-xlabel('time U.A.')
-title('Subplot 1: POSITION ')
+xlabel('time [s]')
+title('Subplot 1: POSITION [m]')
 
 subplot(2,2,2);
-plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(4:6,:)','.');
+plot(navSolution.RX_time-navSolution.RX_time(1),[navSolution.vX;...
+    navSolution.vY; navSolution.vZ],...
+    'b.','DisplayName','RTKLIB solution');
 hold on;grid on
+plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(4:6,:)',...
+    'k.','DisplayName','filt VTL');
 plot(refSolution.SIM_time/1000-TTFF_sec,[refSolution.vX...
     refSolution.vY refSolution.vZ],...
-    '.','DisplayName','reference');
+    'r.','DisplayName','SPIRENT reference');
+
 xlim([0,120])
 ylabel('vX vY vZ (m/s)')
-xlabel('time U.A.')
-title('Subplot 1: VELOCITIES ')
+xlabel('time [s]')
+title('Subplot 1: VELOCITIES [m/s]')
 
 subplot(2,2,3);
-plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(7,:),'.');
-ylim([3019190, 3019700])
+plot(navSolution.RX_time-navSolution.RX_time(1),clk_bias_s*SPEED_OF_LIGHT_M_S,...
+    'b.','DisplayName','RTKLIB solution');
 hold on;grid on
-plot(navSolution.RX_time-navSolution.RX_time(1),clk_bias_s*SPEED_OF_LIGHT_M_S,'.');
+plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(7,:),...
+    'k.','DisplayName','filt VTL');
+ylim([3019190, 3019700])
 xlim([0,120])
 ylabel('clk bias (m)')
-xlabel('time U.A.')
-title('Subplot 1: clk bias')
-legend('vtl','rtklib')
+xlabel('time [s]')
+title('Subplot 1: clk bias [m]')
 
 subplot(2,2,4);
-plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(8,:),'.');
+plot(navSolution.RX_time-navSolution.RX_time(1),clk_drift*SPEED_OF_LIGHT_M_S,...
+    'b.','DisplayName','RTKLIB solution');
 hold on;grid on
-plot(navSolution.RX_time-navSolution.RX_time(1),clk_drift*SPEED_OF_LIGHT_M_S,'.');
+plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(8,:),...
+    'k.','DisplayName','filt VTL');
 xlim([0,120])
 ylabel('clk drift (m/s)')
-legend('vtl','rtklib')
-xlabel('time U.A.')
-title('Subplot 1: clk drift ')
+xlabel('time [s]')
+title('Subplot 1: clk drift [m/s]')
 
-sgtitle('VTL STATE') 
+sgtitle('VTL STATE')

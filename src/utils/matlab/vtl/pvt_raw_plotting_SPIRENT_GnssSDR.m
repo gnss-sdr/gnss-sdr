@@ -52,6 +52,7 @@ end
 if(load_vtl)
 vtlSolution = Vtl2struct('dump_vtl_file.csv');
 end
+
 %% calculate LOS Rx-sat if advance_vtl_data_available=1
 
 if(advance_vtl_data_available)
@@ -348,3 +349,5 @@ if(load_observables)
     hold off
     grid on
 end
+%%
+dopp_filtered_plotting

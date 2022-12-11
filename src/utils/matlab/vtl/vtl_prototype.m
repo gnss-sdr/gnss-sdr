@@ -23,8 +23,24 @@ clearvars
 % end
 SPEED_OF_LIGHT_M_S=299792458.0;
 Lambda_GPS_L1=0.1902937;
-point_of_closure=3000;
-%%
+point_of_closure=6000;
+
+%% ==================== VARIANCES =============================
+pos_var=100;%m^2
+vel_var=10;%m^2/s^2
+clk_bias_var=40;%m^2
+clk_drift_var=1500;%m^2/s^2
+pr_var=10;%m^2
+pr_dot_var=30;%m^2/s^2
+
+% CARLES PAPER LTE GNSS VTL
+% pos_var=2;%m^2
+% vel_var=0.2;%m^2/s^2
+% clk_bias_var=1e-7;%m^2
+% clk_drift_var=1e-4;%m^2/s^2
+% pr_var=20;%m^2
+% pr_dot_var=3;%m^2/s^2
+%% ============================================================
 samplingFreq=5000000;
 channels=6;
 TTFF_sec=41.48;
@@ -50,45 +66,9 @@ if(load_observables)
 end
 %%
 % vtlSolution = Vtl2struct('dump_vtl_file.csv');
-%% calculate LOS Rx-sat
-
-% for chan=1:5
-%     for t=1:length(navSolution.RX_time)
-%         d(chan)=(sat_posX_m(chan,t)-navSolution.X(t))^2;
-%         d(chan)=d(chan)+(sat_posY_m(chan,t)-navSolution.Y(t))^2;
-%         d(chan)=d(chan)+(sat_posZ_m(chan,t)-navSolution.Z(t))^2;
-%         d(chan)=sqrt(d(chan));
-%         
-%         c_pr_m(chan,t)=d(chan)+clk_bias_s(t)*SPEED_OF_LIGHT_M_S;
-%         
-%         a_x(chan,t)=-(sat_posX_m(chan,t)-navSolution.X(t))/d(chan);
-%         a_y(chan,t)=-(sat_posY_m(chan,t)-navSolution.Y(t))/d(chan);
-%         a_z(chan,t)=-(sat_posZ_m(chan,t)-navSolution.Z(t))/d(chan);
-%     end
-% end
-% 
-% %%
-
-% %%
-% for chan=1:5
-%     for t=1:length(navSolution.RX_time)
-%         rhoDot_pri(chan,t)=(sat_velX(chan,t)-navSolution.vX(t))*a_x(chan,t)...
-%             +(sat_velY(chan,t)-navSolution.vY(t))*a_y(chan,t)...
-%             +(sat_velZ(chan,t)-navSolution.vZ(t))*a_z(chan,t);
-%         
-%         kf_yerr(chan,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1)-rhoDot_pri(chan,t);
-%     end
-% end
-
 %%
 
 kf_prototype
-
-%%
-figure;plot(kf_yerr(1:5,:)');title('c pr m-error');xlabel('t U.A');ylabel('pr m [m]');grid minor
-legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
-figure;plot(kf_yerr(6:10,:)');title('c pr m DOT-error');xlabel('t U.A');ylabel('pr m dot [m/s]');grid minor
-legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
 
 %% ====== FILTERING =======================================================
 % moving_avg_factor= 500;
@@ -109,81 +89,9 @@ legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
 vtl_general_plot
 
 %% ============================================== ==============================================
-time_reference_spirent_obs=129780;%s
-
-if(load_observables)
-
-    Carrier_Doppler_hz_sim=zeros(length(refSatData.GPS.SIM_time),6);
-
-    for i=1:length(refSatData.GPS.SIM_time)
-        Carrier_Doppler_hz_sim(i,1)=refSatData.GPS.series(i).doppler_shift(4);%PRN 28
-        Carrier_Doppler_hz_sim(i,2)=refSatData.GPS.series(i).doppler_shift(1);%PRN 4
-        Carrier_Doppler_hz_sim(i,3)=refSatData.GPS.series(i).doppler_shift(6);%PRN 17
-        Carrier_Doppler_hz_sim(i,4)=refSatData.GPS.series(i).doppler_shift(7);%PRN 15
-        Carrier_Doppler_hz_sim(i,5)=refSatData.GPS.series(i).doppler_shift(8);%PRN 27
-        Carrier_Doppler_hz_sim(i,6)=refSatData.GPS.series(i).doppler_shift(9);%PRN 9
-
-        Pseudorange_m_sim(i,1)=refSatData.GPS.series(i).pr_m(4);%PRN 28
-        Pseudorange_m_sim(i,2)=refSatData.GPS.series(i).pr_m(1);%PRN 4
-        Pseudorange_m_sim(i,3)=refSatData.GPS.series(i).pr_m(6);%PRN 17
-        Pseudorange_m_sim(i,4)=refSatData.GPS.series(i).pr_m(7);%PRN 15
-        Pseudorange_m_sim(i,5)=refSatData.GPS.series(i).pr_m(8);%PRN 27
-        Pseudorange_m_sim(i,6)=refSatData.GPS.series(i).pr_m(9);%PRN 9
-    end
-
-
-    Rx_Dopp_all=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz','s')
-    xlim([0,140]);
-    xlabel('')
-    ylabel('Doppler (Hz)')
-    xlabel('time from simulation init (seconds)')
-    grid on
-    hold on
-    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim','.')
-    plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt,'o')
-    legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','PRN 9','Location','eastoutside')
-    hold off
-    grid on
-
-    Rx_Dopp_one=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz(1,:)','s')
-    xlim([0,140]);
-    ylim([-2340,-2220]);
-    xlabel('')
-    ylabel('Doppler (Hz)')
-    xlabel('time from simulation init (seconds)')
-    grid on
-    hold on
-    legend('PRN 28 GNSS-SDR','Location','eastoutside')
-    plot(refSatData.GPS.SIM_time/1000, Carrier_Doppler_hz_sim(:,1)','.','DisplayName','reference')
-    plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, sat_dopp_hz_filt(1,:),'o','DisplayName','filtered VTL')
-    
-    hold off
-    grid on
-% -------------------------------------
-%     Rx_pseudo_all=figure('Name','RX_pr_m');plot(RX_time(1,:)-time_reference_spirent_obs, Pseudorange_m','s')
-%     xlim([0,140]);
-%     xlabel('')
-%     ylabel('Pseudorange (m)')
-%     xlabel('time from simulation init (seconds)')
-%     grid on
-%     hold on
-%     plot(refSatData.GPS.SIM_time/1000, Pseudorange_m_sim','.')
-%     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, pr_m_filt,'o')
-%     legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','PRN 9','Location','eastoutside')
-%     hold off
-%     grid on
-% 
-%     Rx_pseudo_one=figure('Name','RX_pr_m');plot(RX_time(1,:)-time_reference_spirent_obs, Pseudorange_m(1,:)','s')
-%     xlim([0,140]);
-%     xlabel('')
-%     ylabel('Pseudorange (m)')
-%     xlabel('time from simulation init (seconds)')
-%     grid on
-%     hold on
-%     legend('PRN 28 GNSS-SDR','Location','eastoutside')
-%     plot(refSatData.GPS.SIM_time/1000, Pseudorange_m_sim(:,1)','.','DisplayName','reference')
-%     plot(navSolution.RX_time(1,:)-time_reference_spirent_obs, pr_m_filt(1,:),'o','DisplayName','filtered VTL')
-%     hold off
-%     grid on
-end
+%%
+figure;plot(navSolution.RX_time-navSolution.RX_time(1),kf_yerr(1:5,:)');title('c pr m-error');xlabel('t U.A');ylabel('pr m [m]');grid minor
+legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
+figure;plot(navSolution.RX_time-navSolution.RX_time(1),kf_yerr(6:10,:)');title('c pr m DOT-error');xlabel('t U.A');ylabel('pr m dot [m/s]');grid minor
+legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
 

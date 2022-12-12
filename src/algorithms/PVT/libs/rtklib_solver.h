@@ -123,6 +123,8 @@ public:
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
+    Vtl_Engine vtl_engine;
+
 private:
     bool save_matfile() const;
 
@@ -139,7 +141,6 @@ private:
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
     bool d_use_e6_for_pvt;
-    Vtl_Engine vtl_engine;
 };
 
 

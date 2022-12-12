@@ -98,39 +98,39 @@ sgtitle('velocities')
 
 VTL_POS=figure('Name','VTL UTM COORD CENTERED IN 1^{ST} POSITION');
 subplot(2,2,1);
-plot(navSolution.X-navSolution.X(1),'.');
+plot(navSolution.X,'.');
 hold on;grid on
-plot(corr_kf_state(1,3:end)-corr_kf_state(1,3))
-plot(kf_xerr(1,:),'.');
+plot(corr_kf_state(1,3:end))
+% plot(refSolution.X,'.')
 ylabel('X (m)')
 xlabel('time U.A.')
-ylim([-200 800])
+% ylim([-200 800])
 title('Subplot 1: X ')
 legend ('raw navSolution','raw kf state','kferr','Location','eastoutside')
 
 subplot(2,2,2);
-plot(navSolution.Y-navSolution.Y(1),'.');
+plot(navSolution.Y,'.');
 hold on;grid on
-plot(corr_kf_state(2,3:end)-corr_kf_state(2,3))
-plot(kf_xerr(2,:),'.');
+plot(corr_kf_state(2,3:end))
+% plot(refSolution.Y,'.')
 ylabel('Y (m)')
 xlabel('time U.A.')
-ylim([-200 50])
+% ylim([-200 50])
 title('Subplot 1: Y ')
 legend ('raw navSolution','raw kf state','kferr','Location','eastoutside')
 
 subplot(2,2,3);
-plot(navSolution.Z-navSolution.Z(1),'.');
+plot(navSolution.Z,'.');
 hold on;grid on
-plot(corr_kf_state(3,3:end)-corr_kf_state(3,3))
-plot(kf_xerr(3,:),'.');
+plot(corr_kf_state(3,3:end))
+% plot(refSolution.Z,'.')
 ylabel('Z (m)')
 xlabel('time U.A.')
-ylim([-350 50])
+% ylim([-350 50])
 title('Subplot 1: Z ')
-legend ('raw navSolution','raw kf state','kferr','Location','eastoutside')
+legend ('raw navSolution','raw kf state','SPIRENT ref','Location','eastoutside')
 
-sgtitle('VTL UTM COORD CENTERED IN 1^{ST} POSITION')
+sgtitle('VTL UTM COORD')
 %%
 if(load_observables)
     %     Rx_Dopp_all=figure('Name','RX_Carrier_Doppler_hz');plot(RX_time(1,:)-time_reference_spirent_obs, Carrier_Doppler_hz','s')
@@ -215,8 +215,8 @@ plot(navSolution.RX_time-navSolution.RX_time(1),[navSolution.X-navSolution.X(1);
 hold on;grid on
 plot(navSolution.RX_time-navSolution.RX_time(1),corr_kf_state(1:3,:)'-corr_kf_state(1:3,3)',...
     'k.','DisplayName','filt VTL');
-plot(refSolution.SIM_time/1000-TTFF_sec,[refSolution.X-refSolution.X(1)...
-    refSolution.Y-refSolution.Y(1) refSolution.Z-refSolution.Z(1)],...
+plot(refSolution.SIM_time/1000-TTFF_sec,[refSolution.X-refSolution.X(spirent_index_TTFF)...
+    refSolution.Y-refSolution.Y(spirent_index_TTFF) refSolution.Z-refSolution.Z(spirent_index_TTFF)],...
     'r.','DisplayName','SPIRENT reference');
 legend('Location','eastoutside');
 ylim([-200,200])

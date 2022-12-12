@@ -16,7 +16,7 @@ endif()
 # Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
-cmake_minimum_required(VERSION 2.8.12...3.24)
+cmake_minimum_required(VERSION 2.8.12...3.25)
 project(gnss-sdr CXX C)
 
 set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
@@ -134,7 +134,7 @@ if(ENABLE_FPGA)
 endif()
 
 option(ENABLE_BENCHMARKS "Build code snippets benchmarks" OFF)
-if(CMAKE_VERSION VERSION_LESS 3.5.1)
+if(CMAKE_VERSION VERSION_LESS 3.16.3)
     set(ENABLE_BENCHMARKS OFF)
 endif()
 
@@ -276,7 +276,11 @@ endif()
 
 # allow 'large' files in 32 bit builds
 if(UNIX)
-    add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
+    if(CMAKE_VERSION VERSION_GREATER 3.12.0)
+        add_compile_definitions(_LARGEFILE_SOURCE _FILE_OFFSET_BITS=64 _LARGE_FILES)
+    else()
+        add_definitions(-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES)
+    endif()
 endif()
 
 # If this is an out-of-tree build, do not pollute the original source directory
@@ -345,11 +349,11 @@ else()
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.12.1")
 endif()
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
-set(GNSSSDR_GNSSTK_LOCAL_VERSION "13.4.0")
+set(GNSSSDR_GNSSTK_LOCAL_VERSION "13.7.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
-set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.12")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.5")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.7.0")
+set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.13")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.9")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.7.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 if(CMAKE_VERSION VERSION_LESS "3.16")
@@ -1117,13 +1121,11 @@ if(NOT VOLKGNSSSDR_FOUND)
     if(PYTHON_EXECUTABLE)
         set(USE_THIS_PYTHON "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}")
     endif()
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        if(CMAKE_GENERATOR STREQUAL Xcode)
-            set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild"
-                "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
-                "-target"
-            )
-        endif()
+
+    if(CMAKE_GENERATOR STREQUAL Xcode)
+        set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild"
+            "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
+        )
     endif()
 
     if(CMAKE_TOOLCHAIN_FILE)
@@ -1157,11 +1159,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         ${STRIP_VOLK_GNSSSDR_PROFILE}
         ${USE_THIS_PYTHON}
     )
-    if(CMAKE_VERSION VERSION_GREATER 3.18.99 AND CMAKE_GENERATOR STREQUAL Xcode)
-        if(XCODE_VERSION VERSION_GREATER 11)
-            set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -T buildsystem=1)
-        endif()
-    endif()
+
     if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}
             -DCROSSCOMPILE_MULTILIB=TRUE
@@ -1189,7 +1187,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     include(GNUInstallDirs)
     set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES
-        "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)")
+        "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)|(^s390x)")
         set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
     endif()
     if(${CMAKE_INSTALL_LIBDIR} MATCHES lib64)
@@ -1206,7 +1204,7 @@ if(NOT VOLKGNSSSDR_FOUND)
             DOWNLOAD_COMMAND ""
             UPDATE_COMMAND ""
             PATCH_COMMAND ""
-            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+            BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND}
             INSTALL_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
         )
     else()
@@ -1257,7 +1255,7 @@ if(NOT VOLKGNSSSDR_FOUND)
                 DOWNLOAD_COMMAND ""
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
-                BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+                BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND}
                 BUILD_BYPRODUCTS ${VOLK_GNSSSDR_BUILD_BYPRODUCTS}
                 INSTALL_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
             )
@@ -1276,9 +1274,10 @@ if(NOT VOLKGNSSSDR_FOUND)
                 DOWNLOAD_COMMAND ""
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
-                BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND} volk_gnsssdr_profile
+                BUILD_COMMAND ${VOLK_GNSSSDR_BUILD_COMMAND}
                 BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/lib${VOLK_GNSSSDR_LIB_SUFFIX}/${CMAKE_FIND_LIBRARY_PREFIXES}volk_gnsssdr${CMAKE_STATIC_LIBRARY_SUFFIX}
                     ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr_profile
+                    ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install/bin/volk_gnsssdr-config-info
                 INSTALL_DIR ${GNSSSDR_BINARY_DIR}/volk_gnsssdr_module/install
             )
         endif()
@@ -3369,7 +3368,7 @@ add_feature_info(ENABLE_LIMESDR ENABLE_LIMESDR "Enables Limesdr_Signal_Source. R
 add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio and libad9361-dev.")
 add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
 add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio and libad9361-dev.")
-add_feature_info(ENABLE_AD936X_SDR ENABLE_AD9361 "Enables Ad936x_Iio_Signal_Source to access AD936X front-ends using libiio. Requires libiio and libad9361-dev.")
+add_feature_info(ENABLE_AD936X_SDR ENABLE_AD936X_SDR "Enables Ad936x_Iio_Signal_Source to access AD936X front-ends using libiio. Requires libiio and libad9361-dev.")
 add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
 add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")

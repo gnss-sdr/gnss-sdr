@@ -130,15 +130,14 @@ private:
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
     static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;  // flag that enables WE (Write Enable) of the local code FPGA
 
-    std::string device_name;
-    uint32_t num_prev_assigned_ch;
-
-    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    uint32_t channel_;
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc_sptr_;
     std::string role_;
+    std::string device_name_;
+    int32_t* ca_codes_ptr_;
+    uint32_t num_prev_assigned_ch_;
+    uint32_t channel_;
     uint32_t in_streams_;
     uint32_t out_streams_;
-    int32_t* d_ca_codes;
 };
 
 

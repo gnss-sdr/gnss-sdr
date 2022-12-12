@@ -25,16 +25,20 @@
 using namespace std::string_literals;
 
 LabsatSignalSource::LabsatSignalSource(const ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_stream, unsigned int out_stream, Concurrent_Queue<pmt::pmt_t>* queue)
-    : SignalSourceBase(configuration, role, "Labsat_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
+    const std::string& role,
+    unsigned int in_stream,
+    unsigned int out_stream,
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : SignalSourceBase(configuration, role, "Labsat_Signal_Source"s),
+      in_stream_(in_stream),
+      out_stream_(out_stream),
+      enable_throttle_control_(configuration->property(role + ".enable_throttle_control", false)),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./labsat_output.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
-
-    enable_throttle_control_ = configuration->property(role + ".enable_throttle_control", false);
 
     const int64_t sampling_frequency_deprecated = configuration->property(role + ".sampling_frequency", static_cast<int64_t>(16368000));
     const int64_t throttle_frequency_sps = configuration->property(role + ".throttle_frequency_sps", static_cast<int64_t>(sampling_frequency_deprecated));

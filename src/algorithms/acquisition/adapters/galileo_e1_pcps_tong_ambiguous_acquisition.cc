@@ -40,29 +40,28 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
     : configuration_(configuration),
       gnss_synchro_(nullptr),
       role_(role),
+      item_size_(sizeof(gr_complex)),
       threshold_(0.0),
       channel_(0),
+      doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
+      sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 4)),
+      tong_init_val_(configuration->property(role + ".tong_init_val", 1)),
+      tong_max_val_(configuration->property(role + ".tong_max_val", 2)),
+      tong_max_dwells_(configuration->property(role + ".tong_max_dwells", tong_max_val_ + 1)),
       in_streams_(in_streams),
-      out_streams_(out_streams)
+      out_streams_(out_streams),
+      dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("../data/acquisition.dat");
 
-    DLOG(INFO) << "role " << role;
+    DLOG(INFO) << "role " << role_;
 
-    item_type_ = configuration_->property(role + ".item_type",
-        default_item_type);
-
+    item_type_ = configuration_->property(role_ + ".item_type", default_item_type);
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_ = configuration_->property(role + ".dump", false);
-    doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
-    if (FLAGS_doppler_max != 0)
-        {
-            doppler_max_ = FLAGS_doppler_max;
-        }
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
+    dump_filename_ = configuration_->property(role_ + ".dump_filename", default_dump_filename);
 
     if (sampled_ms_ % 4 != 0)
         {
@@ -72,12 +71,10 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
                          << sampled_ms_ << " ms will be used.";
         }
 
-    tong_init_val_ = configuration->property(role + ".tong_init_val", 1);
-    tong_max_val_ = configuration->property(role + ".tong_max_val", 2);
-    tong_max_dwells_ = configuration->property(role + ".tong_max_dwells", tong_max_val_ + 1);
-
-    dump_filename_ = configuration_->property(role + ".dump_filename",
-        default_dump_filename);
+    if (FLAGS_doppler_max != 0)
+        {
+            doppler_max_ = FLAGS_doppler_max;
+        }
 
     bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
 
@@ -94,7 +91,6 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
 
     if (item_type_ == "gr_complex")
         {
-            item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_tong_make_acquisition_cc(sampled_ms_, doppler_max_,
                 fs_in_, samples_per_ms, code_length_, tong_init_val_,
                 tong_max_val_, tong_max_dwells_, dump_, dump_filename_, enable_monitor_output);
@@ -107,7 +103,8 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
         }
     else
         {
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
+            acquisition_cc_ = nullptr;
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 

@@ -56,6 +56,10 @@
 #define CPU_FEATURES_ARCH_RISCV
 #endif
 
+#if defined(__s390x__)
+#define CPU_FEATURES_ARCH_S390X
+#endif
+
 #if defined(__riscv) && defined(__riscv_xlen) && __riscv_xlen == 32
 #define CPU_FEATURES_ARCH_RISCV32
 #endif

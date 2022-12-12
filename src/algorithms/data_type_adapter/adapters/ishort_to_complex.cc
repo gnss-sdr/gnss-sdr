@@ -19,8 +19,14 @@
 #include <glog/logging.h>
 
 
-IshortToComplex::IshortToComplex(const ConfigurationInterface* configuration, const std::string& role,
-    unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
+IshortToComplex::IshortToComplex(const ConfigurationInterface* configuration,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(role),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams),
+                                inverted_spectrum(configuration->property(role + ".inverted_spectrum", false)),
+                                dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_input_item_type("short");
     const std::string default_output_item_type("gr_complex");
@@ -29,12 +35,7 @@ IshortToComplex::IshortToComplex(const ConfigurationInterface* configuration, co
     DLOG(INFO) << "role " << role_;
 
     input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
-
-    dump_ = configuration->property(role_ + ".dump", false);
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
-    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
-
-    const size_t item_size = sizeof(gr_complex);
 
     gr_interleaved_short_to_complex_ = gr::blocks::interleaved_short_to_complex::make();
 
@@ -47,6 +48,7 @@ IshortToComplex::IshortToComplex(const ConfigurationInterface* configuration, co
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            const size_t item_size = sizeof(gr_complex);
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
     if (in_streams_ > 1)

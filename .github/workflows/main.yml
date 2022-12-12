@@ -5,106 +5,124 @@ name: Simple CI
 on:
   pull_request:
     paths-ignore:
-      - '**/CITATION.cff'
+      - "**/CITATION.cff"
   push:
     paths-ignore:
-      - '**/CITATION.cff'
+      - "**/CITATION.cff"
 
 jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: sudo apt-get update && sudo apt-get install ninja-build libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev libboost-serialization-dev liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev python3-mako liborc-0.4-dev
-    - name: configure
-      run: cd build && cmake -GNinja ..
-    - name: build
-      run: cd build && ninja
-    - name: check
-      run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
-    - name: default position_test
-      run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt install -y libunwind-dev
+          sudo apt-get install -y --no-install-recommends ninja-build cmake \
+          libboost-dev libboost-date-time-dev libboost-system-dev libboost-filesystem-dev \
+          libboost-thread-dev libboost-chrono-dev libboost-serialization-dev \
+          liblog4cpp5-dev gnuradio-dev gr-osmosdr libpugixml-dev libpcap-dev libblas-dev \
+          liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
+          libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
+          python3-mako liborc-0.4-dev
+      - name: configure
+        run: cd build && cmake -GNinja ..
+      - name: build
+        run: cd build && ninja
+      - name: check
+        run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
+      - name: default position_test
+        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
 
   build-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: brew update && brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog gnuradio log4cpp openssl pugixml protobuf && pip3 install mako
-    - name: configure
-      run: cd build && cmake -GNinja ..
-    - name: build
-      run: cd build && ninja
-    - name: check
-      run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
-    - name: default position_test
-      run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: brew update && brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog gnuradio log4cpp openssl pugixml protobuf && pip3 install mako
+      - name: configure
+        run: cd build && cmake -GNinja ..
+      - name: build
+        run: cd build && ninja
+      - name: check
+        run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
+      - name: default position_test
+        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && ninja && ../install/position_test
 
+  build-macos-xcode:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: brew update && brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog gnuradio log4cpp openssl pugixml protobuf && pip3 install mako
+      - name: configure
+        run: cd build && cmake -GXcode ..
+      - name: build
+        run: cd build && xcodebuild -configuration Release
+      - name: check
+        run: cd build && xcodebuild -configuration Release -target check && ../install/volk_gnsssdr_profile && ../install/run_tests
+      - name: default position_test
+        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && xcodebuild -configuration Release -target position_test && ../install/position_test
 
   clang-format:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: brew install clang-format
-    - name: run clang-format
-      run: find . -iname \*.h -o -iname \*.c -o -iname \*.cc | xargs clang-format -style=file -i
-    - name: check
-      run: git diff > clang_format.patch && echo -e "if \n [ -s clang_format.patch ] \nthen \n echo "clang-format not applied:"; echo ""; more clang_format.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: brew install clang-format
+      - name: run clang-format
+        run: find . -iname \*.h -o -iname \*.c -o -iname \*.cc | xargs clang-format -style=file -i
+      - name: check
+        run: git diff > clang_format.patch && echo -e "if \n [ -s clang_format.patch ] \nthen \n echo "clang-format not applied:"; echo ""; more clang_format.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
 
   clang-tidy:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: brew update && brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp openssl pugixml protobuf && ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin && ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin && ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin && pip3 install mako
-    - name: Prepare run
-      run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.12.1 core_monitor core_libs pvt_libs
-    - name: run clang-tidy
-      run: cd build && run-clang-tidy -fix
-    - name: check
-      run: git diff > clang_tidy.patch && echo -e "if \n [ -s clang_tidy.patch ] \nthen \n echo "clang_tidy not applied:"; echo ""; more clang_tidy.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: brew update && brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp openssl pugixml protobuf && ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin && ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin && ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin && pip3 install mako
+      - name: Prepare run
+        run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.12.1 core_monitor core_libs pvt_libs
+      - name: run clang-tidy
+        run: cd build && run-clang-tidy -fix
+      - name: check
+        run: git diff > clang_tidy.patch && echo -e "if \n [ -s clang_tidy.patch ] \nthen \n echo "clang_tidy not applied:"; echo ""; more clang_tidy.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
 
   cpplint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: sudo apt-get install python3-pip && sudo pip3 install cpplint
-    - name: run checks
-      run: "find ./src/ -iname *.h -o -iname *.cc | xargs cpplint
-        --filter=-,+build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,\
-        +build/include_what_you_use,+build/printf_format,+build/storage_class,\
-        +readability/constructors,+readability/namespace,+readability/newline,\
-        +readability/utf8,+runtime/casting,+runtime/explicit,\
-        +runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,\
-        +runtime/member_string_references,+runtime/memset,+runtime/operator,\
-        +runtime/printf,+runtime/printf_format,+whitespace/blank_line,\
-        +whitespace/comma,+whitespace/comments,+whitespace/empty_conditional_body,\
-        +whitespace/end-of-line,+whitespace/ending-newline,+whitespace/semicolon,\
-        +whitespace/tab --exclude=./src/core/interfaces/gnss_block_interface.h
-        --exclude=./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cpu_features/test/hwcaps_for_testing.*
-        --exclude=./src/utils/nav-listener/build/nav_message.pb.h"
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: sudo apt-get install python3-pip && sudo pip3 install cpplint
+      - name: run checks
+        run: "find ./src/ -iname *.h -o -iname *.cc | xargs cpplint
+          --filter=-,+build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,\
+          +build/include_what_you_use,+build/printf_format,+build/storage_class,\
+          +readability/constructors,+readability/namespace,+readability/newline,\
+          +readability/utf8,+runtime/casting,+runtime/explicit,\
+          +runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,\
+          +runtime/member_string_references,+runtime/memset,+runtime/operator,\
+          +runtime/printf,+runtime/printf_format,+whitespace/blank_line,\
+          +whitespace/comma,+whitespace/comments,+whitespace/empty_conditional_body,\
+          +whitespace/end-of-line,+whitespace/ending-newline,+whitespace/semicolon,\
+          +whitespace/tab --exclude=./src/core/interfaces/gnss_block_interface.h
+          --exclude=./src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/cpu_features/test/hwcaps_for_testing.*
+          --exclude=./src/utils/nav-listener/build/nav_message.pb.h"
 
   prettier-markdown:
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: sudo npm install --global prettier
       - name: check markdown
         run: find . -iname "*.md" | xargs prettier --parser markdown --print-width 80 --prose-wrap always --list-different
 
-
   cmakelint:
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: |
           sudo python -m pip install --upgrade pip
@@ -112,91 +130,85 @@ jobs:
       - name: check CMake scripts
         run: find . -iname "CMakeLists.txt" -o -iname "*.cmake" | xargs cmakelint --filter=-linelength,-readability/wonkycase
 
-
   volk-gnsssdr-windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install mako
-    - name: configure
-      shell: powershell
-      run: cd build; cmake -G "Visual Studio 17 2022" ..\src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr
-    - name: build
-      run: cmake --build build --config Release
-    - name: test
-      shell: powershell
-      run: cd build; ctest -C Release
-    - name: install
-      run: cmake --install build
-    - name: run profile
-      run: cd 'C:\Program Files (x86)\volk_gnsssdr\bin'; .\volk_gnsssdr_profile.exe
-
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mako
+      - name: configure
+        shell: powershell
+        run: cd build; cmake -G "Visual Studio 17 2022" ..\src\algorithms\libs\volk_gnsssdr_module\volk_gnsssdr
+      - name: build
+        run: cmake --build build --config Release
+      - name: test
+        shell: powershell
+        run: cd build; ctest -C Release
+      - name: install
+        run: cmake --install build
+      - name: run profile
+        run: cd 'C:\Program Files (x86)\volk_gnsssdr\bin'; .\volk_gnsssdr_profile.exe
 
   volk-gnsssdr-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: sudo apt install python3-mako liborc-dev
-    - name: configure
-      run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
-    - name: build
-      run: cd build && make -j2
-    - name: install
-      run: cd build && sudo make install && sudo ldconfig
-    - name: test
-      run: volk_gnsssdr_profile
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: sudo apt install python3-mako liborc-dev
+      - name: configure
+        run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+      - name: build
+        run: cd build && make -j2
+      - name: install
+        run: cd build && sudo make install && sudo ldconfig
+      - name: test
+        run: volk_gnsssdr_profile
 
   volk-gnsssdr-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: pip3 install mako
-    - name: configure
-      run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
-    - name: build
-      run: cd build && make -j2 && sudo make install
-    - name: test
-      run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: pip3 install mako
+      - name: configure
+        run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+      - name: build
+        run: cd build && make -j2 && sudo make install
+      - name: test
+        run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
 
   volk-gnsssdr-macos-xcode:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: pip3 install mako
-    - name: configure
-      run: cd build && cmake -GXcode ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
-    - name: build
-      run: cd build && xcodebuild -configuration Release
-    - name: install
-      run: cd build && sudo xcodebuild -configuration Release -target install
-    - name: test
-      run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: pip3 install mako
+      - name: configure
+        run: cd build && cmake -GXcode ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
+      - name: build
+        run: cd build && xcodebuild -configuration Release
+      - name: install
+        run: cd build && sudo xcodebuild -configuration Release -target install
+      - name: test
+        run: cd build && ctest -C Release --exclude-regex volk_gnsssdr_32fc_32f_rotator_dotprodxnpuppet_32fc
 
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: install dependencies
-      run: sudo apt install shellcheck
-    - name: check scripts
-      run: shellcheck src/utils/scripts/*
-
+      - uses: actions/checkout@v3
+      - name: install dependencies
+        run: sudo apt install shellcheck
+      - name: check scripts
+        run: shellcheck src/utils/scripts/*
 
   REUSE-compliance:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Check REUSE compliance
-      uses: docker://fsfe/reuse
-      with:
-        args: lint
+      - uses: actions/checkout@v3
+      - name: Check REUSE compliance
+        uses: docker://fsfe/reuse
+        with:
+          args: lint

@@ -39,12 +39,12 @@ public:
     /*!
      * \brief Initialize the telemetry CRC statistics
      */
-    void initialize(std::string dump_crc_stats_filename_);
+    void initialize(std::string dump_crc_stats_filename);
 
     /*!
      * \brief Initialize the channel number and output file
      */
-    bool set_channel(int32_t channel_);
+    bool set_channel(int32_t channel);
 
     /*!
      * \brief Update the CRC statistics
@@ -54,10 +54,10 @@ public:
 private:
     std::ofstream d_dump_file;
     std::string d_dump_crc_stats_filename;
-    uint32_t num_crc_ok{0};
-    uint32_t num_crc_not_ok{0};
-    int32_t channel{0};
-    bool enable_crc_stats{false};
+    uint32_t d_num_crc_ok{0};
+    uint32_t d_num_crc_not_ok{0};
+    int32_t d_channel{0};
+    bool d_enable_crc_stats{false};
 };
 
 

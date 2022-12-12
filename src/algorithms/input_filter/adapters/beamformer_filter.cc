@@ -26,12 +26,12 @@ BeamformerFilter::BeamformerFilter(
     unsigned int in_stream, unsigned int out_stream)
     : role_(role),
       in_stream_(in_stream),
-      out_stream_(out_stream)
+      out_stream_(out_stream),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/input_filter.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")

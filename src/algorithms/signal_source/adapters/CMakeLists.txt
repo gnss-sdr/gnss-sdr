@@ -6,14 +6,11 @@
 
 
 # Optional drivers
-set(OPT_DRIVER_SOURCES "")
-set(OPT_DRIVER_HEADERS "")
 
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} custom_udp_signal_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} custom_udp_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES custom_udp_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS custom_udp_signal_source.h)
 endif()
-
 
 if(ENABLE_PLUTOSDR)
     ##############################################
@@ -29,30 +26,26 @@ if(ENABLE_PLUTOSDR)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
 endif()
 
-
 if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware
     ###############################################
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} fmcomms2_signal_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} fmcomms2_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES fmcomms2_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS fmcomms2_signal_source.h)
 endif()
-
 
 if(ENABLE_AD9361)
     ###############################################
     # AD9361 DIRECT TO FPGA Hardware
     ###############################################
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad9361_fpga_signal_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad9361_fpga_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES ad9361_fpga_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS ad9361_fpga_signal_source.h)
 endif()
-
 
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} flexiband_signal_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} flexiband_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES flexiband_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS flexiband_signal_source.h)
 endif()
-
 
 if(ENABLE_ARRAY)
     ##############################################
@@ -62,39 +55,36 @@ if(ENABLE_ARRAY)
         message(" gr-dbfcttc not found, install it from https://github.com/gnss-sdr/gr-dbfcttc")
         message(FATAL_ERROR "gr-dbfcttc required for building gnss-sdr with this option enabled")
     endif()
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} raw_array_signal_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} raw_array_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES raw_array_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS raw_array_signal_source.h)
 endif()
-
 
 if(ENABLE_OSMOSDR)
     ################################################################################
     # OsmoSDR - https://osmocom.org/projects/gr-osmosdr/
     ################################################################################
     if(GROSMOSDR_FOUND)
-        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} osmosdr_signal_source.cc)
-        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} osmosdr_signal_source.h)
+        list(APPEND OPT_DRIVER_SOURCES osmosdr_signal_source.cc)
+        list(APPEND OPT_DRIVER_HEADERS osmosdr_signal_source.h)
     endif()
 endif()
 
 if(ENABLE_LIMESDR)
     if(GRLIMESDR_FOUND)
-        set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} limesdr_signal_source.cc)
-        set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} limesdr_signal_source.h)
+        list(APPEND OPT_DRIVER_SOURCES limesdr_signal_source.cc)
+        list(APPEND OPT_DRIVER_HEADERS limesdr_signal_source.h)
     endif()
 endif()
 
-
 if(ENABLE_UHD)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} uhd_signal_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} uhd_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES uhd_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS uhd_signal_source.h)
 endif()
 
 if(ENABLE_ZMQ)
     list(APPEND OPT_DRIVER_SOURCES zmq_signal_source.cc)
     list(APPEND OPT_DRIVER_HEADERS zmq_signal_source.h)
 endif()
-
 
 set(SIGNAL_SOURCE_ADAPTER_SOURCES
     signal_source_base.cc
@@ -226,7 +216,6 @@ if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
     )
 endif()
 
-
 if(ENABLE_AD9361 AND LIBIIO_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
@@ -309,8 +298,6 @@ endif()
 target_compile_definitions(signal_source_adapters
     PRIVATE -DGNSSSDR_INSTALL_DIR="${CMAKE_INSTALL_PREFIX}"
 )
-
-
 
 set_property(TARGET signal_source_adapters
     APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

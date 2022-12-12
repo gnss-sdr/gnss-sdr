@@ -190,7 +190,11 @@ glonass_l1_ca_dll_pll_c_aid_tracking_sc::glonass_l1_ca_dll_pll_c_aid_tracking_sc
 
     systemName["R"] = std::string("Glonass");
 
-    set_relative_rate(1.0 / static_cast<double>(d_vector_length));
+#if GNURADIO_GREATER_THAN_38
+    this->set_relative_rate(1, static_cast<uint64_t>(d_vector_length));
+#else
+    this->set_relative_rate(1.0 / static_cast<double>(d_vector_length));
+#endif
     // set_min_output_buffer((int64_t)300);
 }
 
@@ -512,11 +516,11 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_sc::set_channel(uint32_t channel)
                         {
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << '\n';
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                         }
@@ -871,7 +875,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
-            catch (const std::ifstream::failure &e)
+            catch (const std::ofstream::failure &e)
                 {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
                 }

@@ -33,7 +33,7 @@ GpsL1CaDllPllTrackingGPU::GpsL1CaDllPllTrackingGPU(
     unsigned int in_streams, unsigned int out_streams) : role_(role), in_streams_(in_streams), out_streams_(out_streams)
 {
     DLOG(INFO) << "role " << role;
-    //################# CONFIGURATION PARAMETERS ########################
+    // ################# CONFIGURATION PARAMETERS ########################
     int fs_in;
     int vector_length;
     bool dump;

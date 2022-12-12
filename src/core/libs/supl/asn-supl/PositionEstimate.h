@@ -37,6 +37,7 @@ extern "C"
         ENUMERATED_t latitudeSign;
         long latitude;
         long longitude;
+        // clang-format off
         struct uncertainty
         {
             long uncertaintySemiMajor;
@@ -46,6 +47,7 @@ extern "C"
             /* Context for parsing across buffer boundaries */
             asn_struct_ctx_t _asn_ctx;
         } * uncertainty;
+        // clang-format on
         long *confidence /* OPTIONAL */;
         struct AltitudeInfo *altitudeInfo /* OPTIONAL */;
         /*

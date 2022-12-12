@@ -402,11 +402,11 @@ void beidou_b1i_telemetry_decoder_gs::set_channel(int32_t channel)
                         {
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << ": exception opening Beidou TLM dump file. " << e.what();
                         }
@@ -663,7 +663,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                             tmp_int = static_cast<int32_t>(current_symbol.PRN);
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
                         }

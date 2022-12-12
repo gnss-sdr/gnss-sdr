@@ -33,17 +33,17 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : gnss_synchro_(nullptr),
-                                role_(role),
-                                doppler_center_(0),
-                                channel_(0),
-                                doppler_step_(0),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams)
+    : gnss_synchro_(nullptr),
+      role_(role),
+      doppler_center_(0),
+      channel_(0),
+      in_streams_(in_streams),
+      out_streams_(out_streams),
+      acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
+      acq_iq_(configuration->property(role + ".acquire_iq", false))
 {
-    acq_parameters_.SetFromConfiguration(configuration, role, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_CODE_LENGTH_CHIPS);
-
-    DLOG(INFO) << "Role " << role;
+    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_CODE_LENGTH_CHIPS);
 
     if (FLAGS_doppler_max != 0)
         {
@@ -52,13 +52,6 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     fs_in_ = acq_parameters_.fs_in;
-
-    acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
-    acq_iq_ = configuration->property(role + ".acquire_iq", false);
-    if (acq_iq_)
-        {
-            acq_pilot_ = false;
-        }
 
     uint32_t code_length = acq_parameters_.code_length;
     uint32_t nsamples_total = acq_parameters_.samples_per_code;
@@ -69,6 +62,11 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
     volk_gnsssdr::vector<std::complex<float>> code(nsamples_total);
     volk_gnsssdr::vector<std::complex<float>> fft_codes_padded(nsamples_total);
     d_all_fft_codes_ = volk_gnsssdr::vector<uint32_t>(nsamples_total * GALILEO_E5A_NUMBER_OF_CODES);  // memory containing all the possible fft codes for PRN 0 to 32
+
+    if (acq_iq_)
+        {
+            acq_pilot_ = false;
+        }
 
     float max;  // temporary maxima search
     int32_t tmp;
@@ -138,6 +136,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
 
     acq_parameters_.all_fft_codes = d_all_fft_codes_.data();
 
+    DLOG(INFO) << "role " << role_;
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters_);
 
     if (in_streams_ > 1)

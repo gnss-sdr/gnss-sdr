@@ -75,12 +75,13 @@ find_path(MATIO_INCLUDE_DIR
         /usr/include
         /usr/local/include
         /opt/local/include
+        ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
     DOC "The MATIO include directory"
 )
 
 # Look for the library.
 find_library(MATIO_LIBRARY
-    NAMES matio
+    NAMES matio libmatio
     PATHS
       ${MATIO_ROOT_USER_DEFINED}/lib
       ${MATIO_ROOT_USER_DEFINED}/lib64
@@ -110,6 +111,7 @@ find_library(MATIO_LIBRARY
       /usr/local/lib
       /usr/local/lib64
       /opt/local/lib
+      ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib
     DOC "The MATIO library"
 )
 
@@ -182,5 +184,6 @@ if(MATIO_FOUND AND NOT TARGET Matio::matio)
         IMPORTED_LOCATION "${MATIO_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${MATIO_INCLUDE_DIR}"
         INTERFACE_LINK_LIBRARIES "${MATIO_LIBRARY}"
+        IMPORTED_IMPLIB "${MATIO_LIBRARY}"
     )
 endif()

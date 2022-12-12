@@ -41,34 +41,34 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     : configuration_(configuration),
       role_(role),
       gnss_synchro_(nullptr),
+      item_size_(sizeof(gr_complex)),
       threshold_(0.0),
       channel_(0),
+      doppler_max_(configuration->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
+      sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 4)),
       in_streams_(in_streams),
-      out_streams_(out_streams)
+      out_streams_(out_streams),
+      bit_transition_flag_(configuration_->property(role + ".bit_transition_flag", false)),
+      dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./data/acquisition.dat";
-
-    DLOG(INFO) << "role " << role;
-
-    item_type_ = configuration_->property(role + ".item_type", default_item_type);
+    item_type_ = configuration_->property(role_ + ".item_type", default_item_type);
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_ = configuration_->property(role + ".dump", false);
-    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
+
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 4);
 
     // -- Find number of samples per spreading code -------------------------
     code_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));
 
-    /* Calculate the folding factor value based on the calculations */
+    /* Calculate the folding factor value */
     auto temp = static_cast<unsigned int>(ceil(sqrt(log2(code_length_))));
-    folding_factor_ = configuration_->property(role + ".folding_factor", temp);
+    folding_factor_ = configuration_->property(role_ + ".folding_factor", temp);
 
     if (sampled_ms_ % folding_factor_ != 0)
         {
@@ -89,23 +89,24 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
         }
 
     vector_length_ = code_length_ * sampled_ms_;
-    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
         {
-            max_dwells_ = configuration_->property(role + ".max_dwells", 1);
+            max_dwells_ = configuration_->property(role_ + ".max_dwells", 1);
         }
     else
         {
             max_dwells_ = 2;
         }
 
-    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
+    dump_filename_ = configuration_->property(role_ + ".dump_filename", default_dump_filename);
 
     bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
 
     int samples_per_ms = round(code_length_);
     code_ = std::vector<std::complex<float>>(code_length_);
+
+    DLOG(INFO) << "role " << role_;
     /* Object relevant information for debugging */
     LOG(INFO) << "Implementation: " << this->implementation()
               << ", Vector Length: " << vector_length_
@@ -116,7 +117,6 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
 
     if (item_type_ == "gr_complex")
         {
-            item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
                 sampled_ms_, max_dwells_, doppler_max_, fs_in_,
                 samples_per_ms, code_length_, bit_transition_flag_,
@@ -130,7 +130,8 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
         }
     else
         {
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
+            acquisition_cc_ = nullptr;
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 

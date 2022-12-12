@@ -106,7 +106,7 @@ float cn0_m2m4_estimator(const gr_complex* Prompt_buffer, int length, float coh_
  * Volume I, Chapter 8: GPS Receivers, AJ Systems, Los Altos, CA 94024.
  * Inc.: 329-407.
  */
-float carrier_lock_detector(gr_complex* Prompt_buffer, int length);
+float carrier_lock_detector(const gr_complex* Prompt_buffer, int length);
 
 
 /** \} */

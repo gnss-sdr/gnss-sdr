@@ -36,7 +36,7 @@ Glonass_Gnav_Navigation_Message::Glonass_Gnav_Navigation_Message()
 }
 
 
-bool Glonass_Gnav_Navigation_Message::CRC_test(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits) const
+bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS>& bits) const
 {
     uint32_t sum_bits = 0;
     int32_t sum_hamming = 0;
@@ -128,7 +128,28 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(const std::bitset<GLONASS_GNAV_ST
             return true;
         }
 
-    // All other conditions are assumed errors. TODO: Add correction for case B
+    if (C_Sigma && (sum_bits & 1))
+        {
+            int32_t syndrome = C1;
+            syndrome |= (C2 ? 2 : 0);
+            syndrome |= (C3 ? 4 : 0);
+            syndrome |= (C4 ? 8 : 0);
+            syndrome |= (C5 ? 16 : 0);
+            syndrome |= (C6 ? 32 : 0);
+            syndrome |= (C7 ? 64 : 0);
+            if (syndrome < 85)
+                {
+                    const int32_t locator = GLONASS_GNAV_ECC_LOCATOR[syndrome];
+                    bits[locator] = !bits[locator];
+                    return true;
+                }
+            else
+                {
+                    return false;
+                }
+        }
+
+    // All other conditions are assumed errors.
     return false;
 }
 
@@ -238,7 +259,7 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
     uint64_t P_1_tmp = 0;
 
     // Unpack bytes to bits
-    const std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(frame_string);
+    std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(frame_string);
 
     // Perform data verification and exit code if error in bit sequence
     flag_CRC_test = CRC_test(string_bits);

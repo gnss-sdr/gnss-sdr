@@ -112,7 +112,7 @@ for t=2:length(navSolution.RX_time)
 
         rhoDot_pri(chan,t)=(sat_velX(chan,t)-xDot_u)*a_x(chan,t)...
             +(sat_velY(chan,t)-yDot_u)*a_y(chan,t)...
-            +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t);
+            +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t)+cdeltatDot_u;
     end
 
 
@@ -131,8 +131,8 @@ for t=2:length(navSolution.RX_time)
 
     % Kalman estimation (measurement update)
     for chan=1:5 % Measurement matrix H assembling
-        kf_yerr(chan,t)=c_pr_m(chan,t)-sat_prg_m(chan,t);%-0.000157*SPEED_OF_LIGHT_M_S;
-        kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1)-rhoDot_pri(chan,t);
+        kf_yerr(chan,t)=c_pr_m(chan,t)-sat_prg_m(chan,t);
+        kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+cdeltatDot_u)-rhoDot_pri(chan,t);
     end
 
     % DOUBLES DIFFERENCES

@@ -115,8 +115,6 @@ for t=2:length(navSolution.RX_time)
             +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t)+cdeltatDot_u;
     end
 
-
-
     for chan=1:5 % Measurement matrix H assembling
         % It has 8 columns (8 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
         kf_H(chan, 1) = a_x(chan,t); kf_H(chan, 2) = a_y(chan,t); kf_H(chan, 3) = a_z(chan,t); kf_H(chan, 7) = 1.0;
@@ -202,6 +200,15 @@ for t=2:length(navSolution.RX_time)
         rhoDot_pri_filt(chan,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+corr_kf_state(8,t))-kf_yerr_g(chan+sat_number,t);
         %convert rhoDot_pri to doppler shift!
         sat_dopp_hz_filt(chan,t)=(rhoDot_pri_filt(chan,t)-corr_kf_state(8,t))/Lambda_GPS_L1;
-
+        
+%       carrier_phase_rads = 0;
+        carrier_freq_hz =GPS_L1_freq_hz+sat_dopp_hz_filt(chan,t);
+%       carrier_freq_rate_hz_s = 0;
+%       code_phase_chips = 0;
     end
+
+%       carrier_phase_rads = 0;
+%       carrier_freq_hz = 0;
+%       carrier_freq_rate_hz_s = 0;
+%       code_phase_chips = 0;
 end

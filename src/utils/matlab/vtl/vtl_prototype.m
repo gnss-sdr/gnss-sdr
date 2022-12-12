@@ -44,6 +44,7 @@ pr_dot_var=30;%m^2/s^2
 samplingFreq=5000000;
 channels=6;
 TTFF_sec=41.48;
+spirent_index_TTFF=416;
 
 plot_skyplot=0;
 plot_reference=1;

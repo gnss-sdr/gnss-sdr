@@ -98,10 +98,10 @@ sgtitle('velocities')
 
 VTL_POS=figure('Name','VTL UTM COORD CENTERED IN 1^{ST} POSITION');
 subplot(2,2,1);
-plot(navSolution.X,'.');
+plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.X,'.');
 hold on;grid on
-plot(corr_kf_state(1,3:end))
-% plot(refSolution.X,'.')
+plot(navSolution.RX_time(3:end)-navSolution.RX_time(1),corr_kf_state(1,3:end))
+plot(refSolution.SIM_time/1000-TTFF_sec,refSolution.X,'.')
 ylabel('X (m)')
 xlabel('time U.A.')
 % ylim([-200 800])
@@ -109,10 +109,10 @@ title('Subplot 1: X ')
 legend ('raw navSolution','raw kf state','kferr','Location','eastoutside')
 
 subplot(2,2,2);
-plot(navSolution.Y,'.');
+plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.Y,'.');
 hold on;grid on
-plot(corr_kf_state(2,3:end))
-% plot(refSolution.Y,'.')
+plot(navSolution.RX_time(3:end)-navSolution.RX_time(1),corr_kf_state(2,3:end))
+plot(refSolution.SIM_time/1000-TTFF_sec,refSolution.Y,'.')
 ylabel('Y (m)')
 xlabel('time U.A.')
 % ylim([-200 50])
@@ -120,10 +120,10 @@ title('Subplot 1: Y ')
 legend ('raw navSolution','raw kf state','kferr','Location','eastoutside')
 
 subplot(2,2,3);
-plot(navSolution.Z,'.');
+plot(navSolution.RX_time-navSolution.RX_time(1),navSolution.Z,'.');
 hold on;grid on
-plot(corr_kf_state(3,3:end))
-% plot(refSolution.Z,'.')
+plot(navSolution.RX_time(3:end)-navSolution.RX_time(1),corr_kf_state(3,3:end))
+plot(refSolution.SIM_time/1000-TTFF_sec,refSolution.Z,'.')
 ylabel('Z (m)')
 xlabel('time U.A.')
 % ylim([-350 50])

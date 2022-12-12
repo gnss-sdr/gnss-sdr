@@ -29,7 +29,8 @@ NotchFilterLite::NotchFilterLite(const ConfigurationInterface* configuration,
     unsigned int out_streams)
     : role_(role),
       in_streams_(in_streams),
-      out_streams_(out_streams)
+      out_streams_(out_streams),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/input_filter.dat");
@@ -39,7 +40,6 @@ NotchFilterLite::NotchFilterLite(const ConfigurationInterface* configuration,
     const int default_n_segments_reset = 5000000;
     const int default_length_ = 32;
     const int default_n_segments_est = 12500;
-
     const float samp_freq = configuration->property("SignalSource.sampling_frequency", default_samp_freq);
     const float default_coeff_rate = samp_freq * 0.1F;
     const float p_c_factor = configuration->property(role + ".p_c_factor", default_p_c_factor);
@@ -51,7 +51,6 @@ NotchFilterLite::NotchFilterLite(const ConfigurationInterface* configuration,
 
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
 
     int n_segments_coeff = static_cast<int>((samp_freq / coeff_rate) / static_cast<float>(length_));
     n_segments_coeff = std::max(1, n_segments_coeff);

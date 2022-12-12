@@ -37,19 +37,19 @@ namespace own = gsl;
 GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : gnss_synchro_(nullptr),
-                                role_(role),
-                                threshold_(0.0),
-                                doppler_center_(0),
-                                channel_(0),
-                                doppler_step_(0),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams)
+    : gnss_synchro_(nullptr),
+      role_(role),
+      threshold_(0.0),
+      doppler_center_(0),
+      channel_(0),
+      in_streams_(in_streams),
+      out_streams_(out_streams),
+      acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
+      acq_iq_(configuration->property(role + ".acquire_iq", false))
 {
     acq_parameters_.ms_per_code = 1;
-    acq_parameters_.SetFromConfiguration(configuration, role, GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_OPT_ACQ_FS_SPS);
-
-    DLOG(INFO) << "Role " << role;
+    acq_parameters_.SetFromConfiguration(configuration, role_, GALILEO_E5B_CODE_CHIP_RATE_CPS, GALILEO_E5B_OPT_ACQ_FS_SPS);
 
     if (FLAGS_doppler_max != 0)
         {
@@ -61,21 +61,20 @@ GalileoE5bPcpsAcquisition::GalileoE5bPcpsAcquisition(const ConfigurationInterfac
     item_size_ = acq_parameters_.it_size;
     fs_in_ = acq_parameters_.fs_in;
 
-    acq_pilot_ = configuration->property(role + ".acquire_pilot", false);
-    acq_iq_ = configuration->property(role + ".acquire_iq", false);
-    if (acq_iq_)
-        {
-            acq_pilot_ = false;
-        }
-
     code_length_ = static_cast<unsigned int>(std::floor(static_cast<double>(acq_parameters_.resampled_fs) / (GALILEO_E5B_CODE_CHIP_RATE_CPS / GALILEO_E5B_CODE_LENGTH_CHIPS)));
     vector_length_ = static_cast<unsigned int>(std::floor(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms) * (acq_parameters_.bit_transition_flag ? 2.0F : 1.0F));
     code_ = volk_gnsssdr::vector<std::complex<float>>(vector_length_);
 
     sampled_ms_ = acq_parameters_.sampled_ms;
 
+    DLOG(INFO) << "role " << role_;
     acquisition_ = pcps_make_acquisition(acq_parameters_);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
+
+    if (acq_iq_)
+        {
+            acq_pilot_ = false;
+        }
 
     if (in_streams_ > 1)
         {

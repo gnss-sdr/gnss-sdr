@@ -91,12 +91,12 @@ public:
     void stop_tracking() override;
 
 private:
-    glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr tracking_cc;
-    glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr tracking_sc;
-    size_t item_size_;
-    std::string item_type_;
-    unsigned int channel_;
+    glonass_l2_ca_dll_pll_c_aid_tracking_cc_sptr tracking_cc_sptr_;
+    glonass_l2_ca_dll_pll_c_aid_tracking_sc_sptr tracking_sc_sptr_;
     std::string role_;
+    std::string item_type_;
+    size_t item_size_;
+    unsigned int channel_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

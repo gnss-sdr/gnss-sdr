@@ -55,7 +55,7 @@ public:
      * \brief Compute CRC for GLONASS GNAV strings
      * \param bits Bits of the string message where to compute CRC
      */
-    bool CRC_test(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits) const;
+    bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS>& bits) const;
 
     /*!
      * \brief Computes the frame number being decoded given the satellite slot number

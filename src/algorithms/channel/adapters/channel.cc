@@ -34,17 +34,18 @@ Channel::Channel(const ConfigurationInterface* configuration,
     std::shared_ptr<TelemetryDecoderInterface> nav,
     const std::string& role,
     const std::string& signal_str,
-    Concurrent_Queue<pmt::pmt_t>* queue) : acq_(std::move(acq)),
-                                           trk_(std::move(trk)),
-                                           nav_(std::move(nav)),
-                                           role_(role),
-                                           channel_(channel)
+    Concurrent_Queue<pmt::pmt_t>* queue)
+    : acq_(std::move(acq)),
+      trk_(std::move(trk)),
+      nav_(std::move(nav)),
+      role_(role),
+      channel_(channel),
+      glonass_extend_correlation_ms_(configuration->property("Tracking_1G.extend_correlation_ms", 0) + configuration->property("Tracking_2G.extend_correlation_ms", 0)),
+      connected_(false),
+      repeat_(configuration->property("Acquisition_" + signal_str + ".repeat_satellite", false)),
+      flag_enable_fpga_(configuration->property("GNSS-SDR.enable_FPGA", false))
 {
-    glonass_extend_correlation_ms_ = configuration->property("Tracking_1G.extend_correlation_ms", 0) + configuration->property("Tracking_2G.extend_correlation_ms", 0);
-
     channel_fsm_ = std::make_shared<ChannelFsm>();
-
-    flag_enable_fpga_ = configuration->property("GNSS-SDR.enable_FPGA", false);
 
     acq_->set_channel(channel_);
     acq_->set_channel_fsm(channel_fsm_);
@@ -55,6 +56,8 @@ Channel::Channel(const ConfigurationInterface* configuration,
     gnss_synchro_.Channel_ID = channel_;
     acq_->set_gnss_synchro(&gnss_synchro_);
     trk_->set_gnss_synchro(&gnss_synchro_);
+
+    repeat_ = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".repeat_satellite", repeat_);
 
     // Provide a warning to the user about the change of parameter name
     if (channel_ == 0)
@@ -91,17 +94,12 @@ Channel::Channel(const ConfigurationInterface* configuration,
     acq_->set_threshold(threshold);
 
     acq_->init();
-    repeat_ = configuration->property("Acquisition_" + signal_str + ".repeat_satellite", false);
-    repeat_ = configuration->property("Acquisition_" + signal_str + std::to_string(channel_) + ".repeat_satellite", repeat_);
-    DLOG(INFO) << "Channel " << channel_ << " satellite repeat = " << repeat_;
 
     channel_fsm_->set_acquisition(acq_);
     channel_fsm_->set_tracking(trk_);
     channel_fsm_->set_telemetry(nav_);
     channel_fsm_->set_channel(channel_);
     channel_fsm_->set_queue(queue);
-
-    connected_ = false;
 
     gnss_signal_ = Gnss_Signal(signal_str);
 
@@ -273,7 +271,7 @@ void Channel::start_acquisition()
     DLOG(INFO) << "Channel start_acquisition()";
 }
 
-bool Channel::glonass_dll_pll_c_aid_tracking_check()
+bool Channel::glonass_dll_pll_c_aid_tracking_check() const
 {
     if (glonass_extend_correlation_ms_)
         {

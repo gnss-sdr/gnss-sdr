@@ -31,36 +31,39 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams)
+    : role_(role),
+      gnss_synchro_(nullptr),
+      item_size_(sizeof(gr_complex)),
+      threshold_(0.0),
+      doppler_max_(configuration->property(role + ".doppler_max", 5000)),
+      max_dwells_(configuration->property(role + ".max_dwells", 1)),
+      channel_(0),
+      doppler_step_(0),
+      sampled_ms_(configuration->property(role + ".coherent_integration_time_ms", 1)),
+      in_streams_(in_streams),
+      out_streams_(out_streams),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./acquisition.mat";
-
-    DLOG(INFO) << "role " << role;
     Acq_Conf acq_parameters = Acq_Conf();
 
-    item_type_ = configuration->property(role + ".item_type", default_item_type);
+    item_type_ = configuration->property(role_ + ".item_type", default_item_type);
     int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(acq_parameters.fs_in)));
-    dump_ = configuration->property(role + ".dump", false);
     acq_parameters.dump = dump_;
-    dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
+    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
     acq_parameters.dump_filename = dump_filename_;
-    doppler_max_ = configuration->property(role + ".doppler_max", 5000);
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
     acq_parameters.doppler_max = doppler_max_;
-    sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
     acq_parameters.sampled_ms = sampled_ms_;
-    max_dwells_ = configuration->property(role + ".max_dwells", 1);
     acq_parameters.max_dwells = max_dwells_;
-
     acq_parameters.blocking_on_standby = configuration->property(role + ".blocking_on_standby", false);
 
     // -- Find number of samples per spreading code -------------------------
@@ -68,21 +71,17 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     acq_parameters.samples_per_ms = static_cast<float>(vector_length_);
     code_ = std::vector<std::complex<float>>(vector_length_);
 
+    DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")
         {
-            item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_make_acquisition_fine_doppler_cc(acq_parameters);
         }
     else
         {
-            item_size_ = sizeof(gr_complex);
+            item_size_ = 0;
+            acquisition_cc_ = nullptr;
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
-
-    channel_ = 0;
-    threshold_ = 0.0;
-    doppler_step_ = 0;
-    gnss_synchro_ = nullptr;
 
     if (in_streams_ > 1)
         {

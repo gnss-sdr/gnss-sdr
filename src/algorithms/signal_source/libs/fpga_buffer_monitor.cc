@@ -111,11 +111,11 @@ Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name,
                 {
                     try
                         {
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(dump_filename_.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "FPGA buffer monitor dump enabled. Log file: " << dump_filename_.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception opening FPGA buffer monitor dump file " << e.what();
                         }

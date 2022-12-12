@@ -5,13 +5,10 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-set(OPT_DRIVER_SOURCES "")
-set(OPT_DRIVER_HEADERS "")
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
-    set(OPT_DRIVER_SOURCES gr_complex_ip_packet_source.cc)
-    set(OPT_DRIVER_HEADERS gr_complex_ip_packet_source.h)
+    list(APPEND OPT_DRIVER_SOURCES gr_complex_ip_packet_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS gr_complex_ip_packet_source.h)
 endif()
-
 
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     fifo_reader.cc
@@ -25,7 +22,6 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     labsat23_source.cc
     ${OPT_DRIVER_SOURCES}
 )
-
 
 set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     fifo_reader.h
@@ -131,6 +127,17 @@ else()
     target_compile_definitions(signal_source_gr_blocks
         PRIVATE
             -DHAS_GENERIC_LAMBDA=0
+    )
+endif()
+
+if(Boost_VERSION_STRING VERSION_GREATER "1.57.99")
+    target_compile_definitions(signal_source_gr_blocks
+        PRIVATE
+            -DHAS_BOOST_ENDIAN=1
+    )
+    target_link_libraries(signal_source_gr_blocks
+        PRIVATE
+            Boost::headers
     )
 endif()
 

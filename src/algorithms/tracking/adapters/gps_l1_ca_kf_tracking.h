@@ -85,10 +85,10 @@ public:
     void stop_tracking() override;
 
 private:
-    kf_tracking_sptr tracking_;
+    kf_tracking_sptr tracking_sptr_;
+    std::string role_;
     size_t item_size_;
     unsigned int channel_;
-    std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

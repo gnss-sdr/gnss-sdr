@@ -163,6 +163,13 @@ if(PMT_USES_BOOST_ANY)
     )
 endif()
 
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DGNURADIO_GREATER_THAN_38=1
+    )
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(tracking_gr_blocks

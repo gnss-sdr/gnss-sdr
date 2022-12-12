@@ -22,7 +22,6 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_sdr_flags.h"
-#include "gnss_synchro.h"
 #include "gps_l2c_signal_replica.h"
 #include <glog/logging.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex

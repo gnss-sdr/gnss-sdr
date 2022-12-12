@@ -58,11 +58,10 @@ bool Monitor_Ephemeris_Udp_Sink::write_galileo_ephemeris(const std::shared_ptr<G
     for (const auto& endpoint : endpoints)
         {
             socket.open(endpoint.protocol(), error);
-            socket.connect(endpoint, error);
 
             try
                 {
-                    if (socket.send(boost::asio::buffer(outbound_data)) == 0)
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
                         {
                             return false;
                         }
@@ -95,11 +94,10 @@ bool Monitor_Ephemeris_Udp_Sink::write_gps_ephemeris(const std::shared_ptr<Gps_E
     for (const auto& endpoint : endpoints)
         {
             socket.open(endpoint.protocol(), error);
-            socket.connect(endpoint, error);
 
             try
                 {
-                    if (socket.send(boost::asio::buffer(outbound_data)) == 0)
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
                         {
                             return false;
                         }

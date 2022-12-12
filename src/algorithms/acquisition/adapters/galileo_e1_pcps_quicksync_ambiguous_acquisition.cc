@@ -40,30 +40,28 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
     : configuration_(configuration),
       role_(role),
       gnss_synchro_(nullptr),
+      item_size_(sizeof(gr_complex)),
       threshold_(0.0),
       channel_(0),
+      doppler_max_(configuration_->property(role + ".doppler_max", 5000)),
       doppler_step_(0),
+      sampled_ms_(configuration_->property(role + ".coherent_integration_time_ms", 8)),
       in_streams_(in_streams),
-      out_streams_(out_streams)
+      out_streams_(out_streams),
+      bit_transition_flag_(configuration_->property(role + ".bit_transition_flag", false)),
+      dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_filename("../data/acquisition.dat");
-
-    DLOG(INFO) << "role " << role;
-
-    item_type_ = configuration_->property(role + ".item_type",
-        default_item_type);
-
+    item_type_ = configuration_->property(role + ".item_type", default_item_type);
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
-    dump_ = configuration_->property(role + ".dump", false);
-    doppler_max_ = configuration_->property(role + ".doppler_max", 5000);
+    dump_filename_ = configuration_->property(role + ".dump_filename", default_dump_filename);
 
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
-    sampled_ms_ = configuration_->property(role + ".coherent_integration_time_ms", 8);
 
     /* --- Find number of samples per spreading code (4 ms)  -----------------*/
     code_length_ = static_cast<unsigned int>(round(
@@ -71,6 +69,7 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
 
     auto samples_per_ms = static_cast<int>(round(code_length_ / 4.0));
 
+    DLOG(INFO) << "role " << role;
     /*Calculate the folding factor value based on the formula described in the paper.
     This may be a bug, but acquisition also work by variying the folding factor at va-
     lues different that the expressed in the paper. In adition, it is important to point
@@ -100,7 +99,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
         }
     // vector_length_ = (sampled_ms_/folding_factor_) * code_length_;
     vector_length_ = sampled_ms_ * samples_per_ms;
-    bit_transition_flag_ = configuration_->property(role + ".bit_transition_flag", false);
 
     if (!bit_transition_flag_)
         {
@@ -111,8 +109,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
             max_dwells_ = 2;
         }
 
-    dump_filename_ = configuration_->property(role + ".dump_filename",
-        default_dump_filename);
 
     bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
 
@@ -124,7 +120,6 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
               << ", Code Length: " << code_length_;
     if (item_type_ == "gr_complex")
         {
-            item_size_ = sizeof(gr_complex);
             acquisition_cc_ = pcps_quicksync_make_acquisition_cc(folding_factor_,
                 sampled_ms_, max_dwells_, doppler_max_, fs_in_,
                 samples_per_ms, code_length_, bit_transition_flag_,
@@ -138,7 +133,8 @@ GalileoE1PcpsQuickSyncAmbiguousAcquisition::GalileoE1PcpsQuickSyncAmbiguousAcqui
         }
     else
         {
-            item_size_ = sizeof(gr_complex);
+            acquisition_cc_ = nullptr;
+            item_size_ = 0;
             LOG(WARNING) << item_type_ << " unknown acquisition item type";
         }
 

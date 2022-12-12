@@ -33,11 +33,14 @@ direct_resampler_conditioner_cc_sptr direct_resampler_make_conditioner_cc(
 
 direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
     double sample_freq_in,
-    double sample_freq_out) : gr::block("direct_resampler_conditioner_cc", gr::io_signature::make(1, 1, sizeof(gr_complex)), gr::io_signature::make(1, 1, sizeof(gr_complex))),
-                              d_sample_freq_in(sample_freq_in),
-                              d_sample_freq_out(sample_freq_out),
-                              d_phase(0),
-                              d_lphase(0)
+    double sample_freq_out)
+    : gr::block("direct_resampler_conditioner_cc",
+          gr::io_signature::make(1, 1, sizeof(gr_complex)),
+          gr::io_signature::make(1, 1, sizeof(gr_complex))),
+      d_sample_freq_in(sample_freq_in),
+      d_sample_freq_out(sample_freq_out),
+      d_phase(0),
+      d_lphase(0)
 {
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
     const double two_32 = 4294967296.0;
@@ -49,8 +52,11 @@ direct_resampler_conditioner_cc::direct_resampler_conditioner_cc(
         {
             d_phase_step = static_cast<uint32_t>(floor(two_32 * sample_freq_in / sample_freq_out));
         }
-    set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
-    set_output_multiple(1);
+#ifdef GR_GREATER_38
+    this->set_relative_rate(static_cast<uint64_t>(sample_freq_out), static_cast<uint64_t>(sample_freq_in));
+#else
+    this->set_relative_rate(sample_freq_out / sample_freq_in);
+#endif
 }
 
 

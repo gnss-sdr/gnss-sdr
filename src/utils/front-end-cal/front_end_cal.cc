@@ -69,7 +69,7 @@ bool FrontEndCal::read_assistance_from_XML()
 
 int FrontEndCal::Get_SUPL_Assist()
 {
-    //######### GNSS Assistance #################################
+    // ######### GNSS Assistance #################################
     Gnss_Sdr_Supl_Client supl_client_acquisition_;
     Gnss_Sdr_Supl_Client supl_client_ephemeris_;
     int supl_mcc;  // Current network MCC (Mobile country code), 3 digits.

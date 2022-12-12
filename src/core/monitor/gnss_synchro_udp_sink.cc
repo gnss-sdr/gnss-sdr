@@ -56,11 +56,10 @@ bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& 
     for (const auto& endpoint : endpoints)
         {
             socket.open(endpoint.protocol(), error);
-            socket.connect(endpoint, error);
 
             try
                 {
-                    if (socket.send(boost::asio::buffer(outbound_data)) == 0)
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
                         {
                             std::cerr << "Gnss_Synchro_Udp_Sink sent 0 bytes\n";
                         }

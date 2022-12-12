@@ -122,7 +122,7 @@ public:
     void stop_tracking() override;
 
 private:
-    const std::string default_device_name_GPS_L5 = "multicorrelator_resampler_3_1_AXI";  // UIO device name
+    const std::string default_device_name_GPS_L5_ = "multicorrelator_resampler_3_1_AXI";  // UIO device name
 
     static const uint32_t NUM_PRNs = 32;  // total number of PRNs
 
@@ -131,17 +131,16 @@ private:
     static const int32_t LOCAL_CODE_FPGA_ENABLE_WRITE_MEMORY = 0x0C000000;      // flag that enables WE (Write Enable) of the local code FPGA
     static const int32_t LOCAL_CODE_FPGA_CORRELATOR_SELECT_COUNT = 0x20000000;  // flag that selects the writing of the pilot code in the FPGA (as opposed to the data code)
 
-    std::string device_name;
-    uint32_t num_prev_assigned_ch;
-
-    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc;
-    uint32_t channel_;
+    dll_pll_veml_tracking_fpga_sptr tracking_fpga_sc_sptr_;
     std::string role_;
+    std::string device_name_;
+    int32_t* prn_codes_ptr_;
+    int32_t* data_codes_ptr_;
+    uint32_t channel_;
+    uint32_t num_prev_assigned_ch_;
     uint32_t in_streams_;
     uint32_t out_streams_;
-    bool d_track_pilot;
-    int32_t* d_ca_codes;
-    int32_t* d_data_codes;
+    bool track_pilot_;
 };
 
 

@@ -636,13 +636,17 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                         {
                             gr::thread::scoped_lock lock(d_setlock);
                             //To.Do: apply VTL corrections to the KF states
-                            // code
-                            //                        d_code_error_kf_chips;
-                            //                        d_code_freq_kf_chips_s;
-                            //                        // carrier
-                            //                        d_carrier_phase_kf_rad;
-                            //                        d_carrier_doppler_kf_hz;
-                            //                        d_carrier_doppler_rate_kf_hz_s;
+                            double delta_t_s = static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in;
+                            arma::mat F_tmp;
+                            F_tmp = {{1.0, 0.0, d_beta * delta_t_s, d_beta * (delta_t_s * delta_t_s) / 2.0},
+                                {0.0, 1.0, 2.0 * GNSS_PI * delta_t_s, GNSS_PI * (delta_t_s * delta_t_s)},
+                                {0.0, 0.0, 1.0, delta_t_s},
+                                {0.0, 0.0, 0.0, 1.0}};
+                            arma::vec x_tmp;
+                            // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
+                            x_tmp = {cmd->code_phase_chips, cmd->carrier_phase_rads, cmd->carrier_freq_hz, cmd->carrier_freq_rate_hz_s};
+                            d_x_old_old = F_tmp * x_tmp;
+
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;
                             d_vtl_cmd_samplestamp = cmd->sample_counter;

@@ -20,6 +20,7 @@
 #include "fir_filter.h"
 #include "galileo_e1_pcps_quicksync_ambiguous_acquisition.h"
 #include "gen_signal_source.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"

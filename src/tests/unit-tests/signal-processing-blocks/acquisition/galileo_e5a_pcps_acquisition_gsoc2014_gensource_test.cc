@@ -19,6 +19,7 @@
 #include "fir_filter.h"
 #include "galileo_e5a_noncoherent_iq_acquisition_caf.h"
 #include "gen_signal_source.h"
+#include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_valve.h"
 #include "gnss_synchro.h"

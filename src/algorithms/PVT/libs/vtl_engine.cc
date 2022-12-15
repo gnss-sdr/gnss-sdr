@@ -244,8 +244,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             // Notice: keep the same satellite order as in the Vtl_Data matrices
             // sample code
             TrackingCmd trk_cmd;
-            trk_cmd.carrier_phase_rads = 0;
-            trk_cmd.carrier_freq_hz = 0;
+            trk_cmd.carrier_phase_rads = 0; // difficult of calculation
+            trk_cmd.carrier_freq_hz = doppler_hz_filt(i) + kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction 
             trk_cmd.carrier_freq_rate_hz_s = 0;
             trk_cmd.code_phase_chips = 0;
             trk_cmd.enable_carrier_nco_cmd = true;

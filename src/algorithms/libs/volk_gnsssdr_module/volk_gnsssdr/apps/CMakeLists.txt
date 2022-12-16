@@ -73,7 +73,7 @@ endif()
 
 if(UNIX)
     target_compile_definitions(volk_gnsssdr_profile
-        PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>$<$<BOOL:${ENABLE_PACKAGING}>:_FORTIFY_SOURCE=2> 
+        PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>$<$<AND:$<CONFIG:None>,$<BOOL:${ENABLE_PACKAGING}>>:_FORTIFY_SOURCE=2>
     )
 endif()
 
@@ -102,7 +102,7 @@ endif()
 
 if(UNIX)
     target_compile_definitions(volk_gnsssdr-config-info
-        PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>$<$<BOOL:${ENABLE_PACKAGING}>:_FORTIFY_SOURCE=2> 
+        PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>$<$<AND:$<CONFIG:None>,$<BOOL:${ENABLE_PACKAGING}>>:_FORTIFY_SOURCE=2>
     )
 endif()
 

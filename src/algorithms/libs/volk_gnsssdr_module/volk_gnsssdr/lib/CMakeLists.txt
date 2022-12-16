@@ -592,7 +592,7 @@ if(NOT (ENABLE_STATIC_LIBS AND (CMAKE_GENERATOR STREQUAL Xcode)))
     )
     if(UNIX)
         target_compile_definitions(volk_gnsssdr
-            PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>
+            PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>$<$<ENABLE_PACKAGING>:_FORTIFY_SOURCE=2>
         )
     endif()
     if(USE_CPU_FEATURES)
@@ -667,7 +667,7 @@ if(ENABLE_STATIC_LIBS)
     )
     if(UNIX)
         target_compile_definitions(volk_gnsssdr_static
-            PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>
+            PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>$<$<ENABLE_PACKAGING>:_FORTIFY_SOURCE=2>
         )
     endif()
     set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)

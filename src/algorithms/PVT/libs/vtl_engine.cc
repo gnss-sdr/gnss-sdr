@@ -100,8 +100,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     for (int32_t i = 0; i < new_data.sat_number; i++)
         {
             // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error)
-            kf_R(i, i) = 10.0;  //TODO: fill with real values.
-            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 30.0;
+            kf_R(i, i) = 20.0;  //TODO: fill with real values.
+            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 2.0;
         }
 
     // Kalman state prediction (time update)

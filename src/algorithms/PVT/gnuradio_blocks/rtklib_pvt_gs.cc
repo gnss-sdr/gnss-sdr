@@ -2136,7 +2136,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, false, d_enable_vtl, d_close_vtl_loop))
                         {
                             // ****** experimental VTL tests
-                            if (d_close_vtl_loop == true)
+                            if (d_close_vtl_loop == true and d_enable_vtl == true)
                                 {
                                     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
                                     int idx = 0;
@@ -2149,7 +2149,8 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     d_internal_pvt_solver->vtl_engine.trk_cmd_outs.at(idx).channel_id = gnss_observables_iter->second.Channel_ID;
                                                     //todo: VTL loop CAN NOT run every PVT epoch because it is required to wait for the corrections to be applied to the tracking KF.
                                                     //currently the VTL runs every PVT epoch which will create inestabilities.
-                                                    this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(d_internal_pvt_solver->vtl_engine.trk_cmd_outs.at(idx)));
+                                                    const std::shared_ptr<TrackingCmd> trk_cmd_test = std::make_shared<TrackingCmd>(d_internal_pvt_solver->vtl_engine.trk_cmd_outs.at(idx));
+                                                    this->message_port_pub(pmt::mp("pvt_to_trk"), pmt::make_any(trk_cmd_test));
                                                     idx++;
                                                 }
                                             catch (std::exception& ex)
@@ -2201,6 +2202,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                     //                                                        }
                                     //                                                }
                                     //                                        }
+                                }
+                            else
+                                {
+                                    std::cout << "Loop open!\n";
                                 }
                             // *****************************
 

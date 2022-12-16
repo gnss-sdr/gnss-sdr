@@ -638,6 +638,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             //To.Do: apply VTL corrections to the KF states
                             double delta_t_s = static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in;
                             arma::mat F_tmp;
+                            //ToDO: check state propagation, at least Doppler propagation does NOT work, see debug traces
                             F_tmp = {{1.0, 0.0, d_beta * delta_t_s, d_beta * (delta_t_s * delta_t_s) / 2.0},
                                 {0.0, 1.0, 2.0 * GNSS_PI * delta_t_s, GNSS_PI * (delta_t_s * delta_t_s)},
                                 {0.0, 0.0, 1.0, delta_t_s},
@@ -645,13 +646,19 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             arma::vec x_tmp;
                             // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
                             x_tmp = {cmd->code_phase_chips, cmd->carrier_phase_rads, cmd->carrier_freq_hz, cmd->carrier_freq_rate_hz_s};
-                            d_x_old_old = F_tmp * x_tmp;
+                            // TODO: Replace only the desired states and leave the others as stored in d_x_old_old vector (e.g replace only the carrier_freq_hz)
+                            arma::vec tmp_x = F_tmp * x_tmp;
+                            double old_doppler = d_x_old_old(2);
+                            d_x_old_old(2) = tmp_x(2);  //replace only the Carrier Frequency state
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;
                             d_vtl_cmd_samplestamp = cmd->sample_counter;
                             std::cout << "CH " << this->d_channel << " RX pvt-to-trk cmd with delay: "
-                                      << static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in << " [s]\n";
+                                      << static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in
+                                      << " SampleCounter origin: " << cmd->sample_counter
+                                      << " Doppler new state: " << tmp_x(2) << " vs. trk state: " << old_doppler << " [Hz]"
+                                      << " [s]\n";
                         }
                 }
             else

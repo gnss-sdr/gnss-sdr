@@ -634,20 +634,23 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
             if (pmt::any_ref(msg).type().hash_code() == typeid(const std::shared_ptr<TrackingCmd>).hash_code())
                 {
                     const auto cmd = wht::any_cast<const std::shared_ptr<TrackingCmd>>(pmt::any_ref(msg));
+                    //std::cout<< "test cast CH "<<cmd->sample_counter <<"\n";
                     if (cmd->channel_id == this->d_channel)
                         {
+
+                            arma::vec x_tmp;
+                            arma::mat F_tmp;
+
                             gr::thread::scoped_lock lock(d_setlock);
                             //To.Do: apply VTL corrections to the KF states
                             double delta_t_s = static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in;
-                            arma::mat F_tmp;
+                            // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
+                            x_tmp = {cmd->code_phase_chips, cmd->carrier_phase_rads, cmd->carrier_freq_hz, cmd->carrier_freq_rate_hz_s};                    
                             //ToDO: check state propagation, at least Doppler propagation does NOT work, see debug traces
                             F_tmp = {{1.0, 0.0, d_beta * delta_t_s, d_beta * (delta_t_s * delta_t_s) / 2.0},
                                 {0.0, 1.0, 2.0 * GNSS_PI * delta_t_s, GNSS_PI * (delta_t_s * delta_t_s)},
                                 {0.0, 0.0, 1.0, delta_t_s},
                                 {0.0, 0.0, 0.0, 1.0}};
-                            arma::vec x_tmp;
-                            // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
-                            x_tmp = {cmd->code_phase_chips, cmd->carrier_phase_rads, cmd->carrier_freq_hz, cmd->carrier_freq_rate_hz_s};
                             // TODO: Replace only the desired states and leave the others as stored in d_x_old_old vector (e.g replace only the carrier_freq_hz)
                             //arma::vec tmp_x = F_tmp * x_tmp;
                             double old_doppler = d_x_old_old(2);
@@ -661,13 +664,14 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             //           << " SampleCounter origin: " << cmd->sample_counter
                             //           << " Doppler new state: " << x_tmp(2) << " vs. trk state: " << old_doppler << " [Hz]"
                             //           << " [s]\n";
-                            if(this->d_channel ==0) 
+                            if(cmd->channel_id  ==0) 
                             {
-                                std::cout << "CH " << this->d_channel << " RX pvt-to-trk cmd with delay: "
-                                      << static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in
+                                std::cout << "CH " << cmd->channel_id  << " RX pvt-to-trk cmd with delay: "
+                                      << delta_t_s << "[s]"
                                       << " SampleCounter origin: " << cmd->sample_counter
                                       << " Doppler new state: " << x_tmp(2) << " vs. trk state: " << old_doppler << " [Hz]"
-                                      << " [s]\n";
+                                      << "\n";
+                                std::cout << "use count " <<cmd.use_count()<<"\r";
                             }
 
                             std::fstream dump_tracking_file;

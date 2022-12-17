@@ -556,13 +556,6 @@ else()
     message(STATUS "System profiling is disabled.")
 endif()
 message(STATUS "  Modify using: -DENABLE_PROFILING=ON/OFF")
-
-########################################################################
-# Option to pass _FORTIFY_SOURCES=2 to the compiler regardless of
-# the building type
-########################################################################
-option(ENABLE_PACKAGING "Always pass _FORTIFY_SOURCES=2 to the compiler" OFF)
-
 ########################################################################
 
 ########################################################################

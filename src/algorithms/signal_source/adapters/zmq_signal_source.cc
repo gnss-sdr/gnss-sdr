@@ -27,9 +27,9 @@ ZmqSignalSource::ZmqSignalSource(const ConfigurationInterface* configuration,
     unsigned int /* out_stream [[maybe_unused]] */,
     Concurrent_Queue<pmt::pmt_t>* /* queue [[maybe_unused]] */)
     : SignalSourceBase(configuration, role, "ZMQ_Signal_Source"s),
-      d_item_size(decode_item_type(configuration->property(role + ".item_type"s, "gr_complex"s), nullptr, true)),
-      d_dump_filename(configuration->property(role + ".dump_filename"s, "data/zmq_dump.dat"s)),
-      d_dump(configuration->property(role + ".dump"s, false))
+      d_item_size(decode_item_type(configuration->property(role + ".item_type", "gr_complex"s), nullptr, true)),
+      d_dump_filename(configuration->property(role + ".dump_filename", "data/zmq_dump.dat"s)),
+      d_dump(configuration->property(role + ".dump", false))
 {
     auto vlen = configuration->property(role + ".vlen"s, 1);
     auto pass_tags = configuration->property(role + ".pass_tags"s, false);

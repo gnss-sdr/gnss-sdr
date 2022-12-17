@@ -23,6 +23,7 @@ clearvars
 % end
 SPEED_OF_LIGHT_M_S=299792458.0;
 Lambda_GPS_L1=0.1902937;
+GPS_L1_freq_hz=1575.42e6;
 %%
 samplingFreq=5000000;
 channels=6;
@@ -34,12 +35,13 @@ plot_reference=1;
 load_observables=1;
 advance_vtl_data_available=1;
 load_vtl=1;
+load_tfk_cmd=1;
 
 navSolution = GnssSDR2struct('PVT_raw.mat');
 refSolution = SpirentMotion2struct('..\log_spirent\motion_V1_SPF_LD_05.csv');
 %%
 if(load_observables)
-    load observables\observable_raw.mat
+    load observables\observables_raw.mat
     refSatData = SpirentSatData2struct('..\log_spirent\sat_data_V1A1_SPF_LD_05.csv');
     rx_PRN=[28 4 17 15 27 9]; % for SPF_LD_05.
 end
@@ -51,6 +53,25 @@ end
 
 if(load_vtl)
 vtlSolution = Vtl2struct('dump_vtl_file.csv');
+end
+
+if(load_tfk_cmd)
+    trkSolution=trk2struct('dump_trk_file.csv');
+
+    %% split by solution type
+    figure;sgtitle('real doppler')
+    for chan=0:4
+        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.dopp.real==chan);'])
+        eval(['Dopp_real_CH' num2str(chan) '=trkSolution.dopp.real(indCH' num2str(chan) ',2);'])
+        eval(['subplot(2,3,' num2str(chan+1) ');plot(Dopp_real_CH' num2str(chan) ')'])
+    end
+    figure;sgtitle('cmd doppler')
+    for chan=0:4
+        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.dopp.cmd==chan);'])
+        eval(['Dopp_cmd_CH' num2str(chan) '=trkSolution.dopp.cmd(indCH' num2str(chan) ',2);'])
+        eval(['subplot(2,3,' num2str(chan+1) ');plot(Dopp_cmd_CH' num2str(chan) ')'])
+    end
+
 end
 
 %% calculate LOS Rx-sat if advance_vtl_data_available=1

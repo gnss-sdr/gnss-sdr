@@ -23,15 +23,16 @@ clearvars
 % end
 SPEED_OF_LIGHT_M_S=299792458.0;
 Lambda_GPS_L1=0.1902937;
-point_of_closure=6000;
+GPS_L1_freq_hz=1575.42e6;
+point_of_closure=3400;
 
 %% ==================== VARIANCES =============================
 pos_var=100;%m^2
 vel_var=10;%m^2/s^2
 clk_bias_var=40;%m^2
 clk_drift_var=1500;%m^2/s^2
-pr_var=10;%m^2
-pr_dot_var=30;%m^2/s^2
+pr_var=20;%m^2
+pr_dot_var=2;%m^2/s^2
 
 % CARLES PAPER LTE GNSS VTL
 % pos_var=2;%m^2
@@ -55,14 +56,14 @@ load_observables=1;
 navSolution = GnssSDR2struct('PVT_raw.mat');
 refSolution = SpirentMotion2struct('..\log_spirent\motion_V1_SPF_LD_05.csv');
 %
-load observables\observable_raw.mat
+load observables\observables_raw.mat
 % refSatData = SpirentSatData2struct('..\log_spirent\sat_data_V1A1_SPF_LD_05.csv');
 rx_PRN=[28 4 17 15 27 9]; % for SPF_LD_05.
 load('PVT_raw.mat','sat_posX_m','sat_posY_m','sat_posZ_m','sat_velX','sat_velY'...
         ,'sat_velZ','sat_prg_m','clk_bias_s','clk_drift','sat_dopp_hz','user_clk_offset')
 
 if(load_observables)
-    load observables\observable_raw.mat
+    load observables\observables_raw.mat
     refSatData = SpirentSatData2struct('..\log_spirent\sat_data_V1A1_SPF_LD_05.csv');
 end
 %%

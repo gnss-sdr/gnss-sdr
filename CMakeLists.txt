@@ -1154,9 +1154,13 @@ if(NOT VOLKGNSSSDR_FOUND)
         -DENABLE_ORC=${ORC_ENABLED}
         ${STRIP_VOLK_GNSSSDR_PROFILE}
         ${USE_THIS_PYTHON}
-        -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}         # Required by packaging systems
-        -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}     # Required by packaging systems
     )
+    if(CMAKE_C_FLAGS)    # Required by some packaging systems
+        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS})
+    endif()
+    if(CMAKE_CXX_FLAGS)  # Required by some packaging systems
+        set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS})
+    endif()
 
     if(DEFINED ENV{OECORE_TARGET_SYSROOT})
         set(VOLK_GNSSSDR_CMAKE_ARGS ${VOLK_GNSSSDR_CMAKE_ARGS}

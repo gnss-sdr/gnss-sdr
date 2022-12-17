@@ -1147,7 +1147,7 @@ rtklib_pvt_gs::~rtklib_pvt_gs()
                         }
                 }
         }
-    catch (std::length_error& e)
+    catch (const std::exception& e)
         {
             LOG(WARNING) << e.what();
         }

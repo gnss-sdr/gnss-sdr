@@ -20,6 +20,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   of samples event.
 - Improved non-coherent acquisition when `Acquisition_XX.blocking=false`.
 - Implemented processing of BeiDou PRN 34 up to PRN 63 signals.
+- Implemented Hamming code correction for Glonass navigation message.
 
 ### Improvements in Interoperability:
 
@@ -38,6 +39,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   receiver, HAS messages are decoded and reported.
 - Added a `ZMQ_Signal_Source` for working with streams of samples published via
   [ZeroMQ](https://zeromq.org/).
+- Fixed register unpacking for Labsat3W files in `Labsat_Signal_Source`. This
+  fix is only available if gnss-sdr is linked against Boost >= 1.58.0.
 
 ### Improvements in Maintainability:
 
@@ -55,14 +58,18 @@ All notable changes to GNSS-SDR will be documented in this file.
   which caused issues when linking with some compilers.
 - Added support for Xilinx's Zynq UltraScale+ devices (requires the
   `-DENABLE_FPGA=ON` building option).
-- Fixed running time error if the binary is built with the
-  `-Wp,-D_GLIBCXX_ASSERTIONS` compiler option. This is added by default in some
-  GNU/Linux distributions.
+- Fixed running time error if the `gnss-sdr` binary and/or the GNU Radio
+  libraries were built with the `-D_GLIBCXX_ASSERTIONS` compiler option. This is
+  added by default in some GNU/Linux distributions (e.g., ArchLinux and Fedora).
 - Fixed linking against libunwind when the glog library is built locally.
 - The configuration options at building time `-DENABLE_OWN_GLOG`,
   `-DENABLE_OWN_ARMADILLO`, and `-DENABLE_OWN_GNSSTK` can now be switched `ON`
   and `OFF` without the need to start from an empty buiding folder.
 - Improved CMake handling of the spdlog library used by GNU Radio >= 3.10.
+- Make use of the C++20 standard if the environment allows for it.
+- Improved passing of compiler flags to `volk_gnsssdr` if the corresponding
+  environment variables are defined. This fixes warnings in some packaging
+  systems.
 
 ### Improvements in Usability:
 

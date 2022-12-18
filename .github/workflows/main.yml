@@ -42,9 +42,10 @@ jobs:
       - name: install dependencies
         run: |
           brew update
+          brew install --overwrite python@3.10 python@3.11
+          python3.11 -m pip install mako
           brew install ninja pkg-config hdf5 automake armadillo lapack \
           gflags glog gnuradio log4cpp openssl pugixml protobuf
-          pip3 install mako
       - name: configure
         run: cd build && cmake -GNinja ..
       - name: build
@@ -61,9 +62,10 @@ jobs:
       - name: install dependencies
         run: |
           brew update
+          brew install --overwrite python@3.10 python@3.11
+          python3.11 -m pip install mako
           brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog \
           gnuradio log4cpp openssl pugixml protobuf
-          pip3 install mako
       - name: configure
         run: cd build && cmake -GXcode ..
       - name: build
@@ -103,12 +105,13 @@ jobs:
       - name: install dependencies
         run: |
           brew update
+          brew install --overwrite python@3.10 python@3.11
+          python3.11 -m pip install mako
           brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio \
           log4cpp openssl pugixml protobuf
           ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin
-          pip3 install mako
       - name: Prepare run
         run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.12.1 core_monitor core_libs pvt_libs
       - name: run clang-tidy

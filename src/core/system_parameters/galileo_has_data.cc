@@ -76,16 +76,20 @@ std::vector<int> Galileo_HAS_data::get_PRNs_in_submask(uint8_t nsys) const
             uint64_t sat_submask = satellite_submask[nsys];
             // convert into string
             std::string sat_submask_str("");
+            sat_submask_str.reserve(number_sats_this_gnss_id);
             uint64_t aux = 1;
+            const std::string one_str("1");
+            const std::string zero_str("0");
+
             for (int k = 0; k < number_sats_this_gnss_id - 1; k++)
                 {
                     if ((aux & sat_submask) >= 1)
                         {
-                            sat_submask_str.insert(0, "1");
+                            sat_submask_str.insert(0, one_str);
                         }
                     else
                         {
-                            sat_submask_str.insert(0, "0");
+                            sat_submask_str.insert(0, zero_str);
                         }
                     aux <<= 1;
                 }

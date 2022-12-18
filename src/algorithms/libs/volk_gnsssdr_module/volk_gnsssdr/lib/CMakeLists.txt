@@ -590,11 +590,7 @@ if(NOT (ENABLE_STATIC_LIBS AND (CMAKE_GENERATOR STREQUAL Xcode)))
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC $<INSTALL_INTERFACE:include>
     )
-    if(UNIX)
-        target_compile_definitions(volk_gnsssdr
-            PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>
-        )
-    endif()
+
     if(USE_CPU_FEATURES)
         if(CPUFEATURES_FOUND)
             target_include_directories(volk_gnsssdr
@@ -665,11 +661,6 @@ if(ENABLE_STATIC_LIBS)
         PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     )
-    if(UNIX)
-        target_compile_definitions(volk_gnsssdr_static
-            PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>
-        )
-    endif()
     set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
 
     install(TARGETS volk_gnsssdr_static

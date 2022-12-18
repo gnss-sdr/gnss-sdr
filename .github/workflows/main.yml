@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2020 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+# SPDX-FileCopyrightText: 2020-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 name: Simple CI
 
 on:
@@ -40,7 +40,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install dependencies
-        run: brew update && brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog gnuradio log4cpp openssl pugixml protobuf && pip3 install mako
+        run: |
+          brew update
+          brew install --overwrite python@3.10 python@3.11
+          python3.11 -m pip install mako
+          brew install ninja pkg-config hdf5 automake armadillo lapack \
+          gflags glog gnuradio log4cpp openssl pugixml protobuf
       - name: configure
         run: cd build && cmake -GNinja ..
       - name: build
@@ -55,15 +60,28 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: install dependencies
-        run: brew update && brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog gnuradio log4cpp openssl pugixml protobuf && pip3 install mako
+        run: |
+          brew update
+          brew install --overwrite python@3.10 python@3.11
+          python3.11 -m pip install mako
+          brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog \
+          gnuradio log4cpp openssl pugixml protobuf
       - name: configure
         run: cd build && cmake -GXcode ..
       - name: build
         run: cd build && xcodebuild -configuration Release
       - name: check
-        run: cd build && xcodebuild -configuration Release -target check && ../install/volk_gnsssdr_profile && ../install/run_tests
+        run: |
+          cd build
+          xcodebuild -configuration Release -target check
+          ../install/volk_gnsssdr_profile
+          ../install/run_tests
       - name: default position_test
-        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON .. && xcodebuild -configuration Release -target position_test && ../install/position_test
+        run: |
+          cd build
+          cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON ..
+          xcodebuild -configuration Release -target position_test
+          ../install/position_test
 
   clang-format:
     runs-on: macos-latest
@@ -74,20 +92,36 @@ jobs:
       - name: run clang-format
         run: find . -iname \*.h -o -iname \*.c -o -iname \*.cc | xargs clang-format -style=file -i
       - name: check
-        run: git diff > clang_format.patch && echo -e "if \n [ -s clang_format.patch ] \nthen \n echo "clang-format not applied:"; echo ""; more clang_format.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
+        run: |
+          git diff > clang_format.patch
+          echo -e "if \n [ -s clang_format.patch ] \nthen \n echo "clang-format not applied:"; echo ""; more clang_format.patch; exit 1 \nfi \n" > detect
+          chmod +x ./detect
+          ./detect
 
   clang-tidy:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
       - name: install dependencies
-        run: brew update && brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio log4cpp openssl pugixml protobuf && ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin && ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin && ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin && pip3 install mako
+        run: |
+          brew update
+          brew install --overwrite python@3.10 python@3.11
+          python3.11 -m pip install mako
+          brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio \
+          log4cpp openssl pugixml protobuf
+          ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin
+          ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
+          ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin
       - name: Prepare run
         run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.12.1 core_monitor core_libs pvt_libs
       - name: run clang-tidy
         run: cd build && run-clang-tidy -fix
       - name: check
-        run: git diff > clang_tidy.patch && echo -e "if \n [ -s clang_tidy.patch ] \nthen \n echo "clang_tidy not applied:"; echo ""; more clang_tidy.patch; exit 1 \nfi \n" > detect && chmod +x ./detect && ./detect
+        run: |
+          git diff > clang_tidy.patch
+          echo -e "if \n [ -s clang_tidy.patch ] \nthen \n echo "clang_tidy not applied:"; echo ""; more clang_tidy.patch; exit 1 \nfi \n" > detect
+          chmod +x ./detect
+          ./detect
 
   cpplint:
     runs-on: ubuntu-latest

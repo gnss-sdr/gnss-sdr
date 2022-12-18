@@ -30,9 +30,9 @@ Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
 
 void Gnss_Satellite::reset()
 {
-    PRN = 0;
     system = std::string("");
     block = std::string("");
+    PRN = 0;
     rf_link = 0;
 }
 
@@ -43,11 +43,11 @@ std::ostream& operator<<(std::ostream& out, const Gnss_Satellite& sat)  // outpu
     std::string tag2;
     if (sat.get_system() == "Galileo")
         {
-            tag = "E";
+            tag = std::string("E");
         }
     if (sat.get_PRN() < 10)
         {
-            tag2 = "0";
+            tag2 = std::string("0");
         }
     out << sat.get_system() << " PRN " << tag << tag2 << sat.get_PRN() << " (Block " << sat.get_block() << ")";
     return out;
@@ -85,8 +85,8 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
     if (this != &rhs)
         {
             this->system = rhs.system;
-            this->PRN = rhs.PRN;
             this->block = rhs.block;
+            this->PRN = rhs.PRN;
             this->rf_link = rhs.rf_link;
         }
     return *this;
@@ -106,8 +106,8 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
     if (this != &other)
         {
             this->system = other.get_system();
-            this->PRN = other.get_PRN();
             this->block = other.get_block();
+            this->PRN = other.get_PRN();
             this->rf_link = other.get_rf_link();
         }
     return *this;

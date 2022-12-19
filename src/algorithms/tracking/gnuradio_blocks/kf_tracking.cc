@@ -652,9 +652,9 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                                 {0.0, 0.0, 1.0, delta_t_s},
                                 {0.0, 0.0, 0.0, 1.0}};
                             // TODO: Replace only the desired states and leave the others as stored in d_x_old_old vector (e.g replace only the carrier_freq_hz)
-                            //arma::vec tmp_x = F_tmp * x_tmp;
+                            arma::vec tmp_x = F_tmp * x_tmp;
                             double old_doppler = d_x_old_old(2);
-                            d_x_old_old(2) = x_tmp(2);  //replace only the Carrier Frequency state
+                            d_x_old_old(2) = tmp_x(2);  //replace only the Carrier Frequency state
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;

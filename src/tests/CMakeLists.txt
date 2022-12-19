@@ -366,10 +366,17 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         if(NOT Patch_EXECUTABLE)
             message(FATAL_ERROR "The patch command is not found. It is required to build GNSSTk. Please check your OS documentation and install the patch command.")
         endif()
-        set(GNSSTK_PATCH_COMMAND
-            cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-            ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static13.patch
-        )
+        if(CMAKE_VERSION VERSION_GREATER 3.17.0)
+            set(GNSSTK_PATCH_COMMAND
+                cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static138.patch
+            )
+        else()
+            set(GNSSTK_PATCH_COMMAND
+                cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static13.patch
+            )
+        endif()
         # Patch only once
         if(EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt)
             set(GNSSTK_PATCH_COMMAND "")
@@ -401,26 +408,48 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                     set(GNSSTK_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
                 endif()
             endif()
-
-            ExternalProject_Add(gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
-                GIT_TAG v${GNSSSDR_GNSSTK_LOCAL_VERSION}
-                SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
-                BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
-                PATCH_COMMAND ${GNSSTK_PATCH_COMMAND}
-                CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
-                    -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install
-                    -DBUILD_EXT=ON
-                    -DBUILD_PYTHON=OFF
-                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                    -DCMAKE_CXX_STANDARD=14
-                    -DCMAKE_CXX_EXTENSIONS=ON
-                    -DCMAKE_C_STANDARD=11
-                    -DCMAKE_C_EXTENSIONS=ON
-                BUILD_COMMAND ${GNSSTK_BUILD_COMMAND} ${GNSSTK_PARALLEL_BUILD}
-                BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
-                UPDATE_COMMAND ""
-            )
+            if(CMAKE_VERSION VERSION_GREATER 3.17.0)
+                ExternalProject_Add(gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
+                    GIT_TAG v${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    GIT_SUBMODULES_RECURSE OFF
+                    GIT_SUBMODULES ""
+                    SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    PATCH_COMMAND ${GNSSTK_PATCH_COMMAND}
+                    CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
+                        -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install
+                        -DBUILD_EXT=ON
+                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                        -DCMAKE_CXX_STANDARD=17
+                        -DCMAKE_CXX_EXTENSIONS=ON
+                        -DCMAKE_C_STANDARD=11
+                        -DCMAKE_C_EXTENSIONS=ON
+                    BUILD_COMMAND ${GNSSTK_BUILD_COMMAND} ${GNSSTK_PARALLEL_BUILD}
+                    BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    UPDATE_COMMAND ""
+                )
+            else()
+                ExternalProject_Add(gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
+                    GIT_TAG v${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
+                    PATCH_COMMAND ${GNSSTK_PATCH_COMMAND}
+                    CMAKE_ARGS ${GTEST_COMPILER} ${TOOLCHAIN_ARG}
+                        -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install
+                        -DBUILD_EXT=ON
+                        -DBUILD_PYTHON=OFF
+                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                        -DCMAKE_CXX_STANDARD=14
+                        -DCMAKE_CXX_EXTENSIONS=ON
+                        -DCMAKE_C_STANDARD=11
+                        -DCMAKE_C_EXTENSIONS=ON
+                    BUILD_COMMAND ${GNSSTK_BUILD_COMMAND} ${GNSSTK_PARALLEL_BUILD}
+                    BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    UPDATE_COMMAND ""
+                )
+            endif()
         endif()
         set(GNSSTK_INCLUDE_DIRS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/include CACHE PATH "Local GNSSTK headers")
         set(GNSSTK_LIBRARY ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX})

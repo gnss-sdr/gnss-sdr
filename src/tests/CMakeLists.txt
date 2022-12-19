@@ -850,7 +850,9 @@ if(ENABLE_SYSTEM_TESTING)
         Gnuradio::analog algorithms_libs
         core_receiver
     )
-    add_system_test(ttff)
+    if(NOT ENABLE_PACKAGING)
+        add_system_test(ttff)
+    endif()
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
         #### POSITION_TEST

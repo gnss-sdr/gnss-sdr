@@ -24,7 +24,7 @@ clearvars
 SPEED_OF_LIGHT_M_S=299792458.0;
 Lambda_GPS_L1=0.1902937;
 GPS_L1_freq_hz=1575.42e6;
-point_of_closure=3400;
+point_of_closure=4060;
 
 %% ==================== VARIANCES =============================
 pos_var=100;%m^2

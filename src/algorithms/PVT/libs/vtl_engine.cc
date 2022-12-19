@@ -233,7 +233,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     //  Filtered pseudorange error measurement (in m) AND Filtered Doppler shift measurements (in Hz):
 
     TrackingCmd trk_cmd;
-    
+
     for (int32_t channel = 0; channel < new_data.sat_number; channel++)  // Measurement vector
         {
             rho_pri_filt(channel) = new_data.pr_m(channel) + kf_yerr(channel);                                                             // now filtered
@@ -245,8 +245,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             //TODO: Fill the tracking commands outputs
             // Notice: keep the same satellite order as in the Vtl_Data matrices
             // sample code
-            trk_cmd.carrier_phase_rads = 0; // difficult of calculation
-            trk_cmd.carrier_freq_hz = doppler_hz_filt(channel) + kf_x(7)/ Lambda_GPS_L1;//+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction 
+            trk_cmd.carrier_phase_rads = 0;                                                // difficult of calculation
+            trk_cmd.carrier_freq_hz = doppler_hz_filt(channel) + kf_x(7) / Lambda_GPS_L1;  //+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction
             trk_cmd.carrier_freq_rate_hz_s = 0;
             trk_cmd.code_phase_chips = 0;
             trk_cmd.enable_carrier_nco_cmd = true;
@@ -254,12 +254,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             trk_cmd.sample_counter = new_data.sample_counter;
             trk_cmd.channel_id = 0;
             trk_cmd_outs.push_back(trk_cmd);
-            if(channel==0) 
-            {
-                std::cout << "CH " << channel
-                        << " Doppler vtl commanded: " << doppler_hz_filt(channel) << " [Hz]"
-                        << " \n";
-            }
+            if (channel == 0)
+                {
+                    std::cout << "[" << trk_cmd.sample_counter << "] CH " << channel
+                              << " Doppler vtl commanded: " << doppler_hz_filt(channel) << " [Hz]"
+                              << " \n";
+                }
         }
 
 

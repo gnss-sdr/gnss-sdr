@@ -2158,6 +2158,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                     std::cout << "VTL Engine problem: " << ex.what() << "\n";
                                                 }
                                         }
+                                    d_internal_pvt_solver->vtl_engine.trk_cmd_outs.clear();
                                     //Dummy messages for evaluation of msg latency
                                     //                                    std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
                                     //                                    for (gnss_observables_iter = d_gnss_observables_map.cbegin();

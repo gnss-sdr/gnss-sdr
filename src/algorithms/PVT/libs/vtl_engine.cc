@@ -58,7 +58,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     counter = counter + 1;        //uint64_t
     cout << "counter" << counter << endl;
     //new_data.kf_state.print("new_data kf initial");
-    if (counter < 1000)
+    uint32_t closure_point=10;
+
+    if (counter < closure_point)
         {  //
             // receiver solution from rtklib_solver
             kf_x(0) = new_data.rx_p(0);
@@ -182,8 +184,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_x = kf_x - kf_xerr;                                      // updated state estimation (a priori + error)
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
     new_data.kf_P = kf_P_x;
-    new_data.kf_state = kf_x;  //updated state estimation
-
     //     // ################## Geometric Transformation ######################################
 
     //     // x_u=kf_x(0);
@@ -240,13 +240,20 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             rhoDot_pri_filt(channel) = (new_data.doppler_hz(channel) * Lambda_GPS_L1 + kf_x(7)) - kf_yerr(channel + new_data.sat_number);  // now filtered
             // TO DO: convert rhoDot_pri to doppler shift!
             // Doppler shift defined as pseudorange rate measurement divided by the negative of carrier wavelength.
+            double d_dt_clk_drift;
+            d_dt_clk_drift=(kf_x(7)-new_data.kf_state(7));
+            if(counter < closure_point)
+            {
             doppler_hz_filt(channel) = (rhoDot_pri_filt(channel) - kf_x(7)) / Lambda_GPS_L1;
+            }else{
+            doppler_hz_filt(channel) = (rhoDot_pri_filt(channel) - kf_x(7)-d_dt_clk_drift) / Lambda_GPS_L1;  
+            }
 
             //TODO: Fill the tracking commands outputs
             // Notice: keep the same satellite order as in the Vtl_Data matrices
             // sample code
             trk_cmd.carrier_phase_rads = 0;                                                // difficult of calculation
-            trk_cmd.carrier_freq_hz = doppler_hz_filt(channel) + kf_x(7) / Lambda_GPS_L1;  //+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction
+            trk_cmd.carrier_freq_hz = doppler_hz_filt(channel);  //+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction
             trk_cmd.carrier_freq_rate_hz_s = 0;
             trk_cmd.code_phase_chips = 0;
             trk_cmd.enable_carrier_nco_cmd = true;
@@ -262,6 +269,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
                 }
         }
 
+    new_data.kf_state = kf_x;  //updated state estimation
 
     fstream dump_vtl_file;
     dump_vtl_file.open("dump_vtl_file.csv", ios::out | ios::app);

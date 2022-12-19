@@ -30,7 +30,7 @@
 #include "gnss_block_factory.h"
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
-#include "gnss_sdr_sample_counter.h"
+#include "gnss_sdr_fpga_sample_counter.h"
 #include "gnss_synchro.h"
 #include "gnuplot_i.h"
 #include "gps_l1_ca_dll_pll_tracking_fpga.h"

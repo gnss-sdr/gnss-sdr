@@ -2,16 +2,26 @@
 %%
 sat_number=5;
 %% ################## Kalman filter initialization ######################################
+st_nmbr=8;
 % covariances (static)
-kf_P_x  = eye(8); %TODO: use a real value.
-kf_x    = zeros(8, 1);
+kf_P_x  = eye(st_nmbr); %TODO: use a real value.
+kf_x    = zeros(st_nmbr, 1);
 kf_R    = zeros(2*sat_number, 2*sat_number);
 kf_dt=0.1;
-% kf_F = eye(8, 8);
+% kf_F = eye(st_nmbr, st_nmbr);
 % kf_F(1, 4) = kf_dt;
 % kf_F(2, 5) = kf_dt;
 % kf_F(3, 6) = kf_dt;
 % kf_F(7, 8) = kf_dt;
+
+% kf_F=[      1     0     0     kf_dt     0           0     0     0       0
+%             0     1     0     0         kf_dt       0     0     0       0
+%             0     0     1     0         0           kf_dt 0     0       0
+%             0     0     0     1         0           0     0     0       0
+%             0     0     0     0         1           0     0     0       0
+%             0     0     0     0         0           1     0     0       0
+%             0     0     0     0         0           0     1     kf_dt   kf_dt^2/2
+%             0     0     0     0         0           0     0     kf_dt   1];
 
 kf_F=[      1     0     0     kf_dt     0           0     0     0
             0     1     0     0         kf_dt       0     0     0
@@ -22,7 +32,7 @@ kf_F=[      1     0     0     kf_dt     0           0     0     0
             0     0     0     0         0           0     1     kf_dt
             0     0     0     0         0           0     0     1];
  
-kf_H = zeros(2*sat_number,8);
+kf_H = zeros(2*sat_number,st_nmbr);
 kf_y = zeros(2*sat_number, 1);
 kf_yerr = zeros(2*sat_number, 1);
 % kf_xerr = zeros(8, 1);
@@ -48,7 +58,7 @@ for t=2:length(navSolution.RX_time)
     %% State error Covariance Matrix Q (PVT) and R (MEASUREMENTS)
     if (t<length(navSolution.RX_time)-point_of_closure)
         %% State error Covariance Matrix Q (PVT)
-        kf_Q = eye(8);%new_data.rx_pvt_var(i); %careful, values for V and T could not be adecuate.
+        kf_Q = eye(st_nmbr);%new_data.rx_pvt_var(i); %careful, values for V and T could not be adecuate.
         %%
 
         % Measurement error Covariance Matrix R assembling
@@ -80,7 +90,7 @@ for t=2:length(navSolution.RX_time)
         cdeltatDot_u=kf_x(8,t);
 
         % Kalman state prediction (time update)
-        kf_P_x  = eye(8)*100; %TODO: use a real value.
+        kf_P_x  = eye(st_nmbr)*100; %TODO: use a real value.
         kf_xpri(:,t) = kf_F * (kf_x(:,t)-kf_x(:,t-1));% state prediction
         kf_P_x= kf_F * kf_P_x * kf_F' + kf_Q;% state error covariance prediction
     else
@@ -116,7 +126,7 @@ for t=2:length(navSolution.RX_time)
     end
 
     for chan=1:5 % Measurement matrix H assembling
-        % It has 8 columns (8 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
+        % It has st_nmbr columns (st_nmbr states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
         kf_H(chan, 1) = a_x(chan,t); kf_H(chan, 2) = a_y(chan,t); kf_H(chan, 3) = a_z(chan,t); kf_H(chan, 7) = 1.0;
         kf_H(chan+sat_number, 4) = a_x(chan,t); kf_H(chan+sat_number, 5) = a_y(chan,t); kf_H(chan+sat_number, 6) = a_z(chan,t); kf_H(chan+sat_number, 8) = 1.0;
     end
@@ -184,10 +194,10 @@ for t=2:length(navSolution.RX_time)
             +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t)+cdeltatDot_u_g;
     end
 
-    kf_H = zeros(2*sat_number,8);
+    kf_H = zeros(2*sat_number,st_nmbr);
 
     for chan=1:5 % Measurement matrix H assembling
-        % It has 8 columns (8 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
+        % It has st_nmbr columns (st_nmbr states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
         kf_H(chan, 1) = a_x(chan,t); kf_H(chan, 2) = a_y(chan,t); kf_H(chan, 3) = a_z(chan,t); kf_H(chan, 7) = 1.0;
         kf_H(chan+sat_number, 4) = a_x(chan,t); kf_H(chan+sat_number, 5) = a_y(chan,t); kf_H(chan+sat_number, 6) = a_z(chan,t); kf_H(chan+sat_number, 8) = 1.0;
     end

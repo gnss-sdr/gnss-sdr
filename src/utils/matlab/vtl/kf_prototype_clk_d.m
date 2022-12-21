@@ -126,17 +126,17 @@ for t=2:length(navSolution.RX_time)
 
         rhoDot_pri(chan,t)=(sat_velX(chan,t)-xDot_u)*a_x(chan,t)...
             +(sat_velY(chan,t)-yDot_u)*a_y(chan,t)...
-            +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t);
+            +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t)+cdeltatDot_u(t);
     end
 
     for chan=1:5 % Measurement matrix H assembling
         % It has st_nmbr columns (st_nmbr states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
         kf_H(chan, 1) = a_x(chan,t); kf_H(chan, 2) = a_y(chan,t); kf_H(chan, 3) = a_z(chan,t); kf_H(chan, 7) = 1.0;
         kf_H(chan+sat_number, 4) = a_x(chan,t); kf_H(chan+sat_number, 5) = a_y(chan,t); kf_H(chan+sat_number, 6) = a_z(chan,t); kf_H(chan+sat_number, 8) = 1.0;
-        kf_H(chan+sat_number, 9) = kf_dt;
+        kf_H(chan+sat_number, 9) = 0.0;
     end
 
-    %     unobsv(t) = length(kf_F) - rank(obsv(kf_F,kf_H));
+        unobsv(t) = st_nmbr - rank(obsv(kf_F,kf_H));
     % !!!! Limitaciones
     % obsv no se recomienda para el diseño de control, ya que calcular el rango de la matriz de observabilidad
     % no se recomienda para las pruebas de observabilidad. Ob será numéricamente singular para la mayoría de los
@@ -145,7 +145,7 @@ for t=2:length(navSolution.RX_time)
     % Kalman estimation (measurement update)
     for chan=1:5 % Measurement matrix H assembling
         kf_yerr(chan,t)=c_pr_m(chan,t)-sat_prg_m(chan,t);
-        kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+cdeltatDot_u(t)+kf_dt*d_cdeltatDot_u(t))-rhoDot_pri(chan,t);
+        kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+cdeltatDot_u(t)+d_cdeltatDot_u(t-1)+d_cdeltatDot_u(t)*kf_dt)-rhoDot_pri(chan,t);
     end
 
     % DOUBLES DIFFERENCES
@@ -184,23 +184,6 @@ for t=2:length(navSolution.RX_time)
     cdeltatDot_u_g=corr_kf_state(8,t);
     d_cdeltatDot_u_g=corr_kf_state(9,t);
 
-%     for chan=1:5 %neccesary quantities
-%         d(chan)=(sat_posX_m(chan,t)-x_u)^2;
-%         d(chan)=d(chan)+(sat_posY_m(chan,t)-y_u)^2;
-%         d(chan)=d(chan)+(sat_posZ_m(chan,t)-z_u)^2;
-%         d(chan)=sqrt(d(chan));
-% 
-%         c_pr_m(chan,t)=d(chan)+cdeltat_u_g;
-% 
-%         a_x(chan,t)=-(sat_posX_m(chan,t)-x_u)/d(chan);
-%         a_y(chan,t)=-(sat_posY_m(chan,t)-y_u)/d(chan);
-%         a_z(chan,t)=-(sat_posZ_m(chan,t)-z_u)/d(chan);
-% 
-%         rhoDot_pri(chan,t)=(sat_velX(chan,t)-xDot_u)*a_x(chan,t)...
-%             +(sat_velY(chan,t)-yDot_u)*a_y(chan,t)...
-%             +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t);
-%     end
-
     kf_H = zeros(2*sat_number,st_nmbr);
 
     for chan=1:5 % Measurement matrix H assembling
@@ -215,20 +198,17 @@ for t=2:length(navSolution.RX_time)
     %  Filtered pseudorange error measurement (in m) AND Filtered Doppler shift measurements (in Hz):
     for chan=1:5  % Measurement vector
         pr_m_filt(chan,t)=sat_prg_m(chan,t)+kf_yerr_g(chan,t);% now filtered
-        rhoDot_pri_filt(chan,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+corr_kf_state(8,t)+kf_dt*corr_kf_state(9,t))-kf_yerr_g(chan+sat_number,t);
+        rhoDot_pri_filt(chan,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+corr_kf_state(8,t))-kf_yerr_g(chan+sat_number,t);
         %convert rhoDot_pri to doppler shift!
-%         d_dt_clk_drift=(corr_kf_state(8,t)-corr_kf_state(8,t-1));
+        %         d_dt_clk_drift=(corr_kf_state(8,t)-corr_kf_state(8,t-1));
 
-        if (t<3)   
-            sat_dopp_hz_filt(chan,t)=(rhoDot_pri_filt(chan,t)-corr_kf_state(8,t)-corr_kf_state(9,t)*kf_dt)/Lambda_GPS_L1;
-        else
-            sat_dopp_hz_filt(chan,t)=(rhoDot_pri_filt(chan,t)-corr_kf_state(8,t)-corr_kf_state(9,t)*kf_dt)/Lambda_GPS_L1;
-        end
-        
-%       carrier_phase_rads = 0;
+        sat_dopp_hz_filt(chan,t)=(rhoDot_pri_filt(chan,t)-corr_kf_state(8,t)+corr_kf_state(9,t-1)+corr_kf_state(9,t)*kf_dt)/Lambda_GPS_L1;
+
+
+        %       carrier_phase_rads = 0;
         carrier_freq_hz =GPS_L1_freq_hz+sat_dopp_hz_filt(chan,t);
-%       carrier_freq_rate_hz_s = 0;
-%       code_phase_chips = 0;
+        %       carrier_freq_rate_hz_s = 0;
+        %       code_phase_chips = 0;
     end
 
 %       carrier_phase_rads = 0;

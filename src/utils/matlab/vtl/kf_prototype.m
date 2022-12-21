@@ -122,7 +122,7 @@ for t=2:length(navSolution.RX_time)
 
         rhoDot_pri(chan,t)=(sat_velX(chan,t)-xDot_u)*a_x(chan,t)...
             +(sat_velY(chan,t)-yDot_u)*a_y(chan,t)...
-            +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t);
+            +(sat_velZ(chan,t)-zDot_u)*a_z(chan,t)+cdeltatDot_u;
     end
 
     for chan=1:5 % Measurement matrix H assembling
@@ -142,9 +142,9 @@ for t=2:length(navSolution.RX_time)
         kf_yerr(chan,t)=c_pr_m(chan,t)-sat_prg_m(chan,t);
         
         if (t<length(navSolution.RX_time)-point_of_closure)
-            kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1)-rhoDot_pri(chan,t);
-        else
             kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+cdeltatDot_u)-rhoDot_pri(chan,t);
+        else
+            kf_yerr(chan+sat_number,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1)-rhoDot_pri(chan,t);
         end
     end
 

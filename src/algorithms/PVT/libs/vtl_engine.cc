@@ -35,22 +35,22 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
 
     // ################## Kalman filter initialization ######################################
     // covariances (static)
-    kf_P_x = arma::eye(8, 8) * 1.0;  //TODO: use a real value.
-    kf_x = arma::zeros(8, 1);
+    kf_P_x = arma::eye(9, 9) * 1.0;  //TODO: use a real value.
+    kf_x = arma::zeros(9, 1);
     kf_R = arma::zeros(2 * new_data.sat_number, 2 * new_data.sat_number);
     double kf_dt = 0.1;
-    kf_Q = arma::eye(8, 8);
+    kf_Q = arma::eye(9, 9);
 
-    kf_F = arma::eye(8, 8);
+    kf_F = arma::eye(9, 9);
     kf_F(0, 3) = kf_dt;
     kf_F(1, 4) = kf_dt;
     kf_F(2, 5) = kf_dt;
     kf_F(6, 7) = kf_dt;
 
-    kf_H = arma::zeros(2 * new_data.sat_number, 8);
+    kf_H = arma::zeros(2 * new_data.sat_number, 9);
     kf_y = arma::zeros(2 * new_data.sat_number, 1);
     kf_yerr = arma::zeros(2 * new_data.sat_number, 1);
-    kf_xerr = arma::zeros(8, 1);
+    kf_xerr = arma::zeros(9, 1);
     kf_S = arma::zeros(2 * new_data.sat_number, 2 * new_data.sat_number);  // kf_P_y innovation covariance matrix
 
     // ################## Kalman Tracking ######################################
@@ -61,7 +61,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     uint32_t closure_point=5;
 
     if (counter < closure_point)
-        {  //
+        {  
             // receiver solution from rtklib_solver
             kf_x(0) = new_data.rx_p(0);
             kf_x(1) = new_data.rx_p(1);
@@ -71,6 +71,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             kf_x(5) = new_data.rx_v(2);
             kf_x(6) = new_data.rx_dts(0) * SPEED_OF_LIGHT_M_S;
             kf_x(7) = new_data.rx_dts(1) * SPEED_OF_LIGHT_M_S;
+            kf_x(8) = 1.0;
 
             kf_x = kf_F * kf_x;  // state prediction
         }
@@ -85,6 +86,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             kf_x(5) = new_data.kf_state[5];
             kf_x(6) = new_data.kf_state[6];
             kf_x(7) = new_data.kf_state[7];
+            kf_x(8) = new_data.kf_state[8];
             kf_P_x = new_data.kf_P;
         }
     // State error Covariance Matrix Q (PVT)
@@ -95,8 +97,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_Q(3, 3) = 10.0;
     kf_Q(4, 4) = 10.0;
     kf_Q(5, 5) = 10.0;
-    kf_Q(6, 6) = 40.0;
-    kf_Q(7, 7) = 1500.0;
+    kf_Q(6, 6) = 100.0;
+    kf_Q(7, 7) = 40.0;
+    kf_Q(8, 8) = 1.0;
 
     // Measurement error Covariance Matrix R assembling
     for (int32_t i = 0; i < new_data.sat_number; i++)
@@ -154,11 +157,11 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             rhoDot_pri(i) = (new_data.sat_v(i, 0) - xDot_u) * a_x(i) + (new_data.sat_v(i, 1) - yDot_u) * a_y(i) + (new_data.sat_v(i, 2) - zDot_u) * a_z(i);
         }
 
-    kf_H = arma::zeros(2 * new_data.sat_number, 8);
+    kf_H = arma::zeros(2 * new_data.sat_number, 9);
 
     for (int32_t i = 0; i < new_data.sat_number; i++)  // Measurement matrix H assembling
         {
-            // It has 8 columns (8 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
+            // It has 9 columns (9 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
             kf_H(i, 0) = a_x(i);
             kf_H(i, 1) = a_y(i);
             kf_H(i, 2) = a_z(i);
@@ -171,10 +174,14 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     // Kalman estimation (measurement update)
     for (int32_t i = 0; i < new_data.sat_number; i++)  // Measurement vector
         {
-            //kf_y(i) = new_data.pr_m(i); // i-Satellite
-            //kf_y(i+new_data.sat_number) = rhoDot_pri(i)/Lambda_GPS_L1; // i-Satellite
             kf_yerr(i) = rho_pri(i) - new_data.pr_m(i);
-            kf_yerr(i + new_data.sat_number) = (new_data.doppler_hz(i) * Lambda_GPS_L1) - rhoDot_pri(i);
+            if (counter < closure_point)
+            { 
+                kf_yerr(i + new_data.sat_number) = (new_data.doppler_hz(i) * Lambda_GPS_L1) - rhoDot_pri(i);
+            }else{
+                kf_yerr(i + new_data.sat_number) = (new_data.doppler_hz(i) * Lambda_GPS_L1+cdeltatDot_u) - rhoDot_pri(i);
+    
+            }
         }
 
     // Kalman filter update step
@@ -210,14 +217,14 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             a_y(i) = -(new_data.sat_p(i, 1) - kf_x(1)) / d(i);
             a_z(i) = -(new_data.sat_p(i, 2) - kf_x(2)) / d(i);
             //compute pseudorange rate estimation
-            rhoDot_pri(i) = (new_data.sat_v(i, 0) - kf_x(3)) * a_x(i) + (new_data.sat_v(i, 1) - kf_x(4)) * a_y(i) + (new_data.sat_v(i, 2) - kf_x(5)) * a_z(i) + kf_x(7);
+            rhoDot_pri(i) = (new_data.sat_v(i, 0) - kf_x(3)) * a_x(i) + (new_data.sat_v(i, 1) - kf_x(4)) * a_y(i) + (new_data.sat_v(i, 2) - kf_x(5)) * a_z(i);
         }
 
-    kf_H = arma::zeros(2 * new_data.sat_number, 8);
+    kf_H = arma::zeros(2 * new_data.sat_number, 9);
 
     for (int32_t i = 0; i < new_data.sat_number; i++)  // Measurement matrix H assembling
         {
-            // It has 8 columns (8 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
+            // It has 9 columns (9 states) and 2*NSat rows (NSat psudorange error;NSat pseudo range rate error)
             kf_H(i, 0) = a_x(i);
             kf_H(i, 1) = a_y(i);
             kf_H(i, 2) = a_z(i);
@@ -240,13 +247,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             rhoDot_pri_filt(channel) = (new_data.doppler_hz(channel) * Lambda_GPS_L1 + kf_x(7)) - kf_yerr(channel + new_data.sat_number);  // now filtered
             // TO DO: convert rhoDot_pri to doppler shift!
             // Doppler shift defined as pseudorange rate measurement divided by the negative of carrier wavelength.
-            double d_dt_clk_drift;
-            d_dt_clk_drift=(kf_x(7)-new_data.kf_state(7));
+            //double d_dt_clk_drift;
+            //d_dt_clk_drift=(kf_x(7)-new_data.kf_state(7));
             if(counter < closure_point)
             {
             doppler_hz_filt(channel) = (rhoDot_pri_filt(channel) - kf_x(7)) / Lambda_GPS_L1;
             }else{
-            doppler_hz_filt(channel) = (rhoDot_pri_filt(channel) - kf_x(7)-d_dt_clk_drift) / Lambda_GPS_L1;  
+            doppler_hz_filt(channel) = (rhoDot_pri_filt(channel) - kf_x(7)) / Lambda_GPS_L1;  
             }
 
             //TODO: Fill the tracking commands outputs
@@ -283,7 +290,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             dump_vtl_file << "kf_xerr"
                           << "," << kf_xerr(0) << "," << kf_xerr(1) << "," << kf_xerr(2) << "," << kf_xerr(3) << "," << kf_xerr(4) << "," << kf_xerr(5) << "," << kf_xerr(6) << "," << kf_xerr(7) << endl;
             dump_vtl_file << "kf_state"
-                          << "," << new_data.kf_state(0) << "," << new_data.kf_state(1) << "," << new_data.kf_state(2) << "," << new_data.kf_state(3) << "," << new_data.kf_state(4) << "," << new_data.kf_state(5) << "," << new_data.kf_state(6) << "," << new_data.kf_state(7) << endl;
+                          << "," << new_data.kf_state(0) << "," << new_data.kf_state(1) << "," << new_data.kf_state(2) << "," << new_data.kf_state(3) << "," << new_data.kf_state(4) << "," << new_data.kf_state(5) << "," << new_data.kf_state(6) << "," << new_data.kf_state(7)<< new_data.kf_state(8) << endl;
             dump_vtl_file << "rtklib_state"
                           << "," << new_data.rx_p(0) << "," << new_data.rx_p(1) << "," << new_data.rx_p(2) << "," << new_data.rx_v(0) << "," << new_data.rx_v(1) << "," << new_data.rx_v(2) << "," << new_data.rx_dts(0) << "," << new_data.rx_dts(1) << endl;
             dump_vtl_file << "filt_dopp_sat"

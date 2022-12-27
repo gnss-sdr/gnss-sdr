@@ -24,14 +24,14 @@ clearvars
 SPEED_OF_LIGHT_M_S=299792458.0;
 Lambda_GPS_L1=0.1902937;
 GPS_L1_freq_hz=1575.42e6;
-% point_of_closure=4118;%4060;
+point_of_closure=4060;%4060;
 
 %% ==================== VARIANCES =============================
 pos_var=100;%m^2
 vel_var=10;%m^2/s^2
 clk_bias_var=100;%m^2
-clk_drift_var=40;%m^2/s^2
-clk_d_drift_var=1;
+clk_drift_var=100;%m^2/s^2
+clk_d_drift_var=10;
 
 pr_var=20;%m^2
 pr_dot_var=2;%m^2/s^2
@@ -51,6 +51,7 @@ spirent_index_TTFF=416;
 plot_skyplot=0;
 plot_reference=1;
 load_observables=1;
+load_tfk_cmd=1;
 
 %% ============================ PARSER TO STRUCT ============================
 
@@ -68,10 +69,36 @@ if(load_observables)
     refSatData = SpirentSatData2struct('..\log_spirent\sat_data_V1A1_SPF_LD_05.csv');
 end
 %%
+if(load_tfk_cmd)
+    trkSolution=trk2struct('dump_trk_file.csv');
+
+    % split by solution type
+    figure;sgtitle('real doppler')
+    for chan=0:4
+        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.dopp.real==chan);'])
+        eval(['Dopp_real_CH' num2str(chan) '=trkSolution.dopp.real(indCH' num2str(chan) ',2);'])
+        eval(['subplot(2,3,' num2str(chan+1) ');plot(Dopp_real_CH' num2str(chan) ')'])
+    end
+    figure;sgtitle('cmd doppler')
+    for chan=0:4
+        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.dopp.cmd==chan);'])
+        eval(['Dopp_cmd_CH' num2str(chan) '=trkSolution.dopp.cmd(indCH' num2str(chan) ',2);'])
+        eval(['subplot(2,3,' num2str(chan+1) ');plot(Dopp_cmd_CH' num2str(chan) ')'])
+    end
+
+    figure;sgtitle('real phase')
+    for chan=0:4
+        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.phase.real==chan);'])
+        eval(['Phase_real_CH' num2str(chan) '=trkSolution.phase.real(indCH' num2str(chan) ',2);'])
+        eval(['subplot(2,3,' num2str(chan+1) ');plot(Phase_real_CH' num2str(chan) ')'])
+    end
+
+end
+%%
 % vtlSolution = Vtl2struct('dump_vtl_file.csv');
 %%
 
-kf_prototype_clk_d
+kf_prototype4acc
 
 %% ====== FILTERING =======================================================
 % moving_avg_factor= 500;
@@ -100,3 +127,25 @@ legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
 
 %%
 figure;plot(navSolution.RX_time-navSolution.RX_time(1),kf_xerr(9,:)');title('kf 9 xerr');xlabel('t U.A');ylabel('kf 9 xerr');grid minor
+%%
+
+figure;sgtitle(' error in phase')
+for chan=0:4
+   eval(['subplot(2,3,' num2str(chan+1) ');plot(err_carrier_phase_rads_filt(' num2str(chan+1) ',:))'])
+   hold on; grid minor; 
+end
+
+%%
+% figure;sgtitle('real vs cmd phase')
+% for chan=0:4
+%     eval(['subplot(2,3,' num2str(chan+1) ');plot(Phase_real_CH' num2str(chan) ')'])
+%     hold on; grid minor; 
+%     eval(['subplot(2,3,' num2str(chan+1) ');plot(carrier_phase_rads_filt(' num2str(chan+1) ',1:3425)+Phase_real_CH' num2str(chan) '(1)' ')'])
+%     legend('real','cmd')
+% end
+% %%
+% figure;sgtitle(' error in cmd to actual phase')
+% for chan=0:4
+%     eval(['subplot(2,3,' num2str(chan+1) ');plot(Phase_real_CH' num2str(chan) '-transpose(carrier_phase_rads_filt(' num2str(chan+1) ',1:3425))+Phase_real_CH' num2str(chan) '(1)' ')'])
+%     grid minor;
+% end

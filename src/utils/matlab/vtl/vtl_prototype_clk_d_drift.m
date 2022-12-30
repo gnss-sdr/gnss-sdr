@@ -86,11 +86,19 @@ if(load_tfk_cmd)
         eval(['subplot(2,3,' num2str(chan+1) ');plot(Dopp_cmd_CH' num2str(chan) ')'])
     end
 
-    figure;sgtitle('real phase')
+    figure;sgtitle('real doppler shift')
     for chan=0:4
-        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.phase.real==chan);'])
-        eval(['Phase_real_CH' num2str(chan) '=trkSolution.phase.real(indCH' num2str(chan) ',2);'])
-        eval(['subplot(2,3,' num2str(chan+1) ');plot(Phase_real_CH' num2str(chan) ')'])
+        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.doppShift.real==chan);'])
+        eval(['doppShift_CH' num2str(chan) '=trkSolution.doppShift.real(indCH' num2str(chan) ',2);'])
+        eval(['subplot(2,3,' num2str(chan+1) ');plot(doppShift_CH' num2str(chan) ')'])
+        grid on
+    end
+
+        figure;sgtitle('real code phase')
+    for chan=0:4
+        eval(['[indCH' num2str(chan) ',~]= find(trkSolution.tao.real==chan);'])
+        eval(['tao_real_CH' num2str(chan) '=trkSolution.tao.real(indCH' num2str(chan) ',2);'])
+        eval(['subplot(2,3,' num2str(chan+1) ');plot(tao_real_CH' num2str(chan) ')'])
     end
 
 end
@@ -127,14 +135,20 @@ legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','Location','eastoutside')
 
 %%
 figure;plot(navSolution.RX_time-navSolution.RX_time(1),kf_xerr(9,:)');title('kf 9 xerr');xlabel('t U.A');ylabel('kf 9 xerr');grid minor
+% %%
+% 
+% figure;sgtitle(' error in phase')
+% for chan=0:4
+%    eval(['subplot(2,3,' num2str(chan+1) ');plot(err_carrier_phase_rads_filt(' num2str(chan+1) ',:))'])
+%    hold on; grid minor; 
+% end
 %%
 
-figure;sgtitle(' error in phase')
+figure;sgtitle(' error in code phase')
 for chan=0:4
-   eval(['subplot(2,3,' num2str(chan+1) ');plot(err_carrier_phase_rads_filt(' num2str(chan+1) ',:))'])
+   eval(['subplot(2,3,' num2str(chan+1) ');plot(err_code_phase_chips(' num2str(chan+1) ',:))'])
    hold on; grid minor; 
 end
-
 %%
 % figure;sgtitle('real vs cmd phase')
 % for chan=0:4

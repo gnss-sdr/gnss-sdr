@@ -245,10 +245,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         {
             rho_pri_filt(channel) = new_data.pr_m(channel) + kf_yerr(channel);                                                             // now filtered
             rhoDot_pri_filt(channel) = (new_data.doppler_hz(channel) * Lambda_GPS_L1 + kf_x(7)) - kf_yerr(channel + new_data.sat_number);  // now filtered
-            // TO DO: convert rhoDot_pri to doppler shift!
-            // Doppler shift defined as pseudorange rate measurement divided by the negative of carrier wavelength.
-            //double d_dt_clk_drift;
-            //d_dt_clk_drift=(kf_x(7)-new_data.kf_state(7));
+
             if(counter < closure_point)
             {
             doppler_hz_filt(channel) = (rhoDot_pri_filt(channel) - kf_x(7)) / Lambda_GPS_L1;

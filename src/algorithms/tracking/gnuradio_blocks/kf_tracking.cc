@@ -654,7 +654,10 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             // TODO: Replace only the desired states and leave the others as stored in d_x_old_old vector (e.g replace only the carrier_freq_hz)
                             arma::vec tmp_x = F_tmp * x_tmp;
                             double old_doppler = d_x_old_old(2);
-                            d_x_old_old(2) = tmp_x(2);  //replace only the Carrier Frequency state
+                            double old_doppler_shift = d_x_old_old(3);
+                            double old_code_phase_chips = d_x_old_old(0)*SPEED_OF_LIGHT_M_S;
+                            d_x_old_old(2) = tmp_x(2);  //replace the Carrier Frequency state
+                            //d_x_old_old(0) = tmp_x(0);  //replace the Code Phase state
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;
@@ -664,15 +667,15 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             //           << " SampleCounter origin: " << cmd->sample_counter
                             //           << " Doppler new state: " << x_tmp(2) << " vs. trk state: " << old_doppler << " [Hz]"
                             //           << " [s]\n";
-                            if(cmd->channel_id  ==0) 
-                            {
-                                std::cout << "CH " << cmd->channel_id  << " RX pvt-to-trk cmd with delay: "
-                                      << delta_t_s << "[s]"
-                                      << " SampleCounter origin: " << cmd->sample_counter
-                                      << " Doppler new state: " << x_tmp(2) << " vs. trk state: " << old_doppler << " [Hz]"
-                                      << "\n";
-                                std::cout << "use count " <<cmd.use_count()<<"\r";
-                            }
+                            // if(cmd->channel_id  ==0) 
+                            // {
+                            //     std::cout << "CH " << cmd->channel_id  << " RX pvt-to-trk cmd with delay: "
+                            //           << delta_t_s << "[s]"
+                            //           << " SampleCounter origin: " << cmd->sample_counter
+                            //           << " code phase new state: " << x_tmp(0) << " vs. trk state: " << old_code_phase_chips << " [chips]"
+                            //           << "\n";
+                            //     std::cout << "use count " <<cmd.use_count()<<"\r";
+                            // }
 
                             std::fstream dump_tracking_file;
                             dump_tracking_file.open("dump_trk_file.csv", std::ios::out | std::ios::app);
@@ -684,7 +687,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             else
                             {
                                 dump_tracking_file << "doppler_corr"
-                                << ","<< this->d_channel << "," << x_tmp(2) << "," << old_doppler  << "\n";
+                                << ","<< this->d_channel << "," << x_tmp(2) << "," << old_doppler  << "," << old_doppler_shift  << "," << old_code_phase_chips  << "\n";
                                 dump_tracking_file.close();
                             }
                         }

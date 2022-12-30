@@ -229,6 +229,7 @@ for t=2:length(navSolution.RX_time)
         err_carrier_phase_rads_filt(chan,t) = trapz(kf_yerr_g(chan+sat_number,1:t)/Lambda_GPS_L1)*2*kf_dt;
         carrier_freq_hz =GPS_L1_freq_hz+sat_dopp_hz_filt(chan,t);
         %       carrier_freq_rate_hz_s = 0;
+        err_code_phase_chips(chan,t) = (kf_yerr_g(chan,t))/SPEED_OF_LIGHT_M_S*1023e3;
     end
 
 end

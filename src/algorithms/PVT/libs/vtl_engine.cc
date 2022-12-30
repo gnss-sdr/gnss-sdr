@@ -58,7 +58,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     counter = counter + 1;        //uint64_t
     cout << "counter" << counter << endl;
     //new_data.kf_state.print("new_data kf initial");
-    uint32_t closure_point=5;
+    uint32_t closure_point=3;
 
     if (counter < closure_point)
         {  

@@ -217,7 +217,7 @@ for t=2:length(navSolution.RX_time)
         pr_m_filt(chan,t)=sat_prg_m(chan,t)+kf_yerr_g(chan,t);% now filtered
         rhoDot_pri_filt(chan,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1+corr_kf_state(8,t))-kf_yerr_g(chan+sat_number,t);
         %convert rhoDot_pri to doppler shift!
-        %         d_dt_clk_drift=(corr_kf_state(8,t)-corr_kf_state(8,t-1));
+        % d_dt_clk_drift=(corr_kf_state(8,t)-corr_kf_state(8,t-1));
         % d_dt_clk_drift=0;
 
         if (t<length(navSolution.RX_time)-point_of_closure)
@@ -229,11 +229,6 @@ for t=2:length(navSolution.RX_time)
         err_carrier_phase_rads_filt(chan,t) = trapz(kf_yerr_g(chan+sat_number,1:t)/Lambda_GPS_L1)*2*kf_dt;
         carrier_freq_hz =GPS_L1_freq_hz+sat_dopp_hz_filt(chan,t);
         %       carrier_freq_rate_hz_s = 0;
-        %       code_phase_chips = 0;
     end
 
-%       carrier_phase_rads = 0;
-%       carrier_freq_hz = 0;
-%       carrier_freq_rate_hz_s = 0;
-%       code_phase_chips = 0;
 end

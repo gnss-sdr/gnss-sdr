@@ -667,15 +667,15 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             //           << " SampleCounter origin: " << cmd->sample_counter
                             //           << " Doppler new state: " << x_tmp(2) << " vs. trk state: " << old_doppler << " [Hz]"
                             //           << " [s]\n";
-                            if(cmd->channel_id  ==0) 
-                            {
-                                std::cout << "CH " << cmd->channel_id  << " RX pvt-to-trk cmd with delay: "
-                                      << delta_t_s << "[s]"
-                                      << " SampleCounter origin: " << cmd->sample_counter
-                                      << " code phase new state: " << x_tmp(0) << " vs. trk state: " << old_code_phase_chips << " [chips]"
-                                      << "\n";
-                                std::cout << "use count " <<cmd.use_count()<<"\r";
-                            }
+                            // if(cmd->channel_id  ==0) 
+                            // {
+                            //     std::cout << "CH " << cmd->channel_id  << " RX pvt-to-trk cmd with delay: "
+                            //           << delta_t_s << "[s]"
+                            //           << " SampleCounter origin: " << cmd->sample_counter
+                            //           << " code phase new state: " << x_tmp(0) << " vs. trk state: " << old_code_phase_chips << " [chips]"
+                            //           << "\n";
+                            //     std::cout << "use count " <<cmd.use_count()<<"\r";
+                            // }
 
                             std::fstream dump_tracking_file;
                             dump_tracking_file.open("dump_trk_file.csv", std::ios::out | std::ios::app);

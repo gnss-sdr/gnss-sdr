@@ -99,15 +99,18 @@ refSatData.BEIDOU=[];
 [indGALILEO,~]= find(strcmp(satdataV1A1SPFLD1, 'GALILEO'));
 [indGPS,~]= find(strcmp(satdataV1A1SPFLD1, 'GPS'));
 
-GAL=satdataV1A1SPFLD1(indGALILEO,:);GAL(:,3)=[];
-GPS=satdataV1A1SPFLD1(indGPS,:); GPS(:,3)=[];
-GAL=cell2mat(GAL);
-GPS=cell2mat(GPS);
-    %% SPIRENT SAT SOLUTION
+if(~isempty(indGALILEO))
+    GAL=satdataV1A1SPFLD1(indGALILEO,:);GAL(:,3)=[];
+    GAL=cell2mat(GAL);
+end
 
+if(~isempty(indGPS))
+    GPS=satdataV1A1SPFLD1(indGPS,:); GPS(:,3)=[];
+    GPS=cell2mat(GPS);
+end
+
+if(~isempty(indGALILEO))
     refSatData.GALILEO.SIM_time=unique(GAL(:,1),'first');
-    refSatData.GPS.SIM_time=unique(GPS(:,1),'first');
-    %%
     k=0;
     for i=1:length(refSatData.GALILEO.SIM_time)
         nsats=length(find(GAL(:,1)==refSatData.GALILEO.SIM_time(i)));        
@@ -145,7 +148,10 @@ GPS=cell2mat(GPS);
         end
 
     end
+end
     %% -------------------------------------
+if(~isempty(indGPS))
+    refSatData.GPS.SIM_time=unique(GPS(:,1),'first');
     k=0;
     for i=1:length(refSatData.GPS.SIM_time)
         nsats=length(find(GPS(:,1)==refSatData.GPS.SIM_time(i)));        
@@ -182,7 +188,7 @@ GPS=cell2mat(GPS);
             refSatData.GPS.series(i).sat_Acc_Z(j)    = GPS(k,49);
         end
     end
-
+end
     % Clear temporary variables
     clear satdataV1A1SPFLD05 GPS GAL
 end

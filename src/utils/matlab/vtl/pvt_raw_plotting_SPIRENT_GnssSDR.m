@@ -106,12 +106,14 @@ rhoDot_pri(chan,t)=(sat_velX(chan,t)-navSolution.vX(t))*a_x(chan,t)...
 kf_yerr(chan,t)=(sat_dopp_hz(chan,t)*Lambda_GPS_L1)-rhoDot_pri(chan,t);
         end
     end
-end
-%%
 figure;plot(kf_yerr')
-%%
+
 figure;plot(pr_m'-sat_prg_m');hold on
 legend('PRN 28','PRN 4','PRN 17','PRN 15','PRN 27','PRN 9','Location','eastoutside')
+end
+
+%%
+
 %% === Convert to UTM coordinate system =============================
 
 % Scenario latitude  is xx.xxxxxxx  N37 49 9.98

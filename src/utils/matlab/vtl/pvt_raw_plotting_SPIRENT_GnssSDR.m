@@ -30,7 +30,7 @@ channels=6;
 TTFF_sec=41.48;
 
 %% ============================ PARSER TO STRUCT ============================
-plot_skyplot=0; % not yet implemented
+plot_skyplot=1;
 plot_reference=1;
 load_observables=1;
 advance_vtl_data_available=1;
@@ -372,3 +372,31 @@ if(load_observables)
 end
 %%
 dopp_filtered_plotting
+%%
+labels = ["G1", "G22", "E17", "E11"]; %inizialitation neccesary
+if(plot_skyplot)
+
+    for i=1:length(refSatData.GPS.SIM_time)
+        for j=1:length(refSatData.GPS.series(i).Sat_PRN)
+            
+            labels{i,j} = ['G' num2str(refSatData.GPS.series(i).Sat_PRN(j))];
+            
+            if(refSatData.GPS.series(i).azimuth(j)<0)
+                az(i,j) = rad2deg(refSatData.GPS.series(i).azimuth(j))+360;
+            else
+                az(i,j) = rad2deg(refSatData.GPS.series(i).azimuth(j));
+            end
+            el(i,j) = rad2deg(refSatData.GPS.series(i).elevation(j));
+        end
+        groups(i,:) = categorical([0 0 1 1], [0 1], ["GPS", "Galileo"]);
+    end
+    %     skyplot(az(i,:), el(i,:), labels, "GroupData", groups)
+    figure;
+    %skyplot(az(500,:), el(500,:), labels(500,:))
+    sp = skyplot(az(1,:),el(1,:),labels(1,:));
+    for idx = 1:length(az)
+    set(sp,AzimuthData=az(1:idx,:),ElevationData=el(1:idx,:));
+    drawnow limitrate
+    end
+    legend('GPS')
+end

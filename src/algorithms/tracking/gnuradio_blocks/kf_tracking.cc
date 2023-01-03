@@ -1216,7 +1216,7 @@ void kf_tracking::run_Kf()
     //  Kalman loop
 
     // Prediction
-    d_x_old_old(0)=0; // reset error estimation because the NCO corrects the code phase
+    //d_x_old_old(0)=0; // reset error estimation because the NCO corrects the code phase
     d_x_new_old = d_F * d_x_old_old;
 
     d_P_new_old = d_F * d_P_old_old * d_F.t() + d_Q;
@@ -1231,7 +1231,7 @@ void kf_tracking::run_Kf()
 
     // new code phase estimation
     d_code_error_kf_chips = d_x_new_new(0);
-
+    d_x_new_new(0)=0; // reset error estimation because the NCO corrects the code phase
     // new carrier phase estimation
     d_carrier_phase_kf_rad = d_x_new_new(1);
 

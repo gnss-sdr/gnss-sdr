@@ -371,7 +371,9 @@ if(load_observables)
     grid on
 end
 %%
-dopp_filtered_plotting
+if(load_vtl)
+    dopp_filtered_plotting
+end
 %%
 labels = ["G1", "G22", "E17", "E11"]; %inizialitation neccesary
 if(plot_skyplot)

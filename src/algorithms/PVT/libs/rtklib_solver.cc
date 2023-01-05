@@ -205,7 +205,7 @@ bool Rtklib_Solver::save_matfile() const
     // READ DUMP FILE
     const std::string dump_filename = d_dump_filename;
     const int32_t number_of_double_vars = 23; //+2 MAGL
-    const int32_t number_of_double_vars_sat = 8; //+ pos/vel/psrange/doppler for sat
+    const int32_t number_of_double_vars_sat = 9; //+ pos(3)/vel(3)/psrange/doppler/CN0 for sat
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 3;
     const int32_t number_of_float_vars = 2;
@@ -266,6 +266,7 @@ bool Rtklib_Solver::save_matfile() const
     auto sat_velZ = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
     auto sat_prg_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
     auto sat_dopp_hz = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+    auto sat_CN0_dBhz = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
 
     auto latitude = std::vector<double>(num_epoch);
     auto longitude = std::vector<double>(num_epoch);
@@ -314,7 +315,8 @@ bool Rtklib_Solver::save_matfile() const
                                 dump_file.read(reinterpret_cast<char *>(&sat_velY[chan][i]), sizeof(double));
                                 dump_file.read(reinterpret_cast<char *>(&sat_velZ[chan][i]), sizeof(double));
                                 dump_file.read(reinterpret_cast<char *>(&sat_prg_m[chan][i]), sizeof(double));
-                                dump_file.read(reinterpret_cast<char *>(&sat_dopp_hz[chan][i]), sizeof(double));               
+                                dump_file.read(reinterpret_cast<char *>(&sat_dopp_hz[chan][i]), sizeof(double)); 
+                                dump_file.read(reinterpret_cast<char *>(&sat_CN0_dBhz[chan][i]), sizeof(double));                
                                 } 
                             dump_file.read(reinterpret_cast<char *>(&latitude[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&longitude[i]), sizeof(double));
@@ -346,6 +348,7 @@ bool Rtklib_Solver::save_matfile() const
     auto sat_velZ_aux = std::vector<double>(5 * num_epoch);
     auto sat_prg_m_aux = std::vector<double>(5 * num_epoch);
     auto sat_dopp_hz_aux = std::vector<double>(5 * num_epoch);
+    auto sat_CN0_dBhz_aux = std::vector<double>(5 * num_epoch);
 
         uint32_t k = 0U;
     for (int64_t j = 0; j < num_epoch; j++)
@@ -360,6 +363,7 @@ bool Rtklib_Solver::save_matfile() const
                     sat_velZ_aux[k] = sat_velZ[i][j];
                     sat_prg_m_aux[k] = sat_prg_m[i][j];
                     sat_dopp_hz_aux[k] = sat_dopp_hz[i][j];
+                    sat_CN0_dBhz_aux[k] = sat_CN0_dBhz[i][j];
                     k++;
                 }
         }
@@ -469,6 +473,9 @@ bool Rtklib_Solver::save_matfile() const
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
             matvar = Mat_VarCreate("sat_dopp_hz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_dopp_hz_aux.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+            matvar = Mat_VarCreate("sat_CN0_dBhz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_CN0_dBhz_aux.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -1428,7 +1435,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_double = vtl_data.pr_m(n);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = vtl_data.doppler_hz(n);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));    
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = vtl_data.sat_CN0_dB_hz(n);
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));     
                                     }
                                     
                                     // GEO user position Latitude [deg]

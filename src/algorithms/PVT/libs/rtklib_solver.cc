@@ -210,7 +210,7 @@ bool Rtklib_Solver::save_matfile() const
     const int32_t number_of_uint8_vars = 3;
     const int32_t number_of_float_vars = 2;
     const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
-                                     sizeof(double) * number_of_double_vars_sat*5+ 
+                                     sizeof(double) * number_of_double_vars_sat*6+ 
                                      sizeof(uint32_t) * number_of_uint32_vars +
                                      sizeof(uint8_t) * number_of_uint8_vars +
                                      sizeof(float) * number_of_float_vars;
@@ -258,15 +258,15 @@ bool Rtklib_Solver::save_matfile() const
     
     auto clk_bias = std::vector<double>(num_epoch);
     auto clk_drift = std::vector<double>(num_epoch);
-    auto sat_posX_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_posY_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_posZ_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_velX = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_velY = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_velZ = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_prg_m = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_dopp_hz = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
-    auto sat_CN0_dBhz = std::vector<std::vector<double>>(5, std::vector<double>(num_epoch));
+    auto sat_posX_m = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_posY_m = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_posZ_m = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_velX = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_velY = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_velZ = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_prg_m = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_dopp_hz = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
+    auto sat_CN0_dBhz = std::vector<std::vector<double>>(6, std::vector<double>(num_epoch));
 
     auto latitude = std::vector<double>(num_epoch);
     auto longitude = std::vector<double>(num_epoch);
@@ -306,7 +306,7 @@ bool Rtklib_Solver::save_matfile() const
 
                             dump_file.read(reinterpret_cast<char *>(&clk_bias[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&clk_drift[i]), sizeof(double));
-                            for (uint32_t chan = 0; chan < 5; chan++)
+                            for (uint32_t chan = 0; chan < 6; chan++)
                                 {
                                 dump_file.read(reinterpret_cast<char *>(&sat_posX_m[chan][i]), sizeof(double));
                                 dump_file.read(reinterpret_cast<char *>(&sat_posY_m[chan][i]), sizeof(double));
@@ -340,20 +340,20 @@ bool Rtklib_Solver::save_matfile() const
             return false;
         }
     
-    auto sat_posX_m_aux = std::vector<double>(5 * num_epoch);
-    auto sat_posY_m_aux = std::vector<double>(5 * num_epoch);
-    auto sat_posZ_m_aux = std::vector<double>(5 * num_epoch);
-    auto sat_velX_aux = std::vector<double>(5 * num_epoch);
-    auto sat_velY_aux = std::vector<double>(5 * num_epoch);
-    auto sat_velZ_aux = std::vector<double>(5 * num_epoch);
-    auto sat_prg_m_aux = std::vector<double>(5 * num_epoch);
-    auto sat_dopp_hz_aux = std::vector<double>(5 * num_epoch);
-    auto sat_CN0_dBhz_aux = std::vector<double>(5 * num_epoch);
+    auto sat_posX_m_aux = std::vector<double>(6 * num_epoch);
+    auto sat_posY_m_aux = std::vector<double>(6 * num_epoch);
+    auto sat_posZ_m_aux = std::vector<double>(6 * num_epoch);
+    auto sat_velX_aux = std::vector<double>(6 * num_epoch);
+    auto sat_velY_aux = std::vector<double>(6 * num_epoch);
+    auto sat_velZ_aux = std::vector<double>(6 * num_epoch);
+    auto sat_prg_m_aux = std::vector<double>(6 * num_epoch);
+    auto sat_dopp_hz_aux = std::vector<double>(6 * num_epoch);
+    auto sat_CN0_dBhz_aux = std::vector<double>(6 * num_epoch);
 
         uint32_t k = 0U;
     for (int64_t j = 0; j < num_epoch; j++)
         {
-            for (uint32_t i = 0; i < 5; i++)
+            for (uint32_t i = 0; i < 6; i++)
                 {
                     sat_posX_m_aux[k] = sat_posX_m[i][j];
                     sat_posY_m_aux[k] = sat_posY_m[i][j];
@@ -450,7 +450,7 @@ bool Rtklib_Solver::save_matfile() const
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
-            std::array<size_t, 2> dims_sat{static_cast<size_t>(5), static_cast<size_t>(num_epoch)};
+            std::array<size_t, 2> dims_sat{static_cast<size_t>(6), static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("sat_posX_m", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims_sat.data(), sat_posX_m_aux.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
@@ -1418,7 +1418,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = vtl_data.rx_dts(1);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    for (int n = 0; n<5; n++)
+                                    for (int n = 0; n<6; n++)
                                     {
                                     tmp_double = vtl_data.sat_p(n, 0);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));    

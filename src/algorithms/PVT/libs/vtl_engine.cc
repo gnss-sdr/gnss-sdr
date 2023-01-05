@@ -46,7 +46,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_F(1, 4) = kf_dt;
     kf_F(2, 5) = kf_dt;
     kf_F(6, 7) = kf_dt;
-
+    
     kf_H = arma::zeros(2 * new_data.sat_number, 9);
     kf_y = arma::zeros(2 * new_data.sat_number, 1);
     kf_yerr = arma::zeros(2 * new_data.sat_number, 1);
@@ -292,8 +292,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
                           << "," << new_data.rx_p(0) << "," << new_data.rx_p(1) << "," << new_data.rx_p(2) << "," << new_data.rx_v(0) << "," << new_data.rx_v(1) << "," << new_data.rx_v(2) << "," << new_data.rx_dts(0) << "," << new_data.rx_dts(1) << endl;
             dump_vtl_file << "filt_dopp_sat"
                           << "," << doppler_hz_filt(0) << "," << doppler_hz_filt(1) << "," << doppler_hz_filt(2) << "," << doppler_hz_filt(3) << "," << doppler_hz_filt(4) << endl;
-            dump_vtl_file << "CN0_sat"
-                          << "," << new_data.sat_CN0_dB_hz(0) << "," << new_data.sat_CN0_dB_hz(1)<< "," << new_data.sat_CN0_dB_hz(2)<< "," << new_data.sat_CN0_dB_hz(3)<< "," << new_data.sat_CN0_dB_hz(4) << endl;
             dump_vtl_file.close();
         }
 

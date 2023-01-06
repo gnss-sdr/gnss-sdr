@@ -94,9 +94,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_Q(0, 0) = 100.0;
     kf_Q(1, 1) = 100.0;
     kf_Q(2, 2) = 100.0;
-    kf_Q(3, 3) = 10.0;
-    kf_Q(4, 4) = 10.0;
-    kf_Q(5, 5) = 10.0;
+    kf_Q(3, 3) = 8.0;
+    kf_Q(4, 4) = 8.0;
+    kf_Q(5, 5) = 8.0;
     kf_Q(6, 6) = 100.0;
     kf_Q(7, 7) = 40.0;
     kf_Q(8, 8) = 1.0;
@@ -105,8 +105,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     for (int32_t i = 0; i < new_data.sat_number; i++)
         {
             // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error)
-            kf_R(i, i) = 20.0;  //TODO: fill with real values.
-            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 2.0;
+            kf_R(i, i) = 50.0*50.0/new_data.sat_CN0_dB_hz(i);  //TODO: fill with real values.
+            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 5.0*50.0/new_data.sat_CN0_dB_hz(i);
+            
+            if(50.0*50.0/new_data.sat_CN0_dB_hz(i)>70||5.0*50.0/new_data.sat_CN0_dB_hz(i)>7){
+                kf_R(i, i) = 10e4;
+                kf_R(i + new_data.sat_number, i + new_data.sat_number) = 10e4;
+            }
         }
 
     // Kalman state prediction (time update)

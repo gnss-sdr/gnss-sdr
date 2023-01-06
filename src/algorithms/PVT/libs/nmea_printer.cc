@@ -213,11 +213,11 @@ bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* const pvt_data, bool pri
             try
                 {
                     nmea_file_descriptor
-		      << GPRMC
-		      << GPGGA // GPGGA (Global Positioning System Fixed Data)
-		      << GPGSA
-		      << GPGSV
-		      << std::flush;
+                        << GPRMC
+                        << GPGGA  // GPGGA (Global Positioning System Fixed Data)
+                        << GPGSA
+                        << GPGSV
+                        << std::flush;
                 }
             catch (const std::exception& ex)
                 {

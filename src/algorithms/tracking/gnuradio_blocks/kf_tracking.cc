@@ -654,7 +654,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             // TODO: Replace only the desired states and leave the others as stored in d_x_old_old vector (e.g replace only the carrier_freq_hz)
                             arma::vec tmp_x = F_tmp * x_tmp;
                             double old_doppler = d_x_old_old(2);
-                            double old_doppler_shift = d_x_old_old(3);
+                            double old_doppler_rate = d_x_old_old(3);
                             double old_code_phase_chips = d_x_old_old(0);
                             d_x_old_old(2) = tmp_x(2);  //replace the Carrier Frequency state
                             d_x_old_old(0) = tmp_x(0);  //replace the Code Phase state
@@ -687,7 +687,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             else
                             {
                                 dump_tracking_file << "doppler_corr"
-                                << ","<< this->d_channel << "," << x_tmp(2) << "," << old_doppler  << "," << old_doppler_shift  << "," << old_code_phase_chips  << "\n";
+                                << ","<< this->d_channel << "," << x_tmp(2) << "," << old_doppler  << "," << old_doppler_rate  << "," << old_code_phase_chips  << "\n";
                                 dump_tracking_file.close();
                             }
                         }

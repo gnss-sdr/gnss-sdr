@@ -70,6 +70,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved passing of compiler flags to `volk_gnsssdr` if the corresponding
   environment variables are defined. This fixes warnings in some packaging
   systems.
+- Test files are now donwloaded at configuration time instead of being included
+  in the source tree. This allows for a smaller package and fixes Lintian
+  `very-long-line-length-in-source-file` warnings since those files were not
+  recognized as binaries. The configuration flag `-DENABLE_PACKAGING=ON` passed
+  to CMake deactivates file downloading.
 
 ### Improvements in Usability:
 

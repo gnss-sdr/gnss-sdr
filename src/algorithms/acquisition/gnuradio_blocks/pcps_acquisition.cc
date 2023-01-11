@@ -932,7 +932,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
             {
                 // Restart acquisition variables
                 d_gnss_synchro->Acq_delay_samples = 0.0;
-                d_gnss_synchro->Acq_doppler_hz = 0.0;
                 d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
                 d_gnss_synchro->Acq_doppler_step = 0U;
                 d_mag = 0.0;
@@ -942,6 +941,14 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                     {
                         d_sample_counter += static_cast<uint64_t>(ninput_items[0]);  // sample counter
                         consume_each(ninput_items[0]);
+                    }
+                else
+                    {
+                        // do not initialize d_gnss_synchro->Acq_doppler_hz if d_acq_parameters.blocking_on_standby is false
+                        // because d_gnss_synchro->Acq_doppler_hz is later used to initialize d_doppler_center_step_two.
+                        // If d_acq_parameters.blocking_on_standby is true then d_gnss_synchro->Acq_doppler_hz can be cleared
+                        // because d_doppler_center_step_two is already initialized before entering state 0
+                        d_gnss_synchro->Acq_doppler_hz = 0.0;
                     }
                 break;
             }

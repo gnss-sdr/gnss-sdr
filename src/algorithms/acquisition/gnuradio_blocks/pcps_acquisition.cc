@@ -776,6 +776,8 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                             else
                                 {
                                     d_step_two = true;  // Clear input buffer and make small grid acquisition
+                                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+                                    update_grid_doppler_wipeoffs_step2();
                                     d_num_noncoherent_integrations_counter = 0;
                                     d_positive_acq = 0;
                                     d_state = 0;
@@ -826,6 +828,8 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
                             else
                                 {
                                     d_step_two = true;  // Clear input buffer and make small grid acquisition
+                                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
+                                    update_grid_doppler_wipeoffs_step2();
                                     d_num_noncoherent_integrations_counter = 0U;
                                     d_state = 0;
                                 }
@@ -910,7 +914,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
     if (!d_active or d_worker_active)
         {
             // do not consume samples while performing a non-coherent integration
-            bool consume_samples = ((!d_active) || (d_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
+            bool consume_samples = ((!d_active) || (d_worker_active && (d_num_noncoherent_integrations_counter == d_acq_parameters.max_dwells)));
             if ((!d_acq_parameters.blocking_on_standby) && consume_samples)
                 {
                     d_sample_counter += static_cast<uint64_t>(ninput_items[0]);
@@ -918,8 +922,6 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                 }
             if (d_step_two)
                 {
-                    d_doppler_center_step_two = static_cast<float>(d_gnss_synchro->Acq_doppler_hz);
-                    update_grid_doppler_wipeoffs_step2();
                     d_state = 0;
                     d_active = true;
                 }

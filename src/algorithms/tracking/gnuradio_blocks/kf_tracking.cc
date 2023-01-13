@@ -616,7 +616,7 @@ void kf_tracking::msg_handler_telemetry_to_trk(const pmt::pmt_t &msg)
                         }
                 }
         }
-    catch (const boost::bad_any_cast &e)
+    catch (const wht::bad_any_cast &e)
         {
             LOG(WARNING) << "msg_handler_telemetry_to_trk Bad any_cast: " << e.what();
         }
@@ -638,7 +638,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                     std::cout << "hash code not match\n";
                 }
         }
-    catch (const boost::bad_any_cast &e)
+    catch (const wht::bad_any_cast &e)
         {
             LOG(WARNING) << "msg_handler_pvt_to_trk Bad any_cast: " << e.what();
         }

@@ -27,6 +27,7 @@
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
+#include <array>
 #include <exception>
 #include <sstream>
 #include <utility>

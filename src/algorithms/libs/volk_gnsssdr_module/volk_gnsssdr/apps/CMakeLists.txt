@@ -71,6 +71,12 @@ else()
     target_link_libraries(volk_gnsssdr_profile PRIVATE volk_gnsssdr ${orc_lib})
 endif()
 
+if(UNIX)
+    target_compile_definitions(volk_gnsssdr_profile
+        PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>
+    )
+endif()
+
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         set_target_properties(volk_gnsssdr_profile
@@ -92,6 +98,12 @@ if(ENABLE_STATIC_LIBS)
     target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr_static ${orc_lib})
 else()
     target_link_libraries(volk_gnsssdr-config-info volk_gnsssdr ${orc_lib})
+endif()
+
+if(UNIX)
+    target_compile_definitions(volk_gnsssdr-config-info
+        PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>
+    )
 endif()
 
 if(ENABLE_STRIP)

@@ -681,6 +681,8 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             d_HAS_data.satellite_submask = std::vector<uint64_t>(d_HAS_data.Nsys_sub);
             d_HAS_data.delta_clock_correction_clock_subset = std::vector<std::vector<int16_t>>(d_HAS_data.Nsys_sub, std::vector<int16_t>());
 
+            const std::string str_one("1");
+            const std::string str_zero("0");
             for (uint8_t i = 0; i < d_HAS_data.Nsys_sub; i++)
                 {
                     d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_CLOCK_SUBSET_LENGTH));
@@ -711,11 +713,11 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                         {
                             if ((aux & mask_value) >= 1)
                                 {
-                                    binary.insert(0, "1");
+                                    binary.insert(0, str_one);
                                 }
                             else
                                 {
-                                    binary.insert(0, "0");
+                                    binary.insert(0, str_zero);
                                 }
                             aux <<= 1;
                         }

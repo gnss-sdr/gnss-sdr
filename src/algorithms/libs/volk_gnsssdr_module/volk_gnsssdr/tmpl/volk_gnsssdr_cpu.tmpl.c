@@ -26,6 +26,10 @@
 #include "cpuinfo_mips.h"
 #elif defined(CPU_FEATURES_ARCH_PPC)
 #include "cpuinfo_ppc.h"
+#elif defined(CPU_FEATURES_ARCH_S390X)
+#include "cpuinfo_s390x.h"
+#elif defined(CPU_FEATURES_ARCH_RISCV)
+#include "cpuinfo_riscv.h"
 #endif
 
 // This is required for MSVC
@@ -41,15 +45,31 @@ struct VOLK_CPU volk_gnsssdr_cpu;
 %for arch in archs:
 static int i_can_has_${arch.name} (void) {
     %for check, params in arch.checks:
-      %if "neon" in arch.name:
+        %if "neon" in arch.name:
 #if defined(CPU_FEATURES_ARCH_ARM)
     if (GetArmInfo().features.${check} == 0){ return 0; }
 #endif
-    %else:
+        %elif "mips" in arch.name:
+#if defined(CPU_FEATURES_ARCH_MIPS)
+    if (GetMipsInfo().features.${check} == 0){ return 0; }
+#endif
+        %elif "ppc" in arch.name:
+#if defined(CPU_FEATURES_ARCH_PPC)
+    if (GetPPCInfo().features.${check} == 0){ return 0; }
+#endif
+        %elif "s390x" in arch.name:
+#if defined(CPU_FEATURES_ARCH_S390X)
+    if (GetS390XInfo().features.${check} == 0){ return 0; }
+#endif
+        %elif "riscv" in arch.name:
+#if defined(CPU_FEATURES_ARCH_RISCV)
+    if (GetRiscvInfo().features.${check} == 0){ return 0; }
+#endif
+        %else:
 #if defined(CPU_FEATURES_ARCH_X86)
     if (GetX86Info().features.${check} == 0){ return 0; }
 #endif
-    %endif
+        %endif
     %endfor
     return 1;
 }

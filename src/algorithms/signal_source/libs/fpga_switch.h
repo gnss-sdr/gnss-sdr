@@ -23,6 +23,7 @@
 #ifndef GNSS_SDR_FPGA_SWITCH_H
 #define GNSS_SDR_FPGA_SWITCH_H
 
+#include <cstdint>
 #include <string>
 
 /** \addtogroup Signal_Source

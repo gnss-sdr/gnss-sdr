@@ -68,8 +68,6 @@ option(ENABLE_CUDA "Enable building of processing blocks implemented with CUDA (
 option(ENABLE_FPGA "Enable building of processing blocks implementing FPGA offloading" OFF)
 
 # Building and packaging options
-option(ENABLE_GENERIC_ARCH "Builds a portable binary" OFF)
-
 option(ENABLE_PACKAGING "Enable software packaging" OFF)
 
 option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
@@ -85,7 +83,6 @@ option(ENABLE_STRIP "Create stripped binaries without debugging symbols (in Rele
 option(Boost_USE_STATIC_LIBS "Use Boost static libs" OFF)
 
 if(ENABLE_PACKAGING)
-    set(ENABLE_GENERIC_ARCH ON)
     set(ENABLE_ARMA_NO_DEBUG ON)
     set(CMAKE_VERBOSE_MAKEFILE ON)
     set(ENABLE_STRIP OFF)
@@ -344,7 +341,7 @@ if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_
   CMAKE_VERSION VERSION_LESS 3.5)
     set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
 else()
-    set(GNSSSDR_GTEST_LOCAL_VERSION "1.12.1")
+    set(GNSSSDR_GTEST_LOCAL_VERSION "1.13.0")
 endif()
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 if(CMAKE_VERSION VERSION_GREATER 3.17.0)
@@ -442,7 +439,6 @@ endif()
 
 
 
-
 ################################################################################
 # Set minimal C and C++ standards
 ################################################################################
@@ -501,22 +497,18 @@ endif()
 ################################################################################
 # Check if the compiler defines the architecture as ARM
 ################################################################################
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(^arm)|(^aarch64)")
+    set(IS_ARM TRUE)
+endif()
 if(NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     if(CMAKE_CROSSCOMPILING)
-        set(IS_ARM TRUE)
         if(NOT CMAKE_NO_SYSTEM_FROM_IMPORTED)
             set(CMAKE_NO_SYSTEM_FROM_IMPORTED TRUE)
         endif()
-    else()
-        if(NOT IS_ARM)
-            include(TestForARM)
-        endif()
-    endif()
-else()
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "(^aarch64)|(arm64)")
-        set(IS_ARM TRUE)
     endif()
 endif()
+
+
 
 ################################################################################
 # pkg-config - Helper tool used when compiling applications and libraries.
@@ -524,6 +516,7 @@ endif()
 set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH TRUE)
 set(FPHSA_NAME_MISMATCHED ON)
 find_package(PkgConfig)
+
 
 
 ################################################################################
@@ -1193,7 +1186,7 @@ if(NOT VOLKGNSSSDR_FOUND)
     include(GNUInstallDirs)
     set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES
-        "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)|(^s390x)")
+        "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)|(^s390x)|^riscv")
         set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
     endif()
     if(${CMAKE_INSTALL_LIBDIR} MATCHES lib64)
@@ -1232,11 +1225,14 @@ if(NOT VOLKGNSSSDR_FOUND)
                 set_package_properties(CPUFEATURES PROPERTIES
                     DESCRIPTION "A cross platform C99 library to get CPU features at runtime (version: ${CPUFEATURES_VERSION})"
                 )
+                if((CMAKE_SYSTEM_PROCESSOR MATCHES "(^s390x)|^riscv") AND (CPUFEATURES_VERSION VERSION_LESS "0.8.0")) # detect cpu_features without s390x / riscv support
+                    set(ENABLE_CPUFEATURES OFF)
+                endif()
             else()
                 set_package_properties(CPUFEATURES PROPERTIES
                     DESCRIPTION "A cross platform C99 library to get CPU features at runtime"
                 )
-                if(VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3" AND VOLK_VERSION VERSION_LESS "2.5.2") # detect "hidden" cpu_features 0.6.0
+                if(DEFINED VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3") # avoid clash with volk's cpufeatures.
                     set(ENABLE_CPUFEATURES OFF)
                 else()
                     set_package_properties(CPUFEATURES PROPERTIES
@@ -1804,6 +1800,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 else()
     if(NOT BLA_VENDOR)
         set(BLA_VENDOR "Generic")
+    endif()
+    if(NOT CMAKE_CROSSCOMPILING AND NOT DEFINED BLA_PREFER_PKGCONFIG)
+        set(BLA_PREFER_PKGCONFIG ON)  # Required by riscv64 arch
     endif()
     find_package(BLAS)
     set_package_properties(BLAS PROPERTIES
@@ -2903,9 +2902,9 @@ if(ENABLE_OPENCL)
             message(STATUS " You can disable OpenCL use by doing 'cmake -DENABLE_OPENCL=OFF ..'")
         endif()
     endif()
-    if(ENABLE_GENERIC_ARCH)
+    if(ENABLE_PACKAGING)
         set(ENABLE_OPENCL OFF)
-        message(STATUS "ENABLE_GENERIC_ARCH is set to ON so the use of OpenCL has been disabled.")
+        message(STATUS "ENABLE_PACKAGING is set to ON so the use of OpenCL has been disabled.")
     endif()
     if(NOT OPENCL_FOUND)
         message(STATUS "Processing blocks using OpenCL will not be built.")
@@ -3282,36 +3281,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     endif()
 endif()
 
-# Processor-architecture related flags
-# See https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
-    if(NOT ENABLE_GENERIC_ARCH)
-        if(IS_ARM)
-            # ARM-specific options
-            # See https://gcc.gnu.org/onlinedocs/gcc/ARM-Options.html
-            if(NOT CMAKE_CROSSCOMPILING AND NOT CMAKE_TOOLCHAIN_FILE)
-                add_compile_options(-mtune=native)
-            endif()
-        else()
-            if(NOT ENABLE_CUDA)
-                add_compile_options(-march=native)
-            endif()
-        endif()
-    endif()
-endif()
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(NOT ENABLE_GENERIC_ARCH)
-        if(IS_ARM)
-            # ARM-specific options
-            if(NOT CMAKE_CROSSCOMPILING AND NOT CMAKE_TOOLCHAIN_FILE)
-                add_compile_options(-mcpu=native)
-            endif()
-        else()
-            add_compile_options(-march=native)
-        endif()
-    endif()
-endif()
-
 
 
 ################################################################################
@@ -3384,7 +3353,6 @@ add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acqu
 add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
 add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA offloading.")
 add_feature_info(ENABLE_ARMA_NO_DEBUG ENABLE_ARMA_NO_DEBUG "Enables passing the ARMA_NO_DEBUG macro to Armadillo, hence disabling bound checking.")
-add_feature_info(ENABLE_GENERIC_ARCH ENABLE_GENERIC_ARCH "When disabled, flags such as '-march=native' are passed to the compiler.")
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
 add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
 add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")

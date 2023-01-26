@@ -258,7 +258,7 @@ endif()
 
 # cpu_features - sensible defaults, user settable option
 if(CMAKE_SYSTEM_PROCESSOR MATCHES
-    "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)|(^s390x)")
+    "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)|(^s390x)|^riscv")
     option(VOLK_CPU_FEATURES "volk-gnsssdr uses cpu_features" ON)
 else()
     option(VOLK_CPU_FEATURES "volk-gnsssdr uses cpu_features" OFF)
@@ -266,7 +266,13 @@ endif()
 
 if(CMAKE_VERSION VERSION_GREATER 3.0 AND VOLK_CPU_FEATURES)
     find_package(CPUFEATURES)
-    set(USE_CPU_FEATURES ON)
+    if(CPUFEATURES_FOUND AND (CMAKE_SYSTEM_PROCESSOR MATCHES "(^s390x)|^riscv") AND (CPUFEATURES_VERSION VERSION_LESS "0.8.0"))
+        set(USE_CPU_FEATURES OFF)
+        unset(CPUFEATURES_FOUND CACHE)
+        message(STATUS "Building volk-gnsssdr without cpu_features, installed version v${CPUFEATURES_VERSION} does not support the ${CMAKE_SYSTEM_PROCESSOR} architecture")
+    else()
+        set(USE_CPU_FEATURES ON)
+    endif()
     if(NOT CPUFEATURES_FOUND)
         message(STATUS "Building volk-gnsssdr with cpu_features")
         set(BUILD_TESTING OFF CACHE BOOL "Build cpu_features without tests." FORCE)
@@ -290,13 +296,8 @@ endif()
 
 # Python
 include(VolkPython) # sets PYTHON_EXECUTABLE
-volk_python_check_module("python >= 2.7" sys "sys.version.split()[0] >= '2.7'" PYTHON_MIN_VER_FOUND)
-volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
-if(Python2_VERSION OR (PYTHON_VERSION_STRING VERSION_LESS "3.0"))
-    volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
-endif()
 
-if(NOT PYTHON_MIN_VER_FOUND)
+if(NOT PYTHON_EXECUTABLE)
     message(FATAL_ERROR "Python 2.7 or greater required to build VOLK_GNSSSDR")
 endif()
 

@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+
+name: Run volk_gnsssdr tests
+
+on:
+  push:
+    paths:
+      - "src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**"
+      - "CMakeLists.txt"
+  pull_request:
+    paths:
+      - "src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**"
+      - "CMakeLists.txt"
+  workflow_dispatch:
+
+jobs:
+  build-ubuntu-non-x86:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.distro }} ${{ matrix.arch }} ${{ matrix.compiler.name }}
+
+    # Run steps on a matrix of archs.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: aarch64
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          - arch: aarch64
+            distro: ubuntu22.04
+            compiler: { name: clang-14, cc: clang-14, cxx: clang++-14 }
+          - arch: armv7
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          - arch: ppc64le
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          - arch: s390x
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          - arch: riscv64
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - uses: uraimo/run-on-arch-action@v2.5.0
+        name: Build in non-x86 container
+        # continue-on-error: ${{ contains(fromJson('["ppc64le", "s390x"]'), matrix.arch) }}
+        id: build
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          githubToken: ${{ github.token }} # Not required, but speeds up builds
+          setup: |
+            mkdir -p "${PWD}/testing"
+          dockerRunArgs: |
+            --volume "${PWD}:/volk_gnsssdr"
+          env: |
+            CC: ${{ matrix.compiler.cc }}
+            CXX: ${{ matrix.compiler.cxx }}
+          shell: /bin/sh
+          install: |
+            apt-get update -q -y
+            apt-get install -q -y git cmake python3-mako liborc-dev ${{ matrix.compiler.name }}
+          run: |
+            git config --global --add safe.directory /volk_gnsssdr
+            cd /volk_gnsssdr
+            cd testing
+            cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/
+            echo "Build with $(nproc) thread(s)"
+            make -j$(nproc)
+            ./cpu_features/list_cpu_features
+            ./apps/volk_gnsssdr-config-info --alignment
+            ./apps/volk_gnsssdr-config-info --avail-machines
+            ./apps/volk_gnsssdr-config-info --all-machines
+            ./apps/volk_gnsssdr-config-info --malloc
+            ./apps/volk_gnsssdr-config-info --cc
+            ctest -V

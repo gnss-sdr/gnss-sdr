@@ -37,12 +37,6 @@ if(NOT GOOGLETEST_FOUND)
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(GTEST_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target" "gtest_main")
     endif()
-    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
-      (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0))
-        set(GOOGLETEST_GIT_TAG v${GNSSSDR_GTEST_LOCAL_VERSION})
-    else()
-        set(GOOGLETEST_GIT_TAG release-${GNSSSDR_GTEST_LOCAL_VERSION})
-    endif()
     if(GNSSSDR_GTEST_LOCAL_VERSION VERSION_LESS 1.12.0)
         set(DEBUG_DECORATION "d")
     else()
@@ -51,7 +45,7 @@ if(NOT GOOGLETEST_FOUND)
     if(CMAKE_VERSION VERSION_LESS 3.2)
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest
-            GIT_TAG ${GOOGLETEST_GIT_TAG}
+            GIT_TAG v${GNSSSDR_GTEST_LOCAL_VERSION}
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER}
@@ -80,7 +74,7 @@ if(NOT GOOGLETEST_FOUND)
         endif()
         ExternalProject_Add(gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             GIT_REPOSITORY https://github.com/google/googletest
-            GIT_TAG ${GOOGLETEST_GIT_TAG}
+            GIT_TAG v${GNSSSDR_GTEST_LOCAL_VERSION}
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gtest/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             BINARY_DIR ${GNSSSDR_BINARY_DIR}/gtest-${GNSSSDR_GTEST_LOCAL_VERSION}
             CMAKE_ARGS ${GTEST_COMPILER}
@@ -369,12 +363,14 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         if(CMAKE_VERSION VERSION_GREATER 3.17.0)
             set(GNSSTK_PATCH_COMMAND
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static14.patch
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static14.patch &&
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_gcc13.patch
             )
         else()
             set(GNSSTK_PATCH_COMMAND
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static13.patch
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static13.patch &&
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_gcc13.patch
             )
         endif()
         # Patch only once
@@ -408,6 +404,9 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                     set(GNSSTK_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
                 endif()
             endif()
+            if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+                set(GNSSTK_FLAGS "-DCMAKE_CXX_FLAGS:STRING=-w")  # Fix for clang in aarch64
+            endif()
             if(CMAKE_VERSION VERSION_GREATER 3.17.0)
                 ExternalProject_Add(gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
                     GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
@@ -425,6 +424,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                         -DCMAKE_CXX_EXTENSIONS=ON
                         -DCMAKE_C_STANDARD=11
                         -DCMAKE_C_EXTENSIONS=ON
+                        "${GNSSTK_FLAGS}"
                     BUILD_COMMAND ${GNSSTK_BUILD_COMMAND} ${GNSSTK_PARALLEL_BUILD}
                     BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gnsstk${CMAKE_STATIC_LIBRARY_SUFFIX}
                     UPDATE_COMMAND ""

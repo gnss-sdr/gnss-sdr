@@ -12,32 +12,28 @@
 # - cmd an additional command to run
 # - have the result variable to set
 ########################################################################
-macro(GNSSSDR_PYTHON_CHECK_MODULE_RAW desc python_code have)
+macro(GNSSSDR_PYTHON_CHECK_MODULE desc mod cmd have)
+    message(STATUS "Python checking for ${desc}")
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c "${python_code}"
+        COMMAND ${PYTHON_EXECUTABLE} -c "
+#########################################
+try: import ${mod}
+except:
+    try: ${mod}
+    except: exit(-1)
+try: assert ${cmd}
+except: exit(-1)
+#########################################"
         OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE return_code
+        RESULT_VARIABLE ${have}
     )
-    if(return_code EQUAL 0)
+    if(${have} EQUAL 0)
         message(STATUS "Python checking for ${desc} - found")
         set(${have} TRUE)
     else()
         message(STATUS "Python checking for ${desc} - not found")
         set(${have} FALSE)
     endif()
-endmacro()
-
-macro(GNSSSDR_PYTHON_CHECK_MODULE desc mod cmd have)
-    gnsssdr_python_check_module_raw(
-        "${desc}" "
-#########################################
-try:
-    import ${mod}
-    assert ${cmd}
-except (ImportError, AssertionError): exit(-1)
-except: pass
-#########################################"
-    "${have}")
 endmacro()
 
 

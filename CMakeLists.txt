@@ -613,8 +613,17 @@ if(ENABLE_UHD)
     endif()
 endif()
 
+find_package(ZEROMQ)
+set_package_properties(ZEROMQ PROPERTIES
+    PURPOSE "Used by the ZMQ_Signal_Source."
+    TYPE OPTIONAL
+)
 if(ENABLE_ZMQ)
-    list(APPEND GR_REQUIRED_COMPONENTS ZEROMQ)
+    if(NOT ZEROMQ_FOUND)
+        set(ENABLE_ZMQ OFF)
+    else()
+        list(APPEND GR_REQUIRED_COMPONENTS ZEROMQ)
+    endif()
 endif()
 
 find_package(GNURADIO)

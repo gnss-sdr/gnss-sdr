@@ -95,9 +95,13 @@ auto ZmqSignalSource::get_right_block() -> gr::basic_block_sptr
     auto result = gr::basic_block_sptr();
 
     if (d_vec_block)
-        result = d_vec_block;  // NOLINT
+        {
+            result = d_vec_block;
+        }
     else
-        result = d_source_block;  // NOLINT
+        {
+            result = d_source_block;
+        }
 
     return result;
 }

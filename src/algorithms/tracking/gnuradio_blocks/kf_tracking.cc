@@ -656,8 +656,19 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             double old_doppler = d_x_old_old(2);
                             double old_doppler_rate = d_x_old_old(3);
                             double old_code_phase_chips = d_x_old_old(0);
-                            d_x_old_old(2) = tmp_x(2);  //replace the Carrier Frequency state
-                            d_x_old_old(0) = tmp_x(0);  //replace the Code Phase state
+
+                            if(abs(d_x_old_old(2) - tmp_x(2))>50){
+                                 std::cout  << " tracking_cmd TOO FAR: "
+                                            << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
+                                            << " \n";
+                            }else{
+                                std::cout  << " tracking_cmd NEAR: "
+                                            << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
+                                            << " \n";
+                                //d_x_old_old(2) = tmp_x(2);  //replace the Code Phase state
+                            }
+
+                            //d_x_old_old(0) = tmp_x(0);  //replace the Code Phase state
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;

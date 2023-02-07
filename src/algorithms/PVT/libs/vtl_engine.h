@@ -59,6 +59,9 @@ private:
     double xDot_u;
     double yDot_u;
     double zDot_u;
+    double xDot2_u;
+    double yDot2_u;
+    double zDot2_u;
     double cdeltat_u;
     double cdeltatDot_u;
     

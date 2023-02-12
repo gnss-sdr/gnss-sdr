@@ -162,7 +162,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     test = kf_H_fill(kf_H,new_data.sat_number,a_x, a_y, a_z, kf_dt);
     // kf_H.print("kf_H diag:");
     // Kalman estimation (measurement update)
-    test = kf_NLmeasurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, new_data.pr_m, new_data.doppler_hz, kf_x);
+    test = kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, new_data.pr_m, new_data.doppler_hz, kf_x);
 
     kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
     // kf_P_x.print("a priori P: ");
@@ -328,7 +328,7 @@ bool Vtl_Engine::obsv_calc(arma::mat &rho_pri,arma::mat &rhoDot_pri,arma::colvec
 	return -1;
 }
 
-bool Vtl_Engine::kf_NLmeasurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x)
+bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x)
 {
     for (int32_t i = 0; i < sat_number; i++)  // Measurement vector
     {

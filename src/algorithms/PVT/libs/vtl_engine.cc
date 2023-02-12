@@ -56,7 +56,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_yerr = arma::zeros(2 * new_data.sat_number, 1);
     kf_xerr = arma::zeros(n_of_states, 1);
     kf_S = arma::zeros(2 * new_data.sat_number, 2 * new_data.sat_number);  // kf_P_y innovation covariance matrix
-
+    kf_K = arma::zeros(n_of_states, 2 * new_data.sat_number); ;
     // ################## Kalman Tracking ######################################
     static uint32_t counter = 0;  //counter
     counter = counter + 1;        //uint64_t
@@ -171,12 +171,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_K = (kf_P_x * kf_H.t()) * arma::inv(kf_S);               // Kalman gain
     kf_xerr = kf_K * (kf_yerr);                                 // Error state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
-    kf_x = kf_x;// - kf_xerr;                                      // updated state estimation (a priori + error)
+    kf_x = kf_x - kf_xerr;                                      // updated state estimation (a priori + error)
     
     if(abs(delta_t_vtl)>.5){
         kf_xerr.print("kf_xERR: ");
         cout<<"kf_dt: "<<delta_t_vtl<<endl;
         kf_x.print("kf_x:");
+        kf_K.print("kf_K:");
     }
     // kf_x.print("state CORRECTED:");
 

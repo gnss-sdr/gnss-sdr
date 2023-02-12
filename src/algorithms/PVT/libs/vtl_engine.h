@@ -52,19 +52,6 @@ private:
     Vtl_Conf config;
     //TODO: Internal VTL persistent variables here
    
-    //State variables
-    double x_u;
-    double y_u;
-    double z_u;
-    double xDot_u;
-    double yDot_u;
-    double zDot_u;
-    double xDot2_u;
-    double yDot2_u;
-    double zDot2_u;
-    double cdeltat_u;
-    double cdeltatDot_u;
-    
     // Transformation variables
     arma::colvec d;
     arma::colvec rho_pri;
@@ -78,7 +65,7 @@ private:
     
     // Kalman filter matrices
     arma::mat kf_P_x_ini;  // initial state error covariance matrix
-    arma::mat kf_P_x;      // state error covariance matrix
+    // arma::mat kf_P_x;      // state error covariance matrix
     arma::mat kf_P_x_pre;  // Predicted state error covariance matrix
     arma::mat kf_S;      // innovation covariance matrix
 
@@ -96,8 +83,12 @@ private:
 
     // Gaussian estimator
     arma::mat kf_R_est;  // measurement error covariance
-};
 
+    bool kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arma::colvec ay, arma::colvec az, double kf_dt); // Observation Matrix constructor
+    bool kf_F_fill(arma::mat &kf_F,double kf_dt); // System Matrix constructor
+    bool obsv_calc(arma::mat &rho_pri,arma::mat &rhoDot_pri,arma::colvec &ax, arma::colvec &ay, arma::colvec &az,int sat_number,arma::mat sat_p,arma::mat sat_v,arma::mat kf_x); // Observables calculation
+    bool kf_NLmeasurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x);
+};
 
 /** \} */
 /** \} */

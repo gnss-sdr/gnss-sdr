@@ -331,7 +331,61 @@ bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat r
     return -1;
 }
 
-bool Vtl_Engine::model3DoF(double acc_x,double acc_y,double acc_z,arma::mat kf_x,double kf_dt)
+bool Vtl_Engine::model3DoF(double acc_x,double acc_y,double acc_z,arma::mat kf_x,double dt)
 {
-    return -1;
+    arma::colvec u_vec;
+    arma::colvec acc_vec;
+    arma::colvec u_dir;
+    arma::colvec gravity_ECEF = {-7.826024, 0.8616969, -5.833042}; //lat=36.533333 lon=-6.283333
+    static double t_disparo;
+    double Empuje;
+    double densidad=1.0;
+    double ballistic_coef = 0.007;
+    double PI = acos(-1.0);
+    //vector velocidad
+    u_vec = kf_x.rows(4, 6);
+    // double u=sqrt(pow(kf_x(4),2)+pow(kf_x(5),2)+pow(kf_x(6),2));
+
+    //modulo de la velocidad
+    double u = norm(u_vec, 2);
+    
+    if(u>4){
+        t_disparo=t_disparo+dt;
+        double diam_cohete=120.0e-3;// 120 mm
+        double mass_rocket=50.0; //50Kg
+        
+        if(t_disparo<.2){
+            u_dir={.90828, -.13984, .388756};
+        }else{
+            u_dir = u_vec / u;        
+        }
+        // lla= ecef2lla([kf_State(1) kf_State(2) kf_State(3)]);
+        // [T, sound_v, P, densidad] = atmosisa(lla(3));
+        // sound_v=320;% @ 5km and -17.5C
+        // Mach=u/sound_v;
+        // CD0 = Cd0_M_LookTable(Mach);
+        // % ballistic_coef is Cd0/mass_rocket;
+        // ballistic_coef=CD0/mass_rocket;
+        // Empuje = EmpujeLookTable(t_disparo);
+                
+        acc_vec = -(PI*densidad*diam_cohete*diam_cohete/8)*ballistic_coef*u*u_dir
+        +gravity_ECEF+Empuje*u_dir;
+        
+        // % return
+        acc_x = acc_vec(0);
+        acc_y = acc_vec(1);
+        acc_z = acc_vec(2); 
+    }else{
+        // % return
+        acc_x = 0;
+        acc_y = 0;
+        acc_z = 0;
+    }
+
+       return -1;
+}
+
+double Vtl_Engine::EmpujeLkTable(double t_disparo)
+{
+    return -1.0;
 }

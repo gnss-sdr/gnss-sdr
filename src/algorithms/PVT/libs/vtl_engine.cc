@@ -367,9 +367,9 @@ bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat k
     double densidad=1.0;
     double ballistic_coef = 0.007;
     //vector velocidad
-    kf_x.print("kf_x: ");
+
     u_vec = kf_x.rows(3, 5);
-    // u_vec.print("u_vec");
+    u_vec.print("u_vec");
     // double u=sqrt(pow(kf_x(4),2)+pow(kf_x(5),2)+pow(kf_x(6),2));
 
     //modulo de la velocidad
@@ -377,6 +377,7 @@ bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat k
   
     if(u>4){
         t_disparo=t_disparo+dt;
+        cout<<"t_disparo: "<<t_disparo<<endl;
         double diam_cohete=120.0e-3;// 120 mm
         double mass_rocket=50.0; //50Kg
         
@@ -398,7 +399,7 @@ bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat k
         acc_vec = -(GNSS_PI*densidad*diam_cohete*diam_cohete/8)*ballistic_coef*u*u_dir
         +gravity_ECEF+Empuje*u_dir;
 
-        acc_vec.print("acc_vec");
+        //acc_vec.print("acc_vec");
         // % return
         acc_x = acc_vec(0);
         acc_y = acc_vec(1);
@@ -594,12 +595,15 @@ double Vtl_Engine::EmpujeLkTable(double t_disparo)
     {1.74000000000000,	537.866310625605},};
 
     //encuentra el mas cercano justo anterior.
-    int index_E = LkTable.elem(find(LkTable<=t_disparo)).max(); 
-    if (index_E<(LkTable.n_rows-1)){  
-        double tdisparo1=LkTable(index_E,0);
-        double tdisparo2=LkTable(index_E+1,0);
-        double E1=LkTable(index_E,1);
-        double E2=LkTable(index_E+1,1);
+    // int index_E = LkTable.elem(find(LkTable<=t_disparo)).max(); 
+    arma::uvec index_E = find(LkTable<=t_disparo, 1, "last");
+    index_E.print("indice E: ");
+    // uint kk = index_E(0);
+    if (index_E(0)<(LkTable.n_rows-1)){  
+        double tdisparo1=LkTable(index_E(0),0);
+        double tdisparo2=LkTable(index_E(0)+1,0);
+        double E1=LkTable(index_E(0),1);
+        double E2=LkTable(index_E(0)+1,1);
         
         E=(t_disparo-tdisparo1)*(E2-E1)/(tdisparo2-tdisparo1)+E1;
     }else{

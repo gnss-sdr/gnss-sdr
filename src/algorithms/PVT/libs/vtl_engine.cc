@@ -42,6 +42,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     static arma::mat kf_P_x = arma::eye(n_of_states, n_of_states) * 1.0;  //TODO: use a real value.; 
     static arma::mat kf_x = arma::zeros(n_of_states, 1);
     static arma::mat kf_dx = arma::zeros(n_of_states, 1);
+
+    //TODO: resolver el problema cuando cambie el numero de sat!!
+    // static arma::colvec rhoDot_pri_old = arma::zeros(new_data.sat_number, 1);
     // covariances (static)
       
     kf_R = arma::zeros(3 * new_data.sat_number, 3 * new_data.sat_number);
@@ -117,7 +120,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error)
             kf_R(i, i) = 80.0;//*50.0/new_data.sat_CN0_dB_hz(i);  //TODO: fill with real values.
             kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;//*50.0/new_data.sat_CN0_dB_hz(i);
-            kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 100.0;//*50.0/new_data.sat_CN0_dB_hz(i);
+            kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 400.0;//*50.0/new_data.sat_CN0_dB_hz(i);
             
             if(80.0*50.0/new_data.sat_CN0_dB_hz(i)>90||20.0*50.0/new_data.sat_CN0_dB_hz(i)>25){
                 kf_R(i, i) = 10e4;
@@ -137,6 +140,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     d = arma::zeros(new_data.sat_number, 1);
     rho_pri = arma::zeros(new_data.sat_number, 1);
     rhoDot_pri = arma::zeros(new_data.sat_number, 1);
+    rhoDot2_pri = arma::zeros(new_data.sat_number, 1);
 
     rho_pri_filt = arma::zeros(new_data.sat_number, 1);
     rhoDot_pri_filt = arma::zeros(new_data.sat_number, 1);
@@ -154,26 +158,39 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             new_data.sat_LOS(i, 2) = a_z(i);
         }
 
-    kf_H = arma::zeros(2 * new_data.sat_number, n_of_states);
+    kf_H = arma::zeros(3 * new_data.sat_number, n_of_states);
     test = kf_H_fill(kf_H,new_data.sat_number,a_x, a_y, a_z, kf_dt);
+
+    for (int32_t i = 0; i < new_data.sat_number; i++)  //neccesary quantities
+    {
+        // rhoDot2_pri(i)=(rhoDot_pri(i)-rhoDot_pri_old(i))/kf_dt;
+    }
     // Kalman estimation (measurement update)
-    test = kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, new_data.pr_m, new_data.doppler_hz, kf_x);
+    test = kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot_pri, new_data.pr_m, new_data.doppler_hz, kf_x);
 
     kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
     // Kalman filter update step
-    kf_S = kf_H * kf_P_x * kf_H.t() + kf_R;                     // innovation covariance matrix (S)
+    kf_S = kf_H * kf_P_x * kf_H.t() + kf_R;    // innovation covariance matrix (S)
     arma::mat B= (kf_P_x * kf_H.t()) ;
     kf_K = B * arma::inv(kf_S);               // Kalman gain
 
-    kf_xerr = kf_K * (kf_yerr);                                 // Error state estimation
+    kf_xerr = kf_K * (kf_yerr);               // Error state estimation
     //kf_xerr.row(5)=kf_K.row(5)*kf_yerr;
     arma::mat A = (arma::eye(size(kf_P_x)) - kf_K * kf_H);
     kf_P_x =  A * kf_P_x * A.t() + kf_K * kf_R * kf_K.t() ;  // update state estimation error covariance matrix
     kf_dx=kf_x;
-    kf_x = kf_x-kf_xerr;                                      // updated state estimation (a priori + error)
+    kf_x = kf_x-kf_xerr;  // updated state estimation (a priori + error)
     
     //     // ################## Geometric Transformation ######################################
     test = obsv_calc(rho_pri,rhoDot_pri,a_x, a_y, a_z,new_data.sat_number,new_data.sat_p,new_data.sat_v,kf_x);
+    
+       for (int32_t i = 0; i < new_data.sat_number; i++)  //neccesary quantities
+    {
+        //acc_effect(i)=(a_x(i)*kf_state(7,t)+a_y(chan,t)*kf_state(8,t)+a_z(chan,t)*kf_state(9,t));
+        //rhoDot2_pri(chan,t)=(rhoDot_pri(chan,t)-rhoDot_pri(chan,t-1))/kf_dt;
+        //rhoDot2_pri(chan,t)=-acc_effect(chan,t);
+    }
+    
     test = kf_H_fill(kf_H,new_data.sat_number,a_x, a_y, a_z, kf_dt);
     //  Re-calculate error measurement vector with the most recent data available: kf_delta_y=kf_H*kf_delta_x
     kf_yerr = kf_H * kf_xerr;
@@ -191,7 +208,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             // sample code
             trk_cmd.carrier_phase_rads = 0;                                                // difficult of calculation
             trk_cmd.carrier_freq_hz = doppler_hz_filt(channel);  //+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction
-            trk_cmd.carrier_freq_rate_hz_s =-(a_x(channel)*kf_x(6)+a_y(channel)*kf_x(7)+a_z(channel)*kf_x(8))/ Lambda_GPS_L1;
+            trk_cmd.carrier_freq_rate_hz_s = 0;//-(a_x(channel)*kf_x(6)+a_y(channel)*kf_x(7)+a_z(channel)*kf_x(8))/ Lambda_GPS_L1;
             trk_cmd.code_phase_chips = kf_yerr(channel)/SPEED_OF_LIGHT_M_S*1023e3;
             trk_cmd.enable_carrier_nco_cmd = true;
             trk_cmd.enable_code_nco_cmd = true;
@@ -278,6 +295,13 @@ bool Vtl_Engine::kf_H_fill(arma::mat &kf_H,int sat_number, arma::colvec ax, arma
             kf_H(i + sat_number, 8) = az(i)*kf_dt;
             kf_H(i + sat_number, 10) = 1.0;
 
+            kf_H(i + 2*sat_number, 3) = 0;//ax(i);
+            kf_H(i + 2*sat_number, 4) = 0;//ay(i);
+            kf_H(i + 2*sat_number, 5) = 0;//az(i);
+            kf_H(i + 2*sat_number, 6) = ax(i);
+            kf_H(i + 2*sat_number, 7) = ay(i);
+            kf_H(i + 2*sat_number, 8) = az(i);
+            kf_H(i + 2*sat_number, 10) = kf_dt;
         }
 
     return -1;
@@ -321,12 +345,13 @@ bool Vtl_Engine::obsv_calc(arma::mat &rho_pri,arma::mat &rhoDot_pri,arma::colvec
 	return -1;
 }
 
-bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x)
+bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::mat rhoDot2_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x)
 {
     for (int32_t i = 0; i < sat_number; i++)  // Measurement vector
     {
         kf_yerr(i) = rho_pri(i) - pr_m(i);
         kf_yerr(i + sat_number) = (doppler_hz(i) * Lambda_GPS_L1+kf_x(10)) - rhoDot_pri(i);
+        kf_yerr(i + 2*sat_number) = -rhoDot2_pri(i);
     }
     return -1;
 }
@@ -347,11 +372,7 @@ bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat k
 
     //modulo de la velocidad
     double u = norm(u_vec, 2);
-
-    // if(t<1000){
-    //     t_disparo=0;
-    // }
-    
+  
     if(u>4){
         t_disparo=t_disparo+dt;
         double diam_cohete=120.0e-3;// 120 mm

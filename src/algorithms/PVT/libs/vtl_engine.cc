@@ -44,19 +44,19 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     static arma::mat kf_dx = arma::zeros(n_of_states, 1);
     // covariances (static)
       
-    kf_R = arma::zeros(2 * new_data.sat_number, 2 * new_data.sat_number);
+    kf_R = arma::zeros(3 * new_data.sat_number, 3 * new_data.sat_number);
     double kf_dt = delta_t_vtl; //0.05;
     kf_Q = arma::eye(n_of_states, n_of_states);
 
     kf_F = arma::eye(n_of_states, n_of_states);
     bool test = kf_F_fill(kf_F,kf_dt);
 
-    //kf_H = arma::zeros(2 * new_data.sat_number, n_of_states);
-    kf_y = arma::zeros(2 * new_data.sat_number, 1);
-    kf_yerr = arma::zeros(2 * new_data.sat_number, 1);
+    //kf_H = arma::zeros(3 * new_data.sat_number, n_of_states);
+    kf_y = arma::zeros(3 * new_data.sat_number, 1);
+    kf_yerr = arma::zeros(3 * new_data.sat_number, 1);
     kf_xerr = arma::zeros(n_of_states, 1);
-    kf_S = arma::zeros(2 * new_data.sat_number, 2 * new_data.sat_number);  // kf_P_y innovation covariance matrix
-    kf_K = arma::zeros(n_of_states, 2 * new_data.sat_number); ;
+    kf_S = arma::zeros(3 * new_data.sat_number, 3 * new_data.sat_number);  // kf_P_y innovation covariance matrix
+    kf_K = arma::zeros(n_of_states, 3 * new_data.sat_number); ;
     // ################## Kalman Tracking ######################################
     static uint32_t counter = 0;  //counter
     counter = counter + 1;        //uint64_t
@@ -79,15 +79,22 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             kf_x(9) = new_data.rx_dts(0) * SPEED_OF_LIGHT_M_S;
             kf_x(10) = new_data.rx_dts(1) * SPEED_OF_LIGHT_M_S;
 
-            kf_dx=kf_x-kf_dx;
+            kf_dx = kf_x-kf_dx;
             kf_dx = kf_F * kf_dx;  // state prediction
         }
     else
         {
             // receiver solution from previous KF step
-            kf_x(6) = (kf_x(6)-kf_dx(6))/kf_dt;
-            kf_x(7) = (kf_x(7)-kf_dx(7))/kf_dt;
-            kf_x(8) = (kf_x(8)-kf_dx(8))/kf_dt;
+            double acc_x = 0;
+            double acc_y = 0;
+            double acc_z = 0;
+            test = model3DoF(acc_x,acc_x,acc_x,kf_x,kf_dt);
+            kf_x(6) = acc_x;
+            kf_x(7) = acc_y;
+            kf_x(8) = acc_z;
+            // kf_x(6) = (kf_x(6)-kf_dx(6))/kf_dt;
+            // kf_x(7) = (kf_x(7)-kf_dx(7))/kf_dt;
+            // kf_x(8) = (kf_x(8)-kf_dx(8))/kf_dt;
         }
    
     // State error Covariance Matrix Q (PVT)
@@ -98,11 +105,11 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_Q(3, 3) = 8.0;
     kf_Q(4, 4) = 8.0;
     kf_Q(5, 5) = 8.0;
-    kf_Q(6, 6) = 10;
-    kf_Q(7, 7) = 10;
-    kf_Q(8, 8) = 10;
+    kf_Q(6, 6) = .10;
+    kf_Q(7, 7) = .10;
+    kf_Q(8, 8) = .10;
     kf_Q(9, 9) = 4.0;
-    kf_Q(10, 10) = 100.0;
+    kf_Q(10, 10) = 10.0;
  
     // Measurement error Covariance Matrix R assembling
     for (int32_t i = 0; i < new_data.sat_number; i++)
@@ -110,10 +117,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error)
             kf_R(i, i) = 80.0;//*50.0/new_data.sat_CN0_dB_hz(i);  //TODO: fill with real values.
             kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;//*50.0/new_data.sat_CN0_dB_hz(i);
+            kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 100.0;//*50.0/new_data.sat_CN0_dB_hz(i);
             
             if(80.0*50.0/new_data.sat_CN0_dB_hz(i)>90||20.0*50.0/new_data.sat_CN0_dB_hz(i)>25){
                 kf_R(i, i) = 10e4;
                 kf_R(i + new_data.sat_number, i + new_data.sat_number) = 10e4;
+                kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 10e4;
                 cout<<"channel: "<<i<<"discarded"<<endl;
             }
         }
@@ -319,5 +328,10 @@ bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat r
         kf_yerr(i) = rho_pri(i) - pr_m(i);
         kf_yerr(i + sat_number) = (doppler_hz(i) * Lambda_GPS_L1+kf_x(10)) - rhoDot_pri(i);
     }
+    return -1;
+}
+
+bool Vtl_Engine::model3DoF(double acc_x,double acc_y,double acc_z,arma::mat kf_x,double kf_dt)
+{
     return -1;
 }

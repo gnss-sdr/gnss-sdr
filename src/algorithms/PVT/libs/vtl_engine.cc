@@ -166,7 +166,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
         // rhoDot2_pri(i)=(rhoDot_pri(i)-rhoDot_pri_old(i))/kf_dt;
     }
     // Kalman estimation (measurement update)
-    test = kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot_pri, new_data.pr_m, new_data.doppler_hz, kf_x);
+    test = kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot_pri*0, new_data.pr_m, new_data.doppler_hz, kf_x);
 
     kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
     // Kalman filter update step
@@ -208,7 +208,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             // sample code
             trk_cmd.carrier_phase_rads = 0;                                                // difficult of calculation
             trk_cmd.carrier_freq_hz = doppler_hz_filt(channel);  //+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction
-            trk_cmd.carrier_freq_rate_hz_s = 0;//-(a_x(channel)*kf_x(6)+a_y(channel)*kf_x(7)+a_z(channel)*kf_x(8))/ Lambda_GPS_L1;
+            trk_cmd.carrier_freq_rate_hz_s =-(a_x(channel)*kf_x(6)+a_y(channel)*kf_x(7)+a_z(channel)*kf_x(8))/ Lambda_GPS_L1;
             trk_cmd.code_phase_chips = kf_yerr(channel)/SPEED_OF_LIGHT_M_S*1023e3;
             trk_cmd.enable_carrier_nco_cmd = true;
             trk_cmd.enable_code_nco_cmd = true;
@@ -367,7 +367,9 @@ bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat k
     double densidad=1.0;
     double ballistic_coef = 0.007;
     //vector velocidad
-    u_vec = kf_x.rows(4, 6);
+    kf_x.print("kf_x: ");
+    u_vec = kf_x.rows(3, 5);
+    // u_vec.print("u_vec");
     // double u=sqrt(pow(kf_x(4),2)+pow(kf_x(5),2)+pow(kf_x(6),2));
 
     //modulo de la velocidad
@@ -391,10 +393,12 @@ bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat k
         // % ballistic_coef is Cd0/mass_rocket;
         // ballistic_coef=CD0/mass_rocket;
         Empuje = EmpujeLkTable(t_disparo);
-                
+        cout<<"Empuje: "<<Empuje<<endl;  
+
         acc_vec = -(GNSS_PI*densidad*diam_cohete*diam_cohete/8)*ballistic_coef*u*u_dir
         +gravity_ECEF+Empuje*u_dir;
-        
+
+        acc_vec.print("acc_vec");
         // % return
         acc_x = acc_vec(0);
         acc_y = acc_vec(1);

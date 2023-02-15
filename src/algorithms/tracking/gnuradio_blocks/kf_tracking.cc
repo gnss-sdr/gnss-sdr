@@ -658,17 +658,19 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             double old_code_phase_chips = d_x_old_old(0);
 
                             if(abs(d_x_old_old(2) - tmp_x(2))>50){
-                                 std::cout  << " tracking_cmd TOO FAR: "
+                                 std::cout  <<"channel: "<< this->d_channel
+                                            << " tracking_cmd TOO FAR: "
                                             << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
                                             << " \n";
                             }else{
-                                std::cout  << " tracking_cmd NEAR: "
+                                std::cout   <<"channel: "<< this->d_channel
+                                            << " tracking_cmd NEAR: "
                                             << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
                                             << " \n";
-                                //d_x_old_old(2) = tmp_x(2);  //replace the Code Phase state
+                            //d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
+                            //d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
                             }
 
-                            //d_x_old_old(0) = tmp_x(0);  //replace the Code Phase state
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;
@@ -698,7 +700,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             else
                             {
                                 dump_tracking_file << "doppler_corr"
-                                << ","<< this->d_channel << "," << x_tmp(2) << "," << old_doppler  << "," << old_doppler_rate  << "," << old_code_phase_chips  << "\n";
+                                << ","<< this->d_channel << "," << tmp_x(2) << "," << old_doppler  << "," <<  tmp_x(3)<< "," << old_doppler_rate << "\n";
                                 dump_tracking_file.close();
                             }
                         }

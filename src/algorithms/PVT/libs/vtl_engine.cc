@@ -331,13 +331,13 @@ bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat r
     return -1;
 }
 
-bool Vtl_Engine::model3DoF(double acc_x,double acc_y,double acc_z,arma::mat kf_x,double dt)
+bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat kf_x,double dt)
 {
     arma::colvec u_vec;
     arma::colvec acc_vec;
     arma::colvec u_dir;
     arma::colvec gravity_ECEF = {-7.826024, 0.8616969, -5.833042}; //lat=36.533333 lon=-6.283333
-    static double t_disparo;
+    static double t_disparo=0;
     double Empuje;
     double densidad=1.0;
     double ballistic_coef = 0.007;
@@ -347,6 +347,10 @@ bool Vtl_Engine::model3DoF(double acc_x,double acc_y,double acc_z,arma::mat kf_x
 
     //modulo de la velocidad
     double u = norm(u_vec, 2);
+
+    // if(t<1000){
+    //     t_disparo=0;
+    // }
     
     if(u>4){
         t_disparo=t_disparo+dt;
@@ -365,7 +369,7 @@ bool Vtl_Engine::model3DoF(double acc_x,double acc_y,double acc_z,arma::mat kf_x
         // CD0 = Cd0_M_LookTable(Mach);
         // % ballistic_coef is Cd0/mass_rocket;
         // ballistic_coef=CD0/mass_rocket;
-        // Empuje = EmpujeLookTable(t_disparo);
+        Empuje = EmpujeLkTable(t_disparo);
                 
         acc_vec = -(GNSS_PI*densidad*diam_cohete*diam_cohete/8)*ballistic_coef*u*u_dir
         +gravity_ECEF+Empuje*u_dir;
@@ -375,6 +379,7 @@ bool Vtl_Engine::model3DoF(double acc_x,double acc_y,double acc_z,arma::mat kf_x
         acc_y = acc_vec(1);
         acc_z = acc_vec(2); 
     }else{
+        t_disparo=0;
         // % return
         acc_x = 0;
         acc_y = 0;

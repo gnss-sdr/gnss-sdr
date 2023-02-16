@@ -64,11 +64,12 @@ information about this open-source, software-defined GNSS receiver.
    1. [GNU/Linux](#gnulinux)
       1. [Alternative 1: Install dependencies using software packages](#alternative-1-install-dependencies-using-software-packages)
          1. [Debian / Ubuntu](#debian--ubuntu)
-         2. [Arch Linux](#arch-linux)
-         3. [CentOS](#centos)
-         4. [Fedora](#fedora)
-         5. [openSUSE](#opensuse)
-         6. [Rocky Linux](#rocky-linux)
+         2. [AlmaLinux](#almalinux)
+         3. [Arch Linux](#arch-linux)
+         4. [CentOS](#centos)
+         5. [Fedora](#fedora)
+         6. [openSUSE](#opensuse)
+         7. [Rocky Linux](#rocky-linux)
       2. [Alternative 2: Install dependencies using PyBOMBS](#alternative-2-install-dependencies-using-pybombs)
       3. [Manual installation of other required dependencies](#manual-installation-of-other-required-dependencies)
          1. [Install Armadillo, a C++ linear algebra library](#install-armadillo-a-c-linear-algebra-library)
@@ -85,7 +86,6 @@ information about this open-source, software-defined GNSS receiver.
          2. [Build FMCOMMS2 based SDR Hardware support (OPTIONAL)](#build-fmcomms2-based-sdr-hardware-support-optional)
          3. [Build OpenCL support (OPTIONAL)](#build-opencl-support-optional)
          4. [Build CUDA support (OPTIONAL)](#build-cuda-support-optional)
-         5. [Build a portable binary](#build-a-portable-binary)
    2. [macOS](#macos)
       1. [Macports](#macports)
       2. [Homebrew](#homebrew)
@@ -142,6 +142,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
     Motorola (now Freescale), and Apple.
   - ppc64: 64-bit big-endian PowerPC architecture.
   - ppc64el: 64-bit little-endian PowerPC architecture.
+  - riscv64: 64-bit RISC-V open standard instruction set architecture.
   - s390x: IBM System z architecture for mainframe computers.
 
 Older distribution releases might work as well, but you will need GCC 4.7 or
@@ -197,6 +198,26 @@ replaced by `python-mako`. For Ubuntu 14.04, you will need to add the package
 **Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev`
 above. Install `libtool`, `automake` and `libhdf5-dev` instead. You will also
 need `python-six`.
+
+Once you have installed these packages, you can jump directly to
+[download the source code and build GNSS-SDR](#clone-gnss-sdrs-git-repository).
+
+#### AlmaLinux
+
+If you are using AlmaLinux:
+
+```
+# dnf update -y
+# dnf install -y 'dnf-command(config-manager)'
+# dnf config-manager --set-enabled powertools
+# dnf install -y epel-release
+# dnf install -y make gcc gcc-c++ kernel-devel cmake git boost-devel \
+      boost-date-time boost-system boost-thread boost-chrono \
+      boost-serialization log4cpp-devel gmp-devel uhd-devel gnuradio-devel \
+      pugixml-devel matio-devel protobuf-devel glog-devel libpcap-devel \
+      blas-devel lapack-devel armadillo-devel openssl-devel python3-mako \
+      libarchive
+```
 
 Once you have installed these packages, you can jump directly to
 [download the source code and build GNSS-SDR](#clone-gnss-sdrs-git-repository).
@@ -496,8 +517,8 @@ $ sudo ldconfig
 #### Download [GoogleTest](https://github.com/google/googletest "Googletest Homepage")
 
 ```
-$ wget https://github.com/google/googletest/archive/release-1.12.1.zip
-$ unzip release-1.12.1.zip
+$ wget https://github.com/google/googletest/archive/refs/tags/v1.13.0.zip
+$ unzip v1.13.0.zip
 ```
 
 Please **DO NOT build or install** Google Test. Every user needs to compile
@@ -521,10 +542,10 @@ downloaded resides. Just type in your terminal (or add it to your
 `$HOME/.bashrc` file for a permanent solution) the following line:
 
 ```
-export GTEST_DIR=/home/username/googletest-release-1.12.1
+export GTEST_DIR=/home/username/googletest-1.13.0
 ```
 
-changing `/home/username/googletest-release-1.12.1` by the actual path where you
+changing `/home/username/googletest-1.13.0` by the actual path where you
 unpacked Google Test. If the CMake script does not find that folder, or the
 environment variable is not defined, or the source code is not installed by a
 package, then it will download a fresh copy of the Google Test source code and
@@ -789,26 +810,6 @@ $ sudo make install
 
 Of course, you will also need a GPU that
 [supports CUDA](https://developer.nvidia.com/cuda-gpus "CUDA GPUs").
-
-#### Build a portable binary
-
-In order to build an executable that not depends on the specific SIMD
-instruction set that is present in the processor of the compiling machine, so
-other users can execute it in other machines without those particular sets, use:
-
-```
-$ cmake -DENABLE_GENERIC_ARCH=ON ..
-$ make
-$ sudo make install
-```
-
-Using this option, all SIMD instructions are exclusively accessed via VOLK,
-which automatically includes versions of each function for different SIMD
-instruction sets, then detects at runtime which to use, or if there are none,
-substitutes a generic, non-SIMD implementation.
-
-More details can be found in our tutorial about
-[GNSS-SDR configuration options at building time](https://gnss-sdr.org/docs/tutorials/using-git/ "Configuration options at building time").
 
 ## macOS
 

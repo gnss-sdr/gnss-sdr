@@ -4,12 +4,14 @@ on:
   push:
     paths:
       - "src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**"
+      - "CMakeLists.txt"
   pull_request:
     paths:
       - "src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/**"
+      - "CMakeLists.txt"
   workflow_dispatch:
 
-name: Build volk-gnssdr on Android NDK
+name: Build volk_gnsssdr on Android NDK
 jobs:
   build:
     name: Build on Android NDK ${{ matrix.arch.name }}

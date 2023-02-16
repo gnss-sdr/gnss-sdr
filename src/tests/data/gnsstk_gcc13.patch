@@ -1,0 +1,12 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+--- ObsID.hpp 2023-01-23 16:53:25.000000000 +0100
++++ ObsID.hpp 2023-01-23 16:55:14.000000000 +0100
+@@ -47,6 +47,7 @@
+ #ifndef OBSID_HPP
+ #define OBSID_HPP
+ 
++#include <cstdint>
+ #include <iostream>
+ #include <iomanip>
+ #include <sstream>

@@ -656,19 +656,31 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             double old_doppler = d_x_old_old(2);
                             double old_doppler_rate = d_x_old_old(3);
                             double old_code_phase_chips = d_x_old_old(0);
+                            
+                            if(cmd->enable_carrier_nco_cmd){
+                                if(cmd->enable_code_nco_cmd){
+                                    if(abs(d_x_old_old(2) - tmp_x(2))>50){
+                                        std::cout  <<"channel: "<< this->d_channel
+                                                    << " tracking_cmd TOO FAR: "
+                                                    << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
+                                                    << " \n";
+                                    }else{
+                                        std::cout   <<"channel: "<< this->d_channel
+                                                    << " tracking_cmd NEAR: "
+                                                    << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
+                                                    << " \n";
+                                    }
+                                    d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
+                                    // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
 
-                            if(abs(d_x_old_old(2) - tmp_x(2))>50){
-                                 std::cout  <<"channel: "<< this->d_channel
-                                            << " tracking_cmd TOO FAR: "
-                                            << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
-                                            << " \n";
+                                }else{
+                                    // std::cout<<"yet to soon"<<std::endl;
+                                    //d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
+                                    // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
+                                }
+
                             }else{
-                                std::cout   <<"channel: "<< this->d_channel
-                                            << " tracking_cmd NEAR: "
-                                            << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
-                                            << " \n";
-                            //d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
-                            //d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
+                                // not 0.5 seg yet
                             }
 
 

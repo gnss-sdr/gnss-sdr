@@ -1248,9 +1248,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             vtl_data.rx_dts(0) = rx_position_and_time[3];
                             vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
 
-                            //new_vtl_data.debug_print();
-                            //vtl_data.kf_state.print("kf_state_input");
                             vtl_engine.vtl_loop(vtl_data);
+                            // cout<<"llegado aqui fuera"<<endl;
                             //vtl_data.kf_state.print("kf_state_output");
                             // pvt_sol.rr[0] = vtl_data.kf_state[0];
                             // pvt_sol.rr[1] = vtl_data.kf_state[1];
@@ -1418,27 +1417,27 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = vtl_data.rx_dts(1);
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    for (int n = 0; n<6; n++)
-                                    {
-                                    tmp_double = vtl_data.sat_p(n, 0);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));    
-                                    tmp_double = vtl_data.sat_p(n, 1);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = vtl_data.sat_p(n, 2);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));     
-                                    tmp_double = vtl_data.sat_v(n, 0);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double)); 
-                                    tmp_double = vtl_data.sat_v(n, 1);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double)); 
-                                    tmp_double = vtl_data.sat_v(n, 2);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = vtl_data.pr_m(n);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = vtl_data.doppler_hz(n);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                    tmp_double = vtl_data.sat_CN0_dB_hz(n);
-                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));     
-                                    }
+                                    // for (int n = 0; n<6; n++)
+                                    // {
+                                    // tmp_double = vtl_data.sat_p(n, 0);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));    
+                                    // tmp_double = vtl_data.sat_p(n, 1);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // tmp_double = vtl_data.sat_p(n, 2);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));     
+                                    // tmp_double = vtl_data.sat_v(n, 0);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double)); 
+                                    // tmp_double = vtl_data.sat_v(n, 1);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double)); 
+                                    // tmp_double = vtl_data.sat_v(n, 2);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // tmp_double = vtl_data.pr_m(n);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // tmp_double = vtl_data.doppler_hz(n);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // tmp_double = vtl_data.sat_CN0_dB_hz(n);
+                                    // d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));     
+                                    // }
                                     
                                     // GEO user position Latitude [deg]
                                     tmp_double = this->get_latitude();

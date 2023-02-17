@@ -36,6 +36,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     static uint64_t refSampleCounter = new_data.sample_counter;
     double delta_t_vtl = (new_data.sample_counter - refSampleCounter) / 5000000.0; 
     refSampleCounter = new_data.sample_counter;
+    static double delta_t_cmd = 0;
+    bool flag_cmd = false;
+    delta_t_cmd = delta_t_cmd+delta_t_vtl; // update timer for vtl trk command
+    if(delta_t_cmd>=0.3){
+        flag_cmd = true;
+        delta_t_cmd = 0; // reset timer for vtl trk command
+    }
     // ################## Kalman filter initialization ######################################
     //State variables
     int n_of_states=11;
@@ -91,7 +98,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             double acc_x = 0;
             double acc_y = 0;
             double acc_z = 0;
-            test = model3DoF(acc_x,acc_y,acc_z,kf_x,kf_dt);
+            test = model3DoF(acc_x,acc_y,acc_z,kf_x,kf_dt,counter);
             kf_x(6) = acc_x;
             kf_x(7) = acc_y;
             kf_x(8) = acc_z;
@@ -122,12 +129,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;//*50.0/new_data.sat_CN0_dB_hz(i);
             kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 400.0;//*50.0/new_data.sat_CN0_dB_hz(i);
             
-            if(80.0*50.0/new_data.sat_CN0_dB_hz(i)>90||20.0*50.0/new_data.sat_CN0_dB_hz(i)>25){
-                kf_R(i, i) = 10e4;
-                kf_R(i + new_data.sat_number, i + new_data.sat_number) = 10e4;
-                kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 10e4;
-                cout<<"channel: "<<i<<"discarded"<<endl;
-            }
+            // if(80.0*50.0/new_data.sat_CN0_dB_hz(i)>90||20.0*50.0/new_data.sat_CN0_dB_hz(i)>25){
+            //     kf_R(i, i) = 10e4;
+            //     kf_R(i + new_data.sat_number, i + new_data.sat_number) = 10e4;
+            //     kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 10e4;
+            //     cout<<"channel: "<<i<<"discarded"<<endl;
+            // }
         }
 
     // Kalman state prediction (time update)
@@ -149,7 +156,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     a_x = arma::zeros(new_data.sat_number, 1);
     a_y = arma::zeros(new_data.sat_number, 1);
     a_z = arma::zeros(new_data.sat_number, 1);
-
+    // cout<<"llegado aqui tambien"<<endl;
     test = obsv_calc(rho_pri,rhoDot_pri,a_x, a_y, a_z,new_data.sat_number,new_data.sat_p,new_data.sat_v,kf_x);
     for (int32_t i = 0; i < new_data.sat_number; i++)  //neccesary quantities
         {
@@ -180,7 +187,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_P_x =  A * kf_P_x * A.t() + kf_K * kf_R * kf_K.t() ;  // update state estimation error covariance matrix
     kf_dx=kf_x;
     kf_x = kf_x-kf_xerr;  // updated state estimation (a priori + error)
-    
+//    kf_x.print("state of kalman: ");
     //     // ################## Geometric Transformation ######################################
     test = obsv_calc(rho_pri,rhoDot_pri,a_x, a_y, a_z,new_data.sat_number,new_data.sat_p,new_data.sat_v,kf_x);
     
@@ -206,15 +213,29 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             //TODO: Fill the tracking commands outputs
             // Notice: keep the same satellite order as in the Vtl_Data matrices
             // sample code
+            
+            
             trk_cmd.carrier_phase_rads = 0;                                                // difficult of calculation
             trk_cmd.carrier_freq_hz = doppler_hz_filt(channel);  //+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction
             trk_cmd.carrier_freq_rate_hz_s =-(a_x(channel)*kf_x(6)+a_y(channel)*kf_x(7)+a_z(channel)*kf_x(8)) / Lambda_GPS_L1;
-            trk_cmd.code_phase_chips = kf_yerr(channel)/SPEED_OF_LIGHT_M_S*1023e3;
-            trk_cmd.enable_carrier_nco_cmd = true;
-            trk_cmd.enable_code_nco_cmd = true;
+            trk_cmd.code_phase_chips = 0;//kf_yerr(channel)/SPEED_OF_LIGHT_M_S*1023e3;
+
+            if (flag_cmd){
+                trk_cmd.enable_carrier_nco_cmd = true; 
+            }else{
+                trk_cmd.enable_carrier_nco_cmd = false; // do NOT apply corrections! loop convergence issue
+            }
+
+            if(counter<1500){
+                // std::cout<<"yet to soon"<<std::endl;
+                trk_cmd.enable_code_nco_cmd = false; // do NOT apply corrections! initial convergence issue
+            }else{
+                trk_cmd.enable_code_nco_cmd = true;  
+            }
             trk_cmd.sample_counter = new_data.sample_counter;
-            trk_cmd.channel_id = 0;
+            trk_cmd.channel_id = channel;
             trk_cmd_outs.push_back(trk_cmd);
+            
             // if (channel == 0)
             //     {
             //         std::cout << "[" << trk_cmd.sample_counter << "] CH " << channel
@@ -222,41 +243,40 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
             //                   << " \n";
             //     }
         }
+    // fstream dump_vtl_file;
+    // dump_vtl_file.open("dump_vtl_file.csv", ios::out | ios::app);
+    // dump_vtl_file.precision(15);
+    // if (!dump_vtl_file)
+    //     {
+    //         cout << "File not created!";
+    //     }
+    // else
+    //     {   
 
-    fstream dump_vtl_file;
-    dump_vtl_file.open("dump_vtl_file.csv", ios::out | ios::app);
-    dump_vtl_file.precision(15);
-    if (!dump_vtl_file)
-        {
-            cout << "File not created!";
-        }
-    else
-        {   
-
-            if(new_data.sat_number>5){      
-                dump_vtl_file << "pr_m"
-                            << "," << kf_yerr(0)<< "," << kf_yerr(1)<< "," << kf_yerr(2) 
-                            << "," << kf_yerr(3) << "," << kf_yerr(4)<< "," << kf_yerr(5)<<endl;
-                dump_vtl_file << "prDot_m"
-                            << "," << kf_yerr(new_data.sat_number)<< "," << kf_yerr(new_data.sat_number+1)<< "," << kf_yerr(new_data.sat_number+2) 
-                            << "," << kf_yerr(new_data.sat_number+3) << "," << kf_yerr(new_data.sat_number+4)<<  "," << kf_yerr(new_data.sat_number+5)<< endl;
-                // dump_vtl_file << "K_column"
-                //             << "," << kf_K.row(5)(6) << "," << kf_K.row(5)(7) << "," <<kf_K.row(5)(8)<< "," << kf_K.row(5)(9)
-                //             << "," << kf_K.row(5)(10) << "," << kf_K.row(5)(11) << endl;
-                // dump_vtl_file << "K_column2"
-                //             << "," << kf_K.row(5)(0) << "," << kf_K.row(5)(1) << "," <<kf_K.row(5)(2)<< "," << kf_K.row(5)(3)
-                //             << "," << kf_K.row(5)(4) << "," << kf_K.row(5)(5) << endl;
-            }
-            dump_vtl_file << "kf_state"
-                          << "," << kf_x(0) << "," << kf_x(1) << "," << kf_x(2) << "," << kf_x(3) << "," << kf_x(4) << "," << kf_x(5) << "," << kf_x(6) << "," << kf_x(7)<< "," << kf_x(8) <<"," << kf_x(9) <<"," << kf_x(10)<< endl;
-            dump_vtl_file << "kf_xerr"
-                          << "," << kf_xerr(0) << "," << kf_xerr(1) << "," << kf_xerr(2) << "," << kf_xerr(3) << "," << kf_xerr(4) << "," << kf_xerr(5) << "," << kf_xerr(6) << "," << kf_xerr(7)<< "," << kf_xerr(8) <<"," << kf_xerr(9) <<"," << kf_xerr(10)<< endl;
-            dump_vtl_file << "rtklib_state"
-                          << "," << new_data.rx_p(0) << "," << new_data.rx_p(1) << "," << new_data.rx_p(2) << "," << new_data.rx_v(0) << "," << new_data.rx_v(1) << "," << new_data.rx_v(2) << "," << new_data.rx_dts(0) << "," << new_data.rx_dts(1) << "," << delta_t_vtl  << endl;
-            dump_vtl_file << "filt_dopp_sat"
-                          << "," << doppler_hz_filt(0) << "," << doppler_hz_filt(1) << "," << doppler_hz_filt(2) << "," << doppler_hz_filt(3) << "," << doppler_hz_filt(4) <<endl;
-            dump_vtl_file.close();
-        }
+    //         if(new_data.sat_number>5){      
+    //             // dump_vtl_file << "pr_m"
+    //             //             << "," << kf_yerr(0)<< "," << kf_yerr(1)<< "," << kf_yerr(2) 
+    //             //             << "," << kf_yerr(3) << "," << kf_yerr(4)<< "," << kf_yerr(5)<<endl;
+    //             // dump_vtl_file << "prDot_m"
+    //             //             << "," << kf_yerr(new_data.sat_number)<< "," << kf_yerr(new_data.sat_number+1)<< "," << kf_yerr(new_data.sat_number+2) 
+    //             //             << "," << kf_yerr(new_data.sat_number+3) << "," << kf_yerr(new_data.sat_number+4)<<  "," << kf_yerr(new_data.sat_number+5)<< endl;
+    //             // // dump_vtl_file << "K_column"
+    //             // //             << "," << kf_K.row(5)(6) << "," << kf_K.row(5)(7) << "," <<kf_K.row(5)(8)<< "," << kf_K.row(5)(9)
+    //             // //             << "," << kf_K.row(5)(10) << "," << kf_K.row(5)(11) << endl;
+    //             // // dump_vtl_file << "K_column2"
+    //             // //             << "," << kf_K.row(5)(0) << "," << kf_K.row(5)(1) << "," <<kf_K.row(5)(2)<< "," << kf_K.row(5)(3)
+    //             // //             << "," << kf_K.row(5)(4) << "," << kf_K.row(5)(5) << endl;
+    //         }
+    //         dump_vtl_file << "kf_state"
+    //                       << "," << kf_x(0) << "," << kf_x(1) << "," << kf_x(2) << "," << kf_x(3) << "," << kf_x(4) << "," << kf_x(5) << "," << kf_x(6) << "," << kf_x(7)<< "," << kf_x(8) <<"," << kf_x(9) <<"," << kf_x(10)<< endl;
+    //         dump_vtl_file << "kf_xerr"
+    //                       << "," << kf_xerr(0) << "," << kf_xerr(1) << "," << kf_xerr(2) << "," << kf_xerr(3) << "," << kf_xerr(4) << "," << kf_xerr(5) << "," << kf_xerr(6) << "," << kf_xerr(7)<< "," << kf_xerr(8) <<"," << kf_xerr(9) <<"," << kf_xerr(10)<< endl;
+    //         dump_vtl_file << "rtklib_state"
+    //                       << "," << new_data.rx_p(0) << "," << new_data.rx_p(1) << "," << new_data.rx_p(2) << "," << new_data.rx_v(0) << "," << new_data.rx_v(1) << "," << new_data.rx_v(2) << "," << new_data.rx_dts(0) << "," << new_data.rx_dts(1) << "," << delta_t_vtl  << endl;
+    //         dump_vtl_file << "filt_dopp_sat"
+    //                       << "," << doppler_hz_filt(0) << "," << doppler_hz_filt(1) << "," << doppler_hz_filt(2) << "," << doppler_hz_filt(3) << "," << doppler_hz_filt(4) <<endl;
+    //         dump_vtl_file.close();
+    //     }
     return true;
 }
 
@@ -356,7 +376,7 @@ bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat r
     return -1;
 }
 
-bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat kf_x,double dt)
+bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat kf_x,double dt, int counter)
 {
     arma::colvec u_vec;
     arma::colvec acc_vec;
@@ -372,39 +392,48 @@ bool Vtl_Engine::model3DoF(double &acc_x,double &acc_y,double &acc_z,arma::mat k
 
     //modulo de la velocidad
     double u = norm(u_vec, 2);
-  
-    if(u>4){
-        t_disparo=t_disparo+dt;
-        cout<<"t_disparo: "<<t_disparo<<endl;
-        double diam_cohete=120.0e-3;// 120 mm
-        double mass_rocket=50.0; //50Kg
-        
-        if(t_disparo<.2){
-            u_dir={.90828, -.13984, -.388756}; 
+    
+    if(counter>1500){
+        if(u>6){
+            t_disparo=t_disparo+dt;
+            std::cout<<"u : "<<u<<endl;
+            double diam_cohete=120.0e-3;// 120 mm
+            double mass_rocket=50.0; //50Kg
+            
+            if(t_disparo<.2){
+                u_dir={.90828, -.13984, -.388756}; 
+            }else{
+                u_dir = u_vec / u;        
+            }
+            // u_dir.print("u_dir");
+            // lla= ecef2lla([kf_State(1) kf_State(2) kf_State(3)]);
+            // [T, sound_v, P, densidad] = atmosisa(lla(3));
+            // sound_v=320;% @ 5km and -17.5C
+            // Mach=u/sound_v;
+            // CD0 = Cd0_M_LookTable(Mach);
+            // % ballistic_coef is Cd0/mass_rocket;
+            // ballistic_coef=CD0/mass_rocket;
+            Empuje = EmpujeLkTable(t_disparo);
+            // cout<<"Empuje: "<<Empuje<<endl;  
+
+            acc_vec = -(GNSS_PI*densidad*diam_cohete*diam_cohete/8)*ballistic_coef*u*u_dir
+            +gravity_ECEF+Empuje*u_dir;
+
+            // acc_vec.print("acc_vec");
+            // % return
+            cout<<"modelo 3Dof actuando,t:"<<t_disparo<<endl;
+            acc_x = acc_vec(0);
+            acc_y = acc_vec(1);
+            acc_z = acc_vec(2); 
         }else{
-            u_dir = u_vec / u;        
+            t_disparo=0;
+            // % return
+            acc_x = 0;
+            acc_y = 0;
+            acc_z = 0;
         }
-        // u_dir.print("u_dir");
-        // lla= ecef2lla([kf_State(1) kf_State(2) kf_State(3)]);
-        // [T, sound_v, P, densidad] = atmosisa(lla(3));
-        // sound_v=320;% @ 5km and -17.5C
-        // Mach=u/sound_v;
-        // CD0 = Cd0_M_LookTable(Mach);
-        // % ballistic_coef is Cd0/mass_rocket;
-        // ballistic_coef=CD0/mass_rocket;
-        Empuje = EmpujeLkTable(t_disparo);
-        cout<<"Empuje: "<<Empuje<<endl;  
-
-        acc_vec = -(GNSS_PI*densidad*diam_cohete*diam_cohete/8)*ballistic_coef*u*u_dir
-        +gravity_ECEF+Empuje*u_dir;
-
-        // acc_vec.print("acc_vec");
-        // % return
-        acc_x = acc_vec(0);
-        acc_y = acc_vec(1);
-        acc_z = acc_vec(2); 
     }else{
-        t_disparo=0;
+        
         // % return
         acc_x = 0;
         acc_y = 0;
@@ -596,7 +625,7 @@ double Vtl_Engine::EmpujeLkTable(double t_disparo)
     //encuentra el mas cercano justo anterior.
     // int index_E = LkTable.elem(find(LkTable<=t_disparo)).max(); 
     arma::uvec index_E = find(LkTable<=t_disparo, 1, "last");
-    index_E.print("indice E: ");
+    // index_E.print("indice E: ");
     // uint kk = index_E(0);
     if (index_E(0)<(LkTable.n_rows-1)){  
         double tdisparo1=LkTable(index_E(0),0);

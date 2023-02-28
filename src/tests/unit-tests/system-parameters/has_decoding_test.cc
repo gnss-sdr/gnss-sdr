@@ -353,6 +353,10 @@ TEST(HAS_Test, Decoder)
                                             EXPECT_EQ(has_message->phase_discontinuity_indicator[has_message->get_PRNs_in_mask(0).size() + i][2], phase_discontinuity_indicator_expected_gal[i]);
                                             EXPECT_EQ(has_message->phase_discontinuity_indicator[has_message->get_PRNs_in_mask(0).size() + i][3], phase_discontinuity_indicator_expected_gal[i]);
                                         }
+                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("L1 C/A", 10), -2.64 * HAS_MSG_CODE_BIAS_SCALE_FACTOR);
+                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("L1 C/A", 11), 0.0);
+                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("E1-C", 36), -1.98 * HAS_MSG_CODE_BIAS_SCALE_FACTOR);
+                                    EXPECT_FLOAT_EQ(has_message->get_code_bias_m("E1-C", 37), 0.0);
                                 }
                             else
                                 {

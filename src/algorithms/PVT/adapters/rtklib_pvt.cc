@@ -878,6 +878,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // Use E6 for PVT
     pvt_output_parameters.use_e6_for_pvt = configuration->property(role + ".use_e6_for_pvt", pvt_output_parameters.use_e6_for_pvt);
+    pvt_output_parameters.use_has_corrections = configuration->property(role + ".use_has_corrections", pvt_output_parameters.use_has_corrections);
+
+    // Use unhealthy satellites
+    pvt_output_parameters.use_unhealthy_sats = configuration->property(role + ".use_unhealthy_sats", pvt_output_parameters.use_unhealthy_sats);
 
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);

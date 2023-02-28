@@ -4,7 +4,7 @@
  *  data flow and structures
  * \authors <ul>
  *          <li> 2017, Javier Arribas
- *          <li> 2017, Carles Fernandez
+ *          <li> 2017-2023, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
  *          </ul>
  *
@@ -23,7 +23,7 @@
  * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017-2019, Javier Arribas
- * Copyright (C) 2017-2019, Carles Fernandez
+ * Copyright (C) 2017-2023, Carles Fernandez
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -41,6 +41,7 @@
 #include "beidou_dnav_utc_model.h"
 #include "galileo_almanac.h"
 #include "galileo_ephemeris.h"
+#include "galileo_has_data.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 #include "glonass_gnav_almanac.h"
@@ -57,11 +58,13 @@
 #include "monitor_pvt.h"
 #include "pvt_solution.h"
 #include "rtklib.h"
+#include "rtklib_conversions.h"
 #include <array>
 #include <cstdint>
 #include <fstream>
 #include <map>
 #include <string>
+#include <utility>
 
 /** \addtogroup PVT
  * \{ */
@@ -91,6 +94,8 @@ public:
     double get_pdop() const override;
     double get_gdop() const override;
     Monitor_Pvt get_monitor_pvt() const;
+    void store_has_data(const Galileo_HAS_data& new_has_data);
+    void update_has_corrections(const std::map<int, Gnss_Synchro>& obs_map);
 
     sol_t pvt_sol{};
     std::array<ssat_t, MAXSAT> pvt_ssat{};
@@ -122,10 +127,23 @@ public:
 private:
     bool save_matfile() const;
 
+    void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
+    void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
+    void get_current_has_obs_correction(const std::string& signal, uint32_t tow_obs, int prn);
+
     std::array<obsd_t, MAXOBS> d_obs_data{};
     std::array<double, 4> d_dop{};
     std::map<int, int> d_rtklib_freq_index;
     std::map<std::string, int> d_rtklib_band_index;
+
+    std::map<std::string, std::map<int, HAS_orbit_corrections>> d_has_orbit_corrections_store_map;  // first key is system, second key is PRN
+    std::map<std::string, std::map<int, HAS_clock_corrections>> d_has_clock_corrections_store_map;  // first key is system, second key is PRN
+
+    std::map<std::string, std::map<int, std::pair<float, uint32_t>>> d_has_code_bias_store_map;   // first key is signal, second key is PRN
+    std::map<std::string, std::map<int, std::pair<float, uint32_t>>> d_has_phase_bias_store_map;  // first key is signal, second key is PRN
+
+    std::map<std::string, std::map<int, HAS_obs_corrections>> d_has_obs_corr_map;  // first key is signal, second key is PRN
+
     std::string d_dump_filename;
     std::ofstream d_dump_file;
     rtk_t d_rtk{};

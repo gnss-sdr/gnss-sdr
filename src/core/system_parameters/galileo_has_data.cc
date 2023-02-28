@@ -18,372 +18,75 @@
 #include "Galileo_CNAV.h"
 #include <algorithm>
 #include <bitset>
+#include <iterator>
+#include <map>
 #include <numeric>
 #include <sstream>
-
-
-std::vector<int> Galileo_HAS_data::get_PRNs_in_mask(uint8_t nsys) const
-{
-    std::vector<int> prn;
-    if (nsys < satellite_mask.size())
-        {
-            uint64_t sat_mask = satellite_mask[nsys];
-            std::bitset<HAS_MSG_NUMBER_SATELLITE_IDS> bits(sat_mask);
-            std::string bit_str = bits.to_string();
-            for (int32_t i = 0; i < HAS_MSG_NUMBER_SATELLITE_IDS; i++)
-                {
-                    if (bit_str[i] == '1')
-                        {
-                            prn.push_back(i + 1);
-                        }
-                }
-        }
-    return prn;
-}
-
-
-std::vector<int> Galileo_HAS_data::get_PRNs_in_submask(uint8_t nsys) const
-{
-    std::vector<int> prn;
-    std::vector<int> prn_in_submask;
-    if (nsys < satellite_submask.size())
-        {
-            auto it = std::find(gnss_id_mask.begin(), gnss_id_mask.end(), gnss_id_clock_subset[nsys]);
-            int index = 0;
-            if (it != gnss_id_mask.end())
-                {
-                    index = it - gnss_id_mask.begin();
-                }
-            else
-                {
-                    return prn_in_submask;
-                }
-
-            uint8_t nsys_index_in_mask = gnss_id_mask[index];
-            uint64_t sat_mask = satellite_mask[nsys_index_in_mask];
-
-            std::bitset<HAS_MSG_NUMBER_SATELLITE_IDS> bits(sat_mask);
-            std::string mask_bit_str = bits.to_string();
-            for (int i = 0; i < HAS_MSG_NUMBER_SATELLITE_IDS; i++)
-                {
-                    if (mask_bit_str[i] == '1')
-                        {
-                            prn.push_back(i + 1);
-                        }
-                }
-
-            int number_sats_this_gnss_id = std::count(mask_bit_str.begin(), mask_bit_str.end(), '1');
-            uint64_t sat_submask = satellite_submask[nsys];
-            // convert into string
-            std::string sat_submask_str("");
-            sat_submask_str.reserve(number_sats_this_gnss_id);
-            uint64_t aux = 1;
-            const std::string one_str("1");
-            const std::string zero_str("0");
-
-            for (int k = 0; k < number_sats_this_gnss_id - 1; k++)
-                {
-                    if ((aux & sat_submask) >= 1)
-                        {
-                            sat_submask_str.insert(0, one_str);
-                        }
-                    else
-                        {
-                            sat_submask_str.insert(0, zero_str);
-                        }
-                    aux <<= 1;
-                }
-
-            for (int i = 0; i < number_sats_this_gnss_id; i++)
-                {
-                    if (sat_submask_str[i] == '1')
-                        {
-                            prn_in_submask.push_back(prn[i]);
-                        }
-                }
-        }
-
-    return prn_in_submask;
-}
+#include <unordered_map>
+#include <utility>
 
 
 std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) const
 {
-    std::vector<std::string> signals_in_mask;
-    if (signal_mask.size() > nsys)
+    if (signal_mask.size() <= nsys)
         {
-            uint16_t sig = signal_mask[nsys];
-            std::bitset<HAS_MSG_NUMBER_SIGNAL_MASKS> bits(sig);
-            std::string bits_str = bits.to_string();
-            for (int32_t k = 0; k < HAS_MSG_NUMBER_SIGNAL_MASKS; k++)
+            return {};
+        }
+    // See HAS SIS ICD v1.0 Table 20
+    std::unordered_map<uint8_t, std::unordered_map<uint8_t, std::string>> signal_index_table = {
+        {0, {
+                {0, "L1 C/A"},
+                {1, "Reserved"},
+                {2, "Reserved"},
+                {3, "L1C(D)"},
+                {4, "L1C(P)"},
+                {5, "L1C(D+P)"},
+                {6, "L2 CM"},
+                {7, "L2 CL"},
+                {8, "L2 CM+CL"},
+                {9, "L2 P"},
+                {10, "Reserved"},
+                {11, "L5 I"},
+                {12, "L5 Q"},
+                {13, "L5 I + L5 Q"},
+                {14, "Reserved"},
+                {15, "Reserved"},
+            }},
+        {2, {
+                {0, "E1-B I/NAV OS"},
+                {1, "E1-C"},
+                {2, "E1-B + E1-C"},
+                {3, "E5a-I F/NAV OS"},
+                {4, "E5a-Q"},
+                {5, "E5a-I+E5a-Q"},
+                {6, "E5b-I I/NAV OS"},
+                {7, "E5b-Q"},
+                {8, "E5b-I+E5b-Q"},
+                {9, "E5-I"},
+                {10, "E5-Q"},
+                {11, "E5-I + E5-Q"},
+                {12, "E6-B C/NAV HAS"},
+                {13, "E6-C"},
+                {14, "E6-B + E6-C"},
+                {15, "Reserved"},
+            }}};
+
+    std::vector<std::string> signals_in_mask;
+    uint16_t sig = signal_mask[nsys];
+    uint8_t system = gnss_id_mask[nsys];
+    std::bitset<HAS_MSG_NUMBER_SIGNAL_MASKS> bits(sig);
+
+    for (int32_t k = 0; k < HAS_MSG_NUMBER_SIGNAL_MASKS; k++)
+        {
+            if ((bits[HAS_MSG_NUMBER_SIGNAL_MASKS - k - 1]))
                 {
-                    if (bits_str[k] == '1')
+                    if (signal_index_table[system].count(k) == 0)
                         {
-                            uint8_t system = gnss_id_mask[nsys];
-                            std::string signal;
-                            // See HAS SIS ICD v1.0 Table 20
-                            switch (k)
-                                {
-                                case 0:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L1 C/A";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E1-B I/NAV OS";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 1:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "Reserved";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E1-C";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 2:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "Reserved";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E1-B + E1-C";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 3:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L1C(D)";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5a-I F/NAV OS";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 4:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L1C(P)";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5a-Q";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 5:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L1C(D+P)";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5a-I+E5a-Q";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 6:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L2 CM";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5b-I I/NAV OS";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 7:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L2 CL";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5b-Q";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 8:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L2 CM+CL";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5b-I+E5b-Q";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 9:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L2 P";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5-I";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 10:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "Reserved";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5-Q";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 11:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L5 I";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E5-I + E5-Q";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 12:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L5 Q";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E6-B C/NAV HAS";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 13:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "L5 I + L5 Q";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E6-C";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 14:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "Reserved";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "E6-B + E6-C";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                case 15:
-                                    if (system == 0)
-                                        {
-                                            // GPS
-                                            signal = "Reserved";
-                                        }
-                                    else if (system == 2)
-                                        {
-                                            // Galileo
-                                            signal = "Reserved";
-                                        }
-                                    else
-                                        {
-                                            signal = "Unknown";
-                                        }
-                                    break;
-                                default:
-                                    signal = "Unknown";
-                                }
-                            signals_in_mask.push_back(signal);
+                            signals_in_mask.emplace_back("Unknown");
+                        }
+                    else
+                        {
+                            signals_in_mask.push_back(signal_index_table[system][k]);
                         }
                 }
         }
@@ -391,77 +94,139 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
 }
 
 
-uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
+std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(const std::string& system) const
 {
-    int number_sats = 0;
-    for (uint8_t i = 0; i < Nsys; i++)
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
         {
-            number_sats += static_cast<int>(get_PRNs_in_mask(i).size());
-            if (nsat < number_sats)
-                {
-                    return gnss_id_mask[i];
-                }
+            return {};
         }
-
-    return HAS_MSG_WRONG_SYSTEM;
+    auto system_index = std::distance(systems.begin(), sys_it);
+    return this->get_signals_in_mask(system_index);
 }
 
 
-uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_index) const
+std::vector<std::string> Galileo_HAS_data::get_systems_string() const
 {
-    uint16_t validity_interval;
-    // See HAS SIS ICD v1.0 Table 23
-    switch (validity_interval_index)
+    if (this->gnss_id_mask.empty())
         {
-        case 0:
-            validity_interval = 5;
-            break;
-        case 1:
-            validity_interval = 10;
-            break;
-        case 2:
-            validity_interval = 15;
-            break;
-        case 3:
-            validity_interval = 20;
-            break;
-        case 4:
-            validity_interval = 30;
-            break;
-        case 5:
-            validity_interval = 60;
-            break;
-        case 6:
-            validity_interval = 90;
-            break;
-        case 7:
-            validity_interval = 120;
-            break;
-        case 8:
-            validity_interval = 180;
-            break;
-        case 9:
-            validity_interval = 240;
-            break;
-        case 10:
-            validity_interval = 300;
-            break;
-        case 11:
-            validity_interval = 600;
-            break;
-        case 12:
-            validity_interval = 900;
-            break;
-        case 13:
-            validity_interval = 1800;
-            break;
-        case 14:
-            validity_interval = 3600;
-            break;
-        default:  // reserved
-            validity_interval = 0;
+            return {};
         }
-    return validity_interval;
+
+    std::vector<std::string> systems;
+    systems.reserve(this->gnss_id_mask.size());
+
+    for (uint8_t i = 0; i < this->Nsys; i++)
+        {
+            switch (this->gnss_id_mask[i])
+                {
+                case 0:
+                    systems.emplace_back("GPS");
+                    break;
+                case 2:
+                    systems.emplace_back("Galileo");
+                    break;
+                default:
+                    systems.emplace_back("Reserved");
+                }
+        }
+
+    return systems;
+}
+
+
+std::vector<std::string> Galileo_HAS_data::get_systems_subset_string() const
+{
+    if (this->gnss_id_clock_subset.empty())
+        {
+            return {};
+        }
+
+    std::vector<std::string> systems;
+    systems.reserve(this->gnss_id_clock_subset.size());
+
+    for (uint8_t i = 0; i < this->Nsys_sub; i++)
+        {
+            switch (this->gnss_id_clock_subset[i])
+                {
+                case 0:
+                    systems.emplace_back("GPS");
+                    break;
+                case 2:
+                    systems.emplace_back("Galileo");
+                    break;
+                default:
+                    systems.emplace_back("Reserved");
+                }
+        }
+
+    return systems;
+}
+
+
+std::vector<std::vector<float>> Galileo_HAS_data::get_code_bias_m() const
+{
+    if (code_bias.empty())
+        {
+            return {};
+        }
+    const size_t outer_size = this->code_bias.size();
+    const size_t inner_size = this->code_bias[0].size();
+    std::vector<std::vector<float>> code_bias_m(outer_size, std::vector<float>(inner_size));
+    for (size_t i = 0; i < outer_size; i++)
+        {
+            for (size_t j = 0; j < inner_size; j++)
+                {
+                    code_bias_m[i][j] = static_cast<float>(this->code_bias[i][j]) * HAS_MSG_CODE_BIAS_SCALE_FACTOR;
+                }
+        }
+    return code_bias_m;
+}
+
+
+std::vector<std::vector<float>> Galileo_HAS_data::get_phase_bias_cycle() const
+{
+    if (phase_bias.empty())
+        {
+            return {};
+        }
+    const size_t outer_size = this->phase_bias.size();
+    const size_t inner_size = this->phase_bias[0].size();
+    std::vector<std::vector<float>> phase_bias_cycle(outer_size, std::vector<float>(inner_size));
+    for (size_t i = 0; i < outer_size; i++)
+        {
+            for (size_t j = 0; j < inner_size; j++)
+                {
+                    phase_bias_cycle[i][j] = static_cast<float>(this->phase_bias[i][j]) * HAS_MSG_PHASE_BIAS_SCALE_FACTOR;
+                }
+        }
+    return phase_bias_cycle;
+}
+
+
+std::vector<std::vector<float>> Galileo_HAS_data::get_delta_clock_subset_correction_m() const
+{
+    if (this->delta_clock_correction_clock_subset.empty())
+        {
+            return {};
+        }
+
+    std::vector<std::vector<float>> delta_clock_subset_correction_m;
+    delta_clock_subset_correction_m.reserve(this->Nsys_sub);
+
+    for (const auto& correction_subset : this->delta_clock_correction_clock_subset)
+        {
+            std::vector<float> correction_m;
+            correction_m.reserve(correction_subset.size());
+            for (const auto& d : correction_subset)
+                {
+                    correction_m.push_back(static_cast<float>(d) * HAS_MSG_DELTA_CLOCK_SCALE_FACTOR);
+                }
+            delta_clock_subset_correction_m.emplace_back(std::move(correction_m));
+        }
+
+    return delta_clock_subset_correction_m;
 }
 
 
@@ -479,19 +244,20 @@ std::vector<float> Galileo_HAS_data::get_delta_radial_m() const
 
 std::vector<float> Galileo_HAS_data::get_delta_radial_m(uint8_t nsys) const
 {
-    std::vector<float> delta_orbit_radial_m = this->get_delta_radial_m();
     if (nsys >= this->Nsys)
         {
-            return delta_orbit_radial_m;
+            return {};
         }
+    std::vector<float> delta_orbit_radial_m_v = this->get_delta_radial_m();
+    std::vector<uint8_t> num_satellites = this->get_num_satellites();
     std::vector<float> delta_orbit_radial_m_aux;
-    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    uint8_t num_sats_in_this_system = num_satellites[nsys];
     delta_orbit_radial_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
         {
-            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            uint8_t num_sats_in_system = num_satellites[sys];
             if (sys != nsys)
                 {
                     index += num_sats_in_system;
@@ -500,7 +266,7 @@ std::vector<float> Galileo_HAS_data::get_delta_radial_m(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_orbit_radial_m_aux.push_back(delta_orbit_radial_m[index]);
+                            delta_orbit_radial_m_aux.push_back(delta_orbit_radial_m_v[index]);
                             index++;
                         }
                 }
@@ -523,19 +289,20 @@ std::vector<float> Galileo_HAS_data::get_delta_in_track_m() const
 
 std::vector<float> Galileo_HAS_data::get_delta_in_track_m(uint8_t nsys) const
 {
-    std::vector<float> delta_in_track_m = this->get_delta_in_track_m();
     if (nsys >= this->Nsys)
         {
-            return delta_in_track_m;
+            return {};
         }
+    std::vector<float> delta_in_track_m_v = this->get_delta_in_track_m();
+    std::vector<uint8_t> num_satellites = this->get_num_satellites();
     std::vector<float> delta_in_track_m_aux;
-    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    uint8_t num_sats_in_this_system = num_satellites[nsys];
     delta_in_track_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
         {
-            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            uint8_t num_sats_in_system = num_satellites[sys];
             if (sys != nsys)
                 {
                     index += num_sats_in_system;
@@ -544,7 +311,7 @@ std::vector<float> Galileo_HAS_data::get_delta_in_track_m(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_in_track_m_aux.push_back(delta_in_track_m[index]);
+                            delta_in_track_m_aux.push_back(delta_in_track_m_v[index]);
                             index++;
                         }
                 }
@@ -567,19 +334,20 @@ std::vector<float> Galileo_HAS_data::get_delta_cross_track_m() const
 
 std::vector<float> Galileo_HAS_data::get_delta_cross_track_m(uint8_t nsys) const
 {
-    std::vector<float> delta_cross_track_m = this->get_delta_cross_track_m();
     if (nsys >= this->Nsys)
         {
-            return delta_cross_track_m;
+            return {};
         }
+    std::vector<float> delta_cross_track_m_v = this->get_delta_cross_track_m();
     std::vector<float> delta_cross_track_m_aux;
-    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    std::vector<uint8_t> num_satellites = this->get_num_satellites();
+    uint8_t num_sats_in_this_system = num_satellites[nsys];
     delta_cross_track_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
         {
-            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            uint8_t num_sats_in_system = num_satellites[sys];
             if (sys != nsys)
                 {
                     index += num_sats_in_system;
@@ -588,7 +356,7 @@ std::vector<float> Galileo_HAS_data::get_delta_cross_track_m(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_cross_track_m_aux.push_back(delta_cross_track_m[index]);
+                            delta_cross_track_m_aux.push_back(delta_cross_track_m_v[index]);
                             index++;
                         }
                 }
@@ -611,19 +379,20 @@ std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m() const
 
 std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m(uint8_t nsys) const
 {
-    std::vector<float> delta_clock_correction_m = this->get_delta_clock_correction_m();
     if (nsys >= this->Nsys)
         {
-            return delta_clock_correction_m;
+            return {};
         }
+    std::vector<float> delta_clock_correction_m_v = this->get_delta_clock_correction_m();
     std::vector<float> delta_clock_correction_m_aux;
-    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    std::vector<uint8_t> num_satellites = this->get_num_satellites();
+    uint8_t num_sats_in_this_system = num_satellites[nsys];
     delta_clock_correction_m_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
         {
-            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            uint8_t num_sats_in_system = num_satellites[sys];
             if (sys != nsys)
                 {
                     index += num_sats_in_system;
@@ -632,7 +401,7 @@ std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m(uint8_t nsys) 
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            delta_clock_correction_m_aux.push_back(delta_clock_correction_m[index]);
+                            delta_clock_correction_m_aux.push_back(delta_clock_correction_m_v[index]);
                             index++;
                         }
                 }
@@ -641,85 +410,143 @@ std::vector<float> Galileo_HAS_data::get_delta_clock_correction_m(uint8_t nsys) 
 }
 
 
-std::vector<std::vector<float>> Galileo_HAS_data::get_code_bias_m() const
+std::vector<float> Galileo_HAS_data::get_delta_clock_subset_correction_m(uint8_t nsys) const
 {
-    std::vector<std::vector<float>> code_bias_m;
-    const size_t outer_size = this->code_bias.size();
-    if (outer_size == 0)
+    if (nsys >= this->Nsys)
         {
-            return code_bias_m;
+            return {};
         }
-    const size_t inner_size = this->code_bias[0].size();
-    code_bias_m = std::vector<std::vector<float>>(outer_size, std::vector<float>(inner_size));
-    for (size_t i = 0; i < outer_size; i++)
+
+    // get equivalence of nsys in mask with nsys_sub_index in submask
+    auto gnss_id_in_mask = this->gnss_id_mask[nsys];
+    auto sys_it = std::find(gnss_id_clock_subset.begin(), gnss_id_clock_subset.end(), gnss_id_in_mask);
+    if (sys_it == gnss_id_clock_subset.end())
         {
-            for (size_t j = 0; j < inner_size; j++)
+            return {};
+        }
+    uint64_t nsys_sub_index = std::distance(gnss_id_clock_subset.begin(), sys_it);
+    if (nsys_sub_index >= satellite_submask.size())
+        {
+            return {};
+        }
+
+    auto subset_corr_matrix = this->get_delta_clock_subset_correction_m();
+    std::vector<float> delta_clock_subset_correction_m_v = subset_corr_matrix[nsys_sub_index];
+    std::vector<float> delta_clock_subset_correction_m_aux;
+    std::vector<uint8_t> num_satellites_subset = this->get_num_subset_satellites();
+    uint8_t num_sats_in_this_system_subset = num_satellites_subset[nsys_sub_index];
+    delta_clock_subset_correction_m_aux.reserve(num_sats_in_this_system_subset);
+    size_t index = 0;
+    for (uint8_t sys = 0; sys <= nsys; sys++)
+        {
+            uint8_t num_sats_in_subset = num_satellites_subset[sys];
+            if (sys != nsys)
                 {
-                    code_bias_m[i][j] = static_cast<float>(this->code_bias[i][j]) * HAS_MSG_CODE_BIAS_SCALE_FACTOR;
+                    index += num_sats_in_subset;
+                }
+            else
+                {
+                    for (uint8_t sat = 0; sat < num_sats_in_subset; sat++)
+                        {
+                            delta_clock_subset_correction_m_aux.push_back(delta_clock_subset_correction_m_v[index]);
+                            index++;
+                        }
                 }
         }
-    return code_bias_m;
+    return delta_clock_subset_correction_m_aux;
 }
 
 
-std::vector<std::vector<float>> Galileo_HAS_data::get_phase_bias_cycle() const
+std::vector<int> Galileo_HAS_data::get_PRNs_in_mask(uint8_t nsys) const
 {
-    std::vector<std::vector<float>> phase_bias_cycle;
-    const size_t outer_size = this->phase_bias.size();
-    if (outer_size == 0)
+    if (nsys >= satellite_mask.size())
         {
-            return phase_bias_cycle;
+            return {};
         }
-    const size_t inner_size = this->phase_bias[0].size();
-    phase_bias_cycle = std::vector<std::vector<float>>(outer_size, std::vector<float>(inner_size));
-    for (size_t i = 0; i < outer_size; i++)
+    std::vector<int> prn;
+    auto sat_mask = satellite_mask[nsys];
+    std::bitset<HAS_MSG_NUMBER_SATELLITE_IDS> bits(sat_mask);
+
+    for (int32_t i = 0; i < HAS_MSG_NUMBER_SATELLITE_IDS; i++)
         {
-            for (size_t j = 0; j < inner_size; j++)
+            if ((bits[HAS_MSG_NUMBER_SATELLITE_IDS - i - 1]))
                 {
-                    phase_bias_cycle[i][j] = static_cast<float>(this->phase_bias[i][j]) * HAS_MSG_PHASE_BIAS_SCALE_FACTOR;
+                    prn.push_back(i + 1);
                 }
         }
-    return phase_bias_cycle;
+    return prn;
 }
 
 
-std::vector<uint8_t> Galileo_HAS_data::get_num_satellites() const
+std::vector<int> Galileo_HAS_data::get_PRNs_in_mask(const std::string& system) const
 {
-    std::vector<uint8_t> num_satellites;
-    if (this->Nsys == 0)
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
         {
-            return num_satellites;
+            return {};  // system not found
         }
-    num_satellites.reserve(this->Nsys);
-    for (uint8_t i = 0; i < this->Nsys; i++)
+    auto system_index = std::distance(systems.begin(), sys_it);
+    return this->get_PRNs_in_mask(system_index);
+}
+
+
+std::vector<int> Galileo_HAS_data::get_PRNs_in_submask(uint8_t nsys) const
+{
+    // nsys refers to the system index in the main mask
+    if (nsys >= this->Nsys)
         {
-            std::stringstream ss;
-            std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> bits(this->satellite_mask[i]);
-            ss << bits.to_string();
-            std::string sat_mask = ss.str();
-            num_satellites.push_back(static_cast<int8_t>(std::count(sat_mask.begin(), sat_mask.end(), '1')));
+            return {};
         }
 
-    return num_satellites;
+    // get equivalence of nsys in mask with nsys_sub_index in submask
+    auto gnss_id_in_mask = this->gnss_id_mask[nsys];
+    auto sys_it = std::find(gnss_id_clock_subset.begin(), gnss_id_clock_subset.end(), gnss_id_in_mask);
+    if (sys_it == gnss_id_clock_subset.end())
+        {
+            return {};
+        }
+    uint64_t nsys_sub_index = std::distance(gnss_id_clock_subset.begin(), sys_it);
+    if (nsys_sub_index >= satellite_submask.size())
+        {
+            return {};
+        }
+
+    auto mask_prns = this->get_PRNs_in_mask(nsys);
+
+    std::vector<int> prn_in_submask;
+    auto sat_submask = this->satellite_submask[nsys_sub_index];
+    int count = 0;
+    while (sat_submask)
+        {
+            if (sat_submask & 1)
+                {
+                    prn_in_submask.push_back(mask_prns[count]);
+                    count++;
+                }
+            sat_submask >>= 1;
+        }
+
+    return prn_in_submask;
 }
 
 
 std::vector<uint16_t> Galileo_HAS_data::get_gnss_iod(uint8_t nsys) const
 {
-    std::vector<uint16_t> gnss_iod_v = this->gnss_iod;
-
     if (nsys >= this->Nsys)
         {
-            return gnss_iod_v;
+            return {};
         }
+
     std::vector<uint16_t> gnss_iod_aux;
-    uint8_t num_sats_in_this_system = this->get_num_satellites()[nsys];
+    std::vector<uint8_t> num_satellites = this->get_num_satellites();
+    uint8_t num_sats_in_this_system = num_satellites[nsys];
     gnss_iod_aux.reserve(num_sats_in_this_system);
 
     size_t index = 0;
     for (uint8_t sys = 0; sys <= nsys; sys++)
         {
-            uint8_t num_sats_in_system = this->get_num_satellites()[sys];
+            uint8_t num_sats_in_system = num_satellites[sys];
             if (sys != nsys)
                 {
                     index += num_sats_in_system;
@@ -728,12 +555,354 @@ std::vector<uint16_t> Galileo_HAS_data::get_gnss_iod(uint8_t nsys) const
                 {
                     for (uint8_t sat = 0; sat < num_sats_in_system; sat++)
                         {
-                            gnss_iod_aux.push_back(gnss_iod_v[index]);
+                            gnss_iod_aux.push_back(this->gnss_iod[index]);
                             index++;
                         }
                 }
         }
     return gnss_iod_aux;
+}
+
+
+std::vector<uint8_t> Galileo_HAS_data::get_num_satellites() const
+{
+    if (this->Nsys == 0)
+        {
+            return {};
+        }
+    std::vector<uint8_t> num_satellites;
+    num_satellites.reserve(this->Nsys);
+    for (uint8_t i = 0; i < this->Nsys; i++)
+        {
+            uint64_t sat_mask = this->satellite_mask[i];
+            int count = 0;
+            while (sat_mask)
+                {
+                    count += sat_mask & 1;
+                    sat_mask >>= 1;
+                }
+            num_satellites.push_back(count);
+        }
+
+    return num_satellites;
+}
+
+
+std::vector<uint8_t> Galileo_HAS_data::get_num_subset_satellites() const
+{
+    if (this->Nsys_sub == 0)
+        {
+            return {};
+        }
+    std::vector<uint8_t> num_satellites_subset;
+    num_satellites_subset.reserve(this->Nsys_sub);
+
+    for (uint8_t i = 0; i < this->Nsys_sub; i++)
+        {
+            uint64_t sat_submask = this->satellite_submask[i];
+            int count = 0;
+            while (sat_submask)
+                {
+                    count += sat_submask & 1;
+                    sat_submask >>= 1;
+                }
+            num_satellites_subset.push_back(count);
+        }
+    return num_satellites_subset;
+}
+
+
+float Galileo_HAS_data::get_code_bias_m(const std::string& signal, int PRN) const
+{
+    float code_bias_correction_m = 0.0;
+    const size_t outer_size = this->code_bias.size();
+    if (outer_size == 0)
+        {
+            return code_bias_correction_m;
+        }
+    const size_t inner_size = this->code_bias[0].size();
+    if (inner_size == 0)
+        {
+            return code_bias_correction_m;
+        }
+
+    std::string targeted_system;
+    if ((signal == "L1 C/A") || (signal == "L1C(D)") || (signal == "L1C(P)" || (signal == "L1C(D+P)") || (signal == "L2 CM") || (signal == "L2 CL") || (signal == "L2 CM+CL") || (signal == "L2 P") || (signal == "L5 I")) ||
+        (signal == "L5 Q") || (signal == "L5 I + L5 Q"))
+        {
+            targeted_system = std::string("GPS");
+        }
+    if ((signal == "E1-B I/NAV OS") || (signal == "E1-C") || (signal == "E1-B + E1-C") || (signal == "E5a-I F/NAV OS") || (signal == "E5a-Q") || (signal == "E5a-I+E5a-Q") || (signal == "E5b-I I/NAV OS") ||
+        (signal == "E5b-Q") || (signal == "E5b-I+E5b-Q") || (signal == "E5-I") || (signal == "E5-Q") || (signal == "E5-I + E5-Q") || (signal == "E6-B C/NAV HAS") || (signal == "E6-C") || (signal == "E6-B + E6-C"))
+        {
+            targeted_system = std::string("Galileo");
+        }
+
+    if (!code_bias.empty() && !targeted_system.empty())
+        {
+            std::vector<std::string> systems = this->get_systems_string();
+            auto Nsys = systems.size();
+            auto nsys_index = std::distance(systems.cbegin(), std::find(systems.cbegin(), systems.cend(), targeted_system));
+
+            if (static_cast<size_t>(nsys_index) < Nsys)
+                {
+                    std::vector<std::string> signals = get_signals_in_mask(static_cast<uint8_t>(nsys_index));
+                    auto sig_index = std::distance(signals.cbegin(), std::find(signals.cbegin(), signals.cend(), signal));
+
+                    if (static_cast<size_t>(sig_index) < signals.size())
+                        {
+                            int sat_index = 0;
+                            bool index_found = false;
+                            for (int s = 0; s < static_cast<int>(Nsys); s++)
+                                {
+                                    std::vector<int> PRNs_in_mask = get_PRNs_in_mask(s);
+                                    if (s == nsys_index)
+                                        {
+                                            if (index_found == false)
+                                                {
+                                                    auto sati = std::distance(PRNs_in_mask.cbegin(), std::find(PRNs_in_mask.cbegin(), PRNs_in_mask.cend(), PRN));
+                                                    if (static_cast<size_t>(sati) < PRNs_in_mask.size())
+                                                        {
+                                                            sat_index += sati;
+                                                            index_found = true;
+                                                        }
+                                                }
+                                        }
+                                    else
+                                        {
+                                            if (index_found == false)
+                                                {
+                                                    sat_index += PRNs_in_mask.size();
+                                                }
+                                        }
+                                }
+                            if (index_found == true)
+                                {
+                                    code_bias_correction_m = static_cast<float>(this->code_bias[sat_index][sig_index]) * HAS_MSG_CODE_BIAS_SCALE_FACTOR;
+                                }
+                        }
+                }
+        }
+
+    return code_bias_correction_m;
+}
+
+
+float Galileo_HAS_data::get_phase_bias_cycle(const std::string& signal, int PRN) const
+{
+    float phase_bias_correction_cycles = 0.0;
+    const size_t outer_size = this->phase_bias.size();
+    if (outer_size == 0)
+        {
+            return phase_bias_correction_cycles;
+        }
+    const size_t inner_size = this->phase_bias[0].size();
+    if (inner_size == 0)
+        {
+            return phase_bias_correction_cycles;
+        }
+
+    std::string targeted_system;
+    if ((signal == "L1 C/A") || (signal == "L1C(D)") || (signal == "L1C(P)" || (signal == "L1C(D+P)") || (signal == "L2 CM") || (signal == "L2 CL") || (signal == "L2 CM+CL") || (signal == "L2 P") || (signal == "L5 I")) ||
+        (signal == "L5 Q") || (signal == "L5 I + L5 Q"))
+        {
+            targeted_system = std::string("GPS");
+        }
+    if ((signal == "E1-B I/NAV OS") || (signal == "E1-C") || (signal == "E1-B + E1-C") || (signal == "E5a-I F/NAV OS") || (signal == "E5a-Q") || (signal == "E5a-I+E5a-Q") || (signal == "E5b-I I/NAV OS") ||
+        (signal == "E5b-Q") || (signal == "E5b-I+E5b-Q") || (signal == "E5-I") || (signal == "E5-Q") || (signal == "E5-I + E5-Q") || (signal == "E6-B C/NAV HAS") || (signal == "E6-C") || (signal == "E6-B + E6-C"))
+        {
+            targeted_system = std::string("Galileo");
+        }
+
+    if (!phase_bias.empty() && !targeted_system.empty())
+        {
+            std::vector<std::string> systems = this->get_systems_string();
+            auto Nsys = systems.size();
+            auto nsys_index = std::distance(systems.cbegin(), std::find(systems.cbegin(), systems.cend(), targeted_system));
+
+            if (static_cast<size_t>(nsys_index) < Nsys)
+                {
+                    std::vector<std::string> signals = get_signals_in_mask(static_cast<uint8_t>(nsys_index));
+                    auto sig_index = std::distance(signals.cbegin(), std::find(signals.cbegin(), signals.cend(), signal));
+
+                    if (static_cast<size_t>(sig_index) < signals.size())
+                        {
+                            int sat_index = 0;
+                            bool index_found = false;
+                            for (int s = 0; s < static_cast<int>(Nsys); s++)
+                                {
+                                    std::vector<int> PRNs_in_mask = get_PRNs_in_mask(s);
+                                    if (s == nsys_index)
+                                        {
+                                            if (index_found == false)
+                                                {
+                                                    auto sati = std::distance(PRNs_in_mask.cbegin(), std::find(PRNs_in_mask.cbegin(), PRNs_in_mask.cend(), PRN));
+                                                    if (static_cast<size_t>(sati) < PRNs_in_mask.size())
+                                                        {
+                                                            sat_index += sati;
+                                                            index_found = true;
+                                                        }
+                                                }
+                                        }
+                                    else
+                                        {
+                                            if (index_found == false)
+                                                {
+                                                    sat_index += PRNs_in_mask.size();
+                                                }
+                                        }
+                                }
+                            if (index_found == true)
+                                {
+                                    phase_bias_correction_cycles = static_cast<float>(this->phase_bias[sat_index][sig_index]) * HAS_MSG_PHASE_BIAS_SCALE_FACTOR;
+                                }
+                        }
+                }
+        }
+
+    return phase_bias_correction_cycles;
+}
+
+
+float Galileo_HAS_data::get_delta_radial_m(const std::string& system, int prn) const
+{
+    if (this->delta_radial.empty())
+        {
+            return 0.0;
+        }
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
+        {
+            return 0.0;  // system not found
+        }
+    auto system_index = std::distance(systems.begin(), sys_it);
+
+    auto prns = this->get_PRNs_in_mask(system_index);
+    auto it = std::find(prns.begin(), prns.end(), prn);
+    if (it == prns.end())
+        {
+            return 0.0;  // PRN not found
+        }
+
+    auto radial_m_v = this->get_delta_radial_m(system_index);
+    return radial_m_v[std::distance(prns.begin(), it)];
+}
+
+
+float Galileo_HAS_data::get_delta_in_track_m(const std::string& system, int prn) const
+{
+    if (this->delta_in_track.empty())
+        {
+            return 0.0;
+        }
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
+        {
+            return 0.0;  // system not found
+        }
+    auto system_index = std::distance(systems.begin(), sys_it);
+
+    auto prns = this->get_PRNs_in_mask(system_index);
+    auto it = std::find(prns.begin(), prns.end(), prn);
+    if (it == prns.end())
+        {
+            return 0.0;  // PRN not found
+        }
+
+    auto in_track_m_v = this->get_delta_in_track_m(system_index);
+    return in_track_m_v[std::distance(prns.begin(), it)];
+}
+
+
+float Galileo_HAS_data::get_delta_cross_track_m(const std::string& system, int prn) const
+{
+    if (this->delta_cross_track.empty())
+        {
+            return 0.0;
+        }
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
+        {
+            return 0.0;  // system not found
+        }
+    auto system_index = std::distance(systems.begin(), sys_it);
+
+    auto prns = this->get_PRNs_in_mask(system_index);
+    auto it = std::find(prns.begin(), prns.end(), prn);
+    if (it == prns.end())
+        {
+            return 0.0;  // PRN not found
+        }
+
+    auto cross_track_m_v = this->get_delta_cross_track_m(system_index);
+    return cross_track_m_v[std::distance(prns.begin(), it)];
+}
+
+
+float Galileo_HAS_data::get_clock_correction_mult_m(const std::string& system, int prn) const
+{
+    if (this->delta_clock_correction.empty())
+        {
+            return 0.0;
+        }
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
+        {
+            return 0.0;  // system not found
+        }
+    auto system_index = std::distance(systems.begin(), sys_it);
+
+    auto prns = this->get_PRNs_in_mask(system_index);
+    auto it = std::find(prns.begin(), prns.end(), prn);
+    if (it == prns.end())
+        {
+            return 0.0;  // PRN not found
+        }
+
+    auto index = std::distance(prns.begin(), it);
+    auto clock_correction_m_v = this->get_delta_clock_correction_m(system_index);
+    auto dcm = static_cast<float>(this->delta_clock_multiplier[system_index]);
+    return clock_correction_m_v[index] * dcm;
+}
+
+
+float Galileo_HAS_data::get_clock_subset_correction_mult_m(const std::string& system, int prn) const
+{
+    if (this->gnss_id_clock_subset.empty())
+        {
+            return 0.0;
+        }
+
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
+        {
+            return 0.0;  // system not found
+        }
+    auto system_index = std::distance(systems.begin(), sys_it);
+
+    auto prns_subset = this->get_PRNs_in_submask(system_index);
+    auto it = std::find(prns_subset.begin(), prns_subset.end(), prn);
+    if (it == prns_subset.end())
+        {
+            return 0.0;  // PRN not found
+        }
+
+    auto index_subset = std::distance(prns_subset.begin(), it);
+    auto clock_correction_m_v = this->get_delta_clock_subset_correction_m(system_index);
+    auto dcm = static_cast<float>(this->delta_clock_multiplier_clock_subset[system_index]);
+    if (!clock_correction_m_v.empty())
+        {
+            return clock_correction_m_v[index_subset] * dcm;
+        }
+    else
+        {
+            return 0.0;
+        }
 }
 
 
@@ -745,29 +914,80 @@ uint16_t Galileo_HAS_data::get_nsat() const
 }
 
 
-std::vector<std::string> Galileo_HAS_data::get_systems_string() const
-{
-    const size_t nsys = this->gnss_id_mask.size();
-    std::vector<std::string> systems(nsys, std::string(""));
-    for (uint8_t i = 0; i < this->Nsys; i++)
-        {
-            std::string system("Reserved");
-            if (this->gnss_id_mask[i] == 0)
-                {
-                    system = "GPS";
-                }
-            if (this->gnss_id_mask[i] == 2)
-                {
-                    system = "Galileo";
-                }
-            systems[i] = system;
-        }
-    return systems;
-}
-
-
 uint16_t Galileo_HAS_data::get_nsat_sub() const
 {
     auto Nsat_sub = static_cast<uint16_t>(this->delta_clock_correction_clock_subset.size());
     return Nsat_sub;
+}
+
+
+uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_index) const
+{
+    // See HAS SIS ICD v1.0 Table 23
+    const std::map<uint8_t, uint16_t> validity_intervals = {
+        {0, 5},
+        {1, 10},
+        {2, 15},
+        {3, 20},
+        {4, 30},
+        {5, 60},
+        {6, 90},
+        {7, 120},
+        {8, 180},
+        {9, 240},
+        {10, 300},
+        {11, 600},
+        {12, 900},
+        {13, 1800},
+        {14, 3600}};
+
+    auto it = validity_intervals.find(validity_interval_index);
+    if (it == validity_intervals.end())
+        {
+            return 0;
+        }
+    return it->second;
+}
+
+
+uint16_t Galileo_HAS_data::get_gnss_iod(const std::string& system, int prn) const
+{
+    if (this->gnss_iod.empty())
+        {
+            return 65535;  // not found
+        }
+    auto systems = this->get_systems_string();
+    auto sys_it = std::find(systems.begin(), systems.end(), system);
+    if (sys_it == systems.end())
+        {
+            return 65535;  // not found
+        }
+    auto system_index = std::distance(systems.begin(), sys_it);
+
+    auto prns = this->get_PRNs_in_mask(system_index);
+    auto it = std::find(prns.begin(), prns.end(), prn);
+    if (it == prns.end())
+        {
+            return 65535;  // PRN not found
+        }
+
+    auto gnss_iod_v = this->get_gnss_iod(system_index);
+    return gnss_iod_v[std::distance(prns.begin(), it)];
+}
+
+
+uint8_t Galileo_HAS_data::get_gnss_id(int nsat) const
+{
+    int number_sats = 0;
+    for (uint8_t i = 0; i < Nsys; i++)
+        {
+            auto prns = get_PRNs_in_mask(i);
+            number_sats += static_cast<int>(prns.size());
+            if (nsat < number_sats)
+                {
+                    return gnss_id_mask[i];
+                }
+        }
+
+    return HAS_MSG_WRONG_SYSTEM;
 }

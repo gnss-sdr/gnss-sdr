@@ -100,19 +100,6 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
     d_channel_last_pseudorange_smooth = std::vector<double>(d_nchannels_out, 0.0);
     d_channel_last_carrier_phase_rads = std::vector<double>(d_nchannels_out, 0.0);
 
-    d_mapStringValues["1C"] = evGPS_1C;
-    d_mapStringValues["2S"] = evGPS_2S;
-    d_mapStringValues["L5"] = evGPS_L5;
-    d_mapStringValues["1B"] = evGAL_1B;
-    d_mapStringValues["5X"] = evGAL_5X;
-    d_mapStringValues["E6"] = evGAL_E6;
-    d_mapStringValues["7X"] = evGAL_7X;
-    d_mapStringValues["1G"] = evGLO_1G;
-    d_mapStringValues["2G"] = evGLO_2G;
-    d_mapStringValues["B1"] = evBDS_B1;
-    d_mapStringValues["B2"] = evBDS_B2;
-    d_mapStringValues["B3"] = evBDS_B3;
-
     d_SourceTagTimestamps = std::vector<std::queue<GnssTime>>(d_nchannels_out);
 
     set_tag_propagation_policy(TPP_DONT);  // no tag propagation, the time tag will be adjusted and regenerated in work()
@@ -581,44 +568,11 @@ void hybrid_observables_gs::smooth_pseudoranges(std::vector<Gnss_Synchro> &data)
             if (it->Flag_valid_pseudorange)
                 {
                     // 0. get wavelength for the current signal
-                    double wavelength_m = 0;
-                    switch (d_mapStringValues[it->Signal])
+                    double wavelength_m = 0.0;
+                    const auto it_freq_map = SIGNAL_FREQ_MAP.find(std::string(it->Signal, 2));
+                    if (it_freq_map != SIGNAL_FREQ_MAP.cend())
                         {
-                        case evGPS_1C:
-                        case evSBAS_1C:
-                        case evGAL_1B:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1;
-                            break;
-                        case evGPS_L5:
-                        case evGAL_5X:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ5;
-                            break;
-                        case evGAL_E6:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ6;
-                            break;
-                        case evGAL_7X:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ7;
-                            break;
-                        case evGPS_2S:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2;
-                            break;
-                        case evBDS_B3:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ3_BDS;
-                            break;
-                        case evGLO_1G:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1_GLO;
-                            break;
-                        case evGLO_2G:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2_GLO;
-                            break;
-                        case evBDS_B1:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ1_BDS;
-                            break;
-                        case evBDS_B2:
-                            wavelength_m = SPEED_OF_LIGHT_M_S / FREQ2_BDS;
-                            break;
-                        default:
-                            break;
+                            wavelength_m = SPEED_OF_LIGHT_M_S / it_freq_map->second;
                         }
 
                     // todo: propagate the PLL lock status in Gnss_Synchro

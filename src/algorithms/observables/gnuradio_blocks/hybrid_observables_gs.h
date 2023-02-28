@@ -29,12 +29,11 @@
 #include <cstddef>                    // for size_t
 #include <cstdint>                    // for int32_t
 #include <fstream>                    // for std::ofstream
-#include <map>                        // for std::map
 #include <memory>                     // for std::shared, std:unique_ptr
-#include <queue>
-#include <string>    // for std::string
-#include <typeinfo>  // for typeid
-#include <vector>    // for std::vector
+#include <queue>                      // for std::queue
+#include <string>                     // for std::string
+#include <typeinfo>                   // for typeid
+#include <vector>                     // for std::vector
 
 /** \addtogroup Observables
  * \{ */
@@ -83,24 +82,6 @@ private:
     int32_t save_matfile() const;
 
     Obs_Conf d_conf;
-
-    enum StringValue_
-    {
-        evGPS_1C,
-        evGPS_2S,
-        evGPS_L5,
-        evSBAS_1C,
-        evGAL_1B,
-        evGAL_5X,
-        evGAL_E6,
-        evGAL_7X,
-        evGLO_1G,
-        evGLO_2G,
-        evBDS_B1,
-        evBDS_B2,
-        evBDS_B3
-    };
-    std::map<std::string, StringValue_> d_mapStringValues;
 
     std::unique_ptr<Gnss_circular_deque<Gnss_Synchro>> d_gnss_synchro_history;  // Tracking observable history
 

@@ -11,7 +11,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2019 (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2013 (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -65,17 +65,26 @@ Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 
 int main(int argc, char** argv)
 {
-    const std::string intro_help(
-        std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n") +
-        "Copyright (C) 2010-2022 (see AUTHORS file for a list of contributors)\n" +
-        "This program comes with ABSOLUTELY NO WARRANTY;\n" +
-        "See COPYING file to see a copy of the General Public License\n \n");
+    try
+        {
+            const std::string intro_help(
+                std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n") +
+                "Copyright (C) 2010-2023 (see AUTHORS file for a list of contributors)\n" +
+                "This program comes with ABSOLUTELY NO WARRANTY;\n" +
+                "See COPYING file to see a copy of the General Public License\n \n");
 
-    const std::string gnss_sdr_version(GNSS_SDR_VERSION);
-    gflags::SetUsageMessage(intro_help);
-    gflags::SetVersionString(gnss_sdr_version);
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
-    std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait.\n";
+            const std::string gnss_sdr_version(GNSS_SDR_VERSION);
+            gflags::SetUsageMessage(intro_help);
+            gflags::SetVersionString(gnss_sdr_version);
+            gflags::ParseCommandLineFlags(&argc, &argv, true);
+            std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait.\n";
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            std::cout << "GNSS-SDR program ended.\n";
+            return 1;
+        }
 
 #if CUDA_GPU_ACCEL
     // Reset the device
@@ -100,21 +109,31 @@ int main(int argc, char** argv)
                 }
             else
                 {
-                    const fs::path p(FLAGS_log_dir);
-                    if (!fs::exists(p))
+                    try
                         {
-                            std::cout << "The path "
-                                      << FLAGS_log_dir
-                                      << " does not exist, attempting to create it.\n";
-                            errorlib::error_code ec;
-                            if (!fs::create_directory(p, ec))
+                            const fs::path p(FLAGS_log_dir);
+                            if (!fs::exists(p))
                                 {
-                                    std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended.\n";
-                                    gflags::ShutDownCommandLineFlags();
-                                    return 1;
+                                    std::cout << "The path "
+                                              << FLAGS_log_dir
+                                              << " does not exist, attempting to create it.\n";
+                                    errorlib::error_code ec;
+                                    if (!fs::create_directory(p, ec))
+                                        {
+                                            std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended.\n";
+                                            gflags::ShutDownCommandLineFlags();
+                                            return 1;
+                                        }
                                 }
+                            std::cout << "Logging will be written at " << FLAGS_log_dir << '\n';
                         }
-                    std::cout << "Logging will be written at " << FLAGS_log_dir << '\n';
+                    catch (const std::exception& e)
+                        {
+                            std::cerr << e.what() << '\n';
+                            std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended.\n";
+                            gflags::ShutDownCommandLineFlags();
+                            return 1;
+                        }
                 }
         }
 
@@ -132,9 +151,7 @@ int main(int argc, char** argv)
     catch (const boost::thread_resource_error& e)
         {
             std::cerr << "Failed to create boost thread.\n";
-            gflags::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended.\n";
-            return 1;
+            return_code = 1;
         }
     catch (const boost::exception& e)
         {
@@ -147,9 +164,7 @@ int main(int argc, char** argv)
                 {
                     std::cerr << "Boost exception: " << boost::diagnostic_information(e) << '\n';
                 }
-            gflags::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended.\n";
-            return 1;
+            return_code = 1;
         }
     catch (const std::exception& ex)
         {
@@ -162,9 +177,7 @@ int main(int argc, char** argv)
                 {
                     std::cerr << "C++ Standard Library exception: " << ex.what() << '\n';
                 }
-            gflags::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended.\n";
-            return 1;
+            return_code = 1;
         }
     catch (...)
         {
@@ -177,9 +190,7 @@ int main(int argc, char** argv)
                 {
                     std::cerr << "Unexpected catch. This should not happen.\n";
                 }
-            gflags::ShutDownCommandLineFlags();
-            std::cout << "GNSS-SDR program ended.\n";
-            return 1;
+            return_code = 1;
         }
 
     // report the elapsed time

@@ -23,7 +23,6 @@
 \li \subpage volk_gnsssdr_8ic_magnitude_squared_8i
 \li \subpage volk_gnsssdr_8ic_x2_dot_prod_8ic
 \li \subpage volk_gnsssdr_8ic_x2_multiply_8ic
-\li \subpage volk_gnsssdr_8ic_s8ic_multiply_8ic
 \li \subpage volk_gnsssdr_8i_accumulator_s8i
 \li \subpage volk_gnsssdr_8i_index_max_16u
 \li \subpage volk_gnsssdr_8i_max_s8i

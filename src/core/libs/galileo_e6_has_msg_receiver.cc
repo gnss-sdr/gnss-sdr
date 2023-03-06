@@ -149,7 +149,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
         {
             d_HAS_data.has_status = d_current_has_status;
             d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow - static_cast<uint32_t>(std::remainder(tow, 3600)) + d_HAS_data.header.toh;
+            d_HAS_data.tow = tow;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
             d_new_message = false;
             d_printed_mids[d_current_message_id] = true;
@@ -201,7 +201,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
         {
             d_HAS_data.has_status = d_current_has_status;
             d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow - static_cast<uint32_t>(std::remainder(tow, 3600)) + d_HAS_data.header.toh;
+            d_HAS_data.tow = tow;
             d_printed_mids[d_current_message_id] = true;
             d_printed_timestamps[d_current_message_id] = timestamp;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
@@ -699,8 +699,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
 
                     // count satellites in the mask
                     std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> satellite_mask_bits(satellite_mask);
-                    std::string satellite_mask_string = satellite_mask_bits.to_string();
-                    int number_sats_this_gnss_id = std::count(satellite_mask_string.begin(), satellite_mask_string.end(), '1');
+                    int number_sats_this_gnss_id = satellite_mask_bits.count();
 
                     d_HAS_data.satellite_submask[i] = read_has_message_body_uint64(message.substr(0, number_sats_this_gnss_id));
                     message = std::string(message.begin() + number_sats_this_gnss_id, message.end());

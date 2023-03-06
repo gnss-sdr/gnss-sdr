@@ -14,6 +14,15 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Accuracy:
+
+- Processing and application of the corrections provided by the Galileo High
+  Accuracy Service (HAS) to the PVT solution. It requires at least a Galileo E1
+  (or E5a) + Galileo E6B configuration. A new configuration parameter
+  `PVT.use_has_corrections`, set to `true` by default, can be used to deactivate
+  the application of HAS corrections but still retrieve the HAS data if set to
+  `false`.
+
 ### Improvements in Availability:
 
 - Fixed bug that made the PVT block to not resolve position anymore after a loss
@@ -70,11 +79,14 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved passing of compiler flags to `volk_gnsssdr` if the corresponding
   environment variables are defined. This fixes warnings in some packaging
   systems.
+- Improved support for the RISC-V architecture.
 - Test files are now donwloaded at configuration time instead of being included
   in the source tree. This allows for a smaller package and fixes Lintian
   `very-long-line-length-in-source-file` warnings since those files were not
   recognized as binaries. The configuration flag `-DENABLE_PACKAGING=ON` passed
   to CMake deactivates file downloading.
+- The `ENABLE_GENERIC_ARCH` building option was removed, simplifying the process
+  of buiding the software in non-x86 processor architectures.
 
 ### Improvements in Usability:
 
@@ -96,6 +108,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   manually set the bandwidth of the bandpass filter on the radio frontend.
 - The new configuration parameter `Channels_XX.RF_channel_ID` allows to specify
   the signal source per channel group.
+- New configuration parameter `PVT.use_unhealthy_sats`, set by default to
+  `false`, allows processing observables of satellites that report an unhealthy
+  status in the navigation message if set to `true`.
 - Allowed the CMake project to be a sub-project.
 
 See the definitions of concepts and metrics at

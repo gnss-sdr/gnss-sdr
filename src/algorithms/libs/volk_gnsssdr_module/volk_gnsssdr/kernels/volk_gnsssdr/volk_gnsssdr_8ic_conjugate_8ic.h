@@ -324,16 +324,6 @@ static inline void volk_gnsssdr_8ic_conjugate_8ic_a_sse3(lv_8sc_t* cVector, cons
 #endif /* LV_HAVE_SSE3 */
 
 
-#ifdef LV_HAVE_ORC
-
-extern void volk_gnsssdr_8ic_conjugate_8ic_a_orc_impl(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points);
-static inline void volk_gnsssdr_8ic_conjugate_8ic_u_orc(lv_8sc_t* cVector, const lv_8sc_t* aVector, unsigned int num_points)
-{
-    volk_gnsssdr_8ic_conjugate_8ic_a_orc_impl(cVector, aVector, num_points);
-}
-#endif /* LV_HAVE_ORC */
-
-
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 

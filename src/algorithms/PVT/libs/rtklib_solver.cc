@@ -473,7 +473,7 @@ bool Rtklib_Solver::save_matfile() const
 {
     // READ DUMP FILE
     const std::string dump_filename = d_dump_filename;
-    const int32_t number_of_double_vars = 23;     //+2 MAGL
+    const int32_t number_of_double_vars = 21; 
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 3;
     const int32_t number_of_float_vars = 2;
@@ -1879,8 +1879,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             vtl_data.rx_dts(0) = rx_position_and_time[3];
                             vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
 
-                            //new_vtl_data.debug_print();
-                            //vtl_data.kf_state.print("kf_state_input");
                             vtl_engine.vtl_loop(vtl_data);
 
                         }

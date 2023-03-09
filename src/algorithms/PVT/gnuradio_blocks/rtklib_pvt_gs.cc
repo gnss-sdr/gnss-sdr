@@ -2301,7 +2301,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         {
                             // VTP To.Do: Check why get_PVT is triggered twice. Leave only one get_PVT.
 
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, false, false, false);
+                            //flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, false, false, false);
                         }
 
                     if (flag_pvt_valid == true)

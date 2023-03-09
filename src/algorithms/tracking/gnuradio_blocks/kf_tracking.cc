@@ -658,13 +658,13 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             double old_code_phase_chips = d_x_old_old(0);
 
                             if(abs(d_x_old_old(2) - tmp_x(2))>50){
-                                 std::cout  << " tracking_cmd TOO FAR: "
-                                            << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
-                                            << " \n";
+                                //  std::cout  << " tracking_cmd TOO FAR: "
+                                //             << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
+                                //             << " \n";
                             }else{
-                                std::cout  << " tracking_cmd NEAR: "
-                                            << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
-                                            << " \n";
+                                // std::cout  << " tracking_cmd NEAR: "
+                                //             << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
+                                //             << " \n";
                                 //d_x_old_old(2) = tmp_x(2);  //replace the Code Phase state
                             }
 

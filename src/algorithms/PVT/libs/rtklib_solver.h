@@ -132,6 +132,7 @@ public:
 
 private:
     bool save_matfile() const;
+    bool save_vtl_matfile() const;
 
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
@@ -152,6 +153,7 @@ private:
 
     std::string d_dump_filename;
     std::ofstream d_dump_file;
+    std::ofstream d_vtl_dump_file;
     rtk_t d_rtk{};
     nav_t d_nav_data{};
     Monitor_Pvt d_monitor_pvt{};

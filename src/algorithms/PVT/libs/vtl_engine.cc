@@ -172,7 +172,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_xerr = kf_K * (kf_yerr);                                 // Error state estimation
     kf_P_x = (arma::eye(size(kf_P_x)) - kf_K * kf_H) * kf_P_x;  // update state estimation error covariance matrix
     kf_x = kf_x - kf_xerr;                                      // updated state estimation (a priori + error)
-    
+    new_data.kf_state = kf_x;
+    new_data.kf_P = kf_P_x;
     if(abs(delta_t_vtl)>.5){
         kf_xerr.print("kf_xERR: ");
         cout<<"kf_dt: "<<delta_t_vtl<<endl;

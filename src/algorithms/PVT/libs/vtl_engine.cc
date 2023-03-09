@@ -22,25 +22,31 @@ using namespace std;
 
 Vtl_Engine::Vtl_Engine()
 {
+    counter=0;
+    refSampleCounter=0;
+    n_of_states=11;
+    kf_P_x = arma::eye(n_of_states, n_of_states) * 1.0;  //TODO: use a real value.; 
+    kf_x = arma::zeros(n_of_states, 1);
 }
 
 Vtl_Engine::~Vtl_Engine()
 {
 }
 
-bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
+bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 {
     //TODO: Implement main VTL loop here
     using arma::as_scalar;
     
-    static uint64_t refSampleCounter = new_data.sample_counter;
+    if (refSampleCounter=0)
+    {
+        refSampleCounter=new_data.sample_counter;
+    } 
     double delta_t_vtl = (new_data.sample_counter - refSampleCounter) / 5000000.0; 
     refSampleCounter = new_data.sample_counter;
     // ################## Kalman filter initialization ######################################
     //State variables
-    int n_of_states=11;
-    static arma::mat kf_P_x = arma::eye(n_of_states, n_of_states) * 1.0;  //TODO: use a real value.; 
-    static arma::mat kf_x = arma::zeros(n_of_states, 1);
+
     arma::mat kf_dx = arma::zeros(n_of_states, 1);
     // covariances (static)
       
@@ -58,8 +64,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data& new_data)
     kf_S = arma::zeros(2 * new_data.sat_number, 2 * new_data.sat_number);  // kf_P_y innovation covariance matrix
     kf_K = arma::zeros(n_of_states, 2 * new_data.sat_number); ;
     // ################## Kalman Tracking ######################################
-    static uint32_t counter = 0;  //counter
-    counter = counter + 1;        //uint64_t
+    counter++;        //uint64_t
     //new_data.kf_state.print("new_data kf initial");
     uint32_t closure_point=3;
     
@@ -338,4 +343,89 @@ bool Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat r
         kf_yerr(i + sat_number) = (doppler_hz(i) * Lambda_GPS_L1+kf_x(10)) - rhoDot_pri(i);
     }
     return -1;
+}
+
+std::vector<double> Vtl_Engine::get_position_ecef_m()
+{
+    std::vector<double> temp = {42,42,42};
+    temp[0] = kf_x[0];
+    temp[1] = kf_x[1];
+    temp[2] = kf_x[2];
+
+    return temp;
+}
+
+std::vector<double> Vtl_Engine::get_velocity_ecef_m_s()
+{
+    std::vector<double> temp = {42,42,42};
+    temp[0] = kf_x[3];
+    temp[1] = kf_x[4];
+    temp[2] = kf_x[5];
+
+    return temp;
+}
+
+std::vector<double> Vtl_Engine::get_accel_ecef_m_s2()
+{
+    std::vector<double> temp = {42,42,42};
+    temp[0] = kf_x[6];
+    temp[1] = kf_x[7];
+    temp[2] = kf_x[8];
+
+    return temp;
+}
+std::vector<double> Vtl_Engine::get_position_var_ecef_m()
+{
+    std::vector<double> temp = {42,42,42};
+    temp[0] = kf_P_x(0,0);
+    temp[1] = kf_P_x(1,1);
+    temp[2] = kf_P_x(2,2);
+
+    return temp;
+}
+
+std::vector<double> Vtl_Engine::get_velocity_var_ecef_m_s()
+{
+    std::vector<double> temp = {42,42,42};
+    temp[0] = kf_P_x(3,3);
+    temp[1] = kf_P_x(4,4);
+    temp[2] = kf_P_x(5,5);
+
+    return temp;
+}
+
+std::vector<double> Vtl_Engine::get_accel_var_ecef_m_s2()
+{
+    std::vector<double> temp = {42,42,42};
+    temp[0] = kf_P_x(6,6);
+    temp[1] = kf_P_x(7,7);
+    temp[2] = kf_P_x(8,8);
+
+    return temp;
+}
+
+double Vtl_Engine::get_latitude()
+{
+
+    return -1.0;
+}
+
+double Vtl_Engine::get_longitude()
+{
+    
+
+    return -1.0;
+}
+
+double Vtl_Engine::get_height()
+{
+    return -1.0;
+}
+
+double Vtl_Engine::get_user_clock_offset_s()
+{
+    double temp=0;
+    temp = kf_x[9];
+
+    return temp;
 }

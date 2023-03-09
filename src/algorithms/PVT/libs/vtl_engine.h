@@ -42,11 +42,21 @@ public:
     void configure(Vtl_Conf config_);  //set config parameters
 
     //TODO: output functions here (output for tracking KF updates, VTL computed user PVT, etc...)
-    bool vtl_loop(Vtl_Data& new_data);
+    bool vtl_loop(Vtl_Data new_data);
     void reset();        // reset all internal states
     void debug_print();  // print debug information
 
     std::vector<TrackingCmd> trk_cmd_outs;  // vector holding the Tracking command states updates to be sent to tracking KFs
+    std::vector<double> get_position_ecef_m();   // get_position_ecef_m
+    std::vector<double> get_velocity_ecef_m_s(); // get_velocity_ecef_m_s
+    std::vector<double> get_accel_ecef_m_s2(); // get_accel_ecef_m_s2
+    std::vector<double> get_position_var_ecef_m(); // get_position_var_ecef_m
+    std::vector<double> get_velocity_var_ecef_m_s(); // get_velocity_var_ecef_m_s
+    std::vector<double> get_accel_var_ecef_m_s2(); // get_accel_var_ecef_m_s2
+    double get_latitude(); // get_latitude
+    double get_longitude(); // get_longitude
+    double get_height(); // get_height
+    double get_user_clock_offset_s(); // get_user_clock_offset_s;    
 
 private:
     Vtl_Conf config;
@@ -67,6 +77,7 @@ private:
     arma::mat kf_P_x_ini;  // initial state error covariance matrix
     // arma::mat kf_P_x;      // state error covariance matrix
     arma::mat kf_P_x_pre;  // Predicted state error covariance matrix
+    arma::mat kf_P_x;
     arma::mat kf_S;      // innovation covariance matrix
 
     arma::mat kf_F;  // state transition matrix
@@ -83,6 +94,11 @@ private:
 
     // Gaussian estimator
     arma::mat kf_R_est;  // measurement error covariance
+
+
+    uint32_t counter;
+    int n_of_states;
+    uint64_t refSampleCounter;
 
     bool kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arma::colvec ay, arma::colvec az, double kf_dt); // Observation Matrix constructor
     bool kf_F_fill(arma::mat &kf_F,double kf_dt); // System Matrix constructor

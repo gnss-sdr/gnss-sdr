@@ -23,8 +23,6 @@ Vtl_Data::Vtl_Data()
 {
     epoch_tow_s = 0;
     sample_counter = 0;
-    kf_state = arma::mat(11,1);
-    kf_P = arma::mat(11,11);
 }
 
 void Vtl_Data::init_storage(int n_sats)
@@ -69,88 +67,4 @@ void Vtl_Data::debug_print()
     // carrier_phase_rads.print("satellite accumulated carrier phases [rads]");
 }
 
-std::vector<double> Vtl_Data::get_position_ecef_m()
-{
-    std::vector<double> temp = {42,42,42};
-    temp[0] = kf_state[0];
-    temp[1] = kf_state[1];
-    temp[2] = kf_state[2];
-
-    return temp;
-}
-
-std::vector<double> Vtl_Data::get_velocity_ecef_m_s()
-{
-    std::vector<double> temp = {42,42,42};
-    temp[0] = kf_state[3];
-    temp[1] = kf_state[4];
-    temp[2] = kf_state[5];
-
-    return temp;
-}
-
-std::vector<double> Vtl_Data::get_accel_ecef_m_s2()
-{
-    std::vector<double> temp = {42,42,42};
-    temp[0] = kf_state[6];
-    temp[1] = kf_state[7];
-    temp[2] = kf_state[8];
-
-    return temp;
-}
-std::vector<double> Vtl_Data::get_position_var_ecef_m()
-{
-    std::vector<double> temp = {42,42,42};
-    temp[0] = kf_P(0,0);
-    temp[1] = kf_P(1,1);
-    temp[2] = kf_P(2,2);
-
-    return temp;
-}
-
-std::vector<double> Vtl_Data::get_velocity_var_ecef_m_s()
-{
-    std::vector<double> temp = {42,42,42};
-    temp[0] = kf_P(3,3);
-    temp[1] = kf_P(4,4);
-    temp[2] = kf_P(5,5);
-
-    return temp;
-}
-
-std::vector<double> Vtl_Data::get_accel_var_ecef_m_s2()
-{
-    std::vector<double> temp = {42,42,42};
-    temp[0] = kf_P(6,6);
-    temp[1] = kf_P(7,7);
-    temp[2] = kf_P(8,8);
-
-    return temp;
-}
-
-double Vtl_Data::get_latitude()
-{
-
-    return -1.0;
-}
-
-double Vtl_Data::get_longitude()
-{
-    
-
-    return -1.0;
-}
-
-double Vtl_Data::get_height()
-{
-    return -1.0;
-}
-
-double Vtl_Data::get_user_clock_offset_s()
-{
-    double temp=0;
-    temp=kf_state[9];
-
-    return temp;
-}
 

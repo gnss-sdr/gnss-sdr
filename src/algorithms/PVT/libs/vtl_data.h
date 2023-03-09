@@ -62,16 +62,6 @@ public:
     double epoch_tow_s;       // current observation RX time [s]
     uint64_t sample_counter;  // current sample counter associated with RX time [samples from start]
     void debug_print();
-    std::vector<double> get_position_ecef_m();   // get_position_ecef_m
-    std::vector<double> get_velocity_ecef_m_s(); // get_velocity_ecef_m_s
-    std::vector<double> get_accel_ecef_m_s2(); // get_accel_ecef_m_s2
-    std::vector<double> get_position_var_ecef_m(); // get_position_var_ecef_m
-    std::vector<double> get_velocity_var_ecef_m_s(); // get_velocity_var_ecef_m_s
-    std::vector<double> get_accel_var_ecef_m_s2(); // get_accel_var_ecef_m_s2
-    double get_latitude(); // get_latitude
-    double get_longitude(); // get_longitude
-    double get_height(); // get_height
-    double get_user_clock_offset_s(); // get_user_clock_offset_s;
 };
 
 

@@ -49,16 +49,16 @@
 #include <matio.h>                   // for Mat_VarCreate
 #include <pmt/pmt_sugar.h>           // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include "iostream"
 #include <algorithm>  // for fill_n
 #include <array>
 #include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
-#include <iostream>   // for cout, cerr
+#include <fstream>
+#include <iostream>  // for cout, cerr
 #include <map>
 #include <numeric>
 #include <vector>
-#include "iostream"
-#include <fstream>
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -637,7 +637,6 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                     //std::cout<< "test cast CH "<<cmd->sample_counter <<"\n";
                     if (cmd->channel_id == this->d_channel)
                         {
-
                             arma::vec x_tmp;
                             arma::mat F_tmp;
 
@@ -645,7 +644,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             //To.Do: apply VTL corrections to the KF states
                             double delta_t_s = static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in;
                             // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
-                            x_tmp = {cmd->code_phase_chips, cmd->carrier_phase_rads, cmd->carrier_freq_hz, cmd->carrier_freq_rate_hz_s};                    
+                            x_tmp = {cmd->code_phase_chips, cmd->carrier_phase_rads, cmd->carrier_freq_hz, cmd->carrier_freq_rate_hz_s};
                             //ToDO: check state propagation, at least Doppler propagation does NOT work, see debug traces
                             F_tmp = {{1.0, 0.0, d_beta * delta_t_s, d_beta * (delta_t_s * delta_t_s) / 2.0},
                                 {0.0, 1.0, 2.0 * GNSS_PI * delta_t_s, GNSS_PI * (delta_t_s * delta_t_s)},
@@ -656,29 +655,35 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             double old_doppler = d_x_old_old(2);
                             double old_doppler_rate = d_x_old_old(3);
                             double old_code_phase_chips = d_x_old_old(0);
-                            
-                            if(cmd->enable_carrier_nco_cmd){
-                                if(cmd->enable_code_nco_cmd){
-                                    if(abs(d_x_old_old(2) - tmp_x(2))>50){
-                                        std::cout  <<"channel: "<< this->d_channel
-                                                    << " tracking_cmd TOO FAR: "
-                                                    << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
-                                                    << " \n";
-                                    }else{
-                                        std::cout   <<"channel: "<< this->d_channel
-                                                    << " tracking_cmd NEAR: "
-                                                    << abs(d_x_old_old(2) - tmp_x(2))<< "Hz"
-                                                    << " \n";
-                                    }
-                                    d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
-                                    // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
 
-                                }else{
-                                    // std::cout<<"yet to soon"<<std::endl;
-                                    //d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
-                                    // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
+                            if (cmd->enable_carrier_nco_cmd)
+                                {
+                                    if (cmd->enable_code_nco_cmd)
+                                        {
+                                            if (abs(d_x_old_old(2) - tmp_x(2)) > 50)
+                                                {
+                                                    std::cout << "channel: " << this->d_channel
+                                                              << " tracking_cmd TOO FAR: "
+                                                              << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
+                                                              << " \n";
+                                                }
+                                            else
+                                                {
+                                                    std::cout << "channel: " << this->d_channel
+                                                              << " tracking_cmd NEAR: "
+                                                              << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
+                                                              << " \n";
+                                                }
+                                            d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
+                                            // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
+                                        }
+                                    else
+                                        {
+                                            // std::cout<<"yet to soon"<<std::endl;
+                                            //d_x_old_old(2) = tmp_x(2);  //replace DOPPLER
+                                            // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
+                                        }
                                 }
-                            }
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;
@@ -688,7 +693,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             //           << " SampleCounter origin: " << cmd->sample_counter
                             //           << " Doppler new state: " << x_tmp(2) << " vs. trk state: " << old_doppler << " [Hz]"
                             //           << " [s]\n";
-                            // if(cmd->channel_id  ==0) 
+                            // if(cmd->channel_id  ==0)
                             // {
                             //     std::cout << "CH " << cmd->channel_id  << " RX pvt-to-trk cmd with delay: "
                             //           << delta_t_s << "[s]"
@@ -702,15 +707,15 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             dump_tracking_file.open("dump_trk_file.csv", std::ios::out | std::ios::app);
                             dump_tracking_file.precision(15);
                             if (!dump_tracking_file)
-                            {
-                                std::cout  << "dump_tracking_file not created!";
-                            }   
+                                {
+                                    std::cout << "dump_tracking_file not created!";
+                                }
                             else
-                            {
-                                dump_tracking_file << "doppler_corr"
-                                << ","<< this->d_channel << "," << tmp_x(2) << "," << old_doppler  << "," <<  tmp_x(3)<< "," << old_doppler_rate << "\n";
-                                dump_tracking_file.close();
-                            }
+                                {
+                                    dump_tracking_file << "doppler_corr"
+                                                       << "," << this->d_channel << "," << tmp_x(2) << "," << old_doppler << "," << tmp_x(3) << "," << old_doppler_rate << "\n";
+                                    dump_tracking_file.close();
+                                }
                         }
                 }
             else
@@ -1252,7 +1257,7 @@ void kf_tracking::run_Kf()
 
     // new code phase estimation
     d_code_error_kf_chips = d_x_new_new(0);
-    d_x_new_new(0)=0; // reset error estimation because the NCO corrects the code phase
+    d_x_new_new(0) = 0;  // reset error estimation because the NCO corrects the code phase
     // new carrier phase estimation
     d_carrier_phase_kf_rad = d_x_new_new(1);
 

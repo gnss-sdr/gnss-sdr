@@ -168,7 +168,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                     try
                         {
                             d_vtl_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-                            uint end_filename = d_dump_filename.length()-4;
+                            uint end_filename = d_dump_filename.length() - 4;
                             d_vtl_dump_filename = d_dump_filename;
                             d_vtl_dump_filename = d_vtl_dump_filename.insert(end_filename, "_vtl");
                             d_vtl_dump_file.open(d_vtl_dump_filename, std::ios::out | std::ios::binary);
@@ -218,7 +218,7 @@ Rtklib_Solver::~Rtklib_Solver()
                     LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
                 }
         }
-        if (d_flag_dump_mat_enabled)
+    if (d_flag_dump_mat_enabled)
         {
             try
                 {
@@ -236,7 +236,7 @@ bool Rtklib_Solver::save_vtl_matfile() const
 {
     // READ DUMP FILE
     const std::string dump_filename = d_vtl_dump_filename;
-    const int32_t number_of_double_vars = 27;     
+    const int32_t number_of_double_vars = 27;
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 1;
     const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
@@ -353,7 +353,6 @@ bool Rtklib_Solver::save_vtl_matfile() const
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
     if (reinterpret_cast<int64_t *>(matfp) != nullptr)
         {
-
             std::array<size_t, 2> dims{1, static_cast<size_t>(num_epoch)};
             matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), TOW_at_current_symbol_ms.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
@@ -474,7 +473,6 @@ bool Rtklib_Solver::save_vtl_matfile() const
             matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vdop.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
-
         }
 
     Mat_Close(matfp);
@@ -486,7 +484,7 @@ bool Rtklib_Solver::save_matfile() const
 {
     // READ DUMP FILE
     const std::string dump_filename = d_dump_filename;
-    const int32_t number_of_double_vars = 21; 
+    const int32_t number_of_double_vars = 21;
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 3;
     const int32_t number_of_float_vars = 2;
@@ -1893,7 +1891,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
 
                             vtl_engine.vtl_loop(vtl_data);
-
                         }
                     else
                         {
@@ -2001,7 +1998,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     this->set_clock_drift_ppm(clock_drift_ppm);
                     // User clock drift [ppm]
                     d_monitor_pvt.user_clk_drift_ppm = clock_drift_ppm;
-                    
+
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)
                         {
@@ -2085,10 +2082,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                             // VTL (optional) MULTIPLEXED FILE RECORDING - Record results to file
                             if (enable_vtl == true)
-                               
+
                                 try
                                     {
-                                        
                                         double tmp_double;
                                         uint32_t tmp_uint32;
                                         // TOW
@@ -2104,7 +2100,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         //tmp_double = rx_position_and_time[3];
                                         tmp_double = vtl_engine.get_user_clock_offset_s();
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        
+
                                         // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] + ECEF ACC X,Y,X [m/s] (9 x double)
                                         std::vector<double> p_vec_m = vtl_engine.get_position_ecef_m();
                                         tmp_double = p_vec_m[0];
@@ -2113,8 +2109,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         tmp_double = p_vec_m[2];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        
-                                        std::vector<double>  v_vec_m = vtl_engine.get_velocity_ecef_m_s();
+
+                                        std::vector<double> v_vec_m = vtl_engine.get_velocity_ecef_m_s();
                                         tmp_double = v_vec_m[0];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         tmp_double = v_vec_m[1];
@@ -2122,7 +2118,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         tmp_double = v_vec_m[2];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        std::vector<double>  a_vec_m = vtl_engine.get_accel_ecef_m_s2();
+                                        std::vector<double> a_vec_m = vtl_engine.get_accel_ecef_m_s2();
                                         tmp_double = a_vec_m[0];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         tmp_double = a_vec_m[1];
@@ -2132,7 +2128,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                                         // position/velocity/acceleration variance/ (units^2)  (9 x double)
 
-                                        std::vector<double>  p_var_vec_m = vtl_engine.get_position_var_ecef_m();
+                                        std::vector<double> p_var_vec_m = vtl_engine.get_position_var_ecef_m();
                                         tmp_double = p_var_vec_m[0];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         tmp_double = p_var_vec_m[1];
@@ -2141,7 +2137,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
 
-                                        std::vector<double>  v_var_vec_m = vtl_engine.get_velocity_var_ecef_m_s();
+                                        std::vector<double> v_var_vec_m = vtl_engine.get_velocity_var_ecef_m_s();
                                         tmp_double = v_var_vec_m[0];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         tmp_double = v_var_vec_m[1];
@@ -2149,7 +2145,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         tmp_double = v_var_vec_m[2];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        vector<double>  a_var_vec_m = vtl_engine.get_accel_var_ecef_m_s2();
+                                        vector<double> a_var_vec_m = vtl_engine.get_accel_var_ecef_m_s2();
                                         tmp_double = a_var_vec_m[0];
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         tmp_double = a_var_vec_m[1];
@@ -2158,13 +2154,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                         // GEO user position Latitude [deg]
-                                        tmp_double =  this->get_latitude();
+                                        tmp_double = this->get_latitude();
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         // GEO user position Longitude [deg]
                                         tmp_double = this->get_longitude();
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                         // GEO user position Height [m]
-                                        tmp_double =  this->get_height();
+                                        tmp_double = this->get_height();
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                         // NUMBER OF VALID SATS

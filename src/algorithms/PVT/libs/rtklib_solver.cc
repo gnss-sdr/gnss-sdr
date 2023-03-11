@@ -162,14 +162,17 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                             LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
                         }
                 }
+            // TODO: if(vtl_enable) then
             if (d_vtl_dump_file.is_open() == false)
                 {
                     try
                         {
                             d_vtl_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-                            int end_filename = d_dump_filename.length()-4;
-                            d_vtl_dump_file.open(d_dump_filename.insert(end_filename, "_vtl"), std::ios::out | std::ios::binary);
-                            LOG(INFO) << "PVT VTL dump enabled Log file: " << d_dump_filename + "_vtl";
+                            uint end_filename = d_dump_filename.length()-4;
+                            d_vtl_dump_filename = d_dump_filename;
+                            d_vtl_dump_filename = d_vtl_dump_filename.insert(end_filename, "_vtl");
+                            d_vtl_dump_file.open(d_vtl_dump_filename, std::ios::out | std::ios::binary);
+                            LOG(INFO) << "PVT VTL dump enabled Log file: " << d_vtl_dump_filename;
                         }
                     catch (const std::ofstream::failure &e)
                         {
@@ -209,11 +212,21 @@ Rtklib_Solver::~Rtklib_Solver()
             try
                 {
                     save_matfile();
-                    save_vtl_matfile();
                 }
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
+                }
+        }
+        if (d_flag_dump_mat_enabled)
+        {
+            try
+                {
+                    save_vtl_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor saving the PVT VTL .mat dump file " << ex.what();
                 }
         }
 }
@@ -222,7 +235,7 @@ Rtklib_Solver::~Rtklib_Solver()
 bool Rtklib_Solver::save_vtl_matfile() const
 {
     // READ DUMP FILE
-    const std::string dump_filename = d_dump_filename+ "_vtl";
+    const std::string dump_filename = d_vtl_dump_filename;
     const int32_t number_of_double_vars = 27;     
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 1;
@@ -233,7 +246,7 @@ bool Rtklib_Solver::save_vtl_matfile() const
     dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     try
         {
-            dump_file.open(dump_filename.c_str(), std::ios::binary | std::ios::ate);
+            dump_file.open(dump_filename, std::ios::binary | std::ios::ate);
         }
     catch (const std::ifstream::failure &e)
         {
@@ -254,7 +267,6 @@ bool Rtklib_Solver::save_vtl_matfile() const
             return false;
         }
 
-    //todo: cambiarlo
     auto TOW_at_current_symbol_ms = std::vector<uint32_t>(num_epoch);
     auto week = std::vector<uint32_t>(num_epoch);
     auto RX_time = std::vector<double>(num_epoch);
@@ -328,7 +340,7 @@ bool Rtklib_Solver::save_vtl_matfile() const
         }
     catch (const std::ifstream::failure &e)
         {
-            std::cerr << "Problem reading dump file:" << e.what() << '\n';
+            std::cerr << "Problem reading VTL dump file:" << e.what() << '\n';
             return false;
         }
 

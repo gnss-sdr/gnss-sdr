@@ -152,6 +152,7 @@ private:
     std::map<std::string, std::map<int, HAS_obs_corrections>> d_has_obs_corr_map;  // first key is signal, second key is PRN
 
     std::string d_dump_filename;
+    std::string d_vtl_dump_filename;
     std::ofstream d_dump_file;
     std::ofstream d_vtl_dump_file;
     rtk_t d_rtk{};

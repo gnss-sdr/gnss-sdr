@@ -251,6 +251,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                     std::cerr << "GNSS-SDR cannot create dump file for the PVT block. Wrong permissions?\n";
                     d_dump = false;
                 }
+            // TODO: if(vtl_enable) then
+            // uint end_filename = d_dump_filename.length()-4;
+            // d_vtl_dump_filename = d_dump_filename.insert(end_filename, "_vtl");
         }
 
     // initialize kml_printer

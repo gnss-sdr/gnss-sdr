@@ -167,7 +167,8 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                     try
                         {
                             d_vtl_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-                            d_vtl_dump_file.open(d_dump_filename + "_vtl", std::ios::out | std::ios::binary);
+                            int end_filename = d_dump_filename.length()-4;
+                            d_vtl_dump_file.open(d_dump_filename.insert(end_filename, "_vtl"), std::ios::out | std::ios::binary);
                             LOG(INFO) << "PVT VTL dump enabled Log file: " << d_dump_filename + "_vtl";
                         }
                     catch (const std::ofstream::failure &e)

@@ -107,7 +107,9 @@ private:
     void obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::colvec &ax, arma::colvec &ay, arma::colvec &az, int sat_number, arma::mat sat_p, arma::mat sat_v, arma::mat kf_x);  // Observables calculation
     void kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::mat rhoDot2_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x);
     void model3DoF(double &acc_x, double &acc_y, double &acc_z, arma::mat kf_x, double dt, int counter);
+    void accelerometer(double &acc_x, double &acc_y, double &acc_z, arma::mat kf_x, double dt, int counter);
     double EmpujeLkTable(double t_disparo);
+    double AccLkTable(double t_disparo);
 };
 
 /** \} */

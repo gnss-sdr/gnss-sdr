@@ -67,8 +67,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_Q = arma::eye(n_of_states, n_of_states);
 
     kf_F = arma::eye(n_of_states, n_of_states);
-    kf_F_fill(kf_F, kf_dt);
-
+   
     kf_y = arma::zeros(3 * new_data.sat_number, 1);
     kf_yerr = arma::zeros(3 * new_data.sat_number, 1);
     kf_xerr = arma::zeros(n_of_states, 1);
@@ -94,9 +93,35 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     }
     uint32_t closure_point = 3;
 
+    // State error Covariance Matrix Q (PVT)
+    kf_Q(0, 0) = 100.0;
+    kf_Q(1, 1) = 100.0;
+    kf_Q(2, 2) = 100.0;
+    kf_Q(3, 3) = 8.0;
+    kf_Q(4, 4) = 8.0;
+    kf_Q(5, 5) = 8.0;
+    kf_Q(6, 6) = .10;
+    kf_Q(7, 7) = .10;
+    kf_Q(8, 8) = .10;
+    kf_Q(9, 9) = 4.0;
+    kf_Q(10, 10) = 10.0;
+
+    // Measurement error Covariance Matrix R assembling
+    for (int32_t i = 0; i < new_data.sat_number; i++)
+        {
+            kf_R(i, i) = 80.0;                                                       
+            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;           
+            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0; 
+        }
+
+    //**************************************
+    // Kalman state prediction (time update)
+    //**************************************
+    kf_F_fill(kf_F, kf_dt);
+
     if (counter < closure_point)
         {
-            // // receiver solution from rtklib_solver
+            // receiver solution from rtklib_solver
             kf_dx = kf_x;
             kf_x(0) = new_data.rx_p(0);
             kf_x(1) = new_data.rx_p(1);
@@ -128,46 +153,15 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             // kf_x(8) = (kf_x(8)-kf_dx(8))/kf_dt;
         }
 
-    // State error Covariance Matrix Q (PVT)
-    kf_Q(0, 0) = 100.0;
-    kf_Q(1, 1) = 100.0;
-    kf_Q(2, 2) = 100.0;
-    kf_Q(3, 3) = 8.0;
-    kf_Q(4, 4) = 8.0;
-    kf_Q(5, 5) = 8.0;
-    kf_Q(6, 6) = .10;
-    kf_Q(7, 7) = .10;
-    kf_Q(8, 8) = .10;
-    kf_Q(9, 9) = 4.0;
-    kf_Q(10, 10) = 10.0;
-
-    // Measurement error Covariance Matrix R assembling
-    for (int32_t i = 0; i < new_data.sat_number; i++)
-        {
-            kf_R(i, i) = 80.0;                                                       
-            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;           
-            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0; 
-        }
-
-    //**************************************
-    // Kalman state prediction (time update)
-    //**************************************
-
     obsv_calc(rho_pri, rhoDot_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
-    for (int32_t i = 0; i < new_data.sat_number; i++)  //neccesary quantities
-        {
-            new_data.sat_LOS(i, 0) = a_x(i);
-            new_data.sat_LOS(i, 1) = a_y(i);
-            new_data.sat_LOS(i, 2) = a_z(i);
-        }
     kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
+
     //**************************************
     // Kalman estimation (measurement update)
     //**************************************
 
     kf_H = arma::zeros(3 * new_data.sat_number, n_of_states);
     kf_H_fill(kf_H, new_data.sat_number, a_x, a_y, a_z, kf_dt);
-
     kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot_pri * 0, new_data.pr_m, new_data.doppler_hz, kf_x);
   
     //**************************************

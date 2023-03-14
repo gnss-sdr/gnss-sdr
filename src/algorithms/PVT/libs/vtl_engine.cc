@@ -27,9 +27,8 @@ Vtl_Engine::Vtl_Engine()
     n_of_states = 11;
     delta_t_cmd = 0;
 
-    kf_P_x = arma::eye(n_of_states, n_of_states) * 1.0;  //TODO: use a real value.;
+    kf_P_x = arma::eye(n_of_states, n_of_states) * 1.0;  // TODO: use a real value.;
     kf_x = arma::zeros(n_of_states, 1);
- 
 }
 
 Vtl_Engine::~Vtl_Engine()
@@ -38,7 +37,7 @@ Vtl_Engine::~Vtl_Engine()
 
 bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 {
-    //TODO: Implement main VTL loop here
+    // TODO: Implement main VTL loop here
     using arma::as_scalar;
 
     if (refSampleCounter == 0)
@@ -57,17 +56,17 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             delta_t_cmd = 0;  // reset timer for vtl trk command
         }
     // ################## Kalman filter initialization ######################################
-    //State variables
+    // State variables
 
     arma::mat kf_dx = arma::zeros(n_of_states, 1);
     // covariances (static)
 
     kf_R = arma::zeros(3 * new_data.sat_number, 3 * new_data.sat_number);
-    double kf_dt = delta_t_vtl;  //0.05;
+    double kf_dt = delta_t_vtl;  // 0.05;
     kf_Q = arma::eye(n_of_states, n_of_states);
 
     kf_F = arma::eye(n_of_states, n_of_states);
-   
+
     kf_y = arma::zeros(3 * new_data.sat_number, 1);
     kf_yerr = arma::zeros(3 * new_data.sat_number, 1);
     kf_xerr = arma::zeros(n_of_states, 1);
@@ -86,11 +85,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     a_y = arma::zeros(new_data.sat_number, 1);
     a_z = arma::zeros(new_data.sat_number, 1);
     // ################## Kalman Tracking ######################################
-    counter++;  //uint64_t
+    counter++;  // uint64_t
 
-    if (counter>2500){
-       flag_time_cmd = true; 
-    }
+    if (counter > 2500)
+        {
+            flag_time_cmd = true;
+        }
     uint32_t closure_point = 3;
 
     // State error Covariance Matrix Q (PVT)
@@ -109,9 +109,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     // Measurement error Covariance Matrix R assembling
     for (int32_t i = 0; i < new_data.sat_number; i++)
         {
-            kf_R(i, i) = 80.0;                                                       
-            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;           
-            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0; 
+            kf_R(i, i) = 80.0;
+            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;
+            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0;
         }
 
     //**************************************
@@ -141,6 +141,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     else
         {
             // receiver solution from previous KF step
+            kf_x = kf_x;
+            // acceleration model
             double acc_x = 0;
             double acc_y = 0;
             double acc_z = 0;
@@ -163,7 +165,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_H = arma::zeros(3 * new_data.sat_number, n_of_states);
     kf_H_fill(kf_H, new_data.sat_number, a_x, a_y, a_z, kf_dt);
     kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot_pri * 0, new_data.pr_m, new_data.doppler_hz, kf_x);
-  
     //**************************************
     // Kalman filter update step
     //**************************************
@@ -175,13 +176,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_xerr = kf_K * (kf_yerr);  // Error state estimation
     arma::mat A = (arma::eye(size(kf_P_x)) - kf_K * kf_H);
     kf_P_x = A * kf_P_x * A.t() + kf_K * kf_R * kf_K.t();  // update state estimation error covariance matrix
-    kf_x = kf_x - kf_xerr;  // updated state estimation (a priori + error)
+    kf_x = kf_x - kf_xerr;                                 // updated state estimation (a priori + error)
     kf_dx = kf_x;
 
     //*************************
     // Geometric Transformation
     //*************************
-    
+
     obsv_calc(rho_pri, rhoDot_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
     kf_H_fill(kf_H, new_data.sat_number, a_x, a_y, a_z, kf_dt);
 
@@ -200,24 +201,24 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             trk_cmd.carrier_phase_rads = 0;                      // difficult of calculation
             trk_cmd.carrier_freq_hz = doppler_hz_filt(channel);  // this is el doppler WITHOUTH sintony correction
             trk_cmd.carrier_freq_rate_hz_s = -(a_x(channel) * kf_x(6) + a_y(channel) * kf_x(7) + a_z(channel) * kf_x(8)) / Lambda_GPS_L1;
-            trk_cmd.code_phase_chips = 0;  //kf_yerr(channel)/SPEED_OF_LIGHT_M_S*1023e3;
+            trk_cmd.code_phase_chips = 0;  // kf_yerr(channel)/SPEED_OF_LIGHT_M_S*1023e3;
 
             if (flag_time_cmd)
-            {
-                if (flag_cmd)
-                    {
-                        trk_cmd.enable_carrier_nco_cmd = true;
-                    }
-                else
-                    {
-                        trk_cmd.enable_carrier_nco_cmd = false;  // do NOT apply corrections! loop convergence issue
-                    }
-            }
+                {
+                    if (flag_cmd)
+                        {
+                            trk_cmd.enable_carrier_nco_cmd = true;
+                        }
+                    else
+                        {
+                            trk_cmd.enable_carrier_nco_cmd = false;  // do NOT apply corrections! loop convergence issue
+                        }
+                }
             else
-            {
-                trk_cmd.enable_carrier_nco_cmd = false;  // do NOT apply corrections! loop convergence issue
-            }
-            
+                {
+                    trk_cmd.enable_carrier_nco_cmd = false;  // do NOT apply corrections! loop convergence issue
+                }
+
 
             trk_cmd.sample_counter = new_data.sample_counter;
             trk_cmd.channel_id = channel;
@@ -233,13 +234,12 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         }
     else
         {
-
             dump_vtl_file << "kf_state"
-                          << "," << kf_x(0) << "," << kf_x(1) << "," << kf_x(2) << "," << kf_x(3) << "," << kf_x(4) << "," << kf_x(5) << "," << kf_x(6) << "," << kf_x(7)<< "," << kf_x(8) <<"," << kf_x(9) <<"," << kf_x(10)<< endl;
+                          << "," << kf_x(0) << "," << kf_x(1) << "," << kf_x(2) << "," << kf_x(3) << "," << kf_x(4) << "," << kf_x(5) << "," << kf_x(6) << "," << kf_x(7) << "," << kf_x(8) << "," << kf_x(9) << "," << kf_x(10) << endl;
             dump_vtl_file << "kf_xerr"
-                          << "," << kf_xerr(0) << "," << kf_xerr(1) << "," << kf_xerr(2) << "," << kf_xerr(3) << "," << kf_xerr(4) << "," << kf_xerr(5) << "," << kf_xerr(6) << "," << kf_xerr(7)<< "," << kf_xerr(8) <<"," << kf_xerr(9) <<"," << kf_xerr(10)<< endl;
+                          << "," << kf_xerr(0) << "," << kf_xerr(1) << "," << kf_xerr(2) << "," << kf_xerr(3) << "," << kf_xerr(4) << "," << kf_xerr(5) << "," << kf_xerr(6) << "," << kf_xerr(7) << "," << kf_xerr(8) << "," << kf_xerr(9) << "," << kf_xerr(10) << endl;
             dump_vtl_file << "rtklib_state"
-                          << "," << new_data.rx_p(0) << "," << new_data.rx_p(1) << "," << new_data.rx_p(2) << "," << new_data.rx_v(0) << "," << new_data.rx_v(1) << "," << new_data.rx_v(2) << "," << new_data.rx_dts(0) << "," << new_data.rx_dts(1) << "," << delta_t_vtl  << endl;
+                          << "," << new_data.rx_p(0) << "," << new_data.rx_p(1) << "," << new_data.rx_p(2) << "," << new_data.rx_v(0) << "," << new_data.rx_v(1) << "," << new_data.rx_v(2) << "," << new_data.rx_dts(0) << "," << new_data.rx_dts(1) << "," << delta_t_vtl << endl;
             // dump_vtl_file << "filt_dopp_sat"
             //               << "," << doppler_hz_filt(0) << "," << doppler_hz_filt(1) << "," << doppler_hz_filt(2) << "," << doppler_hz_filt(3) << "," << doppler_hz_filt(4) <<endl;
             dump_vtl_file.close();
@@ -249,18 +249,18 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 
 void Vtl_Engine::reset()
 {
-    //TODO
+    // TODO
 }
 
 void Vtl_Engine::debug_print()
 {
-    //TODO
+    // TODO
 }
 
 void Vtl_Engine::configure(Vtl_Conf config_)
 {
     config = config_;
-    //TODO: initialize internal variables
+    // TODO: initialize internal variables
 }
 
 void Vtl_Engine::kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arma::colvec ay, arma::colvec az, double kf_dt)
@@ -282,9 +282,9 @@ void Vtl_Engine::kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arm
             kf_H(i + sat_number, 8) = az(i) * kf_dt;
             kf_H(i + sat_number, 10) = 1.0;
 
-            kf_H(i + 2 * sat_number, 3) = 0;  //ax(i);
-            kf_H(i + 2 * sat_number, 4) = 0;  //ay(i);
-            kf_H(i + 2 * sat_number, 5) = 0;  //az(i);
+            kf_H(i + 2 * sat_number, 3) = 0;  // ax(i);
+            kf_H(i + 2 * sat_number, 4) = 0;  // ay(i);
+            kf_H(i + 2 * sat_number, 5) = 0;  // az(i);
             kf_H(i + 2 * sat_number, 6) = ax(i);
             kf_H(i + 2 * sat_number, 7) = ay(i);
             kf_H(i + 2 * sat_number, 8) = az(i);
@@ -310,23 +310,23 @@ void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt)
 
 void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::colvec &ax, arma::colvec &ay, arma::colvec &az, int sat_number, arma::mat sat_p, arma::mat sat_v, arma::mat kf_x)
 {
-    for (int32_t i = 0; i < sat_number; i++)  //neccesary quantities
+    for (int32_t i = 0; i < sat_number; i++)  // neccesary quantities
         {
-            //d(i) is the distance sat(i) to receiver
+            // d(i) is the distance sat(i) to receiver
             d(i) = (sat_p(i, 0) - kf_x(0)) * (sat_p(i, 0) - kf_x(0));
             d(i) = d(i) + (sat_p(i, 1) - kf_x(1)) * (sat_p(i, 1) - kf_x(1));
             d(i) = d(i) + (sat_p(i, 2) - kf_x(2)) * (sat_p(i, 2) - kf_x(2));
             d(i) = sqrt(d(i));
 
-            //compute pseudorange estimation OUTPUT
+            // compute pseudorange estimation OUTPUT
             rho_pri(i) = d(i) + kf_x(9);
-            //compute LOS sat-receiver vector componentsx
+            // compute LOS sat-receiver vector componentsx
             ax(i) = -(sat_p(i, 0) - kf_x(0)) / d(i);
             ay(i) = -(sat_p(i, 1) - kf_x(1)) / d(i);
             az(i) = -(sat_p(i, 2) - kf_x(2)) / d(i);
-            //compute pseudorange rate estimation OUTPUT
+            // compute pseudorange rate estimation OUTPUT
             rhoDot_pri(i) = (sat_v(i, 0) - kf_x(3)) * a_x(i) + (sat_v(i, 1) - kf_x(4)) * a_y(i) + (sat_v(i, 2) - kf_x(5)) * a_z(i);
-            //rhoDot_pri(i) = rhoDot_pri(i) + a_x(i)*xDot2_u*kf_dt+a_y(i)*yDot2_u*kf_dt+a_z(i)*zDot2_u*kf_dt;
+            // rhoDot_pri(i) = rhoDot_pri(i) + a_x(i)*xDot2_u*kf_dt+a_y(i)*yDot2_u*kf_dt+a_z(i)*zDot2_u*kf_dt;
         }
 }
 
@@ -345,16 +345,16 @@ void Vtl_Engine::model3DoF(double &acc_x, double &acc_y, double &acc_z, arma::ma
     arma::colvec u_vec;
     arma::colvec acc_vec;
     arma::colvec u_dir;
-    arma::colvec gravity_ECEF = {-7.826024, 0.8616969, -5.833042};  //lat=36.533333 lon=-6.283333
+    arma::colvec gravity_ECEF = {-7.826024, 0.8616969, -5.833042};  // lat=36.533333 lon=-6.283333
     static double t_disparo = 0;
     double Empuje;
     double densidad = 1.0;
     double ballistic_coef = 0.007;
-    //vector velocidad
+    // vector velocidad
 
     u_vec = kf_x.rows(3, 5);
 
-    //modulo de la velocidad
+    // modulo de la velocidad
     double u = norm(u_vec, 2);
 
     if (counter > 1500)
@@ -364,7 +364,7 @@ void Vtl_Engine::model3DoF(double &acc_x, double &acc_y, double &acc_z, arma::ma
                     t_disparo = t_disparo + dt;
                     // std::cout << "u : " << u << endl;
                     double diam_cohete = 120.0e-3;  // 120 mm
-                    double mass_rocket = 50.0;      //50Kg
+                    double mass_rocket = 50.0;      // 50Kg
 
                     if (t_disparo < .2)
                         {
@@ -592,8 +592,8 @@ double Vtl_Engine::EmpujeLkTable(double t_disparo)
         {1.74000000000000, 537.866310625605},
     };
 
-    //encuentra el mas cercano justo anterior.
-    // int index_E = LkTable.elem(find(LkTable<=t_disparo)).max();
+    // encuentra el mas cercano justo anterior.
+    //  int index_E = LkTable.elem(find(LkTable<=t_disparo)).max();
     arma::uvec index_E = find(LkTable <= t_disparo, 1, "last");
     // index_E.print("indice E: ");
     // uint kk = index_E(0);

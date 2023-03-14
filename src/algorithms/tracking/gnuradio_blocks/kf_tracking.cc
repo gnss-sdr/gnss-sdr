@@ -660,19 +660,19 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                                 {
                                     if (abs(d_x_old_old(2) - tmp_x(2)) > 50)
                                         {
-                                            std::cout << "channel: " << this->d_channel
-                                                      << " tracking_cmd TOO FAR: "
-                                                      << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
-                                                      << " \n";
+                                            // std::cout << "channel: " << this->d_channel
+                                            //           << " tracking_cmd TOO FAR: "
+                                            //           << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
+                                            //           << " \n";
                                         }
                                     else
                                         {
-                                            std::cout << "channel: " << this->d_channel
-                                                      << " tracking_cmd NEAR: "
-                                                      << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
-                                                      << " \n";
+                                            // std::cout << "channel: " << this->d_channel
+                                            //           << " tracking_cmd NEAR: "
+                                            //           << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
+                                            //           << " \n";
                                         }
-                                    // d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
+                                    d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
                                     // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
                                 }
                             else

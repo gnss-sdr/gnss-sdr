@@ -112,6 +112,13 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             kf_R(i, i) = 80.0;
             kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;
             kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0;
+
+            if (i == 6)
+                {
+                    kf_R(i, i) = 10e5;
+                    kf_R(i + new_data.sat_number, i + new_data.sat_number) = 10e5;
+                    kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 10e6;
+                }
         }
 
     //**************************************
@@ -146,7 +153,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             double acc_x = 0;
             double acc_y = 0;
             double acc_z = 0;
-            // model3DoF(acc_x, acc_y, acc_z, kf_x, kf_dt, counter);
+            model3DoF(acc_x, acc_y, acc_z, kf_x, kf_dt, counter);
             kf_x(6) = acc_x;
             kf_x(7) = acc_y;
             kf_x(8) = acc_z;

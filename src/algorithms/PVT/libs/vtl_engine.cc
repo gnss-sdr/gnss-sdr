@@ -69,20 +69,29 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     kf_F = arma::eye(n_of_states, n_of_states);
     kf_F_fill(kf_F, kf_dt);
 
-    //kf_H = arma::zeros(3 * new_data.sat_number, n_of_states);
     kf_y = arma::zeros(3 * new_data.sat_number, 1);
     kf_yerr = arma::zeros(3 * new_data.sat_number, 1);
     kf_xerr = arma::zeros(n_of_states, 1);
     kf_S = arma::zeros(3 * new_data.sat_number, 3 * new_data.sat_number);  // kf_P_y innovation covariance matrix
     kf_K = arma::zeros(n_of_states, 3 * new_data.sat_number);
-    ;
+    d = arma::zeros(new_data.sat_number, 1);
+    rho_pri = arma::zeros(new_data.sat_number, 1);
+    rhoDot_pri = arma::zeros(new_data.sat_number, 1);
+    rhoDot2_pri = arma::zeros(new_data.sat_number, 1);
+
+    rho_pri_filt = arma::zeros(new_data.sat_number, 1);
+    rhoDot_pri_filt = arma::zeros(new_data.sat_number, 1);
+    doppler_hz_filt = arma::zeros(new_data.sat_number, 1);
+
+    a_x = arma::zeros(new_data.sat_number, 1);
+    a_y = arma::zeros(new_data.sat_number, 1);
+    a_z = arma::zeros(new_data.sat_number, 1);
     // ################## Kalman Tracking ######################################
     counter++;  //uint64_t
 
     if (counter>2500){
        flag_time_cmd = true; 
     }
-    //new_data.kf_state.print("new_data kf initial");
     uint32_t closure_point = 3;
 
     if (counter < closure_point)
@@ -120,7 +129,6 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         }
 
     // State error Covariance Matrix Q (PVT)
-    //careful, values for V and T could not be adecuate.
     kf_Q(0, 0) = 100.0;
     kf_Q(1, 1) = 100.0;
     kf_Q(2, 2) = 100.0;
@@ -136,39 +144,15 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     // Measurement error Covariance Matrix R assembling
     for (int32_t i = 0; i < new_data.sat_number; i++)
         {
-            // It is diagonal 2*NSatellite x 2*NSatellite (NSat psudorange error;NSat pseudo range rate error)
-            kf_R(i, i) = 80.0;                                                       //*50.0/new_data.sat_CN0_dB_hz(i);  //TODO: fill with real values.
-            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;           //*50.0/new_data.sat_CN0_dB_hz(i);
-            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0;  //*50.0/new_data.sat_CN0_dB_hz(i);
-
-            // if(80.0*50.0/new_data.sat_CN0_dB_hz(i)>90||20.0*50.0/new_data.sat_CN0_dB_hz(i)>25){
-            //     kf_R(i, i) = 10e4;
-            //     kf_R(i + new_data.sat_number, i + new_data.sat_number) = 10e4;
-            //     kf_R(i + 2*new_data.sat_number, i + 2*new_data.sat_number) = 10e4;
-            //     cout<<"channel: "<<i<<"discarded"<<endl;
-            // }
+            kf_R(i, i) = 80.0;                                                       
+            kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;           
+            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0; 
         }
 
+    //**************************************
     // Kalman state prediction (time update)
-    //new_data.kf_state=kf_x;
-    //kf_x = kf_F * kf_x;                        // state prediction
-    //from error state variables to variables
-    // From state variables definition
-    // TODO: cast to type properly
+    //**************************************
 
-    d = arma::zeros(new_data.sat_number, 1);
-    rho_pri = arma::zeros(new_data.sat_number, 1);
-    rhoDot_pri = arma::zeros(new_data.sat_number, 1);
-    rhoDot2_pri = arma::zeros(new_data.sat_number, 1);
-
-    rho_pri_filt = arma::zeros(new_data.sat_number, 1);
-    rhoDot_pri_filt = arma::zeros(new_data.sat_number, 1);
-    doppler_hz_filt = arma::zeros(new_data.sat_number, 1);
-
-    a_x = arma::zeros(new_data.sat_number, 1);
-    a_y = arma::zeros(new_data.sat_number, 1);
-    a_z = arma::zeros(new_data.sat_number, 1);
-    // cout<<"llegado aqui tambien"<<endl;
     obsv_calc(rho_pri, rhoDot_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
     for (int32_t i = 0; i < new_data.sat_number; i++)  //neccesary quantities
         {
@@ -176,41 +160,37 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             new_data.sat_LOS(i, 1) = a_y(i);
             new_data.sat_LOS(i, 2) = a_z(i);
         }
+    kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
+    //**************************************
+    // Kalman estimation (measurement update)
+    //**************************************
 
     kf_H = arma::zeros(3 * new_data.sat_number, n_of_states);
     kf_H_fill(kf_H, new_data.sat_number, a_x, a_y, a_z, kf_dt);
 
-    for (int32_t i = 0; i < new_data.sat_number; i++)  //neccesary quantities
-        {
-            // rhoDot2_pri(i)=(rhoDot_pri(i)-rhoDot_pri_old(i))/kf_dt;
-        }
-    // Kalman estimation (measurement update)
     kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot_pri * 0, new_data.pr_m, new_data.doppler_hz, kf_x);
-
-    kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
+  
+    //**************************************
     // Kalman filter update step
+    //**************************************
+
     kf_S = kf_H * kf_P_x * kf_H.t() + kf_R;  // innovation covariance matrix (S)
     arma::mat B = (kf_P_x * kf_H.t());
     kf_K = B * arma::inv(kf_S);  // Kalman gain
 
     kf_xerr = kf_K * (kf_yerr);  // Error state estimation
-    //kf_xerr.row(5)=kf_K.row(5)*kf_yerr;
     arma::mat A = (arma::eye(size(kf_P_x)) - kf_K * kf_H);
     kf_P_x = A * kf_P_x * A.t() + kf_K * kf_R * kf_K.t();  // update state estimation error covariance matrix
-    kf_dx = kf_x;
     kf_x = kf_x - kf_xerr;  // updated state estimation (a priori + error)
-                            //    kf_x.print("state of kalman: ");
-    //     // ################## Geometric Transformation ######################################
+    kf_dx = kf_x;
+
+    //*************************
+    // Geometric Transformation
+    //*************************
+    
     obsv_calc(rho_pri, rhoDot_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
-
-    for (int32_t i = 0; i < new_data.sat_number; i++)  //neccesary quantities
-        {
-            //acc_effect(i)=(a_x(i)*kf_state(7,t)+a_y(chan,t)*kf_state(8,t)+a_z(chan,t)*kf_state(9,t));
-            //rhoDot2_pri(chan,t)=(rhoDot_pri(chan,t)-rhoDot_pri(chan,t-1))/kf_dt;
-            //rhoDot2_pri(chan,t)=-acc_effect(chan,t);
-        }
-
     kf_H_fill(kf_H, new_data.sat_number, a_x, a_y, a_z, kf_dt);
+
     //  Re-calculate error measurement vector with the most recent data available: kf_delta_y=kf_H*kf_delta_x
     kf_yerr = kf_H * kf_xerr;
     //  Filtered pseudorange error measurement (in m) AND Filtered Doppler shift measurements (in Hz):
@@ -222,13 +202,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             rho_pri_filt(channel) = new_data.pr_m(channel) + kf_yerr(channel);                                                   // now filtered
             rhoDot_pri_filt(channel) = (new_data.doppler_hz(channel) * Lambda_GPS_L1) + kf_yerr(channel + new_data.sat_number);  // now filtered
             doppler_hz_filt(channel) = (rhoDot_pri_filt(channel)) / Lambda_GPS_L1;
-            //TODO: Fill the tracking commands outputs
-            // Notice: keep the same satellite order as in the Vtl_Data matrices
-            // sample code
-
 
             trk_cmd.carrier_phase_rads = 0;                      // difficult of calculation
-            trk_cmd.carrier_freq_hz = doppler_hz_filt(channel);  //+ kf_x(7)/Lambda_GPS_L1; // this is el doppler WITHOUTH sintony correction
+            trk_cmd.carrier_freq_hz = doppler_hz_filt(channel);  // this is el doppler WITHOUTH sintony correction
             trk_cmd.carrier_freq_rate_hz_s = -(a_x(channel) * kf_x(6) + a_y(channel) * kf_x(7) + a_z(channel) * kf_x(8)) / Lambda_GPS_L1;
             trk_cmd.code_phase_chips = 0;  //kf_yerr(channel)/SPEED_OF_LIGHT_M_S*1023e3;
 
@@ -252,14 +228,8 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             trk_cmd.sample_counter = new_data.sample_counter;
             trk_cmd.channel_id = channel;
             trk_cmd_outs.push_back(trk_cmd);
-
-            // if (channel == 0)
-            //     {
-            //         std::cout << "[" << trk_cmd.sample_counter << "] CH " << channel
-            //                   << " Doppler vtl commanded: " << doppler_hz_filt(channel) << " [Hz]"
-            //                   << " \n";
-            //     }
         }
+
     fstream dump_vtl_file;
     dump_vtl_file.open("dump_vtl_file.csv", ios::out | ios::app);
     dump_vtl_file.precision(15);
@@ -354,13 +324,13 @@ void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::colv
             d(i) = d(i) + (sat_p(i, 2) - kf_x(2)) * (sat_p(i, 2) - kf_x(2));
             d(i) = sqrt(d(i));
 
-            //compute pseudorange estimation
+            //compute pseudorange estimation OUTPUT
             rho_pri(i) = d(i) + kf_x(9);
             //compute LOS sat-receiver vector componentsx
             ax(i) = -(sat_p(i, 0) - kf_x(0)) / d(i);
             ay(i) = -(sat_p(i, 1) - kf_x(1)) / d(i);
             az(i) = -(sat_p(i, 2) - kf_x(2)) / d(i);
-            //compute pseudorange rate estimation
+            //compute pseudorange rate estimation OUTPUT
             rhoDot_pri(i) = (sat_v(i, 0) - kf_x(3)) * a_x(i) + (sat_v(i, 1) - kf_x(4)) * a_y(i) + (sat_v(i, 2) - kf_x(5)) * a_z(i);
             //rhoDot_pri(i) = rhoDot_pri(i) + a_x(i)*xDot2_u*kf_dt+a_y(i)*yDot2_u*kf_dt+a_z(i)*zDot2_u*kf_dt;
         }
@@ -368,7 +338,7 @@ void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::colv
 
 void Vtl_Engine::kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::mat rhoDot2_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x)
 {
-    for (int32_t i = 0; i < sat_number; i++)  // Measurement vector
+    for (int32_t i = 0; i < sat_number; i++)  // Measurement vector OUTPUT
         {
             kf_yerr(i) = rho_pri(i) - pr_m(i);
             kf_yerr(i + sat_number) = (doppler_hz(i) * Lambda_GPS_L1 + kf_x(10)) - rhoDot_pri(i);

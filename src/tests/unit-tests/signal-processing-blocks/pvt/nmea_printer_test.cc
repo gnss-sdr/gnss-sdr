@@ -1,5 +1,5 @@
 /*!
- * \file nma_printer_test.cc
+ * \file nmea_printer_test.cc
  * \brief Implements Unit Tests for the Nmea_Printer class.
  * \author Carles Fernandez-Prades, 2017. cfernandez(at)cttc.es
  *

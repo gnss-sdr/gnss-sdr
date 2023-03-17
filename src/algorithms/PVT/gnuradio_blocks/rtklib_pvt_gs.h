@@ -50,6 +50,7 @@ class Beidou_Dnav_Ephemeris;
 class Galileo_Almanac;
 class Galileo_Ephemeris;
 class Galileo_HAS_data;
+class Geohash;
 class GeoJSON_Printer;
 class Gps_Almanac;
 class Gps_Ephemeris;
@@ -204,6 +205,7 @@ private:
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
     boost::posix_time::time_duration d_utc_diff_time;
+    std::unique_ptr<Geohash> d_geohash;
 
     size_t d_gps_ephemeris_sptr_type_hash_code;
     size_t d_gps_iono_sptr_type_hash_code;

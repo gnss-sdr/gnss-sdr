@@ -111,6 +111,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 - New configuration parameter `PVT.use_unhealthy_sats`, set by default to
   `false`, allows processing observables of satellites that report an unhealthy
   status in the navigation message if set to `true`.
+- Added the [Geohash](https://en.wikipedia.org/wiki/Geohash) of the PVT solution
+  in the internal logs.
 - Allowed the CMake project to be a sub-project.
 
 See the definitions of concepts and metrics at

@@ -34,7 +34,7 @@
 class Geohash
 {
 public:
-    Geohash();
+    Geohash() = default;
 
     /**
      * Encodes latitude/longitude to geohash, either to specified precision or
@@ -66,7 +66,7 @@ private:
      * Returns SW/NE latitude/longitude bounds of specified geohash.
      */
     std::array<double, 4> bounds(std::string geohash) const;
-    std::string base32;
+    std::string base32{"0123456789bcdefghjkmnpqrstuvwxyz"};
 };
 
 /** \} */

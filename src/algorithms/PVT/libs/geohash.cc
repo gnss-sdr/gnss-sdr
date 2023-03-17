@@ -22,12 +22,8 @@
 #include <cstddef>
 #include <limits>
 #include <stdexcept>
+#include <utility>
 
-
-Geohash::Geohash()
-{
-    base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
-}
 
 std::string Geohash::encode(double lat, double lon, int precision) const
 {
@@ -113,7 +109,7 @@ std::string Geohash::encode(double lat, double lon, int precision) const
 
 std::array<double, 2> Geohash::decode(std::string geohash) const
 {
-    const auto bounds = Geohash::bounds(geohash);
+    const auto bounds = Geohash::bounds(std::move(geohash));
 
     const double latMin = bounds[0];
     const double lonMin = bounds[1];
@@ -126,8 +122,8 @@ std::array<double, 2> Geohash::decode(std::string geohash) const
 
     // round to close to centre without excessive precision: ⌊2-log10(Δ°)⌋ decimal places
     std::array<double, 2> latlon{};
-    latlon[0] = std::floor(lat * std::pow(10, std::floor(2 - std::log10(latMax - latMin))));
-    latlon[1] = std::floor(lon * std::pow(10, std::floor(2 - std::log10(lonMax - lonMin))));
+    latlon[0] = std::floor(lat * std::pow(10, std::floor(2.0 - std::log10(latMax - latMin))));
+    latlon[1] = std::floor(lon * std::pow(10, std::floor(2.0 - std::log10(lonMax - lonMin))));
 
     return latlon;
 }
@@ -149,9 +145,8 @@ std::array<double, 4> Geohash::bounds(std::string geohash) const
     double lonMin = -180.0;
     double lonMax = 180.0;
 
-    for (size_t i = 0; i < geohash.length(); i++)
+    for (char chr : geohash)
         {
-            char chr = geohash[i];
             int idx = base32.find(chr);
             if (idx == -1)
                 {
@@ -164,7 +159,7 @@ std::array<double, 4> Geohash::bounds(std::string geohash) const
                     if (evenBit)
                         {
                             // longitude
-                            double lonMid = (lonMin + lonMax) / 2;
+                            double lonMid = (lonMin + lonMax) / 2.0;
                             if (bitN == 1)
                                 {
                                     lonMin = lonMid;
@@ -177,7 +172,7 @@ std::array<double, 4> Geohash::bounds(std::string geohash) const
                     else
                         {
                             // latitude
-                            double latMid = (latMin + latMax) / 2;
+                            double latMid = (latMin + latMax) / 2.0;
                             if (bitN == 1)
                                 {
                                     latMin = latMid;

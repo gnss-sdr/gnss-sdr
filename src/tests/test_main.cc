@@ -72,6 +72,7 @@ DECLARE_string(log_dir);
 #include "unit-tests/signal-processing-blocks/adapter/adapter_test.cc"
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/item_type_helpers_test.cc"
+#include "unit-tests/signal-processing-blocks/pvt/geohash_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rtcm_printer_test.cc"

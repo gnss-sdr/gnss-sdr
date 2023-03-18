@@ -122,8 +122,12 @@ std::array<double, 2> Geohash::decode(std::string geohash) const
 
     // round to close to centre without excessive precision: ⌊2-log10(Δ°)⌋ decimal places
     std::array<double, 2> latlon{};
-    latlon[0] = std::floor(lat * std::pow(10, std::floor(2.0 - std::log10(latMax - latMin))));
-    latlon[1] = std::floor(lon * std::pow(10, std::floor(2.0 - std::log10(lonMax - lonMin))));
+    int decimalPlaces = std::floor(2.0 - std::log10(latMax - latMin));
+    double factor = std::pow(10, decimalPlaces);
+    latlon[0] = std::round(lat * factor) / factor;
+    int decimalPlaces2 = std::floor(2.0 - std::log10(lonMax - lonMin));
+    double factor2 = std::pow(10, decimalPlaces2);
+    latlon[1] = std::round(lon * factor2) / factor2;
 
     return latlon;
 }

@@ -19,15 +19,22 @@
 TEST(Geohash_Test, Encode)
 {
     Geohash gh = Geohash();
-    std::string hash;
-    EXPECT_NO_THROW(hash = gh.encode(52.205, 0.119, 7));
-
-    EXPECT_EQ(0, hash.compare("u120fxw"));
-
+    std::string geohash;
+    EXPECT_NO_THROW(geohash = gh.encode(52.205, 0.119, 7));
+    EXPECT_EQ(0, geohash.compare("u120fxw"));
     EXPECT_THROW(gh.encode(52.205, 0.119, 0), std::invalid_argument);
 }
 
-TEST(Geohash_Test, precision)
+TEST(Geohash_Test, Decode)
+{
+    Geohash gh = Geohash();
+    auto latlon = gh.decode("sp36v1zk0e2g");
+    EXPECT_NEAR(41.274966141209006, latlon[0], 1e-8);
+    EXPECT_NEAR(1.9875180535018444, latlon[1], 1e-8);
+    EXPECT_THROW(gh.decode(""), std::runtime_error);
+}
+
+TEST(Geohash_Test, Precision)
 {
     Geohash gh = Geohash();
     std::string hash;

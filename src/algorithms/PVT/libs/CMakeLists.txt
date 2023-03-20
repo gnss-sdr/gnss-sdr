@@ -25,6 +25,7 @@ set(PVT_LIB_SOURCES
     vtl_conf.cc
     vtl_data.cc
     vtl_engine.cc
+    geohash.cc
 )
 
 set(PVT_LIB_HEADERS
@@ -49,6 +50,7 @@ set(PVT_LIB_HEADERS
     vtl_conf.h
     vtl_data.h
     vtl_engine.h
+    geohash.h
 )
 
 list(SORT PVT_LIB_HEADERS)

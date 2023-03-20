@@ -85,6 +85,7 @@ macro(add_cpu_features_headers_and_sources HDRS_LIST_NAME SRCS_LIST_NAME)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_arm.h)
   elseif(PROCESSOR_IS_AARCH64)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_aarch64.h)
+      list(APPEND ${SRCS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/internal/windows_utils.h)
   elseif(PROCESSOR_IS_X86)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_x86.h)
       list(APPEND ${SRCS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/internal/cpuid_x86.h)
@@ -185,9 +186,9 @@ if(BUILD_TESTING)
   # found.
   enable_language(CXX)
 
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
-  set(CMAKE_CXX_EXTENSIONS OFF) # prefer use of -std11 instead of -gnustd11
+  set(CMAKE_CXX_EXTENSIONS OFF) # prefer use of -std14 instead of -gnustd14
 
   if(NOT TARGET gtest OR NOT TARGET gmock_main)
     # Download and unpack googletest at configure time.

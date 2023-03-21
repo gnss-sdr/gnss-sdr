@@ -795,8 +795,11 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
         }
     if (addr)
         {
-            std::strncpy(addr, p, 256);
-            addr[255] = '\0';
+            int ret = std::snprintf(addr, 256, "%s", p);
+            if (ret < 0 || ret >= 256)
+                {
+                    tracet(1, "error reading address");
+                }
         }
 }
 
@@ -1077,8 +1080,7 @@ void updatetcpsvr(tcpsvr_t *tcpsvr, char *msg)
                 {
                     continue;
                 }
-            std::strncpy(saddr, tcpsvr->cli[i].saddr, 256);
-            saddr[255] = '\0';
+            std::snprintf(saddr, 256, "%s", tcpsvr->cli[i].saddr);
             n++;
         }
     if (n == 0)
@@ -1968,8 +1970,7 @@ void *ftpthread(void *arg)
         }
     if (fs::exists(tmpfile))
         {
-            std::strncpy(ftp->local, tmpfile.c_str(), 1024);
-            ftp->local[1023] = '\0';
+            std::snprintf(ftp->local, 1024, "%s", tmpfile.c_str());
             tracet(3, "ftpthread: file exists %s\n", ftp->local);
             ftp->state = 2;
             return nullptr;

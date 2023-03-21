@@ -165,7 +165,7 @@ void readionexdcb(FILE *fp, double *dcb, double *rms)
 
             if (strstr(label, "PRN / BIAS / RMS") == label)
                 {
-                    int ret = std::snprintf(id, 3, "%s", buff + 3);
+                    int ret = std::snprintf(id, 3, "%s", buff + 3);  // NOLINT(runtime/printf)
                     if (ret >= 0 && ret < 3)
                         {
                             if (!(sat = satid2no(id)))

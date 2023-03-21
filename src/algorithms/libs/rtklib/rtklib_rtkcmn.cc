@@ -2847,7 +2847,7 @@ int readantex(const char *file, pcvs_t *pcvs)
                 {
                     strncpy(pcv.type, buff, 20);  // MAXANT (64)
                     pcv.type[20] = '\0';
-                    int ret = std::snprintf(pcv.code, 20, "%s", buff + 20);  // MAXANT (64)
+                    int ret = std::snprintf(pcv.code, 20, "%s", buff + 20);  // NOLINT(runtime/printf)
                     if (ret >= 0 && ret < 20)
                         {
                             if (!strncmp(pcv.code + 3, "        ", 8))

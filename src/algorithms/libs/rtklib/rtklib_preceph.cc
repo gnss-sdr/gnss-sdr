@@ -123,7 +123,7 @@ int readsp3h(FILE *fp, gtime_t *time, char *type, int *sats,
                 }
             else if (i == 12)
                 {
-                    int ret = std::snprintf(tsys, 3, "%s", buff + 9);
+                    int ret = std::snprintf(tsys, 3, "%s", buff + 9);  // NOLINT(runtime/printf)
                     if (ret < 0 || ret > 3)
                         {
                             trace(3, "Error reading sp3 header\n");

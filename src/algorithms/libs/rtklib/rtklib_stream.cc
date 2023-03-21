@@ -795,7 +795,7 @@ void decodetcppath(const char *path, char *addr, char *port, char *user,
         }
     if (addr)
         {
-            int ret = std::snprintf(addr, 256, "%s", p);
+            int ret = std::snprintf(addr, 256, "%s", p);  // NOLINT(runtime/printf)
             if (ret < 0 || ret >= 256)
                 {
                     tracet(1, "error reading address");
@@ -1080,7 +1080,7 @@ void updatetcpsvr(tcpsvr_t *tcpsvr, char *msg)
                 {
                     continue;
                 }
-            std::snprintf(saddr, 256, "%s", tcpsvr->cli[i].saddr);
+            std::snprintf(saddr, sizeof(saddr), "%s", tcpsvr->cli[i].saddr);
             n++;
         }
     if (n == 0)
@@ -1970,7 +1970,7 @@ void *ftpthread(void *arg)
         }
     if (fs::exists(tmpfile))
         {
-            std::snprintf(ftp->local, 1024, "%s", tmpfile.c_str());
+            std::snprintf(ftp->local, 1024, "%s", tmpfile.c_str());  // NOLINT(runtime/printf)
             tracet(3, "ftpthread: file exists %s\n", ftp->local);
             ftp->state = 2;
             return nullptr;
@@ -2051,7 +2051,7 @@ void *ftpthread(void *arg)
                     break;
                 }
         }
-    int ret2 = std::snprintf(ftp->local, 1024, "%s", local.c_str());
+    int ret2 = std::snprintf(ftp->local, 1024, "%s", local.c_str());  // NOLINT(runtime/printf)
     if (ret2 < 0 || ret2 >= 1024)
         {
             tracet(3, "Error reading ftp local\n");

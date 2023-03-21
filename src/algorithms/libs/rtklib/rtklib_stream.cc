@@ -2051,8 +2051,11 @@ void *ftpthread(void *arg)
                     break;
                 }
         }
-    std::strncpy(ftp->local, local.c_str(), 1024);
-    ftp->local[1023] = '\0';
+    int ret2 = std::snprintf(ftp->local, 1024, "%s", local.c_str());
+    if (ret2 < 0 || ret2 >= 1024)
+        {
+            tracet(3, "Error reading ftp local\n");
+        }
     ftp->state = 2; /* ftp completed */
 
     tracet(3, "ftpthread: complete cmd=%s\n", cmd_str.data());

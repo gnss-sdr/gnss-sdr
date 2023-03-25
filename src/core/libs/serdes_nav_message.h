@@ -50,31 +50,6 @@ public:
         // google::protobuf::ShutdownProtobufLibrary();
     }
 
-    inline Serdes_Nav_Message(const Serdes_Nav_Message& other) noexcept  //!< Copy constructor
-    {
-        this->navmsg_ = other.navmsg_;
-    }
-
-    inline Serdes_Nav_Message& operator=(const Serdes_Nav_Message& rhs) noexcept  //!< Copy assignment operator
-    {
-        this->navmsg_ = rhs.navmsg_;
-        return *this;
-    }
-
-    inline Serdes_Nav_Message(Serdes_Nav_Message&& other) noexcept  //!< Move constructor
-    {
-        this->navmsg_ = std::move(other.navmsg_);
-    }
-
-    inline Serdes_Nav_Message& operator=(Serdes_Nav_Message&& other) noexcept  //!< Move assignment operator
-    {
-        if (this != &other)
-            {
-                this->navmsg_ = std::move(other.navmsg_);
-            }
-        return *this;
-    }
-
     inline std::string createProtobuffer(const std::shared_ptr<Nav_Message_Packet> nav_msg_packet)  //!< Serialization into a string
     {
         navmsg_.Clear();

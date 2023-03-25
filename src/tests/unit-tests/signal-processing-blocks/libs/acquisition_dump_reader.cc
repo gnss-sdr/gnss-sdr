@@ -18,6 +18,7 @@
 
 #include "acquisition_dump_reader.h"
 #include <matio.h>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <utility>
@@ -27,13 +28,13 @@ bool Acquisition_Dump_Reader::read_binary_acq()
     mat_t* matfile = Mat_Open(d_dump_filename.c_str(), MAT_ACC_RDONLY);
     if (matfile == nullptr)
         {
-            std::cout << "¡¡¡Unreachable Acquisition dump file!!!\n";
+            std::cout << "Unreachable Acquisition dump file " << d_dump_filename << '\n';
             return false;
         }
     matvar_t* var_ = Mat_VarRead(matfile, "acq_grid");
     if (var_ == nullptr)
         {
-            std::cout << "¡¡¡Unreachable grid variable into Acquisition dump file!!!\n";
+            std::cout << "Unreachable grid variable in Acquisition dump file.\n";
             Mat_Close(matfile);
             return false;
         }
@@ -162,7 +163,7 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
         }
     else
         {
-            std::cout << "¡¡¡Unreachable Acquisition dump file!!!\n";
+            std::cout << "Unreachable Acquisition dump file " << d_dump_filename << '\n';
         }
     acq_doppler_hz = 0.0;
     acq_delay_samples = 0.0;
@@ -222,18 +223,53 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
 
 // Copy constructor
 Acquisition_Dump_Reader::Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) noexcept
+    : doppler(other.doppler),
+      samples(other.samples),
+      mag(other.mag),
+      acq_doppler_hz(other.acq_doppler_hz),
+      acq_delay_samples(other.acq_delay_samples),
+      test_statistic(other.test_statistic),
+      input_power(other.input_power),
+      threshold(other.threshold),
+      positive_acq(other.positive_acq),
+      PRN(other.PRN),
+      num_dwells(other.num_dwells),
+      sample_counter(other.sample_counter),
+      d_basename(other.d_basename),
+      d_dump_filename(other.d_dump_filename),
+      d_sat(other.d_sat),
+      d_doppler_max(other.d_doppler_max),
+      d_doppler_step(other.d_doppler_step),
+      d_samples_per_code(other.d_samples_per_code),
+      d_num_doppler_bins(other.d_num_doppler_bins)
 {
-    *this = other;
 }
 
 
 // Copy assignment operator
-Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Dump_Reader& rhs)
+Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Dump_Reader& other) noexcept
 {
-    // Only do assignment if RHS is a different object from this.
-    if (this != &rhs)
+    if (this != &other)
         {
-            *this = rhs;
+            doppler = other.doppler;
+            samples = other.samples;
+            mag = other.mag;
+            acq_doppler_hz = other.acq_doppler_hz;
+            acq_delay_samples = other.acq_delay_samples;
+            test_statistic = other.test_statistic;
+            input_power = other.input_power;
+            threshold = other.threshold;
+            positive_acq = other.positive_acq;
+            PRN = other.PRN;
+            num_dwells = other.num_dwells;
+            sample_counter = other.sample_counter;
+            d_basename = other.d_basename;
+            d_dump_filename = other.d_dump_filename;
+            d_sat = other.d_sat;
+            d_doppler_max = other.d_doppler_max;
+            d_doppler_step = other.d_doppler_step;
+            d_samples_per_code = other.d_samples_per_code;
+            d_num_doppler_bins = other.d_num_doppler_bins;
         }
     return *this;
 }
@@ -241,17 +277,54 @@ Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Du
 
 // Move constructor
 Acquisition_Dump_Reader::Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept
+    : doppler(std::move(other.doppler)),
+      samples(std::move(other.samples)),
+      mag(std::move(other.mag)),
+      acq_doppler_hz(other.acq_doppler_hz),
+      acq_delay_samples(other.acq_delay_samples),
+      test_statistic(other.test_statistic),
+      input_power(other.input_power),
+      threshold(other.threshold),
+      positive_acq(other.positive_acq),
+      PRN(other.PRN),
+      num_dwells(other.num_dwells),
+      sample_counter(other.sample_counter),
+      d_basename(std::move(other.d_basename)),
+      d_dump_filename(std::move(other.d_dump_filename)),
+      d_sat(other.d_sat),
+      d_doppler_max(other.d_doppler_max),
+      d_doppler_step(other.d_doppler_step),
+      d_samples_per_code(other.d_samples_per_code),
+      d_num_doppler_bins(other.d_num_doppler_bins)
 {
-    *this = std::move(other);
 }
 
 
 // Move assignment operator
 Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(Acquisition_Dump_Reader&& other) noexcept
 {
-    if (this != &other)
+    if (this != &other)  // Check for self-assignment
         {
-            *this = other;
+            // Move member variables from the other object to this object
+            d_basename = std::move(other.d_basename);
+            d_dump_filename = std::move(other.d_dump_filename);
+            d_sat = std::move(other.d_sat);
+            d_doppler_max = std::move(other.d_doppler_max);
+            d_doppler_step = std::move(other.d_doppler_step);
+            d_samples_per_code = std::move(other.d_samples_per_code);
+            d_num_doppler_bins = std::move(other.d_num_doppler_bins);
+            doppler = std::move(other.doppler);
+            samples = std::move(other.samples);
+            mag = std::move(other.mag);
+            acq_doppler_hz = std::move(other.acq_doppler_hz);
+            acq_delay_samples = std::move(other.acq_delay_samples);
+            test_statistic = std::move(other.test_statistic);
+            input_power = std::move(other.input_power);
+            threshold = std::move(other.threshold);
+            positive_acq = std::move(other.positive_acq);
+            PRN = std::move(other.PRN);
+            num_dwells = std::move(other.num_dwells);
+            sample_counter = std::move(other.sample_counter);
         }
     return *this;
 }

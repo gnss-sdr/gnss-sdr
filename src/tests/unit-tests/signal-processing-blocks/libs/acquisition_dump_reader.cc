@@ -221,30 +221,6 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
         }
 }
 
-// Copy constructor
-Acquisition_Dump_Reader::Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) noexcept
-    : doppler(other.doppler),
-      samples(other.samples),
-      mag(other.mag),
-      acq_doppler_hz(other.acq_doppler_hz),
-      acq_delay_samples(other.acq_delay_samples),
-      test_statistic(other.test_statistic),
-      input_power(other.input_power),
-      threshold(other.threshold),
-      positive_acq(other.positive_acq),
-      PRN(other.PRN),
-      num_dwells(other.num_dwells),
-      sample_counter(other.sample_counter),
-      d_basename(other.d_basename),
-      d_dump_filename(other.d_dump_filename),
-      d_sat(other.d_sat),
-      d_doppler_max(other.d_doppler_max),
-      d_doppler_step(other.d_doppler_step),
-      d_samples_per_code(other.d_samples_per_code),
-      d_num_doppler_bins(other.d_num_doppler_bins)
-{
-}
-
 
 // Copy assignment operator
 Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Dump_Reader& other) noexcept
@@ -308,23 +284,23 @@ Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(Acquisition_Dump_Rea
             // Move member variables from the other object to this object
             d_basename = std::move(other.d_basename);
             d_dump_filename = std::move(other.d_dump_filename);
-            d_sat = std::move(other.d_sat);
-            d_doppler_max = std::move(other.d_doppler_max);
-            d_doppler_step = std::move(other.d_doppler_step);
-            d_samples_per_code = std::move(other.d_samples_per_code);
-            d_num_doppler_bins = std::move(other.d_num_doppler_bins);
+            d_sat = other.d_sat;
+            d_doppler_max = other.d_doppler_max;
+            d_doppler_step = other.d_doppler_step;
+            d_samples_per_code = other.d_samples_per_code;
+            d_num_doppler_bins = other.d_num_doppler_bins;
             doppler = std::move(other.doppler);
             samples = std::move(other.samples);
             mag = std::move(other.mag);
-            acq_doppler_hz = std::move(other.acq_doppler_hz);
-            acq_delay_samples = std::move(other.acq_delay_samples);
-            test_statistic = std::move(other.test_statistic);
-            input_power = std::move(other.input_power);
-            threshold = std::move(other.threshold);
-            positive_acq = std::move(other.positive_acq);
-            PRN = std::move(other.PRN);
-            num_dwells = std::move(other.num_dwells);
-            sample_counter = std::move(other.sample_counter);
+            acq_doppler_hz = other.acq_doppler_hz;
+            acq_delay_samples = other.acq_delay_samples;
+            test_statistic = other.test_statistic;
+            input_power = other.input_power;
+            threshold = other.threshold;
+            positive_acq = other.positive_acq;
+            PRN = other.PRN;
+            num_dwells = other.num_dwells;
+            sample_counter = other.sample_counter;
         }
     return *this;
 }

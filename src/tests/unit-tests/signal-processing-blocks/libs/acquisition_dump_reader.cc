@@ -223,7 +223,7 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
 
 
 // Copy assignment operator
-Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Dump_Reader& other) noexcept
+Acquisition_Dump_Reader& Acquisition_Dump_Reader::operator=(const Acquisition_Dump_Reader& other)
 {
     if (this != &other)
         {

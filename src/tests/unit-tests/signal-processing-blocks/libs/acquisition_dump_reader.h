@@ -37,10 +37,10 @@ public:
         int channel = 0,
         int execution = 1);
 
-    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) = default;            //!< Copy constructor
-    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader& other) noexcept;  //!< Copy assignment operator
-    Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept;                  //!< Move constructor
-    Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) noexcept;       //!< Move assignment operator
+    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) = default;       //!< Copy constructor
+    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader& other);      //!< Copy assignment operator
+    Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept;             //!< Move constructor
+    Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) noexcept;  //!< Move assignment operator
 
     bool read_binary_acq();
 

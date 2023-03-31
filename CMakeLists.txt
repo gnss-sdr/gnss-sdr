@@ -351,7 +351,10 @@ else()
 endif()
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.13")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.9")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "22.2")
+if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13")
+    set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
+endif()
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.7.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
@@ -2341,6 +2344,7 @@ if(NOT MATIO_FOUND OR MATIO_VERSION_STRING VERSION_LESS ${GNSSSDR_MATIO_MIN_VERS
             PREFIX ${GNSSSDR_BINARY_DIR}/matio
             GIT_REPOSITORY https://github.com/tbeu/matio
             GIT_TAG v${GNSSSDR_MATIO_LOCAL_VERSION}
+            UPDATE_COMMAND ""
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/matio/matio-${GNSSSDR_MATIO_LOCAL_VERSION}
             BINARY_DIR ${GNSSSDR_BINARY_DIR}/matio
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
@@ -2588,136 +2592,177 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
             set(PROTOBUF_PROTOC_EXECUTABLE "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc")
         endif()
     else()
-        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
-            if(NOT EXISTS "/usr/bin/libtoolize")
-                message(" libtool has not been found.")
-                message(" You can try to install it by typing:")
-                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-                    message(" sudo yum groupinstall 'Development Tools'")
-                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-                    message(" sudo zypper install libtoool")
+        if(CMAKE_VERSION VERSION_GREATER "3.13")
+            find_package(absl)
+            set_package_properties(absl PROPERTIES
+                URL "https://github.com/abseil/abseil-cpp"
+                PURPOSE "Abseil-cpp >= 20230117 required to be installed before building Protocol Buffers >22.x on the fly."
+                TYPE OPTIONAL
+            )
+            if(absl_FOUND)
+                if(absl_VERSION)
+                    if(${absl_VERSION} VERSION_LESS "20230117")
+                        unset(absl_FOUND CACHE)
+                        set(absl_FOUND OFF)
+                    endif()
                 else()
-                    message(" sudo apt-get install libtool")
+                    unset(absl_FOUND CACHE)
+                    set(absl_FOUND OFF)
                 endif()
-                message(FATAL_ERROR "libtool is required to build Protocol Buffers from source")
             endif()
-            if(EXISTS "/usr/bin/aclocal" OR
-                EXISTS "/usr/bin/aclocal-1.16" OR
-                EXISTS "/usr/bin/aclocal-1.15" OR
-                EXISTS "/usr/bin/aclocal-1.14" OR
-                EXISTS "/usr/bin/aclocal-1.13" OR
-                EXISTS "/usr/bin/aclocal-1.11" OR
-                EXISTS "/usr/bin/aclocal-1.10")
-                message(STATUS "Automake found.")
+            if(absl_FOUND)
+                set_package_properties(absl PROPERTIES
+                    DESCRIPTION "An open-source collection of C++ code designed to augment the C++ standard library (found: v${absl_VERSION})"
+                )
             else()
-                message(" aclocal has not been found.")
-                message(" You can try to install it by typing:")
-                if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-                    message(" sudo yum groupinstall 'Development Tools'")
-                elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-                    message(" sudo zypper install automake")
+                if(absl_VERSION)
+                    set_package_properties(absl PROPERTIES
+                        DESCRIPTION "An open-source collection of C++ code designed to augment the C++ standard library (found: v${absl_VERSION})"
+                    )
                 else()
-                    message(" sudo apt-get install automake")
+                    set_package_properties(absl PROPERTIES
+                        DESCRIPTION "An open-source collection of C++ code designed to augment the C++ standard library"
+                    )
                 endif()
-                message(FATAL_ERROR "aclocal is required to build Protocol Buffers from source")
+                message(STATUS "The Abseil library (https://github.com/abseil/abseil-cpp) >= v20230117 is required to be installed before building Protocol Buffers >22.x on the fly.")
+                message(STATUS " Instead, Protocol Buffers v21.12 will be built, which does not require Abseil.")
+                set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
             endif()
         endif()
-        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS /opt/local/bin/glibtoolize) OR
-                (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS /opt/local/bin/aclocal))
-                message(" libtool/automake tools have not been found.")
-                message(" You can try to install them by typing:")
-                message(" 'sudo port install libtool automake', if you use Macports, or 'brew install libtool automake', if you use Homebrew")
-                message(FATAL_ERROR "libtool/automake tools are required to build Protocol Buffers from source")
+        if(CMAKE_VERSION VERSION_LESS "3.13" OR NOT absl_FOUND)
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+                if(NOT EXISTS "/usr/bin/libtoolize")
+                    message(" libtool has not been found.")
+                    message(" You can try to install it by typing:")
+                    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                        message(" sudo yum groupinstall 'Development Tools'")
+                    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                        message(" sudo zypper install libtoool")
+                    else()
+                        message(" sudo apt-get install libtool")
+                    endif()
+                    message(FATAL_ERROR "libtool is required to build Protocol Buffers from source")
+                endif()
+                if(EXISTS "/usr/bin/aclocal" OR
+                    EXISTS "/usr/bin/aclocal-1.16" OR
+                    EXISTS "/usr/bin/aclocal-1.15" OR
+                    EXISTS "/usr/bin/aclocal-1.14" OR
+                    EXISTS "/usr/bin/aclocal-1.13" OR
+                    EXISTS "/usr/bin/aclocal-1.11" OR
+                    EXISTS "/usr/bin/aclocal-1.10")
+                    message(STATUS "Automake found.")
+                else()
+                    message(" aclocal has not been found.")
+                    message(" You can try to install it by typing:")
+                    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                        message(" sudo yum groupinstall 'Development Tools'")
+                    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                        message(" sudo zypper install automake")
+                    else()
+                        message(" sudo apt-get install automake")
+                    endif()
+                    message(FATAL_ERROR "aclocal is required to build Protocol Buffers from source")
+                endif()
             endif()
-            if(CMAKE_GENERATOR STREQUAL Xcode)
-                if(EXISTS /opt/local/bin/glibtoolize OR EXISTS /opt/local/bin/aclocal)
-                    if(NOT EXISTS /usr/local/bin/glibtoolize OR NOT EXISTS /usr/local/bin/aclocal)
-                        message(" WARNING: libtool/automake binaries cannot be found by Xcode. Please do:")
-                        message("sudo ln -s /opt/local/bin/glibtoolize /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/aclocal /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/autom4te /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/automake /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/autoconf /usr/local/bin/")
-                        message("sudo ln -s /opt/local/bin/autoreconf /usr/local/bin/")
-                        message(FATAL_ERROR "libtool/automake tools cannot be found by Xcode")
+            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+                if((NOT EXISTS /usr/local/bin/glibtoolize AND NOT EXISTS /opt/local/bin/glibtoolize) OR
+                    (NOT EXISTS /usr/local/bin/aclocal AND NOT EXISTS /opt/local/bin/aclocal))
+                    message(" libtool/automake tools have not been found.")
+                    message(" You can try to install them by typing:")
+                    message(" 'sudo port install libtool automake', if you use Macports, or 'brew install libtool automake', if you use Homebrew")
+                    message(FATAL_ERROR "libtool/automake tools are required to build Protocol Buffers from source")
+                endif()
+                if(CMAKE_GENERATOR STREQUAL Xcode)
+                    if(EXISTS /opt/local/bin/glibtoolize OR EXISTS /opt/local/bin/aclocal)
+                        if(NOT EXISTS /usr/local/bin/glibtoolize OR NOT EXISTS /usr/local/bin/aclocal)
+                            message(" WARNING: libtool/automake binaries cannot be found by Xcode. Please do:")
+                            message("sudo ln -s /opt/local/bin/glibtoolize /usr/local/bin/")
+                            message("sudo ln -s /opt/local/bin/aclocal /usr/local/bin/")
+                            message("sudo ln -s /opt/local/bin/autom4te /usr/local/bin/")
+                            message("sudo ln -s /opt/local/bin/automake /usr/local/bin/")
+                            message("sudo ln -s /opt/local/bin/autoconf /usr/local/bin/")
+                            message("sudo ln -s /opt/local/bin/autoreconf /usr/local/bin/")
+                            message(FATAL_ERROR "libtool/automake tools cannot be found by Xcode")
+                        endif()
                     endif()
                 endif()
             endif()
-        endif()
 
-        set(PROTOBUF_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
-        if(PROTOBUF_MAKE_PROGRAM MATCHES "ninja" OR CMAKE_GENERATOR STREQUAL Xcode)
-            find_program(MAKE_EXECUTABLE make
-                PATHS
-                    /usr/bin
-                    /usr/local/bin
-            )
-            if(NOT MAKE_EXECUTABLE)
-                message(FATAL_ERROR "make is required to build Protocol Buffers from source.")
-            endif()
-            set(PROTOBUF_MAKE_PROGRAM ${MAKE_EXECUTABLE})
-        endif()
-        if(CMAKE_VERSION VERSION_LESS 3.2)
-            ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
-                GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                BINARY_DIR ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                UPDATE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
-                CONFIGURE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
-                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
-            )
-        else()
-            if(CMAKE_MAKE_PROGRAM MATCHES "make")
-                include(ProcessorCount)
-                ProcessorCount(NUMBER_OF_PROCESSORS)
-                if(NUMBER_OF_PROCESSORS GREATER 1)
-                    set(PROTOBUF_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
+            set(PROTOBUF_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
+            if(PROTOBUF_MAKE_PROGRAM MATCHES "ninja" OR CMAKE_GENERATOR STREQUAL Xcode)
+                find_program(MAKE_EXECUTABLE make
+                    PATHS
+                        /usr/bin
+                        /usr/local/bin
+                )
+                if(NOT MAKE_EXECUTABLE)
+                    message(FATAL_ERROR "make is required to build Protocol Buffers from source.")
                 endif()
+                set(PROTOBUF_MAKE_PROGRAM ${MAKE_EXECUTABLE})
             endif()
-            ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
-                GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                BINARY_DIR ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                UPDATE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
-                CONFIGURE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
-                BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM} ${PROTOBUF_PARALLEL_BUILD}
-                INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
-                BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc
-            )
-        endif()
+            if(CMAKE_VERSION VERSION_LESS 3.2)
+                ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
+                    GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    BINARY_DIR ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    UPDATE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                    CONFIGURE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM}
+                    INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
+                )
+            else()
+                if(CMAKE_MAKE_PROGRAM MATCHES "make")
+                    include(ProcessorCount)
+                    ProcessorCount(NUMBER_OF_PROCESSORS)
+                    if(NUMBER_OF_PROCESSORS GREATER 1)
+                        set(PROTOBUF_PARALLEL_BUILD "-j${NUMBER_OF_PROCESSORS}")
+                    endif()
+                endif()
+                ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
+                    GIT_TAG v${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    BINARY_DIR ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    UPDATE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/autogen.sh
+                    CONFIGURE_COMMAND ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/configure --prefix=${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
+                    BUILD_COMMAND ${PROTOBUF_MAKE_PROGRAM} ${PROTOBUF_PARALLEL_BUILD}
+                    INSTALL_COMMAND ${PROTOBUF_MAKE_PROGRAM} DESTDIR= install
+                    BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
+                        ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc
+                )
+            endif()
 
-        if(NOT TARGET protobuf::protoc)
-            add_executable(protobuf::protoc IMPORTED)
-            add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
+            if(NOT TARGET protobuf::protoc)
+                add_executable(protobuf::protoc IMPORTED)
+                add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
+            endif()
+            unset(Protobuf_PROTOC_EXECUTABLE)
+            set(PROTOBUF_PROTOC_EXECUTABLE "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc")
+            set_target_properties(protobuf::protoc PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc"
+                INTERFACE_LINK_LIBRARIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protoc${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            )
+            file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include)
+            if(NOT TARGET protobuf::libprotobuf)
+                add_library(protobuf::libprotobuf STATIC IMPORTED)
+                add_dependencies(protobuf::libprotobuf protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
+            endif()
+            set_target_properties(protobuf::libprotobuf PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include"
+                INTERFACE_LINK_LIBRARIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            )
+            if(CMAKE_VERSION VERSION_LESS "3.10")
+                set(Protobuf_PROTOC_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE})
+            endif()
+        else()  # CMake >= 3.13 and Abseil found
+            include(BuildProtobuf)
         endif()
-        unset(Protobuf_PROTOC_EXECUTABLE)
-        set(PROTOBUF_PROTOC_EXECUTABLE "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc")
-        set_target_properties(protobuf::protoc PROPERTIES
-            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc"
-            INTERFACE_LINK_LIBRARIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protoc${CMAKE_STATIC_LIBRARY_SUFFIX}"
-        )
-    endif()
-    file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include)
-    if(NOT TARGET protobuf::libprotobuf)
-        add_library(protobuf::libprotobuf STATIC IMPORTED)
-        add_dependencies(protobuf::libprotobuf protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
-    endif()
-    set_target_properties(protobuf::libprotobuf PROPERTIES
-        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-        IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
-        INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/include"
-        INTERFACE_LINK_LIBRARIES "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}"
-    )
-    if(CMAKE_VERSION VERSION_LESS 3.10)
-        set(Protobuf_PROTOC_EXECUTABLE ${PROTOBUF_PROTOC_EXECUTABLE})
     endif()
     if(${Protobuf_VERSION} VERSION_LESS ${GNSSSDR_PROTOBUF_MIN_VERSION})
         if(NOT (${Protobuf_VERSION} EQUAL "0.0.0"))

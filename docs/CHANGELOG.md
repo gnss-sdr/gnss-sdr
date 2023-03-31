@@ -87,6 +87,14 @@ All notable changes to GNSS-SDR will be documented in this file.
   to CMake deactivates file downloading.
 - The `ENABLE_GENERIC_ARCH` building option was removed, simplifying the process
   of buiding the software in non-x86 processor architectures.
+- If the Protocol Buffers dependency is not found, it is downloaded, built and
+  statically linked at buiding time. If CMake >= 3.13 and the
+  [Abseil C++ libraries](https://github.com/abseil/abseil-cpp) >= 20230117 are
+  installed on your system, Protocol Buffers v22.2 will be used. If those
+  requirements are not met, Protocol Buffers v21.4 will be used instead
+  (requires autotools).
+- Since Debian 8 "Jessie", which enjoyed Long Term Support until the end of June
+  2020, is not anymore in the Debian official repositories, we drop its support.
 
 ### Improvements in Usability:
 

@@ -1,0 +1,12 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+--- port.h	2023-03-31 11:40:38.000000000 +0100
++++ port.h	2023-03-31 11:56:49.000000000 +0100
+@@ -38,6 +38,7 @@
+ 
+ #include <cassert>
+ #include <cstddef>
++#include <cstdint>
+ #include <new>
+ #include <string>
+ #include <type_traits>

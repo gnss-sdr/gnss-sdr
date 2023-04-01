@@ -646,10 +646,10 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
                 }
             const arma::vec BBBe = BBB * e;
             const arma::vec BBBalpha = BBB * alpha;
-            double a = lorentz(BBBe, BBBe);
-            double b = lorentz(BBBe, BBBalpha) - 1.0;
-            double c = lorentz(BBBalpha, BBBalpha);
-            double root = std::sqrt(b * b - a * c);
+            const double a = lorentz(BBBe, BBBe);
+            const double b = lorentz(BBBe, BBBalpha) - 1.0;
+            const double c = lorentz(BBBalpha, BBBalpha);
+            const double root = std::sqrt(b * b - a * c);
             arma::vec r(2);
             r(0) = (-b - root) / a;
             r(1) = (-b + root) / a;
@@ -664,9 +664,9 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
                 {
                     for (int i = 0; i < 2; i++)
                         {
-                            double c_dt = possible_pos(3, i);
-                            double calc = arma::norm(B_pass.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
-                            double omc = B_pass(j, 3) - calc;
+                            const double c_dt = possible_pos(3, i);
+                            const double calc = arma::norm(B_pass.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
+                            const double omc = B_pass(j, 3) - calc;
                             abs_omc(i) = std::abs(omc);
                         }
                 }

@@ -610,47 +610,29 @@ double lorentz(const arma::vec &x, const arma::vec &y)
 
 
 // Bancroft method (see https://gssc.esa.int/navipedia/index.php/Bancroft_Method)
-arma::vec bancroft(arma::mat B_pass)
+// without travel time rotation
+arma::vec rough_bancroft(const arma::mat &B_pass)
 {
+    const int m = B_pass.n_rows;
     arma::vec pos = arma::zeros<arma::vec>(4);
     for (int iter = 1; iter <= 2; iter++)
         {
-            arma::mat B = B_pass;
-            const int m = B.n_rows;
-
-            for (int i = 0; i < m; i++)
-                {
-                    double x = B(i, 0);
-                    double y = B(i, 1);
-                    double z = 0;
-                    double traveltime = 0.072;
-                    if (iter == 2)
-                        {
-                            z = B(i, 2);
-                            double rho = std::pow(x - pos(0), 2) + std::pow(y - pos(1), 2) + std::pow(z - pos(2), 2);
-                            traveltime = std::sqrt(rho) / SPEED_OF_LIGHT_M_S;
-                        }
-                    double angle = traveltime * GNSS_OMEGA_EARTH_DOT;
-                    double cosa = std::cos(angle);
-                    double sina = std::sin(angle);
-                    B(i, 0) = cosa * x + sina * y;
-                    B(i, 1) = -sina * x + cosa * y;
-                }
-
+            // We should rotate the matrix accounting for the travel time here,
+            // but for a rough first estimation we can skip it
             arma::mat BBB;
             if (m > 4)
                 {
-                    BBB = arma::inv(B.t() * B) * B.t();
+                    BBB = arma::inv(B_pass.t() * B_pass) * B_pass.t();
                 }
             else
                 {
-                    BBB = arma::inv(B);
+                    BBB = arma::inv(B_pass);
                 }
             arma::vec e = arma::ones<arma::vec>(m);
             arma::vec alpha = arma::zeros<arma::vec>(m);
             for (int i = 0; i < m; i++)
                 {
-                    arma::vec Bi = B.row(i).t();
+                    arma::vec Bi = B_pass.row(i).t();
                     alpha(i) = lorentz(Bi, Bi) / 2;
                 }
             arma::vec BBBe = BBB * e;
@@ -658,7 +640,7 @@ arma::vec bancroft(arma::mat B_pass)
             double a = lorentz(BBBe, BBBe);
             double b = lorentz(BBBe, BBBalpha) - 1;
             double c = lorentz(BBBalpha, BBBalpha);
-            double root = sqrt(b * b - a * c);
+            double root = std::sqrt(b * b - a * c);
             arma::vec r(2);
             r(0) = (-b - root) / a;
             r(1) = (-b + root) / a;
@@ -674,8 +656,8 @@ arma::vec bancroft(arma::mat B_pass)
                     for (int i = 0; i < 2; i++)
                         {
                             double c_dt = possible_pos(3, i);
-                            double calc = arma::norm(B.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
-                            double omc = B(j, 3) - calc;
+                            double calc = arma::norm(B_pass.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
+                            double omc = B_pass(j, 3) - calc;
                             abs_omc(i) = std::abs(omc);
                         }
                 }
@@ -738,7 +720,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     B(i, 2) = rs[2 + i * 6];
                     B(i, 3) = obs[i].P[0];
                 }
-            arma::vec pos = bancroft(B);
+            arma::vec pos = rough_bancroft(B);
             x[0] = pos(0);
             x[1] = pos(1);
             x[2] = pos(2);

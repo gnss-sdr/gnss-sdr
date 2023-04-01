@@ -33,6 +33,8 @@
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
 #include "rtklib_sbas.h"
+#include <armadillo>
+#include <cmath>
 #include <cstring>
 #include <vector>
 
@@ -599,6 +601,99 @@ int valsol(const double *azel, const int *vsat, int n,
 }
 
 
+// Lorentz inner product
+double lorentz(const arma::vec &x, const arma::vec &y)
+{
+    double p = x(0) * y(0) + x(1) * y(1) + x(2) * y(2) - x(3) * y(3);
+    return p;
+}
+
+
+// Bancroft method (see https://gssc.esa.int/navipedia/index.php/Bancroft_Method)
+arma::vec bancroft(arma::mat B_pass)
+{
+    arma::vec pos = arma::zeros<arma::vec>(4);
+    for (int iter = 1; iter <= 2; iter++)
+        {
+            arma::mat B = B_pass;
+            const int m = B.n_rows;
+
+            for (int i = 0; i < m; i++)
+                {
+                    double x = B(i, 0);
+                    double y = B(i, 1);
+                    double z = 0;
+                    double traveltime = 0.072;
+                    if (iter == 2)
+                        {
+                            z = B(i, 2);
+                            double rho = std::pow(x - pos(0), 2) + std::pow(y - pos(1), 2) + std::pow(z - pos(2), 2);
+                            traveltime = std::sqrt(rho) / SPEED_OF_LIGHT_M_S;
+                        }
+                    double angle = traveltime * GNSS_OMEGA_EARTH_DOT;
+                    double cosa = std::cos(angle);
+                    double sina = std::sin(angle);
+                    B(i, 0) = cosa * x + sina * y;
+                    B(i, 1) = -sina * x + cosa * y;
+                }
+
+            arma::mat BBB;
+            if (m > 4)
+                {
+                    BBB = arma::inv(B.t() * B) * B.t();
+                }
+            else
+                {
+                    BBB = arma::inv(B);
+                }
+            arma::vec e = arma::ones<arma::vec>(m);
+            arma::vec alpha = arma::zeros<arma::vec>(m);
+            for (int i = 0; i < m; i++)
+                {
+                    arma::vec Bi = B.row(i).t();
+                    alpha(i) = lorentz(Bi, Bi) / 2;
+                }
+            arma::vec BBBe = BBB * e;
+            arma::vec BBBalpha = BBB * alpha;
+            double a = lorentz(BBBe, BBBe);
+            double b = lorentz(BBBe, BBBalpha) - 1;
+            double c = lorentz(BBBalpha, BBBalpha);
+            double root = sqrt(b * b - a * c);
+            arma::vec r(2);
+            r(0) = (-b - root) / a;
+            r(1) = (-b + root) / a;
+            arma::mat possible_pos = arma::zeros<arma::mat>(4, 2);
+            for (int i = 0; i < 2; i++)
+                {
+                    possible_pos.col(i) = r(i) * BBBe + BBBalpha;
+                    possible_pos(3, i) = -possible_pos(3, i);
+                }
+            arma::vec abs_omc(2);
+            for (int j = 0; j < m; j++)
+                {
+                    for (int i = 0; i < 2; i++)
+                        {
+                            double c_dt = possible_pos(3, i);
+                            double calc = arma::norm(B.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
+                            double omc = B(j, 3) - calc;
+                            abs_omc(i) = std::abs(omc);
+                        }
+                }
+
+            if (abs_omc(0) > abs_omc(1))
+                {
+                    pos = possible_pos.col(1);
+                }
+            else
+                {
+                    pos = possible_pos.col(0);
+                }
+        }
+
+    return pos;
+}
+
+
 /* estimate receiver position ------------------------------------------------*/
 int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
@@ -630,6 +725,23 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     for (i = 0; i < 3; i++)
         {
             x[i] = sol->rr[i];
+        }
+
+    // Rough first estimation to initialize the algorithm
+    if (std::sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) < 0.1)
+        {
+            arma::mat B = arma::mat(n, 4, arma::fill::zeros);
+            for (i = 0; i < n; i++)
+                {
+                    B(i, 0) = rs[0 + i * 6];
+                    B(i, 1) = rs[1 + i * 6];
+                    B(i, 2) = rs[2 + i * 6];
+                    B(i, 3) = obs[i].P[0];
+                }
+            arma::vec pos = bancroft(B);
+            x[0] = pos(0);
+            x[1] = pos(1);
+            x[2] = pos(2);
         }
 
     for (i = 0; i < MAXITR; i++)

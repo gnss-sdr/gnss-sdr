@@ -22,7 +22,7 @@
  * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2023, Carles Fernandez
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -620,25 +620,34 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
             // We should rotate the matrix accounting for the travel time here,
             // but for a rough first estimation we can skip it
             arma::mat BBB;
+            bool success;
             if (m > 4)
                 {
-                    BBB = arma::inv(B_pass.t() * B_pass) * B_pass.t();
+                    success = arma::inv(BBB, B_pass.t() * B_pass);
+                    if (success)
+                        {
+                            BBB *= B_pass.t();
+                        }
                 }
             else
                 {
-                    BBB = arma::inv(B_pass);
+                    success = arma::inv(BBB, B_pass);
                 }
-            arma::vec e = arma::ones<arma::vec>(m);
+            if (!success)
+                {
+                    return pos;
+                }
+            const arma::vec e = arma::ones<arma::vec>(m);
             arma::vec alpha = arma::zeros<arma::vec>(m);
             for (int i = 0; i < m; i++)
                 {
                     arma::vec Bi = B_pass.row(i).t();
-                    alpha(i) = lorentz(Bi, Bi) / 2;
+                    alpha(i) = lorentz(Bi, Bi) / 2.0;
                 }
-            arma::vec BBBe = BBB * e;
-            arma::vec BBBalpha = BBB * alpha;
+            const arma::vec BBBe = BBB * e;
+            const arma::vec BBBalpha = BBB * alpha;
             double a = lorentz(BBBe, BBBe);
-            double b = lorentz(BBBe, BBBalpha) - 1;
+            double b = lorentz(BBBe, BBBalpha) - 1.0;
             double c = lorentz(BBBalpha, BBBalpha);
             double root = std::sqrt(b * b - a * c);
             arma::vec r(2);
@@ -718,7 +727,18 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     B(i, 0) = rs[0 + i * 6];
                     B(i, 1) = rs[1 + i * 6];
                     B(i, 2) = rs[2 + i * 6];
-                    B(i, 3) = obs[i].P[0];
+                    if (obs[i].code[0] != CODE_NONE)
+                        {
+                            B(i, 3) = obs[i].P[0];
+                        }
+                    else if (obs[i].code[1] != CODE_NONE)
+                        {
+                            B(i, 3) = obs[i].P[1];
+                        }
+                    else
+                        {
+                            B(i, 3) = obs[i].P[2];
+                        }
                 }
             arma::vec pos = rough_bancroft(B);
             x[0] = pos(0);

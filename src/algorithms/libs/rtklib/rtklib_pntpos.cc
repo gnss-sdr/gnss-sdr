@@ -29,6 +29,10 @@
  * -----------------------------------------------------------------------------
  */
 
+#if ARMA_NO_BOUND_CHECKING
+#define ARMA_NO_DEBUG 1
+#endif
+
 #include "rtklib_pntpos.h"
 #include "rtklib_ephemeris.h"
 #include "rtklib_ionex.h"
@@ -615,70 +619,61 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
 {
     const int m = B_pass.n_rows;
     arma::vec pos = arma::zeros<arma::vec>(4);
-    for (int iter = 1; iter <= 2; iter++)
+    arma::mat BBB;
+    bool success;
+    if (m > 4)
         {
-            // We should rotate the matrix accounting for the travel time here,
-            // but for a rough first estimation we can skip it
-            arma::mat BBB;
-            bool success;
-            if (m > 4)
-                {
-                    success = arma::inv(BBB, B_pass.t() * B_pass);
-                    if (success)
-                        {
-                            BBB *= B_pass.t();
-                        }
-                }
-            else
-                {
-                    success = arma::inv(BBB, B_pass);
-                }
-            if (!success)
-                {
-                    return pos;
-                }
-            const arma::vec e = arma::ones<arma::vec>(m);
-            arma::vec alpha = arma::zeros<arma::vec>(m);
-            for (int i = 0; i < m; i++)
-                {
-                    arma::vec Bi = B_pass.row(i).t();
-                    alpha(i) = lorentz(Bi, Bi) / 2.0;
-                }
-            const arma::vec BBBe = BBB * e;
-            const arma::vec BBBalpha = BBB * alpha;
-            const double a = lorentz(BBBe, BBBe);
-            const double b = lorentz(BBBe, BBBalpha) - 1.0;
-            const double c = lorentz(BBBalpha, BBBalpha);
-            const double root = std::sqrt(b * b - a * c);
-            arma::vec r(2);
-            r(0) = (-b - root) / a;
-            r(1) = (-b + root) / a;
-            arma::mat possible_pos = arma::zeros<arma::mat>(4, 2);
+            success = arma::pinv(BBB, B_pass);
+        }
+    else
+        {
+            success = arma::inv(BBB, B_pass);
+        }
+    if (!success)
+        {
+            return pos;
+        }
+    const arma::vec e = arma::ones<arma::vec>(m);
+    arma::vec alpha = arma::zeros<arma::vec>(m);
+    for (int i = 0; i < m; i++)
+        {
+            arma::vec Bi = B_pass.row(i).t();
+            alpha(i) = lorentz(Bi, Bi) / 2.0;
+        }
+    const arma::vec BBBe = BBB * e;
+    const arma::vec BBBalpha = BBB * alpha;
+    const double a = lorentz(BBBe, BBBe);
+    const double b = lorentz(BBBe, BBBalpha) - 1.0;
+    const double c = lorentz(BBBalpha, BBBalpha);
+    const double root = std::sqrt(b * b - a * c);
+    arma::vec r(2);
+    r(0) = (-b - root) / a;
+    r(1) = (-b + root) / a;
+    arma::mat possible_pos = arma::zeros<arma::mat>(4, 2);
+    for (int i = 0; i < 2; i++)
+        {
+            possible_pos.col(i) = r(i) * BBBe + BBBalpha;
+            possible_pos(3, i) = -possible_pos(3, i);
+        }
+    arma::vec abs_omc(2);
+    for (int j = 0; j < m; j++)
+        {
             for (int i = 0; i < 2; i++)
                 {
-                    possible_pos.col(i) = r(i) * BBBe + BBBalpha;
-                    possible_pos(3, i) = -possible_pos(3, i);
+                    const double c_dt = possible_pos(3, i);
+                    const double calc = arma::norm(B_pass.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
+                    const double omc = B_pass(j, 3) - calc;
+                    abs_omc(i) = std::abs(omc);
                 }
-            arma::vec abs_omc(2);
-            for (int j = 0; j < m; j++)
-                {
-                    for (int i = 0; i < 2; i++)
-                        {
-                            const double c_dt = possible_pos(3, i);
-                            const double calc = arma::norm(B_pass.row(j).head(3).t() - possible_pos.head_rows(3).col(i)) + c_dt;
-                            const double omc = B_pass(j, 3) - calc;
-                            abs_omc(i) = std::abs(omc);
-                        }
-                }
+        }
 
-            if (abs_omc(0) > abs_omc(1))
-                {
-                    pos = possible_pos.col(1);
-                }
-            else
-                {
-                    pos = possible_pos.col(0);
-                }
+    if (abs_omc(0) > abs_omc(1))
+        {
+            pos = possible_pos.col(1);
+        }
+    else
+        {
+            pos = possible_pos.col(0);
         }
 
     return pos;

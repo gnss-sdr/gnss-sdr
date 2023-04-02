@@ -76,6 +76,12 @@ target_link_libraries(algorithms_libs_rtklib
         BLAS::BLAS
 )
 
+if(ENABLE_ARMA_NO_DEBUG)
+    target_compile_definitions(algorithms_libs_rtklib
+        PRIVATE -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
+
 if(FILESYSTEM_FOUND)
     target_compile_definitions(algorithms_libs_rtklib PUBLIC -DHAS_STD_FILESYSTEM=1)
     if(find_experimental)

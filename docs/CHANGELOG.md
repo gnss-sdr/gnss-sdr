@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -30,6 +30,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved non-coherent acquisition when `Acquisition_XX.blocking=false`.
 - Implemented processing of BeiDou PRN 34 up to PRN 63 signals.
 - Implemented Hamming code correction for Glonass navigation message.
+- Now the first iteration of the PVT computation is initialized by the Bancroft
+  method. This allows to get PVT fixes in some unusual geometries (_e.g._,
+  GNSS-like signals transmitted by LEO satellites). This initialization is
+  performed by default. You can opt-out by setting `PVT.bancroft_init=false` in
+  your configuration file.
 
 ### Improvements in Interoperability:
 

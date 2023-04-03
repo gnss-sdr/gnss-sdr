@@ -714,7 +714,7 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
         }
 
     // Rough first estimation to initialize the algorithm
-    if (std::sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) < 0.1)
+    if (opt->bancroft_init && (std::sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]) < 0.1))
         {
             arma::mat B = arma::mat(n, 4, arma::fill::zeros);
             for (i = 0; i < n; i++)

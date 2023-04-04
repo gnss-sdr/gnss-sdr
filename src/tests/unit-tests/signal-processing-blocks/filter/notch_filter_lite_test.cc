@@ -43,28 +43,28 @@ DEFINE_int32(notch_filter_lite_test_nsamples, 1000000, "Number of samples to fil
 class NotchFilterLiteTest : public ::testing::Test
 {
 protected:
-    NotchFilterLiteTest() : item_size(sizeof(gr_complex)), nsamples(FLAGS_notch_filter_lite_test_nsamples)
+    NotchFilterLiteTest() : item_size(sizeof(gr_complex)),
+                            nsamples(FLAGS_notch_filter_lite_test_nsamples)
     {
         queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         config = std::make_shared<InMemoryConfiguration>();
     }
-    ~NotchFilterLiteTest() override = default;
 
-    bool stop = false;
-    std::thread ch_thread;
     void start_queue();
     void wait_message();
     void process_message();
     void stop_queue();
-    pmt::pmt_t message;
-
     void init();
     void configure_gr_complex_gr_complex();
+
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
+    pmt::pmt_t message;
+    std::thread ch_thread;
     size_t item_size;
     int nsamples;
+    bool stop{false};
 };
 
 

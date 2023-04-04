@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2022 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2023 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 ################################################################################
@@ -315,60 +315,62 @@ endif()
 ################################################################################
 # Minimum required versions
 ################################################################################
-set(GNSSSDR_GCC_MIN_VERSION "4.7.2")
-set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
 set(GNSSSDR_APPLECLANG_MIN_VERSION "500")
-set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
-set(GNSSSDR_BOOST_MIN_VERSION "1.53")
-set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
-set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
-set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_ARMADILLO_MIN_VERSION "5.300.0")
+set(GNSSSDR_BOOST_MIN_VERSION "1.53")
+set(GNSSSDR_CLANG_MIN_VERSION "3.4.0")
+set(GNSSSDR_GCC_MIN_VERSION "4.7.2")
 set(GNSSSDR_GFLAGS_MIN_VERSION "2.1.2")
+set(GNSSSDR_GNURADIO_MIN_VERSION "3.7.3")
+set(GNSSSDR_MAKO_MIN_VERSION "0.4.2")
 set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
+set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
+set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 
 
 
 ################################################################################
-# Versions to download and build (but not installed) if not found
+# Versions to download and build (but not to install system-wide) if not found
 ################################################################################
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.2.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "11.2.x")
-if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
-  (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
-  CMAKE_VERSION VERSION_LESS 3.5)
-    set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
-else()
-    set(GNSSSDR_GTEST_LOCAL_VERSION "1.13.0")
-endif()
-set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
-if(CMAKE_VERSION VERSION_GREATER 3.17.0)
-    set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.0.0")
-else()
-    set(GNSSSDR_GNSSTK_LOCAL_VERSION "13.7.0")
-endif()
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")
-set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.13")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "22.2")
-if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13")
-    set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
-endif()
+set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.13")
+set(GNSSSDR_GTEST_LOCAL_VERSION "1.13.0")
+set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
+set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.0.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.7.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
+# Downgrade versions if requirements are not met
 if(CMAKE_VERSION VERSION_LESS "3.16")
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.5.0")
 endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.3")
-    set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")    # Fix for Debian 8
+    set(GNSSSDR_GLOG_LOCAL_VERSION "0.4.0")
 endif()
 
 if(CMAKE_VERSION VERSION_LESS "3.0.2")
     set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.1")  # Fix for CentOS 7
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.3.4")    # Fix for Ubuntu 14.04
+endif()
+
+if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13")
+    set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
+endif()
+
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
+  (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0) OR
+  CMAKE_VERSION VERSION_LESS 3.5)
+    set(GNSSSDR_GTEST_LOCAL_VERSION "1.10.x")
+endif()
+
+if(CMAKE_VERSION VERSION_LESS "3.17")
+    set(GNSSSDR_GNSSTK_LOCAL_VERSION "13.7.0")
 endif()
 
 
@@ -1960,16 +1962,12 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     set(ARMADILLO_BUILD_COMMAND ${CMAKE_COMMAND}
         "--build" "${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}"
         "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+        "--target" install
     )
     if(CMAKE_TOOLCHAIN_FILE)
         set(ARMADILLO_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
     else()
         set(ARMADILLO_TOOLCHAIN_FILE "")
-    endif()
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND ENABLE_OWN_ARMADILLO)
-        set(DARWIN_DISABLE_HDF5 -DDETECT_HDF5=false)
-    else()
-        set(DARWIN_DISABLE_HDF5 "")
     endif()
     set(ARMADILLO_CXX_VERSION "")
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 4.8.3)
@@ -1980,41 +1978,38 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             PREFIX ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
             GIT_TAG ${armadillo_BRANCH}
+            UPDATE_COMMAND ""
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
             BINARY_DIR ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
                 -DBUILD_SHARED_LIBS=OFF
                 -DBUILD_SMOKE_TEST=OFF
                 -DALLOW_BLAS_LAPACK_MACOS=ON
                 ${ARMADILLO_CXX_VERSION}
-                ${DARWIN_DISABLE_HDF5}
                 ${ARMADILLO_TOOLCHAIN_FILE}
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
             BUILD_COMMAND ${ARMADILLO_BUILD_COMMAND}
-            UPDATE_COMMAND ""
             INSTALL_COMMAND ""
         )
     else()
-        if(CMAKE_VERSION VERSION_GREATER 3.12.0)
-            set(PARALLEL_BUILD "--parallel 2")
-        endif()
         ExternalProject_Add(armadillo-${armadillo_RELEASE}
             PREFIX ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             GIT_REPOSITORY https://gitlab.com/conradsnicta/armadillo-code.git
             GIT_TAG ${armadillo_BRANCH}
+            UPDATE_COMMAND ""
             SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/armadillo/armadillo-${armadillo_RELEASE}
             BINARY_DIR ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
                 -DBUILD_SHARED_LIBS=OFF
                 -DBUILD_SMOKE_TEST=OFF
                 -DALLOW_BLAS_LAPACK_MACOS=ON
                 ${ARMADILLO_CXX_VERSION}
-                ${DARWIN_DISABLE_HDF5}
                 ${ARMADILLO_TOOLCHAIN_FILE}
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND "${ARMADILLO_BUILD_COMMAND} ${PARALLEL_BUILD}"
+            BUILD_COMMAND ${ARMADILLO_BUILD_COMMAND}
             BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}/${CMAKE_FIND_LIBRARY_PREFIXES}armadillo${CMAKE_STATIC_LIBRARY_SUFFIX}
-            UPDATE_COMMAND ""
             INSTALL_COMMAND ""
         )
     endif()
@@ -2066,6 +2061,20 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
     )
     if(ARPACK_LIBRARY)
         target_link_libraries(Armadillo::armadillo INTERFACE ${ARPACK_LIBRARY})
+    endif()
+    find_library(FLEXIBLAS_LIBRARY
+        NAMES flexiblas
+        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} /opt/local/lib /lib64 /lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/local/lib64
+    )
+    if(FLEXIBLAS_LIBRARY)
+        target_link_libraries(Armadillo::armadillo INTERFACE ${FLEXIBLAS_LIBRARY})
+    endif()
+    find_library(SUPERLU_LIBRARY
+        NAMES superlu
+        PATHS ${CMAKE_SYSTEM_LIBRARY_PATH} /opt/local/lib /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/local/lib64
+    )
+    if(SUPERLU_LIBRARY)
+        target_link_libraries(Armadillo::armadillo INTERFACE ${SUPERLU_LIBRARY})
     endif()
 endif()
 

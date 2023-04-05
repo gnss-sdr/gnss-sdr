@@ -236,7 +236,7 @@ bool Rtklib_Solver::save_vtl_matfile() const
 {
     // READ DUMP FILE
     const std::string dump_filename = d_vtl_dump_filename;
-    const int32_t number_of_double_vars = 28;
+    const int32_t number_of_double_vars = 29;
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 1;
     const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
@@ -272,6 +272,7 @@ bool Rtklib_Solver::save_vtl_matfile() const
     auto RX_time = std::vector<double>(num_epoch);
     auto user_clk_offset = std::vector<double>(num_epoch);
     auto user_clk_offset_drift = std::vector<double>(num_epoch);
+    auto rtklib_user_clk_offset_drift = std::vector<double>(num_epoch);
     auto pos_x = std::vector<double>(num_epoch);
     auto pos_y = std::vector<double>(num_epoch);
     auto pos_z = std::vector<double>(num_epoch);
@@ -310,6 +311,7 @@ bool Rtklib_Solver::save_vtl_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&RX_time[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&user_clk_offset[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&user_clk_offset_drift[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&rtklib_user_clk_offset_drift[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&pos_x[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&pos_y[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&pos_z[i]), sizeof(double));
@@ -373,6 +375,10 @@ bool Rtklib_Solver::save_vtl_matfile() const
             Mat_VarFree(matvar);
 
             matvar = Mat_VarCreate("user_clk_offset_drift", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), user_clk_offset_drift.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("rtklib_user_clk_offset_drift", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), rtklib_user_clk_offset_drift.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -2102,11 +2108,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         // PVT GPS time
                                         tmp_double = gnss_observables_map.cbegin()->second.RX_time;
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        // User clock offset [s]
+                                        // VTL filtered User clock offset [s]
                                         tmp_double = vtl_engine.get_user_clock_offset_s();
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        // User clock offset drift[s/s]
+                                        // VTL filtered User clock offset drift[s/s]
                                         tmp_double = vtl_engine.get_user_clock_offset_drift_s_s();
+                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                        // rtklib User clock offset drift[s/s]
+                                        tmp_double = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
                                         d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                         // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] + ECEF ACC X,Y,X [m/s] (9 x double)

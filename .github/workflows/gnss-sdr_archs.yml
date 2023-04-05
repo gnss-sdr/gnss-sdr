@@ -7,7 +7,7 @@ on:
   push:
     branches:
       - "**-archs"
-      - main
+      - next
   workflow_dispatch:
 
 jobs:
@@ -29,13 +29,13 @@ jobs:
           - arch: armv7
             distro: ubuntu22.04
             compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
+          - arch: riscv64
+            distro: ubuntu22.04
+            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
           - arch: ppc64le
             distro: ubuntu22.04
             compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
           - arch: s390x
-            distro: ubuntu22.04
-            compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
-          - arch: riscv64
             distro: ubuntu22.04
             compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
 

@@ -57,6 +57,7 @@ public:
     double get_longitude();                           // get_longitude
     double get_height();                              // get_height
     double get_user_clock_offset_s();                 // get_user_clock_offset_s;
+    double get_user_clock_offset_drift_s_s();           // get_user_clock_offset_drift_s/s;
 
 private:
     Vtl_Conf config;

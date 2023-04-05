@@ -3278,3 +3278,11 @@ double Vtl_Engine::get_user_clock_offset_s()
 
     return temp;
 }
+
+double Vtl_Engine::get_user_clock_offset_drift_s_s()
+{
+    double temp = 0;
+    temp = kf_x[10];
+
+    return temp;
+}

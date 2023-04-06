@@ -12,7 +12,7 @@ SPDX-FileCopyrightText: 2011-2023 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
-## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 
 ### Improvements in Accuracy:
 
@@ -48,9 +48,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   [IGS State Space Representation (SSR) Format](https://files.igs.org/pub/data/format/igs_ssr_v1.pdf).
   Specifically, it generates messages of type IGM01 (SSR Orbit Correction),
   IGM02 (SSR Clock Correction), IGM03 (SSR Combined Orbit and Clock Correction),
-  and IGM05 (SSR Code Bias). Please note that the content of the HAS messages is
-  **not** applied to the computed PVT solution. In the Galileo E6B-only
-  receiver, HAS messages are decoded and reported.
+  and IGM05 (SSR Code Bias).
 - Added a `ZMQ_Signal_Source` for working with streams of samples published via
   [ZeroMQ](https://zeromq.org/).
 - Fixed register unpacking for Labsat3W files in `Labsat_Signal_Source`. This
@@ -100,6 +98,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   (requires autotools).
 - Since Debian 8 "Jessie", which enjoyed Long Term Support until the end of June
   2020, is not anymore in the Debian official repositories, we drop its support.
+- Fixes for GCC 13 and Clang 16.
 
 ### Improvements in Usability:
 

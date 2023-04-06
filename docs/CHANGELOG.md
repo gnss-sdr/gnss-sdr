@@ -14,6 +14,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7805514.svg)](https://doi.org/10.5281/zenodo.7805514)
+
 ### Improvements in Accuracy:
 
 - Processing and application of the corrections provided by the Galileo High

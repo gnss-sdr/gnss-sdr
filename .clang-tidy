@@ -23,6 +23,7 @@ Checks: '-*,
         bugprone-move-forwarding-reference,
         bugprone-multiple-statement-macro,
         bugprone-parent-virtual-call,
+        bugprone-redundant-branch-condition,
         bugprone-reserved-identifier,
         bugprone-sizeof-container,
         bugprone-sizeof-expression,
@@ -70,6 +71,7 @@ Checks: '-*,
         misc-misplaced-const,
         misc-new-delete-overloads,
         misc-non-copyable-objects,
+        misc-redundant-expression,
         misc-static-assert,
         misc-throw-by-value-catch-by-reference,
         misc-uniqueptr-reset-release,
@@ -356,7 +358,7 @@ std::vector::at;
   - key:             google-runtime-int.TypeSuffix
     value:           _t
   - key:             bugprone-reserved-identifier.AllowedIdentifiers
-    value:           ''
+    value:           '_pb;_pbi'
   - key:             modernize-use-emplace.IgnoreImplicitConstructors
     value:           'false'
   - key:             modernize-use-equals-delete.IgnoreMacros

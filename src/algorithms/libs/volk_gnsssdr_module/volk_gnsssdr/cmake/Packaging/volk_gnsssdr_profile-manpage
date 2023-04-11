@@ -2,7 +2,7 @@
 .\" SPDX-License-Identifier: GPL-3.0-or-later
 .\" SPDX-FileCopyrightText: Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
 .\" Contact carles.fernandez@cttc.es to correct errors or typos.
-.TH volk_gnsssdr_profile 1 "20 Apr 2022" "0.0.17" "volk_gnsssdr_profile man page"
+.TH volk_gnsssdr_profile 1 "6 Apr 2023" "0.0.18" "volk_gnsssdr_profile man page"
 .SH NAME
 \fBvolk_gnsssdr_profile\fR \- Profiler application for libvolk_gnsssdr functions.
 .SH SYNOPSIS

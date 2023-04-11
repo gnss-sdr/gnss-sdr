@@ -2847,11 +2847,13 @@ int readantex(const char *file, pcvs_t *pcvs)
                 {
                     strncpy(pcv.type, buff, 20);  // MAXANT (64)
                     pcv.type[20] = '\0';
-                    strncpy(pcv.code, buff + 20, 20);  // MAXANT (64)
-                    pcv.code[20] = '\0';
-                    if (!strncmp(pcv.code + 3, "        ", 8))
+                    int ret = std::snprintf(pcv.code, 20, "%s", buff + 20);  // NOLINT(runtime/printf)
+                    if (ret >= 0 && ret < 20)
                         {
-                            pcv.sat = satid2no(pcv.code);
+                            if (!strncmp(pcv.code + 3, "        ", 8))
+                                {
+                                    pcv.sat = satid2no(pcv.code);
+                                }
                         }
                 }
             else if (strstr(buff + 60, "VALID FROM"))

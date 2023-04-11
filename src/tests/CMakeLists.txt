@@ -471,8 +471,8 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     endif()
 endif()
 
-if(NOT ENABLE_PACKAGING OR NOT ENABLE_UNIT_TESTING_MINIMAL)
-    message(STATUS "Downloading some data files for testing...")
+if(NOT (ENABLE_PACKAGING OR ENABLE_UNIT_TESTING_MINIMAL))
+    message(STATUS "Downloading some data files for testing ...")
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat)
         message(STATUS "Downloading file: Galileo_E1_ID_1_Fs_4Msps_8ms.dat")
         file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/Galileo_E1_ID_1_Fs_4Msps_8ms.dat
@@ -510,7 +510,7 @@ endif()
 
 if(ENABLE_UNIT_TESTING_EXTRA)
     add_definitions(-DEXTRA_TESTS)
-    message(STATUS "Downloading some extra data files for testing...")
+    message(STATUS "Downloading some extra data files for testing ...")
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
         message(STATUS "Downloading file: gps_l2c_m_prn7_5msps.dat")
         file(DOWNLOAD https://sourceforge.net/projects/gnss-sdr/files/data/gps_l2c_m_prn7_5msps.dat

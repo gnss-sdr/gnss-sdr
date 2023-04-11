@@ -37,10 +37,8 @@ public:
         int channel = 0,
         int execution = 1);
 
-    ~Acquisition_Dump_Reader() = default;
-
-    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) noexcept;        //!< Copy constructor
-    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader&);            //!< Copy assignment operator
+    Acquisition_Dump_Reader(const Acquisition_Dump_Reader& other) = default;       //!< Copy constructor
+    Acquisition_Dump_Reader& operator=(const Acquisition_Dump_Reader& other);      //!< Copy assignment operator
     Acquisition_Dump_Reader(Acquisition_Dump_Reader&& other) noexcept;             //!< Move constructor
     Acquisition_Dump_Reader& operator=(Acquisition_Dump_Reader&& other) noexcept;  //!< Move assignment operator
 
@@ -61,12 +59,12 @@ public:
 
 private:
     std::string d_basename;
+    std::string d_dump_filename;
     unsigned int d_sat{};
     unsigned int d_doppler_max{};
     unsigned int d_doppler_step{};
     unsigned int d_samples_per_code{};
     unsigned int d_num_doppler_bins{};
-    std::string d_dump_filename;
 };
 
 #endif  // GNSS_SDR_ACQUISITION_DUMP_READER_H

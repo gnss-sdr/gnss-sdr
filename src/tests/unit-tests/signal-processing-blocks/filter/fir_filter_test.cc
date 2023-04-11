@@ -44,23 +44,24 @@ DEFINE_int32(filter_test_nsamples, 1000000, "Number of samples to filter in the 
 class FirFilterTest : public ::testing::Test
 {
 protected:
-    FirFilterTest() : item_size(sizeof(gr_complex))
+    FirFilterTest() : item_size(sizeof(gr_complex)),
+                      nsamples(FLAGS_filter_test_nsamples)
     {
         queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         config = std::make_shared<InMemoryConfiguration>();
     }
-    ~FirFilterTest() override = default;
 
     void init();
     void configure_cbyte_cbyte();
     void configure_cbyte_gr_complex();
     void configure_gr_complex_gr_complex();
     void configure_cshort_cshort();
+
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue;
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
     size_t item_size;
-    int nsamples = FLAGS_filter_test_nsamples;
+    int nsamples;
 };
 
 

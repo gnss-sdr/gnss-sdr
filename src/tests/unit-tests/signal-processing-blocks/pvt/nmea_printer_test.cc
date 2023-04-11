@@ -1,5 +1,5 @@
 /*!
- * \file nma_printer_test.cc
+ * \file nmea_printer_test.cc
  * \brief Implements Unit Tests for the Nmea_Printer class.
  * \author Carles Fernandez-Prades, 2017. cfernandez(at)cttc.es
  *
@@ -133,7 +133,8 @@ void NmeaPrinterTest::conf()
         {{}, {}},                                                                          /*  odisp[2][6*11] ocean tide loading parameters {rov,base} */
         {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /*  exterr_t exterr   extended receiver error model */
         0,                                                                                 /* disable L2-AR */
-        {}                                                                                 /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
+        {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
+        true                                                                               /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
     };
 
     rtkinit(&rtk, &rtklib_configuration_options);

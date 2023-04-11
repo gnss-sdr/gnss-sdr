@@ -72,7 +72,6 @@ private:
 
 public:
     int rx_message{0};
-    ~GpsL1CaPcpsAcquisitionTest_msg_rx() override;  //!< Default destructor
 };
 
 
@@ -115,9 +114,6 @@ GpsL1CaPcpsAcquisitionTest_msg_rx::GpsL1CaPcpsAcquisitionTest_msg_rx()
 }
 
 
-GpsL1CaPcpsAcquisitionTest_msg_rx::~GpsL1CaPcpsAcquisitionTest_msg_rx() = default;
-
-
 // ###########################################################
 
 class GpsL1CaPcpsAcquisitionTest : public ::testing::Test
@@ -130,8 +126,6 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         gnss_synchro = Gnss_Synchro();
     }
-
-    ~GpsL1CaPcpsAcquisitionTest() override = default;
 
     void init();
     void plot_grid() const;

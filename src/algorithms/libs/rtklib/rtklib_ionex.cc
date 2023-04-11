@@ -165,16 +165,17 @@ void readionexdcb(FILE *fp, double *dcb, double *rms)
 
             if (strstr(label, "PRN / BIAS / RMS") == label)
                 {
-                    strncpy(id, buff + 3, 3);
-                    id[3] = '\0';
-
-                    if (!(sat = satid2no(id)))
+                    int ret = std::snprintf(id, 3, "%s", buff + 3);  // NOLINT(runtime/printf)
+                    if (ret >= 0 && ret < 3)
                         {
-                            trace(2, "ionex invalid satellite: %s\n", id);
-                            continue;
+                            if (!(sat = satid2no(id)))
+                                {
+                                    trace(2, "ionex invalid satellite: %s\n", id);
+                                    continue;
+                                }
+                            dcb[sat - 1] = str2num(buff, 6, 10);
+                            rms[sat - 1] = str2num(buff, 16, 10);
                         }
-                    dcb[sat - 1] = str2num(buff, 6, 10);
-                    rms[sat - 1] = str2num(buff, 16, 10);
                 }
             else if (strstr(label, "END OF AUX DATA") == label)
                 {

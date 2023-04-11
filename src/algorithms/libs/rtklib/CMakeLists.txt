@@ -69,11 +69,18 @@ target_link_libraries(algorithms_libs_rtklib
     PRIVATE
         core_system_parameters
         algorithms_libs
+        Armadillo::armadillo
         Gflags::gflags
         Glog::glog
         LAPACK::LAPACK
         BLAS::BLAS
 )
+
+if(ENABLE_ARMA_NO_DEBUG)
+    target_compile_definitions(algorithms_libs_rtklib
+        PRIVATE -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
 
 if(FILESYSTEM_FOUND)
     target_compile_definitions(algorithms_libs_rtklib PUBLIC -DHAS_STD_FILESYSTEM=1)

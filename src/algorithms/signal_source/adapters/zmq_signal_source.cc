@@ -42,19 +42,23 @@ ZmqSignalSource::ZmqSignalSource(const ConfigurationInterface* configuration,
     if (!endpoint.empty())
         {
             LOG(INFO) << "Connecting to ZMQ pub at " << endpoint;
-            // work around gnuradio interface deficiency
+            // work around gnuradio interface const-deficiency
             d_source_block = gr::zeromq::sub_source::make(d_item_size, vlen, const_cast<char*>(endpoint.data()), timeout_ms, pass_tags, hwm);
-            d_source_block->set_tag_propagation_policy(gr::block::TPP_DONT);  // GNSS-SDR doesn't do well with tags/
+
+            // work around another bug. GNU Radio passes tags through the ZMQ block
+            // unconditionally if pass_tags is true, but that flag controls protocol more
+            // than the intent of the block. Since we have the vector-to-stream block,
+            // unconditionally create it, and have it squelch the tags. GNSS-SDR should
+            // not fail if unexpected tags are received
+
+            // vector-to-stream should be coherent even if vlen == 1
+            d_vec_block = gr::blocks::vector_to_stream::make(item_size(), vlen);
+            d_vec_block->set_tag_propagation_policy(gr::block::TPP_DONT);  // GNSS-SDR doesn't do well with tags/
         }
     else
         {
             std::cerr << "For ZMQ_Signal_Source " << property << " must be defined" << std::endl;
             throw std::invalid_argument(property + ": undefined");
-        }
-
-    if (vlen > 1)
-        {
-            d_vec_block = gr::blocks::vector_to_stream::make(item_size(), vlen);
         }
 }
 
@@ -64,15 +68,13 @@ auto ZmqSignalSource::item_size() -> size_t { return d_item_size; }
 
 auto ZmqSignalSource::connect(gr::top_block_sptr top_block) -> void
 {
-    if (d_vec_block)
-        {
-            top_block->connect(d_source_block, 0, d_vec_block, 0);
-        }
     if (d_dump)
         {
             d_dump_sink = gr::blocks::file_sink::make(item_size(), d_dump_filename.data());
             top_block->connect(get_right_block(), 0, d_dump_sink, 0);
         }
+
+    top_block->connect(d_source_block, 0, d_vec_block, 0);
 }
 
 
@@ -83,25 +85,13 @@ auto ZmqSignalSource::disconnect(gr::top_block_sptr top_block) -> void
             top_block->disconnect(d_dump_sink);
         }
 
-    if (d_vec_block)
-        {
-            top_block->disconnect(d_vec_block);
-        }
+    // this might be redundant
+    top_block->disconnect(d_vec_block);
+    top_block->disconnect(d_source_block);
 }
 
 
 auto ZmqSignalSource::get_right_block() -> gr::basic_block_sptr
 {
-    auto result = gr::basic_block_sptr();
-
-    if (d_vec_block)
-        {
-            result = d_vec_block;
-        }
-    else
-        {
-            result = d_source_block;
-        }
-
-    return result;
+    return d_vec_block;
 }

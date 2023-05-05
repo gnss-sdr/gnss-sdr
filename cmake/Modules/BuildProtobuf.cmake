@@ -9,13 +9,11 @@
 # abseil-cpp >= 20230117 libraries (see https://github.com/abseil/abseil-cpp)
 # already installed. Zlib is used if found.
 #
-# Note: requires the patch command if using GCC >= 13 or Clang >= 16
-#
 # Creates protobuf::libprotobuf and protobuf::protoc imported targets.
 
 
 if(NOT GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION)
-    set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "22.2")
+    set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "22.4")
 endif()
 
 if(NOT GNSSSDR_BINARY_DIR)
@@ -56,25 +54,6 @@ list(APPEND UTF8_LIBRARIES
     ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}utf8_validity${CMAKE_STATIC_LIBRARY_SUFFIX}
     ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/${CMAKE_INSTALL_LIBDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}utf8_range${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
-
-# Fix for GCC 13 and Clang 16
-if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "13")) OR
-  ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "16")))
-    find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
-    if(NOT Patch_EXECUTABLE)
-        message(FATAL_ERROR "The patch command is not found. It is required to build Protocol Buffers. Please check your OS documentation and install the patch command.")
-    endif()
-    set(PROTOBUF_PATCH_COMMAND
-        cd ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/src/google/protobuf/ &&
-        ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/src/google/protobuf/port.h < ${GNSSSDR_SOURCE_DIR}/src/tests/data/protobuf22.patch
-    )
-    # Patch only once
-    if(EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/protobuf/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/src/google/protobuf/port.h)
-        set(PROTOBUF_PATCH_COMMAND "")
-    endif()
-else()
-    set(PROTOBUF_PATCH_COMMAND "")
-endif()
 
 ExternalProject_Add(protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}
     PREFIX ${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}

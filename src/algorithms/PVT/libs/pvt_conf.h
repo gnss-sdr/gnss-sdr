@@ -52,6 +52,7 @@ public:
 
     uint32_t type_of_receiver = 0;
     uint32_t observable_interval_ms = 20;
+    uint32_t averaging_depth = 1;
 
     int32_t output_rate_ms = 0;
     int32_t display_rate_ms = 0;

@@ -169,6 +169,7 @@ class Gps_Ephemeris;
  *  .show_local_time_zone - (false)
  *  .enable_rx_clock_correction - (false)
  *  .max_clock_offset_ms - (40)
+ *  .averaging_depth - position averaging window size (1)
  */
 class Rtklib_Pvt : public PvtInterface
 {

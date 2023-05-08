@@ -74,6 +74,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // display rate
     pvt_output_parameters.display_rate_ms = bc::lcm(pvt_output_parameters.output_rate_ms, configuration->property(role + ".display_rate_ms", 500));
 
+    // averaging
+    pvt_output_parameters.averaging_depth = configuration->property(role + ".averaging_depth", 1);
+    pvt_output_parameters.averaging_depth = pvt_output_parameters.averaging_depth ? pvt_output_parameters.averaging_depth : 1;
+
     // NMEA Printer settings
     pvt_output_parameters.flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
     pvt_output_parameters.nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);

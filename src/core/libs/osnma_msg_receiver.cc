@@ -110,15 +110,15 @@ void osnma_msg_receiver::process_osnma_message(const OSNMA_msg& osnma_msg)
 
 void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
 {
-    d_osnma_data.d_nma_header.nmas = (nma_header & 0b11000000) << 6;
-    d_osnma_data.d_nma_header.cid = (nma_header & 0b00110000) << 4;
-    d_osnma_data.d_nma_header.cpks = (nma_header & 0b00001110) << 1;
+    d_osnma_data.d_nma_header.nmas = (nma_header & 0b11000000) >> 6;
+    d_osnma_data.d_nma_header.cid = (nma_header & 0b00110000) >> 4;
+    d_osnma_data.d_nma_header.cpks = (nma_header & 0b00001110) >> 1;
     d_osnma_data.d_nma_header.reserved = ((nma_header & 0b00000001) ? true : false);
 }
 
 
 void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
 {
-    d_osnma_data.d_dsm_header.dsm_id = (dsm_header & 0b11110000) << 4;
+    d_osnma_data.d_dsm_header.dsm_id = (dsm_header & 0b11110000) >> 4;
     d_osnma_data.d_dsm_header.dsm_block_id = dsm_header & 0b00001111;
 }

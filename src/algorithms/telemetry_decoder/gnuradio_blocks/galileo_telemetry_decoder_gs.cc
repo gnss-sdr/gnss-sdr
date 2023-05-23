@@ -512,7 +512,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         {
             const std::shared_ptr<OSNMA_msg> tmp_obj = std::make_shared<OSNMA_msg>(d_inav_nav.get_osnma_msg());
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
-            uint8_t nma_status = (tmp_obj->hkroot[0] & 0b11000000) << 6;
+            uint8_t nma_status = (tmp_obj->hkroot[0] & 0b11000000) >> 6;
             std::string nma_status_string;
             if (nma_status == 0)
                 {
@@ -526,7 +526,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 {
                     nma_status_string = std::string("(Operational mode)");
                 }
-            else if (nma_status == 3)
+            else
                 {
                     nma_status_string = std::string("(Do not use mode)");
                 }

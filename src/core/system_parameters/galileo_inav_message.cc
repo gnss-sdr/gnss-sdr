@@ -1405,8 +1405,9 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 }
 
 
-OSNMA_msg Galileo_Inav_Message::get_osnma_msg() const
+OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
 {
+    nma_position_filled = std::array<int8_t, 15>{};
     return nma_msg;
 }
 

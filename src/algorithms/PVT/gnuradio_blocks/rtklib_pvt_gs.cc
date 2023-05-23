@@ -215,6 +215,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 #endif
 #endif
 
+    // Galileo OSNMA messages port in
+    this->message_port_register_in(pmt::mp("OSNMA_to_PVT"));
+    this->set_msg_handler(pmt::mp("OSNMA_to_PVT"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_osnma(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&rtklib_pvt_gs::msg_handler_osnma, this, boost::placeholders::_1));
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_osnma, this, _1));
+#endif
+#endif
+
     d_initial_carrier_phase_offset_estimation_rads = std::vector<double>(nchannels, 0.0);
     d_channel_initialized = std::vector<bool>(nchannels, false);
 
@@ -1629,6 +1642,20 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
     catch (const wht::bad_any_cast& e)
         {
             LOG(WARNING) << "msg_handler_has_data Bad any_cast: " << e.what();
+        }
+}
+
+
+void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
+{
+    try
+        {
+            const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
+            // Process NMA data
+        }
+    catch (const wht::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_osnma Bad any_cast: " << e.what();
         }
 }
 

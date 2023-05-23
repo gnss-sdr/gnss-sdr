@@ -105,6 +105,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_enable_reed_solomon_inav(false),
                       d_valid_timetag(false),
                       d_E6_TOW_set(false),
+                      d_there_are_e1_channels(conf.there_are_e1_channels),
                       d_there_are_e6_channels(conf.there_are_e6_channels)
 {
     // prevent telemetry symbols accumulation in output buffers
@@ -114,12 +115,19 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
 
+    if (d_there_are_e1_channels)
+        {
+            // register OSM out
+            this->message_port_register_out(pmt::mp("OSNMA_from_TLM"));
+        }
+
     if (d_there_are_e6_channels)
         {
             // register Gal E6 messages HAS out
             this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
             // register TOW from map out
             this->message_port_register_out(pmt::mp("TOW_from_TLM"));
+
             // register TOW to TLM input
             this->message_port_register_in(pmt::mp("TOW_to_TLM"));
             // handler for input port
@@ -503,8 +511,26 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     if (d_band == '1' && d_inav_nav.have_new_nma() == true)
         {
             const std::shared_ptr<OSNMA_msg> tmp_obj = std::make_shared<OSNMA_msg>(d_inav_nav.get_osnma_msg());
-            // this->message_port_pub(pmt::mp("whatever"), pmt::make_any(tmp_obj));
-            std::cout << "Galileo OSNMA message received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
+            this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
+            uint8_t nma_status = (tmp_obj->hkroot[0] & 0b11000000) << 6;
+            std::string nma_status_string;
+            if (nma_status == 0)
+                {
+                    nma_status_string = std::string("(Reserved mode)");
+                }
+            else if (nma_status == 1)
+                {
+                    nma_status_string = std::string("(Test mode)");
+                }
+            else if (nma_status == 2)
+                {
+                    nma_status_string = std::string("(Operational mode)");
+                }
+            else if (nma_status == 3)
+                {
+                    nma_status_string = std::string("(Do not use mode)");
+                }
+            std::cout << "Galileo OSNMA message " << nma_status_string << " received in channel " << d_channel << " from satellite " << d_satellite << std::endl;
         }
 }
 

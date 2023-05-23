@@ -27,6 +27,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_ephemeris.cc
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
+    osnma_data.cc
     reed_solomon.cc
 )
 
@@ -89,6 +90,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     MATH_CONSTANTS.h
     reed_solomon.h
     galileo_has_page.h
+    osnma_data.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

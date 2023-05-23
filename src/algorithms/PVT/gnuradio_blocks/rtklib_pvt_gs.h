@@ -144,6 +144,8 @@ private:
 
     void msg_handler_has_data(const pmt::pmt_t& msg);
 
+    void msg_handler_osnma(const pmt::pmt_t& msg);
+
     void initialize_and_apply_carrier_phase_offset();
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,

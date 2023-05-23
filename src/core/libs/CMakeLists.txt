@@ -21,6 +21,7 @@ set(CORE_LIBS_SOURCES
     nav_message_monitor.cc
     nav_message_udp_sink.cc
     galileo_tow_map.cc
+    osnma_msg_receiver.cc
 )
 
 set(CORE_LIBS_HEADERS
@@ -37,6 +38,7 @@ set(CORE_LIBS_HEADERS
     serdes_nav_message.h
     nav_message_monitor.h
     galileo_tow_map.h
+    osnma_msg_receiver.h
 )
 
 if(ENABLE_FPGA)

@@ -30,6 +30,7 @@
 #include "galileo_tow_map.h"
 #include "gnss_sdr_sample_counter.h"
 #include "gnss_signal.h"
+#include "osnma_msg_receiver.h"
 #include "pvt_interface.h"
 #include <gnuradio/blocks/null_sink.h>  // for null_sink
 #include <gnuradio/runtime_types.h>     // for basic_block_sptr, top_block_sptr
@@ -179,6 +180,7 @@ private:
     int connect_channels_to_observables();
     int connect_observables_to_pvt();
     int connect_monitors();
+    int connect_osnma();
     int connect_gal_e6_has();
     int connect_gnss_synchro_monitor();
     int connect_acquisition_monitor();
@@ -234,6 +236,7 @@ private:
     channel_status_msg_receiver_sptr channels_status_;  // class that receives and stores the current status of the receiver channels
     galileo_e6_has_msg_receiver_sptr gal_e6_has_rx_;
     galileo_tow_map_sptr galileo_tow_map_;
+    osnma_msg_receiver_sptr osnma_rx_;
 
     gnss_sdr_sample_counter_sptr ch_out_sample_counter_;
 #if ENABLE_FPGA
@@ -290,6 +293,7 @@ private:
     bool enable_tracking_monitor_;
     bool enable_navdata_monitor_;
     bool enable_fpga_offloading_;
+    bool enable_osnma_rx_;
     bool enable_e6_has_rx_;
 };
 

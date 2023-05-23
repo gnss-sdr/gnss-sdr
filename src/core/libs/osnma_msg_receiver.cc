@@ -70,13 +70,14 @@ osnma_msg_receiver::osnma_msg_receiver() : gr::block("osnma_msg_receiver",
 
 void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 {
-    gr::thread::scoped_lock lock(d_setlock);  // require mutex with msg_handler_osnma function called by the scheduler
+    // requires mutex with msg_handler_osnma function called by the scheduler
+    gr::thread::scoped_lock lock(d_setlock);
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
-            if (msg_type_hash_code == typeid(OSNMA_msg).hash_code())
+            if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_msg>).hash_code())
                 {
-                    const auto nma_msg = wht::any_cast<OSNMA_msg>(pmt::any_ref(msg));
+                    const auto nma_msg = wht::any_cast<std::shared_ptr<OSNMA_msg>>(pmt::any_ref(msg));
                     process_osnma_message(nma_msg);
                 }
             else
@@ -100,9 +101,9 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 }
 
 
-void osnma_msg_receiver::process_osnma_message(const OSNMA_msg& osnma_msg)
+void osnma_msg_receiver::process_osnma_message(std::shared_ptr<OSNMA_msg> osnma_msg)
 {
-    auto hkroot_msg = osnma_msg.hkroot;
+    const auto hkroot_msg = osnma_msg->hkroot;
     read_nma_header(hkroot_msg[0]);
     read_dsm_header(hkroot_msg[1]);
 }
@@ -120,5 +121,5 @@ void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
 void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
 {
     d_osnma_data.d_dsm_header.dsm_id = (dsm_header & 0b11110000) >> 4;
-    d_osnma_data.d_dsm_header.dsm_block_id = dsm_header & 0b00001111;
+    d_osnma_data.d_dsm_header.dsm_block_id = dsm_header & 0b00001111;  // BID
 }

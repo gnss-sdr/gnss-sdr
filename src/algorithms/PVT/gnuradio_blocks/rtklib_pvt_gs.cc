@@ -52,6 +52,7 @@
 #include "monitor_pvt.h"
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
+#include "osnma_data.h"
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
@@ -1651,7 +1652,10 @@ void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
     try
         {
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
-            // Process NMA data
+            if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_data>).hash_code())
+                {
+                    // Act according to NMA data
+                }
         }
     catch (const wht::bad_any_cast& e)
         {

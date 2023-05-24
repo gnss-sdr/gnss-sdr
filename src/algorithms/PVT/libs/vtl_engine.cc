@@ -111,7 +111,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
         {
             kf_R(i, i) = 80.0;
             kf_R(i + new_data.sat_number, i + new_data.sat_number) = 20.0;
-            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 400.0;
+            kf_R(i + 2 * new_data.sat_number, i + 2 * new_data.sat_number) = 40.0;
 
             if (i == 6)
                 {

@@ -657,46 +657,17 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             double old_code_phase_chips = d_x_old_old(0);
 
                             if (cmd->enable_carrier_nco_cmd)
-                                {
-                                    if (abs(d_x_old_old(2) - tmp_x(2)) > 50)
-                                        {
-                                            // std::cout << "channel: " << this->d_channel
-                                            //           << " tracking_cmd TOO FAR: "
-                                            //           << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
-                                            //           << " \n";
-                                        }
-                                    else
-                                        {
-                                            // std::cout << "channel: " << this->d_channel
-                                            //           << " tracking_cmd NEAR: "
-                                            //           << abs(d_x_old_old(2) - tmp_x(2)) << "Hz"
-                                            //           << " \n";
-                                        }
-                                    d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
-                                    d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
-                                }
+                            {
+                                d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
+                            }
                             else
-                                {
-                                    // std::cout << "correction not applied" << std::endl;
-                                }
+                            {
+                                // std::cout << "correction not applied" << std::endl;
+                            }
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;
                             d_vtl_cmd_samplestamp = cmd->sample_counter;
-                            // std::cout << "CH " << this->d_channel << " RX pvt-to-trk cmd with delay: "
-                            //           << static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in
-                            //           << " SampleCounter origin: " << cmd->sample_counter
-                            //           << " Doppler new state: " << x_tmp(2) << " vs. trk state: " << old_doppler << " [Hz]"
-                            //           << " [s]\n";
-                            // if(cmd->channel_id  ==0)
-                            // {
-                            //     std::cout << "CH " << cmd->channel_id  << " RX pvt-to-trk cmd with delay: "
-                            //           << delta_t_s << "[s]"
-                            //           << " SampleCounter origin: " << cmd->sample_counter
-                            //           << " code phase new state: " << x_tmp(0) << " vs. trk state: " << old_code_phase_chips << " [chips]"
-                            //           << "\n";
-                            //     std::cout << "use count " <<cmd.use_count()<<"\r";
-                            // }
 
                             std::fstream dump_tracking_file;
                             dump_tracking_file.open("dump_trk_file.csv", std::ios::out | std::ios::app);

@@ -162,7 +162,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             // kf_x(8) = (kf_x(8)-kf_dx(8))/kf_dt;
         }
 
-    obsv_calc(rho_pri, rhoDot_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
+    obsv_calc(rho_pri, rhoDot_pri, rhoDot2_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
     kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
 
     //**************************************
@@ -171,7 +171,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
 
     kf_H = arma::zeros(3 * new_data.sat_number, n_of_states);
     kf_H_fill(kf_H, new_data.sat_number, a_x, a_y, a_z, kf_dt);
-    kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot_pri * 0, new_data.pr_m, new_data.doppler_hz, kf_x);
+    kf_measurements(kf_yerr, new_data.sat_number, rho_pri, rhoDot_pri, rhoDot2_pri, new_data.pr_m, new_data.doppler_hz, kf_x);
     //**************************************
     // Kalman filter update step
     //**************************************
@@ -190,7 +190,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     // Geometric Transformation
     //*************************
 
-    obsv_calc(rho_pri, rhoDot_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
+    obsv_calc(rho_pri, rhoDot_pri, rhoDot2_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
     kf_H_fill(kf_H, new_data.sat_number, a_x, a_y, a_z, kf_dt);
 
     //  Re-calculate error measurement vector with the most recent data available: kf_delta_y=kf_H*kf_delta_x
@@ -315,7 +315,7 @@ void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt)
     kf_F(9, 10) = kf_dt;
 }
 
-void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::colvec &ax, arma::colvec &ay, arma::colvec &az, int sat_number, arma::mat sat_p, arma::mat sat_v, arma::mat kf_x)
+void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::mat &rhoDot2_pri,arma::colvec &ax, arma::colvec &ay, arma::colvec &az, int sat_number, arma::mat sat_p, arma::mat sat_v, arma::mat kf_x)
 {
     for (int32_t i = 0; i < sat_number; i++)  // neccesary quantities
         {
@@ -333,7 +333,7 @@ void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::colv
             az(i) = -(sat_p(i, 2) - kf_x(2)) / d(i);
             // compute pseudorange rate estimation OUTPUT
             rhoDot_pri(i) = (sat_v(i, 0) - kf_x(3)) * a_x(i) + (sat_v(i, 1) - kf_x(4)) * a_y(i) + (sat_v(i, 2) - kf_x(5)) * a_z(i);
-            // rhoDot_pri(i) = rhoDot_pri(i) + a_x(i)*xDot2_u*kf_dt+a_y(i)*yDot2_u*kf_dt+a_z(i)*zDot2_u*kf_dt;
+            rhoDot2_pri(i) = (kf_x(6)) * a_x(i) + (kf_x(7)) * a_y(i) + (kf_x(8)) * a_z(i);
         }
 }
 
@@ -375,7 +375,7 @@ void Vtl_Engine::model3DoF(double &acc_x, double &acc_y, double &acc_z, arma::ma
 
                     if (t_disparo < .2)
                         {
-                            u_dir = {.90828, -.13984, -.388756};
+                            u_dir = {.90828, -.13984, -.388756}; // launching attitude
                         }
                     else
                         {
@@ -439,11 +439,11 @@ void Vtl_Engine::accelerometer(double &acc_x, double &acc_y, double &acc_z, arma
 
                     if (t_disparo < .2)
                         {
-                            u_dir = {.90828, -.13984, -.388756};
+                            u_dir = {.90828, -.13984, -.388756}; // launching attitude
                         }
                     else
                         {
-                            u_dir = u_vec / u;
+                            u_dir = u_vec / u; 
                         }
 
                     accelerometer = AccLkTable(t_disparo);

@@ -673,7 +673,7 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                                             //           << " \n";
                                         }
                                     d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
-                                    // d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
+                                    d_x_old_old(3) = tmp_x(3);  //replace DOPPLER RATE
                                 }
                             else
                                 {

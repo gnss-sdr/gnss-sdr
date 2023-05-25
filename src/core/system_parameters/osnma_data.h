@@ -42,6 +42,36 @@ struct dsm_header
     uint8_t dsm_block_id;
 };
 
+struct DSM_PKR_message
+{
+    uint8_t nb_dp;
+    uint8_t mid;
+    std::array<uint8_t, 128> itn;  // bitset<1024>
+    uint8_t npkt;
+    uint8_t npktid;
+    std::vector<uint8_t> npk;
+    std::vector<uint8_t> p_dp;
+};
+
+struct DSM_KROOT_message
+{
+    uint8_t nb_dk;
+    uint8_t pkid;
+    uint8_t cidkr;
+    uint8_t reserved1;
+    uint8_t hf;
+    uint8_t mf;
+    uint8_t ks;
+    uint8_t ts;
+    uint8_t maclt;
+    uint8_t reserved;
+    uint16_t wn_k;
+    uint8_t towh_k;
+    uint64_t alpha;
+    std::vector<uint8_t> kroot;
+    std::vector<uint8_t> ds;
+    std::vector<uint8_t> p_dk;
+};
 
 /*!
  * \brief This class handles ONSMA data
@@ -51,16 +81,10 @@ class OSNMA_data
 {
 public:
     OSNMA_data() = default;
-
-    std::string itn;  // bitset<1024>
-    std::string npk;
-    std::string p_dp;
     nma_header d_nma_header;
     dsm_header d_dsm_header;
-    uint8_t nb_dp;
-    uint8_t mid;
-    uint8_t npkt;
-    uint8_t npktid;
+    DSM_PKR_message d_dsm_pkr_message;
+    DSM_KROOT_message d_dsm_kroot_message;
 };
 
 

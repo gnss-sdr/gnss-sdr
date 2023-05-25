@@ -24,8 +24,9 @@
 #include "osnma_data.h"            // for OSNMA_data
 #include <gnuradio/block.h>        // for gr::block
 #include <pmt/pmt.h>               // for pmt::pmt_t
+#include <array>                   // for std::array
 #include <memory>                  // for std::shared_ptr
-
+#include <vector>
 
 /** \addtogroup Core
  * \{ */
@@ -54,10 +55,15 @@ private:
     osnma_msg_receiver();
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
-    void process_osnma_message(std::shared_ptr<OSNMA_msg> osnma_msg);
+    void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_nma_header(uint8_t nma_header);
     void read_dsm_header(uint8_t dsm_header);
+    void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void process_dsm_message(const std::shared_ptr<OSNMA_msg>& osnma_msg, const std::vector<uint8_t>& dsm_msg);
 
+    std::array<std::array<uint8_t, 256>, 16> d_dsm_message{};
+    std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};
+    std::array<uint16_t, 16> d_number_of_blocks{};
     OSNMA_data d_osnma_data{};
     bool d_new_data{false};
 };

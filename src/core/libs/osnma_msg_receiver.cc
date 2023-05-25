@@ -233,7 +233,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
             // Get number of blocks in message
             uint8_t nb = (osnma_msg->hkroot[2] & 0b11110000) >> 4;
             uint16_t number_of_blocks = 0;
-            if (d_osnma_data.d_dsm_header.dsm_id >= 0 && d_osnma_data.d_dsm_header.dsm_id < 12)
+            if (d_osnma_data.d_dsm_header.dsm_id < 12)
                 {
                     // Table 3
                     const auto it = OSNMA_TABLE_3.find(nb);
@@ -274,7 +274,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
 
 void osnma_msg_receiver::process_dsm_message(const std::shared_ptr<OSNMA_msg>& osnma_msg, const std::vector<uint8_t>& dsm_msg)
 {
-    if (d_osnma_data.d_dsm_header.dsm_id >= 0 && d_osnma_data.d_dsm_header.dsm_id < 12)
+    if (d_osnma_data.d_dsm_header.dsm_id < 12)
         {
             // DSM-KROOT message
             d_osnma_data.d_dsm_kroot_message.nb_dk = (dsm_msg[0] & 0b11110000) >> 4;

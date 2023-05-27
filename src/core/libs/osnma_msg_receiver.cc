@@ -148,7 +148,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
             // Get number of blocks in message
-            uint8_t nb = (osnma_msg->hkroot[2] & 0b11110000) >> 4;
+            uint8_t nb = get_number_blocks(d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][0]);
             uint16_t number_of_blocks = 0;
             if (d_osnma_data.d_dsm_header.dsm_id < 12)
                 {
@@ -194,6 +194,9 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                         }
                 }
             process_dsm_message(dsm_msg);
+            d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
+            d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
+            d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
         }
 }
 

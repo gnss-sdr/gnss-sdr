@@ -134,6 +134,7 @@ constexpr std::uint8_t mask_cpks{0x07};
 constexpr std::uint8_t mask_nma_header_reserved{0x01};
 constexpr std::uint8_t mask_dsm_id{0x01};
 constexpr std::uint8_t mask_dsm_block_id{0x0F};
+constexpr std::uint8_t mask_dsm_number_blocks{0XF0};
 #else
 constexpr std::uint8_t mask_nmas{0b1100'0000};
 constexpr std::uint8_t mask_cid{0b0011'0000};
@@ -141,6 +142,7 @@ constexpr std::uint8_t mask_cpks{0b0000'1110};
 constexpr std::uint8_t mask_nma_header_reserved{0b0000'0001};
 constexpr std::uint8_t mask_dsm_id{0b0000'0001};
 constexpr std::uint8_t mask_dsm_block_id{0b0000'1111};
+constexpr std::uint8_t mask_dsm_number_blocks{0b1111'0000};
 
 #endif
 
@@ -174,6 +176,10 @@ inline uint8_t get_dsm_block_id(uint8_t dsm_header)
     return dsm_header & mask_dsm_block_id;
 }
 
+inline uint8_t get_number_blocks(uint8_t dsm_message_0)
+{
+    return (dsm_message_0 & mask_dsm_number_blocks) >> 4;
+}
 
 /** \} */
 /** \} */

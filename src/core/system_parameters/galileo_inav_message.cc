@@ -1392,7 +1392,9 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
         }
 
-    if (page_position_in_inav_subframe > 14 && page_position_in_inav_subframe != 255)
+    if (page_position_in_inav_subframe != 0 &&
+        page_position_in_inav_subframe > 14 &&
+        page_position_in_inav_subframe != 255)
         {
             // something weird happened, reset
             page_position_in_inav_subframe = 255;

@@ -90,6 +90,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     MATH_CONSTANTS.h
     reed_solomon.h
     galileo_has_page.h
+    Galileo_OSNMA.h
     osnma_data.h
 )
 

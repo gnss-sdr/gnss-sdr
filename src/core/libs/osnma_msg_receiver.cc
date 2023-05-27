@@ -18,6 +18,7 @@
 
 
 #include "osnma_msg_receiver.h"
+#include "Galileo_OSNMA.h"
 #include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
@@ -28,8 +29,7 @@
 #include <iterator>
 #include <numeric>
 #include <typeinfo>  // for typeid
-#include <unordered_map>
-#include <utility>
+
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -43,96 +43,6 @@ namespace wht = boost;
 #include <any>
 namespace wht = std;
 #endif
-
-
-// OSNMA SIS ICD v1.0 Table 3
-const std::unordered_map<uint8_t, std::pair<uint16_t, uint16_t>> OSNMA_TABLE_3 = {
-    {0, {0, 0}},
-    {1, {0, 0}},
-    {2, {0, 0}},
-    {3, {0, 0}},
-    {4, {0, 0}},
-    {5, {0, 0}},
-    {6, {0, 0}},
-    {7, {13, 1352}},
-    {8, {14, 1456}},
-    {9, {15, 1560}},
-    {10, {16, 1664}},
-    {11, {0, 0}},
-    {12, {0, 0}},
-    {13, {0, 0}},
-    {14, {0, 0}},
-    {15, {0, 0}}};  // key: nb_dp, value: {num_blocks, l_dp_bits}
-
-const std::unordered_map<uint8_t, std::string> OSNMA_TABLE_5 = {
-    {0, std::string("Reserved")},
-    {1, std::string("ECDSA P-256")},
-    {2, std::string("Reserved")},
-    {3, std::string("ECDSA P-521")},
-    {4, std::string("OAM")},
-    {5, std::string("Reserved")},
-    {6, std::string("Reserved")},
-    {7, std::string("Reserved")},
-    {8, std::string("Reserved")},
-    {9, std::string("Reserved")},
-    {10, std::string("Reserved")},
-    {11, std::string("Reserved")},
-    {12, std::string("Reserved")},
-    {13, std::string("Reserved")},
-    {14, std::string("Reserved")},
-    {15, std::string("Reserved")}};  // key: nptk, value: message
-
-const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_6 = {
-    {std::string("ECDSA P-256"), 264},
-    {std::string("ECDSA P-521"), 536}};
-
-// OSNMA SIS ICD v1.0 Table 7
-const std::unordered_map<uint8_t, std::pair<uint16_t, uint16_t>> OSNMA_TABLE_7 = {
-    {0, {0, 0}},
-    {1, {7, 728}},
-    {2, {8, 832}},
-    {3, {9, 936}},
-    {4, {10, 1040}},
-    {5, {11, 1144}},
-    {6, {12, 1248}},
-    {7, {13, 1352}},
-    {8, {14, 1456}},
-    {9, {0, 0}},
-    {10, {0, 0}},
-    {11, {0, 0}},
-    {12, {0, 0}},
-    {13, {0, 0}},
-    {14, {0, 0}},
-    {15, {0, 0}}};  // key: nb_dk, value: {num_blocks, l_dk_bits}
-
-const std::unordered_map<uint8_t, std::string> OSNMA_TABLE_8 = {
-    {0, std::string("SHA-256")},
-    {1, std::string("Reserved")},
-    {2, std::string("SHA3-256")},
-    {3, std::string("Reserved")}};  // key: hs, value: hash_function
-
-const std::unordered_map<uint8_t, uint16_t> OSNMA_TABLE_10 = {
-    {0, 96},
-    {1, 104},
-    {2, 112},
-    {3, 120},
-    {4, 128},
-    {5, 160},
-    {6, 192},
-    {7, 224},
-    {8, 256},
-    {9, 0},
-    {10, 0},
-    {11, 0},
-    {12, 0},
-    {13, 0},
-    {15, 0},
-    {15, 0}};  // key: ks, value: lk_bits
-
-const std::unordered_map<std::string, std::pair<uint16_t, uint16_t>> OSNMA_TABLE_15 = {
-    {std::string("ECDSA P-256"), {512, 256}},
-    {std::string("ECDSA P-521"), {1059, 521}}};  // key: ECDSA Curve and hash function, value: {l_ds_bits, key_lenght_bits}
-
 
 osnma_msg_receiver_sptr osnma_msg_receiver_make()
 {
@@ -190,6 +100,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
             auto osnma_data_ptr = std::make_shared<OSNMA_data>(d_osnma_data);
             this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(osnma_data_ptr));
             d_new_data = false;
+            d_osnma_data = OSNMA_data();
             DLOG(INFO) << "NMA info sent to the PVT block through the OSNMA_to_PVT async message port";
         }
 }
@@ -197,36 +108,42 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 
 void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
-    const auto hkroot_msg = osnma_msg->hkroot;
-    read_nma_header(hkroot_msg[0]);
-    read_dsm_header(hkroot_msg[1]);
+    read_nma_header(osnma_msg->hkroot[0]);
+    read_dsm_header(osnma_msg->hkroot[1]);
     read_dsm_block(osnma_msg);
 }
 
 
 void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
 {
-    d_osnma_data.d_nma_header.nmas = (nma_header & 0b11000000) >> 6;
-    d_osnma_data.d_nma_header.cid = (nma_header & 0b00110000) >> 4;
-    d_osnma_data.d_nma_header.cpks = (nma_header & 0b00001110) >> 1;
-    d_osnma_data.d_nma_header.reserved = ((nma_header & 0b00000001) ? true : false);
+    d_osnma_data.d_nma_header.nmas = get_nmas(nma_header);
+    d_osnma_data.d_nma_header.cid = get_cid(nma_header);
+    d_osnma_data.d_nma_header.cpks = get_cpks(nma_header);
+    d_osnma_data.d_nma_header.reserved = get_nma_header_reserved(nma_header);
+
+    // debug
+    const auto it = OSNMA_TABLE_2.find(d_osnma_data.d_nma_header.cpks);
+    if (it != OSNMA_TABLE_2.cend())
+        {
+            LOG(WARNING) << "Chain and Public Key Status: " << it->second;
+        }
 }
 
 
 void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
 {
-    d_osnma_data.d_dsm_header.dsm_id = (dsm_header & 0b11110000) >> 4;
-    d_osnma_data.d_dsm_header.dsm_block_id = dsm_header & 0b00001111;  // BID
+    d_osnma_data.d_dsm_header.dsm_id = get_dsm_id(dsm_header);
+    d_osnma_data.d_dsm_header.dsm_block_id = get_dsm_block_id(dsm_header);  // BID
 }
 
 
 void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
-    size_t i = 0;
-    for (auto it = osnma_msg->hkroot.cbegin() + 2; it != osnma_msg->hkroot.cend(); ++it)
+    size_t index = 0;
+    for (const auto* it = osnma_msg->hkroot.cbegin() + 2; it != osnma_msg->hkroot.cend(); ++it)
         {
-            d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][13 * d_osnma_data.d_dsm_header.dsm_block_id + i] = *it;
-            i++;
+            d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][13 * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
+            index++;
         }
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
@@ -256,8 +173,17 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
         }
     // Annotate bid
     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][d_osnma_data.d_dsm_header.dsm_block_id] = 1;
+
+    std::cout << "d_dsm_id_received";
+    for (auto v : d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id])
+        {
+            std::cout << " " << static_cast<uint32_t>(v);
+        }
+    std::cout << std::endl;
+    LOG(WARNING) << "d_number_of blocks: " << static_cast<uint32_t>(d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]) << " BID: " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id) << " DSM ID: " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
     // is message complete? -> process_dsm_message(osnma_msg)
-    if ((d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] != 0) && (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].begin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].end(), 0)))
+    if ((d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] != 0) &&
+        (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].begin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].end(), 0)))
         {
             std::vector<uint8_t> dsm_msg(std::size_t(d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]) * 13, 0);
             for (uint32_t i = 0; i < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; i++)
@@ -267,15 +193,16 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                             dsm_msg[i * 13 + j] = d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][i * 13 + j];
                         }
                 }
-            process_dsm_message(osnma_msg, dsm_msg);
+            process_dsm_message(dsm_msg);
         }
 }
 
 
-void osnma_msg_receiver::process_dsm_message(const std::shared_ptr<OSNMA_msg>& osnma_msg, const std::vector<uint8_t>& dsm_msg)
+void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg)
 {
     if (d_osnma_data.d_dsm_header.dsm_id < 12)
         {
+            LOG(WARNING) << "OSNMA: DSM-KROOT message received.";
             // DSM-KROOT message
             d_osnma_data.d_dsm_kroot_message.nb_dk = (dsm_msg[0] & 0b11110000) >> 4;
             d_osnma_data.d_dsm_kroot_message.pkid = (dsm_msg[0] & 0b00001111);
@@ -318,6 +245,7 @@ void osnma_msg_receiver::process_dsm_message(const std::shared_ptr<OSNMA_msg>& o
         }
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
         {
+            LOG(WARNING) << "OSNMA: DSM-PKR message received.";
             // DSM-PKR message
             d_osnma_data.d_dsm_pkr_message.nb_dp = (dsm_msg[0] & 0b11110000) >> 4;
             d_osnma_data.d_dsm_pkr_message.mid = (dsm_msg[0] & 0b00001111);
@@ -359,5 +287,10 @@ void osnma_msg_receiver::process_dsm_message(const std::shared_ptr<OSNMA_msg>& o
                 {
                     d_osnma_data.d_dsm_pkr_message.p_dp[k] = dsm_msg[l_dp - l_pd + k];
                 }
+        }
+    else
+        {
+            // Reserved message?
+            d_osnma_data = OSNMA_data();
         }
 }

@@ -195,6 +195,11 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                     // const std::string Reserved_2 = page_INAV.substr(220, 8);
                     // const std::string Tail_odd = page_INAV.substr(228, 6);
 
+                    if (page_position_in_inav_subframe != 255)
+                        {
+                            page_position_in_inav_subframe++;
+                        }
+
                     // ************ CRC checksum control *******/
                     std::stringstream TLM_word_for_CRC_stream;
                     TLM_word_for_CRC_stream << page_INAV;
@@ -855,15 +860,11 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
     const auto page_number = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, PAGE_TYPE_BIT));
     DLOG(INFO) << "Page number = " << page_number;
 
-    if (page_position_in_inav_subframe != 255)
-        {
-            page_position_in_inav_subframe++;
-        }
-
     switch (page_number)
         {
         case 1:  // Word type 1: Ephemeris (1/4)
             {
+                page_position_in_inav_subframe = 10;
                 read_page_1(data_jk_bits);
                 if (enable_rs)
                     {
@@ -935,6 +936,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             }
         case 3:  // Word type 3: Ephemeris (3/4) and SISA
             {
+                page_position_in_inav_subframe = 11;
                 read_page_3(data_jk_bits);
                 if (enable_rs)
                     {
@@ -967,6 +969,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 4:  // Word type 4: Ephemeris (4/4) and Clock correction parameters
             {
+                page_position_in_inav_subframe = 1;
                 read_page_4(data_jk_bits);
                 if (enable_rs)
                     {
@@ -998,6 +1001,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             }
 
         case 5:  // Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST
+            page_position_in_inav_subframe = 12;
             // Ionospheric correction
             ai0_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, AI0_5_BIT));
             ai0_5 = ai0_5 * AI0_5_LSB;
@@ -1048,6 +1052,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
 
         case 6:  // Word type 6: GST-UTC conversion parameters
+            page_position_in_inav_subframe = 2;
             A0_6 = static_cast<double>(read_navigation_signed(data_jk_bits, A0_6_BIT));
             A0_6 = A0_6 * A0_6_LSB;
             DLOG(INFO) << "A0_6= " << A0_6;
@@ -1076,6 +1081,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
 
         case 7:  // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
+            page_position_in_inav_subframe = 3;
             IOD_a_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_7_BIT));
             DLOG(INFO) << "IOD_a_7= " << IOD_a_7;
             WN_a_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_A_7_BIT));
@@ -1110,7 +1116,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             break;
 
-        case 8:  // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
+        case 8:  // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)
+            page_position_in_inav_subframe = 4;
             IOD_a_8 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_8_BIT));
             DLOG(INFO) << "IOD_a_8= " << IOD_a_8;
             af0_8 = static_cast<double>(read_navigation_signed(data_jk_bits, AF0_8_BIT));
@@ -1148,6 +1155,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
 
         case 9:  // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
+            page_position_in_inav_subframe = 3;
             IOD_a_9 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_9_BIT));
             DLOG(INFO) << "IOD_a_9= " << IOD_a_9;
             WN_a_9 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_A_9_BIT));
@@ -1187,6 +1195,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
 
         case 10:  // Word type 10: Almanac for SVID3 (2/2) and GST-GPS conversion parameters
+            page_position_in_inav_subframe = 4;
             IOD_a_10 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_10_BIT));
             DLOG(INFO) << "IOD_a_10= " << IOD_a_10;
             Omega0_10 = static_cast<double>(read_navigation_signed(data_jk_bits, OMEGA0_10_BIT));
@@ -1258,6 +1267,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 17:  // Word type 17: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 5;
                 if (enable_rs)
                     {
                         IODnav_LSB17 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1287,6 +1297,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 18:  // Word type 18: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 5;
                 if (enable_rs)
                     {
                         IODnav_LSB18 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1316,6 +1327,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 19:  // Word type 19: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 6;
                 if (enable_rs)
                     {
                         IODnav_LSB19 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1345,6 +1357,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 20:  // Word type 20: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 6;
                 if (enable_rs)
                     {
                         IODnav_LSB20 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1392,8 +1405,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
         }
 
-    if (page_position_in_inav_subframe != 0 &&
-        page_position_in_inav_subframe > 14 &&
+    if (page_position_in_inav_subframe > 14 &&
         page_position_in_inav_subframe != 255)
         {
             // something weird happened, reset
@@ -1416,8 +1428,7 @@ OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
 
 bool Galileo_Inav_Message::have_new_nma()
 {
-    if (std::all_of(nma_position_filled.begin(), nma_position_filled.end(),
-            [](int32_t element) { return element == 1; }))
+    if (std::all_of(nma_position_filled.begin(), nma_position_filled.end(), [](int8_t element) { return element == 1; }))
         {
             return true;
         }

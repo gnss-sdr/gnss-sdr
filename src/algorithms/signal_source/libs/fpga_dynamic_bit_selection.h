@@ -44,7 +44,6 @@ public:
      * \brief Constructor
      */
     explicit Fpga_dynamic_bit_selection(uint32_t num_freq_bands);
-    //explicit Fpga_dynamic_bit_selection(const std::string& device_name1, const std::string& device_name2);
 
     /*!
      * \brief Destructor
@@ -54,7 +53,6 @@ public:
     /*!
      * \brief This function configures the switch in th eFPGA
      */
-    //    void set_switch_position(int32_t switch_position);
     void bit_selection(void);
 
 private:

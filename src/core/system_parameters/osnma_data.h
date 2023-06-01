@@ -42,6 +42,24 @@ struct dsm_header
     uint8_t dsm_block_id;
 };
 
+struct mack_header
+{
+    std::vector<uint8_t> tag0;
+    uint16_t macsec;
+    uint8_t cop;
+};
+
+struct tag
+{
+    std::vector<uint8_t> tag;
+    uint16_t tag_info;
+};
+
+struct tag_and_info
+{
+    std::vector<tag> tags;
+};
+
 struct DSM_PKR_message
 {
     uint8_t nb_dp;
@@ -71,6 +89,14 @@ struct DSM_KROOT_message
     std::vector<uint8_t> kroot;
     std::vector<uint8_t> ds;
     std::vector<uint8_t> p_dk;
+};
+
+struct MACK_message
+{
+    mack_header header;
+    tag_and_info tag_info;
+    std::vector<uint8_t> key;
+    std::vector<uint8_t> padding;
 };
 
 /*!

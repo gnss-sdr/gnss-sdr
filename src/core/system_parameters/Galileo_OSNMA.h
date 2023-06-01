@@ -124,8 +124,10 @@ const std::unordered_map<uint8_t, uint16_t> OSNMA_TABLE_10 = {
     {15, 0}};  // key: ks, value: lk_bits
 
 const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_15 = {
-    {std::string("ECDSA P-256"), {512}},
-    {std::string("ECDSA P-521"), {1056}}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
+    {std::string("ECDSA P-256"), 512},
+    {std::string("ECDSA P-521"), 1056},
+    {std::string("SHA-256"), 512},
+    {std::string("SHA-512"), 1056}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
 
 #if __cplusplus == 201103L
 constexpr std::uint8_t mask_nmas{0xC0};

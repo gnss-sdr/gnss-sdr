@@ -145,42 +145,42 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][13 * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
             index++;
         }
+
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
             // Get number of blocks in message
-            uint8_t nb = get_number_blocks(d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][0]);
+            uint8_t nb = get_number_blocks_index(d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][0]);
             uint16_t number_of_blocks = 0;
             if (d_osnma_data.d_dsm_header.dsm_id < 12)
                 {
-                    // Table 3
-                    const auto it = OSNMA_TABLE_3.find(nb);
-                    if (it != OSNMA_TABLE_3.cend())
-                        {
-                            number_of_blocks = it->second.first;
-                        }
-                }
-            else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
-                {
-                    // Table 7
+                    // DSM-KROOT Table 7
                     const auto it = OSNMA_TABLE_7.find(nb);
                     if (it != OSNMA_TABLE_7.cend())
                         {
                             number_of_blocks = it->second.first;
                         }
                 }
+            else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
+                {
+                    // DSM-PKR Table 3
+                    const auto it = OSNMA_TABLE_3.find(nb);
+                    if (it != OSNMA_TABLE_3.cend())
+                        {
+                            number_of_blocks = it->second.first;
+                        }
+                }
 
             d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = number_of_blocks;
+            if (number_of_blocks == 0)
+                {
+                    // Something is wrong, start over
+                    d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
+                    d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
+                }
         }
     // Annotate bid
     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][d_osnma_data.d_dsm_header.dsm_block_id] = 1;
 
-    std::cout << "d_dsm_id_received";
-    for (auto v : d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id])
-        {
-            std::cout << " " << static_cast<uint32_t>(v);
-        }
-    std::cout << std::endl;
-    LOG(WARNING) << "d_number_of blocks: " << static_cast<uint32_t>(d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]) << " BID: " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id) << " DSM ID: " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
     // is message complete? -> process_dsm_message(osnma_msg)
     if ((d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] != 0) &&
         (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].begin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].end(), 0)))
@@ -196,7 +196,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
             process_dsm_message(dsm_msg);
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
             d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
-            d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
+            // d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
         }
 }
 
@@ -207,7 +207,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
         {
             LOG(WARNING) << "OSNMA: DSM-KROOT message received.";
             // DSM-KROOT message
-            d_osnma_data.d_dsm_kroot_message.nb_dk = (dsm_msg[0] & 0b11110000) >> 4;
+            d_osnma_data.d_dsm_kroot_message.nb_dk = get_number_blocks_index(dsm_msg[0]);
             d_osnma_data.d_dsm_kroot_message.pkid = (dsm_msg[0] & 0b00001111);
             d_osnma_data.d_dsm_kroot_message.cidkr = (dsm_msg[1] & 0b11000000) >> 6;
             d_osnma_data.d_dsm_kroot_message.reserved1 = (dsm_msg[1] & 0b00110000) >> 4;
@@ -222,11 +222,17 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                                     static_cast<uint16_t>(dsm_msg[5]);
             d_osnma_data.d_dsm_kroot_message.towh_k = dsm_msg[6];
 
-            uint32_t lk = 0;
-            const auto it = OSNMA_TABLE_10.find(d_osnma_data.d_dsm_kroot_message.ks);
-            if (it != OSNMA_TABLE_10.cend())
+            uint16_t l_dk_bits = 0;
+            const auto it = OSNMA_TABLE_7.find(d_osnma_data.d_dsm_kroot_message.nb_dk);
+            if (it != OSNMA_TABLE_7.cend())
                 {
-                    lk = it->second;
+                    l_dk_bits = it->second.second;
+                }
+            uint16_t lk_bits = 0;
+            const auto it2 = OSNMA_TABLE_10.find(d_osnma_data.d_dsm_kroot_message.ks);
+            if (it2 != OSNMA_TABLE_10.cend())
+                {
+                    lk_bits = it2->second;
                 }
 
             d_osnma_data.d_dsm_kroot_message.alpha = (static_cast<uint64_t>(dsm_msg[7]) << 40) +
@@ -235,11 +241,17 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                                      (static_cast<uint64_t>(dsm_msg[10]) << 16) +
                                                      (static_cast<uint64_t>(dsm_msg[11]) << 8) +
                                                      static_cast<uint64_t>(dsm_msg[12]);
-            uint32_t bytes_lk = lk / 8;
+            uint16_t bytes_lk = lk_bits / 8;
             d_osnma_data.d_dsm_kroot_message.kroot = std::vector<uint8_t>(bytes_lk, 0);
             for (uint32_t k = 0; k < bytes_lk; k++)
                 {
                     d_osnma_data.d_dsm_kroot_message.kroot[k] = dsm_msg[13 + k];
+                }
+            uint16_t l_ds_bits;
+            const auto it3 = OSNMA_TABLE_15.find("");
+            if (it3 != OSNMA_TABLE_15.cend())
+                {
+                    l_ds_bits = it3->second;
                 }
             // uint32_t l_ld = 0;
             //  const auto it2 = OSNMA_TABLE_5.find()

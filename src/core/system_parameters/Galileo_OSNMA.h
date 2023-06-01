@@ -123,16 +123,16 @@ const std::unordered_map<uint8_t, uint16_t> OSNMA_TABLE_10 = {
     {15, 0},
     {15, 0}};  // key: ks, value: lk_bits
 
-const std::unordered_map<std::string, std::pair<uint16_t, uint16_t>> OSNMA_TABLE_15 = {
-    {std::string("ECDSA P-256"), {512, 256}},
-    {std::string("ECDSA P-521"), {1059, 521}}};  // key: ECDSA Curve and hash function, value: {l_ds_bits, key_lenght_bits}
+const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_15 = {
+    {std::string("ECDSA P-256"), {512}},
+    {std::string("ECDSA P-521"), {1056}}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
 
 #if __cplusplus == 201103L
 constexpr std::uint8_t mask_nmas{0xC0};
 constexpr std::uint8_t mask_cid{0x30};
 constexpr std::uint8_t mask_cpks{0x07};
 constexpr std::uint8_t mask_nma_header_reserved{0x01};
-constexpr std::uint8_t mask_dsm_id{0x01};
+constexpr std::uint8_t mask_dsm_id{0xF0};
 constexpr std::uint8_t mask_dsm_block_id{0x0F};
 constexpr std::uint8_t mask_dsm_number_blocks{0XF0};
 #else
@@ -140,43 +140,43 @@ constexpr std::uint8_t mask_nmas{0b1100'0000};
 constexpr std::uint8_t mask_cid{0b0011'0000};
 constexpr std::uint8_t mask_cpks{0b0000'1110};
 constexpr std::uint8_t mask_nma_header_reserved{0b0000'0001};
-constexpr std::uint8_t mask_dsm_id{0b0000'0001};
+constexpr std::uint8_t mask_dsm_id{0b1111'0000};
 constexpr std::uint8_t mask_dsm_block_id{0b0000'1111};
 constexpr std::uint8_t mask_dsm_number_blocks{0b1111'0000};
 
 #endif
 
-inline uint8_t get_nmas(uint8_t nma_header)
+uint8_t get_nmas(uint8_t nma_header)
 {
     return (nma_header & mask_nmas) >> 6;
 }
 
-inline uint8_t get_cid(uint8_t nma_header)
+uint8_t get_cid(uint8_t nma_header)
 {
     return (nma_header & mask_cid) >> 4;
 }
 
-inline uint8_t get_cpks(uint8_t nma_header)
+uint8_t get_cpks(uint8_t nma_header)
 {
     return (nma_header & mask_cpks) >> 1;
 }
 
-inline bool get_nma_header_reserved(uint8_t nma_header)
+bool get_nma_header_reserved(uint8_t nma_header)
 {
     return ((nma_header & mask_nma_header_reserved) ? true : false);
 }
 
-inline uint8_t get_dsm_id(uint8_t dsm_header)
+uint8_t get_dsm_id(uint8_t dsm_header)
 {
     return (dsm_header & mask_dsm_id) >> 4;
 }
 
-inline uint8_t get_dsm_block_id(uint8_t dsm_header)
+uint8_t get_dsm_block_id(uint8_t dsm_header)
 {
     return dsm_header & mask_dsm_block_id;
 }
 
-inline uint8_t get_number_blocks(uint8_t dsm_message_0)
+uint8_t get_number_blocks_index(uint8_t dsm_message_0)
 {
     return (dsm_message_0 & mask_dsm_number_blocks) >> 4;
 }

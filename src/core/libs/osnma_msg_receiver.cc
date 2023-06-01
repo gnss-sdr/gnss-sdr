@@ -28,6 +28,7 @@
 #include <iostream>
 #include <iterator>
 #include <numeric>
+#include <string>
 #include <typeinfo>  // for typeid
 
 
@@ -121,13 +122,6 @@ void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
     d_osnma_data.d_nma_header.cid = get_cid(nma_header);
     d_osnma_data.d_nma_header.cpks = get_cpks(nma_header);
     d_osnma_data.d_nma_header.reserved = get_nma_header_reserved(nma_header);
-
-    // debug
-    const auto it = OSNMA_TABLE_2.find(d_osnma_data.d_nma_header.cpks);
-    if (it != OSNMA_TABLE_2.cend())
-        {
-            LOG(WARNING) << "Chain and Public Key Status: " << it->second;
-        }
 }
 
 
@@ -194,10 +188,9 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                             dsm_msg[i * 13 + j] = d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][i * 13 + j];
                         }
                 }
-            process_dsm_message(dsm_msg);
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
             d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
-            // d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
+            process_dsm_message(dsm_msg);
         }
 }
 
@@ -273,7 +266,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             d_osnma_data.d_dsm_kroot_message.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
             for (uint32_t k = 0; k < l_ds_bytes; k++)
                 {
-                    d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
+                    d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
                 }
             // validation?
         }
@@ -291,7 +284,6 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             d_osnma_data.d_dsm_pkr_message.npkt = (dsm_msg[129] & 0b11110000) >> 4;
             d_osnma_data.d_dsm_pkr_message.npktid = (dsm_msg[129] & 0b00001111);
 
-            // Table 5
             uint32_t l_npk = 0;
             const auto it = OSNMA_TABLE_5.find(d_osnma_data.d_dsm_pkr_message.npkt);
             if (it != OSNMA_TABLE_5.cend())
@@ -343,25 +335,34 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
             d_mack_message[index + 3] = static_cast<uint8_t>(value & 0x000000FF);
             index = index + 4;
         }
-    read_mack_header(osnma_msg);
-    read_mack_info_and_tags(osnma_msg);
-    read_mack_key(osnma_msg);
-    read_mack_padding(osnma_msg);
+    read_mack_header();
+    read_mack_info_and_tags();
+    read_mack_key();
+    read_mack_padding();
 }
 
-void osnma_msg_receiver::read_mack_header(const std::shared_ptr<OSNMA_msg>& osnma_msg)
+
+void osnma_msg_receiver::read_mack_header()
+{
+    uint8_t lt_bits = 0;
+    const auto it = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
+    if (it != OSNMA_TABLE_11.cend())
+        {
+            lt_bits = it->second;
+        }
+}
+
+
+void osnma_msg_receiver::read_mack_info_and_tags()
 {
 }
 
-void osnma_msg_receiver::read_mack_info_and_tags(const std::shared_ptr<OSNMA_msg>& osnma_msg)
+
+void osnma_msg_receiver::read_mack_key()
 {
 }
 
 
-void osnma_msg_receiver::read_mack_key(const std::shared_ptr<OSNMA_msg>& osnma_msg)
-{
-}
-
-void osnma_msg_receiver::read_mack_padding(const std::shared_ptr<OSNMA_msg>& osnma_msg)
+void osnma_msg_receiver::read_mack_padding()
 {
 }

@@ -123,6 +123,25 @@ const std::unordered_map<uint8_t, uint16_t> OSNMA_TABLE_10 = {
     {15, 0},
     {15, 0}};  // key: ks, value: lk_bits
 
+const std::unordered_map<uint8_t, uint8_t> OSNMA_TABLE_11 = {
+    {0, 0},
+    {1, 0},
+    {2, 0},
+    {3, 0},
+    {4, 0},
+    {5, 20},
+    {6, 24},
+    {7, 26},
+    {8, 32},
+    {9, 40},
+    {10, 0},
+    {11, 0},
+    {12, 0},
+    {13, 0},
+    {14, 0},
+    {15, 0},
+};
+
 const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_15 = {
     {std::string("ECDSA P-256"), 512},
     {std::string("ECDSA P-521"), 1056},

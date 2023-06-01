@@ -62,10 +62,10 @@ private:
     void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg);
 
-    void read_mack_header(const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    void read_mack_info_and_tags(const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    void read_mack_key(const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    void read_mack_padding(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void read_mack_header();
+    void read_mack_info_and_tags();
+    void read_mack_key();
+    void read_mack_padding();
 
     std::array<std::array<uint8_t, 256>, 16> d_dsm_message{};
     std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};

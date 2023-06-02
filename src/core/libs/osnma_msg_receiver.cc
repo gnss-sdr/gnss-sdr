@@ -256,7 +256,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 {
                     d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + bytes_lk + k];
                 }
-            uint16_t l_pdk_bytes = (l_ds_bytes - 13 - bytes_lk - l_ds_bytes);
+            uint16_t l_dk_bits = get_l_dk_bits(d_osnma_data.d_dsm_kroot_message.nb_dk);
+            uint16_t l_dk_bytes = l_dk_bits / 8;
+            LOG(WARNING) << "dk_bits=" << static_cast<uint32_t>(l_dk_bits);
+            LOG(WARNING) << "dk_bytes=" << static_cast<uint32_t>(l_dk_bytes);
+
+            uint16_t l_pdk_bytes = (l_dk_bytes - 13 - bytes_lk - l_ds_bytes);
             LOG(WARNING) << "pdk_bytes=" << static_cast<uint32_t>(l_pdk_bytes);
             d_osnma_data.d_dsm_kroot_message.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
             for (uint16_t k = 0; k < l_ds_bytes; k++)

@@ -176,9 +176,9 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     // Annotate bid
     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][d_osnma_data.d_dsm_header.dsm_block_id] = 1;
 
-    // is message complete? -> process_dsm_message(osnma_msg)
+    // is message complete? -> Process DSM message
     if ((d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] != 0) &&
-        (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].begin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].end(), 0)))
+        (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cbegin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cend(), 0)))
         {
             std::vector<uint8_t> dsm_msg(std::size_t(d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]) * 13, 0);
             for (uint32_t i = 0; i < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; i++)
@@ -190,64 +190,35 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                 }
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
             d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
-            process_dsm_message(dsm_msg);
+            process_dsm_message(dsm_msg, osnma_msg->hkroot[0]);
         }
 }
 
 
-void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg)
+void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg, uint8_t nma_header)
 {
     if (d_osnma_data.d_dsm_header.dsm_id < 12)
         {
             LOG(WARNING) << "OSNMA: DSM-KROOT message received.";
             // DSM-KROOT message
             d_osnma_data.d_dsm_kroot_message.nb_dk = get_number_blocks_index(dsm_msg[0]);
-            d_osnma_data.d_dsm_kroot_message.pkid = (dsm_msg[0] & 0b00001111);
-            d_osnma_data.d_dsm_kroot_message.cidkr = (dsm_msg[1] & 0b11000000) >> 6;
-            d_osnma_data.d_dsm_kroot_message.reserved1 = (dsm_msg[1] & 0b00110000) >> 4;
-            d_osnma_data.d_dsm_kroot_message.hf = (dsm_msg[1] & 0b00001100) >> 2;
+            d_osnma_data.d_dsm_kroot_message.pkid = get_pkid(dsm_msg);                // (dsm_msg[0] & 0b00001111);
+            d_osnma_data.d_dsm_kroot_message.cidkr = get_cidkr(dsm_msg);              // (dsm_msg[1] & 0b11000000) >> 6;
+            d_osnma_data.d_dsm_kroot_message.reserved1 = get_dsm_reserved1(dsm_msg);  // (dsm_msg[1] & 0b00110000) >> 4;
+            d_osnma_data.d_dsm_kroot_message.hf = get_hf(dsm_msg);                    // (dsm_msg[1] & 0b00001100) >> 2;
+            d_osnma_data.d_dsm_kroot_message.mf = get_mf(dsm_msg);                    // (dsm_msg[1] & 0b00000011);
+            d_osnma_data.d_dsm_kroot_message.ks = get_ks(dsm_msg);                    // (dsm_msg[2] & 0b11110000) >> 4;
+            d_osnma_data.d_dsm_kroot_message.ts = get_ts(dsm_msg);                    // (dsm_msg[2] & 0b00001111);
+            d_osnma_data.d_dsm_kroot_message.maclt = get_maclt(dsm_msg);              // dsm_msg[3];
+            d_osnma_data.d_dsm_kroot_message.reserved = get_dsm_reserved(dsm_msg);    // (dsm_msg[4] & 0b11110000) >> 4;
+            d_osnma_data.d_dsm_kroot_message.wn_k = get_wn_k(dsm_msg);                // static_cast<uint16_t>((dsm_msg[4] & 0b00001111) << 8) + static_cast<uint16_t>(dsm_msg[5]);
+            d_osnma_data.d_dsm_kroot_message.towh_k = get_towh_k(dsm_msg);            // dsm_msg[6];
+            d_osnma_data.d_dsm_kroot_message.alpha = get_alpha(dsm_msg);
 
-            d_osnma_data.d_dsm_kroot_message.mf = (dsm_msg[1] & 0b00000011);
-            d_osnma_data.d_dsm_kroot_message.ks = (dsm_msg[2] & 0b11110000) >> 4;
-            d_osnma_data.d_dsm_kroot_message.ts = (dsm_msg[2] & 0b00001111);
-            d_osnma_data.d_dsm_kroot_message.maclt = dsm_msg[3];
-            d_osnma_data.d_dsm_kroot_message.reserved = (dsm_msg[4] & 0b11110000) >> 4;
-            d_osnma_data.d_dsm_kroot_message.wn_k = static_cast<uint16_t>((dsm_msg[4] & 0b00001111) << 8) +
-                                                    static_cast<uint16_t>(dsm_msg[5]);
-            d_osnma_data.d_dsm_kroot_message.towh_k = dsm_msg[6];
+            uint16_t bytes_lk = get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
+            d_osnma_data.d_dsm_kroot_message.kroot = get_kroot(dsm_msg, bytes_lk);
 
-            uint16_t l_dk_bits = 0;
-            const auto it = OSNMA_TABLE_7.find(d_osnma_data.d_dsm_kroot_message.nb_dk);
-            if (it != OSNMA_TABLE_7.cend())
-                {
-                    l_dk_bits = it->second.second;
-                }
-            uint16_t lk_bits = 0;
-            const auto it2 = OSNMA_TABLE_10.find(d_osnma_data.d_dsm_kroot_message.ks);
-            if (it2 != OSNMA_TABLE_10.cend())
-                {
-                    lk_bits = it2->second;
-                }
-
-            d_osnma_data.d_dsm_kroot_message.alpha = (static_cast<uint64_t>(dsm_msg[7]) << 40) +
-                                                     (static_cast<uint64_t>(dsm_msg[8]) << 32) +
-                                                     (static_cast<uint64_t>(dsm_msg[9]) << 24) +
-                                                     (static_cast<uint64_t>(dsm_msg[10]) << 16) +
-                                                     (static_cast<uint64_t>(dsm_msg[11]) << 8) +
-                                                     static_cast<uint64_t>(dsm_msg[12]);
-            uint16_t bytes_lk = lk_bits / 8;
-            d_osnma_data.d_dsm_kroot_message.kroot = std::vector<uint8_t>(bytes_lk, 0);
-            for (uint32_t k = 0; k < bytes_lk; k++)
-                {
-                    d_osnma_data.d_dsm_kroot_message.kroot[k] = dsm_msg[13 + k];
-                }
-
-            std::string hash_function;
-            const auto it3 = OSNMA_TABLE_8.find(d_osnma_data.d_dsm_kroot_message.hf);
-            if (it3 != OSNMA_TABLE_8.cend())
-                {
-                    hash_function = it3->second;
-                }
+            std::string hash_function = get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
 
             uint16_t l_ds_bits = 0;
             const auto it4 = OSNMA_TABLE_15.find(hash_function);
@@ -257,18 +228,43 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 }
             uint16_t l_ds_bytes = l_ds_bits / 8;
             d_osnma_data.d_dsm_kroot_message.ds = std::vector<uint8_t>(l_ds_bytes, 0);
-            for (uint32_t k = 0; k < l_ds_bytes; k++)
+            for (uint16_t k = 0; k < l_ds_bytes; k++)
                 {
                     d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + bytes_lk + k];
                 }
-            uint16_t l_pdk_bytes = (l_dk_bits - 104 - lk_bits - l_ds_bits) / 8;
+            uint16_t l_pdk_bytes = (l_ds_bytes - 13 - bytes_lk - l_ds_bytes);
 
             d_osnma_data.d_dsm_kroot_message.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
-            for (uint32_t k = 0; k < l_ds_bytes; k++)
+            for (uint16_t k = 0; k < l_ds_bytes; k++)
                 {
                     d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
                 }
-            // validation?
+            // validation of padding
+            std::vector<uint8_t> M;
+            M.push_back(nma_header);
+            for (int i = 1; i < 13; i++)
+                {
+                    M.push_back(dsm_msg[i]);
+                }
+            for (uint16_t i = 0; i < bytes_lk; i++)
+                {
+                    M.push_back(dsm_msg[13 + i]);
+                }
+            for (uint16_t k = 0; k < l_ds_bytes; k++)
+                {
+                    M.push_back(dsm_msg[13 + bytes_lk + k]);
+                }
+            sha256.update(&M[0], M.size());
+            uint8_t* digest = sha256.digest();
+            std::vector<uint8_t> p_dk_computed;
+            for (uint16_t i = 0; i < l_pdk_bytes; i++)
+                {
+                    p_dk_computed.push_back(digest[i]);
+                }
+            if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_computed)
+                {
+                    std::cout << "OSNMA: DSM-KROOT message validated" << std::endl;
+                }
         }
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
         {
@@ -349,6 +345,10 @@ void osnma_msg_receiver::read_mack_header()
     if (it != OSNMA_TABLE_11.cend())
         {
             lt_bits = it->second;
+        }
+    if (lt_bits == 0)
+        {
+            return;
         }
 }
 

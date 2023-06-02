@@ -136,6 +136,8 @@ void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
 {
     d_osnma_data.d_dsm_header.dsm_id = get_dsm_id(dsm_header);
     d_osnma_data.d_dsm_header.dsm_block_id = get_dsm_block_id(dsm_header);  // BID
+    LOG(WARNING) << "OSNMA: DSM_ID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
+    LOG(WARNING) << "OSNMA: DSM_BID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id);
 }
 
 
@@ -173,9 +175,11 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                 }
 
             d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = number_of_blocks;
+            LOG(WARNING) << "OSNMA: number_of_blocks=" << static_cast<uint32_t>(number_of_blocks);
             if (number_of_blocks == 0)
                 {
                     // Something is wrong, start over
+                    LOG(WARNING) << "OSNMA: Wrong number of blocks, start over";
                     d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
                     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
                 }
@@ -271,6 +275,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 }
 
             uint16_t check_l_dk = 104 - std::ceil(1 + (((bytes_lk * 8) + l_ds_bits) / (104)));
+            LOG(WARNING) << "check_l_dk_bits=" << static_cast<uint32_t>(check_l_dk);
             if (l_dk_bits != check_l_dk)
                 {
                     std::cout << "OSNMA: Failed length reading" << std::endl;
@@ -344,6 +349,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             uint32_t l_pd = l_dp - 130 - l_npk;
 
             uint32_t check_l_dp = 104 - std::ceil((1040 + l_npk * 8) / 104);
+
             if (l_dp != check_l_dp)
                 {
                     std::cout << "OSNMA: Failed length reading" << std::endl;

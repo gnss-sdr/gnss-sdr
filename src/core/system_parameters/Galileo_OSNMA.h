@@ -165,6 +165,9 @@ constexpr std::uint8_t mask_dsm_ks{0xF0};
 constexpr std::uint8_t mask_dsm_ts{0x0F};
 constexpr std::uint8_t mask_dsm_reserved{0xF0};
 constexpr std::uint8_t mask_dsm_wk_k_msbyte{0x0F};
+constexpr std::uint8_t mask_dsm_mid{0x0F};
+constexpr std::uint8_t mask_dsm_npkt{0xF0};
+constexpr std::uint8_t mask_dsm_npktid{0x0F};
 #else
 constexpr std::uint8_t mask_nmas{0b1100'0000};
 constexpr std::uint8_t mask_cid{0b0011'0000};
@@ -182,6 +185,9 @@ constexpr std::uint8_t mask_dsm_ks{0b1111'0000};
 constexpr std::uint8_t mask_dsm_ts{0b0000'1111};
 constexpr std::uint8_t mask_dsm_reserved{0b1111'0000};
 constexpr std::uint8_t mask_dsm_wk_k_msbyte{0b0000'1111};
+constexpr std::uint8_t mask_dsm_mid{0b0000'1111};
+constexpr std::uint8_t mask_dsm_npkt{0b1111'0000};
+constexpr std::uint8_t mask_dsm_npktid{0b0000'1111};
 #endif
 
 // // hf = (dsm_msg[1] & 0b00001100) >> 2;
@@ -328,12 +334,23 @@ std::string get_hash_function(uint8_t hf)
         }
     return hash_;
 }
-// std::string hash_function;
-// const auto it3 = OSNMA_TABLE_8.find(d_osnma_data.d_dsm_kroot_message.hf);
-// if (it3 != OSNMA_TABLE_8.cend())
-//     {
-//         hash_function = it3->second;
-//     }
+
+uint8_t get_mid(const std::vector<uint8_t>& dsm_msg)
+{
+    return (dsm_msg[0] & mask_dsm_mid);
+}
+
+uint8_t get_npkt(const std::vector<uint8_t>& dsm_msg)
+{
+    return ((dsm_msg[129] & mask_dsm_npkt) >> 4);
+}
+
+uint8_t get_npktid(const std::vector<uint8_t>& dsm_msg)
+{
+    return (dsm_msg[129] & mask_dsm_npktid);
+}
+
+
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_GALILEO_OSNMA_H

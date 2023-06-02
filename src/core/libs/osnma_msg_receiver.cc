@@ -23,6 +23,7 @@
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <bitset>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
@@ -268,46 +269,54 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 {
                     d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
                 }
-            // validation of padding
-            std::vector<uint8_t> M;
-            M.push_back(nma_header);
-            for (int i = 1; i < 13; i++)
-                {
-                    M.push_back(dsm_msg[i]);
-                }
-            for (uint16_t i = 0; i < bytes_lk; i++)
-                {
-                    M.push_back(dsm_msg[13 + i]);
-                }
-            for (uint16_t k = 0; k < l_ds_bytes; k++)
-                {
-                    M.push_back(dsm_msg[13 + bytes_lk + k]);
-                }
 
-            std::vector<uint8_t> hash = computeSHA256(M);
-            std::vector<uint8_t> p_dk_computed;
-            for (uint16_t i = 0; i < l_pdk_bytes; i++)
+            uint16_t check_l_dk = 104 - std::ceil(1 + (((bytes_lk * 8) + l_ds_bits) / (104)));
+            if (l_dk_bits != check_l_dk)
                 {
-                    p_dk_computed.push_back(hash[i]);
+                    std::cout << "OSNMA: Failed length reading" << std::endl;
                 }
-            if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_computed)
+            else
                 {
-                    std::cout << "OSNMA: DSM-KROOT message validated" << std::endl;
+                    // validation of padding
+                    std::vector<uint8_t> M;
+                    M.push_back(nma_header);
+                    for (int i = 1; i < 13; i++)
+                        {
+                            M.push_back(dsm_msg[i]);
+                        }
+                    for (uint16_t i = 0; i < bytes_lk; i++)
+                        {
+                            M.push_back(dsm_msg[13 + i]);
+                        }
+                    for (uint16_t k = 0; k < l_ds_bytes; k++)
+                        {
+                            M.push_back(dsm_msg[13 + bytes_lk + k]);
+                        }
+
+                    std::vector<uint8_t> hash = computeSHA256(M);
+                    std::vector<uint8_t> p_dk_computed;
+                    for (uint16_t i = 0; i < l_pdk_bytes; i++)
+                        {
+                            p_dk_computed.push_back(hash[i]);
+                        }
+                    if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_computed)
+                        {
+                            std::cout << "OSNMA: DSM-KROOT message validated" << std::endl;
+                        }
                 }
         }
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
         {
             LOG(WARNING) << "OSNMA: DSM-PKR message received.";
             // DSM-PKR message
-            d_osnma_data.d_dsm_pkr_message.nb_dp = (dsm_msg[0] & 0b11110000) >> 4;
-            d_osnma_data.d_dsm_pkr_message.mid = (dsm_msg[0] & 0b00001111);
+            d_osnma_data.d_dsm_pkr_message.nb_dp = get_number_blocks_index(dsm_msg[0]);
+            d_osnma_data.d_dsm_pkr_message.mid = get_mid(dsm_msg);
             for (int k = 0; k > 128; k++)
                 {
                     d_osnma_data.d_dsm_pkr_message.itn[k] = dsm_msg[k + 1];
                 }
-
-            d_osnma_data.d_dsm_pkr_message.npkt = (dsm_msg[129] & 0b11110000) >> 4;
-            d_osnma_data.d_dsm_pkr_message.npktid = (dsm_msg[129] & 0b00001111);
+            d_osnma_data.d_dsm_pkr_message.npkt = get_npkt(dsm_msg);
+            d_osnma_data.d_dsm_pkr_message.npktid = get_npktid(dsm_msg);
 
             uint32_t l_npk = 0;
             const auto it = OSNMA_TABLE_5.find(d_osnma_data.d_dsm_pkr_message.npkt);
@@ -333,10 +342,19 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 }
             uint32_t l_dp = dsm_msg.size();
             uint32_t l_pd = l_dp - 130 - l_npk;
-            d_osnma_data.d_dsm_pkr_message.p_dp = std::vector<uint8_t>(l_pd, 0);
-            for (uint32_t k = 0; k > l_pd; k++)
+
+            uint32_t check_l_dp = 104 - std::ceil((1040 + l_npk * 8) / 104);
+            if (l_dp != check_l_dp)
                 {
-                    d_osnma_data.d_dsm_pkr_message.p_dp[k] = dsm_msg[l_dp - l_pd + k];
+                    std::cout << "OSNMA: Failed length reading" << std::endl;
+                }
+            else
+                {
+                    d_osnma_data.d_dsm_pkr_message.p_dp = std::vector<uint8_t>(l_pd, 0);
+                    for (uint32_t k = 0; k > l_pd; k++)
+                        {
+                            d_osnma_data.d_dsm_pkr_message.p_dp[k] = dsm_msg[l_dp - l_pd + k];
+                        }
                 }
         }
     else

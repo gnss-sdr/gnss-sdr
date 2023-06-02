@@ -269,12 +269,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             uint16_t l_pdk_bytes = (l_dk_bytes - 13 - bytes_lk - l_ds_bytes);
             LOG(WARNING) << "pdk_bytes=" << static_cast<uint32_t>(l_pdk_bytes);
             d_osnma_data.d_dsm_kroot_message.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
-            for (uint16_t k = 0; k < l_ds_bytes; k++)
+            for (uint16_t k = 0; k < l_pdk_bytes; k++)
                 {
                     d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
                 }
 
-            uint16_t check_l_dk = 104 - std::ceil(1 + (((bytes_lk * 8) + l_ds_bits) / (104)));
+            uint16_t check_l_dk = 104 * std::ceil(1 + (((bytes_lk * 8) + l_ds_bits) / (104)));
             LOG(WARNING) << "check_l_dk_bits=" << static_cast<uint32_t>(check_l_dk);
             if (l_dk_bits != check_l_dk)
                 {
@@ -348,7 +348,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             uint32_t l_dp = dsm_msg.size();
             uint32_t l_pd = l_dp - 130 - l_npk;
 
-            uint32_t check_l_dp = 104 - std::ceil((1040 + l_npk * 8) / 104);
+            uint32_t check_l_dp = 104 * std::ceil((1040 + l_npk * 8) / 104);
 
             if (l_dp != check_l_dp)
                 {

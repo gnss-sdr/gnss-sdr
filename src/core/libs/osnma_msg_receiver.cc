@@ -48,6 +48,7 @@ namespace wht = std;
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
 #include <openssl/evp.h>
+#define OPENSSL_ENGINE NULL
 #else
 #include <openssl/sha.h>
 #endif

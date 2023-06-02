@@ -274,7 +274,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
                 }
 
-            uint16_t check_l_dk = 104 * std::ceil(1 + (((bytes_lk * 8) + l_ds_bits) / 104));
+            uint16_t check_l_dk = 104 * std::ceil(1.0 + static_cast<float>((bytes_lk * 8.0) + l_ds_bits) / 104.0);
             LOG(WARNING) << "check_l_dk_bits=" << static_cast<uint32_t>(check_l_dk);
             if (l_dk_bits != check_l_dk)
                 {
@@ -283,22 +283,36 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             else
                 {
                     // validation of padding
-                    std::vector<uint8_t> M;
-                    M.push_back(nma_header);
+                    std::vector<uint8_t> MSG;
+                    MSG.push_back(nma_header);
                     for (int i = 1; i < 13; i++)
                         {
-                            M.push_back(dsm_msg[i]);
+                            MSG.push_back(dsm_msg[i]);
                         }
                     for (uint16_t i = 0; i < bytes_lk; i++)
                         {
-                            M.push_back(dsm_msg[13 + i]);
+                            MSG.push_back(dsm_msg[13 + i]);
                         }
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
-                            M.push_back(dsm_msg[13 + bytes_lk + k]);
+                            MSG.push_back(dsm_msg[13 + bytes_lk + k]);
                         }
 
-                    std::vector<uint8_t> hash = computeSHA256(M);
+                    std::vector<uint8_t> hash = computeSHA256(MSG);
+                    std::cout << "hash: ";
+                    for (auto c : hash)
+                        {
+                            std::cout << static_cast<uint32_t>(c);
+                        }
+                    std::cout << std::endl;
+
+                    std::cout << "pdk: ";
+                    for (auto c : d_osnma_data.d_dsm_kroot_message.p_dk)
+                        {
+                            std::cout << static_cast<uint32_t>(c);
+                        }
+                    std::cout << std::endl;
+                    // truncate hash
                     std::vector<uint8_t> p_dk_computed;
                     for (uint16_t i = 0; i < l_pdk_bytes; i++)
                         {
@@ -308,6 +322,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         {
                             std::cout << "OSNMA: DSM-KROOT message validated" << std::endl;
                         }
+                    // Validate signature
                 }
         }
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
@@ -336,11 +351,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
 
             if (d_osnma_data.d_dsm_pkr_message.npkt == 4)
                 {
-                    // OAM
+                    LOG(WARNING) << "OSNMA: OAM received";
                     l_npk = 0;  // ?
                 }
 
-            d_osnma_data.d_dsm_pkr_message.npk = std::vector<uint8_t>(l_npk, 0);
+            d_osnma_data.d_dsm_pkr_message.npk = std::vector<uint8_t>(l_npk, 0);  // ECDSA Public Key
             for (uint32_t k = 0; k > l_npk; k++)
                 {
                     d_osnma_data.d_dsm_pkr_message.npk[k] = dsm_msg[k + 130];
@@ -348,7 +363,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             uint32_t l_dp = dsm_msg.size();
             uint32_t l_pd = l_dp - 130 - l_npk;
 
-            uint32_t check_l_dp = 104 * std::ceil((1040 + l_npk * 8) / 104);
+            uint32_t check_l_dp = 104 * std::ceil(static_cast<float>(1040.0 + l_npk * 8.0) / 104.0);
 
             if (l_dp != check_l_dp)
                 {
@@ -357,7 +372,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             else
                 {
                     d_osnma_data.d_dsm_pkr_message.p_dp = std::vector<uint8_t>(l_pd, 0);
-                    for (uint32_t k = 0; k > l_pd; k++)
+                    for (uint32_t k = 0; k < l_pd; k++)
                         {
                             d_osnma_data.d_dsm_pkr_message.p_dp[k] = dsm_msg[l_dp - l_pd + k];
                         }
@@ -366,6 +381,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
     else
         {
             // Reserved message?
+            LOG(WARNING) << "OSNMA Reserved message received";
             d_osnma_data = OSNMA_data();
         }
     d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
@@ -423,12 +439,12 @@ void osnma_msg_receiver::read_mack_padding()
 
 std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t>& input)
 {
-    std::vector<uint8_t> output{32};  // SHA256 hash size
+    std::vector<uint8_t> output(32);  // SHA256 hash size
 #if USE_OPENSSL_FALLBACK
     SHA256_CTX sha256Context;
     SHA256_Init(&sha256Context);
     SHA256_Update(&sha256Context, input.data(), input.size());
-    SHA256_Final(output, &sha256Context);
+    SHA256_Final(output.data(), &sha256Context);
 #else
     gnutls_hash_hd_t hashHandle;
     gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA256);
@@ -438,3 +454,15 @@ std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t
 #endif
     return output;
 }
+
+// bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& publicKey)
+// {
+//     bool success = false;
+// #if USE_OPENSSL_FALLBACK
+// #else
+//     gnutls_global_init();
+//     int result = gnutls_pubkey_verify_data(publicKey, GNUTLS_SIGN_ECDSA_SHA256, digest, sizeof(digest), signature, signatureSize);
+//     success = (result == GNUTLS_E_SUCCESS);
+// #endif
+//     return success;
+// }

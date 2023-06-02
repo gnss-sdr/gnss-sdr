@@ -308,7 +308,7 @@ uint16_t get_lk_bits(uint8_t ks)
 std::vector<uint8_t> get_kroot(const std::vector<uint8_t>& dsm_msg, uint16_t bytes_lk)
 {
     std::vector<uint8_t> kroot = std::vector<uint8_t>(bytes_lk, 0);
-    if (dsm_msg.size() > 13 + bytes_lk)
+    if (dsm_msg.size() > static_cast<uint64_t>(13 + bytes_lk))
         {
             for (uint16_t k = 0; k < bytes_lk; k++)
                 {

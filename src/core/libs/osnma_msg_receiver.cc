@@ -31,7 +31,6 @@
 #include <string>
 #include <typeinfo>  // for typeid
 
-
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
@@ -43,6 +42,13 @@ namespace wht = boost;
 #else
 #include <any>
 namespace wht = std;
+#endif
+
+#if USE_OPENSSL_FALLBACK
+#include <openssl/sha.h>
+#else
+#include <gnutls/crypto.h>
+#include <gnutls/gnutls.h>
 #endif
 
 osnma_msg_receiver_sptr osnma_msg_receiver_make()
@@ -202,17 +208,17 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             LOG(WARNING) << "OSNMA: DSM-KROOT message received.";
             // DSM-KROOT message
             d_osnma_data.d_dsm_kroot_message.nb_dk = get_number_blocks_index(dsm_msg[0]);
-            d_osnma_data.d_dsm_kroot_message.pkid = get_pkid(dsm_msg);                // (dsm_msg[0] & 0b00001111);
-            d_osnma_data.d_dsm_kroot_message.cidkr = get_cidkr(dsm_msg);              // (dsm_msg[1] & 0b11000000) >> 6;
-            d_osnma_data.d_dsm_kroot_message.reserved1 = get_dsm_reserved1(dsm_msg);  // (dsm_msg[1] & 0b00110000) >> 4;
-            d_osnma_data.d_dsm_kroot_message.hf = get_hf(dsm_msg);                    // (dsm_msg[1] & 0b00001100) >> 2;
-            d_osnma_data.d_dsm_kroot_message.mf = get_mf(dsm_msg);                    // (dsm_msg[1] & 0b00000011);
-            d_osnma_data.d_dsm_kroot_message.ks = get_ks(dsm_msg);                    // (dsm_msg[2] & 0b11110000) >> 4;
-            d_osnma_data.d_dsm_kroot_message.ts = get_ts(dsm_msg);                    // (dsm_msg[2] & 0b00001111);
-            d_osnma_data.d_dsm_kroot_message.maclt = get_maclt(dsm_msg);              // dsm_msg[3];
-            d_osnma_data.d_dsm_kroot_message.reserved = get_dsm_reserved(dsm_msg);    // (dsm_msg[4] & 0b11110000) >> 4;
-            d_osnma_data.d_dsm_kroot_message.wn_k = get_wn_k(dsm_msg);                // static_cast<uint16_t>((dsm_msg[4] & 0b00001111) << 8) + static_cast<uint16_t>(dsm_msg[5]);
-            d_osnma_data.d_dsm_kroot_message.towh_k = get_towh_k(dsm_msg);            // dsm_msg[6];
+            d_osnma_data.d_dsm_kroot_message.pkid = get_pkid(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.cidkr = get_cidkr(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.reserved1 = get_dsm_reserved1(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.hf = get_hf(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.mf = get_mf(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.ks = get_ks(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.ts = get_ts(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.maclt = get_maclt(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.reserved = get_dsm_reserved(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.wn_k = get_wn_k(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.towh_k = get_towh_k(dsm_msg);
             d_osnma_data.d_dsm_kroot_message.alpha = get_alpha(dsm_msg);
 
             uint16_t bytes_lk = get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
@@ -254,12 +260,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 {
                     M.push_back(dsm_msg[13 + bytes_lk + k]);
                 }
-            sha256.update(&M[0], M.size());
-            uint8_t* digest = sha256.digest();
+
+            std::vector<uint8_t> hash = computeSHA256(M);
             std::vector<uint8_t> p_dk_computed;
             for (uint16_t i = 0; i < l_pdk_bytes; i++)
                 {
-                    p_dk_computed.push_back(digest[i]);
+                    p_dk_computed.push_back(hash[i]);
                 }
             if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_computed)
                 {
@@ -365,4 +371,30 @@ void osnma_msg_receiver::read_mack_key()
 
 void osnma_msg_receiver::read_mack_padding()
 {
+}
+
+
+std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t>& input)
+{
+    std::vector<uint8_t> output_vector{32};
+    uint8_t output[32];
+    const uint8_t* input_ptr = input.data();
+    size_t inputLength = input.size();
+#if USE_OPENSSL_FALLBACK
+    SHA256_CTX sha256Context;
+    SHA256_Init(&sha256Context);
+    SHA256_Update(&sha256Context, input_ptr, inputLength);
+    SHA256_Final(output, &sha256Context);
+#else
+    gnutls_hash_hd_t hashHandle;
+    gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA256);
+    gnutls_hash(hashHandle, input_ptr, inputLength);
+    gnutls_hash_output(hashHandle, output);
+    gnutls_hash_deinit(hashHandle, output);
+#endif
+    for (int i = 0; i < 32; i++)
+        {
+            output_vector[i] = output[i];
+        }
+    return output_vector;
 }

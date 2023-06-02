@@ -22,7 +22,6 @@ set(CORE_LIBS_SOURCES
     nav_message_udp_sink.cc
     galileo_tow_map.cc
     osnma_msg_receiver.cc
-    sha256.cc
 )
 
 set(CORE_LIBS_HEADERS
@@ -40,7 +39,6 @@ set(CORE_LIBS_HEADERS
     nav_message_monitor.h
     galileo_tow_map.h
     osnma_msg_receiver.h
-    sha256.h
 )
 
 if(ENABLE_FPGA)
@@ -103,6 +101,21 @@ target_link_libraries(core_libs
         Glog::glog
         Pugixml::pugixml
 )
+
+target_link_libraries(core_libs
+    PRIVATE
+        ${GNUTLS_LIBRARIES}
+        ${GNUTLS_OPENSSL_LIBRARY}
+)
+
+target_include_directories(core_libs
+    PRIVATE
+        ${GNUTLS_INCLUDE_DIR}
+)
+
+if(OPENSSL_FOUND)
+    target_compile_definitions(core_libs PRIVATE -DUSE_OPENSSL_FALLBACK=1)
+endif()
 
 if(USE_GENERIC_LAMBDAS AND NOT GNURADIO_USES_STD_POINTERS)
     target_link_libraries(core_libs PUBLIC Boost::headers)

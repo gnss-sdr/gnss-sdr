@@ -22,11 +22,10 @@
 #include "galileo_inav_message.h"  // for OSNMA_msg
 #include "gnss_block_interface.h"  // for gnss_shared_ptr
 #include "osnma_data.h"            // for OSNMA_data
-#include "sha256.h"
-#include <gnuradio/block.h>  // for gr::block
-#include <pmt/pmt.h>         // for pmt::pmt_t
-#include <array>             // for std::array
-#include <memory>            // for std::shared_ptr
+#include <gnuradio/block.h>        // for gr::block
+#include <pmt/pmt.h>               // for pmt::pmt_t
+#include <array>                   // for std::array
+#include <memory>                  // for std::shared_ptr
 #include <vector>
 
 /** \addtogroup Core
@@ -67,7 +66,8 @@ private:
     void read_mack_info_and_tags();
     void read_mack_key();
     void read_mack_padding();
-    SHA256 sha256;
+
+    std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input);
 
     std::array<std::array<uint8_t, 256>, 16> d_dsm_message{};
     std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};

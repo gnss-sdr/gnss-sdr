@@ -46,7 +46,11 @@ namespace wht = std;
 #endif
 
 #if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+#include <openssl/evp.h>
+#else
 #include <openssl/sha.h>
+#endif
 #else
 #include <gnutls/crypto.h>
 #include <gnutls/gnutls.h>

@@ -108,7 +108,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
             auto osnma_data_ptr = std::make_shared<OSNMA_data>(d_osnma_data);
             this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(osnma_data_ptr));
             d_new_data = false;
-            d_osnma_data = OSNMA_data();
+            // d_osnma_data = OSNMA_data();
             DLOG(INFO) << "NMA info sent to the PVT block through the OSNMA_to_PVT async message port";
         }
 }
@@ -382,7 +382,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
         {
             // Reserved message?
             LOG(WARNING) << "OSNMA Reserved message received";
-            d_osnma_data = OSNMA_data();
+            // d_osnma_data = OSNMA_data();
         }
     d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
 }
@@ -441,10 +441,37 @@ std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t
 {
     std::vector<uint8_t> output(32);  // SHA256 hash size
 #if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+    // unsigned char mdVal[EVP_MAX_MD_SIZE];
+    // unsigned char* md;
+    unsigned int mdLen;
+    EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
+    if (!EVP_DigestInit_ex(mdCtx, EVP_sha256(), OPENSSL_ENGINE))
+        {
+            // printf("Message digest initialization failed.\n");
+            // EVP_MD_CTX_free(mdCtx);
+            // exit(EXIT_FAILURE);
+        }
+    if (!EVP_DigestUpdate(mdCtx, input.data(), input.size()))
+        {
+            // printf("Message digest update failed.\n");
+            // EVP_MD_CTX_free(mdCtx);
+            // exit(EXIT_FAILURE);
+        }
+    if (!EVP_DigestFinal_ex(mdCtx, output.data(), &mdLen))
+        {
+            printf("Message digest finalization failed.\n");
+            EVP_MD_CTX_free(mdCtx);
+            exit(EXIT_FAILURE);
+        }
+    EVP_MD_CTX_free(mdCtx);
+    // md = mdVal;
+#else
     SHA256_CTX sha256Context;
     SHA256_Init(&sha256Context);
     SHA256_Update(&sha256Context, input.data(), input.size());
     SHA256_Final(output.data(), &sha256Context);
+#endif
 #else
     gnutls_hash_hd_t hashHandle;
     gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA256);
@@ -455,7 +482,7 @@ std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t
     return output;
 }
 
-// bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& publicKey)
+// bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& digest, const std::vector<uint8_t>& signature)
 // {
 //     bool success = false;
 // #if USE_OPENSSL_FALLBACK

@@ -274,7 +274,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
                 }
 
-            uint16_t check_l_dk = 104 * std::ceil(1 + (((bytes_lk * 8) + l_ds_bits) / (104)));
+            uint16_t check_l_dk = 104 * std::ceil(1 + (((bytes_lk * 8) + l_ds_bits) / 104));
             LOG(WARNING) << "check_l_dk_bits=" << static_cast<uint32_t>(check_l_dk);
             if (l_dk_bits != check_l_dk)
                 {

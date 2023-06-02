@@ -221,8 +221,24 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             d_osnma_data.d_dsm_kroot_message.towh_k = get_towh_k(dsm_msg);
             d_osnma_data.d_dsm_kroot_message.alpha = get_alpha(dsm_msg);
 
+            LOG(WARNING) << "nb_dk=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.nb_dk);
+            LOG(WARNING) << "pkid=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid);
+            LOG(WARNING) << "cidkr=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.cidkr);
+            LOG(WARNING) << "reserved1=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.reserved1);
+            LOG(WARNING) << "hf=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.hf);
+            LOG(WARNING) << "mf=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.mf);
+            LOG(WARNING) << "ks=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.ks);
+            LOG(WARNING) << "ts=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.ts);
+            LOG(WARNING) << "maclt=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.maclt);
+            LOG(WARNING) << "reserved=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.reserved);
+            LOG(WARNING) << "wn_k=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k);
+            LOG(WARNING) << "towh_k=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k);
+            LOG(WARNING) << "alpha=" << d_osnma_data.d_dsm_kroot_message.alpha;
+
             uint16_t bytes_lk = get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
             d_osnma_data.d_dsm_kroot_message.kroot = get_kroot(dsm_msg, bytes_lk);
+            LOG(WARNING) << "lk_bits=" << static_cast<uint32_t>(get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks));
+            LOG(WARNING) << "lk_bytes=" << static_cast<uint32_t>(bytes_lk);
 
             std::string hash_function = get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
 
@@ -233,13 +249,15 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     l_ds_bits = it4->second;
                 }
             uint16_t l_ds_bytes = l_ds_bits / 8;
+            LOG(WARNING) << "ds_bits=" << static_cast<uint32_t>(l_ds_bits);
+            LOG(WARNING) << "ds_bytes=" << static_cast<uint32_t>(l_ds_bytes);
             d_osnma_data.d_dsm_kroot_message.ds = std::vector<uint8_t>(l_ds_bytes, 0);
             for (uint16_t k = 0; k < l_ds_bytes; k++)
                 {
                     d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + bytes_lk + k];
                 }
             uint16_t l_pdk_bytes = (l_ds_bytes - 13 - bytes_lk - l_ds_bytes);
-
+            LOG(WARNING) << "pdk_bytes=" << static_cast<uint32_t>(l_pdk_bytes);
             d_osnma_data.d_dsm_kroot_message.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
             for (uint16_t k = 0; k < l_ds_bytes; k++)
                 {
@@ -376,25 +394,18 @@ void osnma_msg_receiver::read_mack_padding()
 
 std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t>& input)
 {
-    std::vector<uint8_t> output_vector{32};
-    uint8_t output[32];
-    const uint8_t* input_ptr = input.data();
-    size_t inputLength = input.size();
+    std::vector<uint8_t> output{32};  // SHA256 hash size
 #if USE_OPENSSL_FALLBACK
     SHA256_CTX sha256Context;
     SHA256_Init(&sha256Context);
-    SHA256_Update(&sha256Context, input_ptr, inputLength);
+    SHA256_Update(&sha256Context, input.data(), input.size());
     SHA256_Final(output, &sha256Context);
 #else
     gnutls_hash_hd_t hashHandle;
     gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA256);
-    gnutls_hash(hashHandle, input_ptr, inputLength);
-    gnutls_hash_output(hashHandle, output);
-    gnutls_hash_deinit(hashHandle, output);
+    gnutls_hash(hashHandle, input.data(), input.size());
+    gnutls_hash_output(hashHandle, output.data());
+    gnutls_hash_deinit(hashHandle, output.data());
 #endif
-    for (int i = 0; i < 32; i++)
-        {
-            output_vector[i] = output[i];
-        }
-    return output_vector;
+    return output;
 }

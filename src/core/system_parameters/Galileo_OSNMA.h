@@ -18,6 +18,7 @@
 #ifndef GNSS_SDR_GALILEO_OSNMA_H
 #define GNSS_SDR_GALILEO_OSNMA_H
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -28,6 +29,8 @@
  * \{ */
 /** \addtogroup System_Parameters
  * \{ */
+
+constexpr size_t SIZE_DSM_BLOCKS_BYTES = 13;
 
 // OSNMA User ICD for the Test Phase, Issue 1.0, Table 2
 const std::unordered_map<uint8_t, std::string> OSNMA_TABLE_2 = {

@@ -152,7 +152,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     size_t index = 0;
     for (const auto* it = osnma_msg->hkroot.cbegin() + 2; it != osnma_msg->hkroot.cend(); ++it)
         {
-            d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][13 * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
+            d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][SIZE_DSM_BLOCKS_BYTES * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
             index++;
         }
 
@@ -197,12 +197,12 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     if ((d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] != 0) &&
         (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cbegin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cend(), 0)))
         {
-            std::vector<uint8_t> dsm_msg(std::size_t(d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]) * 13, 0);
+            std::vector<uint8_t> dsm_msg(std::size_t(d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]) * SIZE_DSM_BLOCKS_BYTES, 0);
             for (uint32_t i = 0; i < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; i++)
                 {
-                    for (uint32_t j = 0; j < 14; j++)
+                    for (size_t j = 0; j < SIZE_DSM_BLOCKS_BYTES; j++)
                         {
-                            dsm_msg[i * 13 + j] = d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][i * 13 + j];
+                            dsm_msg[i * SIZE_DSM_BLOCKS_BYTES + j] = d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][i * SIZE_DSM_BLOCKS_BYTES + j];
                         }
                 }
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};

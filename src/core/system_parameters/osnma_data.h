@@ -28,73 +28,91 @@
 /** \addtogroup System_Parameters
  * \{ */
 
-struct nma_header
+class DSM_nma_header
 {
+public:
+    DSM_nma_header() = default;
     uint8_t nmas;
     uint8_t cid;
     uint8_t cpks;
     bool reserved;
 };
 
-struct dsm_header
+class DSM_dsm_header
 {
+public:
+    DSM_dsm_header() = default;
     uint8_t dsm_id;
     uint8_t dsm_block_id;
 };
 
-struct mack_header
+class MACK_header
 {
+public:
+    MACK_header() = default;
     std::vector<uint8_t> tag0;
-    uint16_t macsec;
-    uint8_t cop;
+    uint16_t macsec{};
+    uint8_t cop{};
 };
 
-struct tag
+class MACK_tag
 {
+public:
+    MACK_tag() = default;
     std::vector<uint8_t> tag;
     uint16_t tag_info;
 };
 
-struct tag_and_info
+class MACK_tag_and_info
 {
-    std::vector<tag> tags;
+public:
+    MACK_tag_and_info() = default;
+    std::vector<MACK_tag> tags;
 };
 
-struct DSM_PKR_message
+class DSM_PKR_message
 {
-    uint8_t nb_dp;
-    uint8_t mid;
+public:
+    DSM_PKR_message() = default;
+
     std::array<uint8_t, 128> itn;  // bitset<1024>
-    uint8_t npkt;
-    uint8_t npktid;
     std::vector<uint8_t> npk;
     std::vector<uint8_t> p_dp;
+    uint8_t nb_dp;
+    uint8_t mid;
+    uint8_t npkt;
+    uint8_t npktid;
 };
 
-struct DSM_KROOT_message
+class DSM_KROOT_message
 {
-    uint8_t nb_dk;
-    uint8_t pkid;
-    uint8_t cidkr;
-    uint8_t reserved1;
-    uint8_t hf;
-    uint8_t mf;
-    uint8_t ks;
-    uint8_t ts;
-    uint8_t maclt;
-    uint8_t reserved;
-    uint16_t wn_k;
-    uint8_t towh_k;
-    uint64_t alpha;
+public:
+    DSM_KROOT_message() = default;
+
     std::vector<uint8_t> kroot;
     std::vector<uint8_t> ds;
     std::vector<uint8_t> p_dk;
+    uint64_t alpha{};
+    uint16_t wn_k{};
+    uint8_t nb_dk{};
+    uint8_t pkid{};
+    uint8_t cidkr{};
+    uint8_t reserved1{};
+    uint8_t hf{};
+    uint8_t mf{};
+    uint8_t ks{};
+    uint8_t ts{};
+    uint8_t maclt{};
+    uint8_t reserved{};
+    uint8_t towh_k{};
 };
 
-struct MACK_message
+class MACK_message
 {
-    mack_header header;
-    tag_and_info tag_info;
+public:
+    MACK_message() = default;
+    MACK_header header;
+    MACK_tag_and_info tag_info;
     std::vector<uint8_t> key;
     std::vector<uint8_t> padding;
 };
@@ -107,8 +125,8 @@ class OSNMA_data
 {
 public:
     OSNMA_data() = default;
-    nma_header d_nma_header;
-    dsm_header d_dsm_header;
+    DSM_nma_header d_nma_header;
+    DSM_dsm_header d_dsm_header;
     DSM_PKR_message d_dsm_pkr_message;
     DSM_KROOT_message d_dsm_kroot_message;
 };

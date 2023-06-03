@@ -19,7 +19,7 @@
 
 #include "osnma_msg_receiver.h"
 #include "Galileo_OSNMA.h"
-#include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
+#include "osnma_dsm_reader.h"       // for OSNMA_DSM_Reader
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <bitset>
@@ -67,6 +67,7 @@ osnma_msg_receiver::osnma_msg_receiver() : gr::block("osnma_msg_receiver",
                                                gr::io_signature::make(0, 0, 0),
                                                gr::io_signature::make(0, 0, 0))
 {
+    d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
     // register OSNMA input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("OSNMA_from_TLM"));
     // register OSNMA output message port to PVT block
@@ -130,17 +131,17 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
 
 void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
 {
-    d_osnma_data.d_nma_header.nmas = get_nmas(nma_header);
-    d_osnma_data.d_nma_header.cid = get_cid(nma_header);
-    d_osnma_data.d_nma_header.cpks = get_cpks(nma_header);
-    d_osnma_data.d_nma_header.reserved = get_nma_header_reserved(nma_header);
+    d_osnma_data.d_nma_header.nmas = d_dsm_reader->get_nmas(nma_header);
+    d_osnma_data.d_nma_header.cid = d_dsm_reader->get_cid(nma_header);
+    d_osnma_data.d_nma_header.cpks = d_dsm_reader->get_cpks(nma_header);
+    d_osnma_data.d_nma_header.reserved = d_dsm_reader->get_nma_header_reserved(nma_header);
 }
 
 
 void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
 {
-    d_osnma_data.d_dsm_header.dsm_id = get_dsm_id(dsm_header);
-    d_osnma_data.d_dsm_header.dsm_block_id = get_dsm_block_id(dsm_header);  // BID
+    d_osnma_data.d_dsm_header.dsm_id = d_dsm_reader->get_dsm_id(dsm_header);
+    d_osnma_data.d_dsm_header.dsm_block_id = d_dsm_reader->get_dsm_block_id(dsm_header);  // BID
     LOG(WARNING) << "OSNMA: DSM_ID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
     LOG(WARNING) << "OSNMA: DSM_BID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id);
 }
@@ -158,7 +159,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
             // Get number of blocks in message
-            uint8_t nb = get_number_blocks_index(d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][0]);
+            uint8_t nb = d_dsm_reader->get_number_blocks_index(d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][0]);
             uint16_t number_of_blocks = 0;
             if (d_osnma_data.d_dsm_header.dsm_id < 12)
                 {
@@ -217,19 +218,19 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
         {
             LOG(WARNING) << "OSNMA: DSM-KROOT message received.";
             // DSM-KROOT message
-            d_osnma_data.d_dsm_kroot_message.nb_dk = get_number_blocks_index(dsm_msg[0]);
-            d_osnma_data.d_dsm_kroot_message.pkid = get_pkid(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.cidkr = get_cidkr(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.reserved1 = get_dsm_reserved1(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.hf = get_hf(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.mf = get_mf(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.ks = get_ks(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.ts = get_ts(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.maclt = get_maclt(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.reserved = get_dsm_reserved(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.wn_k = get_wn_k(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.towh_k = get_towh_k(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.alpha = get_alpha(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.nb_dk = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
+            d_osnma_data.d_dsm_kroot_message.pkid = d_dsm_reader->get_pkid(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.cidkr = d_dsm_reader->get_cidkr(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.reserved1 = d_dsm_reader->get_dsm_reserved1(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.hf = d_dsm_reader->get_hf(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.mf = d_dsm_reader->get_mf(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.ks = d_dsm_reader->get_ks(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.ts = d_dsm_reader->get_ts(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.maclt = d_dsm_reader->get_maclt(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.reserved = d_dsm_reader->get_dsm_reserved(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.wn_k = d_dsm_reader->get_wn_k(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.towh_k = d_dsm_reader->get_towh_k(dsm_msg);
+            d_osnma_data.d_dsm_kroot_message.alpha = d_dsm_reader->get_alpha(dsm_msg);
 
             LOG(WARNING) << "nb_dk=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.nb_dk);
             LOG(WARNING) << "pkid=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid);
@@ -245,12 +246,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             LOG(WARNING) << "towh_k=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k);
             LOG(WARNING) << "alpha=" << d_osnma_data.d_dsm_kroot_message.alpha;
 
-            uint16_t bytes_lk = get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
-            d_osnma_data.d_dsm_kroot_message.kroot = get_kroot(dsm_msg, bytes_lk);
-            LOG(WARNING) << "lk_bits=" << static_cast<uint32_t>(get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks));
+            uint16_t bytes_lk = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
+            d_osnma_data.d_dsm_kroot_message.kroot = d_dsm_reader->get_kroot(dsm_msg, bytes_lk);
+            LOG(WARNING) << "lk_bits=" << static_cast<uint32_t>(d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks));
             LOG(WARNING) << "lk_bytes=" << static_cast<uint32_t>(bytes_lk);
 
-            std::string hash_function = get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
+            std::string hash_function = d_dsm_reader->get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
 
             uint16_t l_ds_bits = 0;
             const auto it4 = OSNMA_TABLE_15.find(hash_function);
@@ -266,7 +267,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 {
                     d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + bytes_lk + k];
                 }
-            uint16_t l_dk_bits = get_l_dk_bits(d_osnma_data.d_dsm_kroot_message.nb_dk);
+            uint16_t l_dk_bits = d_dsm_reader->get_l_dk_bits(d_osnma_data.d_dsm_kroot_message.nb_dk);
             uint16_t l_dk_bytes = l_dk_bits / 8;
             LOG(WARNING) << "dk_bits=" << static_cast<uint32_t>(l_dk_bits);
             LOG(WARNING) << "dk_bytes=" << static_cast<uint32_t>(l_dk_bytes);
@@ -300,7 +301,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         }
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
-                            MSG.push_back(dsm_msg[13 + bytes_lk + k]);
+                            MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
                         }
 
                     std::vector<uint8_t> hash = computeSHA256(MSG);
@@ -334,14 +335,14 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
         {
             LOG(WARNING) << "OSNMA: DSM-PKR message received.";
             // DSM-PKR message
-            d_osnma_data.d_dsm_pkr_message.nb_dp = get_number_blocks_index(dsm_msg[0]);
-            d_osnma_data.d_dsm_pkr_message.mid = get_mid(dsm_msg);
+            d_osnma_data.d_dsm_pkr_message.nb_dp = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
+            d_osnma_data.d_dsm_pkr_message.mid = d_dsm_reader->get_mid(dsm_msg);
             for (int k = 0; k > 128; k++)
                 {
                     d_osnma_data.d_dsm_pkr_message.itn[k] = dsm_msg[k + 1];
                 }
-            d_osnma_data.d_dsm_pkr_message.npkt = get_npkt(dsm_msg);
-            d_osnma_data.d_dsm_pkr_message.npktid = get_npktid(dsm_msg);
+            d_osnma_data.d_dsm_pkr_message.npkt = d_dsm_reader->get_npkt(dsm_msg);
+            d_osnma_data.d_dsm_pkr_message.npktid = d_dsm_reader->get_npktid(dsm_msg);
 
             uint32_t l_npk = 0;
             const auto it = OSNMA_TABLE_5.find(d_osnma_data.d_dsm_pkr_message.npkt);
@@ -396,9 +397,8 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
 void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
     uint32_t index = 0;
-    for (size_t i = 0; i < osnma_msg->mack.size(); i++)
+    for (uint32_t value : osnma_msg->mack)
         {
-            uint32_t value = osnma_msg->mack[i];
             d_mack_message[index] = static_cast<uint8_t>((value & 0xFF000000) >> 6);
             d_mack_message[index + 1] = static_cast<uint8_t>((value & 0x00FF0000) >> 4);
             d_mack_message[index + 2] = static_cast<uint8_t>((value & 0x0000FF00) >> 2);
@@ -453,21 +453,21 @@ std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t
     EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
     if (!EVP_DigestInit_ex(mdCtx, EVP_sha256(), OPENSSL_ENGINE))
         {
-            // printf("Message digest initialization failed.\n");
-            // EVP_MD_CTX_free(mdCtx);
-            // exit(EXIT_FAILURE);
+            LOG(WARNING) << "OSNMA SHA-256: Message digest initialization failed.";
+            EVP_MD_CTX_free(mdCtx);
+            return output;
         }
     if (!EVP_DigestUpdate(mdCtx, input.data(), input.size()))
         {
-            // printf("Message digest update failed.\n");
-            // EVP_MD_CTX_free(mdCtx);
-            // exit(EXIT_FAILURE);
+            LOG(WARNING) << "OSNMA SHA-256: Message digest update failed.";
+            EVP_MD_CTX_free(mdCtx);
+            return output;
         }
     if (!EVP_DigestFinal_ex(mdCtx, output.data(), &mdLen))
         {
-            printf("Message digest finalization failed.\n");
+            LOG(WARNING) << "OSNMA SHA-256: Message digest finalization failed.";
             EVP_MD_CTX_free(mdCtx);
-            exit(EXIT_FAILURE);
+            return output;
         }
     EVP_MD_CTX_free(mdCtx);
     // md = mdVal;

@@ -511,8 +511,8 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     if (d_band == '1' && d_inav_nav.have_new_nma() == true)
         {
             const std::shared_ptr<OSNMA_msg> tmp_obj = std::make_shared<OSNMA_msg>(d_inav_nav.get_osnma_msg());
-            this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
             uint8_t nma_status = (tmp_obj->hkroot[0] & 0xC0) >> 6;
+            this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
             std::string nma_status_string;
             if (nma_status == 0)
                 {

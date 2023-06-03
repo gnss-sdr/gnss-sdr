@@ -21,6 +21,7 @@
 
 #include "galileo_inav_message.h"  // for OSNMA_msg
 #include "gnss_block_interface.h"  // for gnss_shared_ptr
+#include "gnss_sdr_make_unique.h"  // for std::make:unique in C++11
 #include "osnma_data.h"            // for OSNMA_data
 #include <gnuradio/block.h>        // for gr::block
 #include <pmt/pmt.h>               // for pmt::pmt_t
@@ -33,6 +34,7 @@
 /** \addtogroup Core_Receiver_Library
  * \{ */
 
+class OSNMA_DSM_Reader;
 class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
@@ -68,6 +70,8 @@ private:
     void read_mack_padding();
 
     std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input);
+
+    std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
 
     std::array<std::array<uint8_t, 256>, 16> d_dsm_message{};
     std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};

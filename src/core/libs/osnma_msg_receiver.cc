@@ -155,7 +155,12 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][SIZE_DSM_BLOCKS_BYTES * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
             index++;
         }
-
+    std::cout << "dsm_message:";
+    for (auto c : d_dsm_message[d_osnma_data.d_dsm_header.dsm_id])
+        {
+            std::cout << " " << static_cast<uint32_t>(c);
+        }
+    std::cout << std::endl;
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
             // Get number of blocks in message
@@ -232,56 +237,32 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             d_osnma_data.d_dsm_kroot_message.towh_k = d_dsm_reader->get_towh_k(dsm_msg);
             d_osnma_data.d_dsm_kroot_message.alpha = d_dsm_reader->get_alpha(dsm_msg);
 
-            LOG(WARNING) << "nb_dk=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.nb_dk);
-            LOG(WARNING) << "pkid=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid);
-            LOG(WARNING) << "cidkr=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.cidkr);
-            LOG(WARNING) << "reserved1=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.reserved1);
-            LOG(WARNING) << "hf=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.hf);
-            LOG(WARNING) << "mf=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.mf);
-            LOG(WARNING) << "ks=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.ks);
-            LOG(WARNING) << "ts=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.ts);
-            LOG(WARNING) << "maclt=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.maclt);
-            LOG(WARNING) << "reserved=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.reserved);
-            LOG(WARNING) << "wn_k=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k);
-            LOG(WARNING) << "towh_k=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k);
-            LOG(WARNING) << "alpha=" << d_osnma_data.d_dsm_kroot_message.alpha;
-
-            uint16_t bytes_lk = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
-            d_osnma_data.d_dsm_kroot_message.kroot = d_dsm_reader->get_kroot(dsm_msg, bytes_lk);
-            LOG(WARNING) << "lk_bits=" << static_cast<uint32_t>(d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks));
-            LOG(WARNING) << "lk_bytes=" << static_cast<uint32_t>(bytes_lk);
+            const uint16_t l_lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
+            d_osnma_data.d_dsm_kroot_message.kroot = d_dsm_reader->get_kroot(dsm_msg, l_lk_bytes);
 
             std::string hash_function = d_dsm_reader->get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
-
             uint16_t l_ds_bits = 0;
             const auto it4 = OSNMA_TABLE_15.find(hash_function);
             if (it4 != OSNMA_TABLE_15.cend())
                 {
                     l_ds_bits = it4->second;
                 }
-            uint16_t l_ds_bytes = l_ds_bits / 8;
-            LOG(WARNING) << "ds_bits=" << static_cast<uint32_t>(l_ds_bits);
-            LOG(WARNING) << "ds_bytes=" << static_cast<uint32_t>(l_ds_bytes);
+            const uint16_t l_ds_bytes = l_ds_bits / 8;
             d_osnma_data.d_dsm_kroot_message.ds = std::vector<uint8_t>(l_ds_bytes, 0);
             for (uint16_t k = 0; k < l_ds_bytes; k++)
                 {
-                    d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + bytes_lk + k];
+                    d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + l_lk_bytes + k];
                 }
-            uint16_t l_dk_bits = d_dsm_reader->get_l_dk_bits(d_osnma_data.d_dsm_kroot_message.nb_dk);
-            uint16_t l_dk_bytes = l_dk_bits / 8;
-            LOG(WARNING) << "dk_bits=" << static_cast<uint32_t>(l_dk_bits);
-            LOG(WARNING) << "dk_bytes=" << static_cast<uint32_t>(l_dk_bytes);
-
-            uint16_t l_pdk_bytes = (l_dk_bytes - 13 - bytes_lk - l_ds_bytes);
-            LOG(WARNING) << "pdk_bytes=" << static_cast<uint32_t>(l_pdk_bytes);
+            const uint16_t l_dk_bits = d_dsm_reader->get_l_dk_bits(d_osnma_data.d_dsm_kroot_message.nb_dk);
+            const uint16_t l_dk_bytes = l_dk_bits / 8;
+            const uint16_t l_pdk_bytes = (l_dk_bytes - 13 - l_lk_bytes - l_ds_bytes);
             d_osnma_data.d_dsm_kroot_message.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
             for (uint16_t k = 0; k < l_pdk_bytes; k++)
                 {
-                    d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + bytes_lk + l_ds_bytes + k];
+                    d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + l_lk_bytes + l_ds_bytes + k];
                 }
 
-            uint16_t check_l_dk = 104 * std::ceil(1.0 + static_cast<float>((bytes_lk * 8.0) + l_ds_bits) / 104.0);
-            LOG(WARNING) << "check_l_dk_bits=" << static_cast<uint32_t>(check_l_dk);
+            const uint16_t check_l_dk = 104 * std::ceil(1.0 + static_cast<float>((l_lk_bytes * 8.0) + l_ds_bits) / 104.0);
             if (l_dk_bits != check_l_dk)
                 {
                     std::cout << "OSNMA: Failed length reading" << std::endl;
@@ -289,43 +270,44 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             else
                 {
                     // validation of padding
+                    const uint16_t size_m = 13 + l_lk_bytes;
                     std::vector<uint8_t> MSG;
+                    MSG.reserve(size_m + l_ds_bytes + 1);
                     MSG.push_back(nma_header);
-                    for (int i = 1; i < 13; i++)
+                    for (uint16_t i = 1; i < size_m; i++)
                         {
                             MSG.push_back(dsm_msg[i]);
                         }
-                    for (uint16_t i = 0; i < bytes_lk; i++)
-                        {
-                            MSG.push_back(dsm_msg[13 + i]);
-                        }
+
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
                             MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
                         }
 
-                    std::vector<uint8_t> hash = computeSHA256(MSG);
-                    std::cout << "hash: ";
-                    for (auto c : hash)
+                    std::vector<uint8_t> hash;
+                    if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
                         {
-                            std::cout << static_cast<uint32_t>(c);
+                            hash = computeSHA256(MSG);
                         }
-                    std::cout << std::endl;
-
-                    std::cout << "pdk: ";
-                    for (auto c : d_osnma_data.d_dsm_kroot_message.p_dk)
+                    else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
                         {
-                            std::cout << static_cast<uint32_t>(c);
+                            hash = computeSHA3_256(MSG);
                         }
-                    std::cout << std::endl;
+                    else
+                        {
+                            hash = std::vector<uint8_t>(32);
+                        }
                     // truncate hash
-                    std::vector<uint8_t> p_dk_computed;
+                    std::vector<uint8_t> p_dk_truncated;
+                    p_dk_truncated.reserve(l_pdk_bytes);
                     for (uint16_t i = 0; i < l_pdk_bytes; i++)
                         {
-                            p_dk_computed.push_back(hash[i]);
+                            p_dk_truncated.push_back(hash[i]);
                         }
-                    if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_computed)
+                    // check DS signature
+                    if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_truncated)
                         {
+                            LOG(WARNING) << "OSNMA: DSM-KROOT message received ok.";
                             std::cout << "OSNMA: DSM-KROOT message validated" << std::endl;
                         }
                     // Validate signature
@@ -354,11 +336,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                             l_npk = it2->second / 8;
                         }
                 }
-
+            uint32_t l_dp = dsm_msg.size();
             if (d_osnma_data.d_dsm_pkr_message.npkt == 4)
                 {
                     LOG(WARNING) << "OSNMA: OAM received";
-                    l_npk = 0;  // ?
+                    l_npk = l_dp - 130;  // bytes
                 }
 
             d_osnma_data.d_dsm_pkr_message.npk = std::vector<uint8_t>(l_npk, 0);  // ECDSA Public Key
@@ -366,11 +348,9 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 {
                     d_osnma_data.d_dsm_pkr_message.npk[k] = dsm_msg[k + 130];
                 }
-            uint32_t l_dp = dsm_msg.size();
+
             uint32_t l_pd = l_dp - 130 - l_npk;
-
             uint32_t check_l_dp = 104 * std::ceil(static_cast<float>(1040.0 + l_npk * 8.0) / 104.0);
-
             if (l_dp != check_l_dp)
                 {
                     std::cout << "OSNMA: Failed length reading" << std::endl;
@@ -478,23 +458,59 @@ std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t
     SHA256_Final(output.data(), &sha256Context);
 #endif
 #else
+    std::vector<uint8_t> output_aux(32);
     gnutls_hash_hd_t hashHandle;
     gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA256);
     gnutls_hash(hashHandle, input.data(), input.size());
-    gnutls_hash_output(hashHandle, output.data());
-    gnutls_hash_deinit(hashHandle, output.data());
+    gnutls_hash_output(hashHandle, output_aux.data());
+    output = output_aux;
+    gnutls_hash_deinit(hashHandle, output_aux.data());
 #endif
     return output;
 }
 
-// bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& digest, const std::vector<uint8_t>& signature)
+
+std::vector<uint8_t> osnma_msg_receiver::computeSHA3_256(const std::vector<uint8_t>& input)
+{
+    std::vector<uint8_t> output(32);  // SHA256 hash size
+#if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    const EVP_MD* md = EVP_sha3_256();
+
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, input.data(), input.size());
+    EVP_DigestFinal_ex(mdctx, output.data(), NULL);
+    EVP_MD_CTX_free(mdctx);
+#else
+    // SHA3-256 not implemented in OpenSSL < 3.0
+#endif
+#else
+    std::vector<uint8_t> output_aux(32);
+    gnutls_hash_hd_t hashHandle;
+    gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA3_256);
+    gnutls_hash(hashHandle, input.data(), input.size());
+    gnutls_hash_output(hashHandle, output_aux.data());
+    output = output_aux;
+    gnutls_hash_deinit(hashHandle, output_aux.data());
+#endif
+    return output;
+}
+
+
+// bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& digest, std::vector<uint8_t>& signature)
 // {
 //     bool success = false;
 // #if USE_OPENSSL_FALLBACK
 // #else
 //     gnutls_global_init();
-//     int result = gnutls_pubkey_verify_data(publicKey, GNUTLS_SIGN_ECDSA_SHA256, digest, sizeof(digest), signature, signatureSize);
+//     int result = gnutls_pubkey_verify_data(publicKey.data(), GNUTLS_SIGN_ECDSA_SHA256, digest.data, digest.size(), signature.data(), signature.size());
 //     success = (result == GNUTLS_E_SUCCESS);
+// gnutls_global_deinit();
 // #endif
 //     return success;
 // }
+// bool verifyDigitalSignature(const unsigned char* signature, size_t signatureSize, const unsigned char* message, size_t messageSize, gnutls_pubkey_t publicKey)
+// {
+//     int verificationStatus = gnutls_pubkey_verify_data(publicKey, GNUTLS_DIG_SHA256, 0, message, messageSize, signature, signatureSize);
+//     return verificationStatus == 0;

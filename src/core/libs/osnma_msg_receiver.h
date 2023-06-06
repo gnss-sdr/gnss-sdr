@@ -70,6 +70,7 @@ private:
     void read_mack_padding();
 
     std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input);
+    std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input);
 
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
 

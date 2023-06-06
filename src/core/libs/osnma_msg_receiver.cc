@@ -242,10 +242,10 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
 
             std::string hash_function = d_dsm_reader->get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
             uint16_t l_ds_bits = 0;
-            const auto it4 = OSNMA_TABLE_15.find(hash_function);
-            if (it4 != OSNMA_TABLE_15.cend())
+            const auto it = OSNMA_TABLE_15.find(hash_function);
+            if (it != OSNMA_TABLE_15.cend())
                 {
-                    l_ds_bits = it4->second;
+                    l_ds_bits = it->second;
                 }
             const uint16_t l_ds_bytes = l_ds_bits / 8;
             d_osnma_data.d_dsm_kroot_message.ds = std::vector<uint8_t>(l_ds_bytes, 0);
@@ -362,6 +362,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         {
                             d_osnma_data.d_dsm_pkr_message.p_dp[k] = dsm_msg[l_dp - l_pd + k];
                         }
+                    // std::vector<uint8_t> mi;  //  (NPKT + NPKID + NPK)
                 }
         }
     else
@@ -385,10 +386,13 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
             d_mack_message[index + 3] = static_cast<uint8_t>(value & 0x000000FF);
             index = index + 4;
         }
-    read_mack_header();
-    read_mack_info_and_tags();
-    read_mack_key();
-    read_mack_padding();
+    if (d_osnma_data.d_dsm_kroot_message.ts != 0)
+        {
+            read_mack_header();
+            read_mack_info_and_tags();
+            read_mack_key();
+            read_mack_padding();
+        }
 }
 
 
@@ -404,11 +408,86 @@ void osnma_msg_receiver::read_mack_header()
         {
             return;
         }
+    uint16_t macseq = 0;
+    uint8_t cop = 0;
+    uint64_t first_lt_bits = static_cast<uint64_t>(d_mack_message[0]) << (lt_bits - 8);
+    first_lt_bits += (static_cast<uint64_t>(d_mack_message[1]) << (lt_bits - 16));
+    if (lt_bits == 20)
+        {
+            first_lt_bits += (static_cast<uint64_t>(d_mack_message[1] & 0xF0) >> 4);
+            macseq += (static_cast<uint16_t>(d_mack_message[1] & 0x0F) << 8);
+            macseq += static_cast<uint16_t>(d_mack_message[2]);
+            cop += ((d_mack_message[3] & 0xF0) >> 4);
+        }
+    else if (lt_bits == 24)
+        {
+            first_lt_bits += static_cast<uint64_t>(d_mack_message[2]);
+            macseq += (static_cast<uint16_t>(d_mack_message[3]) << 8);
+            macseq += (static_cast<uint16_t>(d_mack_message[4] & 0xF0) >> 4);
+            cop += (d_mack_message[4] & 0x0F);
+        }
+    else if (lt_bits == 28)
+        {
+            first_lt_bits += (static_cast<uint64_t>(d_mack_message[2]) << 4);
+            first_lt_bits += (static_cast<uint64_t>(d_mack_message[3] & 0xF0) >> 4);
+            macseq += (static_cast<uint16_t>(d_mack_message[3] & 0x0F) << 8);
+            macseq += (static_cast<uint16_t>(d_mack_message[4]));
+            cop += ((d_mack_message[5] & 0xF0) >> 4);
+        }
+    else if (lt_bits == 32)
+        {
+            first_lt_bits += (static_cast<uint64_t>(d_mack_message[2]) << 8);
+            first_lt_bits += static_cast<uint64_t>(d_mack_message[3]);
+            macseq += (static_cast<uint16_t>(d_mack_message[4]) << 8);
+            macseq += (static_cast<uint16_t>(d_mack_message[5] & 0xF0) >> 4);
+            cop += (d_mack_message[5] & 0x0F);
+        }
+    else if (lt_bits == 40)
+        {
+            first_lt_bits += (static_cast<uint64_t>(d_mack_message[2]) << 16);
+            first_lt_bits += (static_cast<uint64_t>(d_mack_message[3]) << 8);
+            first_lt_bits += static_cast<uint64_t>(d_mack_message[4]);
+            macseq += (static_cast<uint16_t>(d_mack_message[5]) << 8);
+            macseq += (static_cast<uint16_t>(d_mack_message[6] & 0xF0) >> 4);
+            cop += (d_mack_message[6] & 0x0F);
+        }
+    d_osnma_data.d_mack_message.header.tag0 = first_lt_bits;
+    d_osnma_data.d_mack_message.header.macseq = macseq;
+    d_osnma_data.d_mack_message.header.macseq = cop;
 }
 
 
 void osnma_msg_receiver::read_mack_info_and_tags()
 {
+    uint8_t lt_bits = 0;
+    const auto it = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
+    if (it != OSNMA_TABLE_11.cend())
+        {
+            lt_bits = it->second;
+        }
+    if (lt_bits == 0)
+        {
+            return;
+        }
+    uint16_t lk_bits = 0;
+    const auto it2 = OSNMA_TABLE_10.find(d_osnma_data.d_dsm_kroot_message.ks);
+    if (it2 != OSNMA_TABLE_10.cend())
+        {
+            lk_bits = it2->second;
+        }
+    if (lk_bits == 0)
+        {
+            return;
+        }
+    uint16_t nt = std::floor((480.0 + float(lk_bits)) / (float(lt_bits) + 16.0));
+    d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
+    for (uint16_t k = 0; k < (nt - 1); k++)
+        {
+            d_osnma_data.d_mack_message.tag_and_info[k].tag = 0;
+            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.PRN_d = 0;
+            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.ADKD = 0;
+            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.cop = 0;
+        }
 }
 
 
@@ -478,9 +557,9 @@ std::vector<uint8_t> osnma_msg_receiver::computeSHA3_256(const std::vector<uint8
     EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
     const EVP_MD* md = EVP_sha3_256();
 
-    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestInit_ex(mdctx, md, nullptr);
     EVP_DigestUpdate(mdctx, input.data(), input.size());
-    EVP_DigestFinal_ex(mdctx, output.data(), NULL);
+    EVP_DigestFinal_ex(mdctx, output.data(), nullptr);
     EVP_MD_CTX_free(mdctx);
 #else
     // SHA3-256 not implemented in OpenSSL < 3.0

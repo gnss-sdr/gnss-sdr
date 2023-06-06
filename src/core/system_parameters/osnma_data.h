@@ -32,42 +32,44 @@ class DSM_nma_header
 {
 public:
     DSM_nma_header() = default;
-    uint8_t nmas;
-    uint8_t cid;
-    uint8_t cpks;
-    bool reserved;
+    uint8_t nmas{};
+    uint8_t cid{};
+    uint8_t cpks{};
+    bool reserved{};
 };
 
 class DSM_dsm_header
 {
 public:
     DSM_dsm_header() = default;
-    uint8_t dsm_id;
-    uint8_t dsm_block_id;
+    uint8_t dsm_id{};
+    uint8_t dsm_block_id{};
 };
 
 class MACK_header
 {
 public:
     MACK_header() = default;
-    std::vector<uint8_t> tag0;
-    uint16_t macsec{};
+    uint64_t tag0{};
+    uint16_t macseq{};
     uint8_t cop{};
 };
 
-class MACK_tag
+class MACK_tag_info
 {
 public:
-    MACK_tag() = default;
-    std::vector<uint8_t> tag;
-    uint16_t tag_info;
+    MACK_tag_info() = default;
+    uint8_t PRN_d{};
+    uint8_t ADKD{};
+    uint8_t cop{};
 };
 
 class MACK_tag_and_info
 {
 public:
     MACK_tag_and_info() = default;
-    std::vector<MACK_tag> tags;
+    uint64_t tag;
+    MACK_tag_info tag_info;
 };
 
 class DSM_PKR_message
@@ -78,10 +80,10 @@ public:
     std::array<uint8_t, 128> itn;  // bitset<1024>
     std::vector<uint8_t> npk;
     std::vector<uint8_t> p_dp;
-    uint8_t nb_dp;
-    uint8_t mid;
-    uint8_t npkt;
-    uint8_t npktid;
+    uint8_t nb_dp{};
+    uint8_t mid{};
+    uint8_t npkt{};
+    uint8_t npktid{};
 };
 
 class DSM_KROOT_message
@@ -112,7 +114,7 @@ class MACK_message
 public:
     MACK_message() = default;
     MACK_header header;
-    MACK_tag_and_info tag_info;
+    std::vector<MACK_tag_and_info> tag_and_info;
     std::vector<uint8_t> key;
     std::vector<uint8_t> padding;
 };
@@ -129,6 +131,7 @@ public:
     DSM_dsm_header d_dsm_header;
     DSM_PKR_message d_dsm_pkr_message;
     DSM_KROOT_message d_dsm_kroot_message;
+    MACK_message d_mack_message;
 };
 
 

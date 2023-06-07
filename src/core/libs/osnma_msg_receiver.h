@@ -27,6 +27,7 @@
 #include <pmt/pmt.h>               // for pmt::pmt_t
 #include <array>                   // for std::array
 #include <memory>                  // for std::shared_ptr
+#include <string>
 #include <vector>
 
 /** \addtogroup Core
@@ -35,11 +36,12 @@
  * \{ */
 
 class OSNMA_DSM_Reader;
+class Gnss_Crypto;
 class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make();
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath);
 
 /*!
  * \brief GNU Radio block that receives asynchronous OSNMA messages
@@ -53,8 +55,8 @@ public:
     ~osnma_msg_receiver() = default;  //!< Default destructor
 
 private:
-    friend osnma_msg_receiver_sptr osnma_msg_receiver_make();
-    osnma_msg_receiver();
+    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath);
+    osnma_msg_receiver(const std::string& pemFilePath);
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
@@ -69,13 +71,8 @@ private:
     void read_mack_key();
     void read_mack_padding();
 
-    std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input);
-    std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input);
-    std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input);
-    std::vector<uint8_t> computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input);
-    std::vector<uint8_t> readPublicKeyFromPEM(const std::string& filePath);
-
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
+    std::unique_ptr<Gnss_Crypto> d_crypto;
 
     std::array<std::array<uint8_t, 256>, 16> d_dsm_message{};
     std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};

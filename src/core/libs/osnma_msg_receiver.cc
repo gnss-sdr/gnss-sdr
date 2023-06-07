@@ -19,18 +19,15 @@
 
 #include "osnma_msg_receiver.h"
 #include "Galileo_OSNMA.h"
+#include "gnss_crypto.h"
 #include "osnma_dsm_reader.h"       // for OSNMA_DSM_Reader
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
-#include <bitset>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <fstream>
 #include <iostream>
-#include <iterator>
 #include <numeric>
-#include <string>
 #include <typeinfo>  // for typeid
 
 #if HAS_GENERIC_LAMBDA
@@ -46,33 +43,21 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
-#if USE_OPENSSL_FALLBACK
-#include <openssl/cmac.h>
-#include <openssl/hmac.h>
-#if USE_OPENSSL_3
-#include <openssl/evp.h>
-#define OPENSSL_ENGINE NULL
-#else
-#include <openssl/sha.h>
-#endif
-#else
-#include <gnutls/crypto.h>
-#include <gnutls/gnutls.h>
-#include <gnutls/x509.h>
-#endif
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make()
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath)
 {
-    return osnma_msg_receiver_sptr(new osnma_msg_receiver());
+    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath));
 }
 
 
-osnma_msg_receiver::osnma_msg_receiver() : gr::block("osnma_msg_receiver",
-                                               gr::io_signature::make(0, 0, 0),
-                                               gr::io_signature::make(0, 0, 0))
+osnma_msg_receiver::osnma_msg_receiver(
+    const std::string& pemFilePath) : gr::block("osnma_msg_receiver",
+                                          gr::io_signature::make(0, 0, 0),
+                                          gr::io_signature::make(0, 0, 0))
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
-    // register OSNMA input message port from telemetry blocks
+    d_crypto = std::make_unique<Gnss_Crypto>(pemFilePath);
+    //  register OSNMA input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("OSNMA_from_TLM"));
     // register OSNMA output message port to PVT block
     this->message_port_register_out(pmt::mp("OSNMA_to_PVT"));
@@ -291,11 +276,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     std::vector<uint8_t> hash;
                     if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
                         {
-                            hash = computeSHA256(MSG);
+                            hash = d_crypto->computeSHA256(MSG);
                         }
                     else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
                         {
-                            hash = computeSHA3_256(MSG);
+                            hash = d_crypto->computeSHA3_256(MSG);
                         }
                     else
                         {
@@ -584,276 +569,4 @@ void osnma_msg_receiver::read_mack_key()
 
 void osnma_msg_receiver::read_mack_padding()
 {
-}
-
-
-std::vector<uint8_t> osnma_msg_receiver::computeSHA256(const std::vector<uint8_t>& input)
-{
-    std::vector<uint8_t> output(32);  // SHA256 hash size
-#if USE_OPENSSL_FALLBACK
-#if USE_OPENSSL_3
-    // unsigned char mdVal[EVP_MAX_MD_SIZE];
-    // unsigned char* md;
-    unsigned int mdLen;
-    EVP_MD_CTX* mdCtx = EVP_MD_CTX_new();
-    if (!EVP_DigestInit_ex(mdCtx, EVP_sha256(), OPENSSL_ENGINE))
-        {
-            LOG(WARNING) << "OSNMA SHA-256: Message digest initialization failed.";
-            EVP_MD_CTX_free(mdCtx);
-            return output;
-        }
-    if (!EVP_DigestUpdate(mdCtx, input.data(), input.size()))
-        {
-            LOG(WARNING) << "OSNMA SHA-256: Message digest update failed.";
-            EVP_MD_CTX_free(mdCtx);
-            return output;
-        }
-    if (!EVP_DigestFinal_ex(mdCtx, output.data(), &mdLen))
-        {
-            LOG(WARNING) << "OSNMA SHA-256: Message digest finalization failed.";
-            EVP_MD_CTX_free(mdCtx);
-            return output;
-        }
-    EVP_MD_CTX_free(mdCtx);
-    // md = mdVal;
-#else
-    SHA256_CTX sha256Context;
-    SHA256_Init(&sha256Context);
-    SHA256_Update(&sha256Context, input.data(), input.size());
-    SHA256_Final(output.data(), &sha256Context);
-#endif
-#else
-    std::vector<uint8_t> output_aux(32);
-    gnutls_hash_hd_t hashHandle;
-    gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA256);
-    gnutls_hash(hashHandle, input.data(), input.size());
-    gnutls_hash_output(hashHandle, output_aux.data());
-    output = output_aux;
-    gnutls_hash_deinit(hashHandle, output_aux.data());
-#endif
-    return output;
-}
-
-
-std::vector<uint8_t> osnma_msg_receiver::computeSHA3_256(const std::vector<uint8_t>& input)
-{
-    std::vector<uint8_t> output(32);  // SHA256 hash size
-#if USE_OPENSSL_FALLBACK
-#if USE_OPENSSL_3
-    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
-    const EVP_MD* md = EVP_sha3_256();
-
-    EVP_DigestInit_ex(mdctx, md, nullptr);
-    EVP_DigestUpdate(mdctx, input.data(), input.size());
-    EVP_DigestFinal_ex(mdctx, output.data(), nullptr);
-    EVP_MD_CTX_free(mdctx);
-#else
-    // SHA3-256 not implemented in OpenSSL < 3.0
-#endif
-#else
-    std::vector<uint8_t> output_aux(32);
-    gnutls_hash_hd_t hashHandle;
-    gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA3_256);
-    gnutls_hash(hashHandle, input.data(), input.size());
-    gnutls_hash_output(hashHandle, output_aux.data());
-    output = output_aux;
-    gnutls_hash_deinit(hashHandle, output_aux.data());
-#endif
-    return output;
-}
-
-
-std::vector<uint8_t> osnma_msg_receiver::computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input)
-{
-    std::vector<uint8_t> output(32);
-#if USE_OPENSSL_FALLBACK
-#if USE_OPENSSL_3
-    std::vector<uint8_t> hmac(EVP_MAX_MD_SIZE);
-
-    // Create HMAC-SHA256 context
-    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-    EVP_PKEY* pkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, key.data(), key.size());
-
-    // Initialize HMAC-SHA256 context
-    EVP_DigestSignInit(ctx, nullptr, EVP_sha256(), nullptr, pkey);
-
-    // Compute HMAC-SHA256
-    EVP_DigestSignUpdate(ctx, input.data(), input.size());
-    size_t macLength;
-    EVP_DigestSignFinal(ctx, hmac.data(), &macLength);
-
-    EVP_PKEY_free(pkey);
-    EVP_MD_CTX_free(ctx);
-
-    hmac.resize(macLength);
-    output = hmac;
-#else
-    std::vector<uint8_t> hmac(32);
-    // Create HMAC context
-    HMAC_CTX* ctx = HMAC_CTX_new();
-    HMAC_Init_ex(ctx, key.data(), key.size(), EVP_sha256(), nullptr);
-
-    // Update HMAC context with the message
-    HMAC_Update(ctx, input.data(), input.size());
-
-    // Finalize HMAC computation
-    unsigned int hmacLen;
-    HMAC_Final(ctx, hmac.data(), &hmacLen);
-
-    // Clean up HMAC context
-    HMAC_CTX_free(ctx);
-
-    // Resize the HMAC vector to the actual length
-    hmac.resize(hmacLen);
-
-    output = hmac;
-#endif
-#else
-    std::vector<uint8_t> output_aux(32);
-    gnutls_hmac_hd_t hmac;
-    gnutls_hmac_init(&hmac, GNUTLS_MAC_SHA256, key.data(), key.size());
-    gnutls_hmac(hmac, input.data(), input.size());
-    gnutls_hmac_output(hmac, output_aux.data());
-    output = output_aux;
-    gnutls_hmac_deinit(hmac, output_aux.data());
-
-#endif
-    return output;
-}
-
-
-std::vector<uint8_t> osnma_msg_receiver::computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input)
-{
-    std::vector<uint8_t> output(16);
-#if USE_OPENSSL_FALLBACK
-#if USE_OPENSSL_3
-    std::vector<uint8_t> mac(EVP_MAX_MD_SIZE);  // CMAC-AES output size
-
-    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-
-    // Initialize CMAC-AES context
-    EVP_CIPHER_CTX* cmacCtx = EVP_CIPHER_CTX_new();
-    EVP_CMAC_CTX* cmac = EVP_CMAC_CTX_new();
-
-    EVP_CIPHER_CTX_reset(ctx);
-    EVP_CMAC_CTX_reset(cmac);
-
-    // Set AES-128 CMAC cipher and key
-    EVP_CMAC_init(cmac, key.data(), key.size(), EVP_aes_128_cbc(), nullptr);
-
-    // Compute CMAC-AES
-    EVP_CMAC_update(cmac, input.data(), input.size());
-    size_t macLength;
-    EVP_CMAC_final(cmac, mac.data(), &macLength);
-
-    EVP_CIPHER_CTX_free(ctx);
-    EVP_CMAC_CTX_free(cmac);
-
-    mac.resize(macLength);
-    output = mac;
-#else
-    std::vector<uint8_t> mac(CMAC_DIGEST_LENGTH);  // CMAC-AES output size
-
-    // Create CMAC context
-    CMAC_CTX* cmacCtx = CMAC_CTX_new();
-    CMAC_Init(cmacCtx, key.data(), key.size(), EVP_aes_128_cbc(), nullptr);
-
-    // Compute CMAC-AES
-    CMAC_Update(cmacCtx, input.data(), input.size());
-    CMAC_Final(cmacCtx, mac.data(), nullptr);
-
-    // Clean up CMAC context
-    CMAC_CTX_free(cmacCtx);
-
-    output = mac;
-#endif
-#else
-    gnutls_cipher_hd_t cipher;
-    std::vector<uint8_t> mac(16);
-    std::vector<uint8_t> message = input;
-    gnutls_datum_t key_data = {const_cast<uint8_t*>(key.data()), static_cast<unsigned int>(key.size())};
-    gnutls_cipher_init(&cipher, GNUTLS_CIPHER_AES_128_CBC, &key_data, nullptr);
-    gnutls_cipher_set_iv(cipher, nullptr, 16);                      // Set IV to zero
-    gnutls_cipher_encrypt(cipher, message.data(), message.size());  // Encrypt the message with AES-128
-    gnutls_cipher_tag(cipher, mac.data(), mac.size());              // Get the CMAC-AES tag
-    output = mac;
-    gnutls_cipher_deinit(cipher);
-#endif
-    return output;
-}
-
-// bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& digest, std::vector<uint8_t>& signature)
-// {
-//     bool success = false;
-// #if USE_OPENSSL_FALLBACK
-// #else
-//     gnutls_global_init();
-//     int result = gnutls_pubkey_verify_data(publicKey.data(), GNUTLS_SIGN_ECDSA_SHA256, digest.data, digest.size(), signature.data(), signature.size());
-//     success = (result == GNUTLS_E_SUCCESS);
-// gnutls_global_deinit();
-// #endif
-//     return success;
-// }
-// bool verifyDigitalSignature(const unsigned char* signature, size_t signatureSize, const unsigned char* message, size_t messageSize, gnutls_pubkey_t publicKey)
-// {
-//     int verificationStatus = gnutls_pubkey_verify_data(publicKey, GNUTLS_DIG_SHA256, 0, message, messageSize, signature, signatureSize);
-//     return verificationStatus == 0;
-
-std::vector<uint8_t> osnma_msg_receiver::readPublicKeyFromPEM(const std::string& filePath)
-{
-    std::vector<uint8_t> publicKey;
-#if USE_OPENSSL_FALLBACK
-#if USE_OPENSSL_3
-#else
-#endif
-#else
-    // Open the .pem file
-    std::ifstream file(filePath);
-    if (!file)
-        {
-            std::cerr << "Failed to open the file: " << filePath << std::endl;
-            return publicKey;
-        }
-
-    // Read the contents of the .pem file into a string
-    std::string pemContents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-    gnutls_x509_crt_t cert;
-    gnutls_x509_crt_init(&cert);
-
-    // Import the certificate from the PEM file
-    gnutls_datum_t pemData;
-    pemData.data = reinterpret_cast<unsigned char*>(const_cast<char*>(pemContents.data()));
-    pemData.size = pemContents.size();
-    int ret = gnutls_x509_crt_import(cert, &pemData, GNUTLS_X509_FMT_PEM);
-    if (ret < 0)
-        {
-            std::cerr << "Failed to import certificate from PEM file" << std::endl;
-            gnutls_x509_crt_deinit(cert);
-            return publicKey;
-        }
-
-    // Export the public key data
-    size_t pubkey_data_size = 0;
-    ret = gnutls_x509_crt_export(cert, GNUTLS_X509_FMT_DER, nullptr, &pubkey_data_size);
-    if (ret < 0)
-        {
-            std::cerr << "Failed to export public key data" << std::endl;
-            gnutls_x509_crt_deinit(cert);
-            return publicKey;
-        }
-
-    publicKey.resize(pubkey_data_size);
-    ret = gnutls_x509_crt_export(cert, GNUTLS_X509_FMT_DER, publicKey.data(), &pubkey_data_size);
-    if (ret < 0)
-        {
-            std::cerr << "Failed to export public key data" << std::endl;
-            gnutls_x509_crt_deinit(cert);
-            return publicKey;
-        }
-
-    gnutls_x509_crt_deinit(cert);
-
-#endif
-    return publicKey;
 }

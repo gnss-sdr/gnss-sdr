@@ -7,6 +7,7 @@
 
 set(SYSTEM_PARAMETERS_SOURCES
     gnss_almanac.cc
+    gnss_crypto.cc
     gnss_ephemeris.cc
     gnss_satellite.cc
     gnss_signal.cc
@@ -34,6 +35,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 
 set(SYSTEM_PARAMETERS_HEADERS
     gnss_almanac.h
+    gnss_crypto.h
     gnss_ephemeris.h
     gnss_satellite.h
     gnss_signal.h
@@ -129,6 +131,42 @@ target_include_directories(core_system_parameters
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
 )
+
+if(OPENSSL_FOUND)
+    if(TARGET OpenSSL::SSL)
+        target_link_libraries(core_system_parameters
+            PRIVATE
+                OpenSSL::SSL
+        )
+    else()
+        target_link_libraries(core_system_parameters
+            PRIVATE
+                ${OPENSSL_LIBRARIES}
+        )
+        target_include_directories(core_system_parameters
+            PRIVATE
+                ${OPENSSL_INCLUDE_DIR}
+        )
+    endif()
+    if(OPENSSL_VERSION)
+        if(OPENSSL_VERSION VERSION_GREATER "3.0.0")
+            target_compile_definitions(core_system_parameters PRIVATE -DUSE_OPENSSL_3=1)
+        endif()
+    endif()
+else()
+    target_link_libraries(core_system_parameters
+        PRIVATE
+            ${GNUTLS_LIBRARIES}
+            ${GNUTLS_OPENSSL_LIBRARY}
+    )
+    target_include_directories(core_system_parameters
+        PRIVATE
+        ${GNUTLS_INCLUDE_DIR}
+    )
+endif()
+if(OPENSSL_FOUND)
+    target_compile_definitions(core_system_parameters PRIVATE -DUSE_OPENSSL_FALLBACK=1)
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

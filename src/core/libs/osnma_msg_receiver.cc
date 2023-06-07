@@ -51,6 +51,7 @@ namespace wht = std;
 #include <openssl/evp.h>
 #define OPENSSL_ENGINE NULL
 #else
+#include <openssl/cmac.h>
 #include <openssl/sha.h>
 #endif
 #else
@@ -665,30 +666,27 @@ std::vector<uint8_t> osnma_msg_receiver::computeHMAC_SHA_256(const std::vector<u
     std::vector<uint8_t> output(32);
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
-    std::vector<uint8_t> hmac(SHA256_DIGEST_LENGTH);  // HMAC-SHA256 output size
+    std::vector<uint8_t> hmac(EVP_MAX_MD_SIZE);
 
-    // Create HMAC context
+    // Create HMAC-SHA256 context
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-    HMAC_CTX_reset(ctx);
+    EVP_PKEY* pkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, key.data(), key.size());
 
-    // Initialize HMAC context with the key and HMAC algorithm
-    HMAC_Init_ex(ctx, key.data(), key.size(), EVP_sha256(), nullptr);
+    // Initialize HMAC-SHA256 context
+    EVP_DigestSignInit(ctx, nullptr, EVP_sha256(), nullptr, pkey);
 
-    // Update HMAC context with the message
-    HMAC_Update(ctx, input.data(), input.size());
+    // Compute HMAC-SHA256
+    EVP_DigestSignUpdate(ctx, input.data(), input.size());
+    size_t macLength;
+    EVP_DigestSignFinal(ctx, hmac.data(), &macLength);
 
-    // Finalize HMAC computation and obtain the result
-    unsigned int hmacLen;
-    HMAC_Final(ctx, hmac.data(), &hmacLen);
-
-    // Clean up HMAC context
+    EVP_PKEY_free(pkey);
     EVP_MD_CTX_free(ctx);
 
-    // Resize the HMAC vector to the actual length
-    hmac.resize(hmacLen);
+    mac.resize(macLength);
     output = hmac;
 #else
-    std::vector<uint8_t> hmac(SHA256_DIGEST_LENGTH);
+    std::vector<uint8_t> hmac(32);
     // Create HMAC context
     HMAC_CTX* ctx = HMAC_CTX_new();
     HMAC_Init_ex(ctx, key.data(), key.size(), EVP_sha256(), nullptr);
@@ -727,7 +725,45 @@ std::vector<uint8_t> osnma_msg_receiver::computeCMAC_AES(const std::vector<uint8
     std::vector<uint8_t> output(16);
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
+    std::vector<uint8_t> mac(EVP_MAX_MD_SIZE);  // CMAC-AES output size
+
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+
+    // Initialize CMAC-AES context
+    EVP_CIPHER_CTX* cmacCtx = EVP_CIPHER_CTX_new();
+    EVP_CMAC_CTX* cmac = EVP_CMAC_CTX_new();
+
+    EVP_CIPHER_CTX_reset(ctx);
+    EVP_CMAC_CTX_reset(cmac);
+
+    // Set AES-128 CMAC cipher and key
+    EVP_CMAC_init(cmac, key.data(), key.size(), EVP_aes_128_cbc(), nullptr);
+
+    // Compute CMAC-AES
+    EVP_CMAC_update(cmac, input.data(), input.size());
+    size_t macLength;
+    EVP_CMAC_final(cmac, mac.data(), &macLength);
+
+    EVP_CIPHER_CTX_free(ctx);
+    EVP_CMAC_CTX_free(cmac);
+
+    mac.resize(macLength);
+    output = mac;
 #else
+    std::vector<uint8_t> mac(CMAC_DIGEST_LENGTH);  // CMAC-AES output size
+
+    // Create CMAC context
+    CMAC_CTX* cmacCtx = CMAC_CTX_new();
+    CMAC_Init(cmacCtx, key.data(), key.size(), EVP_aes_128_cbc(), nullptr);
+
+    // Compute CMAC-AES
+    CMAC_Update(cmacCtx, input.data(), input.size());
+    CMAC_Final(cmacCtx, mac.data(), nullptr);
+
+    // Clean up CMAC context
+    CMAC_CTX_free(cmacCtx);
+
+    output = mac;
 #endif
 #else
     gnutls_cipher_hd_t cipher;

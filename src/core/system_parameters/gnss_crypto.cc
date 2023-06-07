@@ -27,7 +27,7 @@
 #include <openssl/pem.h>
 #if USE_OPENSSL_3
 #include <openssl/evp.h>
-#define OPENSSL_ENGINE NULL
+#define OPENSSL_ENGINE nullptr
 #else
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
@@ -196,14 +196,14 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
     std::vector<uint8_t> mac(EVP_MAX_MD_SIZE);  // CMAC-AES output size
 
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-    EVP_MAC* cmac = EVP_MAC_fetch(NULL, "CMAC-AES", NULL);
+    EVP_MAC* cmac = EVP_MAC_fetch(nullptr, "CMAC-AES", nullptr);
 
     EVP_MAC_CTX* cmacCtx = EVP_MAC_CTX_new(cmac);
 
     OSSL_PARAM params[4];
     params[0] = OSSL_PARAM_construct_utf8_string("key", (char*)key.data(), key.size());
-    params[1] = OSSL_PARAM_construct_octet_string("iv", NULL, 0);   // Set IV to NULL
-    params[2] = OSSL_PARAM_construct_octet_string("aad", NULL, 0);  // Set AAD to NULL
+    params[1] = OSSL_PARAM_construct_octet_string("iv", nullptr, 0);   // Set IV to nullptr
+    params[2] = OSSL_PARAM_construct_octet_string("aad", nullptr, 0);  // Set AAD to nullptr
     params[3] = OSSL_PARAM_construct_end();
 
     // Set AES-128 CMAC cipher and key

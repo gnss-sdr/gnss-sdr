@@ -34,6 +34,8 @@ class Gnss_Crypto
 public:
     Gnss_Crypto() = default;
     explicit Gnss_Crypto(const std::string& filePath);
+    bool have_public_key() const;
+    void set_public_key(const std::vector<uint8_t>& publickey);
     std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input);
     std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input);
     std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input);

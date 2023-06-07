@@ -44,6 +44,18 @@ Gnss_Crypto::Gnss_Crypto(const std::string& filePath)
 }
 
 
+bool Gnss_Crypto::have_public_key() const
+{
+    return !d_PublicKey.empty();
+}
+
+
+void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publickey)
+{
+    d_PublicKey = publickey;
+}
+
+
 std::vector<uint8_t> Gnss_Crypto::computeSHA256(const std::vector<uint8_t>& input)
 {
     std::vector<uint8_t> output(32);  // SHA256 hash size

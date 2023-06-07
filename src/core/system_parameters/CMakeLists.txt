@@ -29,7 +29,6 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
     reed_solomon.cc
-    osnma_data.cc
     osnma_dsm_reader.cc
 )
 

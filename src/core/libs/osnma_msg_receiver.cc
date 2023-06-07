@@ -483,10 +483,92 @@ void osnma_msg_receiver::read_mack_info_and_tags()
     d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
     for (uint16_t k = 0; k < (nt - 1); k++)
         {
-            d_osnma_data.d_mack_message.tag_and_info[k].tag = 0;
-            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.PRN_d = 0;
-            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.ADKD = 0;
-            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.cop = 0;
+            uint64_t tag = 0;
+            uint8_t PRN_d = 0;
+            uint8_t ADKD = 0;
+            uint8_t cop = 0;
+            if (lt_bits == 20)
+                {
+                    const uint16_t step = std::ceil(4.5 * k);
+                    if (k % 2 == 0)
+                        {
+                            tag += (static_cast<uint64_t>((d_mack_message[3 + step] & 0x0F)) << 16);
+                            tag += (static_cast<uint64_t>(d_mack_message[4 + step]) << 8);
+                            tag += static_cast<uint64_t>(d_mack_message[5 + step]);
+                            PRN_d += d_mack_message[6 + step];
+                            ADKD += ((d_mack_message[7 + step] & 0xF0) >> 4);
+                            cop += (d_mack_message[7 + step] & 0x0F);
+                        }
+                    else
+                        {
+                            tag += (static_cast<uint64_t>(d_mack_message[3 + step]) << 12);
+                            tag += (static_cast<uint64_t>(d_mack_message[4 + step]) << 4);
+                            tag += (static_cast<uint64_t>((d_mack_message[5 + step] & 0xF0)) >> 4);
+                            PRN_d += (d_mack_message[5 + step] & 0x0F) << 4;
+                            PRN_d += (d_mack_message[6 + step] & 0xF0) >> 4;
+                            ADKD += (d_mack_message[6 + step] & 0x0F);
+                            cop += (d_mack_message[7 + step] & 0xF0) >> 4;
+                        }
+                }
+            else if (lt_bits == 24)
+                {
+                    tag += (static_cast<uint64_t>((d_mack_message[5 + k * 5])) << 16);
+                    tag += (static_cast<uint64_t>((d_mack_message[6 + k * 5])) << 8);
+                    tag += static_cast<uint64_t>(d_mack_message[7 + k * 5]);
+                    PRN_d += d_mack_message[8 + k * 5];
+                    ADKD += ((d_mack_message[9 + k * 5] & 0xF0) >> 4);
+                    cop += (d_mack_message[9 + k * 5] & 0x0F);
+                }
+            else if (lt_bits == 28)
+                {
+                    const uint16_t step = std::ceil(5.5 * k);
+                    if (k % 2 == 0)
+                        {
+                            tag += (static_cast<uint64_t>((d_mack_message[5 + step] & 0x0F)) << 24);
+                            tag += (static_cast<uint64_t>(d_mack_message[6 + step]) << 16);
+                            tag += (static_cast<uint64_t>(d_mack_message[7 + step]) << 8);
+                            tag += static_cast<uint64_t>(d_mack_message[8 + step]);
+                            PRN_d += d_mack_message[9 + step];
+                            ADKD += ((d_mack_message[10 + step] & 0xF0) >> 4);
+                            cop += (d_mack_message[10 + step] & 0x0F);
+                        }
+                    else
+                        {
+                            tag += (static_cast<uint64_t>((d_mack_message[5 + step])) << 20);
+                            tag += (static_cast<uint64_t>((d_mack_message[6 + step])) << 12);
+                            tag += (static_cast<uint64_t>((d_mack_message[7 + step])) << 4);
+                            tag += (static_cast<uint64_t>((d_mack_message[8 + step] & 0xF0)) >> 4);
+                            PRN_d += ((d_mack_message[8 + step] & 0x0F) << 4);
+                            PRN_d += ((d_mack_message[9 + step] & 0xF0) >> 4);
+                            ADKD += (d_mack_message[9 + step] & 0x0F);
+                            cop += ((d_mack_message[10 + step] & 0xF0) >> 4);
+                        }
+                }
+            else if (lt_bits == 32)
+                {
+                    tag += (static_cast<uint64_t>((d_mack_message[6 + k * 6])) << 24);
+                    tag += (static_cast<uint64_t>((d_mack_message[7 + k * 6])) << 16);
+                    tag += (static_cast<uint64_t>((d_mack_message[8 + k * 6])) << 8);
+                    tag += static_cast<uint64_t>(d_mack_message[9 + k * 6]);
+                    PRN_d += d_mack_message[10 + k * 6];
+                    ADKD += ((d_mack_message[11 + k * 6] & 0xF0) >> 4);
+                    cop += (d_mack_message[11 + k * 6] & 0x0F);
+                }
+            else if (lt_bits == 40)
+                {
+                    tag += (static_cast<uint64_t>((d_mack_message[7 + k * 7])) << 32);
+                    tag += (static_cast<uint64_t>((d_mack_message[8 + k * 7])) << 24);
+                    tag += (static_cast<uint64_t>((d_mack_message[9 + k * 7])) << 16);
+                    tag += (static_cast<uint64_t>((d_mack_message[10 + k * 7])) << 8);
+                    tag += static_cast<uint64_t>(d_mack_message[11 + k * 7]);
+                    PRN_d += d_mack_message[12 + k * 7];
+                    ADKD += ((d_mack_message[13 + k * 7] & 0xF0) >> 4);
+                    cop += (d_mack_message[13 + k * 7] & 0x0F);
+                }
+            d_osnma_data.d_mack_message.tag_and_info[k].tag = tag;
+            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.PRN_d = PRN_d;
+            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.ADKD = ADKD;
+            d_osnma_data.d_mack_message.tag_and_info[k].tag_info.cop = cop;
         }
 }
 

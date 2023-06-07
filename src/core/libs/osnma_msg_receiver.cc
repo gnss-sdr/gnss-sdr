@@ -46,6 +46,7 @@ namespace wht = std;
 #endif
 
 #if USE_OPENSSL_FALLBACK
+#include <openssl/hmac.h>
 #if USE_OPENSSL_3
 #include <openssl/evp.h>
 #define OPENSSL_ENGINE NULL
@@ -658,6 +659,90 @@ std::vector<uint8_t> osnma_msg_receiver::computeSHA3_256(const std::vector<uint8
     return output;
 }
 
+
+std::vector<uint8_t> osnma_msg_receiver::computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input)
+{
+    std::vector<uint8_t> output(32);
+#if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+    std::vector<uint8_t> hmac(SHA256_DIGEST_LENGTH);  // HMAC-SHA256 output size
+
+    // Create HMAC context
+    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+    HMAC_CTX_reset(ctx);
+
+    // Initialize HMAC context with the key and HMAC algorithm
+    HMAC_Init_ex(ctx, key.data(), key.size(), EVP_sha256(), nullptr);
+
+    // Update HMAC context with the message
+    HMAC_Update(ctx, input.data(), input.size());
+
+    // Finalize HMAC computation and obtain the result
+    unsigned int hmacLen;
+    HMAC_Final(ctx, hmac.data(), &hmacLen);
+
+    // Clean up HMAC context
+    EVP_MD_CTX_free(ctx);
+
+    // Resize the HMAC vector to the actual length
+    hmac.resize(hmacLen);
+    output = hmac;
+#else
+    std::vector<uint8_t> hmac(SHA256_DIGEST_LENGTH);
+    // Create HMAC context
+    HMAC_CTX* ctx = HMAC_CTX_new();
+    HMAC_Init_ex(ctx, key.data(), key.size(), EVP_sha256(), nullptr);
+
+    // Update HMAC context with the message
+    HMAC_Update(ctx, input.data(), input.size());
+
+    // Finalize HMAC computation
+    unsigned int hmacLen;
+    HMAC_Final(ctx, hmac.data(), &hmacLen);
+
+    // Clean up HMAC context
+    HMAC_CTX_free(ctx);
+
+    // Resize the HMAC vector to the actual length
+    hmac.resize(hmacLen);
+
+    output = hmac;
+#endif
+#else
+    std::vector<uint8_t> output_aux(32);
+    gnutls_hmac_hd_t hmac;
+    gnutls_hmac_init(&hmac, GNUTLS_MAC_SHA256, key.data(), key.size());
+    gnutls_hmac(hmac, input.data(), input.size());
+    gnutls_hmac_output(hmac, output_aux.data());
+    output = output_aux;
+    gnutls_hmac_deinit(hmac, output_aux.data());
+
+#endif
+    return output;
+}
+
+
+std::vector<uint8_t> osnma_msg_receiver::computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input)
+{
+    std::vector<uint8_t> output(16);
+#if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+#else
+#endif
+#else
+    gnutls_cipher_hd_t cipher;
+    std::vector<uint8_t> mac(16);
+    std::vector<uint8_t> message = input;
+    gnutls_datum_t key_data = {const_cast<uint8_t*>(key.data()), static_cast<unsigned int>(key.size())};
+    gnutls_cipher_init(&cipher, GNUTLS_CIPHER_AES_128_CBC, &key_data, nullptr);
+    gnutls_cipher_set_iv(cipher, nullptr, 16);                      // Set IV to zero
+    gnutls_cipher_encrypt(cipher, message.data(), message.size());  // Encrypt the message with AES-128
+    gnutls_cipher_tag(cipher, mac.data(), mac.size());              // Get the CMAC-AES tag
+    output = mac;
+    gnutls_cipher_deinit(cipher);
+#endif
+    return output;
+}
 
 // bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& digest, std::vector<uint8_t>& signature)
 // {

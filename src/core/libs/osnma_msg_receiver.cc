@@ -683,7 +683,7 @@ std::vector<uint8_t> osnma_msg_receiver::computeHMAC_SHA_256(const std::vector<u
     EVP_PKEY_free(pkey);
     EVP_MD_CTX_free(ctx);
 
-    mac.resize(macLength);
+    hmac.resize(macLength);
     output = hmac;
 #else
     std::vector<uint8_t> hmac(32);

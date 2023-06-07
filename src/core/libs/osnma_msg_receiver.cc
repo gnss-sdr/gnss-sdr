@@ -26,6 +26,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <numeric>
@@ -46,17 +47,18 @@ namespace wht = std;
 #endif
 
 #if USE_OPENSSL_FALLBACK
+#include <openssl/cmac.h>
 #include <openssl/hmac.h>
 #if USE_OPENSSL_3
 #include <openssl/evp.h>
 #define OPENSSL_ENGINE NULL
 #else
-#include <openssl/cmac.h>
 #include <openssl/sha.h>
 #endif
 #else
 #include <gnutls/crypto.h>
 #include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
 #endif
 
 osnma_msg_receiver_sptr osnma_msg_receiver_make()
@@ -796,3 +798,62 @@ std::vector<uint8_t> osnma_msg_receiver::computeCMAC_AES(const std::vector<uint8
 // {
 //     int verificationStatus = gnutls_pubkey_verify_data(publicKey, GNUTLS_DIG_SHA256, 0, message, messageSize, signature, signatureSize);
 //     return verificationStatus == 0;
+
+std::vector<uint8_t> osnma_msg_receiver::readPublicKeyFromPEM(const std::string& filePath)
+{
+    std::vector<uint8_t> publicKey;
+#if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+#else
+#endif
+#else
+    // Open the .pem file
+    std::ifstream file(filePath);
+    if (!file)
+        {
+            std::cerr << "Failed to open the file: " << filePath << std::endl;
+            return publicKey;
+        }
+
+    // Read the contents of the .pem file into a string
+    std::string pemContents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    gnutls_x509_crt_t cert;
+    gnutls_x509_crt_init(&cert);
+
+    // Import the certificate from the PEM file
+    gnutls_datum_t pemData;
+    pemData.data = reinterpret_cast<unsigned char*>(const_cast<char*>(pemContents.data()));
+    pemData.size = pemContents.size();
+    int ret = gnutls_x509_crt_import(cert, &pemData, GNUTLS_X509_FMT_PEM);
+    if (ret < 0)
+        {
+            std::cerr << "Failed to import certificate from PEM file" << std::endl;
+            gnutls_x509_crt_deinit(cert);
+            return publicKey;
+        }
+
+    // Export the public key data
+    size_t pubkey_data_size = 0;
+    ret = gnutls_x509_crt_export(cert, GNUTLS_X509_FMT_DER, nullptr, &pubkey_data_size);
+    if (ret < 0)
+        {
+            std::cerr << "Failed to export public key data" << std::endl;
+            gnutls_x509_crt_deinit(cert);
+            return publicKey;
+        }
+
+    publicKey.resize(pubkey_data_size);
+    ret = gnutls_x509_crt_export(cert, GNUTLS_X509_FMT_DER, publicKey.data(), &pubkey_data_size);
+    if (ret < 0)
+        {
+            std::cerr << "Failed to export public key data" << std::endl;
+            gnutls_x509_crt_deinit(cert);
+            return publicKey;
+        }
+
+    gnutls_x509_crt_deinit(cert);
+
+#endif
+    return publicKey;
+}

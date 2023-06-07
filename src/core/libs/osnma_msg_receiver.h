@@ -73,6 +73,7 @@ private:
     std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input);
     std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input);
     std::vector<uint8_t> computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input);
+    std::vector<uint8_t> readPublicKeyFromPEM(const std::string& filePath);
 
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
 

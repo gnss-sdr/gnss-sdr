@@ -381,7 +381,6 @@ std::vector<uint8_t> Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePa
 }
 
 
-
 // // bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& digest, std::vector<uint8_t>& signature)
 // // {
 // //     bool success = false;

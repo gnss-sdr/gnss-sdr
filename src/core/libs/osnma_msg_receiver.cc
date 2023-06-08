@@ -193,15 +193,32 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][d_osnma_data.d_dsm_header.dsm_block_id] = 1;
 
     std::cout << "Galileo OSNMA: Available blocks for DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id) << ": [ ";
-    for (auto id_received : d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id])
+    if (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == 0)
         {
-            if (id_received == 0)
+            for (auto id_received : d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id])
                 {
-                    std::cout << "- ";
+                    if (id_received == 0)
+                        {
+                            std::cout << "- ";
+                        }
+                    else
+                        {
+                            std::cout << "X ";
+                        }
                 }
-            else
+        }
+    else
+        {
+            for (uint8_t k = 0; k < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; k++)
                 {
-                    std::cout << "X ";
+                    if (d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][k] == 0)
+                        {
+                            std::cout << "- ";
+                        }
+                    else
+                        {
+                            std::cout << "X ";
+                        }
                 }
         }
     std::cout << "]" << std::endl;

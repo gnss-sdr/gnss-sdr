@@ -47,6 +47,8 @@ public:
     std::array<uint32_t, 15> mack{};
     std::array<uint8_t, 15> hkroot{};
     uint32_t PRN{};
+    uint32_t WN_sf0{};
+    uint32_t TOW_sf0{};
 };
 
 /*!

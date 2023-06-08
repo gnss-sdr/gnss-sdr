@@ -85,6 +85,14 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
             if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_msg>).hash_code())
                 {
                     const auto nma_msg = wht::any_cast<std::shared_ptr<OSNMA_msg>>(pmt::any_ref(msg));
+                    std::cout << "Galileo OSNMA: Subframe received at "
+                              << "WN="
+                              << nma_msg->WN_sf0
+                              << ", TOW="
+                              << nma_msg->TOW_sf0
+                              << ", from SVID="
+                              << nma_msg->PRN
+                              << std::endl;
                     process_osnma_message(nma_msg);
                 }
             else
@@ -133,6 +141,9 @@ void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
     d_osnma_data.d_dsm_header.dsm_block_id = d_dsm_reader->get_dsm_block_id(dsm_header);  // BID
     LOG(WARNING) << "OSNMA: DSM_ID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
     LOG(WARNING) << "OSNMA: DSM_BID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id);
+    std::cout << "Galileo OSNMA: Received block " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id)
+              << " from DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id)
+              << std::endl;
 }
 
 
@@ -144,12 +155,6 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][SIZE_DSM_BLOCKS_BYTES * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
             index++;
         }
-    std::cout << "dsm_message:";
-    for (auto c : d_dsm_message[d_osnma_data.d_dsm_header.dsm_id])
-        {
-            std::cout << " " << static_cast<uint32_t>(c);
-        }
-    std::cout << std::endl;
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
             // Get number of blocks in message
@@ -187,6 +192,20 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
     // Annotate bid
     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][d_osnma_data.d_dsm_header.dsm_block_id] = 1;
 
+    std::cout << "Galileo OSNMA: Available blocks for DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id) << ": [ ";
+    for (auto id_received : d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id])
+        {
+            if (id_received == 0)
+                {
+                    std::cout << "- ";
+                }
+            else
+                {
+                    std::cout << "X ";
+                }
+        }
+    std::cout << "]" << std::endl;
+
     // is message complete? -> Process DSM message
     if ((d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] != 0) &&
         (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cbegin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cend(), 0)))
@@ -201,12 +220,12 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                 }
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
             d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
-            process_dsm_message(dsm_msg, osnma_msg->hkroot[0]);
+            process_dsm_message(dsm_msg, osnma_msg);
         }
 }
 
 
-void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg, uint8_t nma_header)
+void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
     if (d_osnma_data.d_dsm_header.dsm_id < 12)
         {
@@ -254,7 +273,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             const uint16_t check_l_dk = 104 * std::ceil(1.0 + static_cast<float>((l_lk_bytes * 8.0) + l_ds_bits) / 104.0);
             if (l_dk_bits != check_l_dk)
                 {
-                    std::cout << "OSNMA: Failed length reading" << std::endl;
+                    std::cout << "Galileo OSNMA: Failed length reading" << std::endl;
                 }
             else
                 {
@@ -262,7 +281,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     const uint16_t size_m = 13 + l_lk_bytes;
                     std::vector<uint8_t> MSG;
                     MSG.reserve(size_m + l_ds_bytes + 1);
-                    MSG.push_back(nma_header);
+                    MSG.push_back(osnma_msg->hkroot[0]);
                     for (uint16_t i = 1; i < size_m; i++)
                         {
                             MSG.push_back(dsm_msg[i]);
@@ -297,7 +316,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_truncated)
                         {
                             LOG(WARNING) << "OSNMA: DSM-KROOT message received ok.";
-                            std::cout << "OSNMA: DSM-KROOT message validated" << std::endl;
+                            std::cout << "Galileo OSNMA: KROOT with CID=" << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid)
+                                      << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
+                                      << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
+                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k)
+                                      << " validated" << std::endl;
                         }
                     // Validate signature
                 }
@@ -342,7 +365,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             uint32_t check_l_dp = 104 * std::ceil(static_cast<float>(1040.0 + l_npk * 8.0) / 104.0);
             if (l_dp != check_l_dp)
                 {
-                    std::cout << "OSNMA: Failed length reading" << std::endl;
+                    std::cout << "Galileo OSNMA: Failed length reading" << std::endl;
                 }
             else
                 {

@@ -1422,6 +1422,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
 {
     nma_position_filled = std::array<int8_t, 15>{};
+    // Fill TOW and WN
+    nma_msg.WN_sf0 = WN_0;
+    int32_t TOW_sf0 = TOW_5 - 24;
+    if (TOW_sf0 < 0)
+        {
+            TOW_sf0 += 604800;
+        }
+    nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
     return nma_msg;
 }
 

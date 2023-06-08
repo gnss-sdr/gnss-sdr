@@ -32,16 +32,24 @@
 
 constexpr size_t SIZE_DSM_BLOCKS_BYTES = 13;
 
-// OSNMA User ICD for the Test Phase, Issue 1.0, Table 2
+// OSNMA User ICD for the Test Phase, Issue 1.0, Table 1
+const std::unordered_map<uint8_t, std::string> OSNMA_TABLE_1 = {
+    {0, std::string("Reserved")},
+    {1, std::string("Test")},
+    {2, std::string("Operational")},
+    {3, std::string("Don't use")}};  // key: nmas, value: nmas status
+
+
+// OSNMA User ICD for the Test Phase, Issue 1.0, Table 1
 const std::unordered_map<uint8_t, std::string> OSNMA_TABLE_2 = {
     {0, std::string("Reserved")},
     {1, std::string("Nominal")},
     {2, std::string("End of Chain (EOC)")},
     {3, std::string("Chain Revoked (CREV)")},
-    {4, std::string("New Public Key (NPK)")},
-    {5, std::string("Public Key Revoked (PKREV)")},
-    {6, std::string("Reserved")},
-    {7, std::string("Reserved")}};  // key: cpks, value: Chain and Public Key Status
+    {4, std::string("Public Key Revoked (PKREV)")},
+    {5, std::string("Chain Revoked (CREV)")},
+    {6, std::string("New Merkle Tree (NMT)")},
+    {7, std::string("Alert Message (AM)")}};  // key: cpks, value: cpks status
 
 // OSNMA User ICD for the Test Phase, Issue 1.0, Table 3
 const std::unordered_map<uint8_t, std::pair<uint16_t, uint16_t>> OSNMA_TABLE_3 = {

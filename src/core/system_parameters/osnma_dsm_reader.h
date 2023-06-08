@@ -55,6 +55,8 @@ public:
     uint16_t get_lk_bits(uint8_t ks) const;
     std::vector<uint8_t> get_kroot(const std::vector<uint8_t>& dsm_msg, uint16_t bytes_lk) const;
     std::string get_hash_function(uint8_t hf) const;
+    std::string get_nmas_status(uint8_t nmas) const;
+    std::string get_cpks_status(uint8_t cpks) const;
 
     uint8_t get_mid(const std::vector<uint8_t>& dsm_msg) const;
     uint8_t get_npkt(const std::vector<uint8_t>& dsm_msg) const;

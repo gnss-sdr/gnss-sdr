@@ -202,3 +202,27 @@ uint8_t OSNMA_DSM_Reader::get_npktid(const std::vector<uint8_t>& dsm_msg) const
 {
     return (dsm_msg[129] & mask_dsm_npktid);
 }
+
+
+std::string OSNMA_DSM_Reader::get_nmas_status(uint8_t nmas) const
+{
+    std::string status_;
+    const auto it = OSNMA_TABLE_1.find(nmas);
+    if (it != OSNMA_TABLE_1.cend())
+        {
+            status_ = it->second;
+        }
+    return status_;
+}
+
+
+std::string OSNMA_DSM_Reader::get_cpks_status(uint8_t cpks) const
+{
+    std::string status_;
+    const auto it = OSNMA_TABLE_2.find(cpks);
+    if (it != OSNMA_TABLE_2.cend())
+        {
+            status_ = it->second;
+        }
+    return status_;
+}

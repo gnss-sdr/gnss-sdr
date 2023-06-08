@@ -20,6 +20,7 @@
 #include "osnma_msg_receiver.h"
 #include "Galileo_OSNMA.h"
 #include "gnss_crypto.h"
+#include "gnss_satellite.h"
 #include "osnma_dsm_reader.h"       // for OSNMA_DSM_Reader
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
@@ -85,13 +86,14 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
             if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_msg>).hash_code())
                 {
                     const auto nma_msg = wht::any_cast<std::shared_ptr<OSNMA_msg>>(pmt::any_ref(msg));
-                    std::cout << "Galileo OSNMA: Subframe received at "
+                    const auto sat = Gnss_Satellite(std::string("Galileo"), nma_msg->PRN);
+                    std::cout << "Galileo OSNMA: Subframe received starting at "
                               << "WN="
                               << nma_msg->WN_sf0
                               << ", TOW="
                               << nma_msg->TOW_sf0
-                              << ", from SVID="
-                              << nma_msg->PRN
+                              << ", from satellite "
+                              << sat
                               << std::endl;
                     process_osnma_message(nma_msg);
                 }
@@ -336,8 +338,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                             std::cout << "Galileo OSNMA: KROOT with CID=" << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid)
                                       << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
-                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k)
+                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600
                                       << " validated" << std::endl;
+                            std::cout << "Galileo OSNMA: NMAS is " << d_dsm_reader->get_nmas_status(d_osnma_data.d_nma_header.nmas) << ", "
+                                      << " Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
+                                      << "CPSK is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks) << std::endl;
                         }
                     // Validate signature
                 }

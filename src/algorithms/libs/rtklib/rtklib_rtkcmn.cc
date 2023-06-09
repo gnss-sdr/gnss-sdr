@@ -229,7 +229,7 @@ void fatalerr(const char *format, ...)
     char msg[1024];
     va_list ap;
     va_start(ap, format);
-    vsprintf(msg, format, ap);
+    vsnprintf(msg, sizeof(msg), format, ap);
     va_end(ap);
     fprintf(stderr, "%s", msg);
     exit(-9);
@@ -4084,7 +4084,7 @@ void trace(int level, const char *format, ...)
     va_list ap;
     char buffer[256];
     va_start(ap, format);
-    vsprintf(buffer, format, ap);
+    vsnprintf(buffer, sizeof(buffer), format, ap);
     va_end(ap);
     std::string str(buffer);
     VLOG(level) << "RTKLIB TRACE[" << level << "]:" << str;

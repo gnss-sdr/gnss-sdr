@@ -504,7 +504,7 @@ void errmsg(rtk_t *rtk, const char *format, ...)
     time2str(rtk->sol.time, tstr, 2);
     n = std::snprintf(buff, sizeof(buff), "%s: ", tstr + 11);
     va_start(ap, format);
-    n += vsprintf(buff + n, format, ap);
+    n += vsnprintf(buff + n, sizeof(buff) - n, format, ap);
     va_end(ap);
     n = n < MAXERRMSG - rtk->neb ? n : MAXERRMSG - rtk->neb;
     memcpy(rtk->errbuf + rtk->neb, buff, n);

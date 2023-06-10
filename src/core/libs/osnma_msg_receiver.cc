@@ -340,9 +340,9 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
                                       << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600
                                       << " validated" << std::endl;
-                            std::cout << "Galileo OSNMA: NMAS is " << d_dsm_reader->get_nmas_status(d_osnma_data.d_nma_header.nmas) << ", "
-                                      << " Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
-                                      << "CPSK is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks) << std::endl;
+                            std::cout << "Galileo OSNMA: NMA Status is " << d_dsm_reader->get_nmas_status(d_osnma_data.d_nma_header.nmas) << ", "
+                                      << "Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
+                                      << "Chain and Public Key Status is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks) << std::endl;
                         }
                     // Validate signature
                 }

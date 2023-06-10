@@ -27,6 +27,7 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
+#include "Galileo_OSNMA.h"
 #include "channel.h"
 #include "channel_fsm.h"
 #include "channel_interface.h"
@@ -118,8 +119,7 @@ void GNSSFlowgraph::init()
     if (configuration_->property("Channels_1B.count", 0) > 0)
         {
             enable_osnma_rx_ = true;
-            const std::string pemfile_default("./OSNMA_PublicKey_20210920133026.pem");
-            auto pemFilePath = configuration_->property("GNSS-SDR.OSNMA_pem", pemfile_default);
+            auto pemFilePath = configuration_->property("GNSS-SDR.OSNMA_pem", PEMFILE_DEFAULT);
             osnma_rx_ = osnma_msg_receiver_make(pemFilePath);
         }
     else

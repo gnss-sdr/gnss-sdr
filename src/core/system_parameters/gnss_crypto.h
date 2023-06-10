@@ -35,14 +35,15 @@ public:
     Gnss_Crypto() = default;
     explicit Gnss_Crypto(const std::string& filePath);
     bool have_public_key() const;
+    std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input) const;
+    std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input) const;
+    std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;
+    std::vector<uint8_t> computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;
     void set_public_key(const std::vector<uint8_t>& publickey);
-    std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input);
-    std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input);
-    std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input);
-    std::vector<uint8_t> computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input);
-    std::vector<uint8_t> readPublicKeyFromPEM(const std::string& filePath);
+    void readPublicKeyFromPEM(const std::string& filePath);
 
 private:
+    std::vector<uint8_t> base64Decode(const std::string& encoded_string);
     std::vector<uint8_t> d_PublicKey;
 };
 

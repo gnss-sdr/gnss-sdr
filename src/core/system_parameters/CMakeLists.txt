@@ -134,37 +134,37 @@ target_include_directories(core_system_parameters
 if(OPENSSL_FOUND)
     if(TARGET OpenSSL::SSL)
         target_link_libraries(core_system_parameters
-            PRIVATE
+            PUBLIC
                 OpenSSL::SSL
         )
     else()
         target_link_libraries(core_system_parameters
-            PRIVATE
+            PUBLIC
                 ${OPENSSL_LIBRARIES}
         )
         target_include_directories(core_system_parameters
-            PRIVATE
+            PUBLIC
                 ${OPENSSL_INCLUDE_DIR}
         )
     endif()
     if(OPENSSL_VERSION)
         if(OPENSSL_VERSION VERSION_GREATER "3.0.0")
-            target_compile_definitions(core_system_parameters PRIVATE -DUSE_OPENSSL_3=1)
+            target_compile_definitions(core_system_parameters PUBLIC -DUSE_OPENSSL_3=1)
         endif()
     endif()
 else()
     target_link_libraries(core_system_parameters
-        PRIVATE
+        PUBLIC
             ${GNUTLS_LIBRARIES}
             ${GNUTLS_OPENSSL_LIBRARY}
     )
     target_include_directories(core_system_parameters
-        PRIVATE
+        PUBLIC
         ${GNUTLS_INCLUDE_DIR}
     )
 endif()
 if(OPENSSL_FOUND)
-    target_compile_definitions(core_system_parameters PRIVATE -DUSE_OPENSSL_FALLBACK=1)
+    target_compile_definitions(core_system_parameters PUBLIC -DUSE_OPENSSL_FALLBACK=1)
 endif()
 
 if(ENABLE_CLANG_TIDY)

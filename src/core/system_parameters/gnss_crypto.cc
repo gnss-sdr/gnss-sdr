@@ -25,6 +25,7 @@
 
 #if USE_OPENSSL_FALLBACK
 #include <openssl/cmac.h>
+#include <openssl/ecdsa.h>
 #include <openssl/hmac.h>
 #include <openssl/pem.h>
 #if USE_OPENSSL_3
@@ -34,27 +35,49 @@
 #include <openssl/sha.h>
 #endif
 #else
+#include <gnutls/abstract.h>
 #include <gnutls/crypto.h>
-#include <gnutls/gnutls.h>
 #include <gnutls/x509.h>
 #endif
 
+
 Gnss_Crypto::Gnss_Crypto(const std::string& filePath)
 {
+#if USE_OPENSSL_FALLBACK
+#else
+    gnutls_global_init();
+#endif
     readPublicKeyFromPEM(filePath);
+}
+
+
+Gnss_Crypto::~Gnss_Crypto()
+{
+#if USE_OPENSSL_FALLBACK
+    if (d_PublicKey != nullptr)
+        {
+            EC_KEY_free(d_PublicKey);
+        }
+#else
+    if (d_PublicKey != nullptr)
+        {
+            gnutls_pubkey_deinit(*d_PublicKey);
+        }
+
+    gnutls_global_deinit();
+#endif
 }
 
 
 bool Gnss_Crypto::have_public_key() const
 {
-    return !d_PublicKey.empty();
+    return (d_PublicKey != nullptr);
 }
 
 
-void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publickey)
-{
-    d_PublicKey = publickey;
-}
+// void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publickey)
+// {
+// }
 
 
 std::vector<uint8_t> Gnss_Crypto::computeSHA256(const std::vector<uint8_t>& input) const
@@ -296,22 +319,22 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
         }
 
     // Get the EC key from the EVP_PKEY object
-    EC_KEY* ecKey = EVP_PKEY_get1_EC_KEY(evpKey);
+    d_PublicKey = EVP_PKEY_get1_EC_KEY(evpKey);
     EVP_PKEY_free(evpKey);
 
-    if (ecKey == nullptr)
+    if (d_PublicKey == nullptr)
         {
             std::cout << "OpenSSL: Failed to get the EC key from file " << filePath << ". Aborting import" << std::endl;
             return;
         }
 
     // Get the EC group from the EC key
-    const EC_GROUP* ecGroup = EC_KEY_get0_group(ecKey);
+    const EC_GROUP* ecGroup = EC_KEY_get0_group(d_PublicKey);
 
     if (ecGroup == nullptr)
         {
             std::cout << "OpenSSL: Failed to extract the EC group from file " << filePath << ". Aborting import" << std::endl;
-            EC_KEY_free(ecKey);
+            EC_KEY_free(d_PublicKey);
             return;
         }
 
@@ -319,131 +342,68 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
     if (EC_GROUP_get_curve_name(ecGroup) != NID_X9_62_prime256v1)
         {
             std::cerr << "Invalid curve name in file " << filePath << ". Expected P-256. Aborting import" << std::endl;
-            EC_KEY_free(ecKey);
+            EC_KEY_free(d_PublicKey);
             return;
         }
-    // Convert the EC parameters to an octet string (raw binary)
-    // size_t octetSize = i2o_ECPublicKey(ecKey, nullptr);
-    // std::vector<uint8_t> ecParameters(octetSize);
-    // unsigned char* p = ecParameters.data();
-    // i2o_ECPublicKey(ecKey, &p);
-    std::vector<uint8_t> ecParameters(EC_GROUP_get_degree(ecGroup) / 8);
-    EC_POINT_point2oct(ecGroup, EC_KEY_get0_public_key(ecKey), POINT_CONVERSION_UNCOMPRESSED, ecParameters.data(), ecParameters.size(), nullptr);
-
-    // Get the EC public key from the EC key
-    const EC_POINT* ecPoint = EC_KEY_get0_public_key(ecKey);
-
-    // Convert the EC public key to an octet string (raw binary)
-    size_t pointSize = EC_POINT_point2oct(ecGroup, ecPoint, POINT_CONVERSION_UNCOMPRESSED, nullptr, 0, nullptr);
-    publicKey = std::vector<uint8_t>(pointSize);
-    EC_POINT_point2oct(ecGroup, ecPoint, POINT_CONVERSION_UNCOMPRESSED, publicKey.data(), pointSize, nullptr);
-    size_t octetSize = i2o_ECPublicKey(ecKey, nullptr);
-    std::vector<uint8_t> publicKey2(octetSize);
-    unsigned char* p2 = publicKey2.data();
-    i2o_ECPublicKey(ecKey, &p2);
-    // Clean up the EC key
-    EC_KEY_free(ecKey);
-
-    std::cout << "EC parameters (size: " << ecParameters.size() << "):";
-    for (auto k : ecParameters)
-        {
-            std::cout << " " << static_cast<uint32_t>(k);
-        }
-    std::cout << std::endl;
-    std::cout << "Public Key (size: " << publicKey.size() << "):";
-    for (auto k : publicKey)
-        {
-            std::cout << " " << static_cast<uint32_t>(k);
-        }
-    std::cout << "Public Key2: (size: " << publicKey2.size() << "):";
-    for (auto k : publicKey2)
-        {
-            std::cout << " " << static_cast<uint32_t>(k);
-        }
-    std::cout << std::endl;
 #else
     // Load the public key from the BIO
-    EC_KEY* ecKeyPublic = PEM_read_bio_EC_PUBKEY(bio, nullptr, nullptr, nullptr);
+    d_PublicKey = PEM_read_bio_EC_PUBKEY(bio, nullptr, nullptr, nullptr);
     BIO_free(bio);
-    if (ecKeyPublic == nullptr)
+    if (d_PublicKey == nullptr)
         {
             std::cerr << "OpenSSL: error reading the Public Key from file " << filePath << ". Aborting import" << std::endl;
             return;
         }
-
-    // // Get the EC group and EC point from the EC key
-    const EC_GROUP* ecGroup = EC_KEY_get0_group(ecKeyPublic);
-    const EC_POINT* ecPoint = EC_KEY_get0_public_key(ecKeyPublic);
-    // Convert the EC point to an octet string (raw binary)
-    const size_t octetSize = EC_POINT_point2oct(
-        ecGroup, ecPoint, POINT_CONVERSION_UNCOMPRESSED, nullptr, 0, nullptr);
-    publicKey = std::vector<uint8_t>(octetSize);
-    EC_POINT_point2oct(
-        ecGroup, ecPoint, POINT_CONVERSION_UNCOMPRESSED, publicKey.data(), octetSize, nullptr);
-    EC_KEY_free(ecKeyPublic);
-
-    std::cout << "Public Key:";
-    for (auto k : publicKey)
-        {
-            std::cout << " " << static_cast<uint32_t>(k);
-        }
-    std::cout << std::endl;
 #endif
 #else
-    // Find the beginning and end of the EC PARAMETERS section
-    std::size_t beginPos = pemContent.find("-----BEGIN EC PARAMETERS-----");
-    std::size_t endPos = pemContent.find("-----END EC PARAMETERS-----");
-    if (beginPos == std::string::npos || endPos == std::string::npos)
+    gnutls_pubkey_t pubKey;
+    gnutls_pubkey_init(&pubKey);
+    d_PublicKey = &pubKey;
+    // Import the PEM data
+    gnutls_datum_t pemDatum = {const_cast<unsigned char*>(reinterpret_cast<unsigned char*>(pemContent.data())), static_cast<unsigned int>(pemContent.size())};
+    int ret = gnutls_pubkey_import(*d_PublicKey, &pemDatum, GNUTLS_X509_FMT_PEM);
+    if (ret < 0)
         {
-            std::cerr << "No EC Parameters found in file " << filePath << ". Aborting import" << std::endl;
+            std::cerr << "GnuTLS: error reading the Public Key from file "
+                      << filePath
+                      << ". (Error: " << gnutls_strerror(ret) << "). Aborting import" << std::endl;
+            gnutls_pubkey_deinit(*d_PublicKey);
             return;
         }
-
-    // Extract the EC parameters data
-    std::string ecParamsBase64 = pemContent.substr(beginPos + 30, endPos - beginPos - 31);
-    std::vector<uint8_t> ecParameters = base64Decode(ecParamsBase64);
-
-    std::cout << ecParamsBase64 << std::endl;
-    std::cout << "Size ecParamsBase64 : " << ecParamsBase64.size() << std::endl;
-    std::cout << "Size EC : " << ecParameters.size() << std::endl;
-    for (auto k : ecParameters)
-        {
-            std::cout << " " << static_cast<uint32_t>(k);
-        }
-    std::cout << std::endl;
-
-    std::size_t beginPos2 = pemContent.find("-----BEGIN PUBLIC KEY-----");
-    std::size_t endPos2 = pemContent.find("-----END PUBLIC KEY-----");
-    if (beginPos2 == std::string::npos || endPos2 == std::string::npos)
-        {
-            std::cout << "No Public Key found in file " << filePath << ". Aborting import" << std::endl;
-            return;
-        }
-    auto PublickeyBase64 = pemContent.substr(beginPos2 + 27, endPos2 - beginPos2 - 28);
-    auto readpublickey_long = base64Decode(PublickeyBase64);
-    publicKey = std::vector<uint8_t>(readpublickey_long.begin() + 26, readpublickey_long.end());  // ??
-
-    std::cout << "Public Key (size: " << publicKey.size() << "):" << std::endl;
-    for (auto k : publicKey)
-        {
-            std::cout << " " << static_cast<uint32_t>(k);
-        }
-    std::cout << std::endl;
 #endif
-    d_PublicKey = publicKey;
     std::cout << "Public key successfully read from file " << filePath << std::endl;
 }
 
 
-// bool signature(const std::vector<uint8_t>& publicKey, const std::vector<uint8_t>& digest, const std::vector<uint8_t>& signature)
+// bool verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature)
 // {
 //     bool success = false;
 // #if USE_OPENSSL_FALLBACK
+/** Verifies that the given signature is valid ECDSA signature
+ *  of the supplied hash value using the specified public key.
+ *  \param  type     this parameter is ignored
+ *  \param  dgst     pointer to the hash value
+ *  \param  dgstlen  length of the hash value
+ *  \param  sig      pointer to the DER encoded signature
+ *  \param  siglen   length of the DER encoded signature
+ *  \param  eckey    EC_KEY object containing a public EC key
+ *  \return 1 if the signature is valid, 0 if the signature is invalid
+ *          and -1 on error
+ */
+// int ECDSA_verify(int type, const unsigned char *dgst, int dgstlen, const unsigned char *sig, int siglen, EC_KEY *eckey);)
+// int verification = ECDSA_verify(0, digest, SHA256_DIGEST_LENGTH, signature, signature_len, key_pair_obj);
 // #else
 //     gnutls_global_init();
 //     int result = gnutls_pubkey_verify_data(publicKey.data(), GNUTLS_SIGN_ECDSA_SHA256, digest.data(), digest.size(), signature.data(), signature.size());
 //     success = (result == GNUTLS_E_SUCCESS);
 //     gnutls_global_deinit();
+// pubkey: Holds the public key
+// algo: The signature algorithm used
+// flags: Zero or an OR list of gnutls_certificate_verify_flags
+// data: holds the signed data
+// signature: contains the signature
+// This function will verify the given signed data, using the parameters from the certificate.
+// gnutls_pubkey_verify_data2 (gnutls_pubkey_t pubkey, gnutls_sign_algorithm_t algo, unsigned int flags, const gnutls_datum_t * data, const gnutls_datum_t * signature)
 // #endif
 //     return success;
 // }
@@ -451,67 +411,3 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
 // // {
 // //     int verificationStatus = gnutls_pubkey_verify_data(publicKey, GNUTLS_DIG_SHA256, 0, message, messageSize, signature, signatureSize);
 // //     return verificationStatus == 0;
-
-
-std::vector<uint8_t> Gnss_Crypto::base64Decode(const std::string& encoded_string)
-{
-    const std::string base64_chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "0123456789+/";
-    int in_len = encoded_string.size();
-    int i = 0;
-    int j = 0;
-    int in_ = 0;
-    uint8_t char_array_4[4];
-    uint8_t char_array_3[3];
-    std::vector<uint8_t> decoded;
-
-    while (in_len-- && (encoded_string[in_] != '=') &&
-           (isalnum(encoded_string[in_]) || (encoded_string[in_] == '+') || (encoded_string[in_] == '/')))
-        {
-            char_array_4[i++] = encoded_string[in_];
-            in_++;
-            if (i == 4)
-                {
-                    for (i = 0; i < 4; i++)
-                        {
-                            char_array_4[i] = base64_chars.find(char_array_4[i]);
-                        }
-
-                    char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-                    char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-                    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-                    for (i = 0; (i < 3); i++)
-                        {
-                            decoded.push_back(char_array_3[i]);
-                        }
-                    i = 0;
-                }
-        }
-
-    if (i)
-        {
-            for (j = i; j < 4; j++)
-                {
-                    char_array_4[j] = 0;
-                }
-
-            for (j = 0; j < 4; j++)
-                {
-                    char_array_4[j] = base64_chars.find(char_array_4[j]);
-                }
-
-            char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
-
-            for (j = 0; (j < i - 1); j++)
-                {
-                    decoded.push_back(char_array_3[j]);
-                }
-        }
-
-    return decoded;
-}

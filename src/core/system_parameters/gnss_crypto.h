@@ -21,30 +21,38 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-
+#if USE_OPENSSL_FALLBACK
+#include <openssl/ec.h>
+#else
+#include <gnutls/gnutls.h>
+#endif
 
 /** \addtogroup Core
  * \{ */
 /** \addtogroup System_Parameters
  * \{ */
 
-
 class Gnss_Crypto
 {
 public:
     Gnss_Crypto() = default;
+    ~Gnss_Crypto();
     explicit Gnss_Crypto(const std::string& filePath);
     bool have_public_key() const;
     std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input) const;
     std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input) const;
     std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;
     std::vector<uint8_t> computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;
-    void set_public_key(const std::vector<uint8_t>& publickey);
+
     void readPublicKeyFromPEM(const std::string& filePath);
+    // void set_public_key(const std::vector<uint8_t>& publickey);
 
 private:
-    std::vector<uint8_t> base64Decode(const std::string& encoded_string);
-    std::vector<uint8_t> d_PublicKey;
+#if USE_OPENSSL_FALLBACK
+    EC_KEY* d_PublicKey = nullptr;
+#else
+    gnutls_pubkey_t* d_PublicKey;
+#endif
 };
 
 /** \} */

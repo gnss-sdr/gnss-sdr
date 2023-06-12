@@ -344,7 +344,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
     EVP_PKEY_CTX* ctx;
-    ctx = EVP_PKEY_CTX_new(d_PublicKey, NULL /* no engine */);
+    ctx = EVP_PKEY_CTX_new(d_PublicKey, nullptr /* no engine */);
     bool do_operation = true;
     if (!ctx)
         {
@@ -367,6 +367,10 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         {
             success = true;
         }
+    else
+        {
+            std::cerr << "OpenSSL: message authentication failed" << std::endl;
+        }
 #else
     auto digest = this->computeSHA256(message);
     int verification = ECDSA_verify(0, digest.data(), SHA256_DIGEST_LENGTH, signature.data(), static_cast<int>(signature.size()), d_PublicKey);
@@ -378,16 +382,13 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         {
             std::cerr << "OpenSSL: invalid signature found when verifying message" << std::endl;
         }
+    else
+        {
+            std::cerr << "OpenSSL: message authentication failed" << std::endl;
+        }
 
 #endif
 #else
-    // Verify the dummy hash using the public key
-    gnutls_datum_t dummyHash = {nullptr, 0};
-    int ret2 = gnutls_pubkey_verify_hash2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &dummyHash, &dummyHash);
-    if (ret2 != GNUTLS_E_SUCCESS)
-        {
-            std::cout << "GnuTLS: The Public Key is invalid" << std::endl;
-        }
     gnutls_datum_t signature_{};
     signature_.data = const_cast<uint8_t*>(signature.data());
     signature_.size = signature.size();
@@ -395,9 +396,13 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     data_.data = const_cast<uint8_t*>(message.data());
     data_.size = message.size();
     int ret = gnutls_pubkey_verify_data2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &data_, &signature_);
-    if (ret == GNUTLS_E_SUCCESS)
+    if (ret >= 0)
         {
             success = true;
+        }
+    else
+        {
+            std::cerr << "GnuTLS: message authentication failed" << std::endl;
         }
 #endif
     return success;

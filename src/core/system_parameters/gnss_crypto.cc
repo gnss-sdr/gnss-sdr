@@ -43,6 +43,10 @@
 
 Gnss_Crypto::Gnss_Crypto(const std::string& filePath)
 {
+#if USE_OPENSSL_FALLBACK
+#else
+    // gnutls_global_init();
+#endif
     readPublicKeyFromPEM(filePath);
 }
 
@@ -57,20 +61,17 @@ Gnss_Crypto::~Gnss_Crypto()
             EC_KEY_free(d_PublicKey);
         }
 #endif
-#else
-    if (d_PublicKey != nullptr)
-        {
-            gnutls_pubkey_deinit(*d_PublicKey);
-        }
-
-    gnutls_global_deinit();
 #endif
 }
 
 
 bool Gnss_Crypto::have_public_key() const
 {
+#if USE_OPENSSL_FALLBACK
     return (d_PublicKey != nullptr);
+#else
+    return (d_PublicKey != gnutls_pubkey_t{});
+#endif
 }
 
 
@@ -299,7 +300,6 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
             std::cerr << "OpenSSL: error creating a BIO object with data read from file " << filePath << ". Aborting import" << std::endl;
             return;
         }
-    // Load the public key from the BIO
 #if USE_OPENSSL_3
     d_PublicKey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
 #else
@@ -312,22 +312,23 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
             return;
         }
 #else
-    gnutls_global_init();
-    gnutls_pubkey_t pubKey;
-    gnutls_pubkey_init(&pubKey);
-    d_PublicKey = &pubKey;
     // Import the PEM data
     gnutls_datum_t pemDatum = {const_cast<unsigned char*>(reinterpret_cast<unsigned char*>(pemContent.data())), static_cast<unsigned int>(pemContent.size())};
-    int ret = gnutls_pubkey_import(*d_PublicKey, &pemDatum, GNUTLS_X509_FMT_PEM);
-    if (ret < 0)
+    gnutls_pubkey_t pubkey;
+    gnutls_pubkey_init(&pubkey);
+
+    int ret = gnutls_pubkey_import(pubkey, &pemDatum, GNUTLS_X509_FMT_PEM);
+    if (ret != GNUTLS_E_SUCCESS)
         {
+            gnutls_pubkey_deinit(pubkey);
             std::cerr << "GnuTLS: error reading the Public Key from file "
                       << filePath
-                      << ". (Error: " << gnutls_strerror(ret) << "). Aborting import" << std::endl;
-            gnutls_pubkey_deinit(*d_PublicKey);
+                      << ". Aborting import" << std::endl;
             return;
         }
-    gnutls_pubkey_deinit(pubKey);
+    gnutls_pubkey_init(&d_PublicKey);
+    d_PublicKey = pubkey;
+    gnutls_pubkey_deinit(pubkey);
 #endif
     std::cout << "Public key successfully read from file " << filePath << std::endl;
 }
@@ -335,6 +336,10 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
 
 bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature)
 {
+    if (!have_public_key())
+        {
+            return false;
+        }
     bool success = false;
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
@@ -378,7 +383,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 #else
     // Verify the dummy hash using the public key
     gnutls_datum_t dummyHash = {nullptr, 0};
-    int ret2 = gnutls_pubkey_verify_hash2(*d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &dummyHash, &dummyHash);
+    int ret2 = gnutls_pubkey_verify_hash2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &dummyHash, &dummyHash);
     if (ret2 != GNUTLS_E_SUCCESS)
         {
             std::cout << "GnuTLS: The Public Key is invalid" << std::endl;
@@ -389,7 +394,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     gnutls_datum_t data_{};
     data_.data = const_cast<uint8_t*>(message.data());
     data_.size = message.size();
-    int ret = gnutls_pubkey_verify_data2(*d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &data_, &signature_);
+    int ret = gnutls_pubkey_verify_data2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &data_, &signature_);
     if (ret == GNUTLS_E_SUCCESS)
         {
             success = true;

@@ -56,7 +56,7 @@ private:
     EC_KEY* d_PublicKey = nullptr;
 #endif
 #else
-    gnutls_pubkey_t* d_PublicKey;
+    gnutls_pubkey_t d_PublicKey{};
 #endif
 };
 

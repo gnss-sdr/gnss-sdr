@@ -300,7 +300,11 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
             return;
         }
     // Load the public key from the BIO
+#if USE_OPENSSL_3
+    d_PublicKey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
+#else
     d_PublicKey = PEM_read_bio_EC_PUBKEY(bio, nullptr, nullptr, nullptr);
+#endif
     BIO_free(bio);
     if (d_PublicKey == nullptr)
         {

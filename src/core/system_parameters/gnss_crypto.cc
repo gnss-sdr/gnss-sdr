@@ -43,10 +43,6 @@
 
 Gnss_Crypto::Gnss_Crypto(const std::string& filePath)
 {
-#if USE_OPENSSL_FALLBACK
-#else
-    gnutls_global_init();
-#endif
     readPublicKeyFromPEM(filePath);
 }
 
@@ -54,10 +50,13 @@ Gnss_Crypto::Gnss_Crypto(const std::string& filePath)
 Gnss_Crypto::~Gnss_Crypto()
 {
 #if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+#else
     if (d_PublicKey != nullptr)
         {
             EC_KEY_free(d_PublicKey);
         }
+#endif
 #else
     if (d_PublicKey != nullptr)
         {
@@ -300,52 +299,6 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
             std::cerr << "OpenSSL: error creating a BIO object with data read from file " << filePath << ". Aborting import" << std::endl;
             return;
         }
-#if USE_OPENSSL_3
-    // Read the PEM data from the BIO object
-    EVP_PKEY* evpKey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
-    BIO_free(bio);
-    if (!evpKey)
-        {
-            std::cerr << "OpenSSL: error reading the Public Key from file " << filePath << ". Aborting import" << std::endl;
-            return;
-        }
-
-    // Check if the public key is an EC key
-    if (EVP_PKEY_base_id(evpKey) != EVP_PKEY_EC)
-        {
-            std::cerr << "OpenSSL: Public key imported from file " << filePath << " is not an EC key. Aborting import" << std::endl;
-            EVP_PKEY_free(evpKey);
-            return;
-        }
-
-    // Get the EC key from the EVP_PKEY object
-    d_PublicKey = EVP_PKEY_get1_EC_KEY(evpKey);
-    EVP_PKEY_free(evpKey);
-
-    if (d_PublicKey == nullptr)
-        {
-            std::cout << "OpenSSL: Failed to get the EC key from file " << filePath << ". Aborting import" << std::endl;
-            return;
-        }
-
-    // Get the EC group from the EC key
-    const EC_GROUP* ecGroup = EC_KEY_get0_group(d_PublicKey);
-
-    if (ecGroup == nullptr)
-        {
-            std::cout << "OpenSSL: Failed to extract the EC group from file " << filePath << ". Aborting import" << std::endl;
-            EC_KEY_free(d_PublicKey);
-            return;
-        }
-
-    // Check if it is ECDSA P-256
-    if (EC_GROUP_get_curve_name(ecGroup) != NID_X9_62_prime256v1)
-        {
-            std::cerr << "Invalid curve name in file " << filePath << ". Expected P-256. Aborting import" << std::endl;
-            EC_KEY_free(d_PublicKey);
-            return;
-        }
-#else
     // Load the public key from the BIO
     d_PublicKey = PEM_read_bio_EC_PUBKEY(bio, nullptr, nullptr, nullptr);
     BIO_free(bio);
@@ -354,8 +307,8 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
             std::cerr << "OpenSSL: error reading the Public Key from file " << filePath << ". Aborting import" << std::endl;
             return;
         }
-#endif
 #else
+    gnutls_global_init();
     gnutls_pubkey_t pubKey;
     gnutls_pubkey_init(&pubKey);
     d_PublicKey = &pubKey;
@@ -370,44 +323,73 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
             gnutls_pubkey_deinit(*d_PublicKey);
             return;
         }
+    gnutls_pubkey_deinit(pubKey);
 #endif
     std::cout << "Public key successfully read from file " << filePath << std::endl;
 }
 
 
-// bool verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature)
-// {
-//     bool success = false;
-// #if USE_OPENSSL_FALLBACK
-/** Verifies that the given signature is valid ECDSA signature
- *  of the supplied hash value using the specified public key.
- *  \param  type     this parameter is ignored
- *  \param  dgst     pointer to the hash value
- *  \param  dgstlen  length of the hash value
- *  \param  sig      pointer to the DER encoded signature
- *  \param  siglen   length of the DER encoded signature
- *  \param  eckey    EC_KEY object containing a public EC key
- *  \return 1 if the signature is valid, 0 if the signature is invalid
- *          and -1 on error
- */
-// int ECDSA_verify(int type, const unsigned char *dgst, int dgstlen, const unsigned char *sig, int siglen, EC_KEY *eckey);)
-// int verification = ECDSA_verify(0, digest, SHA256_DIGEST_LENGTH, signature, signature_len, key_pair_obj);
-// #else
-//     gnutls_global_init();
-//     int result = gnutls_pubkey_verify_data(publicKey.data(), GNUTLS_SIGN_ECDSA_SHA256, digest.data(), digest.size(), signature.data(), signature.size());
-//     success = (result == GNUTLS_E_SUCCESS);
-//     gnutls_global_deinit();
-// pubkey: Holds the public key
-// algo: The signature algorithm used
-// flags: Zero or an OR list of gnutls_certificate_verify_flags
-// data: holds the signed data
-// signature: contains the signature
-// This function will verify the given signed data, using the parameters from the certificate.
-// gnutls_pubkey_verify_data2 (gnutls_pubkey_t pubkey, gnutls_sign_algorithm_t algo, unsigned int flags, const gnutls_datum_t * data, const gnutls_datum_t * signature)
-// #endif
-//     return success;
-// }
-// // bool verifyDigitalSignature(const unsigned char* signature, size_t signatureSize, const unsigned char* message, size_t messageSize, gnutls_pubkey_t publicKey)
-// // {
-// //     int verificationStatus = gnutls_pubkey_verify_data(publicKey, GNUTLS_DIG_SHA256, 0, message, messageSize, signature, signatureSize);
-// //     return verificationStatus == 0;
+bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature)
+{
+    bool success = false;
+#if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+    EVP_PKEY_CTX* ctx;
+    ctx = EVP_PKEY_CTX_new(d_PublicKey, NULL /* no engine */);
+    bool do_operation = true;
+    if (!ctx)
+        {
+            do_operation = false;
+        }
+    if (EVP_PKEY_verify_init(ctx) <= 0)
+        {
+            do_operation = false;
+        }
+    if (EVP_PKEY_CTX_set_signature_md(ctx, EVP_sha256()) <= 0)
+        {
+            do_operation = false;
+        }
+    int verification = 0;
+    if (do_operation)
+        {
+            verification = EVP_PKEY_verify(ctx, signature.data(), signature.size(), message.data(), message.size());
+        }
+    if (verification == 1)
+        {
+            success = true;
+        }
+#else
+    auto digest = this->computeSHA256(message);
+    int verification = ECDSA_verify(0, digest.data(), SHA256_DIGEST_LENGTH, signature.data(), static_cast<int>(signature.size()), d_PublicKey);
+    if (verification == 1)
+        {
+            success = true;
+        }
+    else if (verification == 0)
+        {
+            std::cerr << "OpenSSL: invalid signature found when verifying message" << std::endl;
+        }
+
+#endif
+#else
+    // Verify the dummy hash using the public key
+    gnutls_datum_t dummyHash = {nullptr, 0};
+    int ret2 = gnutls_pubkey_verify_hash2(*d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &dummyHash, &dummyHash);
+    if (ret2 != GNUTLS_E_SUCCESS)
+        {
+            std::cout << "GnuTLS: The Public Key is invalid" << std::endl;
+        }
+    gnutls_datum_t signature_{};
+    signature_.data = const_cast<uint8_t*>(signature.data());
+    signature_.size = signature.size();
+    gnutls_datum_t data_{};
+    data_.data = const_cast<uint8_t*>(message.data());
+    data_.size = message.size();
+    int ret = gnutls_pubkey_verify_data2(*d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &data_, &signature_);
+    if (ret == GNUTLS_E_SUCCESS)
+        {
+            success = true;
+        }
+#endif
+    return success;
+}

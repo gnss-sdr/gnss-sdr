@@ -161,6 +161,24 @@ const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_15 = {
     {std::string("SHA-512"), 1056}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
 
 const std::string PEMFILE_DEFAULT("./OSNMA_PublicKey_20210920133026.pem");
+
+
+class Mack_lookup
+{
+public:
+    Mack_lookup() = default;
+    uint8_t msg{};
+    uint8_t nt{};
+    std::vector<std::string> sequence1;
+    std::vector<std::string> sequence2;
+};
+
+const std::unordered_map<uint8_t, Mack_lookup> OSNMA_TABLE_16 = {
+    {27, {2, 6, {"00S", "00E", "00E", "00E", "12S", "00E"}, {"00S ", "00E", "00E", "04S", "12S", "00E"}}},
+    {28, {2, 10, {"00S", "00E", "00E", "00E", "00S", "00E", "00E", "12S", "00E", "00E"}, {"00S", "00E", "00E", "00S", "00E", "00E", "04S", "12S", "00E", "00E"}}},
+    {31, {2, 5, {"00S", "00E", "00E", "12S", "00E"}, {"00S", "00E", "00E", "12S", "04S"}}},
+    {33, {2, 6, {"00S", "00E", "04S", "00E", "12S", "00E"}, {"00S", "00E", "00E", "12S", "00E", "12E"}}}};
+
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_GALILEO_OSNMA_H

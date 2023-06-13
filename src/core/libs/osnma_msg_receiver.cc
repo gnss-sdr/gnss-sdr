@@ -305,7 +305,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         {
                             MSG.push_back(dsm_msg[i]);
                         }
-
+                    std::vector<uint8_t> message = MSG;
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
                             MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
@@ -334,12 +334,20 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     // check DS signature
                     if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_truncated)
                         {
+                            bool authenticated = d_crypto->verify_signature(message, d_osnma_data.d_dsm_kroot_message.ds);
                             LOG(WARNING) << "OSNMA: DSM-KROOT message received ok.";
                             std::cout << "Galileo OSNMA: KROOT with CID=" << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid)
                                       << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
-                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600
-                                      << " validated" << std::endl;
+                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
+                            if (authenticated)
+                                {
+                                    std::cout << " authenticated" << std::endl;
+                                }
+                            else
+                                {
+                                    std::cout << " validated" << std::endl;
+                                }
                             std::cout << "Galileo OSNMA: NMA Status is " << d_dsm_reader->get_nmas_status(d_osnma_data.d_nma_header.nmas) << ", "
                                       << "Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
                                       << "Chain and Public Key Status is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks) << std::endl;
@@ -428,9 +436,8 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
     if (d_osnma_data.d_dsm_kroot_message.ts != 0)
         {
             read_mack_header();
-            read_mack_info_and_tags();
-            read_mack_key();
-            read_mack_padding();
+            read_mack_body();
+            d_old_mack_message = d_osnma_data.d_mack_message;
         }
 }
 
@@ -496,7 +503,7 @@ void osnma_msg_receiver::read_mack_header()
 }
 
 
-void osnma_msg_receiver::read_mack_info_and_tags()
+void osnma_msg_receiver::read_mack_body()
 {
     uint8_t lt_bits = 0;
     const auto it = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
@@ -518,7 +525,7 @@ void osnma_msg_receiver::read_mack_info_and_tags()
         {
             return;
         }
-    uint16_t nt = std::floor((480.0 + float(lk_bits)) / (float(lt_bits) + 16.0));
+    uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0));
     d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
     for (uint16_t k = 0; k < (nt - 1); k++)
         {
@@ -537,6 +544,14 @@ void osnma_msg_receiver::read_mack_info_and_tags()
                             PRN_d += d_mack_message[6 + step];
                             ADKD += ((d_mack_message[7 + step] & 0xF0) >> 4);
                             cop += (d_mack_message[7 + step] & 0x0F);
+                            if (k == (nt - 2))
+                                {
+                                    d_osnma_data.d_mack_message.key = std::vector<uint8_t>(d_osnma_data.d_dsm_kroot_message.kroot.size());
+                                    for (size_t j = 0; j < d_osnma_data.d_dsm_kroot_message.kroot.size(); j++)
+                                        {
+                                            d_osnma_data.d_mack_message.key[j] = d_mack_message[8 + step + j];
+                                        }
+                                }
                         }
                     else
                         {
@@ -547,6 +562,14 @@ void osnma_msg_receiver::read_mack_info_and_tags()
                             PRN_d += (d_mack_message[6 + step] & 0xF0) >> 4;
                             ADKD += (d_mack_message[6 + step] & 0x0F);
                             cop += (d_mack_message[7 + step] & 0xF0) >> 4;
+                            if (k == (nt - 2))
+                                {
+                                    d_osnma_data.d_mack_message.key = std::vector<uint8_t>(d_osnma_data.d_dsm_kroot_message.kroot.size());
+                                    for (size_t j = 0; j < d_osnma_data.d_dsm_kroot_message.kroot.size(); j++)
+                                        {
+                                            d_osnma_data.d_mack_message.key[j] = ((d_mack_message[7 + step + j] & 0x0F) << 4) + ((d_mack_message[8 + step + j] & 0xF0) >> 4);
+                                        }
+                                }
                         }
                 }
             else if (lt_bits == 24)
@@ -557,6 +580,14 @@ void osnma_msg_receiver::read_mack_info_and_tags()
                     PRN_d += d_mack_message[8 + k * 5];
                     ADKD += ((d_mack_message[9 + k * 5] & 0xF0) >> 4);
                     cop += (d_mack_message[9 + k * 5] & 0x0F);
+                    if (k == (nt - 2))
+                        {
+                            d_osnma_data.d_mack_message.key = std::vector<uint8_t>(d_osnma_data.d_dsm_kroot_message.kroot.size());
+                            for (size_t j = 0; j < d_osnma_data.d_dsm_kroot_message.kroot.size(); j++)
+                                {
+                                    d_osnma_data.d_mack_message.key[j] = d_mack_message[10 + k * 5 + j];
+                                }
+                        }
                 }
             else if (lt_bits == 28)
                 {
@@ -570,6 +601,14 @@ void osnma_msg_receiver::read_mack_info_and_tags()
                             PRN_d += d_mack_message[9 + step];
                             ADKD += ((d_mack_message[10 + step] & 0xF0) >> 4);
                             cop += (d_mack_message[10 + step] & 0x0F);
+                            if (k == (nt - 2))
+                                {
+                                    d_osnma_data.d_mack_message.key = std::vector<uint8_t>(d_osnma_data.d_dsm_kroot_message.kroot.size());
+                                    for (size_t j = 0; j < d_osnma_data.d_dsm_kroot_message.kroot.size(); j++)
+                                        {
+                                            d_osnma_data.d_mack_message.key[j] = d_mack_message[11 + step + j];
+                                        }
+                                }
                         }
                     else
                         {
@@ -581,6 +620,14 @@ void osnma_msg_receiver::read_mack_info_and_tags()
                             PRN_d += ((d_mack_message[9 + step] & 0xF0) >> 4);
                             ADKD += (d_mack_message[9 + step] & 0x0F);
                             cop += ((d_mack_message[10 + step] & 0xF0) >> 4);
+                            if (k == (nt - 2))
+                                {
+                                    d_osnma_data.d_mack_message.key = std::vector<uint8_t>(d_osnma_data.d_dsm_kroot_message.kroot.size());
+                                    for (size_t j = 0; j < d_osnma_data.d_dsm_kroot_message.kroot.size(); j++)
+                                        {
+                                            d_osnma_data.d_mack_message.key[j] = ((d_mack_message[10 + step + j] & 0x0F) << 4) + ((d_mack_message[11 + step + j] & 0xF0) >> 4);
+                                        }
+                                }
                         }
                 }
             else if (lt_bits == 32)
@@ -592,6 +639,14 @@ void osnma_msg_receiver::read_mack_info_and_tags()
                     PRN_d += d_mack_message[10 + k * 6];
                     ADKD += ((d_mack_message[11 + k * 6] & 0xF0) >> 4);
                     cop += (d_mack_message[11 + k * 6] & 0x0F);
+                    if (k == (nt - 2))
+                        {
+                            d_osnma_data.d_mack_message.key = std::vector<uint8_t>(d_osnma_data.d_dsm_kroot_message.kroot.size());
+                            for (size_t j = 0; j < d_osnma_data.d_dsm_kroot_message.kroot.size(); j++)
+                                {
+                                    d_osnma_data.d_mack_message.key[j] = d_mack_message[12 + k * 6 + j];
+                                }
+                        }
                 }
             else if (lt_bits == 40)
                 {
@@ -603,20 +658,18 @@ void osnma_msg_receiver::read_mack_info_and_tags()
                     PRN_d += d_mack_message[12 + k * 7];
                     ADKD += ((d_mack_message[13 + k * 7] & 0xF0) >> 4);
                     cop += (d_mack_message[13 + k * 7] & 0x0F);
+                    if (k == (nt - 2))
+                        {
+                            d_osnma_data.d_mack_message.key = std::vector<uint8_t>(d_osnma_data.d_dsm_kroot_message.kroot.size());
+                            for (size_t j = 0; j < d_osnma_data.d_dsm_kroot_message.kroot.size(); j++)
+                                {
+                                    d_osnma_data.d_mack_message.key[j] = d_mack_message[14 + k * 7 + j];
+                                }
+                        }
                 }
             d_osnma_data.d_mack_message.tag_and_info[k].tag = tag;
             d_osnma_data.d_mack_message.tag_and_info[k].tag_info.PRN_d = PRN_d;
             d_osnma_data.d_mack_message.tag_and_info[k].tag_info.ADKD = ADKD;
             d_osnma_data.d_mack_message.tag_and_info[k].tag_info.cop = cop;
         }
-}
-
-
-void osnma_msg_receiver::read_mack_key()
-{
-}
-
-
-void osnma_msg_receiver::read_mack_padding()
-{
 }

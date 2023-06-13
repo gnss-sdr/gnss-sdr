@@ -116,7 +116,6 @@ public:
     MACK_header header;
     std::vector<MACK_tag_and_info> tag_and_info;
     std::vector<uint8_t> key;
-    std::vector<uint8_t> padding;
 };
 
 /*!

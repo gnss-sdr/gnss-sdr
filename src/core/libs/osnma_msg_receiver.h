@@ -67,9 +67,9 @@ private:
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
 
     void read_mack_header();
-    void read_mack_info_and_tags();
-    void read_mack_key();
-    void read_mack_padding();
+    void read_mack_body();
+
+    MACK_message d_old_mack_message;
 
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
     std::unique_ptr<Gnss_Crypto> d_crypto;

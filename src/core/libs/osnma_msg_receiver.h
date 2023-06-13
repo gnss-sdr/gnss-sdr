@@ -23,10 +23,11 @@
 #include "gnss_block_interface.h"  // for gnss_shared_ptr
 #include "gnss_sdr_make_unique.h"  // for std::make:unique in C++11
 #include "osnma_data.h"            // for OSNMA_data
-#include <gnuradio/block.h>        // for gr::block
-#include <pmt/pmt.h>               // for pmt::pmt_t
-#include <array>                   // for std::array
-#include <memory>                  // for std::shared_ptr
+#include <boost/circular_buffer.hpp>
+#include <gnuradio/block.h>  // for gr::block
+#include <pmt/pmt.h>         // for pmt::pmt_t
+#include <array>             // for std::array
+#include <memory>            // for std::shared_ptr
 #include <string>
 #include <vector>
 
@@ -65,12 +66,10 @@ private:
     void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
-
     void read_mack_header();
     void read_mack_body();
 
-    MACK_message d_old_mack_message;
-
+    boost::circular_buffer<MACK_message> d_old_mack_message;
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
     std::unique_ptr<Gnss_Crypto> d_crypto;
 

@@ -58,6 +58,7 @@ osnma_msg_receiver::osnma_msg_receiver(
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
     d_crypto = std::make_unique<Gnss_Crypto>(pemFilePath);
+    d_old_mack_message.set_capacity(10);
     //  register OSNMA input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("OSNMA_from_TLM"));
     // register OSNMA output message port to PVT block
@@ -352,7 +353,6 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                       << "Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
                                       << "Chain and Public Key Status is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks) << std::endl;
                         }
-                    // Validate signature
                 }
         }
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
@@ -437,7 +437,47 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
         {
             read_mack_header();
             read_mack_body();
-            d_old_mack_message = d_osnma_data.d_mack_message;
+            d_old_mack_message.push_back(d_osnma_data.d_mack_message);
+
+            // MACSEQ validation
+            uint32_t GST_SF = osnma_msg->TOW_sf0;
+
+            // Are there flexible tags?
+            std::vector<uint8_t> m(5);
+            m[0] = static_cast<uint8_t>(osnma_msg->PRN);  // PRN_A
+            m[1] = ((GST_SF & 0xF000) >> 24);
+            m[2] = ((GST_SF & 0x0F00) >> 16);
+            m[3] = ((GST_SF & 0x00F0) >> 8);
+            m[4] = (GST_SF & 0x000F);
+
+            std::vector<uint8_t> applicable_key;
+            // if ADKD=12, pick d_old_mack_message.front() if d_old_mack_message[10] is full
+            // otherwise pick d_old_mack_message.back()
+            applicable_key = d_old_mack_message.back().key;
+            std::vector<uint8_t> mac;
+            if (d_osnma_data.d_dsm_kroot_message.mf == 0)
+                {
+                    mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+                }
+            else if (d_osnma_data.d_dsm_kroot_message.mf == 1)
+                {
+                    mac = d_crypto->computeCMAC_AES(applicable_key, m);
+                }
+            uint16_t mac_msb = 0;
+            if (!mac.empty())
+                {
+                    mac_msb = (mac[0] << 8) + mac[1];
+                }
+            uint16_t computed_macseq = (mac_msb & 0x0FFF);
+            int num_tags_added = 0;
+            if (computed_macseq == d_osnma_data.d_mack_message.header.macseq)
+                {
+                    std::cout << "OSNMA: MACSEQ authenticated for PRN_A "
+                              << osnma_msg->PRN << " with WN="
+                              << osnma_msg->WN_sf0 << ", TOW="
+                              << osnma_msg->TOW_sf0 << ". Tags added: "
+                              << num_tags_added << std::endl;
+                }
         }
 }
 

@@ -427,9 +427,9 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
     uint32_t index = 0;
     for (uint32_t value : osnma_msg->mack)
         {
-            d_mack_message[index] = static_cast<uint8_t>((value & 0xFF000000) >> 6);
-            d_mack_message[index + 1] = static_cast<uint8_t>((value & 0x00FF0000) >> 4);
-            d_mack_message[index + 2] = static_cast<uint8_t>((value & 0x0000FF00) >> 2);
+            d_mack_message[index] = static_cast<uint8_t>((value & 0xFF000000) >> 24);
+            d_mack_message[index + 1] = static_cast<uint8_t>((value & 0x00FF0000) >> 16);
+            d_mack_message[index + 2] = static_cast<uint8_t>((value & 0x0000FF00) >> 8);
             d_mack_message[index + 3] = static_cast<uint8_t>(value & 0x000000FF);
             index = index + 4;
         }
@@ -508,7 +508,7 @@ void osnma_msg_receiver::read_mack_header()
     else if (lt_bits == 24)
         {
             first_lt_bits += static_cast<uint64_t>(d_mack_message[2]);
-            macseq += (static_cast<uint16_t>(d_mack_message[3]) << 8);
+            macseq += (static_cast<uint16_t>(d_mack_message[3]) << 4);
             macseq += (static_cast<uint16_t>(d_mack_message[4] & 0xF0) >> 4);
             cop += (d_mack_message[4] & 0x0F);
         }
@@ -524,7 +524,7 @@ void osnma_msg_receiver::read_mack_header()
         {
             first_lt_bits += (static_cast<uint64_t>(d_mack_message[2]) << 8);
             first_lt_bits += static_cast<uint64_t>(d_mack_message[3]);
-            macseq += (static_cast<uint16_t>(d_mack_message[4]) << 8);
+            macseq += (static_cast<uint16_t>(d_mack_message[4]) << 4);
             macseq += (static_cast<uint16_t>(d_mack_message[5] & 0xF0) >> 4);
             cop += (d_mack_message[5] & 0x0F);
         }
@@ -533,13 +533,13 @@ void osnma_msg_receiver::read_mack_header()
             first_lt_bits += (static_cast<uint64_t>(d_mack_message[2]) << 16);
             first_lt_bits += (static_cast<uint64_t>(d_mack_message[3]) << 8);
             first_lt_bits += static_cast<uint64_t>(d_mack_message[4]);
-            macseq += (static_cast<uint16_t>(d_mack_message[5]) << 8);
+            macseq += (static_cast<uint16_t>(d_mack_message[5]) << 4);
             macseq += (static_cast<uint16_t>(d_mack_message[6] & 0xF0) >> 4);
             cop += (d_mack_message[6] & 0x0F);
         }
     d_osnma_data.d_mack_message.header.tag0 = first_lt_bits;
     d_osnma_data.d_mack_message.header.macseq = macseq;
-    d_osnma_data.d_mack_message.header.macseq = cop;
+    d_osnma_data.d_mack_message.header.cop = cop;
 }
 
 

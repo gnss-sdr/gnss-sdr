@@ -290,7 +290,6 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
                 }
             return;
         }
-    std::vector<uint8_t> publicKey;
     std::string pemContent((std::istreambuf_iterator<char>(pemFile)), std::istreambuf_iterator<char>());
 #if USE_OPENSSL_FALLBACK
     // Create a BIO object from the string data
@@ -326,7 +325,6 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
                       << ". Aborting import" << std::endl;
             return;
         }
-    gnutls_pubkey_init(&d_PublicKey);
     d_PublicKey = pubkey;
     gnutls_pubkey_deinit(pubkey);
 #endif
@@ -346,6 +344,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     EVP_PKEY_CTX* ctx;
     ctx = EVP_PKEY_CTX_new(d_PublicKey, nullptr /* no engine */);
     bool do_operation = true;
+
     if (!ctx)
         {
             do_operation = false;
@@ -363,6 +362,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         {
             verification = EVP_PKEY_verify(ctx, signature.data(), signature.size(), message.data(), message.size());
         }
+    EVP_PKEY_CTX_free(ctx);
     if (verification == 1)
         {
             success = true;

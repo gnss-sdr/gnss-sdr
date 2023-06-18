@@ -124,7 +124,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     //**************************************
     // Kalman state prediction (time update)
     //**************************************
-    
+
     if (counter < closure_point)
         {
             // receiver solution from rtklib_solver
@@ -300,7 +300,6 @@ void Vtl_Engine::kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arm
 
 void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt, arma::mat &kf_x)
 {
-
     double densidad = 1.0;
     double ballistic_coef = 0.007;
     double diam_cohete = 120.0e-3;  // 120 mm
@@ -323,14 +322,14 @@ void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt, arma::mat &kf_x)
     kf_F(4, 7) = kf_dt;
     kf_F(5, 8) = kf_dt;
 
-    kf_F(6, 3) = -beta*(vx*vx/u+u);
-    kf_F(7, 4) = -beta*(vy*vy/u+u);
-    kf_F(8, 5) = -beta*(vz*vz/u+u);
+    kf_F(6, 3) = -beta * (vx * vx / u + u);
+    kf_F(7, 4) = -beta * (vy * vy / u + u);
+    kf_F(8, 5) = -beta * (vz * vz / u + u);
 
     kf_F(9, 10) = kf_dt;
 }
 
-void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::mat &rhoDot2_pri,arma::colvec &ax, arma::colvec &ay, arma::colvec &az, int sat_number, arma::mat sat_p, arma::mat sat_v, arma::mat kf_x)
+void Vtl_Engine::obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::mat &rhoDot2_pri, arma::colvec &ax, arma::colvec &ay, arma::colvec &az, int sat_number, arma::mat sat_p, arma::mat sat_v, arma::mat kf_x)
 {
     for (int32_t i = 0; i < sat_number; i++)  // neccesary quantities
         {
@@ -390,7 +389,7 @@ void Vtl_Engine::model3DoF(double &acc_x, double &acc_y, double &acc_z, arma::ma
 
                     if (t_disparo < .2)
                         {
-                            u_dir = {.90828, -.13984, -.388756}; // launching attitude
+                            u_dir = {.90828, -.13984, -.388756};  // launching attitude
                         }
                     else
                         {
@@ -454,11 +453,11 @@ void Vtl_Engine::accelerometer(double &acc_x, double &acc_y, double &acc_z, arma
 
                     if (t_disparo < .2)
                         {
-                            u_dir = {.90828, -.13984, -.388756}; // launching attitude
+                            u_dir = {.90828, -.13984, -.388756};  // launching attitude
                         }
                     else
                         {
-                            u_dir = u_vec / u; 
+                            u_dir = u_vec / u;
                         }
 
                     accelerometer = AccLkTable(t_disparo);

@@ -124,8 +124,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
     //**************************************
     // Kalman state prediction (time update)
     //**************************************
-    kf_F_fill(kf_F, kf_dt);
-
+    
     if (counter < closure_point)
         {
             // receiver solution from rtklib_solver
@@ -161,7 +160,7 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             // kf_x(7) = (kf_x(7)-kf_dx(7))/kf_dt;
             // kf_x(8) = (kf_x(8)-kf_dx(8))/kf_dt;
         }
-
+    kf_F_fill(kf_F, kf_dt, kf_x);
     obsv_calc(rho_pri, rhoDot_pri, rhoDot2_pri, a_x, a_y, a_z, new_data.sat_number, new_data.sat_p, new_data.sat_v, kf_x);
     kf_P_x = kf_F * kf_P_x * kf_F.t() + kf_Q;  // state error covariance prediction
 
@@ -299,8 +298,20 @@ void Vtl_Engine::kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arm
         }
 }
 
-void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt)
+void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt, arma::mat &kf_x)
 {
+
+    double densidad = 1.0;
+    double ballistic_coef = 0.007;
+    double diam_cohete = 120.0e-3;  // 120 mm
+    double mass_rocket = 50.0;      // 50Kg
+    double beta = (GNSS_PI * densidad * diam_cohete * diam_cohete / 8) * ballistic_coef;
+    // modulo de la velocidad
+    double vx = kf_x(3);
+    double vy = kf_x(4);
+    double vz = kf_x(5);
+    double u = norm(kf_x.rows(3, 5), 2);
+
     kf_F(0, 3) = kf_dt;
     kf_F(0, 6) = kf_dt * kf_dt / 2;
     kf_F(1, 4) = kf_dt;
@@ -311,6 +322,10 @@ void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt)
     kf_F(3, 6) = kf_dt;
     kf_F(4, 7) = kf_dt;
     kf_F(5, 8) = kf_dt;
+
+    kf_F(6, 3) = -beta*(vx*vx/u+u);
+    kf_F(7, 4) = -beta*(vy*vy/u+u);
+    kf_F(8, 5) = -beta*(vz*vz/u+u);
 
     kf_F(9, 10) = kf_dt;
 }

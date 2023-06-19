@@ -167,6 +167,13 @@ class Mack_lookup
 {
 public:
     Mack_lookup() = default;
+    Mack_lookup(uint8_t msg_,
+        uint8_t nt_,
+        const std::vector<std::string>& s1_,
+        const std::vector<std::string>& s2_) : msg(msg_),
+                                               nt(nt_),
+                                               sequence1(s1_),
+                                               sequence2(s2_){};
     uint8_t msg{};
     uint8_t nt{};
     std::vector<std::string> sequence1;

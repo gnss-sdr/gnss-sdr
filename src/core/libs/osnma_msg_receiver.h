@@ -42,7 +42,7 @@ class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath);
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
 
 /*!
  * \brief GNU Radio block that receives asynchronous OSNMA messages
@@ -56,8 +56,8 @@ public:
     ~osnma_msg_receiver() = default;  //!< Default destructor
 
 private:
-    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath);
-    explicit osnma_msg_receiver(const std::string& pemFilePath);
+    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
+    osnma_msg_receiver(const std::string& pemFilePath, const std::string& merkleFilePath);
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);

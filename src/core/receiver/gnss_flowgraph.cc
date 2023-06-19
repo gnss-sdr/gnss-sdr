@@ -120,7 +120,8 @@ void GNSSFlowgraph::init()
         {
             enable_osnma_rx_ = true;
             auto pemFilePath = configuration_->property("GNSS-SDR.OSNMA_pem", PEMFILE_DEFAULT);
-            osnma_rx_ = osnma_msg_receiver_make(pemFilePath);
+            auto merKleTreePath = configuration_->property("GNSS-SDR.OSNMA_MerkleTree", MERKLEFILE_DEFAULT);
+            osnma_rx_ = osnma_msg_receiver_make(pemFilePath, merKleTreePath);
         }
     else
         {

@@ -45,19 +45,20 @@ namespace wht = std;
 #endif
 
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath)
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath)
 {
-    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath));
+    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath));
 }
 
 
 osnma_msg_receiver::osnma_msg_receiver(
-    const std::string& pemFilePath) : gr::block("osnma_msg_receiver",
-                                          gr::io_signature::make(0, 0, 0),
-                                          gr::io_signature::make(0, 0, 0))
+    const std::string& pemFilePath,
+    const std::string& merkleFilePath) : gr::block("osnma_msg_receiver",
+                                             gr::io_signature::make(0, 0, 0),
+                                             gr::io_signature::make(0, 0, 0))
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
-    d_crypto = std::make_unique<Gnss_Crypto>(pemFilePath);
+    d_crypto = std::make_unique<Gnss_Crypto>(pemFilePath, merkleFilePath);
     d_old_mack_message.set_capacity(10);
     //  register OSNMA input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("OSNMA_from_TLM"));

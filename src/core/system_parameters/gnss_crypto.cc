@@ -17,6 +17,7 @@
 
 #include "gnss_crypto.h"
 #include "Galileo_OSNMA.h"
+#include <pugixml.hpp>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
@@ -41,13 +42,14 @@
 #endif
 
 
-Gnss_Crypto::Gnss_Crypto(const std::string& filePath)
+Gnss_Crypto::Gnss_Crypto(const std::string& pemFilePath, const std::string& merkleTreePath)
 {
 #if USE_OPENSSL_FALLBACK
 #else
     // gnutls_global_init();
 #endif
-    readPublicKeyFromPEM(filePath);
+    readPublicKeyFromPEM(pemFilePath);
+    read_merkle_xml(merkleTreePath);
 }
 
 
@@ -72,6 +74,121 @@ bool Gnss_Crypto::have_public_key() const
 #else
     return (d_PublicKey != gnutls_pubkey_t{});
 #endif
+}
+
+
+std::string Gnss_Crypto::convert_to_utf8_str(const std::vector<uint8_t>& input) const
+{
+    const char hex[] = "0123456789ABCDEF";
+    std::string str(input.size() * 2, '0');
+    for (size_t i = 0; i < input.size(); i++)
+        {
+            str[(i * 2) + 0] = hex[((input[i] & 0xF0) >> 4)];
+            str[(i * 2) + 1] = hex[((input[i] & 0x0F))];
+        }
+    return str;
+}
+
+
+std::vector<uint8_t> Gnss_Crypto::convert_from_hex_str(const std::string& input) const
+{
+    std::vector<uint8_t> result;
+
+    // Iterate over the input string in pairs
+    for (size_t i = 0; i < input.length(); i += 2)
+        {
+            // Extract two hexadecimal characters from the input string
+            std::string hexByte = input.substr(i, 2);
+
+            // Convert the hexadecimal string to an integer value
+            uint8_t value = static_cast<uint8_t>(std::stoul(hexByte, nullptr, 16));
+
+            // Append the value to the result vector
+            result.push_back(value);
+        }
+
+    return result;
+}
+
+
+void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
+{
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file(merkleFilePath.c_str());
+    if (!result)
+        {
+            // XML file not found
+            // If it was not the default, maybe it is a configuration error
+            if (merkleFilePath != MERKLEFILE_DEFAULT)
+                {
+                    std::cerr << "File " << merkleFilePath << " not found" << std::endl;
+                }
+            return;
+        }
+    try
+        {
+            pugi::xml_node root = doc.child("signalData");
+            pugi::xml_node header = root.child("header");
+            pugi::xml_node body = root.child("body");
+
+            // Accessing data from the header
+            pugi::xml_node galHeader = header.child("GAL-header");
+            pugi::xml_node source = galHeader.child("source").child("GAL-EXT-GOC-SC-GLAd");
+            pugi::xml_node destination = galHeader.child("destination").child("GAL-EXT-GOC-SC-GLAd");
+            std::string issueDate = galHeader.child("issueDate").text().get();
+            std::string signalVersion = galHeader.child("signalVersion").text().get();
+            std::string dataVersion = galHeader.child("dataVersion").text().get();
+
+            std::cout << "  Source: " << source.child_value("mission") << " - " << source.child_value("segment") << " - " << source.child_value("element") << std::endl;
+            std::cout << "  Destination: " << destination.child_value("mission") << " - " << destination.child_value("segment") << " - " << destination.child_value("element") << std::endl;
+            std::cout << "  Issue Date: " << issueDate << std::endl;
+            std::cout << "  Signal Version: " << signalVersion << std::endl;
+            std::cout << "  Data Version: " << dataVersion << std::endl;
+
+            // Accessing data from the body
+            pugi::xml_node merkleTree = body.child("MerkleTree");
+
+            int n = std::stoi(merkleTree.child_value("N"));
+            std::string hashFunction = merkleTree.child_value("HashFunction");
+
+            std::cout << "  N: " << n << std::endl;
+            std::cout << "  Hash Function: " << hashFunction << std::endl;
+
+            for (pugi::xml_node publicKey : merkleTree.children("PublicKey"))
+                {
+                    int i = std::stoi(publicKey.child_value("i"));
+                    std::string pkid = publicKey.child_value("PKID");
+                    int lengthInBits = std::stoi(publicKey.child_value("lengthInBits"));
+                    std::string point = publicKey.child_value("point");
+                    std::string pkType = publicKey.child_value("PKType");
+
+                    std::cout << "  Public Key: " << i << std::endl;
+                    std::cout << "  PKID: " << pkid << std::endl;
+                    std::cout << "  Length in Bits: " << lengthInBits << std::endl;
+                    std::cout << "  Point: " << point << std::endl;
+                    std::cout << "  PK Type: " << pkType << std::endl;
+                }
+            for (pugi::xml_node treeNode : merkleTree.children("TreeNode"))
+                {
+                    int j = std::stoi(treeNode.child_value("j"));
+                    int i = std::stoi(treeNode.child_value("i"));
+                    int lengthInBits = std::stoi(treeNode.child_value("lengthInBits"));
+                    std::cout << "  Node length (bits): " << lengthInBits << std::endl;
+                    std::string x_ji = treeNode.child_value("x_ji");
+                    std::cout << "  Size string (bytes): " << x_ji.size() << std::endl;
+                    std::cout << "  m_" << j << "_" << i << " = " << x_ji << std::endl;
+                    std::vector<uint8_t> myVector2 = convert_from_hex_str(x_ji);
+                    std::cout << "After the conversion is " << convert_to_utf8_str(myVector2) << std::endl;
+                    std::vector<uint8_t> myVector(x_ji.begin(), x_ji.end());  // No
+                    std::cout << "  Length Tree node (bytes): " << myVector.size() << std::endl;
+                }
+        }
+    catch (const std::exception& e)
+        {
+            std::cerr << "Exception raised reading the " << merkleFilePath << " file: " << e.what() << '\n';
+            return;
+        }
+    std::cout << "Merkle Tree successfully read from file " << merkleFilePath << std::endl;
 }
 
 
@@ -276,17 +393,17 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
 }
 
 
-void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
+void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
 {
     // Open the .pem file
-    std::ifstream pemFile(filePath);
+    std::ifstream pemFile(pemFilePath);
     if (!pemFile)
         {
             // PEM file not found
-            // If it not was the default, maybe it is a configuration error
-            if (filePath != PEMFILE_DEFAULT)
+            // If it was not the default, maybe it is a configuration error
+            if (pemFilePath != PEMFILE_DEFAULT)
                 {
-                    std::cerr << "File " << filePath << " not found" << std::endl;
+                    std::cerr << "File " << pemFilePath << " not found" << std::endl;
                 }
             return;
         }
@@ -296,7 +413,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
     BIO* bio = BIO_new_mem_buf(pemContent.c_str(), pemContent.length());
     if (!bio)
         {
-            std::cerr << "OpenSSL: error creating a BIO object with data read from file " << filePath << ". Aborting import" << std::endl;
+            std::cerr << "OpenSSL: error creating a BIO object with data read from file " << pemFilePath << ". Aborting import" << std::endl;
             return;
         }
 #if USE_OPENSSL_3
@@ -307,7 +424,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
     BIO_free(bio);
     if (d_PublicKey == nullptr)
         {
-            std::cerr << "OpenSSL: error reading the Public Key from file " << filePath << ". Aborting import" << std::endl;
+            std::cerr << "OpenSSL: error reading the Public Key from file " << pemFilePath << ". Aborting import" << std::endl;
             return;
         }
 #else
@@ -321,14 +438,14 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& filePath)
         {
             gnutls_pubkey_deinit(pubkey);
             std::cerr << "GnuTLS: error reading the Public Key from file "
-                      << filePath
+                      << pemFilePath
                       << ". Aborting import" << std::endl;
             return;
         }
     d_PublicKey = pubkey;
     gnutls_pubkey_deinit(pubkey);
 #endif
-    std::cout << "Public key successfully read from file " << filePath << std::endl;
+    std::cout << "Public key successfully read from file " << pemFilePath << std::endl;
 }
 
 
@@ -389,6 +506,11 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 
 #endif
 #else
+    unsigned int bit_size;
+    if (gnutls_pubkey_get_pk_algorithm(d_PublicKey, &bit_size) != GNUTLS_PK_ECDSA)
+        {
+            std::cout << "GnuTLS: the Public Key does not contain a ECDSA key. Aborting signature verification" << std::endl;
+        }
     gnutls_datum_t signature_{};
     signature_.data = const_cast<uint8_t*>(signature.data());
     signature_.size = signature.size();
@@ -406,4 +528,38 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         }
 #endif
     return success;
+}
+
+
+std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle)
+{
+    if (merkle.empty())
+        {
+            return {};
+        }
+    else if (merkle.size() == 1)
+        {
+            return this->computeSHA3_256(merkle[0]);
+        }
+
+    std::vector<std::vector<uint8_t>> new_merkle = merkle;
+
+    while (new_merkle.size() > 1)
+        {
+            if (new_merkle.size() % 2 == 1)
+                new_merkle.push_back(merkle.back());
+
+            std::vector<std::vector<uint8_t>> result;
+
+            for (size_t i = 0; i < new_merkle.size(); i += 2)
+                {
+                    std::vector<uint8_t> var1 = this->computeSHA3_256(new_merkle[i]);
+                    std::vector<uint8_t> var2 = this->computeSHA3_256(new_merkle[i + 1]);
+                    var1.insert(var1.end(), var2.begin(), var2.end());
+                    std::vector<uint8_t> hash = this->computeSHA3_256(var1);
+                    result.push_back(hash);
+                }
+            new_merkle = result;
+        }
+    return new_merkle[0];
 }

@@ -123,6 +123,7 @@ target_link_libraries(core_system_parameters
     PRIVATE
         Gflags::gflags
         Glog::glog
+        Pugixml::pugixml
 )
 
 # for gnss_sdr_make_unique.h

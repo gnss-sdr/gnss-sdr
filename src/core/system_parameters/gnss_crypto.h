@@ -63,6 +63,12 @@ private:
 #else
     gnutls_pubkey_t d_PublicKey{};
 #endif
+    std::vector<uint8_t> d_x_4_0;
+    std::vector<uint8_t> d_x_3_1;
+    std::vector<uint8_t> d_x_2_1;
+    std::vector<uint8_t> d_x_1_1;
+    std::vector<uint8_t> d_x_0_0;
+    std::vector<uint8_t> d_x_0_1;
 };
 
 /** \} */

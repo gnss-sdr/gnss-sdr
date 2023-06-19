@@ -101,7 +101,7 @@ std::vector<uint8_t> Gnss_Crypto::convert_from_hex_str(const std::string& input)
             std::string hexByte = input.substr(i, 2);
 
             // Convert the hexadecimal string to an integer value
-            uint8_t value = static_cast<uint8_t>(std::stoul(hexByte, nullptr, 16));
+            auto value = static_cast<uint8_t>(std::stoul(hexByte, nullptr, 16));
 
             // Append the value to the result vector
             result.push_back(value);
@@ -118,11 +118,18 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
     if (!result)
         {
             // XML file not found
-            // If it was not the default, maybe it is a configuration error
+            // If it was not the default, maybe it is a configuration error, warn user
             if (merkleFilePath != MERKLEFILE_DEFAULT)
                 {
                     std::cerr << "File " << merkleFilePath << " not found" << std::endl;
                 }
+            // fill default values
+            d_x_4_0 = convert_from_hex_str("C5B2A3BD24E819EF82B17ACE83C0E7F41D34AC9B488CB7CE4D765FDE7DCA0297");
+            d_x_3_1 = convert_from_hex_str("C8314BA8084E0CA101E595E88F170012F1F5CE71EEEFAB27334283E15935E8E6");
+            d_x_2_1 = convert_from_hex_str("6FB21E4DDF3F8E517A5C5B1C6D843F9236707FF11D96F9BA954BFEAA3A44E56B");
+            d_x_1_1 = convert_from_hex_str("86E53A50D345FBDAD49835F3363EE4A7262DB738CBDFC399229AE2803679300D");
+            d_x_0_0 = convert_from_hex_str("40CAA1D70F7B1D370219674A25721311170A49DE4E4A0CE4FE328674E01CF750");
+            d_x_0_1 = convert_from_hex_str("AA1A8B68E5DB293106B5BC8806F9790E8ACF8DC2D28A6EF6C1AC7233A9813D3F");
             return;
         }
     try
@@ -177,15 +184,41 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
                     std::string x_ji = treeNode.child_value("x_ji");
                     std::cout << "  Size string (bytes): " << x_ji.size() << std::endl;
                     std::cout << "  m_" << j << "_" << i << " = " << x_ji << std::endl;
-                    std::vector<uint8_t> myVector2 = convert_from_hex_str(x_ji);
-                    std::cout << "After the conversion is " << convert_to_utf8_str(myVector2) << std::endl;
-                    std::vector<uint8_t> myVector(x_ji.begin(), x_ji.end());  // No
-                    std::cout << "  Length Tree node (bytes): " << myVector.size() << std::endl;
+                    if (j == 4 && i == 0)
+                        {
+                            d_x_4_0 = convert_from_hex_str(x_ji);
+                        }
+                    if (j == 3 && i == 1)
+                        {
+                            d_x_3_1 = convert_from_hex_str(x_ji);
+                        }
+                    if (j == 2 && i == 1)
+                        {
+                            d_x_2_1 = convert_from_hex_str(x_ji);
+                        }
+                    if (j == 1 && i == 1)
+                        {
+                            d_x_1_1 = convert_from_hex_str(x_ji);
+                        }
+                    if (j == 0 && i == 0)
+                        {
+                            d_x_0_0 = convert_from_hex_str(x_ji);
+                        }
+                    if (j == 0 && i == 1)
+                        {
+                            d_x_0_0 = convert_from_hex_str(x_ji);
+                        }
                 }
         }
     catch (const std::exception& e)
         {
             std::cerr << "Exception raised reading the " << merkleFilePath << " file: " << e.what() << '\n';
+            d_x_4_0 = convert_from_hex_str("C5B2A3BD24E819EF82B17ACE83C0E7F41D34AC9B488CB7CE4D765FDE7DCA0297");
+            d_x_3_1 = convert_from_hex_str("C8314BA8084E0CA101E595E88F170012F1F5CE71EEEFAB27334283E15935E8E6");
+            d_x_2_1 = convert_from_hex_str("6FB21E4DDF3F8E517A5C5B1C6D843F9236707FF11D96F9BA954BFEAA3A44E56B");
+            d_x_1_1 = convert_from_hex_str("86E53A50D345FBDAD49835F3363EE4A7262DB738CBDFC399229AE2803679300D");
+            d_x_0_0 = convert_from_hex_str("40CAA1D70F7B1D370219674A25721311170A49DE4E4A0CE4FE328674E01CF750");
+            d_x_0_1 = convert_from_hex_str("AA1A8B68E5DB293106B5BC8806F9790E8ACF8DC2D28A6EF6C1AC7233A9813D3F");
             return;
         }
     std::cout << "Merkle Tree successfully read from file " << merkleFilePath << std::endl;
@@ -547,7 +580,9 @@ std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<ui
     while (new_merkle.size() > 1)
         {
             if (new_merkle.size() % 2 == 1)
-                new_merkle.push_back(merkle.back());
+                {
+                    new_merkle.push_back(merkle.back());
+                }
 
             std::vector<std::vector<uint8_t>> result;
 

@@ -564,7 +564,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 }
 
 
-std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle)
+std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle) const
 {
     if (merkle.empty())
         {

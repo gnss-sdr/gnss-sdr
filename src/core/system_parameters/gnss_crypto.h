@@ -49,7 +49,7 @@ public:
     bool verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature);
     void readPublicKeyFromPEM(const std::string& pemFilePath);
     void read_merkle_xml(const std::string& merkleFilePath);
-    std::vector<uint8_t> getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle);
+    std::vector<uint8_t> getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle) const;
 
     // void set_public_key(const std::vector<uint8_t>& publickey);
 

@@ -64,10 +64,11 @@ private:
     void read_nma_header(uint8_t nma_header);
     void read_dsm_header(uint8_t dsm_header);
     void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_header();
     void read_mack_body();
+    void process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
 
     boost::circular_buffer<MACK_message> d_old_mack_message;
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;

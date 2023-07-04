@@ -49,12 +49,13 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     uint32_t type_of_rx,
     bool flag_dump_to_file,
     bool flag_dump_to_mat,
-    bool use_e6_for_pvt) : d_dump_filename(dump_filename),
-                           d_rtk(rtk),
-                           d_type_of_rx(type_of_rx),
-                           d_flag_dump_enabled(flag_dump_to_file),
-                           d_flag_dump_mat_enabled(flag_dump_to_mat),
-                           d_use_e6_for_pvt(use_e6_for_pvt)
+    Pvt_Conf conf) : d_dump_filename(dump_filename),
+                     d_rtk(rtk),
+                     d_type_of_rx(type_of_rx),
+                     d_flag_dump_enabled(flag_dump_to_file),
+                     d_flag_dump_mat_enabled(flag_dump_to_mat),
+                     d_conf(conf)
+
 {
     this->set_averaging_flag(false);
 
@@ -1039,7 +1040,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
-                        if (sig_ == "E6" && d_use_e6_for_pvt)
+                        if (sig_ == "E6" && d_conf.use_e6_for_pvt)
                             {
                                 galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
@@ -1507,6 +1508,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_rtk.neb = 0;                 // clear error buffer to avoid repeating the error message
                     this->set_time_offset_s(0.0);  // reset rx time estimation
                     this->set_num_valid_observations(0);
+                    if (d_conf.enable_pvt_kf == true)
+                        {
+                            d_pvt_kf.initialized = false;
+                        }
                 }
             else
                 {
@@ -1541,9 +1546,41 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                     this->set_valid_position(true);
                     std::array<double, 4> rx_position_and_time{};
+
+                    if (d_conf.enable_pvt_kf == true)
+                        {
+                            if (d_pvt_kf.initialized == false)
+                                {
+                                    arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
+                                    arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+
+                                    d_pvt_kf.init_kf(p,
+                                        v,
+                                        d_conf.observable_interval_ms / 1000.0,
+                                        d_conf.measures_ecef_pos_sd_m,
+                                        d_conf.measures_ecef_vel_sd_ms,
+                                        d_conf.system_ecef_pos_sd_m,
+                                        d_conf.system_ecef_vel_sd_ms);
+                                }
+                            else
+                                {
+                                    arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
+                                    arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+                                    d_pvt_kf.run_Kf(p, v);
+                                    d_pvt_kf.get_pvt(p, v);
+                                    pvt_sol.rr[0] = p[0];  // [m]
+                                    pvt_sol.rr[1] = p[1];  // [m]
+                                    pvt_sol.rr[2] = p[2];  // [m]
+                                    pvt_sol.rr[3] = v[0];  // [ms]
+                                    pvt_sol.rr[4] = v[1];  // [ms]
+                                    pvt_sol.rr[5] = v[2];  // [ms]
+                                }
+                        }
+
                     rx_position_and_time[0] = pvt_sol.rr[0];  // [m]
                     rx_position_and_time[1] = pvt_sol.rr[1];  // [m]
                     rx_position_and_time[2] = pvt_sol.rr[2];  // [m]
+
                     // todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
                     if (d_rtk.opt.mode == PMODE_SINGLE)
                         {

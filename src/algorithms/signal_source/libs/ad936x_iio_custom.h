@@ -31,7 +31,7 @@
 #endif
 
 #include "ad936x_iio_samples.h"
-#include <ad9361.h>  //multichip sync and high level functions
+#include <ad9361.h>  // multichip sync and high level functions
 #include <thread>
 #include <vector>
 
@@ -114,13 +114,13 @@ private:
     void PlutoTxEnable(bool txon);
     void setPlutoGpo(int p);
 
-    //Device structure
+    // Device structure
     struct iio_context *ctx;
     struct iio_device *phy;
     struct iio_device *stream_dev;
     struct iio_device *dds_dev;
 
-    //stream
+    // stream
 
     uint64_t sample_rate_sps;
 
@@ -135,7 +135,7 @@ private:
     boost::atomic<bool> receive_samples;
 
     boost::atomic<bool> fpga_overflow;
-    //using queues of smart pointers to preallocated buffers
+    // using queues of smart pointers to preallocated buffers
     Concurrent_Queue<std::shared_ptr<ad936x_iio_samples>> free_buffers;
     Concurrent_Queue<std::shared_ptr<ad936x_iio_samples>> used_buffers;
 

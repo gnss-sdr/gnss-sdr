@@ -34,7 +34,7 @@ public:
     uint32_t n_interleaved_iq_samples;
     uint16_t n_channels;
     uint16_t step_bytes;
-    char buffer[IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 4 * 4];  //max 16 bits samples per buffer (4 channels, 2-bytes per I + 2-bytes per Q)
+    char buffer[IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 4 * 4];  // max 16 bits samples per buffer (4 channels, 2-bytes per I + 2-bytes per Q)
 };
 
 #endif

@@ -13,7 +13,7 @@
 class PpsSamplestamp
 {
 public:
-    uint64_t samplestamp;   //PPS rising edge samples counter from the beginning of rx stream opperation. Notice that it is reseted to zero if sample buffer overflow is detected on the FPGA side
+    uint64_t samplestamp;   // PPS rising edge samples counter from the beginning of rx stream opperation. Notice that it is reseted to zero if sample buffer overflow is detected on the FPGA side
     uint32_t overflow_reg;  // >0 indicates overflow situation in the FPGA RX buffer
 };
 

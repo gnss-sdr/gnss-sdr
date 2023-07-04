@@ -83,7 +83,7 @@ private:
     bool open();
 
     boost::thread *d_pcap_thread;
-    //boost::mutex d_mutex;
+    // boost::mutex d_mutex;
     struct sockaddr_in si_me
     {
     };

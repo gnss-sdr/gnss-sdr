@@ -193,7 +193,7 @@ bool Gr_Complex_Ip_Packet_Source::stop()
 bool Gr_Complex_Ip_Packet_Source::open()
 {
     std::array<char, PCAP_ERRBUF_SIZE> errbuf{};
-    //boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
+    // boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     gr::thread::scoped_lock guard(d_setlock);
     // open device for reading
     descr = pcap_open_live(d_src_device.c_str(), 1500, 1, 1000, errbuf.data());
@@ -250,7 +250,7 @@ void Gr_Complex_Ip_Packet_Source::static_pcap_callback(u_char *args, const struc
 void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *args, __attribute__((unused)) const struct pcap_pkthdr *pkthdr,
     const u_char *packet)
 {
-    //boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
+    // boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
 
     const gr_ip_header *ih;
     const gr_udp_header *uh;
@@ -500,7 +500,7 @@ int Gr_Complex_Ip_Packet_Source::work(int noutput_items,
     gr_vector_void_star &output_items)
 {
     // send samples to next GNU Radio block
-    //boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
+    // boost::mutex::scoped_lock lock(d_mutex);  // hold mutex for duration of this function
     if (fifo_items == 0)
         {
             return 0;

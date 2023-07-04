@@ -52,16 +52,16 @@ bool pps_tcp_rx::send_cmd(std::string cmd)
 }
 void pps_tcp_rx::receive_pps(std::string ip_address, int port)
 {
-    //create a message buffer
+    // create a message buffer
     char buf[1500];
-    //setup a socket and connection tools
+    // setup a socket and connection tools
     sockaddr_in sendSockAddr;
     sendSockAddr.sin_family = AF_INET;
     sendSockAddr.sin_addr.s_addr =
         inet_addr(ip_address.c_str());
     sendSockAddr.sin_port = htons(port);
     clientSd = socket(AF_INET, SOCK_STREAM, 0);
-    //try to connect...
+    // try to connect...
     int status = connect(clientSd,
         (sockaddr *)&sendSockAddr, sizeof(sendSockAddr));
     if (status < 0)
@@ -84,8 +84,8 @@ void pps_tcp_rx::receive_pps(std::string ip_address, int port)
                                 {
                                     if (new_pps_line.length() > 0)
                                         {
-                                            //std::cout << "pps_tcp_rx debug: " << new_pps_line << "\n";
-                                            //parse string and push PPS data to the PPS queue
+                                            // std::cout << "pps_tcp_rx debug: " << new_pps_line << "\n";
+                                            // parse string and push PPS data to the PPS queue
                                             std::stringstream ss(new_pps_line);
                                             std::vector<std::string> data;
                                             while (ss.good())
@@ -97,7 +97,7 @@ void pps_tcp_rx::receive_pps(std::string ip_address, int port)
                                             if (data.size() >= 2)
                                                 {
                                                     PpsSamplestamp new_pps;
-                                                    //sample counter
+                                                    // sample counter
                                                     std::size_t found = data.at(0).find("sc=");
                                                     if (found != std::string::npos)
                                                         {
@@ -131,7 +131,7 @@ void pps_tcp_rx::receive_pps(std::string ip_address, int port)
                                                             std::cout << "pps_tcp_rx debug: o parse error str " << data.at(1) << "\n";
                                                         }
                                                     Pps_queue->push(new_pps);
-                                                    //std::cout << "pps_tcp_rx debug: pps pushed!\n";
+                                                    // std::cout << "pps_tcp_rx debug: pps pushed!\n";
                                                 }
                                             else
                                                 {

@@ -94,8 +94,8 @@ void ad936x_iio_source::ad9361_channel_demux_and_record(ad936x_iio_samples *samp
         {
             for (ch = 0; ch < nchannels; ch++)
                 {
-                    //std::cout << current_byte << " of " << samples_in->n_bytes << " test: " << (int)samples_in->buffer[current_byte] << "\n";
-                    (*files_out).at(ch).write(&samples_in->buffer[current_byte], 4);  //two bytes I + two bytes Q per channel
+                    // std::cout << current_byte << " of " << samples_in->n_bytes << " test: " << (int)samples_in->buffer[current_byte] << "\n";
+                    (*files_out).at(ch).write(&samples_in->buffer[current_byte], 4);  // two bytes I + two bytes Q per channel
                     current_byte += 4;
                 }
         }
@@ -134,7 +134,7 @@ ad936x_iio_source::ad936x_iio_source(
         {
             if (ad936x_custom->initialize_device(pluto_uri_, board_type_) == true)
                 {
-                    //configure channels
+                    // configure channels
                     if (ad936x_custom->init_config_ad9361_rx(bandwidth_,
                             sample_rate_,
                             freq_,
@@ -153,19 +153,19 @@ ad936x_iio_source::ad936x_iio_source(
                         {
                             std::cout << "ad936x_iio_source HW configured OK!\n";
 
-                            //PPS FPGA Samplestamp information from TCP server
+                            // PPS FPGA Samplestamp information from TCP server
                             pps_rx = std::make_shared<pps_tcp_rx>();
                             ppsqueue = std::shared_ptr<Concurrent_Queue<PpsSamplestamp>>(new Concurrent_Queue<PpsSamplestamp>());
 
                             pps_rx->set_pps_samplestamp_queue(ppsqueue);
                             ad936x_custom->set_pps_samplestamp_queue(ppsqueue);
 
-                            //start PPS RX thread
+                            // start PPS RX thread
                             if (ppsmode_ == true or customsamplesize_ == true)
                                 {
                                     pps_rx_thread = std::thread(&pps_tcp_rx::receive_pps, pps_rx, fe_ip_, fe_ctlport_);
                                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                                    //configure custom FPGA options
+                                    // configure custom FPGA options
                                     switch (ssize_)
                                         {
                                         case 16:
@@ -251,13 +251,13 @@ ad936x_iio_source::ad936x_iio_source(
 
     set_min_noutput_items(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 2);  // multiplexed I,Q, so, two samples per complex sample
     set_min_output_buffer(IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * sizeof(int16_t) * 2);
-    //std::cout << "max_output_buffer " << min_output_buffer(0) << " min_noutput_items: " << min_noutput_items() << "\n";
+    // std::cout << "max_output_buffer " << min_output_buffer(0) << " min_noutput_items: " << min_noutput_items() << "\n";
 
     //    for (int n = 0; n < ad936x_custom->n_channels; n++)
     //        {
     //            std::string cap_file_root_name = "./debug_cap_ch";
     //            samplesfile.push_back(std::fstream(cap_file_root_name + std::to_string(n) + ".dat", std::ios::out | std::ios::binary));
-    //            //samplesfile.back().exceptions(std::ios_base::badbit | std::ios_base::failbit); //this will enable exceptions for debug
+    //            // samplesfile.back().exceptions(std::ios_base::badbit | std::ios_base::failbit); //this will enable exceptions for debug
     //
     //            if (samplesfile.back().is_open() == false)
     //                {
@@ -301,7 +301,7 @@ int ad936x_iio_source::general_work(int noutput_items,
     ad936x_custom->pop_sample_buffer(current_buffer);
     current_samples = current_buffer.get();
 
-    //I and Q samples are interleaved in buffer: IQIQIQ...
+    // I and Q samples are interleaved in buffer: IQIQIQ...
     int32_t n_interleaved_iq_samples_per_channel = current_samples->n_bytes / (ad936x_custom->n_channels * 2);
     if (noutput_items < n_interleaved_iq_samples_per_channel)
         {
@@ -310,12 +310,12 @@ int ad936x_iio_source::general_work(int noutput_items,
         }
     else
         {
-            //ad9361_channel_demux_and_record(current_samples, ad936x_custom->n_channels, &samplesfile);
+            // ad9361_channel_demux_and_record(current_samples, ad936x_custom->n_channels, &samplesfile);
 
             uint32_t current_byte = 0;
             uint32_t current_byte_in_gr = 0;
             int16_t ch = 0;
-            //std::cout << "nbytes: " << samples_in->n_bytes << " nsamples: " << samples_in->n_samples << " nch: " << nchannels << "\n";
+            // std::cout << "nbytes: " << samples_in->n_bytes << " nsamples: " << samples_in->n_samples << " nch: " << nchannels << "\n";
             if (ad936x_custom->n_channels == 1)
                 {
                     memcpy(&((char *)output_items[0])[0], &current_samples->buffer[current_byte], current_samples->n_bytes);

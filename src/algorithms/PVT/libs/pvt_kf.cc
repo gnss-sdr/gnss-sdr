@@ -80,7 +80,7 @@ void Pvt_Kf::init_kf(const arma::vec& p,
 }
 
 
-void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v);
+void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v)
 {
     // Kalman loop
     // Prediction

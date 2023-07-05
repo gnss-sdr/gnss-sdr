@@ -18,7 +18,6 @@ if(ENABLE_PLUTOSDR)
     ##############################################
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
-    
     ##############################################
     # CUSTOM AD936X IIO SOURCE
     ##############################################

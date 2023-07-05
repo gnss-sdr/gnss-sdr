@@ -1,8 +1,16 @@
-/*
- * ppstcprx.h
+/*!
+ * \file ppstcprx.h
+ * \brief TCP client class for front-end PPS samplestamp information reception
+ * \author Javier Arribas, jarribas(at)cttc.es
+ * -----------------------------------------------------------------------------
  *
- *  Created on: 28 feb 2022
- *      Author: javier
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
  */
 
 #ifndef SRC_LIBS_PPSTCPRX_H_

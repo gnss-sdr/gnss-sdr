@@ -334,7 +334,7 @@ void Gr_Complex_Ip_Packet_Source::demux_samples(const gr_vector_void_star &outpu
 {
     if (d_wire_sample_type == 5)
         {
-            //interleaved 2-bit I 2-bit Q samples packed in bytes: 1 byte -> 2 complex samples
+            // interleaved 2-bit I 2-bit Q samples packed in bytes: 1 byte -> 2 complex samples
             int nsample = 0;
             byte_2bit_struct sample{};  // <- 2 bits wide only
             int real;

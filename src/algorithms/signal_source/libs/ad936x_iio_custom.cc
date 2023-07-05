@@ -21,6 +21,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 ad936x_iio_custom::ad936x_iio_custom(int debug_level_, int log_level_)
@@ -834,10 +835,10 @@ void ad936x_iio_custom::monitor_thread_fn()
                     continue;
                 }
 
-            //		if (device_is_tx) {
-            //			if (val & 1)
-            //				fprintf(stderr, "Underflow detected\n");
-            //		} else {
+            // if (device_is_tx) {
+            // if (val & 1)
+            // fprintf(stderr, "Underflow detected\n");
+            // } else {
             if (val & 4)
                 {
                     std::cout << "WARNING: IIO status register reported overflow!\n";
@@ -909,7 +910,7 @@ void ad936x_iio_custom::PlutoTxEnable(bool txon)
 void ad936x_iio_custom::setPlutoGpo(int p)
 {
     char pins[11];
-    sprintf(pins, "0x27 0x%x0", p);  // direct access to AD9361 registers... WARNING!
+    snprintf(pins, sizeof(pins), "0x27 0x%x0", p);  // direct access to AD9361 registers... WARNING!
     pins[9] = 0;
     int ret;
     // std::cout << "send: " << pins << " \n";
@@ -926,9 +927,9 @@ void ad936x_iio_custom::setPlutoGpo(int p)
 
 bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
 {
-    //	adi,gpo-manual-mode-enable		Enables GPO manual mode, this will conflict with automatic ENSM slave and eLNA mode
-    //	adi,gpo-manual-mode-enable-mask		Enable bit mask, setting or clearing bits will change the level of the corresponding output. Bit0 → GPO, Bit1 → GPO1, Bit2 → GPO2, Bit3 → GP03
-    //	adi,gpo-manual-mode-enable
+    // adi,gpo-manual-mode-enable Enables GPO manual mode, this will conflict with automatic ENSM slave and eLNA mode
+    // adi,gpo-manual-mode-enable-mask Enable bit mask, setting or clearing bits will change the level of the corresponding output. Bit0 → GPO, Bit1 → GPO1, Bit2 → GPO2, Bit3 → GP03
+    // adi,gpo-manual-mode-enable
     // adi,gpo-manual-mode-enable-mask does not work...
     // some software use the direct_reg_access (see https://github.com/g4eml/Langstone/blob/master/LangstoneGUI.c)
 

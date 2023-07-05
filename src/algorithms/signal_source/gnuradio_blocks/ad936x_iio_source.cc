@@ -301,6 +301,7 @@ int ad936x_iio_source::general_work(int noutput_items,
     ad936x_custom->pop_sample_buffer(current_buffer);
     current_samples = current_buffer.get();
 
+
     // I and Q samples are interleaved in buffer: IQIQIQ...
     int32_t n_interleaved_iq_samples_per_channel = current_samples->n_bytes / (ad936x_custom->n_channels * 2);
     if (noutput_items < n_interleaved_iq_samples_per_channel)
@@ -311,14 +312,14 @@ int ad936x_iio_source::general_work(int noutput_items,
     else
         {
             // ad9361_channel_demux_and_record(current_samples, ad936x_custom->n_channels, &samplesfile);
-
+            auto **out = reinterpret_cast<int8_t **>(&output_items[0]);
             uint32_t current_byte = 0;
             uint32_t current_byte_in_gr = 0;
             int16_t ch = 0;
             // std::cout << "nbytes: " << samples_in->n_bytes << " nsamples: " << samples_in->n_samples << " nch: " << nchannels << "\n";
             if (ad936x_custom->n_channels == 1)
                 {
-                    memcpy(&((char *)output_items[0])[0], &current_samples->buffer[current_byte], current_samples->n_bytes);
+                    memcpy(out[0], &current_samples->buffer[current_byte], current_samples->n_bytes);
                 }
             else
                 {
@@ -327,7 +328,7 @@ int ad936x_iio_source::general_work(int noutput_items,
                         {
                             for (ch = 0; ch < ad936x_custom->n_channels; ch++)
                                 {
-                                    memcpy(&((char *)output_items[ch])[current_byte_in_gr], &current_samples->buffer[current_byte], 4);  // two bytes I + two bytes Q per channel: 4 bytes
+                                    memcpy(&out[ch][current_byte_in_gr], &current_samples->buffer[current_byte], 4);  // two bytes I + two bytes Q per channel: 4 bytes
                                     current_byte += 4;
                                 }
                             current_byte_in_gr += 4;

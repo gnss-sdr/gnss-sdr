@@ -947,7 +947,7 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
 
 
     if (check_device() == false) return false;
-    int plutoGpo = 0;
+    // int plutoGpo = 0;
     int ret;
     ret = iio_device_debug_attr_write(phy, "adi,gpo-manual-mode-enable", "1");
 

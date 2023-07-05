@@ -18,10 +18,12 @@
 #include "concurrent_queue.h"
 #include "pps_samplestamp.h"
 #include <arpa/inet.h>
+#include <memory>
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
+
 class pps_tcp_rx
 {
 private:

@@ -56,6 +56,8 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include "monitor_pvt.h"
+#include "pvt_conf.h"
+#include "pvt_kf.h"
 #include "pvt_solution.h"
 #include "rtklib.h"
 #include "rtklib_conversions.h"
@@ -84,7 +86,7 @@ public:
         uint32_t type_of_rx,
         bool flag_dump_to_file,
         bool flag_dump_to_mat,
-        bool use_e6_for_pvt = true);
+        Pvt_Conf conf);
     ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
@@ -149,10 +151,11 @@ private:
     rtk_t d_rtk{};
     nav_t d_nav_data{};
     Monitor_Pvt d_monitor_pvt{};
+    Pvt_Conf d_conf;
+    Pvt_Kf d_pvt_kf;
     uint32_t d_type_of_rx;
     bool d_flag_dump_enabled;
     bool d_flag_dump_mat_enabled;
-    bool d_use_e6_for_pvt;
 };
 
 

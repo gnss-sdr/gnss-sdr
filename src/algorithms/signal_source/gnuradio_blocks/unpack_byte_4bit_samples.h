@@ -20,8 +20,8 @@
 #ifndef GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
 #define GNSS_SDR_UNPACK_BYTE_4BIT_SAMPLES_H
 
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_interpolator.h>
-#include <memory>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -31,7 +31,7 @@
 
 class unpack_byte_4bit_samples;
 
-using unpack_byte_4bit_samples_sptr = std::shared_ptr<unpack_byte_4bit_samples>;
+using unpack_byte_4bit_samples_sptr = gnss_shared_ptr<unpack_byte_4bit_samples>;
 
 unpack_byte_4bit_samples_sptr make_unpack_byte_4bit_samples();
 

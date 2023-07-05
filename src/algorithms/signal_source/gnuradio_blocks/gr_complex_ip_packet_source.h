@@ -83,7 +83,7 @@ private:
     bool open();
 
     boost::thread *d_pcap_thread;
-    boost::mutex d_mutex;
+    // boost::mutex d_mutex;
     struct sockaddr_in si_me
     {
     };
@@ -98,7 +98,7 @@ private:
     int d_udp_port;
     int d_n_baseband_channels;
     int d_wire_sample_type;
-    int d_bytes_per_sample;
+    float d_bytes_per_sample;
     bool d_IQ_swap;
 };
 

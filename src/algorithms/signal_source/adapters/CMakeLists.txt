@@ -16,8 +16,13 @@ if(ENABLE_PLUTOSDR)
     ##############################################
     # ADALM-PLUTO (Analog Devices Inc.)
     ##############################################
-    list(APPEND OPT_DRIVER_SOURCES plutosdr_signal_source.cc)
-    list(APPEND OPT_DRIVER_HEADERS plutosdr_signal_source.h)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} plutosdr_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} plutosdr_signal_source.h)
+    ##############################################
+    # CUSTOM AD936X IIO SOURCE
+    ##############################################
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_custom_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
 endif()
 
 if(ENABLE_FMCOMMS2)
@@ -94,6 +99,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
     labsat_signal_source.cc
     two_bit_cpx_file_signal_source.cc
     two_bit_packed_file_signal_source.cc
+    four_bit_cpx_file_signal_source.cc
     file_timestamp_signal_source.cc
     ${OPT_DRIVER_SOURCES}
 )
@@ -112,6 +118,7 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
     labsat_signal_source.h
     two_bit_cpx_file_signal_source.h
     two_bit_packed_file_signal_source.h
+    four_bit_cpx_file_signal_source.h
     file_timestamp_signal_source.h
     ${OPT_DRIVER_HEADERS}
 )

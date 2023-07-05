@@ -55,6 +55,18 @@ public:
         return the_queue.empty();
     }
 
+    size_t size() const
+    {
+        std::unique_lock<std::mutex> lock(the_mutex);
+        return the_queue.size();
+    }
+
+    void clear()
+    {
+        std::unique_lock<std::mutex> lock(the_mutex);
+        the_queue = std::queue<Data>();
+    }
+
     bool try_pop(Data& popped_value)
     {
         std::unique_lock<std::mutex> lock(the_mutex);

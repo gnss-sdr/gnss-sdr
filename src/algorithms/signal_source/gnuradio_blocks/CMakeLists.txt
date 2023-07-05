@@ -10,12 +10,24 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
     list(APPEND OPT_DRIVER_HEADERS gr_complex_ip_packet_source.h)
 endif()
 
+if(ENABLE_AD936X_SDR)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gr_complex_ip_packet_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gr_complex_ip_packet_source.h)
+endif()
+
+
+if(ENABLE_PLUTOSDR)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_iio_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_iio_source.h)
+endif()
+
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     fifo_reader.cc
     unpack_byte_2bit_samples.cc
     unpack_byte_2bit_cpx_samples.cc
     unpack_byte_4bit_samples.cc
     unpack_intspir_1bit_samples.cc
+    unpack_short_byte_samples.cc
     rtl_tcp_signal_source_c.cc
     unpack_2bit_samples.cc
     unpack_spir_gss6450_samples.cc
@@ -29,6 +41,7 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     unpack_byte_2bit_cpx_samples.h
     unpack_byte_4bit_samples.h
     unpack_intspir_1bit_samples.h
+    unpack_short_byte_samples.h
     rtl_tcp_signal_source_c.h
     unpack_2bit_samples.h
     unpack_spir_gss6450_samples.h

@@ -40,6 +40,8 @@ option(ENABLE_FMCOMMS2 "Enable the use of FMCOMMS4-EBZ + ZedBoard hardware, requ
 
 option(ENABLE_PLUTOSDR "Enable the use of ADALM-PLUTO Evaluation Boards (Analog Devices Inc.), requires gr-iio" OFF)
 
+option(ENABLE_AD936X_SDR "Enable the use of AD936X front-ends using libiio, requires libiio" OFF)
+
 option(ENABLE_AD9361 "Enable the use of AD9361 direct to FPGA hardware, requires libiio" OFF)
 
 option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
@@ -342,7 +344,7 @@ set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.13")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.13.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.0.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.0")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.1")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 # Downgrade versions if requirements are not met
@@ -3152,6 +3154,7 @@ set_package_properties(LIBAD9361 PROPERTIES
 )
 if(NOT LIBAD9361_FOUND)
     set(ENABLE_AD9361 OFF)
+    set(ENABLE_AD936X_SDR OFF)
     set(ENABLE_FMCOMMS2 OFF)
 endif()
 if(ENABLE_PLUTOSDR OR ENABLE_FMCOMMS2)
@@ -3191,6 +3194,7 @@ if(ENABLE_AD9361 OR ENABLE_FMCOMMS2)
         message(STATUS " * gnuradio-iio from https://github.com/analogdevicesinc/gr-iio")
         if(ENABLE_PACKAGING)
             set(ENABLE_AD9361 OFF)
+            set(ENABLE_AD936X_SDR OFF)
             set(ENABLE_FMCOMMS2 OFF)
         else()
             message(FATAL_ERROR "libiio is required for building gnss-sdr with -DENABLE_AD9361=ON.")
@@ -3404,6 +3408,7 @@ add_feature_info(ENABLE_LIMESDR ENABLE_LIMESDR "Enables Limesdr_Signal_Source. R
 add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio and libad9361-dev.")
 add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
 add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio and libad9361-dev.")
+add_feature_info(ENABLE_AD936X_SDR ENABLE_AD936X_SDR "Enables Ad936x_Iio_Signal_Source to access AD936X front-ends using libiio. Requires libiio and libad9361-dev.")
 add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
 add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")

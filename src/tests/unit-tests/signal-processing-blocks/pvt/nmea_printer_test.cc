@@ -17,6 +17,7 @@
 
 #include "gnss_sdr_filesystem.h"
 #include "nmea_printer.h"
+#include "pvt_conf.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solver.h"
 #include <fstream>
@@ -144,7 +145,9 @@ void NmeaPrinterTest::conf()
 TEST_F(NmeaPrinterTest, PrintLine)
 {
     std::string filename("nmea_test.nmea");
-    std::shared_ptr<Rtklib_Solver> pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 1, false, false);
+    Pvt_Conf conf;
+    conf.use_e6_for_pvt = false;
+    std::shared_ptr<Rtklib_Solver> pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 1, false, false, conf);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));

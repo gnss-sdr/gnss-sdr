@@ -1,5 +1,5 @@
 /*!
- * \file Pvt_Kf.cc
+ * \file pvt_kf.cc
  * \brief Kalman Filter for Position and Velocity
  * \author Javier Arribas, 2023. jarribas(at)cttc.es
  *
@@ -14,11 +14,13 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 #include "pvt_kf.h"
 #include <glog/logging.h>
 
 
-void Pvt_Kf::init_kf(arma::vec p, arma::vec v,
+void Pvt_Kf::init_kf(const arma::vec& p,
+    const arma::vec& v,
     double solver_interval_s,
     double measures_ecef_pos_sd_m,
     double measures_ecef_vel_sd_ms,
@@ -28,7 +30,6 @@ void Pvt_Kf::init_kf(arma::vec p, arma::vec v,
     // Kalman Filter class variables
     const double Ti = solver_interval_s;
 
-    std::cout << "Ti=" << Ti << "\n";
     d_F = {{1.0, 0.0, 0.0, Ti, 0.0, 0.0},
         {0.0, 1.0, 0.0, 0.0, Ti, 0.0},
         {0.0, 0.0, 1.0, 0.0, 0.0, Ti},
@@ -38,7 +39,7 @@ void Pvt_Kf::init_kf(arma::vec p, arma::vec v,
 
     d_H = arma::eye(6, 6);
 
-    //   measurement matrix static covariances
+    // measurement matrix static covariances
     d_R = {{pow(measures_ecef_pos_sd_m, 2.0), 0.0, 0.0, 0.0, 0.0, 0.0},
         {0.0, pow(measures_ecef_pos_sd_m, 2.0), 0.0, 0.0, 0.0, 0.0},
         {0.0, 0.0, pow(measures_ecef_pos_sd_m, 2.0), 0.0, 0.0, 0.0},
@@ -46,9 +47,7 @@ void Pvt_Kf::init_kf(arma::vec p, arma::vec v,
         {0.0, 0.0, 0.0, 0.0, pow(measures_ecef_vel_sd_ms, 2.0), 0.0},
         {0.0, 0.0, 0.0, 0.0, 0.0, pow(measures_ecef_vel_sd_ms, 2.0)}};
 
-
     // system covariance matrix (static)
-
     d_Q = {{pow(system_ecef_pos_sd_m, 2.0), 0.0, 0.0, 0.0, 0.0, 0.0},
         {0.0, pow(system_ecef_pos_sd_m, 2.0), 0.0, 0.0, 0.0, 0.0},
         {0.0, 0.0, pow(system_ecef_pos_sd_m, 2.0), 0.0, 0.0, 0.0},
@@ -71,6 +70,7 @@ void Pvt_Kf::init_kf(arma::vec p, arma::vec v,
 
     initialized = true;
 
+    DLOG(INFO) << "Ti: " << Ti;
     DLOG(INFO) << "F: " << d_F;
     DLOG(INFO) << "H: " << d_H;
     DLOG(INFO) << "R: " << d_R;
@@ -79,9 +79,10 @@ void Pvt_Kf::init_kf(arma::vec p, arma::vec v,
     DLOG(INFO) << "x: " << d_x_old_old;
 }
 
-void Pvt_Kf::run_Kf(arma::vec p, arma::vec v)
+
+void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v);
 {
-    //  Kalman loop
+    // Kalman loop
     // Prediction
     d_x_new_old = d_F * d_x_old_old;
     d_P_new_old = d_F * d_P_old_old * d_F.t() + d_Q;
@@ -98,10 +99,6 @@ void Pvt_Kf::run_Kf(arma::vec p, arma::vec v)
     d_P_old_old = d_P_new_new;
 }
 
-Pvt_Kf::Pvt_Kf()
-{
-    initialized = false;
-}
 
 void Pvt_Kf::get_pvt(arma::vec& p, arma::vec& v)
 {

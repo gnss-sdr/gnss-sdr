@@ -1,5 +1,5 @@
 /*!
- * \file Pvt_Kf.h
+ * \file pvt_kf.h
  * \brief Kalman Filter for Position and Velocity
  * \author Javier Arribas, 2023. jarribas(at)cttc.es
  *
@@ -33,18 +33,18 @@
 class Pvt_Kf
 {
 public:
-    Pvt_Kf();
+    Pvt_Kf() = default;
     virtual ~Pvt_Kf() = default;
-    void init_kf(arma::vec p, arma::vec v,
+    void init_kf(const arma::vec& p,
+        const arma::vec& v,
         double solver_interval_s,
         double measures_ecef_pos_sd_m,
         double measures_ecef_vel_sd_ms,
         double system_ecef_pos_sd_m,
         double system_ecef_vel_sd_ms);
-
-    void run_Kf(arma::vec p, arma::vec v);
-    bool initialized;
-    void get_pvt(arma::vec &p, arma::vec &v);
+    void run_Kf(const arma::vec& p, const arma::vec& v);
+    void get_pvt(arma::vec& p, arma::vec& v);
+    bool initialized{false};
 
 private:
     // Kalman Filter class variables

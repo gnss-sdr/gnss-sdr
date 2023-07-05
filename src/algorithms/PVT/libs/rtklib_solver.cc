@@ -51,11 +51,10 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     bool flag_dump_to_mat,
     Pvt_Conf conf) : d_dump_filename(dump_filename),
                      d_rtk(rtk),
+                     d_conf(std::move(conf)),
                      d_type_of_rx(type_of_rx),
                      d_flag_dump_enabled(flag_dump_to_file),
-                     d_flag_dump_mat_enabled(flag_dump_to_mat),
-                     d_conf(conf)
-
+                     d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
     this->set_averaging_flag(false);
 

@@ -581,9 +581,11 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     //        {
     //            std::cout << "Warning: Unable to set AD936x RX filter parameters!\n";
     //        }
+    n_channels = 0;
     if (enable_ch0 == true)
         {
-            std::cerr << "* Get AD9361 Phy RX channel 0...\n";
+            n_channels++;
+            std::cout << "* Get AD9361 Phy RX channel 0...\n";
             std::stringstream name;
             name.str("");
             name << "voltage";
@@ -634,7 +636,8 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
 
     if (enable_ch1 == true)
         {
-            std::cerr << "* Get AD9361 Phy RX channel 1...\n";
+            n_channels++;
+            std::cout << "* Get AD9361 Phy RX channel 1...\n";
             std::stringstream name;
             name.str("");
             name << "voltage";

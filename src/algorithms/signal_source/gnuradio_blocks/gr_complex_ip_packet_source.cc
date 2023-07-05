@@ -19,6 +19,7 @@
 
 #include "gr_complex_ip_packet_source.h"
 #include <gnuradio/io_signature.h>
+#include <volk/volk.h>
 #include <array>
 #include <cstdint>
 #include <utility>
@@ -110,7 +111,7 @@ Gr_Complex_Ip_Packet_Source::Gr_Complex_Ip_Packet_Source(std::string src_device,
       d_pcap_thread(nullptr),
       d_src_device(std::move(src_device)),
       descr(nullptr),
-      fifo_buff(new char[FIFO_SIZE]),
+      fifo_buff(static_cast<char *>(volk_malloc(static_cast<int32_t>(FIFO_SIZE * sizeof(char)), volk_get_alignment()))),
       fifo_read_ptr(0),
       fifo_write_ptr(0),
       fifo_items(0),
@@ -297,6 +298,7 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                             if (aligned_write_items >= payload_length_bytes)
                                 {
                                     // write all in a single memcpy
+                                    gr::thread::scoped_lock guard(d_setlock);
                                     memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], payload_length_bytes);  // size in bytes
                                     fifo_write_ptr += payload_length_bytes;
                                     if (fifo_write_ptr == FIFO_SIZE)
@@ -308,6 +310,7 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                             else
                                 {
                                     // two step wrap write
+                                    gr::thread::scoped_lock guard(d_setlock);
                                     memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], aligned_write_items);  // size in bytes
                                     fifo_write_ptr = payload_length_bytes - aligned_write_items;
                                     memcpy(&fifo_buff[0], &udp_payload[aligned_write_items], fifo_write_ptr);  // size in bytes

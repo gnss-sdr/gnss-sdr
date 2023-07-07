@@ -12,7 +12,7 @@ static int ephemE_17_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
     asn_app_constraint_failed_f *ctfailcb,
     void *app_key)
 {
-    unsigned long value;
+    // unsigned long value;
 
     if (!sptr)
         {
@@ -21,7 +21,7 @@ static int ephemE_17_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
             return -1;
         }
 
-    value = *(const unsigned long *)sptr;
+    // value = *(const unsigned long *)sptr;
 
     /* Constraint check succeeded */
     return 0;
@@ -132,7 +132,7 @@ static int ephemAPowerHalf_19_constraint(asn_TYPE_descriptor_t *td,
     asn_app_constraint_failed_f *ctfailcb,
     void *app_key)
 {
-    unsigned long value;
+    // unsigned long value;
 
     if (!sptr)
         {
@@ -141,7 +141,7 @@ static int ephemAPowerHalf_19_constraint(asn_TYPE_descriptor_t *td,
             return -1;
         }
 
-    value = *(const unsigned long *)sptr;
+    // value = *(const unsigned long *)sptr;
 
     /* Constraint check succeeded */
     return 0;
@@ -647,7 +647,7 @@ static int memb_ephemE_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
     asn_app_constraint_failed_f *ctfailcb,
     void *app_key)
 {
-    unsigned long value;
+    // unsigned long value;
 
     if (!sptr)
         {
@@ -656,7 +656,7 @@ static int memb_ephemE_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
             return -1;
         }
 
-    value = *(const unsigned long *)sptr;
+    // value = *(const unsigned long *)sptr;
 
     /* Constraint check succeeded */
     return 0;
@@ -695,7 +695,7 @@ static int memb_ephemAPowerHalf_constraint_1(
     asn_TYPE_descriptor_t *td, const void *sptr,
     asn_app_constraint_failed_f *ctfailcb, void *app_key)
 {
-    unsigned long value;
+    // unsigned long value;
 
     if (!sptr)
         {
@@ -704,7 +704,7 @@ static int memb_ephemAPowerHalf_constraint_1(
             return -1;
         }
 
-    value = *(const unsigned long *)sptr;
+    // value = *(const unsigned long *)sptr;
 
     /* Constraint check succeeded */
     return 0;

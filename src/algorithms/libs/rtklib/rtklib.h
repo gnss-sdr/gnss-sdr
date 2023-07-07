@@ -1000,6 +1000,7 @@ typedef struct
     exterr_t exterr;              /* extended receiver error model */
     int freqopt;                  /* disable L2-AR */
     char pppopt[256];             /* ppp option */
+    bool bancroft_init;           /* enable Bancroft initialization for the first iteration of the PVT computation */
 } prcopt_t;
 
 

@@ -44,7 +44,7 @@ public:
     ~Gnss_Satellite() = default;                                //!< Default Destructor.
 
     Gnss_Satellite(const Gnss_Satellite& other) noexcept;        //!< Copy constructor
-    Gnss_Satellite& operator=(const Gnss_Satellite&);            //!< Copy assignment operator
+    Gnss_Satellite& operator=(const Gnss_Satellite&) noexcept;   //!< Copy assignment operator
     Gnss_Satellite(Gnss_Satellite&& other) noexcept;             //!< Move constructor
     Gnss_Satellite& operator=(Gnss_Satellite&& other) noexcept;  //!< Move assignment operator
 

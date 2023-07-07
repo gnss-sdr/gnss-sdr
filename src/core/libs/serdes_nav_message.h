@@ -50,27 +50,31 @@ public:
         // google::protobuf::ShutdownProtobufLibrary();
     }
 
-    inline Serdes_Nav_Message(const Serdes_Nav_Message& other) noexcept  //!< Copy constructor
+    inline Serdes_Nav_Message(const Serdes_Nav_Message& other) noexcept : navmsg_(other.navmsg_)  //!< Copy constructor
     {
-        this->navmsg_ = other.navmsg_;
     }
 
     inline Serdes_Nav_Message& operator=(const Serdes_Nav_Message& rhs) noexcept  //!< Copy assignment operator
     {
-        this->navmsg_ = rhs.navmsg_;
+        if (this != &rhs)
+            {
+                this->navmsg_.CopyFrom(rhs.navmsg_);
+            }
         return *this;
     }
 
-    inline Serdes_Nav_Message(Serdes_Nav_Message&& other) noexcept  //!< Move constructor
+    inline Serdes_Nav_Message(Serdes_Nav_Message&& other) noexcept : navmsg_(std::move(other.navmsg_))  //!< Move constructor
     {
-        this->navmsg_ = std::move(other.navmsg_);
+        // Set the other object's navmsg_ to a default-constructed state
+        other.navmsg_ = gnss_sdr::navMsg{};
     }
 
     inline Serdes_Nav_Message& operator=(Serdes_Nav_Message&& other) noexcept  //!< Move assignment operator
     {
         if (this != &other)
             {
-                this->navmsg_ = std::move(other.navmsg_);
+                navmsg_ = std::move(other.navmsg_);
+                other.navmsg_ = gnss_sdr::navMsg{};
             }
         return *this;
     }

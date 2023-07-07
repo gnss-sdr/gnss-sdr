@@ -85,19 +85,15 @@ jobs:
           ../install/position_test
 
   clang-format:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: install dependencies
-        run: brew install clang-format
       - name: run clang-format
-        run: find . -iname \*.h -o -iname \*.c -o -iname \*.cc | xargs clang-format -style=file -i
-      - name: check
-        run: |
-          git diff > clang_format.patch
-          echo -e "if \n [ -s clang_format.patch ] \nthen \n echo "clang-format not applied:"; echo ""; more clang_format.patch; exit 1 \nfi \n" > detect
-          chmod +x ./detect
-          ./detect
+        uses: jidicula/clang-format-action@v4.11.0
+        with:
+          clang-format-version: "15"
+          check-path: "src"
+          exclude-regex: '(libs\/gsl\/)|^.*\.(cu|proto)$'
 
   clang-tidy:
     runs-on: macos-latest

@@ -633,11 +633,11 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                 {
                                     if (inputsc[0].size == 2)
                                         {
-                                            run_cast_test1_s16ic((volk_gnsssdr_fn_1arg_s16ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                            run_cast_test1_s16ic((volk_gnsssdr_fn_1arg_s16ic)(manual_func), test_data[i], lv_16sc_t(static_cast<int16_t>(scalar.real()), static_cast<int16_t>(scalar.imag())), vlen, iter, arch_list[i]);
                                         }
                                     else
                                         {
-                                            run_cast_test1_s8ic((volk_gnsssdr_fn_1arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                            run_cast_test1_s8ic((volk_gnsssdr_fn_1arg_s8ic)(manual_func), test_data[i], lv_8sc_t(static_cast<int8_t>(scalar.real()), static_cast<int8_t>(scalar.imag())), vlen, iter, arch_list[i]);
                                         }
                                 }
                             else
@@ -672,16 +672,16 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                 {
                                     if (inputsc[0].size == 2)
                                         {
-                                            run_cast_test2_s16ic((volk_gnsssdr_fn_2arg_s16ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                            run_cast_test2_s16ic((volk_gnsssdr_fn_2arg_s16ic)(manual_func), test_data[i], lv_16sc_t(static_cast<int16_t>(scalar.real()), static_cast<int16_t>(scalar.imag())), vlen, iter, arch_list[i]);
                                         }
                                     else
                                         {
-                                            run_cast_test2_s8ic((volk_gnsssdr_fn_2arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                            run_cast_test2_s8ic((volk_gnsssdr_fn_2arg_s8ic)(manual_func), test_data[i], lv_8sc_t(static_cast<int8_t>(scalar.real()), static_cast<int8_t>(scalar.imag())), vlen, iter, arch_list[i]);
                                         }
                                 }
                             else
                                 {
-                                    run_cast_test2_s8i((volk_gnsssdr_fn_2arg_s8i)(manual_func), test_data[i], scalar.real(), vlen, iter, arch_list[i]);
+                                    run_cast_test2_s8i((volk_gnsssdr_fn_2arg_s8i)(manual_func), test_data[i], static_cast<char>(scalar.real()), vlen, iter, arch_list[i]);
                                 }
                         }
                     // ADDED BY GNSS-SDR. END
@@ -712,11 +712,11 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
                                     {
                                         if (inputsc[0].size == 4)
                                             {
-                                                run_cast_test3_s16ic((volk_gnsssdr_fn_3arg_s16ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                                run_cast_test3_s16ic((volk_gnsssdr_fn_3arg_s16ic)(manual_func), test_data[i], lv_16sc_t(static_cast<int16_t>(scalar.real()), static_cast<int16_t>(scalar.imag())), vlen, iter, arch_list[i]);
                                             }
                                         else
                                             {
-                                                run_cast_test3_s8ic((volk_gnsssdr_fn_3arg_s8ic)(manual_func), test_data[i], scalar, vlen, iter, arch_list[i]);
+                                                run_cast_test3_s8ic((volk_gnsssdr_fn_3arg_s8ic)(manual_func), test_data[i], lv_8sc_t(static_cast<int8_t>(scalar.real()), static_cast<int8_t>(scalar.imag())), vlen, iter, arch_list[i]);
                                             }
                                     }
                                 }

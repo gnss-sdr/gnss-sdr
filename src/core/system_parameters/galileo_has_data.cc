@@ -19,10 +19,9 @@
 #include <algorithm>
 #include <bitset>
 #include <iterator>
-#include <map>
 #include <numeric>
 #include <sstream>
-#include <unordered_map>
+#include <stdexcept>
 #include <utility>
 
 
@@ -32,44 +31,6 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
         {
             return {};
         }
-    // See HAS SIS ICD v1.0 Table 20
-    std::unordered_map<uint8_t, std::unordered_map<uint8_t, std::string>> signal_index_table = {
-        {0, {
-                {0, "L1 C/A"},
-                {1, "Reserved"},
-                {2, "Reserved"},
-                {3, "L1C(D)"},
-                {4, "L1C(P)"},
-                {5, "L1C(D+P)"},
-                {6, "L2 CM"},
-                {7, "L2 CL"},
-                {8, "L2 CM+CL"},
-                {9, "L2 P"},
-                {10, "Reserved"},
-                {11, "L5 I"},
-                {12, "L5 Q"},
-                {13, "L5 I + L5 Q"},
-                {14, "Reserved"},
-                {15, "Reserved"},
-            }},
-        {2, {
-                {0, "E1-B I/NAV OS"},
-                {1, "E1-C"},
-                {2, "E1-B + E1-C"},
-                {3, "E5a-I F/NAV OS"},
-                {4, "E5a-Q"},
-                {5, "E5a-I+E5a-Q"},
-                {6, "E5b-I I/NAV OS"},
-                {7, "E5b-Q"},
-                {8, "E5b-I+E5b-Q"},
-                {9, "E5-I"},
-                {10, "E5-Q"},
-                {11, "E5-I + E5-Q"},
-                {12, "E6-B C/NAV HAS"},
-                {13, "E6-C"},
-                {14, "E6-B + E6-C"},
-                {15, "Reserved"},
-            }}};
 
     std::vector<std::string> signals_in_mask;
     uint16_t sig = signal_mask[nsys];
@@ -80,13 +41,13 @@ std::vector<std::string> Galileo_HAS_data::get_signals_in_mask(uint8_t nsys) con
         {
             if ((bits[HAS_MSG_NUMBER_SIGNAL_MASKS - k - 1]))
                 {
-                    if (signal_index_table[system].count(k) == 0)
+                    try
+                        {
+                            signals_in_mask.emplace_back(HAS_SIGNAL_INDEX_TABLE.at(system).at(k));
+                        }
+                    catch (const std::out_of_range& e)
                         {
                             signals_in_mask.emplace_back("Unknown");
-                        }
-                    else
-                        {
-                            signals_in_mask.push_back(signal_index_table[system][k]);
                         }
                 }
         }
@@ -923,26 +884,8 @@ uint16_t Galileo_HAS_data::get_nsat_sub() const
 
 uint16_t Galileo_HAS_data::get_validity_interval_s(uint8_t validity_interval_index) const
 {
-    // See HAS SIS ICD v1.0 Table 23
-    const std::map<uint8_t, uint16_t> validity_intervals = {
-        {0, 5},
-        {1, 10},
-        {2, 15},
-        {3, 20},
-        {4, 30},
-        {5, 60},
-        {6, 90},
-        {7, 120},
-        {8, 180},
-        {9, 240},
-        {10, 300},
-        {11, 600},
-        {12, 900},
-        {13, 1800},
-        {14, 3600}};
-
-    auto it = validity_intervals.find(validity_interval_index);
-    if (it == validity_intervals.end())
+    const auto it = HAS_VALIDITY_INTERVALS.find(validity_interval_index);
+    if (it == HAS_VALIDITY_INTERVALS.cend())
         {
             return 0;
         }

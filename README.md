@@ -125,7 +125,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 
 ## GNU/Linux
 
-- Tested distributions: Ubuntu 14.04 LTS and above; Debian 8.0 "jessie" and
+- Tested distributions: Ubuntu 14.04 LTS and above; Debian 9.0 "stretch" and
   above; Arch Linux; CentOS 7; Fedora 26 and above; OpenSUSE 42.3 and above.
 - Supported microprocessor architectures:
   - i386: Intel x86 instruction set (32-bit microprocessors).
@@ -160,7 +160,7 @@ packages.
 
 #### Debian / Ubuntu
 
-If you are using Debian 8, Ubuntu 14.10 or above, this can be done by copying
+If you are using Debian 9, Ubuntu 14.10 or above, this can be done by copying
 and pasting the following line in a terminal:
 
 ```
@@ -172,10 +172,9 @@ $ sudo apt-get install build-essential cmake git pkg-config libboost-dev libboos
        libprotobuf-dev protobuf-compiler python3-mako
 ```
 
-Please note that the required files from `libgtest-dev` were moved to
-`googletest` in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and moved back
-again to `libgtest-dev` in Debian 10 "buster" and Ubuntu 18.10 "cosmic" (and
-above).
+Please note that the required files from `libgtest-dev` were named `googletest`
+in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and renamed to `libgtest-dev`
+in Debian 10 "buster" and above.
 
 Since Ubuntu 21.04 Hirsute / Debian 11, the package `libcpu-features-dev` is
 also required.
@@ -194,10 +193,6 @@ automatically if CMake does not find it installed.
 In distributions older than Ubuntu 16.04 or Debian 9, `python3-mako` must be
 replaced by `python-mako`. For Ubuntu 14.04, you will need to add the package
 `python-six` to the list of dependencies.
-
-**Note for Debian 8 "jessie" users:** please see the note about `libmatio-dev`
-above. Install `libtool`, `automake` and `libhdf5-dev` instead. You will also
-need `python-six`.
 
 Once you have installed these packages, you can jump directly to
 [download the source code and build GNSS-SDR](#clone-gnss-sdrs-git-repository).
@@ -408,9 +403,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-11.2.1.tar.xz
-$ tar xvfz armadillo-11.2.1.tar.xz
-$ cd armadillo-11.2.1
+$ wget https://sourceforge.net/projects/arma/files/armadillo-12.0.1.tar.xz
+$ tar xvfz armadillo-12.0.1.tar.xz
+$ cd armadillo-12.0.1
 $ cmake .
 $ make
 $ sudo make install
@@ -477,24 +472,14 @@ $ sudo ldconfig
 #### Install [Protocol Buffers](https://developers.google.com/protocol-buffers/ "Protocol Buffers' Homepage"), a portable mechanism for serialization of structured data
 
 GNSS-SDR requires Protocol Buffers v3.0.0 or later. If the packages that come
-with your distribution are older than that (_e.g._, Ubuntu 16.04 Xenial and
-Debian 8 Jessie came with older versions), then you will need to install it
-manually. First, install the dependencies:
+with your distribution are older than that (_e.g._, Ubuntu 16.04 Xenial came
+with an older versions), then you will need to install it manually:
 
 ```
-$ sudo apt-get install autoconf automake libtool curl make g++ unzip
-```
-
-and then:
-
-```
-$ git clone https://github.com/protocolbuffers/protobuf.git
+$ git clone --recursive https://github.com/protocolbuffers/protobuf.git
 $ cd protobuf
-$ git submodule update --init --recursive
-$ ./autogen.sh
-$ /configure
-$ make -j$(nproc)
-$ sudo make install
+$ cmake -DABSL_PROPAGATE_CXX_STD=ON -Dprotobuf_BUILD_TESTS=OFF .
+$ cmake --build --config Release --target install .
 $ sudo ldconfig
 ```
 

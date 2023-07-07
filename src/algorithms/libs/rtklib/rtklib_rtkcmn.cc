@@ -229,7 +229,7 @@ void fatalerr(const char *format, ...)
     char msg[1024];
     va_list ap;
     va_start(ap, format);
-    vsprintf(msg, format, ap);
+    vsnprintf(msg, sizeof(msg), format, ap);
     va_end(ap);
     fprintf(stderr, "%s", msg);
     exit(-9);
@@ -2847,11 +2847,13 @@ int readantex(const char *file, pcvs_t *pcvs)
                 {
                     strncpy(pcv.type, buff, 20);  // MAXANT (64)
                     pcv.type[20] = '\0';
-                    strncpy(pcv.code, buff + 20, 20);  // MAXANT (64)
-                    pcv.code[20] = '\0';
-                    if (!strncmp(pcv.code + 3, "        ", 8))
+                    int ret = std::snprintf(pcv.code, 20, "%s", buff + 20);  // NOLINT(runtime/printf)
+                    if (ret >= 0 && ret < 20)
                         {
-                            pcv.sat = satid2no(pcv.code);
+                            if (!strncmp(pcv.code + 3, "        ", 8))
+                                {
+                                    pcv.sat = satid2no(pcv.code);
+                                }
                         }
                 }
             else if (strstr(buff + 60, "VALID FROM"))
@@ -4082,7 +4084,7 @@ void trace(int level, const char *format, ...)
     va_list ap;
     char buffer[256];
     va_start(ap, format);
-    vsprintf(buffer, format, ap);
+    vsnprintf(buffer, sizeof(buffer), format, ap);
     va_end(ap);
     std::string str(buffer);
     VLOG(level) << "RTKLIB TRACE[" << level << "]:" << str;

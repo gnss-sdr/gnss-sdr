@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -13,6 +13,22 @@ SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc
 All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Repeatability
+
+- A Kalman filter is now available in the PVT block, smoothing the outputs of a
+  simple Least Squares solution and improving the precision of delivered fixes.
+  It can be enabled by setting `PVT.enable_pvt_kf=true` in the configuration
+  file. The user can set values for the measurement and process noise
+  covariances with the following optional parameters (here with their default
+  values): `PVT.kf_measures_ecef_pos_sd_m=1.0`, in [m];
+  `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
+  `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
+  `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+
+## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7805514.svg)](https://doi.org/10.5281/zenodo.7805514)
 
 ### Improvements in Accuracy:
 
@@ -30,6 +46,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Improved non-coherent acquisition when `Acquisition_XX.blocking=false`.
 - Implemented processing of BeiDou PRN 34 up to PRN 63 signals.
 - Implemented Hamming code correction for Glonass navigation message.
+- Now the first iteration of the PVT computation is initialized by the Bancroft
+  method. This allows to get PVT fixes in some unusual geometries (_e.g._,
+  GNSS-like signals transmitted by LEO satellites). This initialization is
+  performed by default. You can opt-out by setting `PVT.bancroft_init=false` in
+  your configuration file.
 
 ### Improvements in Interoperability:
 
@@ -43,9 +64,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   [IGS State Space Representation (SSR) Format](https://files.igs.org/pub/data/format/igs_ssr_v1.pdf).
   Specifically, it generates messages of type IGM01 (SSR Orbit Correction),
   IGM02 (SSR Clock Correction), IGM03 (SSR Combined Orbit and Clock Correction),
-  and IGM05 (SSR Code Bias). Please note that the content of the HAS messages is
-  **not** applied to the computed PVT solution. In the Galileo E6B-only
-  receiver, HAS messages are decoded and reported.
+  and IGM05 (SSR Code Bias).
 - Added a `ZMQ_Signal_Source` for working with streams of samples published via
   [ZeroMQ](https://zeromq.org/).
 - Fixed register unpacking for Labsat3W files in `Labsat_Signal_Source`. This
@@ -87,6 +106,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   to CMake deactivates file downloading.
 - The `ENABLE_GENERIC_ARCH` building option was removed, simplifying the process
   of buiding the software in non-x86 processor architectures.
+- If the Protocol Buffers dependency is not found, it is downloaded, built and
+  statically linked at buiding time. If CMake >= 3.13 and the
+  [Abseil C++ libraries](https://github.com/abseil/abseil-cpp) >= 20230117 are
+  installed on your system, Protocol Buffers v22.2 will be used. If those
+  requirements are not met, Protocol Buffers v21.4 will be used instead
+  (requires autotools).
+- Since Debian 8 "Jessie", which enjoyed Long Term Support until the end of June
+  2020, is not anymore in the Debian official repositories, we drop its support.
+- Fixes for GCC 13 and Clang 16.
 
 ### Improvements in Usability:
 

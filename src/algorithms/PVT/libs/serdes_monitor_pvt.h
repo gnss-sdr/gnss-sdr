@@ -55,12 +55,17 @@ public:
 
     inline Serdes_Monitor_Pvt& operator=(const Serdes_Monitor_Pvt& rhs) noexcept  //!< Copy assignment operator
     {
-        this->monitor_ = rhs.monitor_;
+        if (this != &rhs)
+            {
+                this->monitor_.CopyFrom(rhs.monitor_);
+            }
         return *this;
     }
 
     inline Serdes_Monitor_Pvt(Serdes_Monitor_Pvt&& other) noexcept : monitor_(std::move(other.monitor_))  //!< Move constructor
     {
+        // Set the other object's monitor_ to a default-constructed state
+        other.monitor_ = gnss_sdr::MonitorPvt{};
     }
 
     inline Serdes_Monitor_Pvt& operator=(Serdes_Monitor_Pvt&& other) noexcept  //!< Move assignment operator

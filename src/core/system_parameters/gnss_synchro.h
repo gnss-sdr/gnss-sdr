@@ -84,10 +84,7 @@ public:
     uint64_t last_vtl_cmd_sample_counter{};  //!< Set by Tracking processing block
 
     /// Copy constructor
-    Gnss_Synchro(const Gnss_Synchro& other) noexcept
-    {
-        *this = other;
-    };
+    Gnss_Synchro(const Gnss_Synchro& other) noexcept = default;
 
     /// Copy assignment operator
     Gnss_Synchro& operator=(const Gnss_Synchro& rhs) noexcept
@@ -129,10 +126,7 @@ public:
     };
 
     /// Move constructor
-    Gnss_Synchro(Gnss_Synchro&& other) noexcept
-    {
-        *this = std::move(other);
-    };
+    Gnss_Synchro(Gnss_Synchro&& other) noexcept = default;
 
     /// Move assignment operator
     Gnss_Synchro& operator=(Gnss_Synchro&& other) noexcept
@@ -168,6 +162,35 @@ public:
                 this->Flag_valid_pseudorange = other.Flag_valid_pseudorange;
                 this->Flag_PLL_180_deg_phase_locked = other.Flag_PLL_180_deg_phase_locked;
                 this->last_vtl_cmd_sample_counter = other.last_vtl_cmd_sample_counter;
+                // Leave the source object in a valid but unspecified state
+                other.Signal[0] = '\0';
+                other.Signal[1] = '\0';
+                other.Signal[2] = '\0';
+                other.System = 0;
+                other.PRN = 0;
+                other.Channel_ID = 0;
+                other.Acq_delay_samples = 0.0;
+                other.Acq_doppler_hz = 0.0;
+                other.Acq_samplestamp_samples = 0;
+                other.Acq_doppler_step = 0;
+                other.fs = 0;
+                other.Prompt_I = 0.0;
+                other.Prompt_Q = 0.0;
+                other.CN0_dB_hz = 0.0;
+                other.Carrier_Doppler_hz = 0.0;
+                other.Carrier_phase_rads = 0.0;
+                other.Code_phase_samples = 0.0;
+                other.Tracking_sample_counter = 0;
+                other.correlation_length_ms = 0;
+                other.TOW_at_current_symbol_ms = 0;
+                other.Pseudorange_m = 0.0;
+                other.RX_time = 0.0;
+                other.interp_TOW_ms = 0.0;
+                other.Flag_valid_acquisition = false;
+                other.Flag_valid_symbol_output = false;
+                other.Flag_valid_word = false;
+                other.Flag_valid_pseudorange = false;
+                other.Flag_PLL_180_deg_phase_locked = false;
             }
         return *this;
     };

@@ -126,14 +126,14 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTime)
                     // create the concurrent correlator threads
                     for (int current_thread = 0; current_thread < current_max_threads; current_thread++)
                         {
-                            thread_pool.emplace_back(std::thread(run_correlator_cpu_real_codes,
+                            thread_pool.emplace_back(run_correlator_cpu_real_codes,
                                 correlator_pool[current_thread],
                                 d_rem_carrier_phase_rad,
                                 d_carrier_phase_step_rad,
                                 d_code_phase_step_chips,
                                 d_code_phase_rate_step_chips,
                                 d_rem_code_phase_chips,
-                                correlation_sizes[correlation_sizes_idx]));
+                                correlation_sizes[correlation_sizes_idx]);
                         }
                     // wait the threads to finish they work and destroy the thread objects
                     for (auto& t : thread_pool)
@@ -224,14 +224,14 @@ TEST(CpuMulticorrelatorRealCodesTest, MeasureExecutionTimeAlloc)
                     // create the concurrent correlator threads
                     for (int current_thread = 0; current_thread < current_max_threads; current_thread++)
                         {
-                            thread_pool.emplace_back(std::thread(run_correlator_cpu_real_codes,
+                            thread_pool.emplace_back(run_correlator_cpu_real_codes,
                                 correlator_pool[current_thread],
                                 d_rem_carrier_phase_rad,
                                 d_carrier_phase_step_rad,
                                 d_code_phase_step_chips,
                                 d_code_phase_rate_step_chips,
                                 d_rem_code_phase_chips,
-                                correlation_sizes[correlation_sizes_idx]));
+                                correlation_sizes[correlation_sizes_idx]);
                         }
                     // wait the threads to finish they work and destroy the thread objects
                     for (auto& t : thread_pool)

@@ -30,10 +30,10 @@ Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
 
 void Gnss_Satellite::reset()
 {
-    system = std::string("");
-    block = std::string("");
-    PRN = 0;
-    rf_link = 0;
+    this->system.clear();
+    this->block.clear();
+    this->PRN = 0;
+    this->rf_link = 0;
 }
 
 
@@ -73,13 +73,16 @@ bool operator==(const Gnss_Satellite& sat1, const Gnss_Satellite& sat2)
 
 // Copy constructor
 Gnss_Satellite::Gnss_Satellite(const Gnss_Satellite& other) noexcept
+    : system(other.system),
+      block(other.block),
+      PRN(other.PRN),
+      rf_link(other.rf_link)
 {
-    *this = other;
 }
 
 
 // Copy assignment operator
-Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
+Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs) noexcept
 {
     // Only do assignment if RHS is a different object from this.
     if (this != &rhs)
@@ -95,8 +98,15 @@ Gnss_Satellite& Gnss_Satellite::operator=(const Gnss_Satellite& rhs)
 
 // Move constructor
 Gnss_Satellite::Gnss_Satellite(Gnss_Satellite&& other) noexcept
+    : system(std::move(other.system)),
+      block(std::move(other.block)),
+      PRN(other.PRN),
+      rf_link(other.rf_link)
 {
-    *this = std::move(other);
+    other.system.clear();
+    other.block.clear();
+    other.PRN = 0;
+    other.rf_link = 0;
 }
 
 
@@ -105,10 +115,14 @@ Gnss_Satellite& Gnss_Satellite::operator=(Gnss_Satellite&& other) noexcept
 {
     if (this != &other)
         {
-            this->system = other.get_system();
-            this->block = other.get_block();
-            this->PRN = other.get_PRN();
-            this->rf_link = other.get_rf_link();
+            system = std::move(other.system);
+            block = std::move(other.block);
+            PRN = other.PRN;
+            rf_link = other.rf_link;
+            other.system.clear();
+            other.block.clear();
+            other.PRN = 0;
+            other.rf_link = 0;
         }
     return *this;
 }
@@ -613,7 +627,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("FOC-FM19");  // Galileo Full Operational Capability (FOC) satellite FM19 / GSAT0219, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 default:
-                    block_ = std::string("Unknown(Simulated)");
+                    block_ = std::string("Unknown");
                 }
         }
     if (system_ == "Beidou")
@@ -760,7 +774,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("BeiDou-3 GEOG3");  // launched 2020/06/2023
                     break;
                 default:
-                    block_ = std::string("Unknown(Simulated)");
+                    block_ = std::string("Unknown");
                 }
         }
     return block_;

@@ -535,21 +535,18 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
             d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat, conf_);
-            d_user_pvt_solver->set_averaging_depth(1);
             d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, dump_ls_pvt_filename, d_type_of_rx, false, false, conf_);
-            d_internal_pvt_solver->set_averaging_depth(1);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
             // only one solver, customized by the user options
             d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat, conf_);
-            d_internal_pvt_solver->set_averaging_depth(1);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
@@ -2109,7 +2106,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // old_time_debug = d_gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
                     // #### solve PVT and store the corrected observable set
-                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, false))
+                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0))
                         {
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
@@ -2223,7 +2220,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // compute on the fly PVT solution
                     if (flag_compute_pvt_output == true)
                         {
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, false);
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_output_rate_ms / 1000.0);
                         }
 
                     if (flag_pvt_valid == true)
@@ -2335,28 +2332,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             if (current_RX_time_ms % d_kml_rate_ms == 0)
                                                 {
-                                                    d_kml_dump->print_position(d_user_pvt_solver.get(), false);
+                                                    d_kml_dump->print_position(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_gpx_output_enabled)
                                         {
                                             if (current_RX_time_ms % d_gpx_rate_ms == 0)
                                                 {
-                                                    d_gpx_dump->print_position(d_user_pvt_solver.get(), false);
+                                                    d_gpx_dump->print_position(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_geojson_output_enabled)
                                         {
                                             if (current_RX_time_ms % d_geojson_rate_ms == 0)
                                                 {
-                                                    d_geojson_printer->print_position(d_user_pvt_solver.get(), false);
+                                                    d_geojson_printer->print_position(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_nmea_output_file_enabled)
                                         {
                                             if (current_RX_time_ms % d_nmea_rate_ms == 0)
                                                 {
-                                                    d_nmea_printer->Print_Nmea_Line(d_user_pvt_solver.get(), false);
+                                                    d_nmea_printer->Print_Nmea_Line(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_rinex_output_enabled)

@@ -30,10 +30,10 @@ FourBitCpxFileSignalSource::FourBitCpxFileSignalSource(
     unsigned int in_streams, unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
     : FileSourceBase(configuration, role, "Four_Bit_Cpx_File_Signal_Source"s, queue, "byte"s),
+      sample_type_(configuration->property(role + ".sample_type", "iq"s)),
       timestamp_file_(configuration->property(role + ".timestamp_filename"s, ""s)),
       timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0))
 {
-    sample_type_ = configuration->property(role + ".sample_type", "iq"s);
     // the complex-ness of the input is inferred from the output type
     if (sample_type_ == "iq")
         {
@@ -47,7 +47,6 @@ FourBitCpxFileSignalSource::FourBitCpxFileSignalSource(
         {
             LOG(WARNING) << sample_type_ << " unrecognized sample type. Assuming: ";
         }
-
 
     if (in_streams > 0)
         {
@@ -83,8 +82,11 @@ std::tuple<size_t, bool> FourBitCpxFileSignalSource::itemTypeToSize()
     return std::make_tuple(item_size, is_complex);
 }
 
+
 // 1 byte -> 1 complex samples
 double FourBitCpxFileSignalSource::packetsPerSample() const { return 1.0; }
+
+
 gnss_shared_ptr<gr::block> FourBitCpxFileSignalSource::source() const
 {
     if (timestamp_file_.size() > 1)
@@ -114,6 +116,7 @@ void FourBitCpxFileSignalSource::create_file_source_hook()
         }
 }
 
+
 void FourBitCpxFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
 {
     top_block->connect(file_source(), 0, unpack_byte_, 0);
@@ -125,6 +128,7 @@ void FourBitCpxFileSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
             DLOG(INFO) << "connected file_source to timestamp_block_";
         }
 }
+
 
 void FourBitCpxFileSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
 {

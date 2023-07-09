@@ -65,8 +65,6 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
       high_side_lo_(configuration->property(role + ".high_side_lo", false)),
       tx_lo_channel_(configuration->property(role + ".tx_lo_channel", 1)),
       rx0_to_rx1_delay_ns_(configuration->property(role + ".rx0_to_rx1_delay_ns", 0.0))
-
-
 {
     if (item_type_ == "gr_complex")
         {
@@ -185,7 +183,6 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
             LOG(ERROR) << item_type_ << " unrecognized item type";
             exit(1);
         }
-
 
     if (dump_)
         {
@@ -388,7 +385,6 @@ void Ad936xCustomSignalSource::connect(gr::top_block_sptr top_block)
                     else
                         {
                             if (dump_)
-
                                 {
                                     top_block->connect(gr_interleaved_short_to_complex_.at(n), 0, sink_.at(n), 0);
                                     DLOG(INFO) << "connected source to file sink";
@@ -519,6 +515,7 @@ gr::basic_block_sptr Ad936xCustomSignalSource::get_right_block()
 {
     return gr_interleaved_short_to_complex_.at(0);
 }
+
 
 gr::basic_block_sptr Ad936xCustomSignalSource::get_right_block(int RF_channel)
 {

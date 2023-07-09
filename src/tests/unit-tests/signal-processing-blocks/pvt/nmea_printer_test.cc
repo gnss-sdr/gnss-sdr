@@ -14,7 +14,6 @@
  * -----------------------------------------------------------------------------
  */
 
-
 #include "nmea_printer.h"
 #include "gnss_sdr_filesystem.h"
 #include "pvt_conf.h"

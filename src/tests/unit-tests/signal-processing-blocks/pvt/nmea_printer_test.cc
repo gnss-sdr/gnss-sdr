@@ -14,8 +14,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "nmea_printer.h"
+
 #include "gnss_sdr_filesystem.h"
+#include "nmea_printer.h"
 #include "pvt_conf.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solver.h"

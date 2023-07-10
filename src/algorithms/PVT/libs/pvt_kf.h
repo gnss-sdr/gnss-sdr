@@ -35,17 +35,18 @@ class Pvt_Kf
 public:
     Pvt_Kf() = default;
     virtual ~Pvt_Kf() = default;
-    void init_kf(const arma::vec& p,
+    void init_Kf(const arma::vec& p,
         const arma::vec& v,
         const arma::vec& res_p,
-        double solver_interval_s,
+        double update_interval_s,
         double measures_ecef_pos_sd_m,
         double measures_ecef_vel_sd_ms,
         double system_ecef_pos_sd_m,
         double system_ecef_vel_sd_ms);
+    bool is_initialized() const;
     void run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res_p);
-    void get_pvt(arma::vec& p, arma::vec& v);
-    bool initialized{false};
+    void get_pv_Kf(arma::vec& p, arma::vec& v) const;
+    void reset_Kf();
 
 private:
     // Kalman Filter class variables
@@ -59,9 +60,11 @@ private:
     arma::vec d_x_old_old;
     arma::vec d_x_new_old;
     arma::vec d_x_new_new;
+    bool d_initialized{false};
 };
 
 
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_Pvt_Kf_H
+

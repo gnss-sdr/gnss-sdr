@@ -89,7 +89,7 @@ public:
         Pvt_Conf conf);
     ~Rtklib_Solver();
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, bool flag_averaging);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s);
 
     double get_hdop() const override;
     double get_vdop() const override;

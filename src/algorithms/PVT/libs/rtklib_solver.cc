@@ -899,6 +899,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
 
 
 bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -1554,7 +1555,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_pvt_kf.init_Kf(p,
                                         v,
                                         res_p,
-                                        kf_update_interval_s,
+                                        kf_update_interval_s,                                      
                                         d_conf.measures_ecef_pos_sd_m,
                                         d_conf.measures_ecef_vel_sd_ms,
                                         d_conf.system_ecef_pos_sd_m,

@@ -22,14 +22,14 @@
 void Pvt_Kf::init_Kf(const arma::vec& p,
     const arma::vec& v,
     const arma::vec& res_p,
-    double update_interval_s,
+    double solver_interval_s,
     double measures_ecef_pos_sd_m,
     double measures_ecef_vel_sd_ms,
     double system_ecef_pos_sd_m,
     double system_ecef_vel_sd_ms)
 {
     // Kalman Filter class variables
-    const double Ti = update_interval_s;
+    const double Ti = solver_interval_s;
 
     d_F = {{1.0, 0.0, 0.0, Ti, 0.0, 0.0},
         {0.0, 1.0, 0.0, 0.0, Ti, 0.0},
@@ -110,6 +110,11 @@ void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res
                     d_R(1,0) = res_p[3]; d_R(1,1) = res_p[1]; d_R(1,2) = res_p[4];
                     d_R(2,0) = res_p[5]; d_R(2,1) = res_p[4]; d_R(2,2) = res_p[2];
 
+                    // Measurement residuals
+                    d_R(0,0) = res_p[0]; d_R(0,1) = res_p[3]; d_R(0,2) = res_p[5];
+                    d_R(1,0) = res_p[3]; d_R(1,1) = res_p[1]; d_R(1,2) = res_p[4];
+                    d_R(2,0) = res_p[5]; d_R(2,1) = res_p[4]; d_R(2,2) = res_p[2];
+
                     // Measurement update
                     arma::vec z = arma::join_cols(p, v);
                     arma::mat K = d_P_new_old * d_H.t() * arma::inv(d_H * d_P_new_old * d_H.t() + d_R);  // Kalman gain
@@ -117,6 +122,7 @@ void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res
                     d_x_new_new = d_x_new_old + K * (z - d_H * d_x_new_old);
                     arma::mat A = (arma::eye(6, 6) - K * d_H);
                     d_P_new_new = A * d_P_new_old * A.t() + K * d_R * K.t();
+
                     // prepare data for next KF epoch
                     d_x_old_old = d_x_new_new;
                     d_P_old_old = d_P_new_new;

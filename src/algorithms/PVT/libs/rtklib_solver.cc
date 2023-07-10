@@ -56,8 +56,6 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                      d_flag_dump_enabled(flag_dump_to_file),
                      d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
-    this->set_averaging_flag(false);
-
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
     d_rtklib_freq_index[0] = 0;
@@ -900,7 +898,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
 }
 
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -910,8 +908,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
 
     const Glonass_Gnav_Utc_Model &gnav_utc = this->glonass_gnav_utc_model;
-
-    this->set_averaging_flag(flag_averaging);
 
     // ********************************************************************************
     // ****** PREPARE THE DATA (SV EPHEMERIS AND OBSERVATIONS) ************************
@@ -1509,7 +1505,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     this->set_num_valid_observations(0);
                     if (d_conf.enable_pvt_kf == true)
                         {
-                            d_pvt_kf.initialized = false;
+                            d_pvt_kf.reset_Kf();
                         }
                 }
             else
@@ -1548,14 +1544,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     if (d_conf.enable_pvt_kf == true)
                         {
-                            if (d_pvt_kf.initialized == false)
+                            if (d_pvt_kf.is_initialized() == false)
                                 {
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
 
-                                    d_pvt_kf.init_kf(p,
+                                    d_pvt_kf.init_Kf(p,
                                         v,
-                                        d_conf.observable_interval_ms / 1000.0,
+                                        kf_update_interval_s,
                                         d_conf.measures_ecef_pos_sd_m,
                                         d_conf.measures_ecef_vel_sd_ms,
                                         d_conf.system_ecef_pos_sd_m,
@@ -1566,7 +1562,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
                                     d_pvt_kf.run_Kf(p, v);
-                                    d_pvt_kf.get_pvt(p, v);
+                                    d_pvt_kf.get_pv_Kf(p, v);
                                     pvt_sol.rr[0] = p[0];  // [m]
                                     pvt_sol.rr[1] = p[1];  // [m]
                                     pvt_sol.rr[2] = p[2];  // [m]

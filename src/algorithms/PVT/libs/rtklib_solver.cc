@@ -1548,10 +1548,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 {
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+                                    arma::vec res_p = {pvt_sol.qr[0], pvt_sol.qr[1], pvt_sol.qr[2],
+                                                        pvt_sol.qr[3], pvt_sol.qr[4], pvt_sol.qr[5]};                                    
 
                                     d_pvt_kf.init_Kf(p,
                                         v,
-                                        kf_update_interval_s,
+                                        res_p,
+                                        kf_update_interval_s,                                      
                                         d_conf.measures_ecef_pos_sd_m,
                                         d_conf.measures_ecef_vel_sd_ms,
                                         d_conf.system_ecef_pos_sd_m,
@@ -1561,7 +1564,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 {
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
-                                    d_pvt_kf.run_Kf(p, v);
+                                    arma::vec res_p = {pvt_sol.qr[0], pvt_sol.qr[1], pvt_sol.qr[2],
+                                                        pvt_sol.qr[3], pvt_sol.qr[4], pvt_sol.qr[5]};
+                                    
+                                    d_pvt_kf.run_Kf(p, v, res_p);
                                     d_pvt_kf.get_pv_Kf(p, v);
                                     pvt_sol.rr[0] = p[0];  // [m]
                                     pvt_sol.rr[1] = p[1];  // [m]

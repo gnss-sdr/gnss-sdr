@@ -106,9 +106,15 @@ void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res
             try
                 {
                     // Measurement residuals
-                    d_R(0,0) = res_p[0]; d_R(0,1) = res_p[3]; d_R(0,2) = res_p[5];
-                    d_R(1,0) = res_p[3]; d_R(1,1) = res_p[1]; d_R(1,2) = res_p[4];
-                    d_R(2,0) = res_p[5]; d_R(2,1) = res_p[4]; d_R(2,2) = res_p[2];
+                    d_R(0, 0) = res_p[0];
+                    d_R(0, 1) = res_p[3];
+                    d_R(0, 2) = res_p[5];
+                    d_R(1, 0) = res_p[3];
+                    d_R(1, 1) = res_p[1];
+                    d_R(1, 2) = res_p[4];
+                    d_R(2, 0) = res_p[5];
+                    d_R(2, 1) = res_p[4];
+                    d_R(2, 2) = res_p[2];
 
                     // Measurement update
                     arma::vec z = arma::join_cols(p, v);

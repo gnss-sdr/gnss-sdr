@@ -67,4 +67,3 @@ private:
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_Pvt_Kf_H
-

@@ -194,7 +194,7 @@ bool Rtklib_Solver::save_matfile() const
 {
     // READ DUMP FILE
     const std::string dump_filename = d_dump_filename;
-    const int32_t number_of_double_vars = 21;
+    const int32_t number_of_double_vars = 27;
     const int32_t number_of_uint32_vars = 2;
     const int32_t number_of_uint8_vars = 3;
     const int32_t number_of_float_vars = 2;
@@ -243,6 +243,12 @@ bool Rtklib_Solver::save_matfile() const
     auto cov_xy = std::vector<double>(num_epoch);
     auto cov_yz = std::vector<double>(num_epoch);
     auto cov_zx = std::vector<double>(num_epoch);
+    auto cov_vxx = std::vector<double>(num_epoch);
+    auto cov_vyy = std::vector<double>(num_epoch);
+    auto cov_vzz = std::vector<double>(num_epoch);
+    auto cov_vxy = std::vector<double>(num_epoch);
+    auto cov_vyz = std::vector<double>(num_epoch);
+    auto cov_vzx = std::vector<double>(num_epoch);
     auto latitude = std::vector<double>(num_epoch);
     auto longitude = std::vector<double>(num_epoch);
     auto height = std::vector<double>(num_epoch);
@@ -278,6 +284,12 @@ bool Rtklib_Solver::save_matfile() const
                             dump_file.read(reinterpret_cast<char *>(&cov_xy[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&cov_yz[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&cov_zx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vxx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vyy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vzz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vxy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vyz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vzx[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&latitude[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&longitude[i]), sizeof(double));
                             dump_file.read(reinterpret_cast<char *>(&height[i]), sizeof(double));
@@ -371,6 +383,30 @@ bool Rtklib_Solver::save_matfile() const
             Mat_VarFree(matvar);
 
             matvar = Mat_VarCreate("cov_zx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zx.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vxx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vxx.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vyy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vyy.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vzz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vzz.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vxy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vxy.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vyz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vyz.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vzx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vzx.data(), 0);
             Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
             Mat_VarFree(matvar);
 
@@ -1742,6 +1778,20 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     tmp_double = pvt_sol.qr[4];
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
                                     tmp_double = pvt_sol.qr[5];
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // velocity variance/covariance (m^2/s^2) {c_xx,c_yy,c_zz,c_xy,c_yz,c_zx} (6 x double)
+                                    tmp_double = pvt_sol.qvr[0];
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qvr[1];
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qvr[2];
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qvr[3];
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qvr[4];
+                                    d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = pvt_sol.qvr[5];
                                     d_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
                                     // GEO user position Latitude [deg]

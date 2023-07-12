@@ -827,7 +827,7 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
     double *azel, int *vsat, double *resp, char *msg)
 {
     obsd_t *obs_e;
-    sol_t sol_e = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
+    sol_t sol_e = {{0, 0}, {}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
     char tstr[32];
     char msg_e[128];
     double *rs_e;

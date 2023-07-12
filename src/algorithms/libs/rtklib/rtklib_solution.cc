@@ -719,7 +719,7 @@ int decode_solgsi(char *buff, const solopt_t *opt __attribute((unused)), sol_t *
 /* decode solution position --------------------------------------------------*/
 int decode_solpos(char *buff, const solopt_t *opt, sol_t *sol)
 {
-    sol_t sol0 = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
+    sol_t sol0 = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
     char *p = buff;
 
     trace(4, "decode_solpos: buff=%s\n", buff);
@@ -923,7 +923,7 @@ void readsolopt(FILE *fp, solopt_t *opt)
 int inputsol(unsigned char data, gtime_t ts, gtime_t te, double tint,
     int qflag, const solopt_t *opt, solbuf_t *solbuf)
 {
-    sol_t sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
+    sol_t sol = {{0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0}, '0', '0', '0', 0, 0, 0};
     int stat;
 
     trace(4, "inputsol: data=0x%02x\n", data);

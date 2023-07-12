@@ -2650,7 +2650,7 @@ int relpos(rtk_t *rtk, const obsd_t *obs, int nu, int nr,
  *-----------------------------------------------------------------------------*/
 void rtkinit(rtk_t *rtk, const prcopt_t *opt)
 {
-    sol_t sol0 = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
+    sol_t sol0 = {{0, 0}, {}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
     ambc_t ambc0 = {{{0, 0}, {0, 0}, {0, 0}, {0, 0}}, {}, {}, {}, 0, {}};
     ssat_t ssat0 = {0, 0, {0.0}, {0.0}, {0.0}, {'0'}, {'0'}, {'0'}, {'0'}, {'0'}, {}, {}, {}, {}, 0.0, 0.0, 0.0, 0.0, {{{0, 0}}, {{0, 0}}}, {{}, {}}};
     int i;
@@ -2765,7 +2765,7 @@ void rtkfree(rtk_t *rtk)
 int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
     prcopt_t *opt = &rtk->opt;
-    sol_t solb = {{0, 0}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
+    sol_t solb = {{0, 0}, {}, {}, {}, {}, '0', '0', '0', 0.0, 0.0, 0.0};
     gtime_t time;
     int i;
     int nu;

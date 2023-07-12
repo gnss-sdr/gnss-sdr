@@ -37,7 +37,7 @@ public:
     virtual ~Pvt_Kf() = default;
     void init_Kf(const arma::vec& p,
         const arma::vec& v,
-        const arma::vec& res_p,
+        const arma::vec& res_pv,
         double solver_interval_s,
         bool estatic_measures_sd,
         double measures_ecef_pos_sd_m,
@@ -45,7 +45,7 @@ public:
         double system_ecef_pos_sd_m,
         double system_ecef_vel_sd_ms);
     bool is_initialized() const;
-    void run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res_p);
+    void run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res_pv);
     void get_pv_Kf(arma::vec& p, arma::vec& v) const;
     void reset_Kf();
 

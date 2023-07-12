@@ -1061,6 +1061,14 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
                             sol->rr[i + 3] = x[i];
                         }
                     sol->dtr[5] = x[3];
+
+                    for (j = 0; j < 3; j++)
+                        {
+                            sol->qvr[j] = static_cast<float>(Q[j + j * 4]);
+                        }
+                    sol->qvr[3] = static_cast<float>(Q[1]);     /* cov xy */
+                    sol->qvr[4] = static_cast<float>(Q[2 + 4]); /* cov yz */
+                    sol->qvr[5] = static_cast<float>(Q[2]);     /* cov zx */
                     break;
                 }
         }

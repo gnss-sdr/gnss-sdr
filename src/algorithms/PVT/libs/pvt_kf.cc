@@ -21,7 +21,7 @@
 
 void Pvt_Kf::init_Kf(const arma::vec& p,
     const arma::vec& v,
-    const arma::vec& res_p,
+    const arma::vec& res_pv,
     double solver_interval_s,
     bool estatic_measures_sd,
     double measures_ecef_pos_sd_m,
@@ -55,12 +55,12 @@ void Pvt_Kf::init_Kf(const arma::vec& p,
         }
     else
         {
-            d_R = {{res_p[0], res_p[3], res_p[5], 0.0, 0.0, 0.0},
-                {res_p[3], res_p[1], res_p[4], 0.0, 0.0, 0.0},
-                {res_p[4], res_p[5], res_p[2], 0.0, 0.0, 0.0},
-                {0.0, 0.0, 0.0, pow(measures_ecef_vel_sd_ms, 2.0), 0.0, 0.0},
-                {0.0, 0.0, 0.0, 0.0, pow(measures_ecef_vel_sd_ms, 2.0), 0.0},
-                {0.0, 0.0, 0.0, 0.0, 0.0, pow(measures_ecef_vel_sd_ms, 2.0)}};
+            d_R = {{res_pv[0], res_pv[3], res_pv[5], 0.0, 0.0, 0.0},
+                {res_pv[3], res_pv[1], res_pv[4], 0.0, 0.0, 0.0},
+                {res_pv[5], res_pv[4], res_pv[2], 0.0, 0.0, 0.0},
+                {0.0, 0.0, 0.0, res_pv[6], res_pv[9], res_pv[11]},
+                {0.0, 0.0, 0.0, res_pv[9], res_pv[7], res_pv[10]},
+                {0.0, 0.0, 0.0, res_pv[11], res_pv[10], res_pv[8]}};
 
             d_static = false;
         }
@@ -109,7 +109,7 @@ void Pvt_Kf::reset_Kf()
 }
 
 
-void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res_p)
+void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res_pv)
 {
     if (d_initialized)
         {
@@ -124,17 +124,14 @@ void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res
                     if (!d_static)
                         {
                             // Measurement residuals update
-                            d_R(0, 0) = res_p[0];
-                            d_R(0, 1) = res_p[3];
-                            d_R(0, 2) = res_p[5];
-                            d_R(1, 0) = res_p[3];
-                            d_R(1, 1) = res_p[1];
-                            d_R(1, 2) = res_p[4];
-                            d_R(2, 0) = res_p[5];
-                            d_R(2, 1) = res_p[4];
-                            d_R(2, 2) = res_p[2];
-                        }
-                    // Measurement update
+                            d_R = {{res_pv[0], res_pv[3], res_pv[5], 0.0, 0.0, 0.0},
+                                {res_pv[3], res_pv[1], res_pv[4], 0.0, 0.0, 0.0},
+                                {res_pv[5], res_pv[4], res_pv[2], 0.0, 0.0, 0.0},
+                                {0.0, 0.0, 0.0, res_pv[6], res_pv[9], res_pv[11]},
+                                {0.0, 0.0, 0.0, res_pv[9], res_pv[7], res_pv[10]},
+                                {0.0, 0.0, 0.0, res_pv[11], res_pv[10], res_pv[8]}};
+
+                        }  // Measurement update
                     arma::vec z = arma::join_cols(p, v);
                     arma::mat K = d_P_new_old * d_H.t() * arma::inv(d_H * d_P_new_old * d_H.t() + d_R);  // Kalman gain
 

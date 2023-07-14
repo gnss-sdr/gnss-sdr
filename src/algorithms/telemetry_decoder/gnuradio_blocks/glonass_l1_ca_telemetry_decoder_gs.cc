@@ -33,8 +33,6 @@
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
 
-#define CRC_ERROR_LIMIT 6
-
 
 glonass_l1_ca_telemetry_decoder_gs_sptr
 glonass_l1_ca_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
@@ -61,7 +59,10 @@ glonass_l1_ca_telemetry_decoder_gs::glonass_l1_ca_telemetry_decoder_gs(
                             d_dump_mat(conf.dump_mat),
                             d_remove_dat(conf.remove_dat),
                             d_enable_navdata_monitor(conf.enable_navdata_monitor),
-                            d_dump_crc_stats(conf.dump_crc_stats)
+                            d_dump_crc_stats(conf.dump_crc_stats),
+                            d_ecc_errors_resync(conf.ecc_errors_resync),
+                            d_validator_thr(conf.validator_thr),
+                            d_validator_accept_first(conf.validator_accept_first)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -229,16 +230,26 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             // update CRC statistics
             d_Tlm_CRC_Stats->update_CRC_stats(crc_ok);
         }
-
     // 4. Push the new navigation data to the queues
     if (d_nav.have_new_ephemeris() == true)
         {
             // get object for this SV (mandatory)
             d_nav.set_rf_link(d_satellite.get_rf_link());
             const std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
-            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+            static Gnss_Ephemeris::history_set prev(27);
+            if (tmp_obj->PRN == d_satellite.get_PRN())
+                {
+                    if (Gnss_Ephemeris::validate(prev, tmp_obj, d_validator_thr, d_validator_accept_first))
+                        {
+                            this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                            LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
+                            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+                        }
+                }
+            else
+                {
+                    std::cout << "PRN " << tmp_obj->PRN << "!=" << d_satellite.get_PRN() << "\n";
+                }
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -407,7 +418,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                     // call the decoder
                     decode_string(string_symbols.data(), string_length);
                     bool crc_ok = d_nav.get_flag_CRC_test();
-                    if (crc_ok == true)
+                    if ((crc_ok == true) && (abs(corr_value) >= d_symbols_per_preamble * 2 / 3))
                         {
                             d_CRC_error_counter = 0;
                             d_flag_preamble = true;               // valid preamble indicator (initialized to false every work())
@@ -423,11 +434,13 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                         {
                             d_CRC_error_counter++;
                             d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                            if (d_CRC_error_counter > CRC_ERROR_LIMIT)
+                            if (d_CRC_error_counter > d_ecc_errors_resync)
                                 {
                                     LOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
                                     d_flag_frame_sync = false;
+                                    d_flag_preamble = false;
                                     d_stat = 0;
+                                    d_nav = Glonass_Gnav_Navigation_Message();
                                 }
                         }
                 }

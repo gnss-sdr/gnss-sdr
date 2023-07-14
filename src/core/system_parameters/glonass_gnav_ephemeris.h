@@ -22,6 +22,7 @@
 
 
 #include "glonass_gnav_utc_model.h"
+#include "gnss_ephemeris.h"
 #include <boost/date_time/posix_time/ptime.hpp>  // for ptime
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
@@ -37,13 +38,14 @@
  * \note Code added as part of GSoC 2017 program
  * \see <a href="http://russianspacesystems.ru/wp-content/uploads/2016/08/ICD_GLONASS_eng_v5.1.pdf">GLONASS ICD</a>
  */
-class Glonass_Gnav_Ephemeris
+class Glonass_Gnav_Ephemeris : public Common_Ephemeris
 {
 public:
     /*!
      * Default constructor
      */
     Glonass_Gnav_Ephemeris() = default;
+    double max_deviation(Common_Ephemeris& from) override;  //!< Compare a set of ephemeris to another one
 
     double d_m{};            //!< String number within frame [dimensionless]
     double d_t_k{};          //!< GLONASS Time (UTC(SU) + 3 h) referenced to the beginning of the frame within the current day [s]
@@ -77,7 +79,6 @@ public:
     // Immediate deliverables of ephemeris information
     // Satellite Identification Information
     int32_t i_satellite_freq_channel{};  //!< SV Frequency Channel Number
-    uint32_t PRN{};                      //!< SV PRN Number, equivalent to slot number for compatibility with GPS
     uint32_t i_satellite_slot_number{};  //!< SV Slot Number
     double d_yr = 1972.0;                //!< Current year
     double d_satClkDrift{};              //!< GLONASS clock error

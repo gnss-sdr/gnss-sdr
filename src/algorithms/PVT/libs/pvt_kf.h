@@ -2,7 +2,7 @@
  * \file pvt_kf.h
  * \brief Kalman Filter for Position and Velocity
  * \author Javier Arribas, 2023. jarribas(at)cttc.es
- *
+ * \author Miguel Angel Gomez Lopez, 2023. gomezlma(at)inta.es
  *
  * -----------------------------------------------------------------------------
  *

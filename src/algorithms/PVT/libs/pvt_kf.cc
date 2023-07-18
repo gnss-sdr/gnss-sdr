@@ -2,6 +2,7 @@
  * \file pvt_kf.cc
  * \brief Kalman Filter for Position and Velocity
  * \author Javier Arribas, 2023. jarribas(at)cttc.es
+ * \author Miguel Angel Gomez Lopez, 2023. gomezlma(at)inta.es
  *
  *
  * -----------------------------------------------------------------------------
@@ -123,15 +124,14 @@ void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v, const arma::vec& res
                 {
                     if (!d_static)
                         {
-                            // Measurement residuals update
+                            // Measurement residuals non-static update
                             d_R = {{res_pv[0], res_pv[3], res_pv[5], 0.0, 0.0, 0.0},
                                 {res_pv[3], res_pv[1], res_pv[4], 0.0, 0.0, 0.0},
                                 {res_pv[5], res_pv[4], res_pv[2], 0.0, 0.0, 0.0},
                                 {0.0, 0.0, 0.0, res_pv[6], res_pv[9], res_pv[11]},
                                 {0.0, 0.0, 0.0, res_pv[9], res_pv[7], res_pv[10]},
                                 {0.0, 0.0, 0.0, res_pv[11], res_pv[10], res_pv[8]}};
-
-                        }  // Measurement update
+                        }
                     arma::vec z = arma::join_cols(p, v);
                     arma::mat K = d_P_new_old * d_H.t() * arma::inv(d_H * d_P_new_old * d_H.t() + d_R);  // Kalman gain
 

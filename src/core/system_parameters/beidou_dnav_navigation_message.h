@@ -144,12 +144,13 @@ private:
     void print_beidou_word_bytes(uint32_t BEIDOU_word) const;
 
     // broadcast orbit 1
-    double d_SOW{};      // Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
-    double d_SOW_SF1{};  // Time of BeiDou Week from HOW word of Subframe 1 [s]
-    double d_SOW_SF2{};  // Time of BeiDou Week from HOW word of Subframe 2 [s]
-    double d_SOW_SF3{};  // Time of BeiDou Week from HOW word of Subframe 3 [s]
-    double d_SOW_SF4{};  // Time of BeiDou Week from HOW word of Subframe 4 [s]
-    double d_SOW_SF5{};  // Time of BeiDou Week from HOW word of Subframe 5 [s]
+    double d_SOW{};       // Time of BeiDou Week of the ephemeris set (taken from subframes SOW) [s]
+    double d_prev_SOW{};  // Time of BeiDou Week of the ephemeris set (taken from subframes SOW, previous value) [s]
+    double d_SOW_SF1{};   // Time of BeiDou Week from HOW word of Subframe 1 [s]
+    double d_SOW_SF2{};   // Time of BeiDou Week from HOW word of Subframe 2 [s]
+    double d_SOW_SF3{};   // Time of BeiDou Week from HOW word of Subframe 3 [s]
+    double d_SOW_SF4{};   // Time of BeiDou Week from HOW word of Subframe 4 [s]
+    double d_SOW_SF5{};   // Time of BeiDou Week from HOW word of Subframe 5 [s]
 
     double d_AODE{};
     double d_Crs{};      // Amplitude of the Sine Harmonic Correction Term to the Orbit Radius [m]

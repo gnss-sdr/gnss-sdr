@@ -64,6 +64,7 @@ BeidouB3iPcpsAcquisition::BeidouB3iPcpsAcquisition(
     code_ = volk_gnsssdr::vector<std::complex<float>>(vector_length_);
 
     acquisition_ = pcps_make_acquisition(acq_parameters_);
+    acquisition_->set_history(acq_parameters_.sampled_ms * acq_parameters_.samples_per_ms);
     DLOG(INFO) << "acquisition(" << acquisition_->unique_id() << ")";
 
     if (item_type_ == "cbyte")

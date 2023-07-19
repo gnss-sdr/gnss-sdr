@@ -6,6 +6,7 @@
 
 
 set(SYSTEM_PARAMETERS_SOURCES
+    common_ephemeris.cc
     gnss_almanac.cc
     gnss_ephemeris.cc
     gnss_satellite.cc
@@ -31,6 +32,7 @@ set(SYSTEM_PARAMETERS_SOURCES
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
+    common_ephemeris.h
     gnss_almanac.h
     gnss_ephemeris.h
     gnss_satellite.h

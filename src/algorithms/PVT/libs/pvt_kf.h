@@ -39,6 +39,7 @@ public:
         const arma::vec& v,
         const arma::vec& res_pv,
         double solver_interval_s,
+        bool static_scenario_sd,
         bool estatic_measures_sd,
         double measures_ecef_pos_sd_m,
         double measures_ecef_vel_sd_ms,
@@ -63,6 +64,7 @@ private:
     arma::vec d_x_new_new;
     bool d_initialized{false};
     bool d_static{false};
+    bool scenario_static{false};
 };
 
 

@@ -1592,6 +1592,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         v,
                                         res_pv,
                                         kf_update_interval_s,
+                                        d_conf.static_scenario_sd,
                                         d_conf.estatic_measures_sd,
                                         d_conf.measures_ecef_pos_sd_m,
                                         d_conf.measures_ecef_vel_sd_ms,

@@ -97,6 +97,7 @@ public:
 
     // PVT KF parameters
     bool enable_pvt_kf = false;
+    bool static_scenario_sd = false;
     bool estatic_measures_sd = false;
     double measures_ecef_pos_sd_m = 1.0;
     double measures_ecef_vel_sd_ms = 0.1;

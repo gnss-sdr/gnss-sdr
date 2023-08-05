@@ -12,6 +12,20 @@ SPDX-FileCopyrightText: 2011-2023 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Repeatability
+
+- A Kalman filter is now available in the PVT block, smoothing the outputs of a
+  simple Least Squares solution and improving the precision of delivered fixes.
+  It can be enabled by setting `PVT.enable_pvt_kf=true` in the configuration
+  file. The user can set values for the measurement and process noise
+  covariances with the following optional parameters (here with their default
+  values): `PVT.kf_measures_ecef_pos_sd_m=1.0`, in [m];
+  `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
+  `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
+  `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7805514.svg)](https://doi.org/10.5281/zenodo.7805514)

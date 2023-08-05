@@ -1,6 +1,7 @@
 /*!
- * \file file_timestamp_signal_source.h
- * \brief This class reads samples stored in a file and generate stream tags with its timestamp information stored in separated file
+ * \file file_timestamp_signal_source.cc
+ * \brief This class reads samples stored in a file and generate stream tags
+ * with its timestamp information stored in separated file
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -13,17 +14,19 @@
  *
  * -----------------------------------------------------------------------------
  */
+
 #include "file_timestamp_signal_source.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
-#include "gnss_sdr_timestamp.h"
 #include <glog/logging.h>
 #include <string>
 
 using namespace std::string_literals;
 
 FileTimestampSignalSource::FileTimestampSignalSource(const ConfigurationInterface* configuration,
-    const std::string& role, unsigned int in_streams, unsigned int out_streams,
+    const std::string& role,
+    unsigned int in_streams,
+    unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
     : FileSourceBase(configuration, role, "File_Timestamp_Signal_Source"s, queue, "byte"s),
       timestamp_file_(configuration->property(role + ".timestamp_filename"s, "../data/example_capture_timestamp.dat"s)),
@@ -51,18 +54,59 @@ gnss_shared_ptr<gr::block> FileTimestampSignalSource::source() const { return ti
 
 void FileTimestampSignalSource::create_file_source_hook()
 {
-    timestamp_block_ = gnss_sdr_make_Timestamp(
-        std::get<0>(itemTypeToSize()),
-        timestamp_file_,
-        timestamp_clock_offset_ms_);
+    int source_items_to_samples = 1;
+    bool is_complex = false;
+
+    if (item_type() == "ibyte")
+        {
+            source_items_to_samples = 1;
+        }
+    else if (item_type() == "byte")
+        {
+            source_items_to_samples = 1;
+        }
+    else if (item_type() == "short")
+        {
+            source_items_to_samples = 1;
+        }
+    else if (item_type() == "ishort")
+        {
+            source_items_to_samples = 1;
+        }
+    else if (item_type() == "gr_complex")
+        {
+            source_items_to_samples = 1;
+            is_complex = true;
+        }
+
+    if (is_complex == false)
+        {
+            std::cout << "A : " << std::get<0>(itemTypeToSize()) << "\n";
+            timestamp_block_ = gnss_sdr_make_Timestamp(
+                std::get<0>(itemTypeToSize()),
+                timestamp_file_,
+                timestamp_clock_offset_ms_,
+                source_items_to_samples * 2);
+        }
+    else
+        {
+            std::cout << "B : " << std::get<0>(itemTypeToSize()) << "\n";
+            timestamp_block_ = gnss_sdr_make_Timestamp(
+                std::get<0>(itemTypeToSize()),
+                timestamp_file_,
+                timestamp_clock_offset_ms_,
+                source_items_to_samples);
+        }
     DLOG(INFO) << "timestamp_block_(" << timestamp_block_->unique_id() << ")";
 }
+
 
 void FileTimestampSignalSource::pre_connect_hook(gr::top_block_sptr top_block)
 {
     top_block->connect(file_source(), 0, timestamp_block_, 0);
     DLOG(INFO) << "connected file_source to timestamp_block_";
 }
+
 
 void FileTimestampSignalSource::pre_disconnect_hook(gr::top_block_sptr top_block)
 {

@@ -94,6 +94,13 @@ public:
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;
+
+    // PVT KF parameters
+    bool enable_pvt_kf = false;
+    double measures_ecef_pos_sd_m = 1.0;
+    double measures_ecef_vel_sd_ms = 0.1;
+    double system_ecef_pos_sd_m = 0.01;
+    double system_ecef_vel_sd_ms = 0.001;
 };
 
 

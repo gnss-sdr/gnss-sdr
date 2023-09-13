@@ -720,6 +720,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     // Push the valid tracking Gnss_Synchros to their corresponding deque
                     if (in[n][m].Flag_valid_word)
                         {
+                            if (std::string(in[n][m].Signal, 2) == std::string("E6"))
+                                {
+                                    if (d_conf.enable_E6 == false) continue;
+                                }
                             if (d_gnss_synchro_history->size(n) > 0)
                                 {
                                     // Check if the last Gnss_Synchro comes from the same satellite as the previous ones

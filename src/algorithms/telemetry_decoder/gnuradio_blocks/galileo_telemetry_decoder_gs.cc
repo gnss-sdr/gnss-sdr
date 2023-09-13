@@ -105,7 +105,8 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_enable_reed_solomon_inav(false),
                       d_valid_timetag(false),
                       d_E6_TOW_set(false),
-                      d_there_are_e6_channels(conf.there_are_e6_channels)
+                      d_there_are_e6_channels(conf.there_are_e6_channels),
+                      d_use_ced(conf.use_ced)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -442,7 +443,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     else
         {
             // If we still do not have ephemeris, check if we have a reduced CED
-            if ((d_band == '1') && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))
+            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))
                 {
                     const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_reduced_ced());
                     std::cout << "New Galileo E1 I/NAV reduced CED message received in channel " << d_channel << " from satellite " << d_satellite << '\n';

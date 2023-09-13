@@ -152,6 +152,7 @@ private:
     bool d_valid_timetag;
     bool d_E6_TOW_set;
     bool d_there_are_e6_channels;
+    bool d_use_ced;
 };
 
 

@@ -722,7 +722,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             if (std::string(in[n][m].Signal, 2) == std::string("E6"))
                                 {
-                                    if (d_conf.enable_E6 == false) continue;
+                                    if (d_conf.enable_E6 == false)
+                                        {
+                                            continue;
+                                        }
                                 }
                             if (d_gnss_synchro_history->size(n) > 0)
                                 {

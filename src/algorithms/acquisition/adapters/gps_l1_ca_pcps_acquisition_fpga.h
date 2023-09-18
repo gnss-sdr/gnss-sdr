@@ -186,9 +186,8 @@ public:
 private:
     static const uint32_t NUM_PRNs = 32;
 
-    static const uint32_t fpga_downsampling_factor = 4;  // downampling factor in the FPGA
-    static const uint32_t fpga_buff_num = 0;             // L1/E1 band
-    static const uint32_t fpga_blk_exp = 10;             // default block exponent
+    static const uint32_t fpga_buff_num = 0;  // L1/E1 band
+    static const uint32_t fpga_blk_exp = 10;  // default block exponent
 
     // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.

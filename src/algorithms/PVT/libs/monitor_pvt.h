@@ -19,6 +19,7 @@
 
 #include <boost/serialization/nvp.hpp>
 #include <cstdint>
+#include <string>
 
 /** \addtogroup PVT
  * \{ */
@@ -84,6 +85,10 @@ public:
     // User clock drift [ppm]
     double user_clk_drift_ppm;
 
+    // PVT UTC Time (rfc 3339 datetime string)
+    std::string utc_time;
+
+
     /*!
      * \brief This member function serializes and restores
      * Monitor_Pvt objects from a byte stream.
@@ -131,6 +136,7 @@ public:
         ar& BOOST_SERIALIZATION_NVP(vdop);
 
         ar& BOOST_SERIALIZATION_NVP(user_clk_drift_ppm);
+        ar& BOOST_SERIALIZATION_NVP(utc_time);
     }
 };
 

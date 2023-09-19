@@ -112,6 +112,7 @@ public:
         monitor_.set_hdop(monitor->hdop);
         monitor_.set_vdop(monitor->vdop);
         monitor_.set_user_clk_drift_ppm(monitor->user_clk_drift_ppm);
+        monitor_.set_utc_time(monitor->utc_time);
 
         monitor_.SerializeToString(&data);
         return data;
@@ -150,6 +151,7 @@ public:
         monitor.hdop = mon.hdop();
         monitor.vdop = mon.vdop();
         monitor.user_clk_drift_ppm = mon.user_clk_drift_ppm();
+        monitor.utc_time = mon.utc_time();
 
         return monitor;
     }

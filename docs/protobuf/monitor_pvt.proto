@@ -42,4 +42,5 @@ double hdop = 27;  // Horizontal Dilution of Precision
 double vdop = 28;  // Vertical Dilution of Precision
 
 double user_clk_drift_ppm = 29;  // User clock drift [ppm]
+string utc_time = 30; // PVT UTC time (rfc 3339 datetime string)
 }

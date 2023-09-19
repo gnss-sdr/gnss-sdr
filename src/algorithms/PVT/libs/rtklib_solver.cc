@@ -1686,6 +1686,17 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // User clock drift [ppm]
                     d_monitor_pvt.user_clk_drift_ppm = clock_drift_ppm;
 
+                    //write UTC time string
+
+                    // Use a facet to display time in a custom format (only hour and minutes).
+                    boost::posix_time::time_facet *facet = new boost::posix_time::time_facet();
+                    facet->format("%Y-%m-%dT%H:%M:%S%F");
+                    std::stringstream stream;
+                    stream.imbue(std::locale(std::locale::classic(), facet));
+                    stream << p_time;
+                    stream << 'Z';
+                    d_monitor_pvt.utc_time = stream.str();
+
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)
                         {

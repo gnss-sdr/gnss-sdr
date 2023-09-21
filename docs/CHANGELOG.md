@@ -14,7 +14,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
-### Improvements in Repeatability
+### Improvements in Interoperability:
+
+- A new field `utc_time` (a [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339)
+  datetime string) with the Time solution has been added to `monitor_pvt.proto`.
+
+### Improvements in Repeatability:
 
 - A Kalman filter is now available in the PVT block, smoothing the outputs of a
   simple Least Squares solution and improving the precision of delivered fixes.
@@ -25,6 +30,16 @@ All notable changes to GNSS-SDR will be documented in this file.
   `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
   `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
   `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+
+### Improvements in Usability:
+
+- The Galileo E1B Reduced CED parameters usage has been set to `false` by
+  default. You can activate its usage with `Galileo_E1B_Telemetry_Decoder=true`
+  in your configuration file.
+
+- The generation of Galileo E6B observables has been disabled if the user sets
+  `PVT.use_e6_for_pvt=false`, fixing the PVT computation in some multi-band
+  configurations.
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 

@@ -36,10 +36,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The Galileo E1B Reduced CED parameters usage has been set to `false` by
   default. You can activate its usage with `Galileo_E1B_Telemetry_Decoder=true`
   in your configuration file.
-
 - The generation of Galileo E6B observables has been disabled if the user sets
   `PVT.use_e6_for_pvt=false`, fixing the PVT computation in some multi-band
   configurations.
+- Fix bug in the custom binary output (`PVT.enable_monitor=true`) output rate.
+  Before this fix, it was outputting data every 20 ms, instead of observing the
+  `PVT.output_rate_ms` setting.
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 

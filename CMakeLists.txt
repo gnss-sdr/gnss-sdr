@@ -335,7 +335,7 @@ set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 ################################################################################
 # Versions to download and build (but not to install system-wide) if not found
 ################################################################################
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.2.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.6.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.23")

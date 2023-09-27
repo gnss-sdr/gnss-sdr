@@ -2438,7 +2438,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                         }
 
                     // PVT MONITOR
-                    if (d_user_pvt_solver->is_valid_position())
+                    if (d_user_pvt_solver->is_valid_position() && flag_compute_pvt_output == true)
                         {
                             const std::shared_ptr<Monitor_Pvt> monitor_pvt = std::make_shared<Monitor_Pvt>(d_user_pvt_solver->get_monitor_pvt());
 

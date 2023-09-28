@@ -1598,7 +1598,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     ecef2pos(pvt_sol.rr, pos.data());
                     ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
                     this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
-                    double new_cog;
+                    double new_cog = -9999.0;  // COG not estimated due to insuficient velocity
                     if (ground_speed_ms >= 1.0)
                         {
                             new_cog = atan2(enuv[0], enuv[1]) * R2D;
@@ -1679,6 +1679,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_monitor_pvt.vdop = d_dop[3];
 
                     this->set_rx_vel({enuv[0], enuv[1], enuv[2]});
+
+                    // ENU vel [m/s]
+                    d_monitor_pvt.vel_e = enuv[0];
+                    d_monitor_pvt.vel_n = enuv[1];
+                    d_monitor_pvt.vel_u = enuv[2];
+
+                    // Course Over Ground (cog) [deg]
+                    d_monitor_pvt.cog = new_cog;
 
                     const double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 

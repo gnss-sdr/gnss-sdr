@@ -78,9 +78,49 @@ namespace wht = std;
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
+ControlThread* ControlThread::me=nullptr;
+
+
+/**
+ * \brief Callback function for handling signals.
+ * \param	sig	identifier of signal
+ */
+void ControlThread::handle_signal(int sig)
+{
+    if (sig == SIGINT)
+        {
+            std::cout << "Stopping GNSS-SDR via SIGINT...\n";
+
+            ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
+            ControlThread::me->stop_ = true;
+
+            /* Reset signal handling to default behavior */
+            signal(SIGINT, SIG_DFL);
+        }
+    else if (sig == SIGHUP)
+        {
+
+        	std::cout << "Debug: received SIGHUP signal\n";
+            //std::cout << "Debug: reloading daemon config file ...\n";
+            //todo
+        }
+    else if (sig == SIGCHLD)
+        {
+            std::cout << "Debug: received SIGCHLD signal\n";
+            //todo
+        }
+}
+
 
 ControlThread::ControlThread()
 {
+
+	ControlThread::me=this;
+
+    /* the class will handle two signals */
+    signal(SIGINT, ControlThread::handle_signal);
+    signal(SIGHUP, ControlThread::handle_signal);
+
     if (FLAGS_c == "-")
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);

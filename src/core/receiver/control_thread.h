@@ -37,6 +37,7 @@
 #include <typeinfo>  // for std::type_info, typeid
 #include <utility>   // for pair
 #include <vector>    // for vector
+#include <csignal>
 
 #ifdef ENABLE_FPGA
 #include <boost/thread.hpp>  // for boost::thread
@@ -54,6 +55,7 @@ class ConfigurationInterface;
 class GNSSFlowgraph;
 class Gnss_Satellite;
 
+
 /*!
  * \brief This class represents the main thread of the application, so the name is ControlThread.
  * This is the GNSS Receiver Control Plane: it connects the flowgraph, starts running it,
@@ -63,6 +65,8 @@ class Gnss_Satellite;
 class ControlThread
 {
 public:
+
+    static ControlThread* me;
     /*!
      * \brief Default constructor
      */
@@ -122,6 +126,9 @@ public:
     }
 
 private:
+
+    static void handle_signal(int sig);
+
     void init();
 
     void apply_action(unsigned int what);

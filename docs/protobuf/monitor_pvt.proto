@@ -44,9 +44,9 @@ double vdop = 28;  // Vertical Dilution of Precision
 double user_clk_drift_ppm = 29;  // User clock drift [ppm]
 string utc_time = 30; // PVT UTC time (rfc 3339 datetime string)
 
-double vel_e = 31;  // Velocity East component in Local frame, in m/s
-double vel_n = 32;  // Velocity Nord component in Local frame, in m/s
-double vel_u = 33;  // Velocity Up component in Local frame, in m/s
+double vel_e = 31;  // Velocity East component in the local frame, in m/s
+double vel_n = 32;  // Velocity North component in the local frame, in m/s
+double vel_u = 33;  // Velocity Up component in the local frame, in m/s
 
 double cog = 34; // Course Over Ground (cog) [deg]
 }

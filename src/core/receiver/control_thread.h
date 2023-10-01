@@ -37,7 +37,6 @@
 #include <typeinfo>  // for std::type_info, typeid
 #include <utility>   // for pair
 #include <vector>    // for vector
-#include <csignal>
 
 #ifdef ENABLE_FPGA
 #include <boost/thread.hpp>  // for boost::thread
@@ -65,8 +64,7 @@ class Gnss_Satellite;
 class ControlThread
 {
 public:
-
-    static ControlThread* me;
+    static ControlThread *me;
     /*!
      * \brief Default constructor
      */
@@ -126,7 +124,6 @@ public:
     }
 
 private:
-
     static void handle_signal(int sig);
 
     void init();

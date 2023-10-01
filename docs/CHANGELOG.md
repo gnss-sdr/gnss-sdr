@@ -16,8 +16,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Interoperability:
 
-- A new field `utc_time` (a [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339)
-  datetime string) with the Time solution has been added to `monitor_pvt.proto`.
+- New fields have been added to the custom output stream defined by
+  `monitor_pvt.proto`: `utc_time` (a
+  [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) datetime string), velocity
+  in the local ENU frame (`vel_e`, `vel_n`, and `vel_u`), in m/s, and the course
+  over ground, `cog`, in degrees.
 
 ### Improvements in Repeatability:
 
@@ -42,6 +45,9 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fix bug in the custom binary output (`PVT.enable_monitor=true`) output rate.
   Before this fix, it was outputting data every 20 ms, instead of observing the
   `PVT.output_rate_ms` setting.
+- Now the program exits properly if a SIGINT signal is received (_e.g._, the
+  user pressing Ctrl+C, or another user application sending an interruption
+  signal).
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 

@@ -55,6 +55,7 @@
 #include <algorithm>               // for find, min
 #include <chrono>                  // for milliseconds
 #include <cmath>                   // for floor, fmod, log
+#include <csignal>                 // for signal, SIGINT
 #include <ctime>                   // for time_t, gmtime, strftime
 #include <exception>               // for exception
 #include <iostream>                // for operator<<
@@ -78,7 +79,7 @@ namespace wht = std;
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
-ControlThread* ControlThread::me=nullptr;
+ControlThread *ControlThread::me = nullptr;
 
 
 /**
@@ -99,23 +100,21 @@ void ControlThread::handle_signal(int sig)
         }
     else if (sig == SIGHUP)
         {
-
-        	std::cout << "Debug: received SIGHUP signal\n";
-            //std::cout << "Debug: reloading daemon config file ...\n";
-            //todo
+            std::cout << "Debug: received SIGHUP signal\n";
+            // std::cout << "Debug: reloading daemon config file ...\n";
+            // todo
         }
     else if (sig == SIGCHLD)
         {
             std::cout << "Debug: received SIGCHLD signal\n";
-            //todo
+            // todo
         }
 }
 
 
 ControlThread::ControlThread()
 {
-
-	ControlThread::me=this;
+    ControlThread::me = this;
 
     /* the class will handle two signals */
     signal(SIGINT, ControlThread::handle_signal);

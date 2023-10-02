@@ -88,6 +88,7 @@ ControlThread *ControlThread::me = nullptr;
  */
 void ControlThread::handle_signal(int sig)
 {
+    DLOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
     if (sig == SIGINT)
         {
             std::cout << "Stopping GNSS-SDR via SIGINT...\n";

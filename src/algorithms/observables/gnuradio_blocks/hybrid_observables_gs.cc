@@ -93,7 +93,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 
     d_gnss_synchro_history = std::make_unique<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
 
-    d_Rx_clock_buffer.set_capacity(std::min(std::max(200U / d_T_rx_step_ms, 3U), 10U));
+    d_Rx_clock_buffer.set_capacity(std::min(std::max(300U / d_T_rx_step_ms, 3U), 20U));
     d_Rx_clock_buffer.clear();
 
     d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);

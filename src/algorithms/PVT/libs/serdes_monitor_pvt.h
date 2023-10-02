@@ -117,6 +117,7 @@ public:
         monitor_.set_vel_n(monitor->vel_n);
         monitor_.set_vel_u(monitor->vel_u);
         monitor_.set_cog(monitor->cog);
+        monitor_.set_galhas_status(monitor->galhas_status);
         monitor_.SerializeToString(&data);
         return data;
     }
@@ -159,6 +160,7 @@ public:
         monitor.vel_n = mon.vel_n();
         monitor.vel_u = mon.vel_u();
         monitor.cog = mon.cog();
+        monitor.galhas_status = mon.galhas_status();
 
         return monitor;
     }

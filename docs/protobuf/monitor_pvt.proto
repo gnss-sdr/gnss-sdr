@@ -49,4 +49,6 @@ double vel_n = 32;  // Velocity North component in the local frame, in m/s
 double vel_u = 33;  // Velocity Up component in the local frame, in m/s
 
 double cog = 34; // Course Over Ground (cog) [deg]
+
+uint32 galhas_status = 35; // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
 }

@@ -1688,6 +1688,16 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     // Course Over Ground (cog) [deg]
                     d_monitor_pvt.cog = new_cog;
 
+                    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
+                    if (d_has_obs_corr_map.empty())
+                        {
+                            d_monitor_pvt.galhas_status = 0;
+                        }
+                    else
+                        {
+                            d_monitor_pvt.galhas_status = 1;
+                        }
+
                     const double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);

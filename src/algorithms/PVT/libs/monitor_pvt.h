@@ -72,6 +72,9 @@ public:
     // Course Over Ground (COG) [deg]
     double cog;
 
+    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
+    uint32_t galhas_status;
+
     // NUMBER OF VALID SATS
     uint8_t valid_sats;
     // RTKLIB solution status

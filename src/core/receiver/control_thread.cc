@@ -88,8 +88,8 @@ ControlThread *ControlThread::me = nullptr;
  */
 void ControlThread::handle_signal(int sig)
 {
-    DLOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
-    if (sig == SIGINT || sig == SIGTERM)
+    LOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
+    if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
         {
             std::cout << "Stopping GNSS-SDR via SIGINT or SIGTERM...\n";
 
@@ -99,15 +99,9 @@ void ControlThread::handle_signal(int sig)
             /* Reset signal handling to default behavior */
             if (sig == SIGINT) signal(SIGINT, SIG_DFL);
         }
-    else if (sig == SIGHUP)
-        {
-            std::cout << "Debug: received SIGHUP signal\n";
-            // std::cout << "Debug: reloading daemon config file ...\n";
-            // todo
-        }
     else if (sig == SIGCHLD)
         {
-            std::cout << "Debug: received SIGCHLD signal\n";
+            LOG(INFO) << "received SIGCHLD signal";
             // todo
         }
 }

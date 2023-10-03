@@ -89,15 +89,15 @@ ControlThread *ControlThread::me = nullptr;
 void ControlThread::handle_signal(int sig)
 {
     DLOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
-    if (sig == SIGINT)
+    if (sig == SIGINT || sig == SIGTERM)
         {
-            std::cout << "Stopping GNSS-SDR via SIGINT...\n";
+            std::cout << "Stopping GNSS-SDR via SIGINT or SIGTERM...\n";
 
             ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
             ControlThread::me->stop_ = true;
 
             /* Reset signal handling to default behavior */
-            signal(SIGINT, SIG_DFL);
+            if (sig == SIGINT) signal(SIGINT, SIG_DFL);
         }
     else if (sig == SIGHUP)
         {
@@ -117,8 +117,9 @@ ControlThread::ControlThread()
 {
     ControlThread::me = this;
 
-    /* the class will handle two signals */
+    /* the class will handle signals */
     signal(SIGINT, ControlThread::handle_signal);
+    signal(SIGTERM, ControlThread::handle_signal);
     signal(SIGHUP, ControlThread::handle_signal);
 
     if (FLAGS_c == "-")

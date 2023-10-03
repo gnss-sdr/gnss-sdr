@@ -70,6 +70,7 @@ public:
     uint16_t rtcm_tcp_port = 0;
     uint16_t rtcm_station_id = 0;
 
+    bool flag_geohash_log_out = false;
     bool flag_nmea_tty_port = false;
     bool flag_rtcm_server = false;
     bool flag_rtcm_tty_port = false;

@@ -179,7 +179,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
       d_use_has_corrections(conf_.use_has_corrections),
-      d_use_unhealthy_sats(conf_.use_unhealthy_sats)
+      d_use_unhealthy_sats(conf_.use_unhealthy_sats),
+      d_flag_geohash_log_out(conf_.flag_geohash_log_out)
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
@@ -2427,14 +2428,17 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
                             // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << '\n';
 
-                            LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
-                                      << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
-                                      << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]";
-                            LOG(INFO) << "geohash=" << d_geohash->encode(d_user_pvt_solver->get_latitude(), d_user_pvt_solver->get_longitude());
-                            /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
+                            if (d_flag_geohash_log_out == true)
+                                {
+                                    LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
+                                              << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
+                                              << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]";
+                                    LOG(INFO) << "geohash=" << d_geohash->encode(d_user_pvt_solver->get_latitude(), d_user_pvt_solver->get_longitude());
+                                    /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
                                          << " UTC using "<< d_user_pvt_solver->get_num_valid_observations() <<" observations is HDOP = " << d_user_pvt_solver->get_hdop() << " VDOP = "
                                          << d_user_pvt_solver->get_vdop()
                                          << " GDOP = " << d_user_pvt_solver->get_gdop() << '\n'; */
+                                }
                         }
 
                     // PVT MONITOR

@@ -15,13 +15,21 @@ All notable changes to GNSS-SDR will be documented in this file.
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
 ### Improvements in Interoperability:
-- Added a new PVT configuration boolean flag (`flag_geohash_log_out`) that enables or disables the 
-  Position Geohash tag output in INFO log files. Set to `false` by default.
+
+- Added a new PVT configuration boolean flag (`flag_geohash_log_out`) that
+  enables or disables the Position Geohash tag output in INFO log files. Set to
+  `false` by default.
 - New fields have been added to the custom output stream defined by
-  `monitor_pvt.proto`: `utc_time` (a
-  [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) datetime string), velocity
-  in the local ENU frame (`vel_e`, `vel_n`, and `vel_u`), in m/s, and the course
-  over ground, `cog`, in degrees.
+  `monitor_pvt.proto`:
+  - `utc_time` (a [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) datetime
+    string),
+  - velocity in the local ENU frame (`vel_e`, `vel_n`, and `vel_u`), in m/s,
+  - the course over ground, `cog`, in degrees,
+  - the status of the Galileo's High Accuracy Service, `galhas_status`:
+    - 0: HAS data not available
+    - 1: HAS Corrections applied
+  - `geohash`, an
+    [encoded geographic location](https://en.wikipedia.org/wiki/Geohash).
 
 ### Improvements in Repeatability:
 

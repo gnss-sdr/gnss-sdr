@@ -74,9 +74,6 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // display rate
     pvt_output_parameters.display_rate_ms = bc::lcm(pvt_output_parameters.output_rate_ms, configuration->property(role + ".display_rate_ms", 500));
 
-    // log options
-    pvt_output_parameters.flag_geohash_log_out = configuration->property(role + ".flag_geohash_log_out", false);
-
     // PVT KF settings
     pvt_output_parameters.enable_pvt_kf = configuration->property(role + ".enable_pvt_kf", false);
     pvt_output_parameters.measures_ecef_pos_sd_m = configuration->property(role + ".kf_measures_ecef_pos_sd_m", 1.0);

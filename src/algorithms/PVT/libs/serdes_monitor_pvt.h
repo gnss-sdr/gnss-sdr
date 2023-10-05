@@ -118,6 +118,8 @@ public:
         monitor_.set_vel_u(monitor->vel_u);
         monitor_.set_cog(monitor->cog);
         monitor_.set_galhas_status(monitor->galhas_status);
+        monitor_.set_geohash(monitor->geohash);
+
         monitor_.SerializeToString(&data);
         return data;
     }
@@ -161,6 +163,7 @@ public:
         monitor.vel_u = mon.vel_u();
         monitor.cog = mon.cog();
         monitor.galhas_status = mon.galhas_status();
+        monitor.geohash = mon.geohash();
 
         return monitor;
     }

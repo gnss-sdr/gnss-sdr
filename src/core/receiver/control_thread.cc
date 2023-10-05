@@ -81,33 +81,6 @@ extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
 ControlThread *ControlThread::me = nullptr;
 
-
-/**
- * \brief Callback function for handling signals.
- * \param	sig	identifier of signal
- */
-void ControlThread::handle_signal(int sig)
-{
-    LOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
-    if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
-        {
-            ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
-            ControlThread::me->stop_ = true;
-
-            // Reset signal handling to default behavior
-            if (sig == SIGINT)
-                {
-                    signal(SIGINT, SIG_DFL);
-                }
-        }
-    else if (sig == SIGCHLD)
-        {
-            LOG(INFO) << "Received SIGCHLD signal";
-            // todo
-        }
-}
-
-
 ControlThread::ControlThread()
 {
     ControlThread::me = this;
@@ -298,6 +271,28 @@ ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
     if (cmd_interface_thread_.joinable())
         {
             cmd_interface_thread_.join();
+        }
+}
+
+
+void ControlThread::handle_signal(int sig)
+{
+    LOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
+    if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
+        {
+            ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
+            ControlThread::me->stop_ = true;
+
+            // Reset signal handling to default behavior
+            if (sig == SIGINT)
+                {
+                    signal(SIGINT, SIG_DFL);
+                }
+        }
+    else if (sig == SIGCHLD)
+        {
+            LOG(INFO) << "Received SIGCHLD signal";
+            // todo
         }
 }
 

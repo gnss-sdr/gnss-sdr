@@ -124,6 +124,10 @@ public:
     }
 
 private:
+    /*
+     * Callback function for handling signals.
+     * sig   identifier of signal
+     */
     static void handle_signal(int sig);
 
     void init();

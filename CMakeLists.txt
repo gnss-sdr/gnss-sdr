@@ -1116,7 +1116,7 @@ if(NOT VOLKGNSSSDR_FOUND)
         endif()
     endif()
 
-    if(PYTHONINTERP_FOUND)
+    if(CMAKE_VERSION VERSION_LESS 3.27 AND PYTHONINTERP_FOUND)
         set_package_properties(PythonInterp PROPERTIES
             URL "https://www.python.org/"
             DESCRIPTION "An interpreted, high-level, general-purpose programming language (found: v${PYTHON_VERSION_STRING})"

@@ -278,7 +278,6 @@ private:
     bool d_log_timetag;
     bool d_use_has_corrections;
     bool d_use_unhealthy_sats;
-    bool d_flag_geohash_log_out;
 };
 
 

@@ -98,6 +98,7 @@ public:
     // PVT UTC Time (rfc 3339 datetime string)
     std::string utc_time;
 
+    std::string geohash;  // See https://en.wikipedia.org/wiki/Geohash
 
     /*!
      * \brief This member function serializes and restores
@@ -153,6 +154,7 @@ public:
         ar& BOOST_SERIALIZATION_NVP(vel_u);
 
         ar& BOOST_SERIALIZATION_NVP(cog);
+        ar& BOOST_SERIALIZATION_NVP(geohash);
     }
 };
 

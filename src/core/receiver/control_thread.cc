@@ -91,17 +91,18 @@ void ControlThread::handle_signal(int sig)
     LOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
     if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
         {
-            std::cout << "Stopping GNSS-SDR via SIGINT or SIGTERM...\n";
-
             ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
             ControlThread::me->stop_ = true;
 
-            /* Reset signal handling to default behavior */
-            if (sig == SIGINT) signal(SIGINT, SIG_DFL);
+            // Reset signal handling to default behavior
+            if (sig == SIGINT)
+                {
+                    signal(SIGINT, SIG_DFL);
+                }
         }
     else if (sig == SIGCHLD)
         {
-            LOG(INFO) << "received SIGCHLD signal";
+            LOG(INFO) << "Received SIGCHLD signal";
             // todo
         }
 }

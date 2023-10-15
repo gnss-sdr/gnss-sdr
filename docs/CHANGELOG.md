@@ -14,7 +14,24 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
-### Improvements in Repeatability
+### Improvements in Interoperability:
+
+- Added a new PVT configuration boolean flag (`flag_geohash_log_out`) that
+  enables or disables the Position Geohash tag output in INFO log files. Set to
+  `false` by default.
+- New fields have been added to the custom output stream defined by
+  `monitor_pvt.proto`:
+  - `utc_time` (a [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) datetime
+    string),
+  - velocity in the local ENU frame (`vel_e`, `vel_n`, and `vel_u`), in m/s,
+  - the course over ground, `cog`, in degrees,
+  - the status of the Galileo's High Accuracy Service, `galhas_status`:
+    - 0: HAS data not available
+    - 1: HAS Corrections applied
+  - `geohash`, an
+    [encoded geographic location](https://en.wikipedia.org/wiki/Geohash).
+
+### Improvements in Repeatability:
 
 - A Kalman filter is now available in the PVT block, smoothing the outputs of a
   simple Least Squares solution and improving the precision of delivered fixes.
@@ -25,6 +42,21 @@ All notable changes to GNSS-SDR will be documented in this file.
   `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
   `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
   `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+
+### Improvements in Usability:
+
+- The Galileo E1B Reduced CED parameters usage has been set to `false` by
+  default. You can activate its usage with `Galileo_E1B_Telemetry_Decoder=true`
+  in your configuration file.
+- The generation of Galileo E6B observables has been disabled if the user sets
+  `PVT.use_e6_for_pvt=false`, fixing the PVT computation in some multi-band
+  configurations.
+- Fix bug in the custom binary output (`PVT.enable_monitor=true`) output rate.
+  Before this fix, it was outputting data every 20 ms, instead of observing the
+  `PVT.output_rate_ms` setting.
+- Now the program exits properly if a SIGINT signal is received (_e.g._, the
+  user pressing Ctrl+C, or another user application sending an interruption
+  signal).
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 

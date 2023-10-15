@@ -1598,7 +1598,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     ecef2pos(pvt_sol.rr, pos.data());
                     ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
                     this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
-                    double new_cog;
+                    double new_cog = -9999.0;  // COG not estimated due to insuficient velocity
                     if (ground_speed_ms >= 1.0)
                         {
                             new_cog = atan2(enuv[0], enuv[1]) * R2D;
@@ -1680,11 +1680,40 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     this->set_rx_vel({enuv[0], enuv[1], enuv[2]});
 
+                    // ENU vel [m/s]
+                    d_monitor_pvt.vel_e = enuv[0];
+                    d_monitor_pvt.vel_n = enuv[1];
+                    d_monitor_pvt.vel_u = enuv[2];
+
+                    // Course Over Ground (cog) [deg]
+                    d_monitor_pvt.cog = new_cog;
+
+                    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
+                    if (d_has_obs_corr_map.empty())
+                        {
+                            d_monitor_pvt.galhas_status = 0;
+                        }
+                    else
+                        {
+                            d_monitor_pvt.galhas_status = 1;
+                        }
+
                     const double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);
                     // User clock drift [ppm]
                     d_monitor_pvt.user_clk_drift_ppm = clock_drift_ppm;
+
+                    // write UTC time string
+
+                    // Use a facet to display time in a custom format (only hour and minutes).
+                    auto *facet = new boost::posix_time::time_facet();
+                    facet->format("%Y-%m-%dT%H:%M:%S%F");
+                    std::stringstream stream;
+                    stream.imbue(std::locale(std::locale::classic(), facet));
+                    stream << p_time;
+                    stream << 'Z';
+                    d_monitor_pvt.utc_time = stream.str();
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

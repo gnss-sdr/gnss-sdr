@@ -93,7 +93,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 
     d_gnss_synchro_history = std::make_unique<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
 
-    d_Rx_clock_buffer.set_capacity(std::min(std::max(200U / d_T_rx_step_ms, 3U), 10U));
+    d_Rx_clock_buffer.set_capacity(std::min(std::max(300U / d_T_rx_step_ms, 3U), 20U));
     d_Rx_clock_buffer.clear();
 
     d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);
@@ -720,6 +720,13 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     // Push the valid tracking Gnss_Synchros to their corresponding deque
                     if (in[n][m].Flag_valid_word)
                         {
+                            if (std::string(in[n][m].Signal, 2) == std::string("E6"))
+                                {
+                                    if (d_conf.enable_E6 == false)
+                                        {
+                                            continue;
+                                        }
+                                }
                             if (d_gnss_synchro_history->size(n) > 0)
                                 {
                                     // Check if the last Gnss_Synchro comes from the same satellite as the previous ones

@@ -2458,21 +2458,22 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
                             // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << '\n';
 
-                            LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
-                                      << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
-                                      << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]";
-                            LOG(INFO) << "geohash=" << d_geohash->encode(d_user_pvt_solver->get_latitude(), d_user_pvt_solver->get_longitude());
+                            DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
+                                       << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
+                                       << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]";
+
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
-                                         << " UTC using "<< d_user_pvt_solver->get_num_valid_observations() <<" observations is HDOP = " << d_user_pvt_solver->get_hdop() << " VDOP = "
-                                         << d_user_pvt_solver->get_vdop()
-                                         << " GDOP = " << d_user_pvt_solver->get_gdop() << '\n'; */
+                                 << " UTC using "<< d_user_pvt_solver->get_num_valid_observations() <<" observations is HDOP = " << d_user_pvt_solver->get_hdop() << " VDOP = "
+                                 << d_user_pvt_solver->get_vdop()
+                                 << " GDOP = " << d_user_pvt_solver->get_gdop() << '\n'; */
                         }
 
                     // PVT MONITOR
-                    if (d_user_pvt_solver->is_valid_position())
+                    if (d_user_pvt_solver->is_valid_position() && flag_compute_pvt_output == true)
                         {
                             const std::shared_ptr<Monitor_Pvt> monitor_pvt = std::make_shared<Monitor_Pvt>(d_user_pvt_solver->get_monitor_pvt());
-
+                            monitor_pvt->geohash = d_geohash->encode(d_user_pvt_solver->get_latitude(), d_user_pvt_solver->get_longitude());
+                            DLOG(INFO) << "geohash=" << monitor_pvt->geohash;
                             // publish new position to the gnss_flowgraph channel status monitor
                             if (current_RX_time_ms % d_report_rate_ms == 0)
                                 {

@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -42,7 +43,7 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_dynamic_bit_selection(const std::string& device_name1, const std::string& device_name2);
+    explicit Fpga_dynamic_bit_selection(uint32_t num_freq_bands);
 
     /*!
      * \brief Destructor
@@ -52,12 +53,12 @@ public:
     /*!
      * \brief This function configures the switch in th eFPGA
      */
-    //    void set_switch_position(int32_t switch_position);
     void bit_selection(void);
 
 private:
+    const std::string switch_device_name = std::string("AXIS_Switch_v1_0_0");          // Switch UIO device name
+    const std::string dyn_bit_sel_device_name = std::string("dynamic_bits_selector");  // Switch dhnamic bit selector device name
     static const size_t FPGA_PAGE_SIZE = 0x1000;
-
     static const uint32_t Num_bits_ADC = 12;                                      // Number of bits in the ADC
     static const uint32_t Num_bits_FPGA = 4;                                      // Number of bits after the bit selection
     static const uint32_t shift_out_bits_default = Num_bits_ADC - Num_bits_FPGA;  // take the most significant bits by default
@@ -70,14 +71,11 @@ private:
 
     void close_devices(void);
 
-    uint32_t shift_out_bits_band1;  // number of bits to shift for frequency band 1
-    uint32_t shift_out_bits_band2;  // number of bits to shift for frequency band 2
+    std::vector<volatile unsigned*> d_map_base;
+    std::vector<int> d_device_descriptors;
+    std::vector<uint32_t> d_shift_out_bits;
 
-    volatile unsigned* d_map_base1;  // driver memory map corresponding to frequency band 1
-    int d_device_descriptor1;        // driver descriptor corresponding to frequency band 1
-
-    volatile unsigned* d_map_base2;  // driver memory map corresponding to frequency band 2
-    int d_device_descriptor2;        // driver descriptor corresponding to frequency band 2
+    uint32_t d_num_freq_bands;  // number of frequency bands
 };
 
 

@@ -830,9 +830,9 @@ In a terminal, type:
 ```
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install armadillo cmake gnuradio gnutls lapack libad9361-iio libiio \
+$ sudo port install armadillo boost cmake gnuradio gnutls lapack libad9361-iio libiio \
     matio pkgconfig protobuf3-cpp pugixml google-glog +gflags
-$ sudo port install py37-mako
+$ sudo port install py311-mako
 $ sudo port install doxygen +docs
 ```
 

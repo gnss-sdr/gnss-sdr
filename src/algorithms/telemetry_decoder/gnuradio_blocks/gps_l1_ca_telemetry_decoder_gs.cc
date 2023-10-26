@@ -33,6 +33,7 @@
 #include <cstddef>          // for size_t
 #include <cstring>          // for memcpy
 #include <exception>        // for exception
+#include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr
 #include <vector>
@@ -254,7 +255,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
-bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(bool flag_invert)
+bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_invert)
 {
     std::array<char, GPS_SUBFRAME_LENGTH> subframe{};
     int32_t frame_bit_index = 0;
@@ -350,11 +351,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(bool flag_invert)
             const int32_t subframe_ID = d_nav.subframe_decoder(subframe.data());  // decode the subframe
             if (subframe_ID > 0 && subframe_ID < 6)
                 {
-                    std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
-                              << "subframe "
-                              << subframe_ID << " from satellite "
-                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << '\n';
-
                     switch (subframe_ID)
                         {
                         case 1:
@@ -401,6 +397,13 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(bool flag_invert)
                         default:
                             break;
                         }
+                    const auto default_precision{std::cout.precision()};
+                    std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
+                              << "subframe "
+                              << subframe_ID << " from satellite "
+                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN())
+                              << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                              << " dB-Hz" << std::endl;
                     return true;
                 }
         }
@@ -499,7 +502,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             }
                         DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
                         d_prev_GPS_frame_4bytes = 0;
-                        if (decode_subframe(d_flag_PLL_180_deg_phase_locked))
+                        if (decode_subframe(current_symbol.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
@@ -525,7 +528,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         // 0. fetch the symbols into an array
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
 
-                        if (decode_subframe(d_flag_PLL_180_deg_phase_locked))
+                        if (decode_subframe(current_symbol.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())

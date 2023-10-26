@@ -32,6 +32,7 @@
 #include <cmath>            // for round
 #include <cstddef>          // for size_t
 #include <exception>        // for exception
+#include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
 
@@ -257,21 +258,33 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     // get ephemeris object for this SV
                     const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    const auto default_precision{std::cout.precision()};
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
+                              << ": ephemeris from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
+                              << " dB-Hz" << TEXT_RESET << std::endl;
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    const auto default_precision{std::cout.precision()};
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
+                              << ": iono model parameters from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
+                              << " dB-Hz" << TEXT_RESET << std::endl;
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+                    const auto default_precision{std::cout.precision()};
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
+                              << ": UTC model parameters from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
+                              << " dB-Hz" << TEXT_RESET << std::endl;
                 }
 
             // update TOW at the preamble instant

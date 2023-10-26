@@ -172,7 +172,7 @@ else()
     endif()
 endif()
 
-if(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL 3)
     set(PYTHON3 TRUE)
 endif()
 

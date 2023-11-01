@@ -600,9 +600,9 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             const auto default_precision{std::cout.precision()};
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel "
-                      << d_channel << ": ephemeris from satellite " << d_satellite << " with CN0=" << std::setprecision(2) << cn0
+                      << d_channel << ": ephemeris from satellite " << d_satellite << " with CN0="
+                      << std::setprecision(2) << cn0 << std::setprecision(default_precision)
                       << " dB-Hz" << TEXT_RESET << std::endl;
-            std::cout << std::setprecision(default_precision);  // restore defaults
         }
 
     if (d_fnav_nav.have_new_iono_and_GST() == true)
@@ -612,9 +612,8 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
             const auto default_precision{std::cout.precision()};
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel "
                       << d_channel << ": iono/GST model parameters from satellite " << d_satellite
-                      << " with CN0=" << std::setprecision(2) << cn0
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
                       << " dB-Hz" << TEXT_RESET << std::endl;
-            std::cout << std::setprecision(default_precision);  // restore defaults
         }
 
     if (d_fnav_nav.have_new_utc_model() == true)
@@ -624,8 +623,8 @@ void galileo_telemetry_decoder_gs::decode_FNAV_word(float *page_symbols, int32_t
             const auto default_precision{std::cout.precision()};
             std::cout << TEXT_MAGENTA << "New Galileo E5a F/NAV message received in channel "
                       << d_channel << ": UTC model parameters from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
                       << " dB-Hz" << TEXT_RESET << std::endl;
-            std::cout << std::setprecision(default_precision);  // restore defaults
         }
 }
 
@@ -686,9 +685,8 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(uint64_t time_stamp, float *
                             std::cout << TEXT_MAGENTA << "Receiving Galileo E6 CNAV dummy pages in channel "
                                       << d_channel << " from satellite "
                                       << d_satellite << " with CN0="
-                                      << std::setprecision(2) << cn0 << " dB-Hz"
+                                      << std::setprecision(2) << cn0 << " dB-Hz" << std::setprecision(default_precision)
                                       << TEXT_RESET << std::endl;
-                            std::cout << std::setprecision(default_precision);  // restore defaults
                         }
                 }
             else
@@ -705,9 +703,9 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(uint64_t time_stamp, float *
                             const auto default_precision{std::cout.precision()};
                             std::cout << TEXT_MAGENTA << "Receiving Galileo E6 HAS pages"
                                       << (d_cnav_nav.is_HAS_in_test_mode() == true ? " (test mode) " : " ")
-                                      << "in channel " << d_channel << " from satellite " << d_satellite << " with CN0=" << std::setprecision(2) << cn0 << " dB-Hz"
+                                      << "in channel " << d_channel << " from satellite " << d_satellite
+                                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision) << " dB-Hz"
                                       << TEXT_RESET << std::endl;
-                            std::cout << std::setprecision(default_precision);  // restore defaults
                         }
                 }
         }

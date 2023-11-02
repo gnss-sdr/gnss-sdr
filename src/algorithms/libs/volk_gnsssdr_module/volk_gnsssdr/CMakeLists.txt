@@ -307,7 +307,7 @@ if(NOT MAKO_FOUND)
 endif()
 
 # Six
-if(Python2_VERSION OR (PYTHON_VERSION_STRING VERSION_LESS "3.0"))
+if(PYTHON_VERSION_STRING VERSION_LESS "3.0")
     if(NOT SIX_FOUND)
         message(FATAL_ERROR "six - python 2 and 3 compatibility library required to build VOLK_GNSSSDR")
     endif()

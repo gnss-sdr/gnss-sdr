@@ -300,7 +300,11 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel"
                       << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV message received in channel " << d_channel
                       << ": ephemeris from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -314,7 +318,11 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel"
                       << d_channel << " from satellite " << d_satellite;
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV utc model message received in channel "
                       << d_channel << ": UTC model parameters from satellite "
                       << d_satellite
@@ -329,7 +337,11 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel
                       << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV Iono message received in channel "
                       << d_channel << ": Iono model parameters from satellite "
                       << d_satellite << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
@@ -344,7 +356,11 @@ void beidou_b3i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             //            pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel"
                       << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << TEXT_YELLOW << "New BEIDOU B3I DNAV almanac received in channel " << d_channel
                       << " from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)

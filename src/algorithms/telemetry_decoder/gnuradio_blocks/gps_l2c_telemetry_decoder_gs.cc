@@ -259,7 +259,11 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     // get ephemeris object for this SV
                     const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
                     const auto default_precision{std::cout.precision()};
+#endif
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": ephemeris from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
@@ -269,7 +273,11 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
                     const auto default_precision{std::cout.precision()};
+#endif
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": iono model parameters from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
@@ -280,7 +288,11 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
                     const auto default_precision{std::cout.precision()};
+#endif
                     std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
                               << ": UTC model parameters from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)

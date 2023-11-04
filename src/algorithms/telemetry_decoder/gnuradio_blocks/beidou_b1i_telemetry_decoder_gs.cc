@@ -298,11 +298,14 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             const std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj = std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << "New BEIDOU B1I DNAV message received in channel " << d_channel
                       << ": ephemeris from satellite " << d_satellite
-                      << " with CN0=" << std::setprecision(2) << cn0 << " dB-Hz" << std::endl;
-            std::cout << std::setprecision(default_precision);  // restore defaults
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision) << " dB-Hz" << std::endl;
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -310,7 +313,11 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             const std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj = std::make_shared<Beidou_Dnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << "New BEIDOU B1I DNAV utc model message received in channel "
                       << d_channel
                       << ": UTC model parameters from satellite " << d_satellite
@@ -323,7 +330,11 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             const std::shared_ptr<Beidou_Dnav_Iono> tmp_obj = std::make_shared<Beidou_Dnav_Iono>(d_nav.get_iono());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << "New BEIDOU B1I DNAV Iono message received in channel " << d_channel
                       << ": Iono model parameters from satellite " << d_satellite
                       << " with CN0=" << cn0 << std::setprecision(default_precision)
@@ -335,7 +346,11 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, doub
             // std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
             // this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
             const auto default_precision{std::cout.precision()};
+#endif
             std::cout << "New BEIDOU B1I DNAV almanac received in channel " << d_channel
                       << " from satellite " << d_satellite
                       << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)

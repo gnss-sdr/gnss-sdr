@@ -81,8 +81,7 @@
 extern bool GetWindowsIsProcessorFeaturePresent(DWORD);
 extern WORD GetWindowsNativeSystemInfoProcessorRevision();
 #else  // CPU_FEATURES_MOCK_CPUID_AARCH64
-static bool
-GetWindowsIsProcessorFeaturePresent(DWORD dwProcessorFeature)
+static bool GetWindowsIsProcessorFeaturePresent(DWORD dwProcessorFeature)
 {
     return IsProcessorFeaturePresent(dwProcessorFeature);
 }
@@ -115,7 +114,6 @@ Aarch64Info GetAarch64Info(void)
         PF_ARM_V83_LRCPC_INSTRUCTIONS_AVAILABLE);
     info.features.atomics = GetWindowsIsProcessorFeaturePresent(
         PF_ARM_V81_ATOMIC_INSTRUCTIONS_AVAILABLE);
-
 
     bool is_crypto_available = GetWindowsIsProcessorFeaturePresent(
         PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE);

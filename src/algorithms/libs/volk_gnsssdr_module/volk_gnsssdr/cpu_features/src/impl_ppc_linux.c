@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google LLC
+// SPDX-FileCopyrightText: 2018 IBM
 // SPDX-License-Identifier: Apache-2.0
 
 #include "cpu_features_macros.h"

@@ -71,7 +71,6 @@ jobs:
             cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/
             echo "Build with $(nproc) thread(s)"
             make -j$(nproc)
-            ./cpu_features/list_cpu_features
             ./apps/volk_gnsssdr-config-info --alignment
             ./apps/volk_gnsssdr-config-info --avail-machines
             ./apps/volk_gnsssdr-config-info --all-machines

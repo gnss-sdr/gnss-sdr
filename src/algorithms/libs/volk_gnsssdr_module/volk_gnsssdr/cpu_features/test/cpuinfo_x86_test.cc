@@ -195,6 +195,8 @@ TEST_F(CpuidX86Test, SandyBridge)
     EXPECT_FALSE(features.movbe);
     EXPECT_FALSE(features.rdrnd);
     EXPECT_FALSE(features.adx);
+    EXPECT_FALSE(features.lam);
+    EXPECT_FALSE(features.uai);
 }
 
 const int UNDEF = -1;
@@ -802,6 +804,21 @@ TEST_F(CpuidX86Test, AMD_K17_ZEN2_XBOX_SERIES_X)
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN2);
 }
 
+// http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0880F40_K17_CPUID.txt
+TEST_F(CpuidX86Test, AMD_K17_ZEN2_4800S)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000010, 0x68747541, 0x444D4163, 0x69746E65}},
+        {{0x00000001, 0}, Leaf{0x00880F40, 0x00100800, 0x7ED8320B, 0x178BFBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
+    EXPECT_EQ(info.family, 0x17);
+    EXPECT_EQ(info.model, 0x84);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN2);
+}
+
 // http://users.atw.hu/instlatx64/HygonGenuine/HygonGenuine0900F02_Hygon_CPUID3.txt
 TEST_F(CpuidX86Test, AMD_K18_ZEN_DHYANA)
 {
@@ -931,6 +948,7 @@ TEST_F(CpuidX86Test, AMD_K19_ZEN4_RAPHAEL)
         {{0x80000002, 0}, Leaf{0x20444D41, 0x657A7952, 0x2035206E, 0x30303637}},
         {{0x80000003, 0}, Leaf{0x2D362058, 0x65726F43, 0x6F725020, 0x73736563}},
         {{0x80000004, 0}, Leaf{0x2020726F, 0x20202020, 0x20202020, 0x00202020}},
+        {{0x80000021, 0}, Leaf{0x00062FCF, 0x0000015C, 0x00000000, 0x00000000}},
     });
     const auto info = GetX86Info();
 
@@ -939,7 +957,24 @@ TEST_F(CpuidX86Test, AMD_K19_ZEN4_RAPHAEL)
     EXPECT_EQ(info.model, 0x61);
     EXPECT_STREQ(info.brand_string,
         "AMD Ryzen 5 7600X 6-Core Processor             ");
+    EXPECT_TRUE(info.features.uai);
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN4);
+}
+
+// http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0A70F41_K19_Phoenix_03_CPUID.txt
+TEST_F(CpuidX86Test, AMD_K19_ZEN4_PHOENIX)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000010, 0x68747541, 0x444D4163, 0x69746E65}},
+        {{0x00000001, 0}, Leaf{0x00A70F41, 0x00100800, 0x7EF8320B, 0x178BFBFF}},
+        {{0x80000000, 0}, Leaf{0x80000028, 0x68747541, 0x444D4163, 0x69746E65}},
+        {{0x80000001, 0}, Leaf{0x00A70F41, 0x50000000, 0x75C237FF, 0x2FD3FBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
+    EXPECT_EQ(info.family, 0x19);
+    EXPECT_EQ(info.model, 0x74);
 }
 
 // http://users.atw.hu/instlatx64/HygonGenuine/HygonGenuine0900F11_Hygon_01_CPUID.txt
@@ -962,6 +997,36 @@ TEST_F(CpuidX86Test, AMD_K18_ZEN_DHYANA_OCTAL_CORE_C86_3250)
     EXPECT_STREQ(info.brand_string,
         "Hygon C86 3250  8-core Processor               ");
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN);
+}
+
+// http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD08A0F00_K17_Mendocino_01_CPUID.txt
+TEST_F(CpuidX86Test, AMD_ZEN2_MENDOCINO)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000010, 0x68747541, 0x444D4163, 0x69746E65}},
+        {{0x00000001, 0}, Leaf{0x008A0F00, 0x00080800, 0x7EF8320B, 0x178BFBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_EQ(info.model, 0xA0);
+    EXPECT_EQ(info.family, 0x17);
+    EXPECT_STREQ(info.vendor, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN2);
+}
+
+// http://users.atw.hu/instlatx64/AuthenticAMD/AuthenticAMD0A10F11_K19_Genoa_02_CPUID.txt
+TEST_F(CpuidX86Test, AMD_K19_ZEN4_GENOA)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000010, 0x68747541, 0x444D4163, 0x69746E65}},
+        {{0x00000001, 0}, Leaf{0x00A10F11, 0x00200800, 0x7EFA320B, 0x178BFBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_EQ(info.model, 0x11);
+    EXPECT_EQ(info.family, 0x19);
+    EXPECT_STREQ(info.vendor, CPU_FEATURES_VENDOR_AUTHENTIC_AMD);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::AMD_ZEN4);
 }
 
 // http://users.atw.hu/instlatx64/GenuineIntel/GenuineIntel00906A4_AlderLakeP_00_CPUID.txt
@@ -1742,6 +1807,20 @@ TEST_F(CpuidX86Test, INTEL_RAPTOR_LAKE_S)
     EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_RPL);
 }
 
+// http://users.atw.hu/instlatx64/GenuineIntel/GenuineIntel00B06E0_AlderLakeN_03_CPUID.txt
+TEST_F(CpuidX86Test, INTEL_ALDER_LAKE_N)
+{
+    cpu().SetLeaves({
+        {{0x00000000, 0}, Leaf{0x00000020, 0x756E6547, 0x6C65746E, 0x49656E69}},
+        {{0x00000001, 0}, Leaf{0x000B06E0, 0x00800800, 0x7FFAFBBF, 0xBFEBFBFF}},
+    });
+    const auto info = GetX86Info();
+
+    EXPECT_STREQ(info.vendor, CPU_FEATURES_VENDOR_GENUINE_INTEL);
+    EXPECT_EQ(info.family, 0x06);
+    EXPECT_EQ(info.model, 0xBE);
+    EXPECT_EQ(GetX86Microarchitecture(&info), X86Microarchitecture::INTEL_ADL);
+}
 
 // https://github.com/google/cpu_features/issues/200
 // http://users.atw.hu/instlatx64/GenuineIntel/GenuineIntel00206F2_Eagleton_CPUID.txt

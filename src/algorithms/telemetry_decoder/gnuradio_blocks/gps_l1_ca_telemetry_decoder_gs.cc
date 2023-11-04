@@ -397,7 +397,11 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                         default:
                             break;
                         }
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
                     const auto default_precision{std::cout.precision()};
+#endif
                     std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
                               << "subframe "
                               << subframe_ID << " from satellite "

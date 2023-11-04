@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2017 Google LLC
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.13)
 
 # option() honors normal variables.
 # see: https://cmake.org/cmake/help/git-stage/policy/CMP0077.html
@@ -9,11 +9,16 @@ if(POLICY CMP0077)
   cmake_policy(SET CMP0077 NEW)
 endif()
 
-project(CpuFeatures VERSION 0.7.0 LANGUAGES C)
+project(CpuFeatures VERSION 0.9.0 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
-if(CMAKE_VERSION LESS "3.1")
-    add_compile_options("$<$<STREQUAL:$<TARGET_PROPERTY:LINKER_LANGUAGE>,C>:-std=gnu99>")
+
+# when cpu_features is included as subproject (i.e. using add_subdirectory(cpu_features))
+# in the source tree of a project that uses it, test rules are disabled.
+if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  option(BUILD_TESTING "Enable test rule" OFF)
+else()
+  option(BUILD_TESTING "Enable test rule" ON)
 endif()
 
 # Default Build Type to be Release
@@ -21,6 +26,22 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING
       "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
+endif()
+
+# An option to enable/disable the executable target list_cpu_features.
+# Disable it by default if the project is included as a subproject.
+if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  option(BUILD_EXECUTABLE "Build list_cpu_features executable." OFF)
+else()
+  option(BUILD_EXECUTABLE "Build list_cpu_features executable." ON)
+endif()
+
+# An option which allows to switch off install steps. Useful for embedding.
+# Disable it by default if the project is included as a subproject.
+if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  option(ENABLE_INSTALL "Enable install targets" OFF)
+else()
+  option(ENABLE_INSTALL "Enable install targets" ON)
 endif()
 
 # BUILD_SHARED_LIBS is a standard CMake variable, but we declare it here to make
@@ -57,14 +78,15 @@ set(PROCESSOR_IS_X86 FALSE)
 set(PROCESSOR_IS_POWER FALSE)
 set(PROCESSOR_IS_S390X FALSE)
 set(PROCESSOR_IS_RISCV FALSE)
+set(PROCESSOR_IS_LOONGARCH FALSE)
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips")
   set(PROCESSOR_IS_MIPS TRUE)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(^aarch64)|(^arm64)|(^ARM64)")
   set(PROCESSOR_IS_AARCH64 TRUE)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
   set(PROCESSOR_IS_ARM TRUE)
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64|amd64)|(^i.86$)")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(x86_64)|(AMD64|amd64)|(^i.86$)")
   set(PROCESSOR_IS_X86 TRUE)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
   set(PROCESSOR_IS_POWER TRUE)
@@ -72,6 +94,8 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(s390x)")
   set(PROCESSOR_IS_S390X TRUE)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^riscv")
   set(PROCESSOR_IS_RISCV TRUE)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^loongarch")
+  set(PROCESSOR_IS_LOONGARCH TRUE)
 endif()
 
 macro(add_cpu_features_headers_and_sources HDRS_LIST_NAME SRCS_LIST_NAME)
@@ -85,6 +109,7 @@ macro(add_cpu_features_headers_and_sources HDRS_LIST_NAME SRCS_LIST_NAME)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_arm.h)
   elseif(PROCESSOR_IS_AARCH64)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_aarch64.h)
+      list(APPEND ${SRCS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/internal/cpuid_aarch64.h)
       list(APPEND ${SRCS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/internal/windows_utils.h)
   elseif(PROCESSOR_IS_X86)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_x86.h)
@@ -96,6 +121,8 @@ macro(add_cpu_features_headers_and_sources HDRS_LIST_NAME SRCS_LIST_NAME)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_s390x.h)
   elseif(PROCESSOR_IS_RISCV)
       list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_riscv.h)
+  elseif(PROCESSOR_IS_LOONGARCH)
+      list(APPEND ${HDRS_LIST_NAME} ${PROJECT_SOURCE_DIR}/include/cpuinfo_loongarch.h)
   else()
     message(FATAL_ERROR "Unsupported architectures ${CMAKE_SYSTEM_PROCESSOR}")
   endif()
@@ -123,6 +150,8 @@ setup_include_and_definitions(utils)
 if(UNIX)
   add_library(unix_based_hardware_detection OBJECT
     ${PROJECT_SOURCE_DIR}/include/internal/hwcaps.h
+    ${PROJECT_SOURCE_DIR}/src/hwcaps_linux_or_android.c
+    ${PROJECT_SOURCE_DIR}/src/hwcaps_freebsd.c
     ${PROJECT_SOURCE_DIR}/src/hwcaps.c
   )
   setup_include_and_definitions(unix_based_hardware_detection)
@@ -131,8 +160,12 @@ if(UNIX)
     target_compile_definitions(unix_based_hardware_detection PRIVATE HAVE_DLFCN_H)
   endif()
   check_symbol_exists(getauxval "sys/auxv.h" HAVE_STRONG_GETAUXVAL)
+  check_symbol_exists(elf_aux_info "sys/auxv.h" HAVE_STRONG_ELF_AUX_INFO)
   if(HAVE_STRONG_GETAUXVAL)
     target_compile_definitions(unix_based_hardware_detection PRIVATE HAVE_STRONG_GETAUXVAL)
+  endif()
+  if(HAVE_STRONG_ELF_AUX_INFO)
+    target_compile_definitions(unix_based_hardware_detection PUBLIC HAVE_STRONG_ELF_AUX_INFO)
   endif()
 endif()
 
@@ -153,20 +186,21 @@ target_link_libraries(cpu_features PUBLIC ${CMAKE_DL_LIBS})
 target_include_directories(cpu_features
   PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cpu_features>
 )
-if(PROCESSOR_IS_X86)
-  if(APPLE)
-    target_compile_definitions(cpu_features PRIVATE HAVE_SYSCTLBYNAME)
-  endif()
+
+if(APPLE)
+  target_compile_definitions(cpu_features PRIVATE HAVE_SYSCTLBYNAME)
 endif()
-add_library(CpuFeature::cpu_features ALIAS cpu_features)
+add_library(CpuFeatures::cpu_features ALIAS cpu_features)
 
 #
 # program : list_cpu_features
 #
 
-add_executable(list_cpu_features ${PROJECT_SOURCE_DIR}/src/utils/list_cpu_features.c)
-target_link_libraries(list_cpu_features PRIVATE cpu_features)
-add_executable(CpuFeature::list_cpu_features ALIAS list_cpu_features)
+if(BUILD_EXECUTABLE)
+  add_executable(list_cpu_features ${PROJECT_SOURCE_DIR}/src/utils/list_cpu_features.c)
+  target_link_libraries(list_cpu_features PRIVATE cpu_features)
+  add_executable(CpuFeatures::list_cpu_features ALIAS list_cpu_features)
+endif()
 
 #
 # ndk_compat
@@ -232,36 +266,47 @@ endif()
 #
 # Install cpu_features and list_cpu_features
 #
-
-include(GNUInstallDirs)
-install(TARGETS cpu_features list_cpu_features
-  EXPORT CpuFeaturesTargets
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpu_features
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-install(EXPORT CpuFeaturesTargets
-  NAMESPACE CpuFeatures::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CpuFeatures
-  COMPONENT Devel
-)
-include(CMakePackageConfigHelpers)
-configure_package_config_file(cmake/CpuFeaturesConfig.cmake.in
-  "${PROJECT_BINARY_DIR}/CpuFeaturesConfig.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CpuFeatures"
-  NO_SET_AND_CHECK_MACRO
-  NO_CHECK_REQUIRED_COMPONENTS_MACRO
-)
-write_basic_package_version_file(
-  "${PROJECT_BINARY_DIR}/CpuFeaturesConfigVersion.cmake"
-  COMPATIBILITY SameMajorVersion
-)
-install(
-  FILES
+if(ENABLE_INSTALL)
+  include(GNUInstallDirs)
+  install(TARGETS cpu_features
+    EXPORT CpuFeaturesTargets
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpu_features
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
+  if(BUILD_EXECUTABLE)
+    install(TARGETS list_cpu_features
+      EXPORT CpuFeaturesTargets
+      PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cpu_features
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+      BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+  endif()
+  install(EXPORT CpuFeaturesTargets
+    NAMESPACE CpuFeatures::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CpuFeatures
+    COMPONENT Devel
+  )
+  include(CMakePackageConfigHelpers)
+  configure_package_config_file(cmake/CpuFeaturesConfig.cmake.in
     "${PROJECT_BINARY_DIR}/CpuFeaturesConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CpuFeatures"
+    NO_SET_AND_CHECK_MACRO
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+  )
+  write_basic_package_version_file(
     "${PROJECT_BINARY_DIR}/CpuFeaturesConfigVersion.cmake"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CpuFeatures"
-  COMPONENT Devel
-)
+    COMPATIBILITY SameMajorVersion
+  )
+  install(
+    FILES
+      "${PROJECT_BINARY_DIR}/CpuFeaturesConfig.cmake"
+      "${PROJECT_BINARY_DIR}/CpuFeaturesConfigVersion.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/CpuFeatures"
+    COMPONENT Devel
+  )
+endif()

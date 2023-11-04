@@ -544,7 +544,6 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
                 PRIVATE
                     $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
             )
-            add_dependencies(volk_gnsssdr_obj list_cpu_features)
         endif()
     endif()
     # Configure object target properties

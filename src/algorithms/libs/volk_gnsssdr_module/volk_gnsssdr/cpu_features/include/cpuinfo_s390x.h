@@ -89,7 +89,8 @@ typedef enum
     S390X_LAST_,
 } S390XFeaturesEnum;
 
-int GetS390XFeaturesEnumValue(const S390XFeatures* features, S390XFeaturesEnum value);
+int GetS390XFeaturesEnumValue(const S390XFeatures* features,
+    S390XFeaturesEnum value);
 
 const char* GetS390XFeaturesEnumName(S390XFeaturesEnum);
 

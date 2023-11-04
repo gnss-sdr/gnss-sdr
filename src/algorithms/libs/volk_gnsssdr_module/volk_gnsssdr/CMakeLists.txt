@@ -257,8 +257,14 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "^cortex")
 endif()
 
 # cpu_features - sensible defaults, user settable option
-if(CMAKE_SYSTEM_PROCESSOR MATCHES
-    "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)|(^s390x)|^riscv")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips" OR
+CMAKE_SYSTEM_PROCESSOR MATCHES "(^aarch64)|(^arm64)|(^ARM64)" OR
+CMAKE_SYSTEM_PROCESSOR MATCHES "^arm" OR
+CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(x86_64)|(AMD64|amd64)|(^i.86$)" OR
+CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)" OR
+CMAKE_SYSTEM_PROCESSOR MATCHES "^(s390x)" OR
+CMAKE_SYSTEM_PROCESSOR MATCHES "^riscv" OR
+CMAKE_SYSTEM_PROCESSOR MATCHES "^loongarch")
     option(VOLK_CPU_FEATURES "volk-gnsssdr uses cpu_features" ON)
 else()
     option(VOLK_CPU_FEATURES "volk-gnsssdr uses cpu_features" OFF)
@@ -266,7 +272,7 @@ endif()
 
 if(CMAKE_VERSION VERSION_GREATER 3.0 AND VOLK_CPU_FEATURES)
     find_package(CPUFEATURES)
-    if(CPUFEATURES_FOUND AND (CMAKE_SYSTEM_PROCESSOR MATCHES "(^s390x)|^riscv") AND (CPUFEATURES_VERSION VERSION_LESS "0.8.0"))
+    if(CPUFEATURES_FOUND AND (CMAKE_SYSTEM_PROCESSOR MATCHES "(^s390x)|^riscv|^loongarch") AND (CPUFEATURES_VERSION VERSION_LESS "0.8.0"))
         set(USE_CPU_FEATURES OFF)
         unset(CPUFEATURES_FOUND CACHE)
         message(STATUS "Building volk-gnsssdr without cpu_features, installed version v${CPUFEATURES_VERSION} does not support the ${CMAKE_SYSTEM_PROCESSOR} architecture")
@@ -274,20 +280,33 @@ if(CMAKE_VERSION VERSION_GREATER 3.0 AND VOLK_CPU_FEATURES)
         set(USE_CPU_FEATURES ON)
     endif()
     if(NOT CPUFEATURES_FOUND)
-        message(STATUS "Building volk-gnsssdr with cpu_features")
-        set(BUILD_TESTING OFF CACHE BOOL "Build cpu_features without tests." FORCE)
-        set(BUILD_PIC ON CACHE BOOL
-            "Build cpu_features with Position Independent Code (PIC)."
-            FORCE
-        )
-        set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL
-            "Build cpu_features with Position Independent Code (PIC)."
-            FORCE
-        )
-        set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
-        set(BUILD_SHARED_LIBS OFF)
-        add_subdirectory(cpu_features)
-        set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
+        if(CMAKE_VERSION VERSION_LESS 3.13)
+            message(STATUS "Building volk-gnsssdr without cpu_features")
+        else()
+            message(STATUS "Building volk-gnsssdr with cpu_features")
+            set(BUILD_TESTING OFF CACHE BOOL "Build cpu_features without tests." FORCE)
+            set(BUILD_PIC ON CACHE BOOL
+                "Build cpu_features with Position Independent Code (PIC)."
+                FORCE
+            )
+            set(CMAKE_POSITION_INDEPENDENT_CODE ON CACHE BOOL
+                "Build cpu_features with Position Independent Code (PIC)."
+                FORCE
+            )
+            set(BUILD_SHARED_LIBS_SAVED "${BUILD_SHARED_LIBS}")
+            set(BUILD_SHARED_LIBS OFF)
+            if(ENABLE_INSTALL)
+                set(ENABLE_INSTALL_AUX ${ENABLE_INSTALL})
+            endif()
+            set(ENABLE_INSTALL ON)
+            add_subdirectory(cpu_features)
+            unset(ENABLE_INSTALL)
+            if(ENABLE_INSTALL_AUX)
+                set(ENABLE_INSTALL ${ENABLE_INSTALL_AUX})
+                unset(ENABLE_INSTALL_AUX)
+            endif()
+            set(BUILD_SHARED_LIBS "${BUILD_SHARED_LIBS_SAVED}")
+        endif()
     endif()
 else()
     message(STATUS "Building volk-gnsssdr without cpu_features")

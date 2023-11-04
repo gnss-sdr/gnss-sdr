@@ -1208,8 +1208,14 @@ if(NOT VOLKGNSSSDR_FOUND)
     endif()
     include(GNUInstallDirs)
     set(SUPPORTED_CPU_FEATURES_ARCH FALSE)
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES
-        "(^mips)|(^arm)|(^aarch64)|(x86_64)|(AMD64|amd64)|(^i.86$)|(^powerpc)|(^ppc)|(^s390x)|^riscv")
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^mips" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "(^aarch64)|(^arm64)|(^ARM64)" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "^arm" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(x86_64)|(AMD64|amd64)|(^i.86$)" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "^(s390x)" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "^riscv" OR
+    CMAKE_SYSTEM_PROCESSOR MATCHES "^loongarch")
         set(SUPPORTED_CPU_FEATURES_ARCH TRUE)
     endif()
     if(${CMAKE_INSTALL_LIBDIR} MATCHES lib64)
@@ -1248,14 +1254,14 @@ if(NOT VOLKGNSSSDR_FOUND)
                 set_package_properties(CPUFEATURES PROPERTIES
                     DESCRIPTION "A cross platform C99 library to get CPU features at runtime (version: ${CPUFEATURES_VERSION})"
                 )
-                if((CMAKE_SYSTEM_PROCESSOR MATCHES "(^s390x)|^riscv") AND (CPUFEATURES_VERSION VERSION_LESS "0.8.0")) # detect cpu_features without s390x / riscv support
+                if((CMAKE_SYSTEM_PROCESSOR MATCHES "(^s390x)|(^riscv)|(^loongarch)") AND (CPUFEATURES_VERSION VERSION_LESS "0.8.0")) # detect cpu_features without s390x / riscv support
                     set(ENABLE_CPUFEATURES OFF)
                 endif()
             else()
                 set_package_properties(CPUFEATURES PROPERTIES
                     DESCRIPTION "A cross platform C99 library to get CPU features at runtime"
                 )
-                if(DEFINED VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3") # avoid clash with volk's cpufeatures.
+                if((DEFINED VOLK_VERSION AND VOLK_VERSION VERSION_GREATER "2.3") OR (CMAKE_VERSION VERSION_LESS "3.13")) # avoid clash with volk's cpufeatures.
                     set(ENABLE_CPUFEATURES OFF)
                 else()
                     set_package_properties(CPUFEATURES PROPERTIES

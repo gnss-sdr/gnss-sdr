@@ -45,7 +45,8 @@ FourBitCpxFileSignalSource::FourBitCpxFileSignalSource(
         }
     else
         {
-            LOG(WARNING) << sample_type_ << " unrecognized sample type. Assuming: ";
+            reverse_interleaving_ = false;
+            LOG(WARNING) << sample_type_ << " unrecognized sample type. Assuming: iq";
         }
 
     if (in_streams > 0)

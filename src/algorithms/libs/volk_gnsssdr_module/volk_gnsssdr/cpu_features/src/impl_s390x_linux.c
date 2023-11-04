@@ -59,7 +59,8 @@ static bool HandleS390XLine(const LineResult result,
         {
             if (CpuFeatures_StringView_IsEquals(key, str("# processors")))
                 {
-                    strings->num_processors = CpuFeatures_StringView_ParsePositiveNumber(value);
+                    strings->num_processors =
+                        CpuFeatures_StringView_ParsePositiveNumber(value);
                 }
         }
     return !result.eof;

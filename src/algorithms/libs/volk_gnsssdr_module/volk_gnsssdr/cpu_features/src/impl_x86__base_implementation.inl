@@ -36,9 +36,7 @@ uint32_t GetXCR0Eax(void)
     /* named form of xgetbv not supported on OSX, so must use byte form, see:
        https://github.com/asmjit/asmjit/issues/78
      */
-    __asm(".byte 0x0F, 0x01, 0xd0"
-          : "=a"(eax), "=d"(edx)
-          : "c"(0));
+    __asm(".byte 0x0F, 0x01, 0xd0" : "=a"(eax), "=d"(edx) : "c"(0));
     return eax;
 }
 
@@ -93,6 +91,7 @@ typedef struct
     Leaf leaf_80000002;  // brand string
     Leaf leaf_80000003;  // brand string
     Leaf leaf_80000004;  // brand string
+    Leaf leaf_80000021;  // AMD Extended Feature Identification 2
 } Leaves;
 
 static Leaves ReadLeaves(void)
@@ -114,12 +113,12 @@ static Leaves ReadLeaves(void)
         .leaf_80000002 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000002, 0),
         .leaf_80000003 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000003, 0),
         .leaf_80000004 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000004, 0),
+        .leaf_80000021 = SafeCpuIdEx(max_cpuid_leaf_ext, 0x80000021, 0),
     };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // OS support
-// TODO: Add documentation
 ////////////////////////////////////////////////////////////////////////////////
 
 #define MASK_XMM 0x2
@@ -333,6 +332,7 @@ static void ParseCpuId(const Leaves* leaves, X86Info* info,
     features->fs_rep_cmpsb_scasb = IsBitSet(leaf_7_1.eax, 12);
     features->adx = IsBitSet(leaf_7.ebx, 19);
     features->lzcnt = IsBitSet(leaf_80000001.ecx, 5);
+    features->lam = IsBitSet(leaf_7_1.eax, 26);
 
     /////////////////////////////////////////////////////////////////////////////
     // The following section is devoted to Vector Extensions.
@@ -395,6 +395,7 @@ static void ParseCpuId(const Leaves* leaves, X86Info* info,
                     features->amx_bf16 = IsBitSet(leaf_7.edx, 22);
                     features->amx_tile = IsBitSet(leaf_7.edx, 24);
                     features->amx_int8 = IsBitSet(leaf_7.edx, 25);
+                    features->amx_fp16 = IsBitSet(leaf_7_1.eax, 21);
                 }
         }
     else
@@ -413,6 +414,7 @@ static void ParseExtraAMDCpuId(const Leaves* leaves, X86Info* info,
     OsPreserves os_preserves)
 {
     const Leaf leaf_80000001 = leaves->leaf_80000001;
+    const Leaf leaf_80000021 = leaves->leaf_80000021;
 
     X86Features* const features = &info->features;
 
@@ -425,6 +427,8 @@ static void ParseExtraAMDCpuId(const Leaves* leaves, X86Info* info,
         {
             features->fma4 = IsBitSet(leaf_80000001.ecx, 16);
         }
+
+    features->uai = IsBitSet(leaf_80000021.eax, 7);
 }
 
 static const X86Info kEmptyX86Info;
@@ -460,7 +464,7 @@ X86Info GetX86Info(void)
 // Microarchitecture
 ////////////////////////////////////////////////////////////////////////////////
 
-#define CPUID(FAMILY, MODEL) ((((FAMILY)&0xFF) << 8) | ((MODEL)&0xFF))
+#define CPUID(FAMILY, MODEL) ((((FAMILY) & 0xFF) << 8) | ((MODEL) & 0xFF))
 
 X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
 {
@@ -605,6 +609,7 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                         }
                 case CPUID(0x06, 0x97):
                 case CPUID(0x06, 0x9A):
+                case CPUID(0x06, 0xBE):
                     // https://en.wikichip.org/wiki/intel/microarchitectures/alder_lake
                     return INTEL_ADL;
                 case CPUID(0x06, 0xA5):
@@ -781,8 +786,10 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                 case CPUID(0x17, 0x60):
                 case CPUID(0x17, 0x68):
                 case CPUID(0x17, 0x71):
+                case CPUID(0x17, 0x84):
                 case CPUID(0x17, 0x90):
                 case CPUID(0x17, 0x98):
+                case CPUID(0x17, 0xA0):
                     // https://en.wikichip.org/wiki/amd/microarchitectures/zen_2
                     return AMD_ZEN2;
                 case CPUID(0x19, 0x00):
@@ -796,7 +803,9 @@ X86Microarchitecture GetX86Microarchitecture(const X86Info* info)
                     // https://en.wikichip.org/wiki/amd/microarchitectures/zen_3
                     return AMD_ZEN3;
                 case CPUID(0x19, 0x10):
+                case CPUID(0x19, 0x11):
                 case CPUID(0x19, 0x61):
+                case CPUID(0x19, 0x74):
                     // https://en.wikichip.org/wiki/amd/microarchitectures/zen_4
                     return AMD_ZEN4;
                 default:
@@ -1958,6 +1967,7 @@ CacheInfo GetX86CacheInfo(void)
     LINE(X86_AMX_BF16, amx_bf16, , , )                       \
     LINE(X86_AMX_TILE, amx_tile, , , )                       \
     LINE(X86_AMX_INT8, amx_int8, , , )                       \
+    LINE(X86_AMX_FP16, amx_fp16, , , )                       \
     LINE(X86_PCLMULQDQ, pclmulqdq, , , )                     \
     LINE(X86_SMX, smx, , , )                                 \
     LINE(X86_SGX, sgx, , , )                                 \
@@ -1976,7 +1986,9 @@ CacheInfo GetX86CacheInfo(void)
     LINE(X86_FS_REP_MOV, fs_rep_mov, , , )                   \
     LINE(X86_FZ_REP_MOVSB, fz_rep_movsb, , , )               \
     LINE(X86_FS_REP_STOSB, fs_rep_stosb, , , )               \
-    LINE(X86_FS_REP_CMPSB_SCASB, fs_rep_cmpsb_scasb, , , )
+    LINE(X86_FS_REP_CMPSB_SCASB, fs_rep_cmpsb_scasb, , , )   \
+    LINE(X86_LAM, lam, , , )                                 \
+    LINE(X86_UAI, uai, , , )
 #define INTROSPECTION_PREFIX X86
 #define INTROSPECTION_ENUM_PREFIX X86
 #include "define_introspection.inl"

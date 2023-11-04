@@ -90,7 +90,7 @@ public:
     bool pre_2009_file = false;
     bool dump = false;
     bool dump_mat = true;
-    bool log_source_timetag;
+    bool log_source_timetag = false;
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;

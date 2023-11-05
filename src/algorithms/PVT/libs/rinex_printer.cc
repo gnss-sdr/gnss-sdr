@@ -4979,7 +4979,10 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
                 }
             if (d_version == 3)
                 {
-                    line += satelliteSystem.find("GPS")->second;
+                    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                        {
+                            line += satelliteSystem.find("GPS")->second;
+                        }
                     if (gps_ephemeris_iter->second.PRN < 10)
                         {
                             line += std::string("0");
@@ -5289,7 +5292,10 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gps
             const std::string hour(timestring, 9, 2);
             const std::string minutes(timestring, 11, 2);
             const std::string seconds(timestring, 13, 2);
-            line += satelliteSystem.find("GPS")->second;
+            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("GPS")->second;
+                }
             if (gps_ephemeris_iter->second.PRN < 10)
                 {
                     line += std::string("0");
@@ -5453,7 +5459,10 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Gal
             const std::string minutes(timestring, 11, 2);
             const std::string seconds(timestring, 13, 2);
 
-            line += satelliteSystem.find("Galileo")->second;
+            if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("Galileo")->second;
+                }
             if (galileo_ephemeris_iter->second.PRN < 10)
                 {
                     line += std::string("0");
@@ -5713,7 +5722,10 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Glo
                 }
             if (d_version == 3)
                 {
-                    line += satelliteSystem.find("GLONASS")->second;
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            line += satelliteSystem.find("GLONASS")->second;
+                        }
                     if (glonass_gnav_ephemeris_iter->second.PRN < 10)
                         {
                             line += std::string("0");
@@ -5882,7 +5894,10 @@ void Rinex_Printer::log_rinex_nav(std::fstream& out, const std::map<int32_t, Bei
             const std::string minutes(timestring, 11, 2);
             const std::string seconds(timestring, 13, 2);
 
-            line += satelliteSystem.find("Beidou")->second;
+            if (satelliteSystem.find("Beidou") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("Beidou")->second;
+                }
             if (bds_ephemeris_iter->second.PRN < 10)
                 {
                     line += std::string("0");
@@ -6020,7 +6035,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("GLONASS")->second;
+    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GLONASS")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -6178,7 +6196,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
             // -------- SYS / OBS TYPES
             // one line per available system
             line.clear();
-            line += satelliteSystem.find("GLONASS")->second;
+            if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("GLONASS")->second;
+                }
             line += std::string(2, ' ');
             std::stringstream strm;
             d_numberTypesObservations = 4;
@@ -6296,7 +6317,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Glonass_Gnav_Ephem
             line.clear();
             line += Rinex_Printer::rightJustify(std::to_string(0), 3);  // Number of satellites in list
             line += std::string(1, ' ');
-            line += satelliteSystem.find("GLONASS")->second;
+            if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("GLONASS")->second;
+                }
             line += Rinex_Printer::rightJustify(std::to_string(0), 2);  // Slot Number
             line += std::string(1, ' ');
             line += Rinex_Printer::rightJustify(std::to_string(0), 2);  // Frequency Number
@@ -6356,7 +6380,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Mixed")->second;
+    if (satelliteSystem.find("Mixed") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Mixed")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -6507,7 +6534,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
             // one line per available system
             line.clear();
-            line += satelliteSystem.find("GPS")->second;
+            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("GPS")->second;
+                }
             line += std::string(2, ' ');
             std::stringstream strm;
             d_numberTypesObservations = 4;
@@ -6550,7 +6580,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
                     number_of_observations_glo = number_of_observations_glo + 4;
                 }
             line.clear();
-            line += satelliteSystem.find("GLONASS")->second;
+            if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("GLONASS")->second;
+                }
             line += std::string(2, ' ');
             line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_glo), 3);
             if (found_1G != std::string::npos)
@@ -6656,7 +6689,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
             line.clear();
             line += Rinex_Printer::rightJustify(std::to_string(0), 3);  // Number of satellites in list
             line += std::string(1, ' ');
-            line += satelliteSystem.find("GLONASS")->second;
+            if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("GLONASS")->second;
+                }
             line += Rinex_Printer::rightJustify(std::to_string(0), 2);  // Slot Number
             line += std::string(1, ' ');
             line += Rinex_Printer::rightJustify(std::to_string(0), 2);  // Frequency Number
@@ -6716,7 +6752,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Mixed")->second;
+    if (satelliteSystem.find("Mixed") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Mixed")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -6864,7 +6903,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     // -------- SYS / OBS TYPES
     // one line per available system
     line.clear();
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(2, ' ');
     std::stringstream strm;
     d_numberTypesObservations = 4;
@@ -6907,7 +6949,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
             number_of_observations_glo = number_of_observations_glo + 4;
         }
     line.clear();
-    line += satelliteSystem.find("GLONASS")->second;
+    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GLONASS")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_glo), 3);
     if (found_1G != std::string::npos)
@@ -6981,7 +7026,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line.clear();
     line += Rinex_Printer::rightJustify(std::to_string(0), 3);  // Number of satellites in list
     line += std::string(1, ' ');
-    line += satelliteSystem.find("GLONASS")->second;
+    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GLONASS")->second;
+        }
     line += Rinex_Printer::rightJustify(std::to_string(0), 2);  // Slot Number
     line += std::string(1, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(0), 2);  // Frequency Number
@@ -7041,7 +7089,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Mixed")->second;
+    if (satelliteSystem.find("Mixed") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Mixed")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -7205,7 +7256,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
             number_of_observations_gal = number_of_observations_gal + 4;
         }
 
-    line += satelliteSystem.find("Galileo")->second;
+    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Galileo")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
 
@@ -7293,7 +7347,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
             number_of_observations_glo = number_of_observations_glo + 4;
         }
 
-    line += satelliteSystem.find("GLONASS")->second;
+    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GLONASS")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_glo), 3);
 
@@ -7383,7 +7440,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -7541,7 +7601,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
             // -------- SYS / OBS TYPES
             // one line per available system
             line.clear();
-            line += satelliteSystem.find("GPS")->second;
+            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                {
+                    line += satelliteSystem.find("GPS")->second;
+                }
             line += std::string(2, ' ');
             std::stringstream strm;
             d_numberTypesObservations = 4;
@@ -7651,7 +7714,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -7800,7 +7866,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
         {
             number_of_observations_gps = number_of_observations_gps + 4;
         }
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(2, ' ');
     std::stringstream strm;
     d_numberTypesObservations = number_of_observations_gps;
@@ -7906,7 +7975,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -8061,7 +8133,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& eph
         {
             number_of_observations_gps = number_of_observations_gps + 4;
         }
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(2, ' ');
     std::stringstream strm;
     d_numberTypesObservations = number_of_observations_gps;
@@ -8191,7 +8266,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Mixed")->second;
+    if (satelliteSystem.find("Mixed") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Mixed")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -8346,7 +8424,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
             number_of_observations_gps = number_of_observations_gps + 4;
         }
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(2, ' ');
     std::stringstream strm;
     d_numberTypesObservations = number_of_observations_gps;
@@ -8442,7 +8523,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         {
             number_of_observations_gal = number_of_observations_gal + 4;
         }
-    line += satelliteSystem.find("Galileo")->second;
+    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Galileo")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
     if (found_1B != std::string::npos)
@@ -8563,7 +8647,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Mixed")->second;
+    if (satelliteSystem.find("Mixed") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Mixed")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -8712,7 +8799,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
         {
             number_of_observations_gps = number_of_observations_gps + 4;
         }
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(2, ' ');
     std::stringstream strm;
     d_numberTypesObservations = number_of_observations_gps;
@@ -8788,7 +8878,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
         {
             number_of_observations_gal = number_of_observations_gal + 4;
         }
-    line += satelliteSystem.find("Galileo")->second;
+    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Galileo")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
     if (found_1B != std::string::npos)
@@ -8914,7 +9007,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
         }
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Galileo")->second;
+    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Galileo")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -9079,7 +9175,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
 
     line.clear();
 
-    line += satelliteSystem.find("Galileo")->second;
+    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Galileo")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations), 3);
 
@@ -9207,7 +9306,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Mixed")->second;
+    if (satelliteSystem.find("Mixed") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Mixed")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -9343,7 +9445,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     // -------- SYS / OBS TYPES
     // one line per available system
     line.clear();
-    line += satelliteSystem.find("GPS")->second;
+    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("GPS")->second;
+        }
     line += std::string(2, ' ');
     std::stringstream strm;
     d_numberTypesObservations = 4;
@@ -9401,7 +9506,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
         }
 
     line.clear();
-    line += satelliteSystem.find("Galileo")->second;
+    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Galileo")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations_gal), 3);
 
@@ -9524,7 +9632,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem.find("Beidou")->second;
+    if (satelliteSystem.find("Beidou") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Beidou")->second;
+        }
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -9667,7 +9778,10 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Beidou_Dnav_Epheme
 
     line.clear();
 
-    line += satelliteSystem.find("Beidou")->second;
+    if (satelliteSystem.find("Beidou") != satelliteSystem.cend())
+        {
+            line += satelliteSystem.find("Beidou")->second;
+        }
     line += std::string(2, ' ');
     line += Rinex_Printer::rightJustify(std::to_string(number_of_observations), 3);
 
@@ -10093,7 +10207,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                  observables_iter != observables.cend();
                  observables_iter++)
                 {
-                    line += satelliteSystem.find("GLONASS")->second;
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            line += satelliteSystem.find("GLONASS")->second;
+                        }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
                             line += std::string(1, '0');
@@ -10213,7 +10330,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Glonass_Gnav_Ephemeri
                 {
                     std::string lineObs;
                     lineObs.clear();
-                    lineObs += satelliteSystem.find("GLONASS")->second;
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("GLONASS")->second;
+                        }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
                             lineObs += std::string(1, '0');
@@ -10430,7 +10550,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                  observables_iter != observablesG1C.cend();
                  observables_iter++)
                 {
-                    line += satelliteSystem.find("GPS")->second;
+                    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                        {
+                            line += satelliteSystem.find("GPS")->second;
+                        }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
                             line += std::string(1, '0');
@@ -10442,7 +10565,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                  observables_iter != observablesR1C.cend();
                  observables_iter++)
                 {
-                    line += satelliteSystem.find("GLONASS")->second;
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            line += satelliteSystem.find("GLONASS")->second;
+                        }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
                             line += std::string(1, '0');
@@ -10454,7 +10580,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                  observables_iter != observablesR2C.cend();
                  observables_iter++)
                 {
-                    line += satelliteSystem.find("GLONASS")->second;
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            line += satelliteSystem.find("GLONASS")->second;
+                        }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
                             line += std::string(1, '0');
@@ -10481,11 +10610,17 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
                     // Specify system only if in version 3
                     if (s == "G")
                         {
-                            lineObs += satelliteSystem.find("GPS")->second;
+                            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                                {
+                                    lineObs += satelliteSystem.find("GPS")->second;
+                                }
                         }
                     if (s == "R")
                         {
-                            lineObs += satelliteSystem.find("GLONASS")->second;  // should not happen
+                            if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                                {
+                                    lineObs += satelliteSystem.find("GLONASS")->second;
+                                }  // should not happen
                         }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
@@ -10554,7 +10689,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             lineObs.clear();
             if (d_version == 3)
                 {
-                    lineObs += satelliteSystem.find("GLONASS")->second;
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("GLONASS")->second;
+                        }
                     if (static_cast<int32_t>(*it) < 10)
                         {
                             lineObs += std::string(1, '0');
@@ -10742,11 +10880,17 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
             // Specify system only if in version 3
             if (s == "G")
                 {
-                    lineObs += satelliteSystem.find("GPS")->second;
+                    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("GPS")->second;
+                        }
                 }
             if (s == "R")
                 {
-                    lineObs += satelliteSystem.find("GLONASS")->second;  // should not happen
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("GLONASS")->second;
+                        }  // should not happen
                 }
             if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                 {
@@ -10812,7 +10956,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& g
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("GLONASS")->second;
+            if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("GLONASS")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -11000,11 +11147,17 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
             s.assign(1, observables_iter->second.System);
             if (s == "E")
                 {
-                    lineObs += satelliteSystem.find("Galileo")->second;
+                    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("Galileo")->second;
+                        }
                 }
             if (s == "R")
                 {
-                    lineObs += satelliteSystem.find("GLONASS")->second;  // should not happen
+                    if (satelliteSystem.find("GLONASS") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("GLONASS")->second;
+                        }  // should not happen
                 }
             if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                 {
@@ -11068,7 +11221,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("Galileo")->second;
+            if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("Galileo")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -11201,7 +11357,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
                  observables_iter != observables.cend();
                  observables_iter++)
                 {
-                    line += satelliteSystem.find("GPS")->second;
+                    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                        {
+                            line += satelliteSystem.find("GPS")->second;
+                        }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
                             line += std::string(1, '0');
@@ -11322,7 +11481,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, d
                 {
                     std::string lineObs;
                     lineObs.clear();
-                    lineObs += satelliteSystem.find("GPS")->second;
+                    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("GPS")->second;
+                        }
                     if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                         {
                             lineObs += std::string(1, '0');
@@ -11449,7 +11611,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
         {
             std::string lineObs;
             lineObs.clear();
-            lineObs += satelliteSystem.find("GPS")->second;
+            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("GPS")->second;
+                }
             if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -11673,7 +11838,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& eph, c
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("GPS")->second;
+            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("GPS")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -11926,7 +12094,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ep
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("Galileo")->second;
+            if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("Galileo")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -12148,11 +12319,17 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
             s.assign(1, observables_iter->second.System);
             if (s == "G")
                 {
-                    lineObs += satelliteSystem.find("GPS")->second;
+                    if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("GPS")->second;
+                        }
                 }
             if (s == "E")
                 {
-                    lineObs += satelliteSystem.find("Galileo")->second;  // should not happen
+                    if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                        {
+                            lineObs += satelliteSystem.find("Galileo")->second;
+                        }  // should not happen
                 }
             if (static_cast<int32_t>(observables_iter->second.PRN) < 10)
                 {
@@ -12216,7 +12393,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("Galileo")->second;
+            if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("Galileo")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -12469,7 +12649,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("GPS")->second;
+            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("GPS")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -12531,7 +12714,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_CNAV_Ephemeris& e
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("Galileo")->second;
+            if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("Galileo")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -12802,7 +12988,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("GPS")->second;
+            if (satelliteSystem.find("GPS") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("GPS")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -12875,7 +13064,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Gps_Ephemeris& gps_ep
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("Galileo")->second;
+            if (satelliteSystem.find("Galileo") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("Galileo")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');
@@ -13060,7 +13252,10 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Beidou_Dnav_Ephemeris
          it++)
         {
             lineObs.clear();
-            lineObs += satelliteSystem.find("Beidou")->second;
+            if (satelliteSystem.find("Beidou") != satelliteSystem.cend())
+                {
+                    lineObs += satelliteSystem.find("Beidou")->second;
+                }
             if (static_cast<int32_t>(*it) < 10)
                 {
                     lineObs += std::string(1, '0');

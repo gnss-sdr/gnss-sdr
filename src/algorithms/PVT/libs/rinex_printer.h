@@ -39,14 +39,15 @@
 #define GNSS_SDR_RINEX_PRINTER_H
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <cstdint>  // for int32_t
-#include <cstdlib>  // for strtol, strtod
-#include <fstream>  // for fstream
-#include <iomanip>  // for setprecision
-#include <map>      // for map
-#include <sstream>  // for stringstream
-#include <string>   // for string
-#include <vector>
+#include <cstdint>        // for int32_t
+#include <cstdlib>        // for strtol, strtod
+#include <fstream>        // for fstream
+#include <iomanip>        // for setprecision
+#include <map>            // for map
+#include <sstream>        // for stringstream
+#include <string>         // for string
+#include <unordered_map>  // for unordered_map
+#include <vector>         // for vector
 
 
 /** \addtogroup PVT
@@ -232,6 +233,14 @@ public:
 
 
 private:
+    const std::unordered_map<std::string, std::string> satelliteSystem = {
+        {"GPS", "G"},
+        {"GLONASS", "R"},
+        {"SBAS payload", "S"},
+        {"Galileo", "E"},
+        {"Beidou", "C"},
+        {"Mixed", "M"}};  // RINEX v3.02 codes
+
     /*
      * Generates the GPS Observation data header
      */
@@ -984,7 +993,6 @@ private:
 
     inline std::string asFixWidthString(int x, int width, char fill_digit) const;
 
-    std::map<std::string, std::string> satelliteSystem;  // GPS, GLONASS, SBAS payload, Galileo or Beidou
     std::map<std::string, std::string> observationType;  // PSEUDORANGE, CARRIER_PHASE, DOPPLER, SIGNAL_STRENGTH
     std::map<std::string, std::string> observationCode;  // GNSS observation descriptors
 

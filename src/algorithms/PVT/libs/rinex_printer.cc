@@ -65,14 +65,6 @@ Rinex_Printer::Rinex_Printer(int32_t conf_version,
                                     d_pre_2009_file(false)
 
 {
-    // RINEX v3.02 codes
-    satelliteSystem["GPS"] = "G";
-    satelliteSystem["GLONASS"] = "R";
-    satelliteSystem["SBAS payload"] = "S";
-    satelliteSystem["Galileo"] = "E";
-    satelliteSystem["Beidou"] = "C";
-    satelliteSystem["Mixed"] = "M";
-
     observationCode["GPS_L1_CA"] = "1C";          // "1C" GPS L1 C/A
     observationCode["GPS_L1_P"] = "1P";           // "1P" GPS L1 P
     observationCode["GPS_L1_Z_TRACKING"] = "1W";  // "1W" GPS L1 Z-tracking and similar (AS on)
@@ -6364,7 +6356,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem["Mixed"];
+    line += satelliteSystem.find("Mixed")->second;
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -6724,7 +6716,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += d_stringVersion;
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem["Mixed"];
+    line += satelliteSystem.find("Mixed")->second;
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -7049,7 +7041,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Galileo_Ephemeris&
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem["Mixed"];
+    line += satelliteSystem.find("Mixed")->second;
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -8199,7 +8191,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem["Mixed"];
+    line += satelliteSystem.find("Mixed")->second;
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -8571,7 +8563,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_CNAV_Ephemeris
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem["Mixed"];
+    line += satelliteSystem.find("Mixed")->second;
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);
@@ -9215,7 +9207,7 @@ void Rinex_Printer::rinex_obs_header(std::fstream& out, const Gps_Ephemeris& gps
     line += "3.02";
     line += std::string(11, ' ');
     line += Rinex_Printer::leftJustify("OBSERVATION DATA", 20);
-    line += satelliteSystem["Mixed"];
+    line += satelliteSystem.find("Mixed")->second;
     line += std::string(19, ' ');
     line += std::string("RINEX VERSION / TYPE");
     Rinex_Printer::lengthCheck(line);

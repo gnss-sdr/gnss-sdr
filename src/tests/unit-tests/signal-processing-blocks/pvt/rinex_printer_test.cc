@@ -145,7 +145,7 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
 {
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 4, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 4, false, false);
     auto eph = Galileo_Ephemeris();
     eph.PRN = 1;
     pvt_solution->galileo_ephemeris_map[1] = eph;
@@ -233,7 +233,7 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
 {
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 28, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 28, false, false);
     auto eph = Glonass_Gnav_Ephemeris();
     eph.PRN = 1;
     pvt_solution->glonass_gnav_ephemeris_map[1] = eph;
@@ -295,7 +295,7 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
     eph_gps.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 106, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 106, false, false);
     pvt_solution->galileo_ephemeris_map[1] = eph_gal;
 
     pvt_solution->gps_ephemeris_map[1] = eph_gps;
@@ -367,7 +367,7 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
     eph_gps.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 26, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 26, false, false);
     pvt_solution->glonass_gnav_ephemeris_map[1] = eph_glo;
 
     pvt_solution->gps_ephemeris_map[1] = eph_gps;
@@ -436,7 +436,7 @@ TEST_F(RinexPrinterTest, GalileoObsLog)
     eph.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 4, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 4, false, false);
     pvt_solution->galileo_ephemeris_map[1] = eph;
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
@@ -518,7 +518,7 @@ TEST_F(RinexPrinterTest, GlonassObsLog)
     eph.PRN = 22;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 23, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 23, false, false);
     pvt_solution->glonass_gnav_ephemeris_map[1] = eph;
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
@@ -602,7 +602,7 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     eph_cnav.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 7, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 7, false, false);
     pvt_solution->gps_ephemeris_map[1] = eph;
     pvt_solution->gps_cnav_ephemeris_map[1] = eph_cnav;
     std::map<int, Gnss_Synchro> gnss_observables_map;
@@ -692,7 +692,7 @@ TEST_F(RinexPrinterTest, GalileoObsLogDualBand)
 {
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 14, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 14, false, false);
     auto eph = Galileo_Ephemeris();
     eph.PRN = 1;
     pvt_solution->galileo_ephemeris_map[1] = eph;
@@ -794,7 +794,7 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     eph_gal.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 9, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 9, false, false);
     pvt_solution->gps_ephemeris_map[1] = eph_gps;
     pvt_solution->galileo_ephemeris_map[1] = eph_gal;
     std::map<int, Gnss_Synchro> gnss_observables_map;
@@ -920,7 +920,7 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     eph_glo.PRN = 1;
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 26, false, false, conf);
+    auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 26, false, false);
     pvt_solution->gps_ephemeris_map[1] = eph_gps;
     pvt_solution->glonass_gnav_ephemeris_map[1] = eph_glo;
     std::map<int, Gnss_Synchro> gnss_observables_map;

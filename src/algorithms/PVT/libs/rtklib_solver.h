@@ -82,11 +82,12 @@ class Rtklib_Solver : public Pvt_Solution
 {
 public:
     Rtklib_Solver(const rtk_t& rtk,
+        const Pvt_Conf& conf,
         const std::string& dump_filename,
         uint32_t type_of_rx,
         bool flag_dump_to_file,
-        bool flag_dump_to_mat,
-        Pvt_Conf conf);
+        bool flag_dump_to_mat);
+
     ~Rtklib_Solver();
 
     bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s);

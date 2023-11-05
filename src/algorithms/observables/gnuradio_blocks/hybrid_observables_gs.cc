@@ -431,6 +431,10 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
 
                             // 1st: copy the nearest gnss_synchro data for that channel
                             interpolated_obs = d_gnss_synchro_history->get(ch, nearest_element);
+                            if (interpolated_obs.fs == 0LL)
+                                {
+                                    return false;
+                                }
 
                             // 2nd: Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
                             const double T_rx_s = static_cast<double>(rx_clock) / static_cast<double>(interpolated_obs.fs);

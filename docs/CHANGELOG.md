@@ -34,6 +34,8 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Portability:
 
 - Updated local `cpu_features` library to v0.9.0.
+- `volk_gnsssdr`: fix syntax for Python 3.12 without breaking backward
+  compatibility with Python 2.7.
 
 ### Improvements in Repeatability:
 

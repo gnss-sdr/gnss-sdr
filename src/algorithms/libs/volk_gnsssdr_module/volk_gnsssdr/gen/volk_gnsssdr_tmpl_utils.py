@@ -11,7 +11,7 @@ from __future__ import print_function
 import os
 import re
 import sys
-import optparse
+import argparse
 import volk_gnsssdr_arch_defs
 import volk_gnsssdr_machine_defs
 import volk_gnsssdr_kernel_defs
@@ -34,13 +34,14 @@ def __parse_tmpl(_tmpl, **kwargs):
     return str(Template(_tmpl).render(**defs))
 
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option('--input', type='string')
-    parser.add_option('--output', type='string')
-    (opts, args) = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input', type=str)
+    parser.add_argument('--output', type=str)
+    args, extras = parser.parse_known_args()
 
-    output = __parse_tmpl(open(opts.input).read(), args=args)
-    if opts.output: open(opts.output, 'w').write(output)
+    output = __parse_tmpl(open(args.input).read(), args=extras)
+    if args.output: open(args.output, 'w').write(output)
     else: print(output)
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    main()

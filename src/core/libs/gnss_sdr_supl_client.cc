@@ -248,17 +248,20 @@ void Gnss_Sdr_Supl_Client::read_supl_data()
                             gps_almanac_map.insert(std::pair<int, Gps_Almanac>(a->prn, gps_almanac_entry));
                             gps_almanac_iterator = this->gps_almanac_map.find(a->prn);
                         }
-                    gps_almanac_iterator->second.PRN = a->prn;
-                    gps_almanac_iterator->second.af0 = static_cast<double>(a->AF0) * pow(2.0, -20);
-                    gps_almanac_iterator->second.af1 = static_cast<double>(a->AF1) * pow(2.0, -38);
-                    gps_almanac_iterator->second.delta_i = static_cast<double>(a->Ksii) * pow(2.0, -19);
-                    gps_almanac_iterator->second.omega = static_cast<double>(a->w) * pow(2.0, -23);
-                    gps_almanac_iterator->second.OMEGA_0 = static_cast<double>(a->OMEGA_0) * pow(2.0, -23);
-                    gps_almanac_iterator->second.sqrtA = static_cast<double>(a->A_sqrt) * pow(2.0, -11);
-                    gps_almanac_iterator->second.OMEGAdot = static_cast<double>(a->OMEGA_dot) * pow(2.0, -38);
-                    gps_almanac_iterator->second.toa = static_cast<int32_t>(a->toa * pow(2.0, 12));
-                    gps_almanac_iterator->second.ecc = static_cast<double>(a->e) * pow(2.0, -21);
-                    gps_almanac_iterator->second.M_0 = static_cast<double>(a->M0) * pow(2.0, -23);
+                    if (gps_almanac_iterator != gps_almanac_map.end())
+                        {
+                            gps_almanac_iterator->second.PRN = a->prn;
+                            gps_almanac_iterator->second.af0 = static_cast<double>(a->AF0) * pow(2.0, -20);
+                            gps_almanac_iterator->second.af1 = static_cast<double>(a->AF1) * pow(2.0, -38);
+                            gps_almanac_iterator->second.delta_i = static_cast<double>(a->Ksii) * pow(2.0, -19);
+                            gps_almanac_iterator->second.omega = static_cast<double>(a->w) * pow(2.0, -23);
+                            gps_almanac_iterator->second.OMEGA_0 = static_cast<double>(a->OMEGA_0) * pow(2.0, -23);
+                            gps_almanac_iterator->second.sqrtA = static_cast<double>(a->A_sqrt) * pow(2.0, -11);
+                            gps_almanac_iterator->second.OMEGAdot = static_cast<double>(a->OMEGA_dot) * pow(2.0, -38);
+                            gps_almanac_iterator->second.toa = static_cast<int32_t>(a->toa * pow(2.0, 12));
+                            gps_almanac_iterator->second.ecc = static_cast<double>(a->e) * pow(2.0, -21);
+                            gps_almanac_iterator->second.M_0 = static_cast<double>(a->M0) * pow(2.0, -23);
+                        }
                 }
         }
 

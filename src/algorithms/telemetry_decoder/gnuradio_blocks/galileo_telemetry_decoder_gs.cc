@@ -1030,7 +1030,10 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             decode_FNAV_word(d_page_part_symbols.data(), d_frame_length_symbols, current_symbol.CN0_dB_hz);
                             break;
                         case 3:  // CNAV
-                            decode_CNAV_word(current_symbol.Tracking_sample_counter / static_cast<uint64_t>(current_symbol.fs), d_page_part_symbols.data(), d_frame_length_symbols, current_symbol.CN0_dB_hz);
+                            if (current_symbol.fs != 0LL)
+                                {
+                                    decode_CNAV_word(current_symbol.Tracking_sample_counter / static_cast<uint64_t>(current_symbol.fs), d_page_part_symbols.data(), d_frame_length_symbols, current_symbol.CN0_dB_hz);
+                                }
                             break;
                         default:
                             return -1;

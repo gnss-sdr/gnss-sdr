@@ -144,6 +144,7 @@ public:
      *    105   |  Galileo E1B + Galileo E5b + Galileo E6B
      *    106   |  GPS L1 C/A + Galileo E1B + Galileo E6B
      *    107   |  GPS L1 C/A + Galileo E6B
+     *    108   |  GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
      *    500   |  BeiDou B1I
      *    501   |  BeiDou B1I + GPS L1 C/A
      *    502   |  BeiDou B1I + Galileo E1B

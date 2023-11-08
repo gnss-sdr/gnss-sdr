@@ -128,6 +128,10 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
             break;
+        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+            d_rtklib_band_index["E6"] = 2;
+            d_rtklib_freq_index[2] = 3;
+            break;
         }
     // auto empty_map = std::map < int, HAS_obs_corrections >> ();
     // d_has_obs_corr_map["L1 C/A"] = empty_map;

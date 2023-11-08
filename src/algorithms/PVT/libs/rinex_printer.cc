@@ -724,6 +724,20 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                             d_rinex_header_written = true;  // do not write header anymore
                         }
                     break;
+                case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+                    if ((galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend()) and
+                        (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()) and
+                        (gps_cnav_ephemeris_iter != pvt_solver->gps_cnav_ephemeris_map.cend()))
+                        {
+                            const std::string gal_signal("1B 5X E6");
+                            const std::string gps_signal("1C L5");
+                            rinex_obs_header(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gps_signal, gal_signal);
+                            rinex_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                            output_navfilename.push_back(navMixfilename);
+                            log_rinex_nav(navMixFile, pvt_solver->gps_ephemeris_map, pvt_solver->galileo_ephemeris_map);
+                            d_rinex_header_written = true;  // do not write header anymore
+                        }
+                    break;
                 case 500:  // BDS B1I only
                     if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
                         {
@@ -1237,7 +1251,33 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                                                 }
                                         }
                                 }
-
+                            break;
+                        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+                            if (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend())
+                                {
+                                    if (galileo_ephemeris_iter != pvt_solver->galileo_ephemeris_map.cend())
+                                        {
+                                            // we have Galileo ephemeris, maybe from assistance
+                                            log_rinex_obs(obsFile, gps_ephemeris_iter->second, galileo_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                            if (!d_rinex_header_updated && (pvt_solver->gps_utc_model.A0 != 0))
+                                                {
+                                                    update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                                    update_nav_header(navMixFile, pvt_solver->gps_iono, pvt_solver->gps_utc_model, gps_ephemeris_iter->second, pvt_solver->galileo_iono, pvt_solver->galileo_utc_model);
+                                                    d_rinex_header_updated = true;
+                                                }
+                                        }
+                                    else
+                                        {
+                                            // we do not have galileo ephemeris, print only GPS data
+                                            log_rinex_obs(obsFile, gps_ephemeris_iter->second, rx_time, gnss_observables_map);
+                                            if (!d_rinex_header_updated && (pvt_solver->gps_utc_model.A0 != 0))
+                                                {
+                                                    update_obs_header(obsFile, pvt_solver->gps_utc_model);
+                                                    update_nav_header(navFile, pvt_solver->gps_utc_model, pvt_solver->gps_iono, gps_ephemeris_iter->second);
+                                                    d_rinex_header_updated = true;
+                                                }
+                                        }
+                                }
                             break;
                         case 500:  // BDS B1I only
                             if (beidou_dnav_ephemeris_iter != pvt_solver->beidou_dnav_ephemeris_map.cend())
@@ -1374,6 +1414,16 @@ void Rinex_Printer::log_rinex_nav_gps_nav(int type_of_rx, const std::map<int32_t
                     log_rinex_nav(navFile, new_eph);
                 }
             break;
+        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+            if (navMixFile.tellp() != 0)
+                {
+                    log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+                }
+            else
+                {
+                    log_rinex_nav(navFile, new_eph);
+                }
+            break;
         case 1000:  // L1+L2+L5
             log_rinex_nav(navFile, new_eph);
             break;
@@ -1432,6 +1482,12 @@ void Rinex_Printer::log_rinex_nav_gal_nav(int type_of_rx, const std::map<int32_t
             log_rinex_nav(navMixFile, new_eph, new_gal_eph);
             break;
         case 107:  // GPS L1 C/A + Galileo E6B
+            if (navMixFile.tellp() != 0)
+                {
+                    log_rinex_nav(navMixFile, new_eph, new_gal_eph);
+                }
+            break;
+        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
             if (navMixFile.tellp() != 0)
                 {
                     log_rinex_nav(navMixFile, new_eph, new_gal_eph);

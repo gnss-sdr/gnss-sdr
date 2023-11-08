@@ -1269,7 +1269,7 @@ void Rinex_Printer::print_rinex_annotation(const Rtklib_Solver* pvt_solver, cons
                                 {
                                     log_rinex_obs(obsFile, gps_ephemeris_iter->second, gps_cnav_ephemeris_iter->second, rx_time, gnss_observables_map, true);
                                 }
-                            if (!d_rinex_header_updated && (pvt_solver->gps_utc_model.A0 != 0))
+                            if (!d_rinex_header_updated && (pvt_solver->gps_utc_model.A0 != 0) && (gps_ephemeris_iter != pvt_solver->gps_ephemeris_map.cend()))
                                 {
                                     update_obs_header(obsFile, pvt_solver->gps_utc_model);
                                     update_nav_header(navFile, pvt_solver->gps_utc_model, pvt_solver->gps_iono, gps_ephemeris_iter->second);

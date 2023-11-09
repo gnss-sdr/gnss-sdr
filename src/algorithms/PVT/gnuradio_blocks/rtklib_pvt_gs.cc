@@ -448,10 +448,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // Initialize HAS simple printer
-    d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 107)) && (conf_.output_enabled));
+    d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 109)) && (conf_.output_enabled));
     if (d_enable_has_messages)
         {
-            d_has_simple_printer = std::make_unique<Has_Simple_Printer>();
+            d_has_simple_printer = std::make_unique<Has_Simple_Printer>(conf_.has_output_file_path);
         }
     else
         {
@@ -548,19 +548,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
-            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat, conf_);
+            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat);
             d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, dump_ls_pvt_filename, d_type_of_rx, false, false, conf_);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, false, false);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
             // only one solver, customized by the user options
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat, conf_);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
             d_user_pvt_solver = d_internal_pvt_solver;
         }

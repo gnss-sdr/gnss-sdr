@@ -45,16 +45,16 @@
 
 
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
+    const Pvt_Conf &conf,
     const std::string &dump_filename,
     uint32_t type_of_rx,
     bool flag_dump_to_file,
-    bool flag_dump_to_mat,
-    Pvt_Conf conf) : d_dump_filename(dump_filename),
-                     d_rtk(rtk),
-                     d_conf(std::move(conf)),
-                     d_type_of_rx(type_of_rx),
-                     d_flag_dump_enabled(flag_dump_to_file),
-                     d_flag_dump_mat_enabled(flag_dump_to_mat)
+    bool flag_dump_to_mat) : d_dump_filename(dump_filename),
+                             d_rtk(rtk),
+                             d_conf(conf),
+                             d_type_of_rx(type_of_rx),
+                             d_flag_dump_enabled(flag_dump_to_file),
+                             d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
@@ -127,6 +127,10 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
         case 107:  // GPS L1 C/A + Galileo E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
+            break;
+        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+            d_rtklib_band_index["E6"] = 2;
+            d_rtklib_freq_index[2] = 3;
             break;
         }
     // auto empty_map = std::map < int, HAS_obs_corrections >> ();

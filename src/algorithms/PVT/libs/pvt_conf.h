@@ -46,6 +46,7 @@ public:
     std::string kml_output_path = std::string(".");
     std::string xml_output_path = std::string(".");
     std::string rtcm_output_file_path = std::string(".");
+    std::string has_output_file_path = std::string(".");
     std::string udp_addresses;
     std::string udp_eph_addresses;
     std::string log_source_timetag_file;
@@ -90,7 +91,7 @@ public:
     bool pre_2009_file = false;
     bool dump = false;
     bool dump_mat = true;
-    bool log_source_timetag;
+    bool log_source_timetag = false;
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;

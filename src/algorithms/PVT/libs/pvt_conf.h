@@ -46,6 +46,7 @@ public:
     std::string kml_output_path = std::string(".");
     std::string xml_output_path = std::string(".");
     std::string rtcm_output_file_path = std::string(".");
+    std::string has_output_file_path = std::string(".");
     std::string udp_addresses;
     std::string udp_eph_addresses;
     std::string log_source_timetag_file;

@@ -437,7 +437,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 109)) && (conf_.output_enabled));
     if (d_enable_has_messages)
         {
-            d_has_simple_printer = std::make_unique<Has_Simple_Printer>();
+            d_has_simple_printer = std::make_unique<Has_Simple_Printer>(conf_.has_output_file_path);
         }
     else
         {

@@ -861,6 +861,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.xml_output_path = configuration->property(role + ".xml_output_path", default_output_path);
     pvt_output_parameters.nmea_output_file_path = configuration->property(role + ".nmea_output_file_path", default_output_path);
     pvt_output_parameters.rtcm_output_file_path = configuration->property(role + ".rtcm_output_file_path", default_output_path);
+    pvt_output_parameters.has_output_file_path = configuration->property(role + ".has_output_file_path", default_output_path);
 
     // Read PVT MONITOR Configuration
     pvt_output_parameters.monitor_enabled = configuration->property(role + ".enable_monitor", false);

@@ -929,7 +929,7 @@ int32_t Rtcm::read_MT1005(const std::string& message, uint32_t& ref_id, double& 
     const uint32_t reserved_field_length = 6;
     uint32_t index = preamble_length + reserved_field_length;
 
-    uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    uint32_t read_message_length = Rtcm::bin_to_uint(message_bin.substr(index, 10));
     index += 10;
     if (read_message_length != 19)
         {
@@ -1601,7 +1601,7 @@ int32_t Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph) co
     const uint32_t reserved_field_length = 6;
     uint32_t index = preamble_length + reserved_field_length;
 
-    const uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    const uint32_t read_message_length = Rtcm::bin_to_uint(message_bin.substr(index, 10));
     index += 10;
 
     if (read_message_length != 61)
@@ -1621,7 +1621,7 @@ int32_t Rtcm::read_MT1019(const std::string& message, Gps_Ephemeris& gps_eph) co
         }
 
     // Fill Gps Ephemeris with message data content
-    gps_eph.PRN = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    gps_eph.PRN = Rtcm::bin_to_uint(message_bin.substr(index, 6));
     index += 6;
 
     gps_eph.WN = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
@@ -1835,7 +1835,7 @@ int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& gl
     const uint32_t reserved_field_length = 6;
     uint32_t index = preamble_length + reserved_field_length;
 
-    const uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    const uint32_t read_message_length = Rtcm::bin_to_uint(message_bin.substr(index, 10));
     index += 10;
 
     if (read_message_length != 45)  // 360 bits = 45 bytes
@@ -1855,7 +1855,7 @@ int32_t Rtcm::read_MT1020(const std::string& message, Glonass_Gnav_Ephemeris& gl
         }
 
     // Fill Gps Ephemeris with message data content
-    glonass_gnav_eph.i_satellite_slot_number = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    glonass_gnav_eph.i_satellite_slot_number = Rtcm::bin_to_uint(message_bin.substr(index, 6));
     index += 6;
 
     glonass_gnav_eph.i_satellite_freq_channel = static_cast<int32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 5)) - 7.0);
@@ -2138,7 +2138,7 @@ int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph
     const uint32_t reserved_field_length = 6;
     uint32_t index = preamble_length + reserved_field_length;
 
-    const uint32_t read_message_length = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 10)));
+    const uint32_t read_message_length = Rtcm::bin_to_uint(message_bin.substr(index, 10));
     index += 10;
 
     if (read_message_length != 62)
@@ -2158,7 +2158,7 @@ int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph
         }
 
     // Fill Galileo Ephemeris with message data content
-    gal_eph.PRN = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 6)));
+    gal_eph.PRN = Rtcm::bin_to_uint(message_bin.substr(index, 6));
     index += 6;
 
     gal_eph.WN = static_cast<double>(Rtcm::bin_to_uint(message_bin.substr(index, 12)));
@@ -2233,7 +2233,7 @@ int32_t Rtcm::read_MT1045(const std::string& message, Galileo_Ephemeris& gal_eph
     gal_eph.BGD_E1E5a = static_cast<double>(Rtcm::bin_to_int(message_bin.substr(index, 10)));
     index += 10;
 
-    gal_eph.E5a_HS = static_cast<uint32_t>(Rtcm::bin_to_uint(message_bin.substr(index, 2)));
+    gal_eph.E5a_HS = Rtcm::bin_to_uint(message_bin.substr(index, 2));
     index += 2;
 
     gal_eph.E5a_DVS = static_cast<bool>(Rtcm::bin_to_uint(message_bin.substr(index, 1)));

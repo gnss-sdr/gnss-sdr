@@ -49,7 +49,7 @@ TwoBitPackedFileSignalSource::TwoBitPackedFileSignalSource(
 std::tuple<size_t, bool> TwoBitPackedFileSignalSource::itemTypeToSize()
 {
     auto is_complex_t = false;
-    auto item_size = size_t(sizeof(char));  // default
+    auto item_size = sizeof(char);  // default
 
     if (item_type() == "byte")
         {

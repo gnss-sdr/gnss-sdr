@@ -113,7 +113,7 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
     d_TOW *= CNAV_TOW_LSB;
     ephemeris_record.tow = d_TOW;
 
-    alert_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_ALERT_FLAG));
+    alert_flag = read_navigation_bool(data_bits, CNAV_ALERT_FLAG);
     ephemeris_record.alert_flag = alert_flag;
 
     page_type = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
@@ -145,8 +145,8 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             ephemeris_record.omega = static_cast<double>(read_navigation_signed(data_bits, CNAV_OMEGA));
             ephemeris_record.omega *= CNAV_OMEGA_LSB;
 
-            ephemeris_record.integrity_status_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_INTEGRITY_FLAG));
-            ephemeris_record.l2c_phasing_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_L2_PHASING_FLAG));
+            ephemeris_record.integrity_status_flag = read_navigation_bool(data_bits, CNAV_INTEGRITY_FLAG);
+            ephemeris_record.l2c_phasing_flag = read_navigation_bool(data_bits, CNAV_L2_PHASING_FLAG);
 
             b_flag_ephemeris_1 = true;
             break;

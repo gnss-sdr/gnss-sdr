@@ -60,7 +60,7 @@ bool Galileo_Fnav_Message::CRC_test(const std::bitset<GALILEO_FNAV_DATA_FRAME_BI
     // using boost::dynamic_bitset.
     // ToDo: Use boost::dynamic_bitset for all the bitset operations in this class
 
-    boost::dynamic_bitset<uint8_t> frame_bits(std::string(bits.to_string()));
+    boost::dynamic_bitset<uint8_t> frame_bits(bits.to_string());
 
     std::vector<uint8_t> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));

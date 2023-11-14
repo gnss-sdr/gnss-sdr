@@ -171,9 +171,9 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
     _packet->gps_satellites = num_gps_sats;
     _packet->galileo_satellites = num_gal_sats;
     _packet->microseconds = static_cast<uint32_t>(elapsed_seconds.count() * 1.0e6);
-    _packet->latitude = static_cast<double>(pvt->get_latitude()) * (M_PI / 180.0);
-    _packet->longitude = static_cast<double>(pvt->get_longitude()) * (M_PI / 180.0);
-    _packet->height = static_cast<double>(pvt->get_height());
+    _packet->latitude = pvt->get_latitude() * (M_PI / 180.0);
+    _packet->longitude = pvt->get_longitude() * (M_PI / 180.0);
+    _packet->height = pvt->get_height();
     _packet->velocity[0] = static_cast<float>(pvt->get_rx_vel()[1]);
     _packet->velocity[1] = static_cast<float>(pvt->get_rx_vel()[0]);
     _packet->velocity[2] = static_cast<float>(-pvt->get_rx_vel()[2]);
@@ -196,11 +196,11 @@ void An_Packet_Printer::update_sdr_gnss_packet(sdr_gnss_packet_t* _packet, const
 void An_Packet_Printer::encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packet, an_packet_t* _packet) const
 {
     uint8_t offset = 0;
-    LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->nsvfix), offset, _packet->data, sizeof(sdr_gnss_packet->nsvfix));
+    LSB_bytes_to_array(&sdr_gnss_packet->nsvfix, offset, _packet->data, sizeof(sdr_gnss_packet->nsvfix));
     offset += sizeof(sdr_gnss_packet->nsvfix);
-    LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->gps_satellites), offset, _packet->data, sizeof(sdr_gnss_packet->gps_satellites));
+    LSB_bytes_to_array(&sdr_gnss_packet->gps_satellites, offset, _packet->data, sizeof(sdr_gnss_packet->gps_satellites));
     offset += sizeof(sdr_gnss_packet->gps_satellites);
-    LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->galileo_satellites), offset, _packet->data, sizeof(sdr_gnss_packet->galileo_satellites));
+    LSB_bytes_to_array(&sdr_gnss_packet->galileo_satellites, offset, _packet->data, sizeof(sdr_gnss_packet->galileo_satellites));
     offset += sizeof(sdr_gnss_packet->galileo_satellites);
     LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sdr_gnss_packet->microseconds), offset, _packet->data, sizeof(sdr_gnss_packet->microseconds));
     offset += sizeof(sdr_gnss_packet->microseconds);
@@ -218,9 +218,9 @@ void An_Packet_Printer::encode_sdr_gnss_packet(sdr_gnss_packet_t* sdr_gnss_packe
     offset += sizeof(sdr_gnss_packet->velocity[2]);
     for (auto& sat : sdr_gnss_packet->sats)
         {
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sat.prn), offset, _packet->data, sizeof(sat.prn));
+            LSB_bytes_to_array(&sat.prn, offset, _packet->data, sizeof(sat.prn));
             offset += sizeof(sat.prn);
-            LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sat.snr), offset, _packet->data, sizeof(sat.snr));
+            LSB_bytes_to_array(&sat.snr, offset, _packet->data, sizeof(sat.snr));
             offset += sizeof(sat.snr);
             LSB_bytes_to_array(reinterpret_cast<uint8_t*>(&sat.doppler), offset, _packet->data, sizeof(sat.doppler));
             offset += sizeof(sat.doppler);

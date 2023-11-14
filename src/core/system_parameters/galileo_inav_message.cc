@@ -54,7 +54,7 @@ bool Galileo_Inav_Message::CRC_test(const std::bitset<GALILEO_DATA_FRAME_BITS>& 
     // using boost::dynamic_bitset.
     // ToDo: Use boost::dynamic_bitset for all the bitset operations in this class
 
-    boost::dynamic_bitset<unsigned char> frame_bits(std::string(bits.to_string()));
+    boost::dynamic_bitset<unsigned char> frame_bits(bits.to_string());
 
     std::vector<unsigned char> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
@@ -162,7 +162,7 @@ int64_t Galileo_Inav_Message::read_navigation_signed(const std::bitset<GALILEO_D
 bool Galileo_Inav_Message::read_navigation_bool(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value;
-    if (static_cast<int>(static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first])) == 1)
+    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first]) == 1)
         {
             value = true;
         }
@@ -989,15 +989,15 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             ai2_5 = ai2_5 * AI2_5_LSB;
             DLOG(INFO) << "ai2_5= " << ai2_5;
             // Ionospheric disturbance flag
-            Region1_flag_5 = static_cast<bool>(read_navigation_bool(data_jk_bits, REGION1_5_BIT));
+            Region1_flag_5 = read_navigation_bool(data_jk_bits, REGION1_5_BIT);
             DLOG(INFO) << "Region1_flag_5= " << Region1_flag_5;
-            Region2_flag_5 = static_cast<bool>(read_navigation_bool(data_jk_bits, REGION2_5_BIT));
+            Region2_flag_5 = read_navigation_bool(data_jk_bits, REGION2_5_BIT);
             DLOG(INFO) << "Region2_flag_5= " << Region2_flag_5;
-            Region3_flag_5 = static_cast<bool>(read_navigation_bool(data_jk_bits, REGION3_5_BIT));
+            Region3_flag_5 = read_navigation_bool(data_jk_bits, REGION3_5_BIT);
             DLOG(INFO) << "Region3_flag_5= " << Region3_flag_5;
-            Region4_flag_5 = static_cast<bool>(read_navigation_bool(data_jk_bits, REGION4_5_BIT));
+            Region4_flag_5 = read_navigation_bool(data_jk_bits, REGION4_5_BIT);
             DLOG(INFO) << "Region4_flag_5= " << Region4_flag_5;
-            Region5_flag_5 = static_cast<bool>(read_navigation_bool(data_jk_bits, REGION5_5_BIT));
+            Region5_flag_5 = read_navigation_bool(data_jk_bits, REGION5_5_BIT);
             DLOG(INFO) << "Region5_flag_5= " << Region5_flag_5;
             BGD_E1E5a_5 = static_cast<double>(read_navigation_signed(data_jk_bits, BGD_E1_E5A_5_BIT));
             BGD_E1E5a_5 = BGD_E1E5a_5 * BGD_E1_E5A_5_LSB;

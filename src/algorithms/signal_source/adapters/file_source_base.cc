@@ -383,7 +383,7 @@ size_t FileSourceBase::samplesToSkip() const
 
 size_t FileSourceBase::computeSamplesInFile() const
 {
-    auto n_samples = static_cast<size_t>(samples());
+    auto n_samples = samples();
 
     // this could throw, but the existence of the file has been proven before we get here.
     const auto size = fs::file_size(filename());

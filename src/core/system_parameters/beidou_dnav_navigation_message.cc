@@ -492,7 +492,7 @@ int32_t Beidou_Dnav_Navigation_Message::d2_subframe_decoder(std::string const& s
                     d_eccentricity_msb = static_cast<double>(read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     d_eccentricity_msb_bits = (read_navigation_unsigned(subframe_bits, D2_E_MSB));
                     // Adjust for lsb in next page (shift number of lsb to the left)
-                    d_eccentricity_msb = static_cast<uint64_t>((static_cast<uint64_t>(d_eccentricity_msb) << 22U));
+                    d_eccentricity_msb = static_cast<uint64_t>(d_eccentricity_msb) << 22U;
                     d_eccentricity_msb_bits = d_eccentricity_msb_bits << 22U;
 
                     // Set system flags for message reception

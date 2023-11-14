@@ -258,7 +258,7 @@ void pcps_acquisition::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(d_acq_parameters.doppler_max) - static_cast<int32_t>(-d_acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
+    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_acq_parameters.doppler_max) / static_cast<double>(d_doppler_step)));
 
     // Create the carrier Doppler wipeoff signals
     if (d_grid_doppler_wipeoffs.empty())

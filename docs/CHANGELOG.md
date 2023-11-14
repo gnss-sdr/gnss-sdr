@@ -65,6 +65,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   signal).
 - The estimated CN0 value is now printed in the terminal when navigation data is
   succesfully decoded.
+- Fixed GPS navigation message satellite validation.
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 

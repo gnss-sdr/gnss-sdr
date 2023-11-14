@@ -1584,11 +1584,11 @@ void time2epoch(gtime_t t, double *ep)
                     break;
                 }
         }
-    ep[0] = 1970 + static_cast<int>(days / 1461) * 4 + static_cast<int>(mon / 12);
+    ep[0] = 1970 + days / 1461 * 4 + mon / 12;
     ep[1] = mon % 12 + 1;
     ep[2] = day + 1;
-    ep[3] = static_cast<int>(sec / 3600);
-    ep[4] = static_cast<int>(sec % 3600 / 60);
+    ep[3] = sec / 3600;
+    ep[4] = sec % 3600 / 60;
     ep[5] = sec % 60 + t.sec;
 }
 

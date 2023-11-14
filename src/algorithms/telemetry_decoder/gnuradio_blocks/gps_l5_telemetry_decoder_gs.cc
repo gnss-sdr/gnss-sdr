@@ -264,7 +264,7 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                     std::cout << TEXT_MAGENTA << "New GPS L5 CNAV message received in channel " << d_channel
                               << ": ephemeris from satellite " << d_satellite
                               << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz
-                              << std::setprecision(default_precision) << " dB-Hz" << std::endl;
+                              << std::setprecision(default_precision) << " dB-Hz" << TEXT_RESET << std::endl;
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {

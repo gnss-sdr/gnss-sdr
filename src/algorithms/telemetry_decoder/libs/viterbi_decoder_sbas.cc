@@ -423,9 +423,10 @@ int Viterbi_Decoder_Sbas::parity_counter(int symbol, int length)
 
 
 // prev helper class
-Viterbi_Decoder_Sbas::Prev::Prev(int states, int t) : num_states(states),
-                                                      t(t),
-                                                      refcount(1)
+Viterbi_Decoder_Sbas::Prev::Prev(int states,
+    int tt) : num_states(states),
+              t(tt),
+              refcount(1)
 {
     state = std::vector<int>(num_states);
     v_bit = std::vector<int>(num_states);

@@ -24,7 +24,7 @@
 
 uint32_t gps_l2c_m_shift(uint32_t x)
 {
-    return static_cast<uint32_t>((x >> 1U) xor ((x & 1U) * 0445112474U));
+    return ((x >> 1U) xor ((x & 1U) * 0445112474U));
 }
 
 

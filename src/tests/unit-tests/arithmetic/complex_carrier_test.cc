@@ -32,7 +32,7 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
     auto* output = new std::complex<float>[FLAGS_size_carrier_test];
     const double _f = 2000.0;
     const double _fs = 2000000.0;
-    const auto phase_step = static_cast<double>((TWO_PI * _f) / _fs);
+    const auto phase_step = (TWO_PI * _f) / _fs;
     double phase = 0.0;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -72,7 +72,7 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
     std::vector<std::complex<float>> output(FLAGS_size_carrier_test);
     const double _f = 2000.0;
     const double _fs = 2000000.0;
-    const auto phase_step = static_cast<double>((TWO_PI * _f) / _fs);
+    const auto phase_step = (TWO_PI * _f) / _fs;
     double phase = 0.0;
 
     std::chrono::time_point<std::chrono::system_clock> start, end;

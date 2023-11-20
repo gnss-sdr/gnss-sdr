@@ -11309,7 +11309,6 @@ void Rinex_Printer::log_rinex_obs(std::fstream& out, const Galileo_Ephemeris& ga
          it++)
         {
             lineObs.clear();
-            const auto satsys_gal = satelliteSystem.find("Galileo");
             if (satsys_gal != satelliteSystem.cend())
                 {
                     lineObs += satsys_gal->second;

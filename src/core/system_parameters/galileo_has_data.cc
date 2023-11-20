@@ -602,10 +602,10 @@ float Galileo_HAS_data::get_code_bias_m(const std::string& signal, int PRN) cons
     if (!code_bias.empty() && !targeted_system.empty())
         {
             std::vector<std::string> systems = this->get_systems_string();
-            auto Nsys = systems.size();
+            auto Nsys_ = systems.size();
             auto nsys_index = std::distance(systems.cbegin(), std::find(systems.cbegin(), systems.cend(), targeted_system));
 
-            if (static_cast<size_t>(nsys_index) < Nsys)
+            if (static_cast<size_t>(nsys_index) < Nsys_)
                 {
                     std::vector<std::string> signals = get_signals_in_mask(static_cast<uint8_t>(nsys_index));
                     auto sig_index = std::distance(signals.cbegin(), std::find(signals.cbegin(), signals.cend(), signal));
@@ -678,10 +678,10 @@ float Galileo_HAS_data::get_phase_bias_cycle(const std::string& signal, int PRN)
     if (!phase_bias.empty() && !targeted_system.empty())
         {
             std::vector<std::string> systems = this->get_systems_string();
-            auto Nsys = systems.size();
+            auto Nsys_ = systems.size();
             auto nsys_index = std::distance(systems.cbegin(), std::find(systems.cbegin(), systems.cend(), targeted_system));
 
-            if (static_cast<size_t>(nsys_index) < Nsys)
+            if (static_cast<size_t>(nsys_index) < Nsys_)
                 {
                     std::vector<std::string> signals = get_signals_in_mask(static_cast<uint8_t>(nsys_index));
                     auto sig_index = std::distance(signals.cbegin(), std::find(signals.cbegin(), signals.cend(), signal));

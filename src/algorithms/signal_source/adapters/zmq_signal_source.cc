@@ -43,7 +43,7 @@ ZmqSignalSource::ZmqSignalSource(const ConfigurationInterface* configuration,
         {
             LOG(INFO) << "Connecting to ZMQ pub at " << endpoint;
             // work around gnuradio interface const-deficiency
-            d_source_block = gr::zeromq::sub_source::make(d_item_size, vlen, endpoint.data(), timeout_ms, pass_tags, hwm);
+            d_source_block = gr::zeromq::sub_source::make(d_item_size, vlen, const_cast<char*>(endpoint.data()), timeout_ms, pass_tags, hwm);
 
             // work around another bug. GNU Radio passes tags through the ZMQ block
             // unconditionally if pass_tags is true, but that flag controls protocol more

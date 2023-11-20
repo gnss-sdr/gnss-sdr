@@ -31,6 +31,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   - `geohash`, an
     [encoded geographic location](https://en.wikipedia.org/wiki/Geohash).
 
+### Improvements in Maintainability
+
+- Removed useless casts and shadowed variables, improving source code
+  readability.
+
 ### Improvements in Portability:
 
 - Updated local `cpu_features` library to v0.9.0.

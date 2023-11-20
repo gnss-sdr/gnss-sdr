@@ -347,9 +347,9 @@ TEST_F(DataTypeAdapter, IshortToComplexValidationOfResults)
         {
             while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(gr_complex)))
                 {
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.real()));
+                    EXPECT_EQ(input_data_shorts.at(i), iSample.real());
                     i++;
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.imag()));
+                    EXPECT_EQ(input_data_shorts.at(i), iSample.imag());
                     i++;
                 }
         }
@@ -373,9 +373,9 @@ TEST_F(DataTypeAdapter, IshortToCshortValidationOfResults)
         {
             while (ifs.read(reinterpret_cast<char*>(&iSample), sizeof(lv_16sc_t)))
                 {
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.real()));
+                    EXPECT_EQ(input_data_shorts.at(i), iSample.real());
                     i++;
-                    EXPECT_EQ(input_data_shorts.at(i), static_cast<int16_t>(iSample.imag()));
+                    EXPECT_EQ(input_data_shorts.at(i), iSample.imag());
                     i++;
                 }
         }

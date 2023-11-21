@@ -75,8 +75,6 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
                             d_sample_counter(0ULL),
                             d_preamble_index(0ULL),
                             d_last_valid_preamble(0),
-                            d_bits_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
-                            d_samples_per_preamble(GPS_CA_PREAMBLE_LENGTH_BITS),
                             d_preamble_period_symbols(GPS_SUBFRAME_BITS),
                             d_CRC_error_counter(0),
                             d_channel(0),
@@ -118,7 +116,7 @@ gps_l1_ca_telemetry_decoder_gs::gps_l1_ca_telemetry_decoder_gs(
     // preamble bits to sampled symbols
     d_max_symbols_without_valid_frame = d_required_symbols * 20;  // rise alarm 120 segs without valid tlm
     int32_t n = 0;
-    for (int32_t i = 0; i < d_bits_per_preamble; i++)
+    for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
         {
             if (GPS_CA_PREAMBLE[i] == '1')
                 {
@@ -493,7 +491,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                     }
                             }
                     }
-                if (abs(corr_value) >= d_samples_per_preamble)
+                if (abs(corr_value) >= GPS_CA_PREAMBLE_LENGTH_BITS)
                     {
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp
                         if (corr_value < 0)

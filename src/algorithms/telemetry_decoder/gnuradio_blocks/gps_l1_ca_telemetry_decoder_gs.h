@@ -92,8 +92,6 @@ private:
     uint64_t d_preamble_index;
     uint64_t d_last_valid_preamble;
 
-    int32_t d_bits_per_preamble;
-    int32_t d_samples_per_preamble;
     int32_t d_preamble_period_symbols;
     int32_t d_CRC_error_counter;
     int32_t d_channel;

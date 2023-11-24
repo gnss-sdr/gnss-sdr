@@ -253,9 +253,9 @@ endif()
 # NOTE: This is not defined on Windows systems.
 ########################################################################
 if(NOT WIN32)
-  set(CMAKE_CXX_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+  set(CMAKE_CXX_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer" CACHE STRING
     "Flags used by the C++ compiler during Address Sanitized builds." FORCE)
-  set(CMAKE_C_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fno-omit-frame-pointer" CACHE STRING
+  set(CMAKE_C_FLAGS_ASAN "-Wall -Wextra -g -O2 -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer" CACHE STRING
     "Flags used by the C compiler during Address Sanitized builds." FORCE)
   mark_as_advanced(
     CMAKE_CXX_FLAGS_ASAN

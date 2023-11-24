@@ -71,6 +71,11 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The estimated CN0 value is now printed in the terminal when navigation data is
   succesfully decoded.
 - Fixed GPS navigation message satellite validation.
+- Latitude and longitude are now reported in the terminal with six decimal
+  places (the sixth decimal place worths up to 0.11 m), instead of the
+  overkilling nine (the ninth decimal place worths up to 110 microns).
+  Similarly, height in meters is now reported with two decimal places instead of
+  three, and velocity in m/s also with two decimal places instead of three.
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 

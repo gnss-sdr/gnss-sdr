@@ -464,6 +464,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // check if there is a problem with the telemetry of the current satellite
     if (d_stat < 2 && d_sent_tlm_failed_msg == false)
         {
+            gr::thread::scoped_lock lock(d_setlock);
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
                 {
                     const int message = 1;  // bad telemetry
@@ -551,6 +552,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                                 if (d_CRC_error_counter > 2)
                                     {
                                         DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
+                                        gr::thread::scoped_lock lock(d_setlock);
                                         d_flag_frame_sync = false;
                                         d_stat = 0;
                                         d_TOW_at_current_symbol_ms = 0;

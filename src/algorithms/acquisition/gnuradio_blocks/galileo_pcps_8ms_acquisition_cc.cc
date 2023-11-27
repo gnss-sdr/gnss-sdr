@@ -381,7 +381,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                         auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();
                         current_synchro_data = *d_gnss_synchro;
-                        *out[0] = current_synchro_data;
+                        *out[0] = std::move(current_synchro_data);
                         noutput_items = 1;  // Number of Gnss_Synchro objects produced
                     }
 

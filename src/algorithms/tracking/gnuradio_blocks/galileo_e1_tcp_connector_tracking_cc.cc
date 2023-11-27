@@ -291,7 +291,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     current_synchro_data.fs = d_fs_in;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
@@ -438,7 +438,7 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
     current_synchro_data.Signal[2] = '\0';
 
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
 
     if (d_dump)
         {

@@ -232,7 +232,7 @@ void read_results(std::vector<volk_gnsssdr_test_results_t> *results, std::string
 
                     if (single_kernel_result.size() == 3)
                         {
-                            volk_gnsssdr_test_results_t kernel_result;
+                            volk_gnsssdr_test_results_t kernel_result{};
                             kernel_result.name = std::string(single_kernel_result[0]);
                             kernel_result.config_name = std::string(single_kernel_result[0]);
                             kernel_result.best_arch_u = std::string(single_kernel_result[1]);

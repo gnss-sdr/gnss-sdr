@@ -33,6 +33,7 @@
 #include <exception>        // for std::exception
 #include <iomanip>          // for std::setprecision
 #include <iostream>         // for std::cout
+#include <utility>          // for std::move
 
 gps_l5_telemetry_decoder_gs_sptr
 gps_l5_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
@@ -383,8 +384,8 @@ int gps_l5_telemetry_decoder_gs::general_work(int noutput_items __attribute__((u
                         }
                 }
 
-            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-            out[0] = current_synchro_data;
+            // 3. Make the output (move the object contents to the GNURadio reserved memory)
+            out[0] = std::move(current_synchro_data);
             return 1;
         }
     return 0;

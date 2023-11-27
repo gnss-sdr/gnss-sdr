@@ -21,6 +21,7 @@
 #include "rtklib_solver.h"
 #include <fstream>
 #include <string>
+#include <utility>
 
 
 class RinexPrinterTest : public ::testing::Test
@@ -296,9 +297,9 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 106, false, false);
-    pvt_solution->galileo_ephemeris_map[1] = eph_gal;
+    pvt_solution->galileo_ephemeris_map[1] = std::move(eph_gal);
 
-    pvt_solution->gps_ephemeris_map[1] = eph_gps;
+    pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
@@ -603,8 +604,8 @@ TEST_F(RinexPrinterTest, GpsObsLogDualBand)
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 7, false, false);
-    pvt_solution->gps_ephemeris_map[1] = eph;
-    pvt_solution->gps_cnav_ephemeris_map[1] = eph_cnav;
+    pvt_solution->gps_ephemeris_map[1] = std::move(eph);
+    pvt_solution->gps_cnav_ephemeris_map[1] = std::move(eph_cnav);
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();

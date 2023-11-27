@@ -36,6 +36,7 @@
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr
+#include <utility>          // for std::move
 #include <vector>
 
 #ifdef COMPILER_HAS_ROTL
@@ -659,8 +660,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         }
                 }
 
-            // 3. Make the output (copy the object contents to the GNU Radio reserved memory)
-            *out[0] = current_symbol;
+            // 3. Make the output (move the object contents to the GNU Radio reserved memory)
+            *out[0] = std::move(current_symbol);
 
             return 1;
         }

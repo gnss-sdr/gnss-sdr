@@ -2015,7 +2015,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
             current_synchro_data.Tracking_sample_counter = d_sample_counter_next;  // d_sample_counter;
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
-            *out[0] = current_synchro_data;
+            *out[0] = std::move(current_synchro_data);
             return 1;
         }
     return 0;

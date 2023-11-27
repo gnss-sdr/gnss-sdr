@@ -578,7 +578,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_cycles * TWO_PI;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
                     return 1;
                 }
@@ -813,7 +813,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_sc::general_work(int noutput_items __at
             current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(d_correlation_length_samples);
         }
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
     if (d_dump)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

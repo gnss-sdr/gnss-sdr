@@ -2066,7 +2066,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             current_synchro_data.Tracking_sample_counter = this->nitems_read(0);
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
-            *out[0] = current_synchro_data;
 
             // generate new tag associated with gnss-synchro object
 
@@ -2088,6 +2087,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     d_timetag_waiting = false;
                 }
 
+            *out[0] = std::move(current_synchro_data);
             return 1;
         }
     return 0;

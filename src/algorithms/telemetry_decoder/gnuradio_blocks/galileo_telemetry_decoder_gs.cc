@@ -1399,8 +1399,8 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             LOG(WARNING) << "Exception writing navigation data dump file " << e.what();
                         }
                 }
-            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-            *out[0] = current_symbol;
+            // 3. Make the output (move the object contents to the GNURadio reserved memory)
+            *out[0] = std::move(current_symbol);
             return 1;
         }
     return 0;

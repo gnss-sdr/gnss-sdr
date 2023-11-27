@@ -102,7 +102,7 @@ public:
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
         channel_fsm_ = channel_fsm;
-        acquisition_->set_channel_fsm(channel_fsm);
+        acquisition_->set_channel_fsm(channel_fsm_);
     }
 
     /*!

@@ -871,6 +871,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool pcps_acquisition::start()
 {
+    gr::thread::scoped_lock lk(d_setlock);
     d_sample_counter = 0ULL;
     calculate_threshold();
     return true;
@@ -1017,7 +1018,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         {
                             Gnss_Synchro current_synchro_data = d_monitor_queue.front();
                             d_monitor_queue.pop();
-                            *out[i] = current_synchro_data;
+                            *out[i] = std::move(current_synchro_data);
                         }
                     return num_gnss_synchro_objects;
                 }

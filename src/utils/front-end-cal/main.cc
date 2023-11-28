@@ -596,10 +596,10 @@ int main(int argc, char** argv)
     for (auto& it : f_if_estimation_Hz_map)
         {
             mean_f_if_Hz += it.second;
-            const auto est_Hz = f_fs_estimation_Hz_map.find(it.first);
-            if (est_Hz != f_fs_estimation_Hz_map.cend())
+            const auto est_fs = f_fs_estimation_Hz_map.find(it.first);
+            if (est_fs != f_fs_estimation_Hz_map.cend())
                 {
-                    mean_fs_Hz += est_Hz->second;
+                    mean_fs_Hz += est_fs->second;
                 }
             const auto est_ppm = f_ppm_estimation_Hz_map.find(it.first);
             if (est_ppm != f_ppm_estimation_Hz_map.cend())

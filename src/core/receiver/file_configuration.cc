@@ -84,7 +84,7 @@ bool FileConfiguration::property(std::string property_name, bool default_value) 
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -139,7 +139,7 @@ uint16_t FileConfiguration::property(std::string property_name, uint16_t default
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -150,7 +150,7 @@ int16_t FileConfiguration::property(std::string property_name, int16_t default_v
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -172,7 +172,7 @@ double FileConfiguration::property(std::string property_name, double default_val
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 

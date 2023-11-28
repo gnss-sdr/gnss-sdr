@@ -443,6 +443,100 @@ void gps_l1_ca_telemetry_decoder_gs::check_tlm_separation()
 }
 
 
+void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &current_gs)
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    switch (d_stat)
+        {
+        case 0:  // no preamble information
+            {
+                // correlate with preamble
+                int32_t corr_value = 0;
+                if (d_symbol_history.size() >= d_required_symbols)
+                    {
+                        // ******* preamble correlation ********
+                        for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                            {
+                                if (d_symbol_history[i] < 0.0)  // symbols clipping
+                                    {
+                                        corr_value -= d_preamble_samples[i];
+                                    }
+                                else
+                                    {
+                                        corr_value += d_preamble_samples[i];
+                                    }
+                            }
+                    }
+                if (abs(corr_value) >= d_samples_per_preamble)
+                    {
+                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+                        if (corr_value < 0)
+                            {
+                                d_flag_PLL_180_deg_phase_locked = true;
+                            }
+                        else
+                            {
+                                d_flag_PLL_180_deg_phase_locked = false;
+                            }
+                        DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
+                        d_prev_GPS_frame_4bytes = 0;
+                        if (decode_subframe(current_gs.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
+                            {
+                                d_CRC_error_counter = 0;
+                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
+                                d_last_valid_preamble = d_sample_counter;
+                                if (!d_flag_frame_sync)
+                                    {
+                                        d_flag_frame_sync = true;
+                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                    }
+                                d_stat = 1;  // preamble acquired
+                            }
+                    }
+                d_flag_TOW_set = false;
+                break;
+            }
+        case 1:  // preamble acquired
+            {
+                if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
+                    {
+                        DLOG(INFO) << "Preamble received for SAT " << this->d_satellite << "d_sample_counter=" << d_sample_counter << "\n";
+                        // call the decoder
+                        // 0. fetch the symbols into an array
+                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+
+                        if (decode_subframe(current_gs.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
+                            {
+                                d_CRC_error_counter = 0;
+                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
+                                d_last_valid_preamble = d_sample_counter;
+                                if (!d_flag_frame_sync)
+                                    {
+                                        d_flag_frame_sync = true;
+                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                    }
+                            }
+                        else
+                            {
+                                d_CRC_error_counter++;
+                                if (d_CRC_error_counter > 2)
+                                    {
+                                        DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
+                                        d_flag_frame_sync = false;
+                                        d_stat = 0;
+                                        d_TOW_at_current_symbol_ms = 0;
+                                        d_TOW_at_Preamble_ms = 0;
+                                        d_CRC_error_counter = 0;
+                                        d_flag_TOW_set = false;
+                                    }
+                            }
+                    }
+                break;
+            }
+        }
+}
+
+
 int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -480,98 +574,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     // check if there is a problem with the telemetry of the current satellite
     check_tlm_separation();
 
-    // ******* frame sync ******************
-    switch (d_stat)
-        {
-        case 0:  // no preamble information
-            {
-                // correlate with preamble
-                int32_t corr_value = 0;
-                if (d_symbol_history.size() >= d_required_symbols)
-                    {
-                        // ******* preamble correlation ********
-                        for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-                            {
-                                if (d_symbol_history[i] < 0.0)  // symbols clipping
-                                    {
-                                        corr_value -= d_preamble_samples[i];
-                                    }
-                                else
-                                    {
-                                        corr_value += d_preamble_samples[i];
-                                    }
-                            }
-                    }
-                if (abs(corr_value) >= d_samples_per_preamble)
-                    {
-                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                        if (corr_value < 0)
-                            {
-                                d_flag_PLL_180_deg_phase_locked = true;
-                            }
-                        else
-                            {
-                                d_flag_PLL_180_deg_phase_locked = false;
-                            }
-                        DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
-                        d_prev_GPS_frame_4bytes = 0;
-                        if (decode_subframe(current_symbol.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
-                            {
-                                d_CRC_error_counter = 0;
-                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_last_valid_preamble = d_sample_counter;
-                                if (!d_flag_frame_sync)
-                                    {
-                                        d_flag_frame_sync = true;
-                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
-                                    }
-                                d_stat = 1;  // preamble acquired
-                            }
-                    }
-                d_flag_TOW_set = false;
-                break;
-            }
-        case 1:  // preamble acquired
-            {
-                if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
-                    {
-                        DLOG(INFO) << "Preamble received for SAT " << this->d_satellite << "d_sample_counter=" << d_sample_counter << "\n";
-                        // call the decoder
-                        // 0. fetch the symbols into an array
-                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-
-                        if (decode_subframe(current_symbol.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
-                            {
-                                d_CRC_error_counter = 0;
-                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_last_valid_preamble = d_sample_counter;
-                                if (!d_flag_frame_sync)
-                                    {
-                                        d_flag_frame_sync = true;
-                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
-                                    }
-                            }
-                        else
-                            {
-                                d_CRC_error_counter++;
-                                if (d_CRC_error_counter > 2)
-                                    {
-                                        DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
-                                        gr::thread::scoped_lock lock(d_setlock);
-                                        d_flag_frame_sync = false;
-                                        d_stat = 0;
-                                        d_TOW_at_current_symbol_ms = 0;
-                                        d_TOW_at_Preamble_ms = 0;
-                                        d_CRC_error_counter = 0;
-                                        d_flag_TOW_set = false;
-                                    }
-                            }
-                    }
-                break;
-            }
-        }
+    // frame sync
+    frame_synchronization(current_symbol);
 
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)

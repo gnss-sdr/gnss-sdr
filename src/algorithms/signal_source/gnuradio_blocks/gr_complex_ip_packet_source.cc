@@ -260,6 +260,7 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
 
     // eth frame parameters
     // **** UDP RAW PACKET DECODER ****
+    gr::thread::scoped_lock guard(d_setlock);
     if ((packet[12] == 0x08) & (packet[13] == 0x00))  // IP FRAME
         {
             // retrieve the position of the ip header
@@ -296,7 +297,6 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                     const u_char *udp_payload = (reinterpret_cast<const u_char *>(uh) + sizeof(gr_udp_header));
                     if (fifo_items <= (FIFO_SIZE - payload_length_bytes))
                         {
-                            gr::thread::scoped_lock guard(d_setlock);
                             int aligned_write_items = FIFO_SIZE - fifo_write_ptr;
                             if (aligned_write_items >= payload_length_bytes)
                                 {

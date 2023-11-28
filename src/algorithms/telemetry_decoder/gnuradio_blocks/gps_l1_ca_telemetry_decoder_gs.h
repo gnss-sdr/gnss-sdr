@@ -74,6 +74,7 @@ private:
     gps_l1_ca_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
     void check_tlm_separation();
+    void frame_synchronization(const Gnss_Synchro &current_gs);
     bool gps_word_parityCheck(uint32_t gpsword);
     bool decode_subframe(double cn0, bool flag_invert);
 

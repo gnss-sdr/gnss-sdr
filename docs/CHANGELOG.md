@@ -14,6 +14,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Efficiency:
+
+- Fixed some performance inefficiencies detected by Coverity Scan.
+
 ### Improvements in Interoperability:
 
 - Added a new PVT configuration boolean flag (`flag_geohash_log_out`) that
@@ -41,6 +45,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Updated local `cpu_features` library to v0.9.0.
 - `volk_gnsssdr`: fix syntax for Python 3.12 without breaking backward
   compatibility with Python 2.7.
+- Fixed linking against latest GNU Radio version.
 
 ### Improvements in Repeatability:
 
@@ -53,6 +58,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
   `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
   `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+
+### Improvements in Scalability:
+
+- Fixed some potential data race conditions detected by Coverity Scan.
 
 ### Improvements in Usability:
 

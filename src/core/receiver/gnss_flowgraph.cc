@@ -491,6 +491,7 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
         }
 
     // Activate acquisition in enabled channels
+    std::lock_guard<std::mutex> lock(signal_list_mutex_);
     for (int i = 0; i < channels_count_; i++)
         {
             LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();

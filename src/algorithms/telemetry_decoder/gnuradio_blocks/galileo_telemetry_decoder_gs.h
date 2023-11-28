@@ -80,6 +80,7 @@ private:
 
     galileo_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf, int frame_type);
 
+    void check_tlm_separation();
     void msg_handler_read_galileo_tow_map(const pmt::pmt_t &msg);
     void deinterleaver(int32_t rows, int32_t cols, const float *in, float *out);
     void decode_INAV_word(float *page_part_symbols, int32_t frame_length, double cn0);

@@ -647,7 +647,7 @@ private:
         inline void join(const std::shared_ptr<RtcmListener>& participant)
         {
             participants_.insert(participant);
-            for (auto msg : recent_msgs_)
+            for (const auto& msg : recent_msgs_)
                 {
                     participant->deliver(msg);
                 }

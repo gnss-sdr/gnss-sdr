@@ -768,7 +768,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             n_valid++;
                         }
-                    epoch_data[n] = interpolated_gnss_synchro;
+                    epoch_data[n] = std::move(interpolated_gnss_synchro);
                 }
             if (d_T_rx_TOW_set)
                 {

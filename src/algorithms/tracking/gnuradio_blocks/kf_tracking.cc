@@ -2075,7 +2075,7 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
-            *out[0] = current_synchro_data;
+            *out[0] = std::move(current_synchro_data);
             return 1;
         }
     return 0;

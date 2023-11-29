@@ -104,8 +104,8 @@ void CubatureFilter::predict_sequential(const arma::vec& x_post, const arma::mat
     P_x_pred = P_x_pred / static_cast<float>(np) - x_pred * x_pred.t() + noise_covariance;
 
     // Store predicted mean and error covariance
-    x_pred_out = x_pred;
-    P_x_pred_out = P_x_pred;
+    x_pred_out = std::move(x_pred);
+    P_x_pred_out = std::move(P_x_pred);
 }
 
 
@@ -270,8 +270,8 @@ void UnscentedFilter::predict_sequential(const arma::vec& x_post, const arma::ma
     P_x_pred = P_x_pred + noise_covariance;
 
     // Store predicted mean and error covariance
-    x_pred_out = x_pred;
-    P_x_pred_out = P_x_pred;
+    x_pred_out = std::move(x_pred);
+    P_x_pred_out = std::move(P_x_pred);
 }
 
 

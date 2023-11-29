@@ -95,7 +95,7 @@ int64_t FileConfiguration::property(std::string property_name, int64_t default_v
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -106,7 +106,7 @@ uint64_t FileConfiguration::property(std::string property_name, uint64_t default
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -117,7 +117,7 @@ int FileConfiguration::property(std::string property_name, int default_value) co
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -128,7 +128,7 @@ unsigned int FileConfiguration::property(std::string property_name, unsigned int
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -161,7 +161,7 @@ float FileConfiguration::property(std::string property_name, float default_value
             return overrided_->property(property_name, default_value);
         }
     const std::string empty;
-    return converter_->convert(property(property_name, empty), default_value);
+    return converter_->convert(property(std::move(property_name), empty), default_value);
 }
 
 
@@ -178,7 +178,7 @@ double FileConfiguration::property(std::string property_name, double default_val
 
 void FileConfiguration::set_property(std::string property_name, std::string value)
 {
-    overrided_->set_property(property_name, value);
+    overrided_->set_property(std::move(property_name), std::move(value));
 }
 
 

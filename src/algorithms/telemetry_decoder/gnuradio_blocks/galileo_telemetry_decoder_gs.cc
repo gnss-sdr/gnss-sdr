@@ -393,7 +393,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     if (page_part_bits[0] == 1)
         {
             // DECODE COMPLETE WORD (even + odd) and TEST CRC
-            d_inav_nav.split_page(page_String, d_flag_even_word_arrived);
+            d_inav_nav.split_page(std::move(page_String), d_flag_even_word_arrived);
             if (d_inav_nav.get_flag_CRC_test() == true)
                 {
                     if (d_band == '1')
@@ -421,7 +421,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     else
         {
             // STORE HALF WORD (even page)
-            d_inav_nav.split_page(page_String, d_flag_even_word_arrived);
+            d_inav_nav.split_page(std::move(page_String), d_flag_even_word_arrived);
             d_flag_even_word_arrived = 1;
         }
 

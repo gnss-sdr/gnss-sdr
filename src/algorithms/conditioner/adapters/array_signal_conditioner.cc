@@ -73,7 +73,7 @@ void ArraySignalConditioner::disconnect(gr::top_block_sptr top_block)
 
     // data_type_adapt_->disconnect(top_block);
     in_filt_->disconnect(top_block);
-    res_->disconnect(top_block);
+    res_->disconnect(std::move(top_block));
 
     connected_ = false;
 }

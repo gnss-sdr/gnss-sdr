@@ -36,6 +36,7 @@
 #include "notch_filter_lite.h"
 #include <gnuradio/blocks/null_sink.h>
 #include <gtest/gtest.h>
+#include <utility>
 
 
 DEFINE_int32(notch_filter_lite_test_nsamples, 1000000, "Number of samples to filter in the tests (max: 2147483647)");
@@ -178,7 +179,7 @@ TEST_F(NotchFilterLiteTest, ConnectAndRunGrcomplex)
     config2->set_property("Test_Source.sampling_frequency", "4000000");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
-    config2->set_property("Test_Source.filename", filename);
+    config2->set_property("Test_Source.filename", std::move(filename));
     config2->set_property("Test_Source.item_type", "gr_complex");
     config2->set_property("Test_Source.repeat", "true");
 

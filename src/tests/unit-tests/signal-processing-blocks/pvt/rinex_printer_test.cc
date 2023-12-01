@@ -149,12 +149,12 @@ TEST_F(RinexPrinterTest, GalileoObsHeader)
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 4, false, false);
     auto eph = Galileo_Ephemeris();
     eph.PRN = 1;
-    pvt_solution->galileo_ephemeris_map[1] = eph;
+    pvt_solution->galileo_ephemeris_map[1] = std::move(eph);
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
     gs.PRN = 1;
-    gnss_observables_map[1] = gs;
+    gnss_observables_map[1] = std::move(gs);
 
     auto rp = std::make_shared<Rinex_Printer>();
 
@@ -237,12 +237,12 @@ TEST_F(RinexPrinterTest, GlonassObsHeader)
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 28, false, false);
     auto eph = Glonass_Gnav_Ephemeris();
     eph.PRN = 1;
-    pvt_solution->glonass_gnav_ephemeris_map[1] = eph;
+    pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph);
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
     gs.PRN = 1;
-    gnss_observables_map[1] = gs;
+    gnss_observables_map[1] = std::move(gs);
 
     auto rp = std::make_shared<Rinex_Printer>(3);
 
@@ -305,7 +305,7 @@ TEST_F(RinexPrinterTest, MixedObsHeader)
     Gnss_Synchro gs{};
     gs.PRN = 1;
     gnss_observables_map[1] = gs;
-    gnss_observables_map[2] = gs;
+    gnss_observables_map[2] = std::move(gs);
 
     auto rp = std::make_shared<Rinex_Printer>();
 
@@ -369,15 +369,15 @@ TEST_F(RinexPrinterTest, MixedObsHeaderGpsGlo)
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 26, false, false);
-    pvt_solution->glonass_gnav_ephemeris_map[1] = eph_glo;
+    pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph_glo);
 
-    pvt_solution->gps_ephemeris_map[1] = eph_gps;
+    pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
 
     std::map<int, Gnss_Synchro> gnss_observables_map;
     Gnss_Synchro gs{};
     gs.PRN = 1;
     gnss_observables_map[1] = gs;
-    gnss_observables_map[2] = gs;
+    gnss_observables_map[2] = std::move(gs);
 
     auto rp = std::make_shared<Rinex_Printer>();
 

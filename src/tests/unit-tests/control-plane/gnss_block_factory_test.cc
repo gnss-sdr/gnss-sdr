@@ -32,6 +32,7 @@
 #include "tracking_interface.h"
 #include <gtest/gtest.h>
 #include <pmt/pmt.h>
+#include <utility>
 #include <vector>
 
 TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
@@ -40,7 +41,7 @@ TEST(GNSSBlockFactoryTest, InstantiateFileSignalSource)
     configuration->set_property("SignalSource.implementation", "File_Signal_Source");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
-    configuration->set_property("SignalSource.filename", filename);
+    configuration->set_property("SignalSource.filename", std::move(filename));
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     // Example of a factory as a shared_ptr
     std::shared_ptr<GNSSBlockFactory> factory = std::make_shared<GNSSBlockFactory>();

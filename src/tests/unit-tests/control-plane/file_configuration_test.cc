@@ -19,6 +19,7 @@
 #include "file_configuration.h"
 #include "gnss_sdr_make_unique.h"
 #include <string>
+#include <utility>
 
 
 TEST(FileConfigurationTest, OverridedProperties)
@@ -31,7 +32,7 @@ TEST(FileConfigurationTest, OverridedProperties)
     std::string value = configuration->property("NotThere", default_value);
     EXPECT_STREQ("default_value", value.c_str());
     configuration->set_property("NotThere", "Yes!");
-    value = configuration->property("NotThere", default_value);
+    value = configuration->property("NotThere", std::move(default_value));
     EXPECT_STREQ("Yes!", value.c_str());
 }
 
@@ -40,7 +41,7 @@ TEST(FileConfigurationTest, LoadFromNonExistentFile)
 {
     std::unique_ptr<ConfigurationInterface> configuration = std::make_unique<FileConfiguration>("./i_dont_exist.conf");
     std::string default_value = "default_value";
-    std::string value = configuration->property("whatever.whatever", default_value);
+    std::string value = configuration->property("whatever.whatever", std::move(default_value));
     EXPECT_STREQ("default_value", value.c_str());
 }
 
@@ -51,6 +52,6 @@ TEST(FileConfigurationTest, PropertyDoesNotExist)
     std::string filename = path + "data/config_file_sample.txt";
     std::unique_ptr<ConfigurationInterface> configuration = std::make_unique<FileConfiguration>(filename);
     std::string default_value = "default_value";
-    std::string value = configuration->property("whatever.whatever", default_value);
+    std::string value = configuration->property("whatever.whatever", std::move(default_value));
     EXPECT_STREQ("default_value", value.c_str());
 }

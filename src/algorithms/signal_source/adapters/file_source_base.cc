@@ -171,7 +171,7 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
     // VALVE
     if (valve())
         {
-            top_block->connect(input, 0, valve(), 0);
+            top_block->connect(std::move(input), 0, valve(), 0);
             DLOG(INFO) << "connected source to valve";
 
             output = valve();

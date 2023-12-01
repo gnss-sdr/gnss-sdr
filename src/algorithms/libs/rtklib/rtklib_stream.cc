@@ -81,7 +81,8 @@ serial_t *openserial(const char *path, int mode, char *msg)
     char *p;
     char parity = 'N';
     char dev[128];
-    char port[128];
+    char port[128] = "";
+    port[127] = '\0';
     char fctr[64] = "";
 
     const speed_t bs[] = {
@@ -105,7 +106,7 @@ serial_t *openserial(const char *path, int mode, char *msg)
         }
     else if (strlen(path) < 128)
         {
-            std::strncpy(port, path, 128);
+            std::strncpy(port, path, 127);
             port[127] = '\0';
         }
 
@@ -124,7 +125,6 @@ serial_t *openserial(const char *path, int mode, char *msg)
             return nullptr;
         }
     parity = static_cast<char>(toupper(static_cast<int>(parity)));
-
     std::string s_aux = "/dev/"s + std::string(port);
     s_aux.resize(128, '\0');
     int n = s_aux.length();
@@ -705,7 +705,7 @@ void syncfile(file_t *file1, file_t *file2)
 void decodetcppath(const char *path, char *addr, char *port, char *user,
     char *passwd, char *mntpnt, char *str)
 {
-    char buff[MAXSTRPATH] = "";
+    char buff[MAXSTRPATH + 1] = "";
     char *p;
     char *q;
 
@@ -1827,7 +1827,7 @@ int statentrip(ntrip_t *ntrip)
 void decodeftppath(const char *path, char *addr, char *file, char *user,
     char *passwd, int *topts)
 {
-    char buff[MAXSTRPATH] = "";
+    char buff[MAXSTRPATH + 1] = "";
     char *p;
     char *q;
 
@@ -1896,7 +1896,7 @@ void decodeftppath(const char *path, char *addr, char *file, char *user,
             p = buff;
         }
 
-    std::strncpy(addr, p, 1024);
+    std::strncpy(addr, p, 1023);
     addr[1023] = '\0';
 }
 
@@ -2254,7 +2254,7 @@ int stropen(stream_t *stream, int type, int mode, const char *path)
     stream->mode = mode;
     if (strlen(path) < MAXSTRPATH)
         {
-            std::strncpy(stream->path, path, MAXSTRPATH);
+            std::strncpy(stream->path, path, MAXSTRPATH - 1);
             stream->path[MAXSTRPATH - 1] = '\0';
         }
     stream->inb = stream->inr = stream->outb = stream->outr = 0;

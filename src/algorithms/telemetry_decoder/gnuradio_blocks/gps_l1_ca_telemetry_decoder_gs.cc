@@ -537,6 +537,13 @@ void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &c
 }
 
 
+bool gps_l1_ca_telemetry_decoder_gs::is_PLL_180_deg_phase_locked()
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    return d_flag_PLL_180_deg_phase_locked;
+}
+
+
 int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -613,7 +620,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     d_nav_msg_packet.nav_message = "";
                 }
 
-            if (d_flag_PLL_180_deg_phase_locked == true)
+            if (is_PLL_180_deg_phase_locked())
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GNSS_PI;

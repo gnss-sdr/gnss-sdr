@@ -5225,6 +5225,7 @@ int expath(const char *path, char *paths[], int nmax)
                             if (strlen(paths[i]) < 1025)
                                 {
                                     std::strncpy(tmp, paths[i], 1024);
+                                    tmp[1023] = '\0';
                                 }
                             else
                                 {

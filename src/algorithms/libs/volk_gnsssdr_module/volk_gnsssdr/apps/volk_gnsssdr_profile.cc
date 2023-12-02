@@ -81,8 +81,7 @@ int main(int argc, char *argv[])
 
     for (int arg_number = 0; arg_number < argc; ++arg_number)
         {
-            if (std::string("--help") == std::string(argv[arg_number]) ||
-                std::string("-h") == std::string(argv[arg_number]))
+            if (profile_options.present("help"))
                 {
                     return 0;
                 }

@@ -20,8 +20,7 @@
 #include <limits>                              // for numeric_limits
 #include <map>                                 // for map
 #include <random>                              // for random_device, default_random_engine, uniform_real_distribution
-#include <utility>
-#include <vector>  // for vector
+#include <vector>                              // for vector
 
 template <typename T>
 void random_values(T *buf, unsigned int n, std::default_random_engine &e1)

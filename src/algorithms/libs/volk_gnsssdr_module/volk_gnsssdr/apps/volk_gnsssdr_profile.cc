@@ -47,7 +47,7 @@ void set_benchmark(bool val) { test_params.set_benchmark(val); }
 void set_tolerance(float val) { test_params.set_tol(val); }
 void set_vlen(int val) { test_params.set_vlen((unsigned int)val); }
 void set_iter(int val) { test_params.set_iter((unsigned int)val); }
-void set_substr(std::string val) { test_params.set_regex(val); }
+void set_substr(std::string val) { test_params.set_regex(std::move(val)); }
 bool update_mode = false;
 void set_update(bool val) { update_mode = val; }
 bool dry_run = false;

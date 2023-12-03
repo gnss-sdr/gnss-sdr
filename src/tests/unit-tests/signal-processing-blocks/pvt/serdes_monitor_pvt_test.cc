@@ -17,6 +17,7 @@
 #include "serdes_galileo_eph.h"
 #include "serdes_monitor_pvt.h"
 #include <memory>
+#include <utility>
 
 TEST(Serdes_Monitor_Pvt_Test, Simpletest)
 {
@@ -41,7 +42,7 @@ TEST(Serdes_Monitor_Pvt_Test, GalileoEphemerisSerdes)
     eph->tow = true_tow;
 
     Serdes_Galileo_Eph gal_serdes = Serdes_Galileo_Eph();
-    std::string serialized_data = gal_serdes.createProtobuffer(eph);
+    std::string serialized_data = gal_serdes.createProtobuffer(std::move(eph));
 
     gnss_sdr::GalileoEphemeris ephgal;
     ephgal.ParseFromString(serialized_data);

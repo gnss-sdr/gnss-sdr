@@ -65,6 +65,7 @@ private:
     void read_dsm_header(uint8_t dsm_header);
     void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    bool verify_dsm_pkr(DSM_PKR_message message, std::vector<uint8_t> input_message);
     void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_header();
     void read_mack_body();
@@ -74,13 +75,16 @@ private:
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
     std::unique_ptr<Gnss_Crypto> d_crypto;
 
-    std::array<std::array<uint8_t, 256>, 16> d_dsm_message{};
+    std::array<std::array<uint8_t, 256>, 16> d_dsm_message{}; // C: each dsm[0-15] has 2048 bits
     std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};
     std::array<uint16_t, 16> d_number_of_blocks{};
-    std::array<uint8_t, 60> d_mack_message{};
+    std::array<uint8_t, 60> d_mack_message{}; // C: 480 b
 
     OSNMA_data d_osnma_data{};
     bool d_new_data{false};
+    bool d_public_key_verified{false};
+    bool d_kroot_verified{false};
+
 };
 
 

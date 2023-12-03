@@ -110,9 +110,9 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
         }
 
     //  Send the resulting decoded NMA data (if available) to PVT
-    if (d_new_data == true)
+    if (d_new_data == true) // TODO where is it set to true?
         {
-            auto osnma_data_ptr = std::make_shared<OSNMA_data>(d_osnma_data);
+            auto osnma_data_ptr = std::make_shared<OSNMA_data>(d_osnma_data); // C: why create new object and pass it empty to Pvt?
             this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(osnma_data_ptr));
             d_new_data = false;
             // d_osnma_data = OSNMA_data();
@@ -302,12 +302,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     const uint16_t size_m = 13 + l_lk_bytes;
                     std::vector<uint8_t> MSG;
                     MSG.reserve(size_m + l_ds_bytes + 1);
-                    MSG.push_back(osnma_msg->hkroot[0]);
+                    MSG.push_back(osnma_msg->hkroot[0]); // C: NMA header
                     for (uint16_t i = 1; i < size_m; i++)
                         {
                             MSG.push_back(dsm_msg[i]);
                         }
-                    std::vector<uint8_t> message = MSG;
+                    std::vector<uint8_t> message = MSG; // C: MSG == M || DS from ICD. Eq. 7
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
                             MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
@@ -344,15 +344,19 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                       << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
                             if (authenticated)
                                 {
-                                    std::cout << " authenticated" << std::endl;
+                                    std::cout << " authenticated" << std::endl; // C: proceed with Tesla chain key verification.
                                 }
                             else
                                 {
-                                    std::cout << " validated" << std::endl;
+                                    std::cout << " validated" << std::endl; // C: Kroot not verified => retrieve it again
                                 }
                             std::cout << "Galileo OSNMA: NMA Status is " << d_dsm_reader->get_nmas_status(d_osnma_data.d_nma_header.nmas) << ", "
                                       << "Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
                                       << "Chain and Public Key Status is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks) << std::endl;
+                        }
+                    else
+                        {
+                            std::cout << "Galileo OSNMA: Error computing padding bits." << std::endl;
                         }
                 }
         }
@@ -411,6 +415,9 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                               << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
                               << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600
                               << " received" << std::endl;
+                    // C: NPK verification against Merkle tree root.
+                    std::vector<uint8_t> m_0;
+                    d_public_key_verified = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message, m_0);
                 }
         }
     else
@@ -434,7 +441,7 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
             d_mack_message[index + 3] = static_cast<uint8_t>(value & 0x000000FF);
             index = index + 4;
         }
-    if (d_osnma_data.d_dsm_kroot_message.ts != 0)
+    if (d_osnma_data.d_dsm_kroot_message.ts != 0) // C: 4 ts <  ts < 10
         {
             read_mack_header();
             read_mack_body();
@@ -444,7 +451,7 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
 
 
 void osnma_msg_receiver::read_mack_header()
-{
+{ // C: still to review computations.
     uint8_t lt_bits = 0;
     const auto it = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
     if (it != OSNMA_TABLE_11.cend())
@@ -453,7 +460,7 @@ void osnma_msg_receiver::read_mack_header()
         }
     if (lt_bits == 0)
         {
-            return;
+            return; // C: TODO if Tag length is 0, what is the action? no verification possible of NavData for sure.
         }
     uint16_t macseq = 0;
     uint8_t cop = 0;
@@ -526,8 +533,8 @@ void osnma_msg_receiver::read_mack_body()
         {
             return;
         }
-    uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0));
-    d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
+    uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0)); // C: compute number of tags
+    d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1); // C: nt - 1?
     for (uint16_t k = 0; k < (nt - 1); k++)
         {
             uint64_t tag = 0;
@@ -680,11 +687,14 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
 {
     d_old_mack_message.push_back(d_osnma_data.d_mack_message);
 
-    // MACSEQ validation
+    // MACSEQ validation - case no FLX Tags
     uint32_t GST_SF = osnma_msg->TOW_sf0;
 
+    // C: TODO check ADKD-MACLT for match, also identify which tags are FLX
+    // C: TODO if Tag_x FLX => MACSEQ, otherwise ___ ?
     // Are there flexible tags?
-    std::vector<uint8_t> m(5);
+
+    std::vector<uint8_t> m(5); // C: ICD - Eq. 23
     m[0] = static_cast<uint8_t>(osnma_msg->PRN);  // PRN_A
     m[1] = ((GST_SF & 0xF000) >> 24);
     m[2] = ((GST_SF & 0x0F00) >> 16);
@@ -696,11 +706,11 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
     // otherwise pick d_old_mack_message.back()
     applicable_key = d_old_mack_message.back().key;
     std::vector<uint8_t> mac;
-    if (d_osnma_data.d_dsm_kroot_message.mf == 0)
+    if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
         {
             mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
         }
-    else if (d_osnma_data.d_dsm_kroot_message.mf == 1)
+    else if (d_osnma_data.d_dsm_kroot_message.mf == 1) // C: CMAC-AES
         {
             mac = d_crypto->computeCMAC_AES(applicable_key, m);
         }
@@ -719,4 +729,16 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                       << osnma_msg->TOW_sf0 << ". Tags added: "
                       << num_tags_added << std::endl;
         }
+
+    // C: TODO - for each tag in tag_and_info[] && until l_t_verified <= L_t_min
+    // C: TODO - tag = trunc(l_t, mac(applicable_key,m))
+    // C: TODO - where m = (PRNd || PRNa || GSTsf || CTR || NMAS || NavData || P)
+}
+
+bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message, std::vector<uint8_t> m0)
+{
+    // TODO concatenate message
+    // TODO create function for recursively apply hash
+
+    return false;
 }

@@ -68,7 +68,7 @@ class MACK_tag_and_info
 {
 public:
     MACK_tag_and_info() = default;
-    uint64_t tag;
+    uint64_t tag; // C: 20-40 bits
     MACK_tag_info tag_info;
 };
 

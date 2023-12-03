@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
     if (!dry_run)
         {
             if (config_file != "")
-                write_results(&results, false, config_file);
+                write_results(&results, false, std::move(config_file));
             else
                 write_results(&results, false);
         }

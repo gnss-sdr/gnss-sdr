@@ -796,8 +796,8 @@ TEST_F(RinexPrinterTest, MixedObsLog)
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 9, false, false);
-    pvt_solution->gps_ephemeris_map[1] = eph_gps;
-    pvt_solution->galileo_ephemeris_map[1] = eph_gal;
+    pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
+    pvt_solution->galileo_ephemeris_map[1] = std::move(eph_gal);
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();
@@ -922,8 +922,8 @@ TEST_F(RinexPrinterTest, MixedObsLogGpsGlo)
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
     auto pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 26, false, false);
-    pvt_solution->gps_ephemeris_map[1] = eph_gps;
-    pvt_solution->glonass_gnav_ephemeris_map[1] = eph_glo;
+    pvt_solution->gps_ephemeris_map[1] = std::move(eph_gps);
+    pvt_solution->glonass_gnav_ephemeris_map[1] = std::move(eph_glo);
     std::map<int, Gnss_Synchro> gnss_observables_map;
 
     Gnss_Synchro gs1 = Gnss_Synchro();

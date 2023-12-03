@@ -21,7 +21,7 @@ option_t::option_t(std::string t_longform,
     void (*t_callback)())
     : longform("--" + t_longform),
       shortform("-" + t_shortform),
-      msg(t_msg),
+      msg(std::move(t_msg)),
       callback(t_callback)
 {
     option_type = VOID_CALLBACK;
@@ -34,7 +34,7 @@ option_t::option_t(std::string t_longform,
     void (*t_callback)(int))
     : longform("--" + t_longform),
       shortform("-" + t_shortform),
-      msg(t_msg),
+      msg(std::move(t_msg)),
       callback((void (*)())t_callback)
 {
     option_type = INT_CALLBACK;
@@ -47,7 +47,7 @@ option_t::option_t(std::string t_longform,
     void (*t_callback)(float))
     : longform("--" + t_longform),
       shortform("-" + t_shortform),
-      msg(t_msg),
+      msg(std::move(t_msg)),
       callback((void (*)())t_callback)
 {
     option_type = FLOAT_CALLBACK;
@@ -60,7 +60,7 @@ option_t::option_t(std::string t_longform,
     void (*t_callback)(bool))
     : longform("--" + t_longform),
       shortform("-" + t_shortform),
-      msg(t_msg),
+      msg(std::move(t_msg)),
       callback((void (*)())t_callback)
 {
     option_type = BOOL_CALLBACK;
@@ -73,7 +73,7 @@ option_t::option_t(std::string t_longform,
     void (*t_callback)(std::string))
     : longform("--" + t_longform),
       shortform("-" + t_shortform),
-      msg(t_msg),
+      msg(std::move(t_msg)),
       callback((void (*)())t_callback)
 {
     option_type = STRING_CALLBACK;
@@ -86,8 +86,8 @@ option_t::option_t(std::string t_longform,
     std::string t_printval)
     : longform("--" + t_longform),
       shortform("-" + t_shortform),
-      msg(t_msg),
-      printval(t_printval)
+      msg(std::move(t_msg)),
+      printval(std::move(t_printval))
 {
     option_type = STRING;
 }

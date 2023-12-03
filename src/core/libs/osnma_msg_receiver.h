@@ -65,7 +65,7 @@ private:
     void read_dsm_header(uint8_t dsm_header);
     void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    bool verify_dsm_pkr(DSM_PKR_message message, std::vector<uint8_t> input_message);
+    bool verify_dsm_pkr(DSM_PKR_message message);
     void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_header();
     void read_mack_body();

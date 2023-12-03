@@ -50,6 +50,10 @@ public:
     void readPublicKeyFromPEM(const std::string& pemFilePath);
     void read_merkle_xml(const std::string& merkleFilePath);
     std::vector<uint8_t> getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle) const;
+    std::vector<uint8_t> getMerkleRoot() const
+    {
+        return d_x_4_0;
+    }
 
     // void set_public_key(const std::vector<uint8_t>& publickey);
 

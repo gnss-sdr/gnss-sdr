@@ -416,8 +416,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                               << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600
                               << " received" << std::endl;
                     // C: NPK verification against Merkle tree root.
-                    std::vector<uint8_t> m_0;
-                    d_public_key_verified = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message, m_0);
+                    d_public_key_verified = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message);
                 }
         }
     else
@@ -735,10 +734,49 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
     // C: TODO - where m = (PRNd || PRNa || GSTsf || CTR || NMAS || NavData || P)
 }
 
-bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message, std::vector<uint8_t> m0)
+bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
 {
-    // TODO concatenate message
+    // TODO create leafe base message m_i
     // TODO create function for recursively apply hash
 
-    return false;
+    // build base leaf m_i
+//    auto leaf = message.mid;
+    std::vector<uint8_t> m_i;
+    m_i.reserve(2 + message.npk.size());
+    m_i[0] = message.npkt;
+    m_i[1] = message.npktid;
+    for (uint8_t i = 2; i < m_i.size(); i++)
+        {
+            m_i.push_back(message.npk[i]);
+        }
+
+    // compute intermediate leafs' values
+    std::vector<uint8_t> x_0,x_1,x_2,x_3,x_4;
+//    uint8_t  k = 0;
+    x_0 = d_crypto->computeSHA256(m_i);
+    x_0.insert(x_0.end(),message.itn.begin(),&message.itn[31]);
+    x_1 = d_crypto->computeSHA256(x_0);
+    x_1.insert(x_1.end(),&message.itn[32],&message.itn[63]);
+    x_2 = d_crypto->computeSHA256(x_1);
+    x_2.insert(x_2.end(),&message.itn[64],&message.itn[95]);
+    x_3 = d_crypto->computeSHA256(x_2);
+    x_3.insert(x_3.end(),&message.itn[96],&message.itn[127]);
+    // root leaf computation
+    x_4 = d_crypto->computeSHA256(x_3);
+
+    // C: d_crypto->getMerkleRoot([m_0:m_15]) I realised I could have done this...
+    // C: ... but why computing all the possible results?  I have only one leaf in each osnma message...
+    // verify that computed root matches merkle root
+
+    if(x_4 == d_crypto->getMerkleRoot())
+        {
+            std::cout << "Galileo OSNMA: DSM-PKR verified successfully! " << std::endl;
+            return true;
+            // C: NPK verification against Merkle tree root.
+        }
+    else
+        {
+            std::cout << "Galileo OSNMA: DSM-PKR verification unsuccessful !" << std::endl;
+            return false;
+        }
 }

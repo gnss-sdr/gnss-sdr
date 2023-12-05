@@ -533,7 +533,7 @@ void osnma_msg_receiver::read_mack_body()
             return;
         }
     uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0)); // C: compute number of tags
-    d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1); // C: nt - 1?
+    d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
     for (uint16_t k = 0; k < (nt - 1); k++)
         {
             uint64_t tag = 0;
@@ -684,7 +684,7 @@ void osnma_msg_receiver::read_mack_body()
 
 void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
-    d_old_mack_message.push_back(d_osnma_data.d_mack_message);
+    d_old_mack_message.push_back(d_osnma_data.d_mack_message); // C: old mack message is needed  for
 
     // MACSEQ validation - case no FLX Tags
     uint32_t GST_SF = osnma_msg->TOW_sf0;
@@ -692,8 +692,47 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
     // C: TODO check ADKD-MACLT for match, also identify which tags are FLX
     // C: TODO if Tag_x FLX => MACSEQ, otherwise ___ ?
     // Are there flexible tags?
+    // d_osnma_data.d_dsm_kroot_message.maclt
+    // d_osnma_data.d_mack_message.tag_and_info[k].tag
 
-    std::vector<uint8_t> m(5); // C: ICD - Eq. 23
+    // retrieve data to verify MACK tags
+    uint8_t msg {0};
+    uint8_t nt {0};
+    std::vector<std::string> sq1{};
+    std::vector<std::string> sq2{};
+    const auto it = OSNMA_TABLE_16.find(d_osnma_data.d_dsm_kroot_message.maclt);
+    if (it != OSNMA_TABLE_16.cend())
+        {
+            auto msg = it->second.msg;
+            auto nt = it->second.nt;
+            auto sq1 = it->second.sequence1;
+            auto sq2 = it->second.sequence2;
+        }
+    if (msg == 0)
+        {
+          return;
+        }
+    // compare ADKD of Mack tags with MACLT defined ADKDs
+    // TODO - "When it is equal to 2, the sequence starts with the MACK message transmitted in the first 30 seconds of a GST minute."
+    if(d_osnma_data.d_mack_message.tag_and_info.size() != sq1.size()) // TODO - which sequence is retrieved in this Mack?
+        {
+          std::cout << "Galileo OSNMA: Number of retrieved tags does not match MACLT sequence size!" << std::endl;
+          return;
+        }
+    bool allOk = true;
+    std::string selfAutenticated {};
+    for (uint8_t i = 0; i < d_osnma_data.d_mack_message.tag_and_info.size(); i++)
+        {
+            if(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD != std::stoi(sq1[i])) // C: undefined if format is not "00S"
+                {
+                    allOk = false;
+                    break;
+                }
+            selfAutenticated = sq1[i][sq1[i].size()-1];
+        }
+
+
+    std::vector<uint8_t> m(5); // C: ICD - Eq. 22
     m[0] = static_cast<uint8_t>(osnma_msg->PRN);  // PRN_A
     m[1] = ((GST_SF & 0xF000) >> 24);
     m[2] = ((GST_SF & 0x0F00) >> 16);
@@ -730,8 +769,10 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
         }
 
     // C: TODO - for each tag in tag_and_info[] && until l_t_verified <= L_t_min
-    // C: TODO - tag = trunc(l_t, mac(applicable_key,m))
-    // C: TODO - where m = (PRNd || PRNa || GSTsf || CTR || NMAS || NavData || P)
+    // C:  d_osnma_data.d_dsm_kroot_message.ts gives l_t of each tag for this mack
+    // C:  tag = trunc(l_t, mac(applicable_key,m))
+    // C:  where m = (PRNd || PRNa || GSTsf || CTR || NMAS || NavData || P)
+    // C: si l_t_verified >= L_t_min d_new_data = true
 }
 
 bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)

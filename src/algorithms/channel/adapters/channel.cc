@@ -212,6 +212,13 @@ gr::basic_block_sptr Channel::get_right_block()
 }
 
 
+Gnss_Signal Channel::get_signal()
+{
+    std::lock_guard<std::mutex> lk(mx_);
+    return gnss_signal_;
+}
+
+
 void Channel::set_signal(const Gnss_Signal& gnss_signal)
 {
     std::lock_guard<std::mutex> lk(mx_);

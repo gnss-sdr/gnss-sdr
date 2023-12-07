@@ -225,7 +225,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
 
     config = std::make_shared<InMemoryConfiguration>();
 
-    config->set_property("Channel.signal", signal);
+    config->set_property("Channel.signal", std::move(signal));
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(fs_in));
     config->set_property("SignalSource.fs_hz", std::to_string(fs_in));
     config->set_property("SignalSource.item_type", "gr_complex");

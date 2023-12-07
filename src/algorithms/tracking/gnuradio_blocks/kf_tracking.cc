@@ -564,7 +564,7 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -911,7 +911,7 @@ void kf_tracking::update_kf_narrow_integration_time()
             Qnew += d_F * d_Q * d_F.t();
             d_Q = d_F * d_Q * d_F.t();
         }
-    d_Q = Qnew;
+    d_Q = std::move(Qnew);
 
     // state vector: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz
     d_F = {{1.0, 0.0, d_beta * Ti, d_beta * TiTi / 2.0},
@@ -1629,7 +1629,7 @@ int32_t kf_tracking::save_matfile() const
     // WRITE MAT FILE
     mat_t *matfp;
     matvar_t *matvar;
-    std::string filename = dump_filename_;
+    std::string filename = std::move(dump_filename_);
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
@@ -2075,7 +2075,7 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
-            *out[0] = current_synchro_data;
+            *out[0] = std::move(current_synchro_data);
             return 1;
         }
     return 0;

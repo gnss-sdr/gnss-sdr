@@ -30,6 +30,7 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 
 gps_l1_ca_dll_pll_tracking_gpu_cc_sptr
@@ -344,7 +345,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 1;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     d_sample_counter += static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
@@ -479,7 +480,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
 
     // assign the GNU Radio block output data
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
 
     if (d_dump)
         {

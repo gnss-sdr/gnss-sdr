@@ -22,6 +22,7 @@
 #include <gnuradio/top_block.h>
 #include <gtest/gtest.h>
 #include <stdexcept>
+#include <utility>
 
 TEST(FileSignalSource, Instantiate)
 {
@@ -32,7 +33,7 @@ TEST(FileSignalSource, Instantiate)
     config->set_property("Test.sampling_frequency", "0");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
-    config->set_property("Test.filename", filename);
+    config->set_property("Test.filename", std::move(filename));
     config->set_property("Test.item_type", "gr_complex");
     config->set_property("Test.repeat", "false");
 
@@ -57,5 +58,5 @@ TEST(FileSignalSource, InstantiateFileNotExists)
     // connect doesn't matter, since the exception should be thrown sooner than any connections
     auto top = gr::make_top_block("GNSSUnitTest");
     auto uptr = std::make_shared<FileSignalSource>(config.get(), "Test", 0, 1, queue.get());
-    EXPECT_THROW({ uptr->connect(top); }, std::exception);
+    EXPECT_THROW({ uptr->connect(std::move(top)); }, std::exception);
 }

@@ -36,6 +36,7 @@
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
+#include <utility>          // for std::move
 
 #define CRC_ERROR_LIMIT 8
 
@@ -702,8 +703,8 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                         }
                 }
 
-            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-            *out[0] = current_symbol;
+            // 3. Make the output (move the object contents to the GNURadio reserved memory)
+            *out[0] = std::move(current_symbol);
             return 1;
         }
     return 0;

@@ -29,6 +29,7 @@
 #include <cstddef>  // for size_t
 #include <memory>   // for weak_ptr
 #include <string>   // for string
+#include <utility>
 
 /** \addtogroup Acquisition
  * \{ */
@@ -97,8 +98,8 @@ public:
      */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
-        channel_fsm_ = channel_fsm;
-        acquisition_fpga_->set_channel_fsm(channel_fsm);
+        channel_fsm_ = std::move(channel_fsm);
+        acquisition_fpga_->set_channel_fsm(channel_fsm_);
     }
 
     /*!

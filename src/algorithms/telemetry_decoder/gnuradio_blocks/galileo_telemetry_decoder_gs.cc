@@ -401,7 +401,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     if (page_part_bits[0] == 1)
         {
             // DECODE COMPLETE WORD (even + odd) and TEST CRC
-            d_inav_nav.split_page(page_String, d_flag_even_word_arrived);
+            d_inav_nav.split_page(std::move(page_String), d_flag_even_word_arrived);
             if (d_inav_nav.get_flag_CRC_test() == true)
                 {
                     if (d_band == '1')
@@ -429,7 +429,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     else
         {
             // STORE HALF WORD (even page)
-            d_inav_nav.split_page(page_String, d_flag_even_word_arrived);
+            d_inav_nav.split_page(std::move(page_String), d_flag_even_word_arrived);
             d_flag_even_word_arrived = 1;
         }
 
@@ -867,6 +867,22 @@ void galileo_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
+void galileo_telemetry_decoder_gs::check_tlm_separation()
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    if (d_sent_tlm_failed_msg == false)
+        {
+            if ((d_symbol_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
+                {
+                    const int message = 1;  // bad telemetry
+                    DLOG(INFO) << "Wrong tlm sync in sat " << this->d_satellite;
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    d_sent_tlm_failed_msg = true;
+                }
+        }
+}
+
+
 int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
     gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
 {
@@ -930,16 +946,7 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     d_flag_preamble = false;
 
     // check if there is a problem with the telemetry of the current satellite
-    if (d_sent_tlm_failed_msg == false)
-        {
-            if ((d_symbol_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
-                {
-                    const int message = 1;  // bad telemetry
-                    DLOG(INFO) << "sent msg sat " << this->d_satellite;
-                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
-                    d_sent_tlm_failed_msg = true;
-                }
-        }
+    check_tlm_separation();
 
     // ******* frame sync ******************
     int32_t corr_value = 0;
@@ -1413,8 +1420,8 @@ int galileo_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                             LOG(WARNING) << "Exception writing navigation data dump file " << e.what();
                         }
                 }
-            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-            *out[0] = current_symbol;
+            // 3. Make the output (move the object contents to the GNURadio reserved memory)
+            *out[0] = std::move(current_symbol);
             return 1;
         }
     return 0;

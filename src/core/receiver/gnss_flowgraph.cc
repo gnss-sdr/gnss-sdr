@@ -513,6 +513,7 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
         }
 
     // Activate acquisition in enabled channels
+    std::lock_guard<std::mutex> lock(signal_list_mutex_);
     for (int i = 0; i < channels_count_; i++)
         {
             LOG(INFO) << "Channel " << i << " assigned to " << channels_.at(i)->get_signal();
@@ -2255,7 +2256,7 @@ void GNSSFlowgraph::set_signals_list()
 
             if (!tmp_set.empty())
                 {
-                    available_galileo_prn = tmp_set;
+                    available_galileo_prn = std::move(tmp_set);
                 }
         }
 
@@ -2295,7 +2296,7 @@ void GNSSFlowgraph::set_signals_list()
 
             if (!tmp_set.empty())
                 {
-                    available_gps_prn = tmp_set;
+                    available_gps_prn = std::move(tmp_set);
                 }
         }
 
@@ -2335,7 +2336,7 @@ void GNSSFlowgraph::set_signals_list()
 
             if (!tmp_set.empty())
                 {
-                    available_sbas_prn = tmp_set;
+                    available_sbas_prn = std::move(tmp_set);
                 }
         }
 
@@ -2375,7 +2376,7 @@ void GNSSFlowgraph::set_signals_list()
 
             if (!tmp_set.empty())
                 {
-                    available_glonass_prn = tmp_set;
+                    available_glonass_prn = std::move(tmp_set);
                 }
         }
 
@@ -2415,7 +2416,7 @@ void GNSSFlowgraph::set_signals_list()
 
             if (!tmp_set.empty())
                 {
-                    available_beidou_prn = tmp_set;
+                    available_beidou_prn = std::move(tmp_set);
                 }
         }
 

@@ -647,7 +647,7 @@ private:
         inline void join(const std::shared_ptr<RtcmListener>& participant)
         {
             participants_.insert(participant);
-            for (auto msg : recent_msgs_)
+            for (const auto& msg : recent_msgs_)
                 {
                     participant->deliver(msg);
                 }
@@ -810,7 +810,7 @@ private:
         inline void write(const Rtcm_Message& msg)
         {
             io_context_.post(
-                [this, msg]() {
+                [this, &msg]() {
                     bool write_in_progress = !write_msgs_.empty();
                     write_msgs_.push_back(msg);
                     if (!write_in_progress)

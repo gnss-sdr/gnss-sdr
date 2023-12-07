@@ -2983,7 +2983,7 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
     const pcvs_t *pcvs)
 {
     pcv_t *pcv;
-    char buff[MAXANT] = "";
+    char buff[MAXANT + 1] = "";
     char *types[2];
     char *p;
     int i;
@@ -3730,12 +3730,12 @@ int savenav(const char *file, const nav_t *nav)
                 }
             auto id = satno2id(nav->eph[i].sat);
             fprintf(fp,
-                "%s,%d,%d,%d,%d,%d,%d,%d,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
+                "%s,%d,%d,%d,%d,%ld,%ld,%ld,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%d,%d\n",
                 id.data(), nav->eph[i].iode, nav->eph[i].iodc, nav->eph[i].sva,
-                nav->eph[i].svh, static_cast<int>(nav->eph[i].toe.time),
-                static_cast<int>(nav->eph[i].toc.time), static_cast<int>(nav->eph[i].ttr.time),
+                nav->eph[i].svh, static_cast<intmax_t>(nav->eph[i].toe.time),
+                static_cast<intmax_t>(nav->eph[i].toc.time), static_cast<intmax_t>(nav->eph[i].ttr.time),
                 nav->eph[i].A, nav->eph[i].e, nav->eph[i].i0, nav->eph[i].OMG0,
                 nav->eph[i].omg, nav->eph[i].M0, nav->eph[i].deln, nav->eph[i].OMGd,
                 nav->eph[i].idot, nav->eph[i].crc, nav->eph[i].crs, nav->eph[i].cuc,
@@ -3751,11 +3751,11 @@ int savenav(const char *file, const nav_t *nav)
                 }
             auto id = satno2id(nav->geph[i].sat);
             fprintf(fp,
-                "%s,%d,%d,%d,%d,%d,%d,%d,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
+                "%s,%d,%d,%d,%d,%d,%ld,%ld,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%.14E\n",
                 id.data(), nav->geph[i].iode, nav->geph[i].frq, nav->geph[i].svh,
-                nav->geph[i].sva, nav->geph[i].age, static_cast<int>(nav->geph[i].toe.time),
-                static_cast<int>(nav->geph[i].tof.time),
+                nav->geph[i].sva, nav->geph[i].age, static_cast<intmax_t>(nav->geph[i].toe.time),
+                static_cast<intmax_t>(nav->geph[i].tof.time),
                 nav->geph[i].pos[0], nav->geph[i].pos[1], nav->geph[i].pos[2],
                 nav->geph[i].vel[0], nav->geph[i].vel[1], nav->geph[i].vel[2],
                 nav->geph[i].acc[0], nav->geph[i].acc[1], nav->geph[i].acc[2],
@@ -5017,6 +5017,7 @@ int rtk_uncompress(const char *file, char *uncfile)
     char *p;
     char cmd[2048] = "";
     char tmpfile[1024] = "";
+    tmpfile[1023] = '\0';
     char buff[1024];
     char *fname;
     char *dir = const_cast<char *>("");
@@ -5067,6 +5068,7 @@ int rtk_uncompress(const char *file, char *uncfile)
             std::strncpy(uncfile, tmpfile, 1024);
             uncfile[p - tmpfile] = '\0';
             std::strncpy(buff, tmpfile, 1024);
+            buff[1023] = '\0';
             fname = buff;
             if ((p = strrchr(buff, '/')))
                 {
@@ -5158,6 +5160,7 @@ int expath(const char *path, char *paths[], int nmax)
     int j;
     int n = 0;
     char tmp[1024] = "";
+    tmp[1023] = '\0';
     struct dirent *d;
     DIR *dp;
     const char *file = path;
@@ -5230,6 +5233,7 @@ int expath(const char *path, char *paths[], int nmax)
                                 }
                             std::strncpy(paths[i], paths[j], 1024);
                             std::strncpy(paths[j], tmp, 1024);
+                            paths[j][1023] = '\0';
                         }
                 }
         }

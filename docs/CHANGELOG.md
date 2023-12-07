@@ -14,6 +14,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Efficiency:
+
+- Fixed some performance inefficiencies detected by Coverity Scan.
+
 ### Improvements in Interoperability:
 
 - Added a new PVT configuration boolean flag (`flag_geohash_log_out`) that
@@ -41,6 +45,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Updated local `cpu_features` library to v0.9.0.
 - `volk_gnsssdr`: fix syntax for Python 3.12 without breaking backward
   compatibility with Python 2.7.
+- Fixed linking against latest GNU Radio version.
 
 ### Improvements in Repeatability:
 
@@ -53,6 +58,10 @@ All notable changes to GNSS-SDR will be documented in this file.
   `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
   `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
   `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+
+### Improvements in Scalability:
+
+- Fixed some potential data race conditions detected by Coverity Scan.
 
 ### Improvements in Usability:
 
@@ -71,6 +80,21 @@ All notable changes to GNSS-SDR will be documented in this file.
 - The estimated CN0 value is now printed in the terminal when navigation data is
   succesfully decoded.
 - Fixed GPS navigation message satellite validation.
+- Latitude and longitude are now reported in the terminal with six decimal
+  places (the sixth decimal place worths up to 0.11 m), instead of the
+  overkilling nine (the ninth decimal place worths up to 110 microns).
+  Similarly, height in meters is now reported with two decimal places instead of
+  three, and velocity in m/s also with two decimal places instead of three.
+- Fixed the rate at which KLM, GPX, GeoJSON, and NMEA annotations are made. The
+  rate is now set by `PVT.output_rate_ms` (`500` ms by default), and can be
+  particularized by `PVT.kml_rate_ms`, `PVT.gpx_rate_ms`, `PVT.geojson_rate_ms`,
+  and `PVT.nmea_rate_ms`. Those values should be multiples of
+  `PVT.output_rate_ms`, or the least common multiple will be taken.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
 
 ## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
 

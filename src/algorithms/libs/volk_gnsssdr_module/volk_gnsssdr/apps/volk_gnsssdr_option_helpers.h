@@ -29,12 +29,30 @@ typedef enum
 class option_t
 {
 public:
-    option_t(std::string longform, std::string shortform, std::string msg, void (*callback)());
-    option_t(std::string longform, std::string shortform, std::string msg, void (*callback)(int));
-    option_t(std::string longform, std::string shortform, std::string msg, void (*callback)(float));
-    option_t(std::string longform, std::string shortform, std::string msg, void (*callback)(bool));
-    option_t(std::string longform, std::string shortform, std::string msg, void (*callback)(std::string));
-    option_t(std::string longform, std::string shortform, std::string msg, std::string printval);
+    option_t(std::string t_longform,
+        std::string t_shortform,
+        std::string t_msg,
+        void (*t_callback)());
+    option_t(std::string t_longform,
+        std::string t_shortform,
+        std::string t_msg,
+        void (*t_callback)(int));
+    option_t(std::string t_longform,
+        std::string t_shortform,
+        std::string t_msg,
+        void (*t_callback)(float));
+    option_t(std::string t_longform,
+        std::string t_shortform,
+        std::string t_msg,
+        void (*t_callback)(bool));
+    option_t(std::string t_longform,
+        std::string t_shortform,
+        std::string t_msg,
+        void (*t_callback)(std::string));
+    option_t(std::string t_longform,
+        std::string t_shortform,
+        std::string t_msg,
+        std::string t_printval);
 
     std::string longform;
     std::string shortform;
@@ -48,6 +66,7 @@ class option_list
 {
 public:
     explicit option_list(std::string program_name);
+    bool present(std::string option_name);
 
     void add(const option_t &opt);
 
@@ -56,8 +75,9 @@ public:
     void help();
 
 private:
-    std::string program_name;
-    std::vector<option_t> internal_list;
+    std::string d_program_name;
+    std::vector<option_t> d_internal_list;
+    std::map<std::string, int> d_present_options;
 };
 
 

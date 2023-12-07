@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
     std::string def_kernel_regex = "";
 
     volk_gnsssdr_test_params_t test_params(def_tol, def_scalar, def_vlen, def_iter,
-        def_benchmark_mode, def_kernel_regex);
-    std::vector<volk_gnsssdr_test_case_t> test_cases = init_test_list(test_params);
+        def_benchmark_mode, std::move(def_kernel_regex));
+    std::vector<volk_gnsssdr_test_case_t> test_cases = init_test_list(std::move(test_params));
     std::vector<volk_gnsssdr_test_results_t> results;
     if (argc > 1)
         {
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
                 }
 
             // Generate XML results
-            print_qa_xml(results, qa_failures.size());
+            print_qa_xml(std::move(results), qa_failures.size());
 
             // Summarize QA results
             std::cerr << "Kernel QA finished: " << qa_failures.size() << " failures out of "

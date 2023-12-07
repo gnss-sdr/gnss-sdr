@@ -22,7 +22,6 @@
 #include <random>                              // for random_device, default_random_engine, uniform_real_distribution
 #include <vector>                              // for vector
 
-
 template <typename T>
 void random_values(T *buf, unsigned int n, std::default_random_engine &e1)
 {
@@ -946,14 +945,14 @@ bool run_volk_gnsssdr_tests(volk_gnsssdr_func_desc_t desc,
 
     if (puppet_master_name == "NULL")
         {
-            results->back().config_name = name;
+            results->back().config_name = std::move(name);
         }
     else
         {
-            results->back().config_name = puppet_master_name;
+            results->back().config_name = std::move(puppet_master_name);
         }
-    results->back().best_arch_a = best_arch_a;
-    results->back().best_arch_u = best_arch_u;
+    results->back().best_arch_a = std::move(best_arch_a);
+    results->back().best_arch_u = std::move(best_arch_u);
 
     return fail_global;
 }

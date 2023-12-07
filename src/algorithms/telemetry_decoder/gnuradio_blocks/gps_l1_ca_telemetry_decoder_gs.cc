@@ -36,6 +36,7 @@
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr
+#include <utility>          // for std::move
 #include <vector>
 
 #ifdef COMPILER_HAS_ROTL
@@ -427,40 +428,9 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
 }
 
 
-int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
-    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+void gps_l1_ca_telemetry_decoder_gs::check_tlm_separation()
 {
-    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
-    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
-
-    Gnss_Synchro current_symbol{};
-    // 1. Copy the current tracking output
-    current_symbol = in[0][0];
-    if (d_symbol_history.empty())
-        {
-            // Tracking synchronizes the tlm bit boundaries by acquiring the preamble
-            // inserting the preamble to the new tracked satellite (history empty) before the first synchronized symbol
-            // may speed up the tlm decoding by not discarding the first received frame
-            for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-                {
-                    if (current_symbol.Flag_PLL_180_deg_phase_locked == true)
-                        {
-                            d_symbol_history.push_back(static_cast<float>(-d_preamble_samples[i]));
-                        }
-                    else
-                        {
-                            d_symbol_history.push_back(static_cast<float>(d_preamble_samples[i]));
-                        }
-                    d_sample_counter++;
-                }
-        }
-    // add new symbol to the symbol queue
-    d_symbol_history.push_back(current_symbol.Prompt_I);
-
-    d_sample_counter++;  // count for the processed symbols
-    consume_each(1);
-    d_flag_preamble = false;
-    // check if there is a problem with the telemetry of the current satellite
+    gr::thread::scoped_lock lock(d_setlock);
     if (d_stat < 2 && d_sent_tlm_failed_msg == false)
         {
             if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
@@ -470,8 +440,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     d_sent_tlm_failed_msg = true;
                 }
         }
+}
 
-    // ******* frame sync ******************
+
+void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &current_gs)
+{
+    gr::thread::scoped_lock lock(d_setlock);
     switch (d_stat)
         {
         case 0:  // no preamble information
@@ -506,11 +480,10 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             }
                         DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
                         d_prev_GPS_frame_4bytes = 0;
-                        if (decode_subframe(current_symbol.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
+                        if (decode_subframe(current_gs.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                                gr::thread::scoped_lock lock(d_setlock);
                                 d_last_valid_preamble = d_sample_counter;
                                 if (!d_flag_frame_sync)
                                     {
@@ -532,11 +505,10 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         // 0. fetch the symbols into an array
                         d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
 
-                        if (decode_subframe(current_symbol.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
+                        if (decode_subframe(current_gs.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
                             {
                                 d_CRC_error_counter = 0;
                                 d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                                gr::thread::scoped_lock lock(d_setlock);
                                 d_last_valid_preamble = d_sample_counter;
                                 if (!d_flag_frame_sync)
                                     {
@@ -562,6 +534,55 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                 break;
             }
         }
+}
+
+
+bool gps_l1_ca_telemetry_decoder_gs::is_PLL_180_deg_phase_locked()
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    return d_flag_PLL_180_deg_phase_locked;
+}
+
+
+int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__((unused)), gr_vector_int &ninput_items __attribute__((unused)),
+    gr_vector_const_void_star &input_items, gr_vector_void_star &output_items)
+{
+    auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);            // Get the output buffer pointer
+    const auto **in = reinterpret_cast<const Gnss_Synchro **>(&input_items[0]);  // Get the input buffer pointer
+
+    Gnss_Synchro current_symbol{};
+    // 1. Copy the current tracking output
+    current_symbol = in[0][0];
+    if (d_symbol_history.empty())
+        {
+            // Tracking synchronizes the tlm bit boundaries by acquiring the preamble
+            // inserting the preamble to the new tracked satellite (history empty) before the first synchronized symbol
+            // may speed up the tlm decoding by not discarding the first received frame
+            for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                {
+                    if (current_symbol.Flag_PLL_180_deg_phase_locked == true)
+                        {
+                            d_symbol_history.push_back(static_cast<float>(-d_preamble_samples[i]));
+                        }
+                    else
+                        {
+                            d_symbol_history.push_back(static_cast<float>(d_preamble_samples[i]));
+                        }
+                    d_sample_counter++;
+                }
+        }
+    // add new symbol to the symbol queue
+    d_symbol_history.push_back(current_symbol.Prompt_I);
+
+    d_sample_counter++;  // count for the processed symbols
+    consume_each(1);
+    d_flag_preamble = false;
+
+    // check if there is a problem with the telemetry of the current satellite
+    check_tlm_separation();
+
+    // frame sync
+    frame_synchronization(current_symbol);
 
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
@@ -599,7 +620,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     d_nav_msg_packet.nav_message = "";
                 }
 
-            if (d_flag_PLL_180_deg_phase_locked == true)
+            if (is_PLL_180_deg_phase_locked())
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GNSS_PI;
@@ -659,8 +680,8 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                         }
                 }
 
-            // 3. Make the output (copy the object contents to the GNU Radio reserved memory)
-            *out[0] = current_symbol;
+            // 3. Make the output (move the object contents to the GNU Radio reserved memory)
+            *out[0] = std::move(current_symbol);
 
             return 1;
         }

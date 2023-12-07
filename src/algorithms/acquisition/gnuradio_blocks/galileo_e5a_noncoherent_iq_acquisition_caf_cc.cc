@@ -730,7 +730,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();
                         current_synchro_data = *d_gnss_synchro;
-                        *out[0] = current_synchro_data;
+                        *out[0] = std::move(current_synchro_data);
                         return_value = 1;  // Number of Gnss_Synchro objects produced
                     }
 

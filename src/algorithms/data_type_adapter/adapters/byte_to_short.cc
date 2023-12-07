@@ -26,7 +26,7 @@ ByteToShort::ByteToShort(const ConfigurationInterface* configuration,
     unsigned int out_streams) : role_(std::move(role)),
                                 in_streams_(in_streams),
                                 out_streams_(out_streams),
-                                dump_(configuration->property(role + ".dump", false))
+                                dump_(configuration->property(role_ + ".dump", false))
 {
     const std::string default_input_item_type("byte");
     const std::string default_output_item_type("short");

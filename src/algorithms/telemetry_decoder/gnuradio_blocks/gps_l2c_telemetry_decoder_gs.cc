@@ -35,6 +35,7 @@
 #include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
+#include <utility>          // for std::move
 
 
 gps_l2c_telemetry_decoder_gs_sptr
@@ -368,6 +369,6 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
         }
 
     // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-    out[0] = current_synchro_data;
+    out[0] = std::move(current_synchro_data);
     return 1;
 }

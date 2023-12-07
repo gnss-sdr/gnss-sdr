@@ -209,7 +209,7 @@ Acquisition_Dump_Reader::Acquisition_Dump_Reader(const std::string& basename,
         }
     d_num_doppler_bins = static_cast<unsigned int>(ceil(static_cast<double>(static_cast<int>(d_doppler_max) - static_cast<int>(-d_doppler_max)) / static_cast<double>(d_doppler_step)));
     std::vector<std::vector<float> > mag_aux(d_num_doppler_bins, std::vector<float>(d_samples_per_code));
-    mag = mag_aux;
+    mag = std::move(mag_aux);
     d_dump_filename = d_basename + "_ch_" + std::to_string(channel) + "_" + std::to_string(execution) + "_sat_" + std::to_string(d_sat) + ".mat";
     for (unsigned int doppler_index = 0; doppler_index < d_num_doppler_bins; doppler_index++)
         {

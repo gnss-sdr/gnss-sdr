@@ -113,7 +113,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -768,7 +768,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             n_valid++;
                         }
-                    epoch_data[n] = interpolated_gnss_synchro;
+                    epoch_data[n] = std::move(interpolated_gnss_synchro);
                 }
             if (d_T_rx_TOW_set)
                 {

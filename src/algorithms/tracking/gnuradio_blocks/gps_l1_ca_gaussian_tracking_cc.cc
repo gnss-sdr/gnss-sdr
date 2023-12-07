@@ -634,7 +634,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 1;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     // Kalman filter initialization reset
                     kf_P_x = kf_P_x_ini;
                     // Update Kalman states based on acquisition information
@@ -811,7 +811,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
 
     // assign the GNU Radio block output data
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
 
     if (d_dump)
         {

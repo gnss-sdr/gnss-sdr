@@ -512,6 +512,7 @@ void osnma_msg_receiver::read_mack_header()
 
 void osnma_msg_receiver::read_mack_body()
 {
+
     uint8_t lt_bits = 0;
     const auto it = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
     if (it != OSNMA_TABLE_11.cend())
@@ -534,7 +535,7 @@ void osnma_msg_receiver::read_mack_body()
         }
     uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0)); // C: compute number of tags
     d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
-    for (uint16_t k = 0; k < (nt - 1); k++)
+    for (uint16_t k = 0; k < (nt - 1); k++) // C: retrieve Tag&Info
         {
             uint64_t tag = 0;
             uint8_t PRN_d = 0;
@@ -679,6 +680,20 @@ void osnma_msg_receiver::read_mack_body()
             d_osnma_data.d_mack_message.tag_and_info[k].tag_info.ADKD = ADKD;
             d_osnma_data.d_mack_message.tag_and_info[k].tag_info.cop = cop;
         }
+    // TODO - [TAS-110]
+    //      retrieve TESLA key: index i is [479-MH(l_t)-(nt-1)*(16+l_t), i+l_k]
+    //      compute I (GST_SFi,GST_Kroot)
+    //      perform recursive hash calls until base case: i = 10...1
+
+    // retrieve tesla key
+    uint8_t start_index_bytes = ( 480 - (lt_bits + 16) - (nt - 1) * ( lt_bits + 16 ) - 1 ) / 8; // includes -1 to start at [i-1]
+    uint8_t last_index_bytes = ( start_index_bytes * 8 + lk_bits ) / 8;
+    uint8_t key_index_bytes = 0;
+    for (uint8_t i = start_index_bytes; i < last_index_bytes ; i++, key_index_bytes++)
+        {
+            d_osnma_data.d_mack_message.key[key_index_bytes] = d_mack_message[i];
+        }
+
 }
 
 

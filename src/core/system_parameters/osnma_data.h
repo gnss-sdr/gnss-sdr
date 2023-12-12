@@ -102,7 +102,7 @@ public:
     uint8_t reserved1{};
     uint8_t hf{};
     uint8_t mf{};
-    uint8_t ks{};
+    uint8_t ks{}; // key size, in bits
     uint8_t ts{};
     uint8_t maclt{};
     uint8_t reserved{};

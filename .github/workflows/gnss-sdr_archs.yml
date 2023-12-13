@@ -40,8 +40,8 @@ jobs:
           #   compiler: { name: g++-12, cc: gcc-12, cxx: g++-12 }
 
     steps:
-      - uses: actions/checkout@v3.1.0
-      - uses: uraimo/run-on-arch-action@v2.5.0
+      - uses: actions/checkout@v4
+      - uses: uraimo/run-on-arch-action@v2.6.0
         name: Test in non-x86 container
         continue-on-error: ${{ contains(fromJson('["ppc64le", "s390x"]'), matrix.arch) }}
         id: test

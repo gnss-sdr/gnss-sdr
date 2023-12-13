@@ -46,6 +46,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 - `volk_gnsssdr`: fix syntax for Python 3.12 without breaking backward
   compatibility with Python 2.7.
 - Fixed linking against latest GNU Radio version.
+- Make use of new API if linking against VOLK >= 3.1.
+- Fixed undefined behaviour in `volk_gnsssdr` arising from incompatibility
+  between complex numbers in C and C++.
+- Now build system paths are not leaked when cross-compiling.
 
 ### Improvements in Repeatability:
 

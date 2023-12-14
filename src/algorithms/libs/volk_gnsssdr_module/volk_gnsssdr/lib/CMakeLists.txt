@@ -372,14 +372,18 @@ if(MSVC)
         set(cmake_c_compiler_version "Microsoft Visual Studio 14.0")
     endif()
 else()
-    execute_process(COMMAND ${CMAKE_C_COMPILER} --version
-        OUTPUT_VARIABLE cmake_c_compiler_version
-    )
+    if(NOT CMAKE_CROSSCOMPILING)
+        execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+            OUTPUT_VARIABLE cmake_c_compiler_version
+        )
+    endif()
 endif()
 if(NOT GRCBTU)
     set(GRCBTU "")
 endif()
-set(COMPILER_INFO "${CMAKE_C_COMPILER}:::${CMAKE_C_FLAGS_${GRCBTU}} ${CMAKE_C_FLAGS}\n${CMAKE_CXX_COMPILER}:::${CMAKE_CXX_FLAGS_${GRCBTU}} ${CMAKE_CXX_FLAGS}\n")
+if(NOT CMAKE_CROSSCOMPILING)
+    set(COMPILER_INFO "${CMAKE_C_COMPILER}:::${CMAKE_C_FLAGS_${GRCBTU}} ${CMAKE_C_FLAGS}\n${CMAKE_CXX_COMPILER}:::${CMAKE_CXX_FLAGS_${GRCBTU}} ${CMAKE_CXX_FLAGS}\n")
+endif()
 
 foreach(machine_name ${available_machines})
     # generate machine source
@@ -396,7 +400,9 @@ foreach(machine_name ${available_machines})
     if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         message(STATUS "BUILD INFO ::: ${machine_name} ::: ${COMPILER_NAME} ::: ${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}")
     endif()
-    set(COMPILER_INFO "${COMPILER_INFO}${machine_name}:::${COMPILER_NAME}:::${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}\n")
+    if(NOT CMAKE_CROSSCOMPILING)
+        set(COMPILER_INFO "${COMPILER_INFO}${machine_name}:::${COMPILER_NAME}:::${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}\n")
+    endif()
     if(${machine_name}_flags AND NOT MSVC)
         set_source_files_properties(${machine_source} PROPERTIES COMPILE_FLAGS "${${machine_name}_flags}")
     endif()
@@ -407,11 +413,15 @@ foreach(machine_name ${available_machines})
 endforeach()
 
 # Convert to a C string to compile and display properly
-string(STRIP "${cmake_c_compiler_version}" cmake_c_compiler_version)
-string(STRIP ${COMPILER_INFO} COMPILER_INFO)
-message(STATUS "Compiler Version: ${cmake_c_compiler_version}")
-string(REPLACE "\n" " \\n" cmake_c_compiler_version ${cmake_c_compiler_version})
-string(REPLACE "\n" " \\n" COMPILER_INFO ${COMPILER_INFO})
+if(NOT CMAKE_CROSSCOMPILING)
+    string(STRIP "${cmake_c_compiler_version}" cmake_c_compiler_version)
+    string(REPLACE "\n" " \\n" cmake_c_compiler_version ${cmake_c_compiler_version})
+    message(STATUS "Compiler Version: ${cmake_c_compiler_version}")
+    string(STRIP ${COMPILER_INFO} COMPILER_INFO)
+    string(REPLACE "\n" " \\n" COMPILER_INFO ${COMPILER_INFO})
+else()
+    set(cmake_c_compiler_version "")
+endif()
 
 
 ########################################################################
@@ -481,8 +491,12 @@ endif()
 message(STATUS "Loading version ${VERSION} into constants...")
 
 # double escape for windows backslash path separators
-string(REPLACE "\\" "\\\\" prefix "${prefix}")
-string(REPLACE "${CMAKE_SOURCE_DIR}" "$BUILD_DIR" COMPILER_INFO "${COMPILER_INFO}")
+if(NOT CMAKE_CROSSCOMPILING)
+    string(REPLACE "\\" "\\\\" prefix "${prefix}")
+    string(REPLACE "${CMAKE_SOURCE_DIR}" "$BUILD_DIR" COMPILER_INFO "${COMPILER_INFO}")
+else()
+    set(prefix "")
+endif()
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.c.in

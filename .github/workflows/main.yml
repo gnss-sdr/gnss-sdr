@@ -48,11 +48,10 @@ jobs:
           rm /usr/local/bin/pydoc3 || true
           rm /usr/local/bin/python3 || true
           rm /usr/local/bin/python3-config || true
-          rm /usr/local/bin/2to3-3.11 || true
-          rm /usr/local/bin/idle3.11 || true
-          rm /usr/local/bin/pydoc3.11 || true
-          rm /usr/local/bin/python3.11 || true
-          rm /usr/local/bin/python3.11-config || true
+          rm /usr/local/bin/2to3-3.1* || true
+          rm /usr/local/bin/idle3.1* || true
+          rm /usr/local/bin/pydoc3.1* || true
+          rm /usr/local/bin/python3.1* || true
           brew install ninja hdf5 automake armadillo lapack \
           gflags glog gnuradio log4cpp openssl pugixml protobuf
           pip3 install mako
@@ -77,11 +76,10 @@ jobs:
           rm /usr/local/bin/pydoc3 || true
           rm /usr/local/bin/python3 || true
           rm /usr/local/bin/python3-config || true
-          rm /usr/local/bin/2to3-3.11 || true
-          rm /usr/local/bin/idle3.11 || true
-          rm /usr/local/bin/pydoc3.11 || true
-          rm /usr/local/bin/python3.11 || true
-          rm /usr/local/bin/python3.11-config || true
+          rm /usr/local/bin/2to3-3.1* || true
+          rm /usr/local/bin/idle3.1* || true
+          rm /usr/local/bin/pydoc3.1* || true
+          rm /usr/local/bin/python3.1* || true
           brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog \
           gnuradio log4cpp openssl pugixml protobuf
           pip3 install mako
@@ -125,11 +123,10 @@ jobs:
           rm /usr/local/bin/pydoc3 || true
           rm /usr/local/bin/python3 || true
           rm /usr/local/bin/python3-config || true
-          rm /usr/local/bin/2to3-3.11 || true
-          rm /usr/local/bin/idle3.11 || true
-          rm /usr/local/bin/pydoc3.11 || true
-          rm /usr/local/bin/python3.11 || true
-          rm /usr/local/bin/python3.11-config || true
+          rm /usr/local/bin/2to3-3.1* || true
+          rm /usr/local/bin/idle3.1* || true
+          rm /usr/local/bin/pydoc3.1* || true
+          rm /usr/local/bin/python3.1* || true
           brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio \
           log4cpp openssl pugixml protobuf
           pip3 install mako

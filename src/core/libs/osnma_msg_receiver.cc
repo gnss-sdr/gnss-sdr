@@ -341,7 +341,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         {
                             p_dk_truncated.push_back(hash[i]);
                         }
-                    // check DS signature
+                    // Check that the padding bits received match the computed values
                     if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_truncated)
                         {
                             bool authenticated = d_crypto->verify_signature(message, d_osnma_data.d_dsm_kroot_message.ds);
@@ -371,7 +371,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
         {
             LOG(WARNING) << "OSNMA: DSM-PKR message received.";
-            // DSM-PKR message
+            // Save DSM-PKR message
             d_osnma_data.d_dsm_pkr_message.nb_dp = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
             d_osnma_data.d_dsm_pkr_message.mid = d_dsm_reader->get_mid(dsm_msg);
             for (int k = 0; k > 128; k++)
@@ -424,7 +424,17 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                               << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600
                               << " received" << std::endl;
                     // C: NPK verification against Merkle tree root.
-                    d_public_key_verified = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message);
+                    if (!d_public_key_verified)
+                        {
+                            bool verification = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message);
+                            if (verification)
+                                {
+                                    d_public_key_verified = true;
+                                    d_crypto->set_public_key(d_osnma_data.d_dsm_pkr_message.npk);
+                                }
+
+                        }
+
                 }
         }
     else
@@ -872,7 +882,6 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
 
 bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
 {
-    // TODO create leafe base message m_i
     // TODO create function for recursively apply hash
 
     // build base leaf m_i

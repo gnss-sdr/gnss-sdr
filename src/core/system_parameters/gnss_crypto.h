@@ -55,7 +55,8 @@ public:
         return d_x_4_0;
     }
 
-    // void set_public_key(const std::vector<uint8_t>& publickey);
+    void set_public_key(const std::vector<uint8_t>& publickey);
+    static std::vector<uint8_t> get_public_key();
 
 private:
 #if USE_OPENSSL_FALLBACK

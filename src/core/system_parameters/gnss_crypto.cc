@@ -598,3 +598,26 @@ std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<ui
         }
     return new_merkle[0];
 }
+
+
+void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
+{
+#if USE_OPENSSL_FALLBACK
+    // TODO - convert to OSSL PubKey format
+#else
+// GNU-TLS
+    // TODO - convert to gnutls_pubkey_st
+#endif
+
+}
+
+std::vector<uint8_t> Gnss_Crypto::get_public_key()
+{
+#if USE_OPENSSL_FALLBACK
+    // TODO
+#else
+// GNU-TLS
+    // TODO
+#endif
+    return {};
+}

@@ -86,6 +86,7 @@ private:
     bool d_kroot_verified{false};
     uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification
     uint32_t d_GST_0 {};
+    uint32_t d_GST_SIS {};
 };
 
 

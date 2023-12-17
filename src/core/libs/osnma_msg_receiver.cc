@@ -150,7 +150,9 @@ void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
               << std::endl;
 }
 
-
+/*
+ * accumulates dsm messages until completeness, then calls process_dsm_message
+ * */
 void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
     size_t index = 0;
@@ -245,7 +247,13 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
         }
 }
 
-
+/*
+ * case DSM-Kroot:
+ * - computes the padding
+ * - if successful, tries to verify the digital signature
+ * case DSM-PKR:
+ * - calls verify_dsm_pkr to verify the public key
+ * */
 void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
     if (d_osnma_data.d_dsm_header.dsm_id < 12)
@@ -441,8 +449,9 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
             index = index + 4;
         }
     // compute time of subrame and kroot time of applicability, used in read_mack_body and process_mack_message
-    d_GST_Sf = osnma_msg->TOW_sf0 + osnma_msg->WN_sf0 * 604800; // TODO - find a better placement
+    d_GST_SIS = osnma_msg->TOW_sf0 + osnma_msg->WN_sf0 * 604800; // TODO - find a better placement
     d_GST_0 = d_osnma_data.d_dsm_kroot_message.towh_k + 604800 * d_osnma_data.d_dsm_kroot_message.wn_k;
+    d_GST_Sf = d_GST_0 + 30 * std::floor((d_GST_SIS-d_GST_0)/30); // TODO - find a better placement
     if (d_osnma_data.d_dsm_kroot_message.ts != 0) // C: 4 ts <  ts < 10
         {
             read_mack_header();
@@ -703,11 +712,11 @@ void osnma_msg_receiver::read_mack_body()
     std::vector<uint8_t> K_II = d_osnma_data.d_mack_message.key;
     std::vector<uint8_t> K_I; // result of the recursive hash operations
     uint8_t size_hash_f = d_osnma_data.d_dsm_kroot_message.ks / 8;
-    // compute the current tesla key
+    // compute the current tesla key , GST_SFi and K_II change in each iteration
     for (uint8_t i = 1; i < num_of_hashes_needed ; i++)
         {
             // build message digest m = (K_I+1 || GST_SFi || alpha)
-            std::vector<uint8_t> msg(sizeof(K_II) + sizeof(d_GST_Sf) + sizeof(d_osnma_data.d_dsm_kroot_message.alpha));
+            std::vector<uint8_t> msg(sizeof(K_II) + sizeof(GST_SFi) + sizeof(d_osnma_data.d_dsm_kroot_message.alpha));
             std::copy(K_II.begin(),K_II.end(),msg.begin());
 
             msg.push_back((d_GST_Sf & 0xF000) >> 24);
@@ -772,7 +781,7 @@ void osnma_msg_receiver::read_mack_body()
 void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
     d_old_mack_message.push_back(d_osnma_data.d_mack_message); // C: old mack message is needed  for
-
+    
     // MACSEQ validation - case no FLX Tags
 
     // C: TODO check ADKD-MACLT for match, also identify which tags are FLX

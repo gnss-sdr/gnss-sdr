@@ -23,11 +23,7 @@
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
-#if INTPTR_MAX == INT64_MAX  // 64-bit processor architecture
 #include "fpga_dma-proxy.h"
-#else
-#include "fpga_ezdma.h"
-#endif
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
@@ -145,7 +141,7 @@ private:
 
     float Fpass_;
     float Fstop_;
-    uint32_t num_freq_bands_;
+    uint32_t num_input_files_;
     uint32_t dma_buff_offset_pos_;
     uint32_t in_stream_;
     uint32_t out_stream_;

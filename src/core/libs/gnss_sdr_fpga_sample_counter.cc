@@ -206,7 +206,7 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
     out[0].Channel_ID = -1;
     out[0].fs = fs;
 
-    if ((sample_counter - last_sample_counter) > samples_per_report)
+    if ((sample_counter - last_sample_counter) >= samples_per_report)
         {
             last_sample_counter = sample_counter;
 

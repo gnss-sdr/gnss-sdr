@@ -23,7 +23,7 @@
 #include <iostream>
 
 void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configuration,
-    const std::string &role, uint32_t sel_queue_fpga, uint32_t blk_exp, double chip_rate, double code_length_chips)
+    const std::string &role, uint32_t sel_queue_fpga, uint32_t blk_exp, uint32_t downsampling_factor_default, double chip_rate, double code_length_chips)
 {
     // sampling frequency
     const int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
@@ -33,7 +33,7 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
     doppler_max = configuration->property(role + ".doppler_max", doppler_max);
 
     // downsampling factor
-    downsampling_factor = configuration->property(role + ".downsampling_factor", downsampling_factor);
+    downsampling_factor = configuration->property(role + ".downsampling_factor", downsampling_factor_default);
 
     fs_in = fs_in / downsampling_factor;
 

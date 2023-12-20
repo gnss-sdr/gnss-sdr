@@ -150,6 +150,7 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
+    static const uint32_t downsampling_factor_default = 1;
     static const uint32_t fpga_buff_num = 0;  // L2 band
     static const uint32_t fpga_blk_exp = 13;  // default block exponent
 

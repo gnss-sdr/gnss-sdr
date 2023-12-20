@@ -337,6 +337,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     struct iio_channel *rx_chan0;  // stream channel 0
     struct iio_channel *rx_chan1;  // stream channel 1
     struct iio_channel *chn;       // phy channel
+    struct iio_channel *lo_chn;    // phy channel
 
     int ret;
 
@@ -419,12 +420,12 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         }
     // Configure LO channel
     std::cout << "* Acquiring " << RX_DEV_A << " LO RX channel 0\n";
-    if (!get_lo_chan(ad9361_phy, RX, 0, &chn))
+    if (!get_lo_chan(ad9361_phy, RX, 0, &lo_chn))
         {
             std::cout << "RX LO channel 0not found\n";
             throw std::runtime_error("RX LO channel 0not found");
         }
-    wr_ch_lli(chn, "frequency", freq0_);
+    wr_ch_lli(lo_chn, "frequency", freq0_);
 
     if (enable_ad9361_b)
         {
@@ -485,7 +486,10 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     if (rx2_enable_)
         {
             iio_channel_enable(rx_chan1);
-            ad9361_fmcomms5_multichip_sync(ctx, FIXUP_INTERFACE_TIMING | CHECK_SAMPLE_RATES);
+            if (enable_ad9361_b)
+                {
+                    ad9361_fmcomms5_multichip_sync(ctx, FIXUP_INTERFACE_TIMING | CHECK_SAMPLE_RATES);
+                }
         }
     if (!rx1_enable_ and !rx2_enable_)
         {

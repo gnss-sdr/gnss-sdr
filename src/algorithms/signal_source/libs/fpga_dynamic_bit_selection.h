@@ -43,7 +43,7 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_dynamic_bit_selection(uint32_t num_freq_bands);
+    explicit Fpga_dynamic_bit_selection(bool enable_rx1_band, bool enable_rx2_band);
 
     /*!
      * \brief Destructor
@@ -69,13 +69,18 @@ private:
     static const uint32_t Power_Threshold_High = 9000;
     static const uint32_t Power_Threshold_Low = 3000;
 
-    void close_devices(void);
+    void open_device(volatile unsigned **d_map_base, int &d_dev_descr, int freq_band);
+    void bit_selection_per_rf_band(volatile unsigned *d_map_base, uint32_t shift_out_bits);
+    void close_device(volatile unsigned *d_map_base, int &d_dev_descr);
 
-    std::vector<volatile unsigned*> d_map_base;
-    std::vector<int> d_device_descriptors;
-    std::vector<uint32_t> d_shift_out_bits;
-
-    uint32_t d_num_freq_bands;  // number of frequency bands
+    volatile unsigned *d_map_base_freq_band_1;
+    volatile unsigned *d_map_base_freq_band_2;
+    int d_dev_descr_freq_band_1;
+    int d_dev_descr_freq_band_2;
+    uint32_t d_shift_out_bits_freq_band_1;
+    uint32_t d_shift_out_bits_freq_band_2;
+    bool d_enable_rx1_band;
+    bool d_enable_rx2_band;
 };
 
 

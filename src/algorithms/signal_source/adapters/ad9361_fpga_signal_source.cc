@@ -558,8 +558,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
                 }
         }
 
-    // skip the initial samples if neededsrc/algorithms/signal_source/libs/ad9361_manager.cc
-
+    // skip the initial samples if needed
     uint64_t bytes_to_skeep = samples_to_skip * item_size;
     try
         {

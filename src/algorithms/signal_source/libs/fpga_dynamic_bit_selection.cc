@@ -82,6 +82,7 @@ void Fpga_dynamic_bit_selection::bit_selection()
         }
 }
 
+
 void Fpga_dynamic_bit_selection::open_device(volatile unsigned **d_map_base, int &d_dev_descr, int freq_band)
 {
     // find the uio device file corresponding to the dynamic bit selector 0 module.
@@ -108,6 +109,7 @@ void Fpga_dynamic_bit_selection::open_device(volatile unsigned **d_map_base, int
         }
 }
 
+
 void Fpga_dynamic_bit_selection::bit_selection_per_rf_band(volatile unsigned *d_map_base, uint32_t shift_out_bits)
 {
     // estimated signal power
@@ -132,6 +134,7 @@ void Fpga_dynamic_bit_selection::bit_selection_per_rf_band(volatile unsigned *d_
     // update bit selection corresopnding to frequency band 1
     d_map_base[0] = shift_out_bits;
 }
+
 
 void Fpga_dynamic_bit_selection::close_device(volatile unsigned *d_map_base, int &d_dev_descr)
 {

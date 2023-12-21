@@ -27,15 +27,18 @@ pps_tcp_rx::pps_tcp_rx()
     clientSd = -1;
 }
 
+
 pps_tcp_rx::~pps_tcp_rx()
 {
     // TODO Auto-generated destructor stub
 }
 
+
 void pps_tcp_rx::set_pps_samplestamp_queue(std::shared_ptr<Concurrent_Queue<PpsSamplestamp>> queue)
 {
     Pps_queue = std::move(queue);
 }
+
 
 bool pps_tcp_rx::send_cmd(std::string cmd)
 {
@@ -59,6 +62,8 @@ bool pps_tcp_rx::send_cmd(std::string cmd)
         }
     return true;
 }
+
+
 void pps_tcp_rx::receive_pps(std::string ip_address, int port)
 {
     // create a message buffer

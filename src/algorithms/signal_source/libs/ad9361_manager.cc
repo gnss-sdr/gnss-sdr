@@ -157,7 +157,7 @@ void cfg_ad9361_streaming_ch(struct stream_cfg *cfg, iio_channel *chn)
 
 
 int setup_filter(const std::string &filter_source_, uint64_t bandwidth_, uint64_t sample_rate_, uint64_t freq_, const std::string &rf_port_select_,
-    struct iio_device *ad9361_phy_dev, struct iio_channel *rx_chan, struct iio_channel *chn, int chid, std::string filter_filename_, float Fpass_, float Fstop_)
+    struct iio_device *ad9361_phy_dev, struct iio_channel *rx_chan, struct iio_channel *chn, int chid, std::string filter_filename_, [[maybe_unused]] float Fpass_, [[maybe_unused]] float Fstop_)
 {
     int ret;
     if (filter_source_ == "Off")

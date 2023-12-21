@@ -29,6 +29,12 @@
 Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(bool enable_rx1_band, bool enable_rx2_band)
     : d_enable_rx1_band(enable_rx1_band), d_enable_rx2_band(enable_rx2_band)
 {
+    d_map_base_freq_band_1 = nullptr;
+    d_map_base_freq_band_2 = nullptr;
+    d_dev_descr_freq_band_1 = 0;
+    d_dev_descr_freq_band_2 = 0;
+    d_shift_out_bits_freq_band_1 = 0;
+    d_shift_out_bits_freq_band_2 = 0;
     if (d_enable_rx1_band)
         {
             open_device(&d_map_base_freq_band_1, d_dev_descr_freq_band_1, 0);
@@ -41,7 +47,7 @@ Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(bool enable_rx1_band, boo
         {
             open_device(&d_map_base_freq_band_2, d_dev_descr_freq_band_2, 1);
 
-            // init bit selection corresponding to frequency band 1
+            // init bit selection corresponding to frequency band 2
             d_shift_out_bits_freq_band_2 = shift_out_bits_default;
             d_map_base_freq_band_2[0] = d_shift_out_bits_freq_band_2;
         }

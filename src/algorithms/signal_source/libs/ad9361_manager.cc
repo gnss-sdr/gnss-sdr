@@ -450,7 +450,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                 {
                     return false;
                 }
-            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq1_, rf_port_select_, ad9361_phy_B, rx_chan1, chn, 0, filter_filename_, Fpass_, Fstop_) == -1)
+            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq1_, rf_port_select_, ad9361_phy_B, rx_chan1, chn, 0, std::move(filter_filename_), Fpass_, Fstop_) == -1)
                 {
                     return false;
                 }
@@ -472,7 +472,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                     std::cout << rx_stream_dev_a << " channel 1 not found\n";
                     throw std::runtime_error(rx_stream_dev_a + "RX channel 1 not found");
                 }
-            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq0_, rf_port_select_, ad9361_phy, rx_chan1, chn, 1, filter_filename_, Fpass_, Fstop_) == -1)
+            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq0_, rf_port_select_, ad9361_phy, rx_chan1, chn, 1, std::move(filter_filename_), Fpass_, Fstop_) == -1)
                 {
                     return false;
                 }

@@ -2097,6 +2097,7 @@ void GNSSFlowgraph::set_configuration(const std::shared_ptr<ConfigurationInterfa
 #if ENABLE_FPGA
 void GNSSFlowgraph::start_acquisition_helper()
 {
+    std::lock_guard<std::mutex> lock(signal_list_mutex_);
     for (int i = 0; i < channels_count_; i++)
         {
             if (channels_state_[i] == 1)

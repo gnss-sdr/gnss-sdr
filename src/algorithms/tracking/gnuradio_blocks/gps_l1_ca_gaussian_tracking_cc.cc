@@ -308,10 +308,6 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
 
     sys = std::string(1, d_acquisition_gnss_synchro->System);
 
-    // DEBUG OUTPUT
-    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
-
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
@@ -319,6 +315,10 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " Code Phase correction [samples]=" << delay_correction_samples
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
+
+    gr::thread::scoped_lock l(d_setlock);
+    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
+    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 }
 
 
@@ -776,6 +776,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
                         }
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
                         {
+                            gr::thread::scoped_lock l(d_setlock);
                             std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
                             this->message_port_pub(pmt::mp("events"), pmt::from_long(3));  // 3 -> loss of lock

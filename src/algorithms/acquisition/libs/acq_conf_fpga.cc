@@ -21,6 +21,7 @@
 #include <glog/logging.h>
 #include <cmath>
 #include <iostream>
+#include <utility>
 
 void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role, uint32_t sel_queue_fpga, uint32_t blk_exp, uint32_t downsampling_factor_default, double chip_rate, double code_length_chips)
@@ -58,7 +59,7 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
             std::cout << "Cannot find the FPGA uio device file corresponding to device name " << acquisition_device_name << std::endl;
             throw std::exception();
         }
-    device_name = device_io_name;
+    device_name = std::move(device_io_name);
 
     // exclusion limit
     excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / chip_rate) * static_cast<float>(fs_in)));

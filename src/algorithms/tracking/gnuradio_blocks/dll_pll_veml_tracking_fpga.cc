@@ -446,7 +446,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -1383,6 +1383,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
     d_acquisition_gnss_synchro = p_gnss_synchro;
     if (p_gnss_synchro->PRN > 0)
         {
+            gr::thread::scoped_lock lock(d_setlock);
             // A set_gnss_synchro command with a valid PRN is received when the system is going to run acquisition with that PRN.
             // We can use this command to pre-initialize tracking parameters and variables before the actual acquisition process takes place.
             // In this way we minimize the latency between acquisition and tracking once the acquisition has been made.
@@ -1527,8 +1528,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 {
                 case 1:  // Pull-in
                     {
-                        d_worker_is_done = false;
                         boost::mutex::scoped_lock lock(d_mutex);
+                        d_worker_is_done = false;
                         while (!d_worker_is_done)
                             {
                                 d_m_condition.wait(lock);

@@ -90,6 +90,7 @@ GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
 
     doppler_max = 5000;
     doppler_step = 100;
+    nsamples_to_transfer = 0;
 }
 
 

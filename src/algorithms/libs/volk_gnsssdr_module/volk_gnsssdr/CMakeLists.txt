@@ -539,6 +539,18 @@ install(EXPORT VOLK_GNSSSDR-export FILE VolkGnsssdrTargets.cmake
     NAMESPACE VolkGnsssdr:: DESTINATION ${CMAKE_MODULES_DIR}/volk_gnsssdr
 )
 
+
+########################################################################
+# Remove leftovers in the source directory
+########################################################################
+install(CODE "file(REMOVE ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.py)")
+install(CODE "file(REMOVE ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_arch_defs.pyc)")
+install(CODE "file(REMOVE ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_kernel_defs.pyc)")
+install(CODE "file(REMOVE ${PROJECT_SOURCE_DIR}/gen/volk_gnsssdr_machine_defs.pyc)")
+install(CODE "file(REMOVE_RECURSE ${PROJECT_SOURCE_DIR}/gen/__pycache__)")
+
+
+
 ########################################################################
 # Option to enable QA testing, on by default
 ########################################################################

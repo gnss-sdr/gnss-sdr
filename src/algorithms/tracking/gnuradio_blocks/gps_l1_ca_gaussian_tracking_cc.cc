@@ -609,7 +609,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
-
+    gr::thread::scoped_lock l(d_setlock);
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -746,7 +746,6 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
             d_rem_code_phase_chips = d_code_freq_chips * (d_rem_code_phase_samples / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
-            gr::thread::scoped_lock l(d_setlock);
             if (d_cn0_estimation_counter < FLAGS_cn0_samples)
                 {
                     // fill buffer with prompt correlator output values

@@ -838,6 +838,7 @@ $ sudo port install doxygen +docs
 ```
 
 For macOS versions older than Sonoma, you will also need LAPACK:
+
 ```
 $ sudo port install lapack
 ```
@@ -885,6 +886,7 @@ $ brew install graphviz doxygen
 ```
 
 For macOS versions older than Sonoma, you will also need LAPACK:
+
 ```
 $ brew install lapack
 ```

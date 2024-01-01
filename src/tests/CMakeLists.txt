@@ -1,7 +1,7 @@
 # GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
 # This file is part of GNSS-SDR.
 #
-# SPDX-FileCopyrightText: 2010-2020 C. Fernandez-Prades cfernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2010-2024 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
 
@@ -408,6 +408,10 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                 set(GNSSTK_FLAGS "-DCMAKE_CXX_FLAGS:STRING=-w")  # Fix for clang in aarch64
             endif()
             if(CMAKE_VERSION VERSION_GREATER 3.17.0)
+                set(GNSSTK_CXX_STANDARD 17)
+                if((${CMAKE_SYSTEM_NAME} MATCHES "Darwin") AND ("${DARWIN_VERSION}" VERSION_GREATER_EQUAL "14"))
+                    set(GNSSTK_CXX_STANDARD 14)
+                endif()
                 ExternalProject_Add(gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}
                     GIT_REPOSITORY https://github.com/SGL-UT/gnsstk
                     GIT_TAG v${GNSSSDR_GNSSTK_LOCAL_VERSION}
@@ -420,7 +424,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
                         -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/install
                         -DBUILD_EXT=ON
                         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                        -DCMAKE_CXX_STANDARD=17
+                        -DCMAKE_CXX_STANDARD=${GNSSTK_CXX_STANDARD}
                         -DCMAKE_CXX_EXTENSIONS=ON
                         -DCMAKE_C_STANDARD=11
                         -DCMAKE_C_EXTENSIONS=ON

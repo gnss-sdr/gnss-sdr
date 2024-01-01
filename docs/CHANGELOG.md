@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -50,6 +50,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Fixed undefined behaviour in `volk_gnsssdr` arising from incompatibility
   between complex numbers in C and C++.
 - Now build system paths are not leaked when cross-compiling.
+- Enabled building using macOS Sonoma and `arm64` processor architecture.
 
 ### Improvements in Repeatability:
 

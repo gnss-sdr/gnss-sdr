@@ -235,6 +235,7 @@ Gps_L1_Ca_Gaussian_Tracking_cc::Gps_L1_Ca_Gaussian_Tracking_cc(
 
 void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
 {
+    gr::thread::scoped_lock l(d_setlock);
     /*
      *  correct the code phase according to the delay between acq and trk
      */
@@ -316,7 +317,6 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
               << " Code Phase correction [samples]=" << delay_correction_samples
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
 
-    gr::thread::scoped_lock l(d_setlock);
     std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
     LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 }

@@ -90,6 +90,7 @@ GpsL1CaPcpsAcquisitionTestFpga::GpsL1CaPcpsAcquisitionTestFpga()
 
     doppler_max = 5000;
     doppler_step = 100;
+    nsamples_to_transfer = 0;
 }
 
 
@@ -279,7 +280,7 @@ public:
     }
 
 private:
-    bool acquisition_successful;
+    bool acquisition_successful{};
 };
 
 
@@ -309,7 +310,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     args.scaling_factor = DMA_SIGNAL_SCALING_FACTOR;
 
     std::string file = "data/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
-    args.file = file;  // DMA file configuration
+    args.file = std::move(file);  // DMA file configuration
 
     // instantiate the FPGA switch and set the
     // switch position to DMA.
@@ -347,7 +348,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     args.nsamples_tx = nsamples_to_transfer;
 
     // run the acquisition. The acquisition must run in a separate thread because it is a blocking function
-    args_acq.acquisition = acquisition;
+    args_acq.acquisition = std::move(acquisition);
 
     if (pthread_create(&thread_acquisition, nullptr, handler_acquisition_gps_l1_acq_test, reinterpret_cast<void*>(&args_acq)) < 0)
         {

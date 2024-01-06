@@ -73,7 +73,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
       tx_bandwidth_(configuration->property(role + ".tx_bandwidth", static_cast<uint64_t>(500000))),
       Fpass_(configuration->property(role + ".Fpass", static_cast<float>(0.0))),
       Fstop_(configuration->property(role + ".Fstop", static_cast<float>(0.0))),
-      num_freq_bands_(2),
+      num_input_files_(1),
       dma_buff_offset_pos_(0),
       in_stream_(in_stream),
       out_stream_(out_stream),
@@ -95,16 +95,14 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 {
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", 0.0);
     const size_t header_size = configuration->property(role + ".header_size", 0);
-    const int num_ch_rx1 = configuration->property("Channels_1C.count", 0) +
-                           configuration->property("Channels_1B.count", 0);
-    const int num_ch_rx2 = (configuration->property("Channels_L2.count", 0) > 0) ? configuration->property("Channels_L2.count", 0) : configuration->property("Channels_L5.count", 0) + configuration->property("Channels_5X.count", 0);
 
-    // number of frequency bands
-    if (num_ch_rx2 == 0)
-        {
-            num_freq_bands_ = 1;
-        }
+    const bool enable_rx1_band((configuration->property("Channels_1C.count", 0) > 0) ||
+                               (configuration->property("Channels_1B.count", 0) > 0));
+    const bool enable_rx2_band((configuration->property("Channels_L2.count", 0) > 0) ||
+                               (configuration->property("Channels_L5.count", 0) > 0) ||
+                               (configuration->property("Channels_5X.count", 0) > 0));
 
+    const uint32_t num_freq_bands = ((enable_rx1_band == true) and (enable_rx2_band == true)) ? 2 : 1;
     if (freq0_ == 0)
         {
             // use ".freq0"
@@ -132,6 +130,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     if (filename0_.empty())
         {
+            num_input_files_ = 2;
             filename0_ = configuration->property(role + ".filename0", empty_string);
             filename1_ = configuration->property(role + ".filename1", empty_string);
         }
@@ -141,7 +140,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     // if more than one input file are specified then the DMA transfer the samples to both the L1 and the L2/L5 frequency channels.
     if (filename1_.empty())
         {
-            if (num_ch_rx1 != 0)
+            if (enable_rx1_band)
                 {
                     dma_buff_offset_pos_ = 2;
                 }
@@ -427,14 +426,14 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     return;
                 }
 
-            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands_, dump_, dump_filename);
+            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands, dump_, dump_filename);
             thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
         }
 
     // dynamic bits selection
     if (enable_dynamic_bit_selection_)
         {
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(num_freq_bands_);
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(enable_rx1_band, enable_rx2_band);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 
@@ -607,7 +606,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
 
     // if only one frequency band is used then clear the samples corresponding to the unused frequency band
     uint32_t dma_index = 0;
-    if (num_freq_bands_ == 1)
+    if (num_input_files_ == 1)
         {
             // if only one file is enabled then clear the samples corresponding to the frequency band that is not used.
             for (int index0 = 0; index0 < (nread_elements); index0 += 2)
@@ -660,7 +659,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
                 }
 
             // read filename 1 (if enabled)
-            if (num_freq_bands_ > 1)
+            if (num_input_files_ > 1)
                 {
                     dma_index = 0;
                     try
@@ -781,7 +780,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
             std::cerr << "Exception closing file " << filename0_ << '\n';
         }
 
-    if (num_freq_bands_ > 1)
+    if (num_input_files_ > 1)
         {
             try
                 {

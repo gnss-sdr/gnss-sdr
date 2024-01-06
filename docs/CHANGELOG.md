@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2023 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -45,11 +45,12 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Updated local `cpu_features` library to v0.9.0.
 - `volk_gnsssdr`: fix syntax for Python 3.12 without breaking backward
   compatibility with Python 2.7.
-- Fixed linking against latest GNU Radio version.
+- Fixed linking against GNU Radio v3.10.9.1.
 - Make use of new API if linking against VOLK >= 3.1.
 - Fixed undefined behaviour in `volk_gnsssdr` arising from incompatibility
   between complex numbers in C and C++.
 - Now build system paths are not leaked when cross-compiling.
+- Enabled building using macOS Sonoma and `arm64` processor architecture.
 
 ### Improvements in Repeatability:
 

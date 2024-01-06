@@ -224,9 +224,9 @@ check_c_source_compiles("#include <arm_neon.h>\nint main(){ uint8_t *dest; uint8
 
 if(neon_compile_result)
     set(CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/include)
-    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM __VOLK_VOLATILE(\"vrev32.8 q0, q0\");}"
+    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM(\"vrev32.8 q0, q0\");}"
         have_neonv7_result)
-    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM __VOLK_VOLATILE(\"sub v1.4s,v1.4s,v1.4s\");}"
+    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM(\"sub v1.4s,v1.4s,v1.4s\");}"
         have_neonv8_result)
 
     if(NOT have_neonv7_result)

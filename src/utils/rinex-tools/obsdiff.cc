@@ -30,6 +30,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #if GNSSTK_USES_GPSTK_NAMESPACE
@@ -673,7 +674,7 @@ void carrier_doppler_single_diff(
         {
             // 2. RMSE
             arma::vec err;
-            err = delta_measured_carrier_doppler_cycles;
+            err = std::move(delta_measured_carrier_doppler_cycles);
             arma::vec err2 = arma::square(err);
             double rmse = sqrt(arma::mean(err2));
 
@@ -865,7 +866,7 @@ void code_pseudorange_single_diff(
             // 2. RMSE
             arma::vec err;
 
-            err = delta_measured_obs;
+            err = std::move(delta_measured_obs);
 
             arma::vec err2 = arma::square(err);
             double rmse = sqrt(arma::mean(err2));
@@ -1014,7 +1015,7 @@ void coderate_phaserate_consistence(
 
     // 2. RMSE
     arma::vec err;
-    err = ratediff;
+    err = std::move(ratediff);
 
     arma::vec err2 = arma::square(err);
     double rmse = sqrt(arma::mean(err2));
@@ -1098,7 +1099,7 @@ void code_phase_diff(
         {
             // 2. RMSE
             arma::vec err;
-            err = code_minus_phase;
+            err = std::move(code_minus_phase);
 
             arma::vec err2 = arma::square(err);
             double rmse = sqrt(arma::mean(err2));
@@ -1727,22 +1728,42 @@ int main(int argc, char** argv)
 {
     std::cout << "Running RINEX observables difference tool...\n";
     gflags::ParseCommandLineFlags(&argc, &argv, true);
-    if (FLAGS_single_diff)
+    try
         {
-            if (FLAGS_dupli_sat)
+            if (FLAGS_single_diff)
                 {
-                    RINEX_doublediff_dupli_sat();
+                    if (FLAGS_dupli_sat)
+                        {
+                            RINEX_doublediff_dupli_sat();
+                        }
+                    else
+                        {
+                            RINEX_singlediff();
+                        }
                 }
             else
                 {
-                    RINEX_singlediff();
+                    RINEX_doublediff(FLAGS_remove_rx_clock_error);
                 }
         }
-    else
+    catch (const gnsstk::Exception& e)
         {
-            RINEX_doublediff(FLAGS_remove_rx_clock_error);
+            std::cerr << e;
+            gflags::ShutDownCommandLineFlags();
+            return 1;
         }
-
+    catch (const std::exception& e)
+        {
+            std::cerr << "Exception: " << e.what();
+            gflags::ShutDownCommandLineFlags();
+            return 1;
+        }
+    catch (...)
+        {
+            std::cerr << "Unknown error\n";
+            gflags::ShutDownCommandLineFlags();
+            return 1;
+        }
     gflags::ShutDownCommandLineFlags();
     return 0;
 }

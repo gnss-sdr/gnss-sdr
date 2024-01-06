@@ -186,7 +186,7 @@ public:
 
 private:
     static const uint32_t NUM_PRNs = 32;
-
+    static const uint32_t downsampling_factor_default = 4;
     static const uint32_t fpga_buff_num = 0;  // L1/E1 band
     static const uint32_t fpga_blk_exp = 10;  // default block exponent
 

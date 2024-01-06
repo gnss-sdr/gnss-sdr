@@ -805,7 +805,7 @@ double ad936x_iio_custom::get_rx_gain(int ch_num)
 }
 
 
-bool ad936x_iio_custom::calibrate(int ch, double bw_hz)
+bool ad936x_iio_custom::calibrate([[maybe_unused]] int ch, [[maybe_unused]] double bw_hz)
 {
     if (check_device() == false) return false;
     // todo

@@ -49,6 +49,8 @@ public:
     uint32_t PRN{};
     uint32_t WN_sf0{};
     uint32_t TOW_sf0{};
+    uint32_t t0e_1{};
+    uint32_t IOD_nav{};
 };
 
 /*!

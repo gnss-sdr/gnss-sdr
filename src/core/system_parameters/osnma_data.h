@@ -70,6 +70,7 @@ public:
     MACK_tag_and_info() = default;
     uint64_t tag; // C: 20-40 bits
     MACK_tag_info tag_info;
+    // TODO - std::vector<uint8_t> with complete Tag
 };
 
 class DSM_PKR_message

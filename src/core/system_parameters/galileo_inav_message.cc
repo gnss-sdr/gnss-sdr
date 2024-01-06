@@ -1430,6 +1430,9 @@ OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
             TOW_sf0 += 604800;
         }
     nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
+    // TODO - draft for retrieving NavData for use during Tag verification.
+    nma_msg.t0e_1 = static_cast<uint32_t>(t0e_1);
+    nma_msg.IOD_nav = static_cast<uint32_t>(IOD_nav_1);
     return nma_msg;
 }
 

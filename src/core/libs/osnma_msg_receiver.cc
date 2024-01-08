@@ -460,7 +460,7 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
         }
     // compute time of subrame and kroot time of applicability, used in read_mack_body and process_mack_message
     // TODO - find a better placement
-    d_GST_SIS = osnma_msg->TOW_sf0 + osnma_msg->WN_sf0 * 604800;
+    d_GST_SIS = osnma_msg->TOW_sf0 + osnma_msg->WN_sf0 * 604800; // TODO - unsure about this operation and of the -24 seconds,...
     d_GST_0 = d_osnma_data.d_dsm_kroot_message.towh_k + 604800 * d_osnma_data.d_dsm_kroot_message.wn_k;
     d_GST_Sf = d_GST_0 + 30 * std::floor((d_GST_SIS-d_GST_0)/30); // Eq. 3 R.G.
     if (d_osnma_data.d_dsm_kroot_message.ts != 0) // C: 4 ts <  ts < 10
@@ -888,7 +888,6 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
         {
             mac = d_crypto->computeCMAC_AES(applicable_key, m);
         }
-
     // Truncate the twelve MSBits and compare with received MACSEQ
     uint16_t mac_msb = 0;
     if (!mac.empty())
@@ -899,17 +898,101 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
     int num_tags_added = 0;
     if (computed_macseq == d_osnma_data.d_mack_message.header.macseq)
         {
-
-            // C: TODO - for each tag in tag_and_info[] && until l_t_verified <= L_t_min or tags of MACK are finished
-            // C:  d_osnma_data.d_dsm_kroot_message.ts gives l_t of each tag for this mack
-            // C:  tag = trunc(l_t, mac(applicable_key,m))
-            // C:  where m = (PRNd || PRNa || GSTsf || CTR || NMAS || NavData || P)
-            // C: si l_t_verified >= L_t_min d_new_data = true
             std::cout << "OSNMA: MACSEQ authenticated for PRN_A "
                       << osnma_msg->PRN << " with WN="
                       << osnma_msg->WN_sf0 << ", TOW="
-                      << osnma_msg->TOW_sf0 << ". Tags added: "
-                      << num_tags_added << std::endl;
+                      << osnma_msg->TOW_sf0 << ". Verifying tags. "
+                      << std::endl;
+
+            uint8_t l_t_verified = 0; // tag bits verified
+            uint8_t i = 0;
+            // TODO - configuration file must define which tags shall be verified
+            // e.g. NavDataVerification: A == ALL, T == Timing Parameters, ECS == Ephemeris,Clock and Status.
+            std::string navDataToVerify = "EphemerisClockAndStatus"; // ADKD 0
+            // Timing Parameters ADKD 4
+            // EphemerisClockAndStatus ADKD 12 10+ Delay
+            m.clear();
+            uint8_t lt_bits = 0;
+            const auto it2 = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
+            if (it2 != OSNMA_TABLE_11.cend())
+                {
+                    lt_bits = it2->second;
+                }
+            if (lt_bits == 0)
+                {
+                    return; // C: TODO if Tag length is 0, what is the action? no verification possible of NavData for sure.
+                }
+            while (i < d_osnma_data.d_mack_message.tag_and_info.size() && l_t_verified < d_Lt_min)
+                {
+                    // compute m
+                    m.push_back(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.PRN_d);
+                    m.push_back(osnma_msg->PRN);
+                    m.push_back(static_cast<uint8_t>((d_GST_Sf & 0xFF000000) >> 24));
+                    m.push_back(static_cast<uint8_t>((d_GST_Sf & 0x00FF0000) >> 16));
+                    m.push_back(static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8));
+                    m.push_back(static_cast<uint8_t>(d_GST_Sf & 0x000000FF));
+                    m.push_back(i+1); // CTRauto
+                    m.push_back(d_osnma_data.d_nma_header.nmas);
+                    // TODO - other ADKD need different data.
+                    // TODO - store buffer the NavData of 11 last subframes, ADKD 0 and 12 => NavData belongs to SF-1
+                    m.insert(m.end(),osnma_msg->EphemerisClockAndStatusData.begin(),osnma_msg->EphemerisClockAndStatusData.end()) ;
+                    i = 0;
+                    while (i<10/*TODO - number of padding zeroes to be computed*/)
+                        {
+                            m.push_back(0);
+                            i++;
+                        }
+
+                    // compute mac
+                    if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
+                        {
+                            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+                        }
+                    else if (d_osnma_data.d_dsm_kroot_message.mf == 1) // C: CMAC-AES
+                        {
+                            mac = d_crypto->computeCMAC_AES(applicable_key, m);
+                        }
+
+                    // compute tag = trunc(l_t, mac(K,m)) Eq. 23 ICD
+                    uint64_t computed_mac = static_cast<uint64_t>(mac[0]) << (lt_bits - 8);
+                    computed_mac += (static_cast<uint64_t>(mac[1]) << (lt_bits - 16));
+                    if (lt_bits == 20)
+                        {
+                            computed_mac += (static_cast<uint64_t>(mac[1] & 0xF0) >> 4);
+                        }
+                    else if (lt_bits == 24)
+                        {
+                            computed_mac += static_cast<uint64_t>(mac[2]);
+                        }
+                    else if (lt_bits == 28)
+                        {
+                            computed_mac += (static_cast<uint64_t>(mac[2]) << 4);
+                            computed_mac += (static_cast<uint64_t>(mac[3] & 0xF0) >> 4);
+                        }
+                    else if (lt_bits == 32)
+                        {
+                            computed_mac += (static_cast<uint64_t>(mac[2]) << 8);
+                            computed_mac += static_cast<uint64_t>(mac[3]);
+                        }
+                    else if (lt_bits == 40)
+                        {
+                            computed_mac += (static_cast<uint64_t>(mac[2]) << 16);
+                            computed_mac += (static_cast<uint64_t>(mac[3]) << 8);
+                            computed_mac += static_cast<uint64_t>(mac[4]);
+                        }
+
+                    // Compare computed tag with received one truncated
+                    if (d_osnma_data.d_mack_message.tag_and_info[i].tag == computed_mac)
+                        {
+                            std::cout << "Galileo OSNMA: Tag verification successful " << std::endl;
+                            l_t_verified += lt_bits;
+                        }
+                    else
+                        {
+                            std::cout << "Galileo OSNMA: Tag verification failed " << std::endl;
+                        }
+
+                }
         }
 }
 

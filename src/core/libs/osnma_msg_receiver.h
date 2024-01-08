@@ -85,6 +85,7 @@ private:
     bool d_public_key_verified{false};
     bool d_kroot_verified{false};
     uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification
+    uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint32_t d_GST_0 {};
     uint32_t d_GST_SIS {};
 };

@@ -156,16 +156,7 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
 
 bool Glonass_Gnav_Navigation_Message::read_navigation_bool(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    bool value;
-
-    if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)
-        {
-            value = true;
-        }
-    else
-        {
-            value = false;
-        }
+    bool value = bits[GLONASS_GNAV_STRING_BITS - parameter[0].first];
     return value;
 }
 
@@ -173,16 +164,11 @@ bool Glonass_Gnav_Navigation_Message::read_navigation_bool(const std::bitset<GLO
 uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    const int32_t num_of_slices = parameter.size();
-    for (int32_t i = 0; i < num_of_slices; i++)
+    for (const auto& p : parameter)
         {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < p.second; j++)
                 {
-                    value <<= 1ULL;  // shift left
-                    if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
-                        {
-                            value += 1ULL;  // insert the bit
-                        }
+                    value = (value << 1U) | static_cast<uint64_t>(bits[GLONASS_GNAV_STRING_BITS - p.first - j]);
                 }
         }
     return value;
@@ -192,26 +178,14 @@ uint64_t Glonass_Gnav_Navigation_Message::read_navigation_unsigned(const std::bi
 int64_t Glonass_Gnav_Navigation_Message::read_navigation_signed(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     int64_t value = 0LL;
-    int64_t sign = 0LL;
-    const int32_t num_of_slices = parameter.size();
-    // read the MSB and perform the sign extension
-    if (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1)
+    int64_t sign = (bits[GLONASS_GNAV_STRING_BITS - parameter[0].first] == 1) ? -1LL : 1LL;
+
+    // const int32_t num_of_slices = parameter.size();
+    for (const auto& p : parameter)
         {
-            sign = -1LL;
-        }
-    else
-        {
-            sign = 1LL;
-        }
-    for (int32_t i = 0; i < num_of_slices; i++)
-        {
-            for (int32_t j = 1; j < parameter[i].second; j++)
+            for (int32_t j = 1; j < p.second; j++)
                 {
-                    value <<= 1;  // shift left
-                    if (bits[GLONASS_GNAV_STRING_BITS - parameter[i].first - j] == 1)
-                        {
-                            value += 1LL;  // insert the bit
-                        }
+                    value = (value << 1) + bits[GLONASS_GNAV_STRING_BITS - p.first - j];
                 }
         }
     return (sign * value);

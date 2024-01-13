@@ -53,7 +53,7 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew install ninja hdf5 automake armadillo lapack \
+          brew install ninja hdf5 automake armadillo lapack libmatio \
           gflags glog gnuradio log4cpp openssl pugixml protobuf
           pip3 install mako
       - name: configure
@@ -82,8 +82,8 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog \
-          gnuradio log4cpp openssl pugixml protobuf
+          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio \
+          gflags glog gnuradio log4cpp openssl pugixml protobuf
           pip3 install mako
       - name: configure
         run: cd build && cmake -GXcode ..

@@ -44,6 +44,7 @@ if(APPLE)
             ${GFLAGS_ROOT_USER_PROVIDED}/lib
             /usr/local/lib
             /opt/local/lib
+            /opt/homebrew/opt/gflags/lib
     )
 else()
     find_path(GFlags_ROOT_DIR
@@ -84,6 +85,7 @@ else()
 endif()
 
 if(GFlags_ROOT_DIR)
+    unset(GFlags_INCLUDE_DIRS CACHE)
     # We are testing only a couple of files in the include directories
     find_path(GFlags_INCLUDE_DIRS
         gflags/gflags.h
@@ -93,6 +95,7 @@ if(GFlags_ROOT_DIR)
             /usr/include
             /usr/local/include
             /opt/local/include
+            /opt/homebrew/opt/gflags/include
     )
 
     # Find the libraries

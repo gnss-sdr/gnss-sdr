@@ -18,6 +18,7 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_make_unique.h"
 #include "in_memory_configuration.h"
+#include <utility>
 
 TEST(InMemoryConfiguration, IsPresent)
 {
@@ -35,7 +36,7 @@ TEST(InMemoryConfiguration, StoreAndRetrieve)
     auto configuration = std::make_unique<InMemoryConfiguration>();
     configuration->set_property("Foo.property1", "value");
     std::string default_value = "default_value";
-    std::string value = configuration->property("Foo.property1", default_value);
+    std::string value = configuration->property("Foo.property1", std::move(default_value));
     EXPECT_STREQ("value", value.c_str());
 }
 
@@ -45,7 +46,7 @@ TEST(InMemoryConfiguration, NoStoringAndRetrieve)
     // std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<InMemoryConfiguration>();
     auto configuration = std::make_unique<InMemoryConfiguration>();
     std::string default_value = "default_value";
-    std::string value = configuration->property("Foo.property1", default_value);
+    std::string value = configuration->property("Foo.property1", std::move(default_value));
     EXPECT_STREQ("default_value", value.c_str());
 }
 

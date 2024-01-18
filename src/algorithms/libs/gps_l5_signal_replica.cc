@@ -210,7 +210,7 @@ void gps_l5i_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint3
             // === Digitizing ==================================================
 
             // --- Make index array to read L5 code values ---------------------
-            codeValueIndex = static_cast<int32_t>(std::ceil(ts * static_cast<float>(i + 1.0F) / tc)) - 1;
+            codeValueIndex = static_cast<int32_t>(std::ceil(ts * (i + 1.0F) / tc)) - 1;
 
             // --- Make the digitized version of the L5I code ------------------
             if (i == samplesPerCode - 1)
@@ -282,7 +282,7 @@ void gps_l5q_code_gen_complex_sampled(own::span<std::complex<float>> dest, uint3
             // === Digitizing ==================================================
 
             // --- Make index array to read L5 code values ---------------------
-            codeValueIndex = static_cast<int32_t>(std::ceil(ts * static_cast<float>(i + 1.0F) / tc)) - 1;
+            codeValueIndex = static_cast<int32_t>(std::ceil(ts * (i + 1.0F) / tc)) - 1;
 
             // --- Make the digitized version of the L5Q code ------------------
             if (i == samplesPerCode - 1)

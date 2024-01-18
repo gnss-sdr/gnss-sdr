@@ -30,8 +30,10 @@
 #include <cstddef>          // for size_t
 #include <cstdlib>          // for abs
 #include <exception>        // for exception
+#include <iomanip>          // for std::setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
+#include <utility>          // for std::move
 
 #define CRC_ERROR_LIMIT 6
 
@@ -152,7 +154,7 @@ glonass_l1_ca_telemetry_decoder_gs::~glonass_l1_ca_telemetry_decoder_gs()
 }
 
 
-void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbols, int32_t frame_length)
+void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbols, int32_t frame_length, double cn0)
 {
     double chip_acc = 0.0;
     int32_t chip_acc_counter = 0;
@@ -238,7 +240,15 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             const std::shared_ptr<Glonass_Gnav_Ephemeris> tmp_obj = std::make_shared<Glonass_Gnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
+            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel
+                      << ": ephemeris from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                      << " dB-Hz" << std::endl;
         }
     if (d_nav.have_new_utc_model() == true)
         {
@@ -246,7 +256,15 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
             const std::shared_ptr<Glonass_Gnav_Utc_Model> tmp_obj = std::make_shared<Glonass_Gnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
+            std::cout << "New GLONASS L1 GNAV message received in channel " << d_channel
+                      << ": UTC model parameters from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                      << " dB-Hz" << std::endl;
         }
     if (d_nav.have_new_almanac() == true)
         {
@@ -255,7 +273,14 @@ void glonass_l1_ca_telemetry_decoder_gs::decode_string(const double *frame_symbo
                 tmp_obj = std::make_shared<Glonass_Gnav_Almanac>(d_nav.get_almanac(slot_nbr));
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             LOG(INFO) << "GLONASS GNAV Almanac data have been received in channel" << d_channel << " in slot number " << slot_nbr;
-            std::cout << "New GLONASS L1 GNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
+            std::cout << "New GLONASS L1 GNAV almanac received in channel " << d_channel << " from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                      << " dB-Hz" << std::endl;
         }
     // 5. Update satellite information on system
     if (d_nav.get_flag_update_slot_number() == true)
@@ -405,7 +430,7 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                         }
 
                     // call the decoder
-                    decode_string(string_symbols.data(), string_length);
+                    decode_string(string_symbols.data(), string_length, current_symbol.CN0_dB_hz);
                     bool crc_ok = d_nav.get_flag_CRC_test();
                     if (crc_ok == true)
                         {
@@ -501,8 +526,8 @@ int glonass_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribu
                 }
         }
 
-    // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-    *out[0] = current_symbol;
+    // 3. Make the output (move the object contents to the GNURadio reserved memory)
+    *out[0] = std::move(current_symbol);
 
     return 1;
 }

@@ -184,10 +184,16 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
     if (d_sampled_ms > 1)
         {
             // DATA CODE B: First replica is inverted (0,1,1)
+#if VOLK_EQUAL_OR_GREATER_31
+            auto minus_one = gr_complex(-1, 0);
+            volk_32fc_s32fc_multiply2_32fc(&(d_fft_if->get_inbuf())[0],
+                &codeI[0], &minus_one,
+                d_samples_per_code);
+#else
             volk_32fc_s32fc_multiply_32fc(&(d_fft_if->get_inbuf())[0],
                 &codeI[0], gr_complex(-1, 0),
                 d_samples_per_code);
-
+#endif
             d_fft_if->execute();  // We need the FFT of local code
 
             // Conjugate the local code
@@ -196,9 +202,16 @@ void galileo_e5a_noncoherentIQ_acquisition_caf_cc::set_local_code(std::complex<f
             if (d_both_signal_components == true)
                 {
                     // PILOT CODE B: First replica is inverted (0,1,1)
+#if VOLK_EQUAL_OR_GREATER_31
+                    auto minus_one = gr_complex(-1, 0);
+                    volk_32fc_s32fc_multiply2_32fc(&(d_fft_if->get_inbuf())[0],
+                        &codeQ[0], &minus_one,
+                        d_samples_per_code);
+#else
                     volk_32fc_s32fc_multiply_32fc(&(d_fft_if->get_inbuf())[0],
                         &codeQ[0], gr_complex(-1, 0),
                         d_samples_per_code);
+#endif
                     d_fft_if->execute();  // We need the FFT of local code
 
                     // Conjugate the local code
@@ -613,15 +626,15 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                     {
                                         d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1.0F - weighting_factor * static_cast<float>((doppler_index - i)));
                                     }
-                                d_CAF_vector[doppler_index] /= static_cast<float>(1.0F + static_cast<float>(CAF_bins_half + doppler_index) - weighting_factor * static_cast<float>(CAF_bins_half) * ((static_cast<float>(CAF_bins_half) + 1.0F) / 2.0F) - weighting_factor * static_cast<float>(doppler_index) * (static_cast<float>(doppler_index) + 1.0F) / 2.0F);  // triangles = [n*(n+1)/2]
+                                d_CAF_vector[doppler_index] /= 1.0F + static_cast<float>(CAF_bins_half + doppler_index) - weighting_factor * static_cast<float>(CAF_bins_half) * ((static_cast<float>(CAF_bins_half) + 1.0F) / 2.0F) - weighting_factor * static_cast<float>(doppler_index) * (static_cast<float>(doppler_index) + 1.0F) / 2.0F;  // triangles = [n*(n+1)/2]
                                 if (d_both_signal_components)
                                     {
                                         accum[0] = 0;
                                         for (int i = 0; i < CAF_bins_half + doppler_index + 1; i++)
                                             {
-                                                accum[0] += static_cast<float>(d_CAF_vector_Q[i] * (1.0F - weighting_factor * static_cast<float>(abs(doppler_index - i))));
+                                                accum[0] += d_CAF_vector_Q[i] * (1.0F - weighting_factor * static_cast<float>(abs(doppler_index - i)));
                                             }
-                                        accum[0] /= static_cast<float>(1.0F + static_cast<float>(CAF_bins_half + doppler_index) - weighting_factor * static_cast<float>(CAF_bins_half) * static_cast<float>(CAF_bins_half + 1) / 2.0F - weighting_factor * static_cast<float>(doppler_index) * static_cast<float>(doppler_index + 1) / 2.0F);  // triangles = [n*(n+1)/2]
+                                        accum[0] /= 1.0F + static_cast<float>(CAF_bins_half + doppler_index) - weighting_factor * static_cast<float>(CAF_bins_half) * static_cast<float>(CAF_bins_half + 1) / 2.0F - weighting_factor * static_cast<float>(doppler_index) * static_cast<float>(doppler_index + 1) / 2.0F;  // triangles = [n*(n+1)/2]
                                         d_CAF_vector[doppler_index] += accum[0];
                                     }
                             }
@@ -629,19 +642,19 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         for (int doppler_index = CAF_bins_half; doppler_index < d_num_doppler_bins - CAF_bins_half; doppler_index++)
                             {
                                 d_CAF_vector[doppler_index] = 0;
-                                for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(doppler_index + CAF_bins_half + 1); i++)
+                                for (int i = doppler_index - CAF_bins_half; i < doppler_index + CAF_bins_half + 1; i++)
                                     {
                                         d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1.0F - weighting_factor * static_cast<float>((doppler_index - i)));
                                     }
-                                d_CAF_vector[doppler_index] /= static_cast<float>(1.0F + 2.0F * static_cast<float>(CAF_bins_half) - 2.0F * weighting_factor * static_cast<float>(CAF_bins_half) * static_cast<float>(CAF_bins_half + 1) / 2.0F);
+                                d_CAF_vector[doppler_index] /= 1.0F + 2.0F * static_cast<float>(CAF_bins_half) - 2.0F * weighting_factor * static_cast<float>(CAF_bins_half) * static_cast<float>(CAF_bins_half + 1) / 2.0F;
                                 if (d_both_signal_components)
                                     {
                                         accum[0] = 0;
-                                        for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(doppler_index + CAF_bins_half + 1); i++)
+                                        for (int i = doppler_index - CAF_bins_half; i < doppler_index + CAF_bins_half + 1; i++)
                                             {
-                                                accum[0] += static_cast<float>(d_CAF_vector_Q[i] * (1 - weighting_factor * static_cast<float>((doppler_index - i))));
+                                                accum[0] += d_CAF_vector_Q[i] * (1 - weighting_factor * static_cast<float>((doppler_index - i)));
                                             }
-                                        accum[0] /= static_cast<float>(1.0F + 2.0F * static_cast<float>(CAF_bins_half) - 2.0F * weighting_factor * static_cast<float>(CAF_bins_half) * static_cast<float>(CAF_bins_half + 1) / 2.0F);
+                                        accum[0] /= 1.0F + 2.0F * static_cast<float>(CAF_bins_half) - 2.0F * weighting_factor * static_cast<float>(CAF_bins_half) * static_cast<float>(CAF_bins_half + 1) / 2.0F;
                                         d_CAF_vector[doppler_index] += accum[0];
                                     }
                             }
@@ -653,13 +666,13 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                                     {
                                         d_CAF_vector[doppler_index] += d_CAF_vector_I[i] * (1.0F - weighting_factor * static_cast<float>(abs(doppler_index - i)));
                                     }
-                                d_CAF_vector[doppler_index] /= static_cast<float>(1.0F + static_cast<float>(CAF_bins_half) + static_cast<float>(d_num_doppler_bins - doppler_index - 1) - weighting_factor * static_cast<float>(CAF_bins_half) * (static_cast<float>(CAF_bins_half) + 1.0F) / 2.0F - weighting_factor * static_cast<float>(d_num_doppler_bins - doppler_index - 1) * static_cast<float>(d_num_doppler_bins - doppler_index) / 2.0F);
+                                d_CAF_vector[doppler_index] /= 1.0F + static_cast<float>(CAF_bins_half) + static_cast<float>(d_num_doppler_bins - doppler_index - 1) - weighting_factor * static_cast<float>(CAF_bins_half) * (static_cast<float>(CAF_bins_half) + 1.0F) / 2.0F - weighting_factor * (d_num_doppler_bins - doppler_index - 1) * static_cast<float>(d_num_doppler_bins - doppler_index) / 2.0F;
                                 if (d_both_signal_components)
                                     {
                                         accum[0] = 0;
                                         for (int i = doppler_index - CAF_bins_half; i < static_cast<int>(d_num_doppler_bins); i++)
                                             {
-                                                accum[0] += static_cast<float>(d_CAF_vector_Q[i] * (1.0F - weighting_factor * static_cast<float>(abs(doppler_index - i))));
+                                                accum[0] += d_CAF_vector_Q[i] * (1.0F - weighting_factor * static_cast<float>(abs(doppler_index - i)));
                                             }
                                         accum[0] /= static_cast<float>(1.0F + static_cast<float>(CAF_bins_half) + static_cast<float>(d_num_doppler_bins - doppler_index - 1) - weighting_factor * static_cast<float>(CAF_bins_half) * static_cast<float>(CAF_bins_half + 1.0) / 2.0 - weighting_factor * static_cast<float>(d_num_doppler_bins - doppler_index - 1) * static_cast<float>(d_num_doppler_bins - doppler_index) / 2.0);
                                         d_CAF_vector[doppler_index] += accum[0];
@@ -730,7 +743,7 @@ int galileo_e5a_noncoherentIQ_acquisition_caf_cc::general_work(int noutput_items
                         auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();
                         current_synchro_data = *d_gnss_synchro;
-                        *out[0] = current_synchro_data;
+                        *out[0] = std::move(current_synchro_data);
                         return_value = 1;  // Number of Gnss_Synchro objects produced
                     }
 

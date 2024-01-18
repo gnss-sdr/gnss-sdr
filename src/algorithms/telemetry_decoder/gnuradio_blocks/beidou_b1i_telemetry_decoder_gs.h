@@ -75,7 +75,7 @@ private:
 
     beidou_b1i_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
-    void decode_subframe(float *symbols);
+    void decode_subframe(float *symbols, double cn0);
     void decode_word(int32_t word_counter, const float *enc_word_symbols, int32_t *dec_word_symbols);
     void decode_bch15_11_01(const int32_t *bits, std::array<int32_t, 15> &decbits);
 

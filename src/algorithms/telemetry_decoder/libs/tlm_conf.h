@@ -43,6 +43,7 @@ public:
     bool dump_crc_stats{false};       // telemetry CRC statistics
     bool enable_navdata_monitor{false};
     bool there_are_e6_channels{false};
+    bool use_ced{false};
 };
 
 

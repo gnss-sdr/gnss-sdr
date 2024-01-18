@@ -70,7 +70,7 @@ void GenSignalSource::disconnect(gr::top_block_sptr top_block)
         filter_->get_left_block(), 0);
 
     signal_generator_->disconnect(top_block);
-    filter_->disconnect(top_block);
+    filter_->disconnect(std::move(top_block));
 
     connected_ = false;
 }

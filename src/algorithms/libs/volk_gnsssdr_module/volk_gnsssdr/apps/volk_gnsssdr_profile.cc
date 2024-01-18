@@ -47,7 +47,7 @@ void set_benchmark(bool val) { test_params.set_benchmark(val); }
 void set_tolerance(float val) { test_params.set_tol(val); }
 void set_vlen(int val) { test_params.set_vlen((unsigned int)val); }
 void set_iter(int val) { test_params.set_iter((unsigned int)val); }
-void set_substr(std::string val) { test_params.set_regex(val); }
+void set_substr(std::string val) { test_params.set_regex(std::move(val)); }
 bool update_mode = false;
 void set_update(bool val) { update_mode = val; }
 bool dry_run = false;
@@ -81,8 +81,7 @@ int main(int argc, char *argv[])
 
     for (int arg_number = 0; arg_number < argc; ++arg_number)
         {
-            if (std::string("--help") == std::string(argv[arg_number]) ||
-                std::string("-h") == std::string(argv[arg_number]))
+            if (profile_options.present("help"))
                 {
                     return 0;
                 }
@@ -169,7 +168,7 @@ int main(int argc, char *argv[])
     if (!dry_run)
         {
             if (config_file != "")
-                write_results(&results, false, config_file);
+                write_results(&results, false, std::move(config_file));
             else
                 write_results(&results, false);
         }

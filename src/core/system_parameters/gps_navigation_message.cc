@@ -32,9 +32,6 @@ Gps_Navigation_Message::Gps_Navigation_Message()
     for (uint32_t i = 1; i < 33; i++)
         {
             satelliteBlock[i] = gnss_sat.what_block(_system, i);
-        }
-    for (int32_t i = 1; i < 33; i++)
-        {
             almanacHealth[i] = 0;
         }
 }
@@ -46,66 +43,35 @@ void Gps_Navigation_Message::print_gps_word_bytes(uint32_t GPS_word) const
 }
 
 
-bool Gps_Navigation_Message::read_navigation_bool(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t> /*unused*/>& parameter) const
+bool Gps_Navigation_Message::read_navigation_bool(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    bool value;
-
-    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[0].first]) == 1)
-        {
-            value = true;
-        }
-    else
-        {
-            value = false;
-        }
+    bool value = bits[GPS_SUBFRAME_BITS - parameter[0].first];
     return value;
 }
 
 
-uint64_t Gps_Navigation_Message::read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t> /*unused*/>& parameter) const
+uint64_t Gps_Navigation_Message::read_navigation_unsigned(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    const int32_t num_of_slices = parameter.size();
-    for (int32_t i = 0; i < num_of_slices; i++)
+    for (const auto& p : parameter)
         {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < p.second; ++j)
                 {
-                    value <<= 1;  // shift left
-                    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1ULL;  // insert the bit
-                        }
+                    value = (value << 1) | (bits.test(GPS_SUBFRAME_BITS - p.first - j) ? 1 : 0);
                 }
         }
     return value;
 }
 
 
-int64_t Gps_Navigation_Message::read_navigation_signed(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t> /*unused*/>& parameter) const
+int64_t Gps_Navigation_Message::read_navigation_signed(const std::bitset<GPS_SUBFRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    int64_t value = 0LL;
-    const int32_t num_of_slices = parameter.size();
-
-    // read the MSB and perform the sign extension
-    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[0].first]) == 1)
+    int64_t value = (bits[GPS_SUBFRAME_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
+    for (const auto& p : parameter)
         {
-            value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
-        }
-    else
-        {
-            value &= 0LL;
-        }
-
-    for (int32_t i = 0; i < num_of_slices; i++)
-        {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < p.second; j++)
                 {
-                    value *= 2;                     // shift left the signed integer
-                    value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
-                    if (static_cast<int>(bits[GPS_SUBFRAME_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1LL;  // insert the bit
-                        }
+                    value = (value << 1) | static_cast<int64_t>(bits[GPS_SUBFRAME_BITS - p.first - j]);
                 }
         }
     return value;
@@ -351,7 +317,7 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
 
         default:
             break;
-        }  // switch subframeID ...
+        }  // switch subframeID
 
     return subframe_ID;
 }
@@ -514,9 +480,9 @@ bool Gps_Navigation_Message::satellite_validation()
     // First Step:
     // check Issue Of Ephemeris Data (IODE IODC..) to find a possible interrupted reception
     // and check if the data have been filled (!=0)
-    if (d_TOW_SF1 != 0.0 and d_TOW_SF2 != 0.0 and d_TOW_SF3 != 0.0)
+    if (d_TOW_SF1 != 0.0 && d_TOW_SF2 != 0.0 && d_TOW_SF3 != 0.0)
         {
-            if (d_IODE_SF2 == d_IODE_SF3 and d_IODC == d_IODE_SF2 and d_IODC != -1.0)
+            if (d_IODE_SF2 == d_IODE_SF3 && (d_IODC & 0xFF) == d_IODE_SF2 && d_IODE_SF2 != -1.0)
                 {
                     flag_data_valid = true;
                     b_valid_ephemeris_set_flag = true;

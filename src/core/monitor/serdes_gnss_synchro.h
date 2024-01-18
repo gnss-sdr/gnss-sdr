@@ -73,7 +73,7 @@ public:
     {
         observables.Clear();
         std::string data;
-        for (auto gs : vgs)
+        for (const auto& gs : vgs)
             {
                 gnss_sdr::GnssSynchro* obs = observables.add_observable();
                 char c = gs.System;

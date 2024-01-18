@@ -386,7 +386,7 @@ TEST(RTKLibSolverTest, test1)
 
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    auto d_ls_pvt = std::make_unique<Rtklib_Solver>(rtk, nchannels, dump_filename, 1, flag_dump_to_file, save_to_mat, conf);
+    auto d_ls_pvt = std::make_unique<Rtklib_Solver>(rtk, conf, nchannels, dump_filename, 1, flag_dump_to_file, save_to_mat);
     d_ls_pvt->set_averaging_depth(1);
 
     // load ephemeris

@@ -46,7 +46,7 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
 {
     const std::string default_item_type("gr_complex");
     std::string default_dump_filename = "./data/acquisition.dat";
-    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
+    dump_filename_ = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
     item_type_ = configuration->property(role_ + ".item_type", default_item_type);
     int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);

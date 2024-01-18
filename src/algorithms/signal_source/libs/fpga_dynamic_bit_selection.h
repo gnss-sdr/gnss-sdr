@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -42,7 +43,7 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_dynamic_bit_selection(const std::string& device_name1, const std::string& device_name2);
+    explicit Fpga_dynamic_bit_selection(bool enable_rx1_band, bool enable_rx2_band);
 
     /*!
      * \brief Destructor
@@ -52,12 +53,12 @@ public:
     /*!
      * \brief This function configures the switch in th eFPGA
      */
-    //    void set_switch_position(int32_t switch_position);
     void bit_selection(void);
 
 private:
+    const std::string switch_device_name = std::string("AXIS_Switch_v1_0_0");          // Switch UIO device name
+    const std::string dyn_bit_sel_device_name = std::string("dynamic_bits_selector");  // Switch dhnamic bit selector device name
     static const size_t FPGA_PAGE_SIZE = 0x1000;
-
     static const uint32_t Num_bits_ADC = 12;                                      // Number of bits in the ADC
     static const uint32_t Num_bits_FPGA = 4;                                      // Number of bits after the bit selection
     static const uint32_t shift_out_bits_default = Num_bits_ADC - Num_bits_FPGA;  // take the most significant bits by default
@@ -68,16 +69,18 @@ private:
     static const uint32_t Power_Threshold_High = 9000;
     static const uint32_t Power_Threshold_Low = 3000;
 
-    void close_devices(void);
+    void open_device(volatile unsigned **d_map_base, int &d_dev_descr, int freq_band);
+    void bit_selection_per_rf_band(volatile unsigned *d_map_base, uint32_t shift_out_bits);
+    void close_device(volatile unsigned *d_map_base, int &d_dev_descr);
 
-    uint32_t shift_out_bits_band1;  // number of bits to shift for frequency band 1
-    uint32_t shift_out_bits_band2;  // number of bits to shift for frequency band 2
-
-    volatile unsigned* d_map_base1;  // driver memory map corresponding to frequency band 1
-    int d_device_descriptor1;        // driver descriptor corresponding to frequency band 1
-
-    volatile unsigned* d_map_base2;  // driver memory map corresponding to frequency band 2
-    int d_device_descriptor2;        // driver descriptor corresponding to frequency band 2
+    volatile unsigned *d_map_base_freq_band_1;
+    volatile unsigned *d_map_base_freq_band_2;
+    int d_dev_descr_freq_band_1;
+    int d_dev_descr_freq_band_2;
+    uint32_t d_shift_out_bits_freq_band_1;
+    uint32_t d_shift_out_bits_freq_band_2;
+    bool d_enable_rx1_band;
+    bool d_enable_rx2_band;
 };
 
 

@@ -113,7 +113,7 @@ macro(check_arch arch_name)
             set(have_flag have${flag})
             # make the have_flag have nice alphanum chars (just for looks/not necessary)
             execute_process(
-                COMMAND ${PYTHON_EXECUTABLE} -c "import re; print(re.sub('\\W', '_', '${have_flag}'))"
+                COMMAND ${PYTHON_EXECUTABLE} -c "import re; print(re.sub(r'\\W', '_', '${have_flag}'))"
                 OUTPUT_VARIABLE have_flag OUTPUT_STRIP_TRAILING_WHITESPACE
             )
             if(VOLK_FLAG_CHECK_FLAGS)
@@ -224,9 +224,9 @@ check_c_source_compiles("#include <arm_neon.h>\nint main(){ uint8_t *dest; uint8
 
 if(neon_compile_result)
     set(CMAKE_REQUIRED_INCLUDES ${PROJECT_SOURCE_DIR}/include)
-    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM __VOLK_VOLATILE(\"vrev32.8 q0, q0\");}"
+    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM(\"vrev32.8 q0, q0\");}"
         have_neonv7_result)
-    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM __VOLK_VOLATILE(\"sub v1.4s,v1.4s,v1.4s\");}"
+    check_c_source_compiles("#include <volk_gnsssdr/volk_gnsssdr_common.h>\n int main(){__VOLK_ASM(\"sub v1.4s,v1.4s,v1.4s\");}"
         have_neonv8_result)
 
     if(NOT have_neonv7_result)
@@ -372,14 +372,18 @@ if(MSVC)
         set(cmake_c_compiler_version "Microsoft Visual Studio 14.0")
     endif()
 else()
-    execute_process(COMMAND ${CMAKE_C_COMPILER} --version
-        OUTPUT_VARIABLE cmake_c_compiler_version
-    )
+    if(NOT CMAKE_CROSSCOMPILING)
+        execute_process(COMMAND ${CMAKE_C_COMPILER} --version
+            OUTPUT_VARIABLE cmake_c_compiler_version
+        )
+    endif()
 endif()
 if(NOT GRCBTU)
     set(GRCBTU "")
 endif()
-set(COMPILER_INFO "${CMAKE_C_COMPILER}:::${CMAKE_C_FLAGS_${GRCBTU}} ${CMAKE_C_FLAGS}\n${CMAKE_CXX_COMPILER}:::${CMAKE_CXX_FLAGS_${GRCBTU}} ${CMAKE_CXX_FLAGS}\n")
+if(NOT CMAKE_CROSSCOMPILING)
+    set(COMPILER_INFO "${CMAKE_C_COMPILER}:::${CMAKE_C_FLAGS_${GRCBTU}} ${CMAKE_C_FLAGS}\n${CMAKE_CXX_COMPILER}:::${CMAKE_CXX_FLAGS_${GRCBTU}} ${CMAKE_CXX_FLAGS}\n")
+endif()
 
 foreach(machine_name ${available_machines})
     # generate machine source
@@ -396,7 +400,9 @@ foreach(machine_name ${available_machines})
     if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
         message(STATUS "BUILD INFO ::: ${machine_name} ::: ${COMPILER_NAME} ::: ${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}")
     endif()
-    set(COMPILER_INFO "${COMPILER_INFO}${machine_name}:::${COMPILER_NAME}:::${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}\n")
+    if(NOT CMAKE_CROSSCOMPILING)
+        set(COMPILER_INFO "${COMPILER_INFO}${machine_name}:::${COMPILER_NAME}:::${CMAKE_C_FLAGS_${CBTU}} ${CMAKE_C_FLAGS} ${${machine_name}_flags}\n")
+    endif()
     if(${machine_name}_flags AND NOT MSVC)
         set_source_files_properties(${machine_source} PROPERTIES COMPILE_FLAGS "${${machine_name}_flags}")
     endif()
@@ -407,11 +413,15 @@ foreach(machine_name ${available_machines})
 endforeach()
 
 # Convert to a C string to compile and display properly
-string(STRIP "${cmake_c_compiler_version}" cmake_c_compiler_version)
-string(STRIP ${COMPILER_INFO} COMPILER_INFO)
-message(STATUS "Compiler Version: ${cmake_c_compiler_version}")
-string(REPLACE "\n" " \\n" cmake_c_compiler_version ${cmake_c_compiler_version})
-string(REPLACE "\n" " \\n" COMPILER_INFO ${COMPILER_INFO})
+if(NOT CMAKE_CROSSCOMPILING)
+    string(STRIP "${cmake_c_compiler_version}" cmake_c_compiler_version)
+    string(REPLACE "\n" " \\n" cmake_c_compiler_version ${cmake_c_compiler_version})
+    message(STATUS "Compiler Version: ${cmake_c_compiler_version}")
+    string(STRIP ${COMPILER_INFO} COMPILER_INFO)
+    string(REPLACE "\n" " \\n" COMPILER_INFO ${COMPILER_INFO})
+else()
+    set(cmake_c_compiler_version "")
+endif()
 
 
 ########################################################################
@@ -481,8 +491,12 @@ endif()
 message(STATUS "Loading version ${VERSION} into constants...")
 
 # double escape for windows backslash path separators
-string(REPLACE "\\" "\\\\" prefix "${prefix}")
-string(REPLACE "${CMAKE_SOURCE_DIR}" "$BUILD_DIR" COMPILER_INFO "${COMPILER_INFO}")
+if(NOT CMAKE_CROSSCOMPILING)
+    string(REPLACE "\\" "\\\\" prefix "${prefix}")
+    string(REPLACE "${CMAKE_SOURCE_DIR}" "$BUILD_DIR" COMPILER_INFO "${COMPILER_INFO}")
+else()
+    set(prefix "")
+endif()
 
 configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/constants.c.in
@@ -544,7 +558,6 @@ if(NOT (CMAKE_GENERATOR STREQUAL Xcode))
                 PRIVATE
                     $<TARGET_PROPERTY:cpu_features,INTERFACE_INCLUDE_DIRECTORIES>
             )
-            add_dependencies(volk_gnsssdr_obj list_cpu_features)
         endif()
     endif()
     # Configure object target properties

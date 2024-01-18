@@ -55,6 +55,7 @@
 #include <algorithm>               // for find, min
 #include <chrono>                  // for milliseconds
 #include <cmath>                   // for floor, fmod, log
+#include <csignal>                 // for signal, SIGINT
 #include <ctime>                   // for time_t, gmtime, strftime
 #include <exception>               // for exception
 #include <iostream>                // for operator<<
@@ -78,9 +79,17 @@ namespace wht = std;
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
+ControlThread *ControlThread::me = nullptr;
 
 ControlThread::ControlThread()
 {
+    ControlThread::me = this;
+
+    /* the class will handle signals */
+    signal(SIGINT, ControlThread::handle_signal);
+    signal(SIGTERM, ControlThread::handle_signal);
+    signal(SIGHUP, ControlThread::handle_signal);
+
     if (FLAGS_c == "-")
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
@@ -262,6 +271,28 @@ ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
     if (cmd_interface_thread_.joinable())
         {
             cmd_interface_thread_.join();
+        }
+}
+
+
+void ControlThread::handle_signal(int sig)
+{
+    LOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
+    if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
+        {
+            ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
+            ControlThread::me->stop_ = true;
+
+            // Reset signal handling to default behavior
+            if (sig == SIGINT)
+                {
+                    signal(SIGINT, SIG_DFL);
+                }
+        }
+    else if (sig == SIGCHLD)
+        {
+            LOG(INFO) << "Received SIGCHLD signal";
+            // todo
         }
 }
 

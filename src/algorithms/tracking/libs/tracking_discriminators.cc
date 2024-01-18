@@ -54,7 +54,7 @@ double fll_four_quadrant_atan(gr_complex prompt_s1, gr_complex prompt_s2, double
 {
     const float dot = prompt_s1.real() * prompt_s2.real() + prompt_s1.imag() * prompt_s2.imag();
     const float cross = prompt_s1.real() * prompt_s2.imag() - prompt_s2.real() * prompt_s1.imag();
-    return static_cast<double>(gr::fast_atan2f(cross, dot) / (t2 - t1));
+    return gr::fast_atan2f(cross, dot) / (t2 - t1);
 }
 
 
@@ -85,7 +85,7 @@ double fll_diff_atan(gr_complex prompt_s1, gr_complex prompt_s2, double t1, doub
  */
 double pll_four_quadrant_atan(gr_complex prompt_s1)
 {
-    return static_cast<double>(gr::fast_atan2f(prompt_s1.imag(), prompt_s1.real()));
+    return gr::fast_atan2f(prompt_s1.imag(), prompt_s1.real());
 }
 
 

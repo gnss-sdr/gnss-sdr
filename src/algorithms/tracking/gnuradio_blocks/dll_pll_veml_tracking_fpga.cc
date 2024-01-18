@@ -446,7 +446,7 @@ dll_pll_veml_tracking_fpga::dll_pll_veml_tracking_fpga(const Dll_Pll_Conf_Fpga &
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -1209,7 +1209,7 @@ int32_t dll_pll_veml_tracking_fpga::save_matfile() const
     // WRITE MAT FILE
     mat_t *matfp;
     matvar_t *matvar;
-    std::string filename = dump_filename_;
+    std::string filename = std::move(dump_filename_);
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
@@ -1383,6 +1383,7 @@ void dll_pll_veml_tracking_fpga::set_gnss_synchro(Gnss_Synchro *p_gnss_synchro)
     d_acquisition_gnss_synchro = p_gnss_synchro;
     if (p_gnss_synchro->PRN > 0)
         {
+            gr::thread::scoped_lock lock(d_setlock);
             // A set_gnss_synchro command with a valid PRN is received when the system is going to run acquisition with that PRN.
             // We can use this command to pre-initialize tracking parameters and variables before the actual acquisition process takes place.
             // In this way we minimize the latency between acquisition and tracking once the acquisition has been made.
@@ -1527,8 +1528,8 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
                 {
                 case 1:  // Pull-in
                     {
-                        d_worker_is_done = false;
                         boost::mutex::scoped_lock lock(d_mutex);
+                        d_worker_is_done = false;
                         while (!d_worker_is_done)
                             {
                                 d_m_condition.wait(lock);
@@ -2015,7 +2016,7 @@ int dll_pll_veml_tracking_fpga::general_work(int noutput_items __attribute__((un
             current_synchro_data.Tracking_sample_counter = d_sample_counter_next;  // d_sample_counter;
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
-            *out[0] = current_synchro_data;
+            *out[0] = std::move(current_synchro_data);
             return 1;
         }
     return 0;

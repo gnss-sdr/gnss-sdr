@@ -36,16 +36,7 @@ Gps_CNAV_Navigation_Message::Gps_CNAV_Navigation_Message()
 
 bool Gps_CNAV_Navigation_Message::read_navigation_bool(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    bool value;
-
-    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first]) == 1)
-        {
-            value = true;
-        }
-    else
-        {
-            value = false;
-        }
+    bool value = bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first];
     return value;
 }
 
@@ -53,16 +44,11 @@ bool Gps_CNAV_Navigation_Message::read_navigation_bool(const std::bitset<GPS_CNA
 uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    const int32_t num_of_slices = parameter.size();
-    for (int32_t i = 0; i < num_of_slices; i++)
+    for (const auto& p : parameter)
         {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < p.second; j++)
                 {
-                    value <<= 1ULL;  // shift left
-                    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1ULL;  // insert the bit
-                        }
+                    value = (value << 1) | static_cast<uint64_t>(bits[GPS_CNAV_DATA_PAGE_BITS - p.first - j]);
                 }
         }
     return value;
@@ -71,29 +57,12 @@ uint64_t Gps_CNAV_Navigation_Message::read_navigation_unsigned(const std::bitset
 
 int64_t Gps_CNAV_Navigation_Message::read_navigation_signed(const std::bitset<GPS_CNAV_DATA_PAGE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    int64_t value = 0LL;
-    const int32_t num_of_slices = parameter.size();
-
-    // read the MSB and perform the sign extension
-    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first]) == 1)
+    int64_t value = (bits[GPS_CNAV_DATA_PAGE_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
+    for (const auto& p : parameter)
         {
-            value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
-        }
-    else
-        {
-            value &= 0LL;
-        }
-
-    for (int32_t i = 0; i < num_of_slices; i++)
-        {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < p.second; j++)
                 {
-                    value *= 2;                     // shift left the signed integer
-                    value &= 0xFFFFFFFFFFFFFFFELL;  // reset the corresponding bit (for the 64 bits variable)
-                    if (static_cast<int>(bits[GPS_CNAV_DATA_PAGE_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1LL;  // insert the bit
-                        }
+                    value = (value << 1) | static_cast<int64_t>(bits[GPS_CNAV_DATA_PAGE_BITS - p.first - j]);
                 }
         }
     return value;
@@ -113,7 +82,7 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
     d_TOW *= CNAV_TOW_LSB;
     ephemeris_record.tow = d_TOW;
 
-    alert_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_ALERT_FLAG));
+    alert_flag = read_navigation_bool(data_bits, CNAV_ALERT_FLAG);
     ephemeris_record.alert_flag = alert_flag;
 
     page_type = static_cast<int32_t>(read_navigation_unsigned(data_bits, CNAV_MSG_TYPE));
@@ -145,8 +114,8 @@ void Gps_CNAV_Navigation_Message::decode_page(const std::bitset<GPS_CNAV_DATA_PA
             ephemeris_record.omega = static_cast<double>(read_navigation_signed(data_bits, CNAV_OMEGA));
             ephemeris_record.omega *= CNAV_OMEGA_LSB;
 
-            ephemeris_record.integrity_status_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_INTEGRITY_FLAG));
-            ephemeris_record.l2c_phasing_flag = static_cast<bool>(read_navigation_bool(data_bits, CNAV_L2_PHASING_FLAG));
+            ephemeris_record.integrity_status_flag = read_navigation_bool(data_bits, CNAV_INTEGRITY_FLAG);
+            ephemeris_record.l2c_phasing_flag = read_navigation_bool(data_bits, CNAV_L2_PHASING_FLAG);
 
             b_flag_ephemeris_1 = true;
             break;

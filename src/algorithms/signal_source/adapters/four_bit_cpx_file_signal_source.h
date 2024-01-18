@@ -1,5 +1,5 @@
 /*!
- * \file FOUR_BIT_cpx_file_signal_source.h
+ * \file four_bit_cpx_file_signal_source.h
  * \brief Interface of a class that reads signals samples from a 2 bit complex sampler front-end file
  * and adapts it to a SignalSourceInterface.
  * \author Javier Arribas, 2015 jarribas(at)cttc.es
@@ -62,12 +62,11 @@ protected:
 private:
     unpack_byte_4bit_samples_sptr unpack_byte_;
     gr::blocks::interleaved_short_to_complex::sptr inter_shorts_to_cpx_;
-    std::string sample_type_;
-    bool reverse_interleaving_;
-
     gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
+    std::string sample_type_;
     std::string timestamp_file_;
     double timestamp_clock_offset_ms_;
+    bool reverse_interleaving_;
 };
 
 

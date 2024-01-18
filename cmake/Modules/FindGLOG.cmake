@@ -109,6 +109,7 @@ else()
             /usr/include/glog
             /usr/local/include/glog
             /opt/local/include/glog   # default location in Macports
+            /opt/homebrew/opt/glog/include/glog
             ${GLOG_ROOT}/include/glog
     )
 endif()

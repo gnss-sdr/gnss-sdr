@@ -43,7 +43,7 @@ GalileoE5aPcpsAcquisitionFpga::GalileoE5aPcpsAcquisitionFpga(
       acq_pilot_(configuration->property(role + ".acquire_pilot", false)),
       acq_iq_(configuration->property(role + ".acquire_iq", false))
 {
-    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_CODE_LENGTH_CHIPS);
+    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GALILEO_E5A_CODE_CHIP_RATE_CPS, GALILEO_E5A_CODE_LENGTH_CHIPS);
 
     if (FLAGS_doppler_max != 0)
         {

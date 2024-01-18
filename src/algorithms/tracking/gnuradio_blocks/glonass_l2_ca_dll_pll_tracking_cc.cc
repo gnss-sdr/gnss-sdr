@@ -520,7 +520,7 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 1;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
                     return 1;
                 }
@@ -639,7 +639,7 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
 
     // assign the GNU Radio block output data
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
     if (d_dump)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file

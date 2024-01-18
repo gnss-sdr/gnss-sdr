@@ -19,7 +19,7 @@ IEEE Access, Vol. 6, No. 1, pp. 20451-20463, April 2018. DOI:
 [10.1109/ACCESS.2018.2822835](https://doi.org/10.1109/ACCESS.2018.2822835)
 
 The data set used in this paper is available at
-https://zenodo.org/record/1184601
+https://zenodo.org/records/1184601
 
 The sample format is `ibyte`: Interleaved (I&Q) stream of samples of type signed
 integer, 8-bit two’s complement number ranging from -128 to 127. The sampling
@@ -53,7 +53,7 @@ $ cd gnss-sdr
 $ git checkout next
 $ mkdir -p exp-access18/data
 $ cd exp-access18/data
-$ curl https://zenodo.org/record/1184601/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz
+$ curl https://zenodo.org/records/1184601/files/L2_signal_samples.tar.xz --output L2_signal_samples.tar.xz
 $ tar xvfJ L2_signal_samples.tar.xz
 $ echo "3a04c1eeb970776bb77f5e3b7eaff2df  L2_signal_samples.tar.xz" > data.md5
 $ md5sum -c data.md5

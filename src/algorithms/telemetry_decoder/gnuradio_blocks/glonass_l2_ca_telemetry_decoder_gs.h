@@ -79,7 +79,7 @@ private:
 
     const int32_t d_symbols_per_preamble = GLONASS_GNAV_PREAMBLE_LENGTH_SYMBOLS;
 
-    void decode_string(const double *symbols, int32_t frame_length);
+    void decode_string(const double *symbols, int32_t frame_length, double cn0);
 
     // Storage for incoming data
     boost::circular_buffer<Gnss_Synchro> d_symbol_history;

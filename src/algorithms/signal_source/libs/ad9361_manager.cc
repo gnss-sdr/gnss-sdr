@@ -157,7 +157,7 @@ void cfg_ad9361_streaming_ch(struct stream_cfg *cfg, iio_channel *chn)
 
 
 int setup_filter(const std::string &filter_source_, uint64_t bandwidth_, uint64_t sample_rate_, uint64_t freq_, const std::string &rf_port_select_,
-    struct iio_device *ad9361_phy_dev, struct iio_channel *rx_chan, struct iio_channel *chn, int chid, std::string filter_filename_, float Fpass_, float Fstop_)
+    struct iio_device *ad9361_phy_dev, struct iio_channel *rx_chan, struct iio_channel *chn, int chid, std::string filter_filename_, [[maybe_unused]] float Fpass_, [[maybe_unused]] float Fstop_)
 {
     int ret;
     if (filter_source_ == "Off")
@@ -337,6 +337,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     struct iio_channel *rx_chan0;  // stream channel 0
     struct iio_channel *rx_chan1;  // stream channel 1
     struct iio_channel *chn;       // phy channel
+    struct iio_channel *lo_chn;    // phy channel
 
     int ret;
 
@@ -419,12 +420,12 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
         }
     // Configure LO channel
     std::cout << "* Acquiring " << RX_DEV_A << " LO RX channel 0\n";
-    if (!get_lo_chan(ad9361_phy, RX, 0, &chn))
+    if (!get_lo_chan(ad9361_phy, RX, 0, &lo_chn))
         {
             std::cout << "RX LO channel 0not found\n";
             throw std::runtime_error("RX LO channel 0not found");
         }
-    wr_ch_lli(chn, "frequency", freq0_);
+    wr_ch_lli(lo_chn, "frequency", freq0_);
 
     if (enable_ad9361_b)
         {
@@ -449,7 +450,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                 {
                     return false;
                 }
-            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq1_, rf_port_select_, ad9361_phy_B, rx_chan1, chn, 0, filter_filename_, Fpass_, Fstop_) == -1)
+            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq1_, rf_port_select_, ad9361_phy_B, rx_chan1, chn, 0, std::move(filter_filename_), Fpass_, Fstop_) == -1)
                 {
                     return false;
                 }
@@ -471,7 +472,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
                     std::cout << rx_stream_dev_a << " channel 1 not found\n";
                     throw std::runtime_error(rx_stream_dev_a + "RX channel 1 not found");
                 }
-            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq0_, rf_port_select_, ad9361_phy, rx_chan1, chn, 1, filter_filename_, Fpass_, Fstop_) == -1)
+            if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq0_, rf_port_select_, ad9361_phy, rx_chan1, chn, 1, std::move(filter_filename_), Fpass_, Fstop_) == -1)
                 {
                     return false;
                 }
@@ -485,7 +486,10 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
     if (rx2_enable_)
         {
             iio_channel_enable(rx_chan1);
-            ad9361_fmcomms5_multichip_sync(ctx, FIXUP_INTERFACE_TIMING | CHECK_SAMPLE_RATES);
+            if (enable_ad9361_b)
+                {
+                    ad9361_fmcomms5_multichip_sync(ctx, FIXUP_INTERFACE_TIMING | CHECK_SAMPLE_RATES);
+                }
         }
     if (!rx1_enable_ and !rx2_enable_)
         {

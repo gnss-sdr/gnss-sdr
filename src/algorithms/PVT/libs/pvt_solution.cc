@@ -69,70 +69,6 @@ int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 }
 
 
-void Pvt_Solution::set_averaging_depth(int depth)
-{
-    d_averaging_depth = depth;
-}
-
-
-void Pvt_Solution::set_averaging_flag(bool flag)
-{
-    d_flag_averaging = flag;
-}
-
-
-void Pvt_Solution::perform_pos_averaging()
-{
-    // MOVING AVERAGE PVT
-    bool avg = d_flag_averaging;
-    if (avg == true)
-        {
-            if (d_hist_longitude_d.size() == static_cast<unsigned int>(d_averaging_depth))
-                {
-                    // Pop oldest value
-                    d_hist_longitude_d.pop_back();
-                    d_hist_latitude_d.pop_back();
-                    d_hist_height_m.pop_back();
-                    // Push new values
-                    d_hist_longitude_d.push_front(d_longitude_d);
-                    d_hist_latitude_d.push_front(d_latitude_d);
-                    d_hist_height_m.push_front(d_height_m);
-
-                    d_avg_latitude_d = 0.0;
-                    d_avg_longitude_d = 0.0;
-                    d_avg_height_m = 0.0;
-                    for (size_t i = 0; i < d_hist_longitude_d.size(); i++)
-                        {
-                            d_avg_latitude_d = d_avg_latitude_d + d_hist_latitude_d.at(i);
-                            d_avg_longitude_d = d_avg_longitude_d + d_hist_longitude_d.at(i);
-                            d_avg_height_m = d_avg_height_m + d_hist_height_m.at(i);
-                        }
-                    d_avg_latitude_d = d_avg_latitude_d / static_cast<double>(d_averaging_depth);
-                    d_avg_longitude_d = d_avg_longitude_d / static_cast<double>(d_averaging_depth);
-                    d_avg_height_m = d_avg_height_m / static_cast<double>(d_averaging_depth);
-                    d_valid_position = true;
-                }
-            else
-                {
-                    // int current_depth=d_hist_longitude_d.size();
-                    // Push new values
-                    d_hist_longitude_d.push_front(d_longitude_d);
-                    d_hist_latitude_d.push_front(d_latitude_d);
-                    d_hist_height_m.push_front(d_height_m);
-
-                    d_avg_latitude_d = d_latitude_d;
-                    d_avg_longitude_d = d_longitude_d;
-                    d_avg_height_m = d_height_m;
-                    d_valid_position = false;
-                }
-        }
-    else
-        {
-            d_valid_position = true;
-        }
-}
-
-
 double Pvt_Solution::get_time_offset_s() const
 {
     return d_rx_dt_s;
@@ -196,30 +132,6 @@ void Pvt_Solution::set_course_over_ground(double cog_deg)
 double Pvt_Solution::get_course_over_ground() const
 {
     return d_course_over_ground_d;
-}
-
-
-double Pvt_Solution::get_avg_latitude() const
-{
-    return d_avg_latitude_d;
-}
-
-
-double Pvt_Solution::get_avg_longitude() const
-{
-    return d_avg_longitude_d;
-}
-
-
-double Pvt_Solution::get_avg_height() const
-{
-    return d_avg_height_m;
-}
-
-
-bool Pvt_Solution::is_averaging() const
-{
-    return d_flag_averaging;
 }
 
 

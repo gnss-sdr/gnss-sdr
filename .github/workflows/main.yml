@@ -15,7 +15,7 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: |
           sudo apt-get update -y
@@ -39,14 +39,23 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: |
           brew update
-          brew install --overwrite python@3.10 python@3.11
-          python3.11 -m pip install mako
-          brew install ninja pkg-config hdf5 automake armadillo lapack \
+          rm /usr/local/bin/2to3 || true
+          rm /usr/local/bin/idle3 || true
+          rm /usr/local/bin/pydoc3 || true
+          rm /usr/local/bin/python3 || true
+          rm /usr/local/bin/python3-config || true
+          rm /usr/local/bin/2to3-3.1* || true
+          rm /usr/local/bin/idle3.1* || true
+          rm /usr/local/bin/pydoc3.1* || true
+          rm /usr/local/bin/python3.1* || true
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew install ninja hdf5 automake armadillo lapack libmatio \
           gflags glog gnuradio log4cpp openssl pugixml protobuf
+          pip3 install mako
       - name: configure
         run: cd build && cmake -GNinja ..
       - name: build
@@ -59,14 +68,23 @@ jobs:
   build-macos-xcode:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: |
           brew update
-          brew install --overwrite python@3.10 python@3.11
-          python3.11 -m pip install mako
-          brew install ninja pkg-config hdf5 automake armadillo lapack gflags glog \
-          gnuradio log4cpp openssl pugixml protobuf
+          rm /usr/local/bin/2to3 || true
+          rm /usr/local/bin/idle3 || true
+          rm /usr/local/bin/pydoc3 || true
+          rm /usr/local/bin/python3 || true
+          rm /usr/local/bin/python3-config || true
+          rm /usr/local/bin/2to3-3.1* || true
+          rm /usr/local/bin/idle3.1* || true
+          rm /usr/local/bin/pydoc3.1* || true
+          rm /usr/local/bin/python3.1* || true
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio \
+          gflags glog gnuradio log4cpp openssl pugixml protobuf
+          pip3 install mako
       - name: configure
         run: cd build && cmake -GXcode ..
       - name: build
@@ -87,7 +105,7 @@ jobs:
   clang-format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: run clang-format
         uses: jidicula/clang-format-action@v4.11.0
         with:
@@ -98,14 +116,23 @@ jobs:
   clang-tidy:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: |
           brew update
-          brew install --overwrite python@3.10 python@3.11
-          python3.11 -m pip install mako
+          rm /usr/local/bin/2to3 || true
+          rm /usr/local/bin/idle3 || true
+          rm /usr/local/bin/pydoc3 || true
+          rm /usr/local/bin/python3 || true
+          rm /usr/local/bin/python3-config || true
+          rm /usr/local/bin/2to3-3.1* || true
+          rm /usr/local/bin/idle3.1* || true
+          rm /usr/local/bin/pydoc3.1* || true
+          rm /usr/local/bin/python3.1* || true
+          export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio \
           log4cpp openssl pugixml protobuf
+          pip3 install mako
           ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin
@@ -123,7 +150,7 @@ jobs:
   cpplint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt-get install python3-pip && sudo pip3 install cpplint
       - name: run checks
@@ -144,7 +171,7 @@ jobs:
   prettier-markdown:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo npm install --global prettier
       - name: check markdown
@@ -153,7 +180,7 @@ jobs:
   cmakelint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: |
           sudo python -m pip install --upgrade pip
@@ -164,8 +191,10 @@ jobs:
   volk-gnsssdr-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -186,7 +215,7 @@ jobs:
   volk-gnsssdr-ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt install python3-mako liborc-dev
       - name: configure
@@ -201,7 +230,7 @@ jobs:
   volk-gnsssdr-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: pip3 install mako
       - name: configure
@@ -214,7 +243,7 @@ jobs:
   volk-gnsssdr-macos-xcode:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: pip3 install mako
       - name: configure
@@ -229,7 +258,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt install shellcheck
       - name: check scripts
@@ -238,7 +267,7 @@ jobs:
   REUSE-compliance:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check REUSE compliance
         uses: docker://fsfe/reuse
         with:

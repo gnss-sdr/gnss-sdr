@@ -19,16 +19,16 @@
 #include <glog/logging.h>
 
 
-void Pvt_Kf::init_kf(const arma::vec& p,
+void Pvt_Kf::init_Kf(const arma::vec& p,
     const arma::vec& v,
-    double solver_interval_s,
+    double update_interval_s,
     double measures_ecef_pos_sd_m,
     double measures_ecef_vel_sd_ms,
     double system_ecef_pos_sd_m,
     double system_ecef_vel_sd_ms)
 {
     // Kalman Filter class variables
-    const double Ti = solver_interval_s;
+    const double Ti = update_interval_s;
 
     d_F = {{1.0, 0.0, 0.0, Ti, 0.0, 0.0},
         {0.0, 1.0, 0.0, 0.0, Ti, 0.0},
@@ -68,7 +68,7 @@ void Pvt_Kf::init_kf(const arma::vec& p,
     d_x_old_old.subvec(0, 2) = p;
     d_x_old_old.subvec(3, 5) = v;
 
-    initialized = true;
+    d_initialized = true;
 
     DLOG(INFO) << "Ti: " << Ti;
     DLOG(INFO) << "F: " << d_F;
@@ -80,28 +80,54 @@ void Pvt_Kf::init_kf(const arma::vec& p,
 }
 
 
-void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v)
+bool Pvt_Kf::is_initialized() const
 {
-    // Kalman loop
-    // Prediction
-    d_x_new_old = d_F * d_x_old_old;
-    d_P_new_old = d_F * d_P_old_old * d_F.t() + d_Q;
-
-    // Measurement update
-    arma::vec z = arma::join_cols(p, v);
-    arma::mat K = d_P_new_old * d_H.t() * arma::inv(d_H * d_P_new_old * d_H.t() + d_R);  // Kalman gain
-
-    d_x_new_new = d_x_new_old + K * (z - d_H * d_x_new_old);
-    d_P_new_new = (arma::eye(6, 6) - K * d_H) * d_P_new_old;
-
-    // prepare data for next KF epoch
-    d_x_old_old = d_x_new_new;
-    d_P_old_old = d_P_new_new;
+    return d_initialized;
 }
 
 
-void Pvt_Kf::get_pvt(arma::vec& p, arma::vec& v)
+void Pvt_Kf::reset_Kf()
 {
-    p = d_x_new_new.subvec(0, 2);
-    v = d_x_new_new.subvec(3, 5);
+    d_initialized = false;
+}
+
+
+void Pvt_Kf::run_Kf(const arma::vec& p, const arma::vec& v)
+{
+    if (d_initialized)
+        {
+            // Kalman loop
+            // Prediction
+            d_x_new_old = d_F * d_x_old_old;
+            d_P_new_old = d_F * d_P_old_old * d_F.t() + d_Q;
+
+            // Measurement update
+            try
+                {
+                    arma::vec z = arma::join_cols(p, v);
+                    arma::mat K = d_P_new_old * d_H.t() * arma::inv(d_H * d_P_new_old * d_H.t() + d_R);  // Kalman gain
+
+                    d_x_new_new = d_x_new_old + K * (z - d_H * d_x_new_old);
+                    d_P_new_new = (arma::eye(6, 6) - K * d_H) * d_P_new_old;
+
+                    // prepare data for next KF epoch
+                    d_x_old_old = d_x_new_new;
+                    d_P_old_old = d_P_new_new;
+                }
+            catch (...)
+                {
+                    d_x_new_new = d_x_new_old;
+                    this->reset_Kf();
+                }
+        }
+}
+
+
+void Pvt_Kf::get_pv_Kf(arma::vec& p, arma::vec& v) const
+{
+    if (d_initialized)
+        {
+            p = d_x_new_new.subvec(0, 2);
+            v = d_x_new_new.subvec(3, 5);
+        }
 }

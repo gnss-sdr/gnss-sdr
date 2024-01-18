@@ -8,7 +8,7 @@
 
 from __future__ import print_function
 
-import optparse
+import argparse
 import volk_gnsssdr_arch_defs
 import volk_gnsssdr_machine_defs
 
@@ -20,6 +20,7 @@ def do_arch_flags_list(compiler):
         output.append(','.join(fields))
     print(';'.join(output))
 
+
 def do_machines_list(arch_names):
     output = list()
     for machine in volk_gnsssdr_machine_defs.machines:
@@ -28,6 +29,7 @@ def do_machines_list(arch_names):
             output.append(machine.name)
     print(';'.join(output))
 
+
 def do_machine_flags_list(compiler, machine_name):
     output = list()
     machine = volk_gnsssdr_machine_defs.machine_dict[machine_name]
@@ -35,16 +37,18 @@ def do_machine_flags_list(compiler, machine_name):
         output.extend(arch.get_flags(compiler))
     print(' '.join(output))
 
+
 def main():
-    parser = optparse.OptionParser()
-    parser.add_option('--mode', type='string')
-    parser.add_option('--compiler', type='string')
-    parser.add_option('--archs', type='string')
-    parser.add_option('--machine', type='string')
-    (opts, args) = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--mode', type=str)
+    parser.add_argument('--compiler', type=str)
+    parser.add_argument('--archs', type=str)
+    parser.add_argument('--machine', type=str)
+    args = parser.parse_args()
 
-    if opts.mode == 'arch_flags': return do_arch_flags_list(opts.compiler.lower())
-    if opts.mode == 'machines': return do_machines_list(opts.archs.split(';'))
-    if opts.mode == 'machine_flags': return do_machine_flags_list(opts.compiler.lower(), opts.machine)
+    if args.mode == 'arch_flags': return do_arch_flags_list(args.compiler.lower())
+    if args.mode == 'machines': return do_machines_list(args.archs.split(';'))
+    if args.mode == 'machine_flags': return do_machine_flags_list(args.compiler.lower(), args.machine)
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    main()

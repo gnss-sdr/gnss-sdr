@@ -28,6 +28,7 @@
 #include "pass_through.h"
 #include "tracking_interface.h"
 #include <gtest/gtest.h>
+#include <utility>
 
 
 TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopOldNotation /*unused*/)
@@ -42,7 +43,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopOldNotation /*unused*/
     config->set_property("SignalSource.repeat", "true");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
-    config->set_property("SignalSource.filename", filename);
+    config->set_property("SignalSource.filename", std::move(filename));
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("Channels_1C.count", "1");
     config->set_property("Channels.in_acquisition", "1");
@@ -76,7 +77,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStop /*unused*/)
     config->set_property("SignalSource.repeat", "true");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
-    config->set_property("SignalSource.filename", filename);
+    config->set_property("SignalSource.filename", std::move(filename));
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("Channels_1C.count", "8");
     config->set_property("Channels.in_acquisition", "1");
@@ -110,7 +111,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopGalileoE1B /*unused*/)
     config->set_property("SignalSource.repeat", "true");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
-    config->set_property("SignalSource.filename", filename);
+    config->set_property("SignalSource.filename", std::move(filename));
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("Channels_1B.count", "8");
     config->set_property("Channels.in_acquisition", "1");
@@ -145,7 +146,7 @@ TEST(GNSSFlowgraph /*unused*/, InstantiateConnectStartStopHybrid /*unused*/)
     config->set_property("SignalSource.repeat", "true");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat";
-    config->set_property("SignalSource.filename", filename);
+    config->set_property("SignalSource.filename", std::move(filename));
     config->set_property("SignalConditioner.implementation", "Pass_Through");
     config->set_property("Channels_1C.count", "8");
     config->set_property("Channels_1B.count", "8");

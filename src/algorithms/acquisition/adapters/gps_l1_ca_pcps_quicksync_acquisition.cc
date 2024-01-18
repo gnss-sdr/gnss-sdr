@@ -99,7 +99,7 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
             max_dwells_ = 2;
         }
 
-    dump_filename_ = configuration_->property(role_ + ".dump_filename", default_dump_filename);
+    dump_filename_ = configuration_->property(role_ + ".dump_filename", std::move(default_dump_filename));
 
     bool enable_monitor_output = configuration_->property("AcquisitionMonitor.enable_monitor", false);
 

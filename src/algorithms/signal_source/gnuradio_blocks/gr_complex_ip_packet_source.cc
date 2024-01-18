@@ -164,6 +164,7 @@ bool Gr_Complex_Ip_Packet_Source::start()
     // open the ethernet device
     if (open() == true)
         {
+            gr::thread::scoped_lock guard(d_setlock);
             // start pcap capture thread
             d_pcap_thread = new boost::thread(
 #if HAS_GENERIC_LAMBDA
@@ -181,6 +182,7 @@ bool Gr_Complex_Ip_Packet_Source::start()
 bool Gr_Complex_Ip_Packet_Source::stop()
 {
     std::cout << "gr_complex_ip_packet_source STOP\n";
+    gr::thread::scoped_lock guard(d_setlock);
     if (descr != nullptr)
         {
             pcap_breakloop(descr);
@@ -258,6 +260,7 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
 
     // eth frame parameters
     // **** UDP RAW PACKET DECODER ****
+    gr::thread::scoped_lock guard(d_setlock);
     if ((packet[12] == 0x08) & (packet[13] == 0x00))  // IP FRAME
         {
             // retrieve the position of the ip header
@@ -298,7 +301,6 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                             if (aligned_write_items >= payload_length_bytes)
                                 {
                                     // write all in a single memcpy
-                                    gr::thread::scoped_lock guard(d_setlock);
                                     memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], payload_length_bytes);  // size in bytes
                                     fifo_write_ptr += payload_length_bytes;
                                     if (fifo_write_ptr == FIFO_SIZE)
@@ -310,7 +312,6 @@ void Gr_Complex_Ip_Packet_Source::pcap_callback(__attribute__((unused)) u_char *
                             else
                                 {
                                     // two step wrap write
-                                    gr::thread::scoped_lock guard(d_setlock);
                                     memcpy(&fifo_buff[fifo_write_ptr], &udp_payload[0], aligned_write_items);  // size in bytes
                                     fifo_write_ptr = payload_length_bytes - aligned_write_items;
                                     memcpy(&fifo_buff[0], &udp_payload[aligned_write_items], fifo_write_ptr);  // size in bytes

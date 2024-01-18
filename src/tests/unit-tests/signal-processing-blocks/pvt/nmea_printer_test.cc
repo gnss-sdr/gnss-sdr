@@ -147,7 +147,7 @@ TEST_F(NmeaPrinterTest, PrintLine)
     std::string filename("nmea_test.nmea");
     Pvt_Conf conf;
     conf.use_e6_for_pvt = false;
-    std::shared_ptr<Rtklib_Solver> pvt_solution = std::make_shared<Rtklib_Solver>(rtk, "filename", 1, false, false, conf);
+    std::shared_ptr<Rtklib_Solver> pvt_solution = std::make_shared<Rtklib_Solver>(rtk, conf, "filename", 1, false, false);
 
     boost::posix_time::ptime pt(boost::gregorian::date(1994, boost::date_time::Nov, 19),
         boost::posix_time::hours(22) + boost::posix_time::minutes(54) + boost::posix_time::seconds(46));
@@ -168,7 +168,7 @@ TEST_F(NmeaPrinterTest, PrintLine)
     bool flag_nmea_output_file = true;
     ASSERT_NO_THROW({
         std::shared_ptr<Nmea_Printer> nmea_printer = std::make_shared<Nmea_Printer>(filename, flag_nmea_output_file, false, "");
-        nmea_printer->Print_Nmea_Line(pvt_solution.get(), false);
+        nmea_printer->Print_Nmea_Line(pvt_solution.get());
     }) << "Failure printing NMEA messages.";
 
     std::ifstream test_file(filename);

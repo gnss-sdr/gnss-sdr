@@ -29,6 +29,7 @@
 #include <cstddef>  // for size_t
 #include <memory>   // for weak_ptr
 #include <string>   // for string
+#include <utility>
 
 /** \addtogroup Acquisition
  * \{ */
@@ -97,8 +98,8 @@ public:
      */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
-        channel_fsm_ = channel_fsm;
-        acquisition_fpga_->set_channel_fsm(channel_fsm);
+        channel_fsm_ = std::move(channel_fsm);
+        acquisition_fpga_->set_channel_fsm(channel_fsm_);
     }
 
     /*!
@@ -149,9 +150,9 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-    static const uint32_t fpga_downsampling_factor = 4;  // downampling factor in the FPGA
-    static const uint32_t fpga_buff_num = 0;             // L2 band
-    static const uint32_t fpga_blk_exp = 13;             // default block exponent
+    static const uint32_t downsampling_factor_default = 1;
+    static const uint32_t fpga_buff_num = 0;  // L2 band
+    static const uint32_t fpga_blk_exp = 13;  // default block exponent
 
     static const uint32_t NUM_PRNs = 32;
     static const uint32_t QUANT_BITS_LOCAL_CODE = 16;

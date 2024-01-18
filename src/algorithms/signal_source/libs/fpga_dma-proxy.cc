@@ -42,10 +42,12 @@ int Fpga_DMA::DMA_open()
     return 0;
 }
 
+
 int8_t *Fpga_DMA::get_buffer_address()  // NOLINT(readability-make-member-function-const)
 {
     return tx_channel.buf_ptr[0].buffer;
 }
+
 
 int Fpga_DMA::DMA_write(int nbytes) const
 {

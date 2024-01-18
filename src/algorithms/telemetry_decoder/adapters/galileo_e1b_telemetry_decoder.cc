@@ -33,6 +33,7 @@ GalileoE1BTelemetryDecoder::GalileoE1BTelemetryDecoder(
     DLOG(INFO) << "role " << role;
     tlm_parameters_.SetFromConfiguration(configuration, role);
     tlm_parameters_.enable_reed_solomon = configuration->property(role + ".enable_reed_solomon", false);
+    tlm_parameters_.use_ced = configuration->property(role + ".use_reduced_ced", false);
     // make telemetry decoder object
     telemetry_decoder_ = galileo_make_telemetry_decoder_gs(satellite_, tlm_parameters_, 1);  // unified galileo decoder set to INAV (frame_type=1)
     DLOG(INFO) << "telemetry_decoder(" << telemetry_decoder_->unique_id() << ")";

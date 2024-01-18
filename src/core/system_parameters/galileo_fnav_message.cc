@@ -60,7 +60,7 @@ bool Galileo_Fnav_Message::CRC_test(const std::bitset<GALILEO_FNAV_DATA_FRAME_BI
     // using boost::dynamic_bitset.
     // ToDo: Use boost::dynamic_bitset for all the bitset operations in this class
 
-    boost::dynamic_bitset<uint8_t> frame_bits(std::string(bits.to_string()));
+    boost::dynamic_bitset<uint8_t> frame_bits(bits.to_string());
 
     std::vector<uint8_t> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
@@ -282,16 +282,12 @@ void Galileo_Fnav_Message::decode_page(const std::string& data)
 uint64_t Galileo_Fnav_Message::read_navigation_unsigned(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    const int num_of_slices = parameter.size();
-    for (int i = 0; i < num_of_slices; i++)
+    for (const auto& p : parameter)
         {
-            for (int j = 0; j < parameter[i].second; j++)
+            for (int j = 0; j < p.second; j++)
                 {
                     value <<= 1U;  // shift left
-                    if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1;  // insert the bit
-                        }
+                    value |= static_cast<uint64_t>(bits[GALILEO_FNAV_DATA_FRAME_BITS - p.first - j]);
                 }
         }
     return value;
@@ -300,29 +296,12 @@ uint64_t Galileo_Fnav_Message::read_navigation_unsigned(const std::bitset<GALILE
 
 int64_t Galileo_Fnav_Message::read_navigation_signed(const std::bitset<GALILEO_FNAV_DATA_FRAME_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    int64_t value = 0LL;
-    const int num_of_slices = parameter.size();
-
-    // read the MSB and perform the sign extension
-    if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[0].first]) == 1)
+    int64_t value = (bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
+    for (const auto& p : parameter)
         {
-            value ^= 0x0FFFFFFFFFFFFFFF;  // 64 bits variable
-        }
-    else
-        {
-            value &= 0;
-        }
-
-    for (int i = 0; i < num_of_slices; i++)
-        {
-            for (int j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < p.second; j++)
                 {
-                    value <<= 1;                  // shift left
-                    value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
-                    if (static_cast<int>(bits[GALILEO_FNAV_DATA_FRAME_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1;  // insert the bit
-                        }
+                    value = (value << 1) | static_cast<int64_t>(bits[GALILEO_FNAV_DATA_FRAME_BITS - p.first - j]);
                 }
         }
     return value;

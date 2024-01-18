@@ -41,7 +41,7 @@ public:
     explicit Kml_Printer(const std::string& base_path = std::string("."));
     ~Kml_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
-    bool print_position(const Pvt_Solution* const position, bool print_average_values);
+    bool print_position(const Pvt_Solution* const position);
     bool close_file();
 
 private:

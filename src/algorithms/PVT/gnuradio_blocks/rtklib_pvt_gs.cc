@@ -230,7 +230,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -440,10 +440,10 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         }
 
     // Initialize HAS simple printer
-    d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 107)) && (conf_.output_enabled));
+    d_enable_has_messages = (((d_type_of_rx >= 100) && (d_type_of_rx < 109)) && (conf_.output_enabled));
     if (d_enable_has_messages)
         {
-            d_has_simple_printer = std::make_unique<Has_Simple_Printer>();
+            d_has_simple_printer = std::make_unique<Has_Simple_Printer>(conf_.has_output_file_path);
         }
     else
         {
@@ -504,7 +504,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     std::ostringstream os;
 #ifdef HAS_PUT_TIME
     time_t when = std::time(nullptr);
-    auto const tm = *std::localtime(&when);
+    const auto& tm = *std::localtime(&when);
     os << std::put_time(&tm, "%z");
 #endif
     std::string utc_diff_str = os.str();  // in ISO 8601 format: "+HHMM" or "-HHMM"
@@ -540,22 +540,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         {
             // setup two PVT solvers: internal solver for rx clock and user solver
             // user PVT solver
-            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat, conf_);
-            d_user_pvt_solver->set_averaging_depth(1);
+            d_user_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat);
             d_user_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
 
             // internal PVT solver, mainly used to estimate the receiver clock
             rtk_t internal_rtk = rtk;
             internal_rtk.opt.mode = PMODE_SINGLE;  // use single positioning mode in internal PVT solver
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, dump_ls_pvt_filename, d_type_of_rx, false, false, conf_);
-            d_internal_pvt_solver->set_averaging_depth(1);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(internal_rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, false, false);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
         }
     else
         {
             // only one solver, customized by the user options
-            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat, conf_);
-            d_internal_pvt_solver->set_averaging_depth(1);
+            d_internal_pvt_solver = std::make_shared<Rtklib_Solver>(rtk, conf_, dump_ls_pvt_filename, d_type_of_rx, d_dump, d_dump_mat);
             d_internal_pvt_solver->set_pre_2009_file(conf_.pre_2009_file);
             d_user_pvt_solver = d_internal_pvt_solver;
         }
@@ -2115,7 +2112,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // old_time_debug = d_gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
                     // #### solve PVT and store the corrected observable set
-                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, false, d_enable_vtl, d_close_vtl_loop))
+                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, false, d_enable_vtl, d_close_vtl_loop))
                         {
                             // ****** experimental VTL tests
                             if (d_close_vtl_loop == true and d_enable_vtl == true)
@@ -2307,6 +2304,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // VTP To.Do: Check why get_PVT is triggered twice. Leave only one get_PVT.
 
                             //flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, false, false, false);
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, false, d_enable_vtl, d_close_vtl_loop);
                         }
 
                     if (flag_pvt_valid == true)
@@ -2411,28 +2409,28 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                         {
                                             if (current_RX_time_ms % d_kml_rate_ms == 0)
                                                 {
-                                                    d_kml_dump->print_position(d_user_pvt_solver.get(), false);
+                                                    d_kml_dump->print_position(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_gpx_output_enabled)
                                         {
                                             if (current_RX_time_ms % d_gpx_rate_ms == 0)
                                                 {
-                                                    d_gpx_dump->print_position(d_user_pvt_solver.get(), false);
+                                                    d_gpx_dump->print_position(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_geojson_output_enabled)
                                         {
                                             if (current_RX_time_ms % d_geojson_rate_ms == 0)
                                                 {
-                                                    d_geojson_printer->print_position(d_user_pvt_solver.get(), false);
+                                                    d_geojson_printer->print_position(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_nmea_output_file_enabled)
                                         {
                                             if (current_RX_time_ms % d_nmea_rate_ms == 0)
                                                 {
-                                                    d_nmea_printer->Print_Nmea_Line(d_user_pvt_solver.get(), false);
+                                                    d_nmea_printer->Print_Nmea_Line(d_user_pvt_solver.get());
                                                 }
                                         }
                                     if (d_rinex_output_enabled)
@@ -2482,22 +2480,17 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             std::cout
                                 << TEXT_BOLD_GREEN
                                 << "Position at " << time_solution << UTC_solution_str
-                                << " using " << d_user_pvt_solver->get_num_valid_observations()
-                                << std::fixed << std::setprecision(9)
-                                << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
-                                << std::fixed << std::setprecision(3)
-                                << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]" << TEXT_RESET << '\n';
-
-                            std::cout << std::setprecision(ss);
+                                << " using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = "
+                                << std::fixed << std::setprecision(6) << d_user_pvt_solver->get_latitude()
+                                << " [deg], Long = " << d_user_pvt_solver->get_longitude() << " [deg], Height = "
+                                << std::fixed << std::setprecision(2) << d_user_pvt_solver->get_height() << std::setprecision(ss) << " [m]" << TEXT_RESET << std::endl;
                             DLOG(INFO) << "RX clock offset: " << d_user_pvt_solver->get_time_offset_s() << "[s]";
 
                             std::cout
                                 << TEXT_BOLD_GREEN
-                                << "Velocity: " << std::fixed << std::setprecision(3)
+                                << "Velocity: " << std::fixed << std::setprecision(2)
                                 << "East: " << d_user_pvt_solver->get_rx_vel()[0] << " [m/s], North: " << d_user_pvt_solver->get_rx_vel()[1]
-                                << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << " [m/s]" << TEXT_RESET << '\n';
-
-                            std::cout << std::setprecision(ss);
+                                << " [m/s], Up = " << d_user_pvt_solver->get_rx_vel()[2] << std::setprecision(ss) << " [m/s]" << TEXT_RESET << std::endl;
                             DLOG(INFO) << "RX clock drift: " << d_user_pvt_solver->get_clock_drift_ppm() << " [ppm]";
 
                             // boost::posix_time::ptime p_time;
@@ -2506,21 +2499,22 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // p_time += boost::posix_time::microseconds(round(rtklib_utc_time.sec * 1e6));
                             // std::cout << TEXT_MAGENTA << "Observable RX time (GPST) " << boost::posix_time::to_simple_string(p_time) << TEXT_RESET << '\n';
 
-                            LOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
-                                      << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
-                                      << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]";
-                            LOG(INFO) << "geohash=" << d_geohash->encode(d_user_pvt_solver->get_latitude(), d_user_pvt_solver->get_longitude());
+                            DLOG(INFO) << "Position at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
+                                       << " UTC using " << d_user_pvt_solver->get_num_valid_observations() << " observations is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
+                                       << " [deg], Height = " << d_user_pvt_solver->get_height() << " [m]";
+
                             /* std::cout << "Dilution of Precision at " << boost::posix_time::to_simple_string(d_user_pvt_solver->get_position_UTC_time())
-                                         << " UTC using "<< d_user_pvt_solver->get_num_valid_observations() <<" observations is HDOP = " << d_user_pvt_solver->get_hdop() << " VDOP = "
-                                         << d_user_pvt_solver->get_vdop()
-                                         << " GDOP = " << d_user_pvt_solver->get_gdop() << '\n'; */
+                                 << " UTC using "<< d_user_pvt_solver->get_num_valid_observations() <<" observations is HDOP = " << d_user_pvt_solver->get_hdop() << " VDOP = "
+                                 << d_user_pvt_solver->get_vdop()
+                                 << " GDOP = " << d_user_pvt_solver->get_gdop() << '\n'; */
                         }
 
                     // PVT MONITOR
-                    if (d_user_pvt_solver->is_valid_position())
+                    if (d_user_pvt_solver->is_valid_position() && flag_compute_pvt_output == true)
                         {
                             const std::shared_ptr<Monitor_Pvt> monitor_pvt = std::make_shared<Monitor_Pvt>(d_user_pvt_solver->get_monitor_pvt());
-
+                            monitor_pvt->geohash = d_geohash->encode(d_user_pvt_solver->get_latitude(), d_user_pvt_solver->get_longitude());
+                            DLOG(INFO) << "geohash=" << monitor_pvt->geohash;
                             // publish new position to the gnss_flowgraph channel status monitor
                             if (current_RX_time_ms % d_report_rate_ms == 0)
                                 {

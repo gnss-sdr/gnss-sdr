@@ -124,10 +124,16 @@ void galileo_pcps_8ms_acquisition_cc::set_local_code(std::complex<float> *code)
     volk_32fc_conjugate_32fc(d_fft_code_A.data(), d_fft_if->get_outbuf(), d_fft_size);
 
     // code B: two replicas of a primary code; the second replica is inverted.
+#if VOLK_EQUAL_OR_GREATER_31
+    auto minus_one = gr_complex(-1, 0);
+    volk_32fc_s32fc_multiply2_32fc(&(d_fft_if->get_inbuf())[d_samples_per_code],
+        &code[d_samples_per_code], &minus_one,
+        d_samples_per_code);
+#else
     volk_32fc_s32fc_multiply_32fc(&(d_fft_if->get_inbuf())[d_samples_per_code],
         &code[d_samples_per_code], gr_complex(-1, 0),
         d_samples_per_code);
-
+#endif
     d_fft_if->execute();  // We need the FFT of local code
 
     // Conjugate the local code
@@ -381,7 +387,7 @@ int galileo_pcps_8ms_acquisition_cc::general_work(int noutput_items,
                         auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                         Gnss_Synchro current_synchro_data = Gnss_Synchro();
                         current_synchro_data = *d_gnss_synchro;
-                        *out[0] = current_synchro_data;
+                        *out[0] = std::move(current_synchro_data);
                         noutput_items = 1;  // Number of Gnss_Synchro objects produced
                     }
 

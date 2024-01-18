@@ -44,7 +44,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
       out_streams_(out_streams),
       acquire_pilot_(configuration->property(role + ".acquire_pilot", false))
 {
-    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS);
+    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS);
 
     if (FLAGS_doppler_max != 0)
         {

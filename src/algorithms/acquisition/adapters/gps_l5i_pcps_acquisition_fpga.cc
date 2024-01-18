@@ -44,7 +44,7 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    acq_parameters_.SetFromConfiguration(configuration, role, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GPS_L5I_CODE_RATE_CPS, GPS_L5I_CODE_LENGTH_CHIPS);
+    acq_parameters_.SetFromConfiguration(configuration, role, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GPS_L5I_CODE_RATE_CPS, GPS_L5I_CODE_LENGTH_CHIPS);
 
     LOG(INFO) << "role " << role;
 

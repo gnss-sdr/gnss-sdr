@@ -587,16 +587,24 @@ private:
 
         inline bool decode_header()
         {
-            char header[header_length + 1] = "";
-            std::strncat(header, data_.data(), header_length);
+            std::string header(data_.data(), header_length);
             if (header[0] != 'G' || header[1] != 'S')
                 {
                     return false;
                 }
 
-            char header2_[header_length - 1] = "";
-            std::strncat(header2_, data_.data() + 2, header_length - 2);
-            body_length_ = std::atoi(header2_);
+            auto header2 = header.substr(2);
+            try
+                {
+                    body_length_ = std::stoi(header2);
+                }
+            catch (const std::exception& e)
+                {
+                    // invalid stoi conversion
+                    body_length_ = 0;
+                    return false;
+                }
+
             if (body_length_ == 0)
                 {
                     return false;
@@ -612,11 +620,11 @@ private:
 
         inline void encode_header()
         {
-            char header[header_length + 1] = "";
             std::stringstream ss;
             ss << "GS" << std::setw(4) << std::max(std::min(static_cast<int>(body_length_), static_cast<int>(max_body_length)), 0);
-            std::copy_n(ss.str().c_str(), header_length + 1, header);
-            std::copy_n(header, header_length, data_.data());
+            std::string header = ss.str();
+            header.resize(header_length, ' ');
+            std::copy(header.begin(), header.end(), data_.begin());
         }
 
     private:
@@ -639,7 +647,7 @@ private:
         inline void join(const std::shared_ptr<RtcmListener>& participant)
         {
             participants_.insert(participant);
-            for (auto msg : recent_msgs_)
+            for (const auto& msg : recent_msgs_)
                 {
                     participant->deliver(msg);
                 }
@@ -802,7 +810,7 @@ private:
         inline void write(const Rtcm_Message& msg)
         {
             io_context_.post(
-                [this, msg]() {
+                [this, &msg]() {
                     bool write_in_progress = !write_msgs_.empty();
                     write_msgs_.push_back(msg);
                     if (!write_in_progress)

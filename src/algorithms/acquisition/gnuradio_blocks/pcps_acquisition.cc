@@ -259,7 +259,7 @@ void pcps_acquisition::init()
     d_mag = 0.0;
     d_input_power = 0.0;
 
-    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(static_cast<int32_t>(d_acq_parameters.doppler_max) - static_cast<int32_t>(-d_acq_parameters.doppler_max)) / static_cast<double>(d_doppler_step)));
+    d_num_doppler_bins = static_cast<uint32_t>(std::ceil(static_cast<double>(2 * d_acq_parameters.doppler_max) / static_cast<double>(d_doppler_step)));
 
     // Create the carrier Doppler wipeoff signals
     if (d_grid_doppler_wipeoffs.empty())
@@ -872,6 +872,7 @@ void pcps_acquisition::acquisition_core(uint64_t samp_count)
 // Called by gnuradio to enable drivers, etc for i/o devices.
 bool pcps_acquisition::start()
 {
+    gr::thread::scoped_lock lk(d_setlock);
     d_sample_counter = 0ULL;
     calculate_threshold();
     return true;
@@ -1018,7 +1019,7 @@ int pcps_acquisition::general_work(int noutput_items __attribute__((unused)),
                         {
                             Gnss_Synchro current_synchro_data = d_monitor_queue.front();
                             d_monitor_queue.pop();
-                            *out[i] = current_synchro_data;
+                            *out[i] = std::move(current_synchro_data);
                         }
                     return num_gnss_synchro_objects;
                 }

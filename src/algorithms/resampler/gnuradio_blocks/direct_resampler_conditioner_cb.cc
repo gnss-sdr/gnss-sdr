@@ -65,12 +65,7 @@ void direct_resampler_conditioner_cb::forecast(int noutput_items,
     gr_vector_int &ninput_items_required)
 {
     int nreqd = std::max(static_cast<unsigned>(1), static_cast<int>(static_cast<double>(noutput_items + 1) * sample_freq_in() / sample_freq_out()) + history() - 1);
-    unsigned ninputs = ninput_items_required.size();
-
-    for (unsigned i = 0; i < ninputs; i++)
-        {
-            ninput_items_required[i] = nreqd;
-        }
+    std::fill(ninput_items_required.begin(), ninput_items_required.end(), nreqd);
 }
 
 

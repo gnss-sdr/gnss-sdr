@@ -27,7 +27,7 @@
  *
  * <b>Dispatcher Prototype</b>
  * \code
- * void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points);
+ * void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points);
  * \endcode
  *
  * \b Inputs
@@ -51,7 +51,7 @@
 
 #ifdef LV_HAVE_GENERIC
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     unsigned int i = 0;
     lv_16sc_t tmp16;
@@ -61,7 +61,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(lv_16sc_t* ou
             tmp16 = *inVector++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             *outVector++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
             // Regenerate phase
             if (i % 512 == 0)
                 {
@@ -81,7 +81,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(lv_16sc_t* ou
 
 #ifdef LV_HAVE_GENERIC
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     unsigned int ROTATOR_RELOAD = 512;
     unsigned int n = 0;
@@ -95,7 +95,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(lv_16s
                     tmp16 = *inVector++;
                     tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
                     *outVector++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-                    (*phase) *= phase_inc;
+                    (*phase) *= *phase_inc;
                 }
                 // Regenerate phase
                 // printf("Phase before regeneration %i: %f,%f  Modulus: %f\n", n,lv_creal(*phase),lv_cimag(*phase), cabsf(*phase));
@@ -111,7 +111,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(lv_16s
             tmp16 = *inVector++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             *outVector++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
         }
 }
 
@@ -121,7 +121,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(lv_16s
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
     unsigned int number;
@@ -129,13 +129,13 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
     __m128i c1, c2, result;
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_inc[2];
-    two_phase_inc[0] = phase_inc * phase_inc;
-    two_phase_inc[1] = phase_inc * phase_inc;
+    two_phase_inc[0] = *phase_inc * *phase_inc;
+    two_phase_inc[1] = *phase_inc * *phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*)two_phase_inc);
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
-    two_phase_acc[1] = (*phase) * phase_inc;
+    two_phase_acc[1] = (*phase) * *phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
 
     const lv_16sc_t* _in = inVector;
@@ -213,7 +213,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
             tmp16 = *_in++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             *_out++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
         }
 }
 
@@ -223,7 +223,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(lv_16sc_t* out
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
     const unsigned int ROTATOR_RELOAD = 512;
@@ -233,13 +233,13 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
     __m128i c1, c2, result;
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_inc[2];
-    two_phase_inc[0] = phase_inc * phase_inc;
-    two_phase_inc[1] = phase_inc * phase_inc;
+    two_phase_inc[0] = *phase_inc * *phase_inc;
+    two_phase_inc[1] = *phase_inc * *phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*)two_phase_inc);
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
-    two_phase_acc[1] = (*phase) * phase_inc;
+    two_phase_acc[1] = (*phase) * *phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
 
     const lv_16sc_t* _in = inVector;
@@ -367,7 +367,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
             tmp16 = *_in++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             *_out++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
         }
 }
 
@@ -377,7 +377,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(lv_16sc
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
     unsigned int number;
@@ -385,13 +385,13 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
     __m128i c1, c2, result;
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_inc[2];
-    two_phase_inc[0] = phase_inc * phase_inc;
-    two_phase_inc[1] = phase_inc * phase_inc;
+    two_phase_inc[0] = *phase_inc * *phase_inc;
+    two_phase_inc[1] = *phase_inc * *phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*)two_phase_inc);
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
-    two_phase_acc[1] = (*phase) * phase_inc;
+    two_phase_acc[1] = (*phase) * *phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
 
     const lv_16sc_t* _in = inVector;
@@ -470,7 +470,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
             tmp16 = *_in++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             *_out++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
         }
 }
 
@@ -480,7 +480,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(lv_16sc_t* out
 #ifdef LV_HAVE_SSE3
 #include <pmmintrin.h>
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     const unsigned int sse_iters = num_points / 4;
     unsigned int ROTATOR_RELOAD = 512;
@@ -490,13 +490,13 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
     __m128i c1, c2, result;
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_inc[2];
-    two_phase_inc[0] = phase_inc * phase_inc;
-    two_phase_inc[1] = phase_inc * phase_inc;
+    two_phase_inc[0] = *phase_inc * *phase_inc;
+    two_phase_inc[1] = *phase_inc * *phase_inc;
     two_phase_inc_reg = _mm_load_ps((float*)two_phase_inc);
     __VOLK_ATTR_ALIGNED(16)
     lv_32fc_t two_phase_acc[2];
     two_phase_acc[0] = (*phase);
-    two_phase_acc[1] = (*phase) * phase_inc;
+    two_phase_acc[1] = (*phase) * *phase_inc;
     two_phase_acc_reg = _mm_load_ps((float*)two_phase_acc);
 
     const lv_16sc_t* _in = inVector;
@@ -624,7 +624,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
             tmp16 = *_in++;
             tmp32 = lv_cmake((float)lv_creal(tmp16), (float)lv_cimag(tmp16)) * (*phase);
             *_out++ = lv_cmake((int16_t)rintf(lv_creal(tmp32)), (int16_t)rintf(lv_cimag(tmp32)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
         }
 }
 
@@ -634,7 +634,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(lv_16sc
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     unsigned int i = 0;
     const unsigned int neon_iters = num_points / 4;
@@ -642,13 +642,13 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
     lv_32fc_t tmp32_;
 
     float arg_phase0 = cargf(*phase);
-    float arg_phase_inc = cargf(phase_inc);
+    float arg_phase_inc = cargf(*phase_inc);
     float phase_est = 0.0;
 
     const lv_16sc_t* _in = inVector;
     lv_16sc_t* _out = outVector;
 
-    lv_32fc_t ___phase4 = phase_inc * phase_inc * phase_inc * phase_inc;
+    lv_32fc_t ___phase4 = *phase_inc * *phase_inc * *phase_inc * *phase_inc;
     __VOLK_ATTR_ALIGNED(16)
     float32_t __phase4_real[4] = {lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4)};
     __VOLK_ATTR_ALIGNED(16)
@@ -657,9 +657,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
     float32x4_t _phase4_real = vld1q_f32(__phase4_real);
     float32x4_t _phase4_imag = vld1q_f32(__phase4_imag);
 
-    lv_32fc_t phase2 = (lv_32fc_t)(*phase) * phase_inc;
-    lv_32fc_t phase3 = phase2 * phase_inc;
-    lv_32fc_t phase4 = phase3 * phase_inc;
+    lv_32fc_t phase2 = (lv_32fc_t)(*phase) * *phase_inc;
+    lv_32fc_t phase3 = phase2 * *phase_inc;
+    lv_32fc_t phase4 = phase3 * *phase_inc;
 
     __VOLK_ATTR_ALIGNED(16)
     float32_t __phase_real[4] = {lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};
@@ -737,9 +737,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
                             // printf("Estimated phase: %f\n\n", cos(phase_est));
 
                             *phase = lv_cmake(cos(phase_est), sin(phase_est));
-                            phase2 = (lv_32fc_t)(*phase) * phase_inc;
-                            phase3 = phase2 * phase_inc;
-                            phase4 = phase3 * phase_inc;
+                            phase2 = (lv_32fc_t)(*phase) * *phase_inc;
+                            phase3 = phase2 * *phase_inc;
+                            phase4 = phase3 * *phase_inc;
 
                             __VOLK_ATTR_ALIGNED(16)
                             float32_t ____phase_real[4] = {lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};
@@ -760,7 +760,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
             tmp16_ = *_in++;
             tmp32_ = lv_cmake((float32_t)lv_creal(tmp16_), (float32_t)lv_cimag(tmp16_)) * (*phase);
             *_out++ = lv_cmake((int16_t)rintf(lv_creal(tmp32_)), (int16_t)rintf(lv_cimag(tmp32_)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
         }
 }
 
@@ -770,7 +770,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(lv_16sc_t* outVe
 #ifdef LV_HAVE_NEON
 #include <arm_neon.h>
 
-static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t phase_inc, lv_32fc_t* phase, unsigned int num_points)
+static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t* outVector, const lv_16sc_t* inVector, const lv_32fc_t* phase_inc, lv_32fc_t* phase, unsigned int num_points)
 {
     unsigned int i = 0;
     const unsigned int neon_iters = num_points / 4;
@@ -782,13 +782,13 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
     lv_32fc_t tmp32_;
 
     float arg_phase0 = cargf(*phase);
-    float arg_phase_inc = cargf(phase_inc);
+    float arg_phase_inc = cargf(*phase_inc);
     float phase_est = 0.0;
 
     const lv_16sc_t* _in = inVector;
     lv_16sc_t* _out = outVector;
 
-    lv_32fc_t ___phase4 = phase_inc * phase_inc * phase_inc * phase_inc;
+    lv_32fc_t ___phase4 = *phase_inc * *phase_inc * *phase_inc * *phase_inc;
     __VOLK_ATTR_ALIGNED(16)
     float32_t __phase4_real[4] = {lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4), lv_creal(___phase4)};
     __VOLK_ATTR_ALIGNED(16)
@@ -797,9 +797,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
     float32x4_t _phase4_real = vld1q_f32(__phase4_real);
     float32x4_t _phase4_imag = vld1q_f32(__phase4_imag);
 
-    lv_32fc_t phase2 = (lv_32fc_t)(*phase) * phase_inc;
-    lv_32fc_t phase3 = phase2 * phase_inc;
-    lv_32fc_t phase4 = phase3 * phase_inc;
+    lv_32fc_t phase2 = (lv_32fc_t)(*phase) * *phase_inc;
+    lv_32fc_t phase3 = phase2 * *phase_inc;
+    lv_32fc_t phase4 = phase3 * *phase_inc;
 
     __VOLK_ATTR_ALIGNED(16)
     float32_t __phase_real[4] = {lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};
@@ -877,9 +877,9 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
                     phase_est = arg_phase0 + (n + 1) * ROTATOR_RELOAD * 4 * arg_phase_inc;
                     // printf("Estimated phase: %f\n\n", cos(phase_est));
                     *phase = lv_cmake(cos(phase_est), sin(phase_est));
-                    phase2 = (lv_32fc_t)(*phase) * phase_inc;
-                    phase3 = phase2 * phase_inc;
-                    phase4 = phase3 * phase_inc;
+                    phase2 = (lv_32fc_t)(*phase) * *phase_inc;
+                    phase3 = phase2 * *phase_inc;
+                    phase4 = phase3 * *phase_inc;
 
                     __VOLK_ATTR_ALIGNED(16)
                     float32_t ____phase_real[4] = {lv_creal((*phase)), lv_creal(phase2), lv_creal(phase3), lv_creal(phase4)};
@@ -954,7 +954,7 @@ static inline void volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(lv_16sc_t
             tmp16_ = *_in++;
             tmp32_ = lv_cmake((float32_t)lv_creal(tmp16_), (float32_t)lv_cimag(tmp16_)) * (*phase);
             *_out++ = lv_cmake((int16_t)rintf(lv_creal(tmp32_)), (int16_t)rintf(lv_cimag(tmp32_)));
-            (*phase) *= phase_inc;
+            (*phase) *= *phase_inc;
         }
 }
 

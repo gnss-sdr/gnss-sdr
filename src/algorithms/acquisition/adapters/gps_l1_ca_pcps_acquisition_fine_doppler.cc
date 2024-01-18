@@ -55,7 +55,7 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     acq_parameters.fs_in = fs_in_;
     acq_parameters.samples_per_chip = static_cast<unsigned int>(ceil(GPS_L1_CA_CHIP_PERIOD_S * static_cast<float>(acq_parameters.fs_in)));
     acq_parameters.dump = dump_;
-    dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
+    dump_filename_ = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
     acq_parameters.dump_filename = dump_filename_;
     if (FLAGS_doppler_max != 0)
         {

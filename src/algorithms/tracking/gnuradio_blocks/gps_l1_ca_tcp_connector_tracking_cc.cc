@@ -319,7 +319,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     current_synchro_data.fs = d_fs_in;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     d_sample_counter_seconds = d_sample_counter_seconds + (static_cast<double>(samples_offset) / static_cast<double>(d_fs_in));
                     d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
@@ -468,7 +468,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
     current_synchro_data.Signal[2] = '\0';
 
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
 
     if (d_dump)
         {

@@ -171,7 +171,7 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
     // VALVE
     if (valve())
         {
-            top_block->connect(input, 0, valve(), 0);
+            top_block->connect(std::move(input), 0, valve(), 0);
             DLOG(INFO) << "connected source to valve";
 
             output = valve();
@@ -186,11 +186,11 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
     // DUMP
     if (sink())
         {
-            top_block->connect(output, 0, sink(), 0);
+            top_block->connect(std::move(output), 0, sink(), 0);
             DLOG(INFO) << "connected output to file sink";
         }
 
-    post_connect_hook(top_block);
+    post_connect_hook(std::move(top_block));
 }
 
 
@@ -219,7 +219,7 @@ void FileSourceBase::disconnect(gr::top_block_sptr top_block)
     // VALVE
     if (valve())
         {
-            top_block->disconnect(input, 0, valve(), 0);
+            top_block->disconnect(std::move(input), 0, valve(), 0);
             DLOG(INFO) << "disconnected source to valve";
 
             output = valve();
@@ -234,11 +234,11 @@ void FileSourceBase::disconnect(gr::top_block_sptr top_block)
     // DUMP
     if (sink())
         {
-            top_block->disconnect(output, 0, sink(), 0);
+            top_block->disconnect(std::move(output), 0, sink(), 0);
             DLOG(INFO) << "disconnected output to file sink";
         }
 
-    post_disconnect_hook(top_block);
+    post_disconnect_hook(std::move(top_block));
 }
 
 
@@ -383,7 +383,7 @@ size_t FileSourceBase::samplesToSkip() const
 
 size_t FileSourceBase::computeSamplesInFile() const
 {
-    auto n_samples = static_cast<size_t>(samples());
+    auto n_samples = samples();
 
     // this could throw, but the existence of the file has been proven before we get here.
     const auto size = fs::file_size(filename());

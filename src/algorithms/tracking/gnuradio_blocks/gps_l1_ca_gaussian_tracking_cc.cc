@@ -235,6 +235,7 @@ Gps_L1_Ca_Gaussian_Tracking_cc::Gps_L1_Ca_Gaussian_Tracking_cc(
 
 void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
 {
+    gr::thread::scoped_lock l(d_setlock);
     /*
      *  correct the code phase according to the delay between acq and trk
      */
@@ -308,10 +309,6 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
 
     sys = std::string(1, d_acquisition_gnss_synchro->System);
 
-    // DEBUG OUTPUT
-    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
-    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
-
     // enable tracking
     d_pull_in = true;
     d_enable_tracking = true;
@@ -319,6 +316,9 @@ void Gps_L1_Ca_Gaussian_Tracking_cc::start_tracking()
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " Code Phase correction [samples]=" << delay_correction_samples
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
+
+    std::cout << "Tracking of GPS L1 C/A signal started on channel " << d_channel << " for satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << '\n';
+    LOG(INFO) << "Starting tracking of satellite " << Gnss_Satellite(systemName[sys], d_acquisition_gnss_synchro->PRN) << " on channel " << d_channel;
 }
 
 
@@ -609,7 +609,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
 
     // GNSS_SYNCHRO OBJECT to interchange data between tracking->telemetry_decoder
     Gnss_Synchro current_synchro_data = Gnss_Synchro();
-
+    gr::thread::scoped_lock l(d_setlock);
     if (d_enable_tracking == true)
         {
             // Fill the acquisition data
@@ -634,7 +634,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
                     current_synchro_data.correlation_length_ms = 1;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     // Kalman filter initialization reset
                     kf_P_x = kf_P_x_ini;
                     // Update Kalman states based on acquisition information
@@ -811,7 +811,7 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
 
     // assign the GNU Radio block output data
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
 
     if (d_dump)
         {

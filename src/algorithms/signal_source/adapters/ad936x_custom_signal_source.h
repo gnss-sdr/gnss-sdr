@@ -83,7 +83,6 @@ private:
     std::vector<unpack_byte_4bit_samples_sptr> unpack_byte_fourbits;
     std::vector<unpack_byte_2bit_cpx_samples_sptr> unpack_byte_twobits;
 
-
     std::string item_type_;
     size_t item_size_;
     int64_t samples_;

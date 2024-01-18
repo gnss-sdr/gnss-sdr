@@ -93,7 +93,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
 
     d_gnss_synchro_history = std::make_unique<Gnss_circular_deque<Gnss_Synchro>>(1000, d_nchannels_out);
 
-    d_Rx_clock_buffer.set_capacity(std::min(std::max(200U / d_T_rx_step_ms, 3U), 10U));
+    d_Rx_clock_buffer.set_capacity(std::min(std::max(300U / d_T_rx_step_ms, 3U), 20U));
     d_Rx_clock_buffer.clear();
 
     d_channel_last_pll_lock = std::vector<bool>(d_nchannels_out, false);
@@ -113,7 +113,7 @@ hybrid_observables_gs::hybrid_observables_gs(const Obs_Conf &conf_)
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -431,6 +431,10 @@ bool hybrid_observables_gs::interp_trk_obs(Gnss_Synchro &interpolated_obs, uint3
 
                             // 1st: copy the nearest gnss_synchro data for that channel
                             interpolated_obs = d_gnss_synchro_history->get(ch, nearest_element);
+                            if (interpolated_obs.fs == 0LL)
+                                {
+                                    return false;
+                                }
 
                             // 2nd: Linear interpolation: y(t) = y(t1) + (y(t2) - y(t1)) * (t - t1) / (t2 - t1)
                             const double T_rx_s = static_cast<double>(rx_clock) / static_cast<double>(interpolated_obs.fs);
@@ -720,6 +724,13 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                     // Push the valid tracking Gnss_Synchros to their corresponding deque
                     if (in[n][m].Flag_valid_word)
                         {
+                            if (std::string(in[n][m].Signal, 2) == std::string("E6"))
+                                {
+                                    if (d_conf.enable_E6 == false)
+                                        {
+                                            continue;
+                                        }
+                                }
                             if (d_gnss_synchro_history->size(n) > 0)
                                 {
                                     // Check if the last Gnss_Synchro comes from the same satellite as the previous ones
@@ -757,7 +768,7 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
                         {
                             n_valid++;
                         }
-                    epoch_data[n] = interpolated_gnss_synchro;
+                    epoch_data[n] = std::move(interpolated_gnss_synchro);
                 }
             if (d_T_rx_TOW_set)
                 {

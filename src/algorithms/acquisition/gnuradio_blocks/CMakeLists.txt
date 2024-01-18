@@ -101,6 +101,14 @@ if(ENABLE_OPENCL)
     )
 endif()
 
+if(VOLK_VERSION)
+    if(VOLK_VERSION VERSION_GREATER 3.0.99)
+        target_compile_definitions(acquisition_gr_blocks
+            PRIVATE -DVOLK_EQUAL_OR_GREATER_31=1
+        )
+    endif()
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(acquisition_gr_blocks

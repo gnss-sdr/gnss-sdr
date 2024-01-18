@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2021 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -799,7 +799,7 @@ Of course, you will also need a GPU that
 ## macOS
 
 GNSS-SDR can be built on macOS (or the former Mac OS X), starting from 10.9
-(Mavericks) and including 11 (Big Sur). If you still have not installed
+(Mavericks) and including 14 (Sonoma). If you still have not installed
 [Xcode](https://developer.apple.com/xcode/ "Xcode"), do it now from the App
 Store (it's free). You will also need the Xcode Command Line Tools, which do not
 come by default in macOS versions older than Big Sur. If you are using an older
@@ -830,10 +830,17 @@ In a terminal, type:
 ```
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install armadillo cmake gnuradio gnutls lapack libad9361-iio libiio \
-    matio pkgconfig protobuf3-cpp pugixml google-glog +gflags
-$ sudo port install py37-mako
+$ sudo port install armadillo cmake pkgconfig protobuf3-cpp pugixml gnutls
+$ sudo port install gnuradio +uhd +grc +zeromq
+$ sudo port install boost matio libad9361-iio libiio google-glog +gflags
+$ sudo port install py311-mako
 $ sudo port install doxygen +docs
+```
+
+For macOS versions older than Sonoma, you will also need LAPACK:
+
+```
+$ sudo port install lapack
 ```
 
 You also might need to activate a Python installation. The list of installed
@@ -846,7 +853,7 @@ $ port select --list python
 and you can activate a certain version by typing:
 
 ```
-$ sudo port select --set python python37
+$ sudo port select --set python python311
 ```
 
 ### Homebrew
@@ -871,11 +878,17 @@ Install the required dependencies:
 
 ```
 $ brew update && brew upgrade
-$ brew install armadillo cmake hdf5 gflags glog gnuradio lapack libmatio log4cpp \
+$ brew install armadillo cmake hdf5 gflags glog gnuradio libmatio log4cpp \
     openssl pkg-config protobuf pugixml
 $ pip3 install mako
 $ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
+```
+
+For macOS versions older than Sonoma, you will also need LAPACK:
+
+```
+$ brew install lapack
 ```
 
 ### Other package managers

@@ -28,6 +28,7 @@
 #include <iterator>  // for std::back_inserter
 #include <string>
 #include <unistd.h>
+#include <utility>
 
 
 class Galileo_FNAV_INAV_test : public ::testing::Test
@@ -102,7 +103,7 @@ public:
         if (page_part_bits[0] == 1)
             {
                 // DECODE COMPLETE WORD (even + odd) and TEST CRC
-                INAV_decoder.split_page(page_String, flag_even_word_arrived);
+                INAV_decoder.split_page(std::move(page_String), flag_even_word_arrived);
                 if (INAV_decoder.get_flag_CRC_test() == true)
                     {
                         crc_ok = true;

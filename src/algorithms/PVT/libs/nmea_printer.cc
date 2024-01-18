@@ -100,7 +100,7 @@ Nmea_Printer::Nmea_Printer(const std::string& filename,
         {
             nmea_dev_descriptor = -1;
         }
-    print_avg_pos = false;
+
     d_PVT_data = nullptr;
 }
 
@@ -190,11 +190,10 @@ void Nmea_Printer::close_serial() const
 }
 
 
-bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* const pvt_data, bool print_average_values)
+bool Nmea_Printer::Print_Nmea_Line(const Rtklib_Solver* const pvt_data)
 {
     // set the new PVT data
     d_PVT_data = pvt_data;
-    print_avg_pos = print_average_values;
 
     // generate the NMEA sentences
 

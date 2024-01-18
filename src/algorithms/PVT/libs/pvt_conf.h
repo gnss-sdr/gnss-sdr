@@ -46,6 +46,7 @@ public:
     std::string kml_output_path = std::string(".");
     std::string xml_output_path = std::string(".");
     std::string rtcm_output_file_path = std::string(".");
+    std::string has_output_file_path = std::string(".");
     std::string udp_addresses;
     std::string udp_eph_addresses;
     std::string log_source_timetag_file;
@@ -55,13 +56,13 @@ public:
 
     int32_t output_rate_ms = 0;
     int32_t display_rate_ms = 0;
-    int32_t kml_rate_ms = 1000;
-    int32_t gpx_rate_ms = 1000;
-    int32_t geojson_rate_ms = 1000;
-    int32_t nmea_rate_ms = 1000;
+    int32_t kml_rate_ms = 20;
+    int32_t gpx_rate_ms = 20;
+    int32_t geojson_rate_ms = 20;
+    int32_t nmea_rate_ms = 20;
     int32_t rinex_version = 0;
     int32_t rinexobs_rate_ms = 0;
-    int32_t an_rate_ms = 1000;
+    int32_t an_rate_ms = 20;
     int32_t max_obs_block_rx_clock_offset_ms = 40;
     int udp_port = 0;
     int udp_eph_port = 0;
@@ -90,7 +91,7 @@ public:
     bool pre_2009_file = false;
     bool dump = false;
     bool dump_mat = true;
-    bool log_source_timetag;
+    bool log_source_timetag = false;
     bool use_e6_for_pvt = true;
     bool enable_vtl = false;
     bool close_vtl_loop = true;

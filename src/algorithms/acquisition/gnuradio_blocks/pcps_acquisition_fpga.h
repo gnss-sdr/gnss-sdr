@@ -33,6 +33,7 @@
 #include <cstdint>  // for uint32_t
 #include <memory>   // for shared_ptr
 #include <string>   // for string
+#include <utility>  // for move
 
 /** \addtogroup Acquisition
  * \{ */
@@ -118,7 +119,7 @@ public:
      */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm)
     {
-        d_channel_fsm = channel_fsm;
+        d_channel_fsm = std::move(channel_fsm);
     }
 
     /*!

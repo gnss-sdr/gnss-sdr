@@ -49,16 +49,16 @@
 using namespace std;
 
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
+    const Pvt_Conf &conf,
     const std::string &dump_filename,
     uint32_t type_of_rx,
     bool flag_dump_to_file,
-    bool flag_dump_to_mat,
-    Pvt_Conf conf) : d_dump_filename(dump_filename),
-                     d_rtk(rtk),
-                     d_conf(std::move(conf)),
-                     d_type_of_rx(type_of_rx),
-                     d_flag_dump_enabled(flag_dump_to_file),
-                     d_flag_dump_mat_enabled(flag_dump_to_mat)
+    bool flag_dump_to_mat) : d_dump_filename(dump_filename),
+                             d_rtk(rtk),
+                             d_conf(conf),
+                             d_type_of_rx(type_of_rx),
+                             d_flag_dump_enabled(flag_dump_to_file),
+                             d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
     // TODO: temporal VTL config parameters are hardcoded here. Move it to PVT adapter config (javi)
     Vtl_Conf new_vtl_conf;
@@ -66,9 +66,6 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 
     vtl_engine.configure(new_vtl_conf);
     vtl_engine.reset();
-
-
-    this->set_averaging_flag(false);
 
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
@@ -141,6 +138,10 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
         case 107:  // GPS L1 C/A + Galileo E6B
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
+            break;
+        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+            d_rtklib_band_index["E6"] = 2;
+            d_rtklib_freq_index[2] = 3;
             break;
         }
     // auto empty_map = std::map < int, HAS_obs_corrections >> ();
@@ -1198,8 +1199,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
         }
 }
 
-
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging, bool enable_vtl, bool close_vtl_loop)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -1209,8 +1209,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
 
     const Glonass_Gnav_Utc_Model &gnav_utc = this->glonass_gnav_utc_model;
-
-    this->set_averaging_flag(flag_averaging);
 
     // ********************************************************************************
     // ****** PREPARE THE DATA (SV EPHEMERIS AND OBSERVATIONS) ************************
@@ -1813,7 +1811,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     this->set_num_valid_observations(0);
                     if (d_conf.enable_pvt_kf == true)
                         {
-                            d_pvt_kf.initialized = false;
+                            d_pvt_kf.reset_Kf();
                         }
                 }
             else
@@ -1855,14 +1853,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     if (d_conf.enable_pvt_kf == true)
                         {
-                            if (d_pvt_kf.initialized == false)
+                            if (d_pvt_kf.is_initialized() == false)
                                 {
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
 
-                                    d_pvt_kf.init_kf(p,
+                                    d_pvt_kf.init_Kf(p,
                                         v,
-                                        d_conf.observable_interval_ms / 1000.0,
+                                        kf_update_interval_s,
                                         d_conf.measures_ecef_pos_sd_m,
                                         d_conf.measures_ecef_vel_sd_ms,
                                         d_conf.system_ecef_pos_sd_m,
@@ -1873,7 +1871,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
                                     arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
                                     d_pvt_kf.run_Kf(p, v);
-                                    d_pvt_kf.get_pvt(p, v);
+                                    d_pvt_kf.get_pv_Kf(p, v);
                                     pvt_sol.rr[0] = p[0];  // [m]
                                     pvt_sol.rr[1] = p[1];  // [m]
                                     pvt_sol.rr[2] = p[2];  // [m]
@@ -2000,7 +1998,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     ecef2pos(pvt_sol.rr, pos.data());
                     ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
                     this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
-                    double new_cog;
+                    double new_cog = -9999.0;  // COG not estimated due to insuficient velocity
                     if (ground_speed_ms >= 1.0)
                         {
                             new_cog = atan2(enuv[0], enuv[1]) * R2D;
@@ -2082,11 +2080,40 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     this->set_rx_vel({enuv[0], enuv[1], enuv[2]});
 
+                    // ENU vel [m/s]
+                    d_monitor_pvt.vel_e = enuv[0];
+                    d_monitor_pvt.vel_n = enuv[1];
+                    d_monitor_pvt.vel_u = enuv[2];
+
+                    // Course Over Ground (cog) [deg]
+                    d_monitor_pvt.cog = new_cog;
+
+                    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
+                    if (d_has_obs_corr_map.empty())
+                        {
+                            d_monitor_pvt.galhas_status = 0;
+                        }
+                    else
+                        {
+                            d_monitor_pvt.galhas_status = 1;
+                        }
+
                     const double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);
                     // User clock drift [ppm]
                     d_monitor_pvt.user_clk_drift_ppm = clock_drift_ppm;
+
+                    // write UTC time string
+
+                    // Use a facet to display time in a custom format (only hour and minutes).
+                    auto *facet = new boost::posix_time::time_facet();
+                    facet->format("%Y-%m-%dT%H:%M:%S%F");
+                    std::stringstream stream;
+                    stream.imbue(std::locale(std::locale::classic(), facet));
+                    stream << p_time;
+                    stream << 'Z';
+                    d_monitor_pvt.utc_time = stream.str();
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)

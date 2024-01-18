@@ -21,6 +21,7 @@
 #include <complex>
 #include <cstdint>
 #include <thread>
+#include <utility>
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>
 #else
@@ -177,7 +178,7 @@ TEST_F(NotchFilterTest, ConnectAndRunGrcomplex)
     config2->set_property("Test_Source.sampling_frequency", "4000000");
     std::string path = std::string(TEST_PATH);
     std::string filename = path + "signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat";
-    config2->set_property("Test_Source.filename", filename);
+    config2->set_property("Test_Source.filename", std::move(filename));
     config2->set_property("Test_Source.item_type", "gr_complex");
     config2->set_property("Test_Source.repeat", "true");
 

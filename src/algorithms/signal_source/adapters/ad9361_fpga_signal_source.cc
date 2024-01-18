@@ -59,26 +59,26 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
       filename0_(configuration->property(role + ".filename", empty_string)),
       rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
       rf_gain_rx2_(configuration->property(role + ".gain_rx2", default_manual_gain_rx2)),
+      scale_dds_dbfs_(configuration->property(role + ".scale_dds_dbfs", -3.0)),
+      phase_dds_deg_(configuration->property(role + ".phase_dds_deg", 0.0)),
+      tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db)),
       freq0_(configuration->property(role + ".freq", 0)),
       freq1_(configuration->property(role + ".freq1", static_cast<uint64_t>(GPS_L5_FREQ_HZ))),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
       bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),
       samples_to_skip_(0),
       samples_(configuration->property(role + ".samples", static_cast<int64_t>(0))),
-      Fpass_(configuration->property(role + ".Fpass", static_cast<float>(0.0))),
-      Fstop_(configuration->property(role + ".Fstop", static_cast<float>(0.0))),
-      num_freq_bands_(2),
-      dma_buff_offset_pos_(0),
-      scale_dds_dbfs_(configuration->property(role + ".scale_dds_dbfs", -3.0)),
-      phase_dds_deg_(configuration->property(role + ".phase_dds_deg", 0.0)),
-      tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db)),
       freq_dds_tx_hz_(configuration->property(role + ".freq_dds_tx_hz", uint64_t(10000))),
       freq_rf_tx_hz_(configuration->property(role + ".freq_rf_tx_hz", static_cast<uint64_t>(GPS_L1_FREQ_HZ - GPS_L5_FREQ_HZ - freq_dds_tx_hz_))),
       tx_bandwidth_(configuration->property(role + ".tx_bandwidth", static_cast<uint64_t>(500000))),
-      item_size_(sizeof(int8_t)),
+      Fpass_(configuration->property(role + ".Fpass", static_cast<float>(0.0))),
+      Fstop_(configuration->property(role + ".Fstop", static_cast<float>(0.0))),
+      num_input_files_(1),
+      dma_buff_offset_pos_(0),
       in_stream_(in_stream),
       out_stream_(out_stream),
       switch_position_(configuration->property(role + ".switch_position", 0)),
+      item_size_(sizeof(int8_t)),
       enable_dds_lo_(configuration->property(role + ".enable_dds_lo", false)),
       filter_auto_(configuration->property(role + ".filter_auto", false)),
       quadrature_(configuration->property(role + ".quadrature", true)),
@@ -93,12 +93,16 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
       rf_shutdown_(configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown)),
       repeat_(configuration->property(role + ".repeat", false))
 {
-    const int l1_band = configuration->property("Channels_1C.count", 0) +
-                        configuration->property("Channels_1B.count", 0);
-
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", 0.0);
     const size_t header_size = configuration->property(role + ".header_size", 0);
 
+    const bool enable_rx1_band((configuration->property("Channels_1C.count", 0) > 0) ||
+                               (configuration->property("Channels_1B.count", 0) > 0));
+    const bool enable_rx2_band((configuration->property("Channels_L2.count", 0) > 0) ||
+                               (configuration->property("Channels_L5.count", 0) > 0) ||
+                               (configuration->property("Channels_5X.count", 0) > 0));
+
+    const uint32_t num_freq_bands = ((enable_rx1_band == true) and (enable_rx2_band == true)) ? 2 : 1;
     if (freq0_ == 0)
         {
             // use ".freq0"
@@ -126,6 +130,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
 
     if (filename0_.empty())
         {
+            num_input_files_ = 2;
             filename0_ = configuration->property(role + ".filename0", empty_string);
             filename1_ = configuration->property(role + ".filename1", empty_string);
         }
@@ -135,8 +140,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     // if more than one input file are specified then the DMA transfer the samples to both the L1 and the L2/L5 frequency channels.
     if (filename1_.empty())
         {
-            num_freq_bands_ = 1;
-            if (l1_band != 0)
+            if (enable_rx1_band)
                 {
                     dma_buff_offset_pos_ = 2;
                 }
@@ -160,7 +164,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
     if (find_uio_dev_file_name(device_io_name, switch_device_name, 0) < 0)
         {
             std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << switch_device_name << '\n';
-            item_size_ = 0;
             return;
         }
 
@@ -196,7 +199,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     else
                         {
                             std::cerr << "SignalSource: Unable to open the samples file " << filename0_.c_str() << '\n';
-                            item_size_ = 0;
                             return;
                         }
                     std::streamsize ss = std::cout.precision();
@@ -224,7 +226,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                             else
                                 {
                                     std::cerr << "SignalSource: Unable to open the samples file " << filename1_.c_str() << '\n';
-                                    item_size_ = 0;
                                     return;
                                 }
                             std::streamsize ss = std::cout.precision();
@@ -372,7 +373,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             catch (const std::runtime_error &e)
                 {
                     std::cerr << "Exception cached when configuring the RX chain: " << e.what() << '\n';
-                    item_size_ = 0;
                     return;
                 }
             // LOCAL OSCILLATOR DDS GENERATOR FOR DUAL FREQUENCY OPERATION
@@ -407,7 +407,6 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
                     catch (const std::runtime_error &e)
                         {
                             std::cerr << "Exception cached when configuring the TX carrier: " << e.what() << '\n';
-                            item_size_ = 0;
                             return;
                         }
                 }
@@ -424,36 +423,17 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
             if (find_uio_dev_file_name(device_io_name_buffer_monitor, buffer_monitor_device_name, 0) < 0)
                 {
                     std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << buffer_monitor_device_name << '\n';
-                    item_size_ = 0;
                     return;
                 }
 
-            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands_, dump_, dump_filename);
+            buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(device_io_name_buffer_monitor, num_freq_bands, dump_, dump_filename);
             thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
         }
 
     // dynamic bits selection
     if (enable_dynamic_bit_selection_)
         {
-            std::string device_io_name_dyn_bit_sel_0;
-            std::string device_io_name_dyn_bit_sel_1;
-
-            // find the uio device file corresponding to the dynamic bit selector 0 module.
-            if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_0, dyn_bit_sel_device_name, 0) < 0)
-                {
-                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
-                    item_size_ = 0;
-                    return;
-                }
-
-            // find the uio device file corresponding to the dynamic bit selector 1 module.
-            if (find_uio_dev_file_name(device_io_name_dyn_bit_sel_1, dyn_bit_sel_device_name, 1) < 0)
-                {
-                    std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << dyn_bit_sel_device_name << '\n';
-                    item_size_ = 0;
-                    return;
-                }
-            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(device_io_name_dyn_bit_sel_0, device_io_name_dyn_bit_sel_1);
+            dynamic_bit_selection_fpga = std::make_shared<Fpga_dynamic_bit_selection>(enable_rx1_band, enable_rx2_band);
             thread_dynamic_bit_selection = std::thread([&] { run_dynamic_bit_selection_process(); });
         }
 
@@ -626,7 +606,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
 
     // if only one frequency band is used then clear the samples corresponding to the unused frequency band
     uint32_t dma_index = 0;
-    if (num_freq_bands_ == 1)
+    if (num_input_files_ == 1)
         {
             // if only one file is enabled then clear the samples corresponding to the frequency band that is not used.
             for (int index0 = 0; index0 < (nread_elements); index0 += 2)
@@ -679,7 +659,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
                 }
 
             // read filename 1 (if enabled)
-            if (num_freq_bands_ > 1)
+            if (num_input_files_ > 1)
                 {
                     dma_index = 0;
                     try
@@ -800,7 +780,7 @@ void Ad9361FpgaSignalSource::run_DMA_process(const std::string &filename0_, cons
             std::cerr << "Exception closing file " << filename0_ << '\n';
         }
 
-    if (num_freq_bands_ > 1)
+    if (num_input_files_ > 1)
         {
             try
                 {

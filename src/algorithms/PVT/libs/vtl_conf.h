@@ -31,7 +31,7 @@ class Vtl_Conf
 {
 public:
     Vtl_Conf();
-    //TODO: VTL control parameters and config options here
+    // TODO: VTL control parameters and config options here
 };
 
 

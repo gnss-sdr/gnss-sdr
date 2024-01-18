@@ -39,9 +39,9 @@ public:
 
     ~Vtl_Engine();
 
-    void configure(Vtl_Conf config_);  //set config parameters
+    void configure(Vtl_Conf config_);  // set config parameters
 
-    //TODO: output functions here (output for tracking KF updates, VTL computed user PVT, etc...)
+    // TODO: output functions here (output for tracking KF updates, VTL computed user PVT, etc...)
     bool vtl_loop(Vtl_Data new_data);
     void reset();        // reset all internal states
     void debug_print();  // print debug information
@@ -57,11 +57,11 @@ public:
     double get_longitude();                           // get_longitude
     double get_height();                              // get_height
     double get_user_clock_offset_s();                 // get_user_clock_offset_s;
-    double get_user_clock_offset_drift_s_s();           // get_user_clock_offset_drift_s/s;
+    double get_user_clock_offset_drift_s_s();         // get_user_clock_offset_drift_s/s;
 
 private:
     Vtl_Conf config;
-    //TODO: Internal VTL persistent variables here
+    // TODO: Internal VTL persistent variables here
 
     // Transformation variables
     arma::colvec d;
@@ -103,9 +103,9 @@ private:
     uint64_t refSampleCounter;
     double delta_t_cmd = 0;
 
-    void kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arma::colvec ay, arma::colvec az, double kf_dt);  /*  */ // Observation Matrix constructor
-    void kf_F_fill_rocket(arma::mat &kf_F, double kf_dt, arma::mat &kf_x);        // System Matrix constructor
-    void kf_F_fill(arma::mat &kf_F, double kf_dt, arma::mat &kf_x);       // System Matrix constructor
+    void kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arma::colvec ay, arma::colvec az, double kf_dt); /*  */                                                                                    // Observation Matrix constructor
+    void kf_F_fill_rocket(arma::mat &kf_F, double kf_dt, arma::mat &kf_x);                                                                                                                                      // System Matrix constructor
+    void kf_F_fill(arma::mat &kf_F, double kf_dt, arma::mat &kf_x);                                                                                                                                             // System Matrix constructor
     void obsv_calc(arma::mat &rho_pri, arma::mat &rhoDot_pri, arma::mat &rhoDot2_pri, arma::colvec &ax, arma::colvec &ay, arma::colvec &az, int sat_number, arma::mat sat_p, arma::mat sat_v, arma::mat kf_x);  // Observables calculation
     void kf_measurements(arma::mat &kf_yerr, int sat_number, arma::mat rho_pri, arma::mat rhoDot_pri, arma::mat rhoDot2_pri, arma::colvec pr_m, arma::colvec doppler_hz, arma::mat kf_x);
 };

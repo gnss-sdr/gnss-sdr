@@ -298,7 +298,6 @@ void Vtl_Engine::kf_H_fill(arma::mat &kf_H, int sat_number, arma::colvec ax, arm
 }
 void Vtl_Engine::kf_F_fill(arma::mat &kf_F, double kf_dt, arma::mat &kf_x)
 {
-
     // modulo de la velocidad
     double vx = kf_x(3);
     double vy = kf_x(4);

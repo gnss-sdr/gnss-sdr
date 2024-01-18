@@ -62,7 +62,7 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
 {
     // TODO: temporal VTL config parameters are hardcoded here. Move it to PVT adapter config (javi)
     Vtl_Conf new_vtl_conf;
-    //TODO: new_vtl_conf.parameter1=blablabla
+    // TODO: new_vtl_conf.parameter1=blablabla
 
     vtl_engine.configure(new_vtl_conf);
     vtl_engine.reset();
@@ -1846,9 +1846,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             dops(index_aux, azel.data(), 0.0, d_dop.data());
                         }
                     this->set_valid_position(true);
-                    //this->set_averaging_flag(true);
-                    //this->set_averaging_depth(100);
-                    //this->perform_pos_averaging();
+                    // this->set_averaging_flag(true);
+                    // this->set_averaging_depth(100);
+                    // this->perform_pos_averaging();
                     std::array<double, 4> rx_position_and_time{};
 
                     if (d_conf.enable_pvt_kf == true)
@@ -1902,7 +1902,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     if (enable_vtl == true)
                         {
-                            //VTL input data extraction from rtklib structures
+                            // VTL input data extraction from rtklib structures
                             /* satellite positions, velocities and clocks */
                             prcopt_t *opt = &d_rtk.opt;
                             /* count rover/base station observations */
@@ -1927,7 +1927,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             /* satellite positions, velocities and clocks */
                             satposs(d_rtk.sol.time, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, opt->sateph, rs, dts, var, svh.data());
 
-                            //Vtl_Data vtl_data;
+                            // Vtl_Data vtl_data;
                             vtl_data.init_storage(n_sats);
                             vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
                             vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
@@ -1947,14 +1947,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     vtl_data.sat_health_flag(n) = svh.at(n);
                                     vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0] * 0.25;  //(0.25 dBHz)
                                     // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
-                                    //To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
-                                    //corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)
+                                    // To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
+                                    // corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)
                                     vtl_data.pr_m(n) = pr_corrected_code_bias_vec[n] - tropo_vec[n] - iono_vec[n] + SPEED_OF_LIGHT_M_S * dts[n * 2];
                                     vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0] - SPEED_OF_LIGHT_M_S * dts[1 + 2 * n] / Lambda_GPS_L1;
                                     vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
                                     vtl_data.pr_res(n) = pr_residual_vec[n];
                                 }
-                            //VTL input data extraction from rtklib structures
+                            // VTL input data extraction from rtklib structures
                             /* Receiver position, velocity and clock */
                             /* position/velocity (m|m/s):{x,y,z,vx,vy,vz} or {e,n,u,ve,vn,vu} */
                             vtl_data.rx_p(0) = pvt_sol.rr[0];
@@ -1967,13 +1967,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             vtl_data.rx_pvt_var[0] = pvt_sol.qr[0];
                             vtl_data.rx_pvt_var[1] = pvt_sol.qr[1];
                             vtl_data.rx_pvt_var[2] = pvt_sol.qr[2];
-                            //TODO: get direct estimations for V T variances, instead:
-                            vtl_data.rx_pvt_var[3] = pvt_sol.qr[0];  //in general minor than position.
+                            // TODO: get direct estimations for V T variances, instead:
+                            vtl_data.rx_pvt_var[3] = pvt_sol.qr[0];  // in general minor than position.
                             vtl_data.rx_pvt_var[4] = pvt_sol.qr[1];
                             vtl_data.rx_pvt_var[5] = pvt_sol.qr[2];
-                            vtl_data.rx_pvt_var[6] = pvt_sol.qr[0];  //time
-                            vtl_data.rx_pvt_var[7] = pvt_sol.qr[0];  //doppler
-                            //receiver clock offset and receiver clock drift
+                            vtl_data.rx_pvt_var[6] = pvt_sol.qr[0];  // time
+                            vtl_data.rx_pvt_var[7] = pvt_sol.qr[0];  // doppler
+                            // receiver clock offset and receiver clock drift
                             vtl_data.rx_dts(0) = rx_position_and_time[3];
                             vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
 
@@ -1981,15 +1981,15 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                     else
                         {
-                            //MAGL: the code should not enter here once the vtl has started
-                            // .. but it does!
-                            //and not only that but pvt_sol.rr seems to have NOT reasonable values
-                            // pvt_sol.rr[0]=rx_position_and_time[0];  // [m]
-                            // pvt_sol.rr[1]=rx_position_and_time[1];  // [m]
-                            // pvt_sol.rr[2]=rx_position_and_time[2];  // [m]
-                            // pvt_sol.rr[3]=4.2e6;
-                            // pvt_sol.rr[4]=4.2e6;
-                            // pvt_sol.rr[5]=4.2e6;
+                            // MAGL: the code should not enter here once the vtl has started
+                            //  .. but it does!
+                            // and not only that but pvt_sol.rr seems to have NOT reasonable values
+                            //  pvt_sol.rr[0]=rx_position_and_time[0];  // [m]
+                            //  pvt_sol.rr[1]=rx_position_and_time[1];  // [m]
+                            //  pvt_sol.rr[2]=rx_position_and_time[2];  // [m]
+                            //  pvt_sol.rr[3]=4.2e6;
+                            //  pvt_sol.rr[4]=4.2e6;
+                            //  pvt_sol.rr[5]=4.2e6;
                         }
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;

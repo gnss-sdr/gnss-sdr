@@ -535,7 +535,6 @@ void osnma_msg_receiver::read_mack_header()
 
 void osnma_msg_receiver::read_mack_body()
 {
-
     uint8_t lt_bits = 0;
     const auto it = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
     if (it != OSNMA_TABLE_11.cend())
@@ -703,10 +702,6 @@ void osnma_msg_receiver::read_mack_body()
             d_osnma_data.d_mack_message.tag_and_info[k].tag_info.ADKD = ADKD;
             d_osnma_data.d_mack_message.tag_and_info[k].tag_info.cop = cop;
         }
-    // TODO - [TAS-110]
-    //      retrieve TESLA key: index i is [479-MH(l_t)-(nt-1)*(16+l_t), i+l_k]
-    //      compute I (GST_SFi,GST_Kroot)
-    //      perform recursive hash calls until base case: i = 10...1
 
     // retrieve tesla key
     uint8_t start_index_bytes = ( 480 - (lt_bits + 16) - (nt - 1) * ( lt_bits + 16 ) - 1 ) / 8; // includes -1 to start at [i-1]
@@ -798,12 +793,6 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
     
     // MACSEQ validation - case no FLX Tags
 
-    // C: TODO check ADKD-MACLT for match, also identify which tags are FLX
-
-
-    // d_osnma_data.d_dsm_kroot_message.maclt
-    // d_osnma_data.d_mack_message.tag_and_info[k].tag
-
     // retrieve data to verify MACK tags
     uint8_t msg {0};
     uint8_t nt {0};
@@ -840,21 +829,17 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
           std::cout << "Galileo OSNMA: Number of retrieved tags does not match MACLT sequence size!" << std::endl;
           return;
         }
-    bool allOk = true; // one being invalid spoils the entire MACK
     std::vector<uint8_t> flxTags {};
     std::string tempADKD;
     for (uint8_t i = 0; i < d_osnma_data.d_mack_message.tag_and_info.size(); i++)
         {
-            // TODO - logic for asserting if if sq[i] == "FLX" (string) or "00X" (int built with first two digits)
             tempADKD = sequence[i];
             if(tempADKD == "FLX")
                 {
                     flxTags.push_back(i); // C: just need to save the index in the sequence
                 }
             else if(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD != std::stoi(sequence[i]))
-                {
-                    allOk = false;
-                    std::cout << "Galileo OSNMA: Unsuccessful verification of received ADKD against MAC Look-up table. " << std::endl;
+                {                    std::cout << "Galileo OSNMA: Unsuccessful verification of received ADKD against MAC Look-up table. " << std::endl;
                     return; // C: suffices one incorrect to abort and not process the rest of the tags
                 }
         }

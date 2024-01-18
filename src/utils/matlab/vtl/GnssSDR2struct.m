@@ -1,3 +1,14 @@
+% Miguel Angel Gomez, 2024. gomezlma(at)inta.es
+% -------------------------------------------------------------------------
+%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+% This file is part of GNSS-SDR.
+%
+% Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+% SPDX-License-Identifier: GPL-3.0-or-later
+%
+% -------------------------------------------------------------------------
+%
 % GnssSDR2struct Convert GNSS-SDR output .mat file PVT.mat to a struct.
 %   refSolution = SpirentMotion2struct(path_to_motion_V1_csv) Convert PVT.mat to a struct navSolution
 %   refSolution has the following fields:

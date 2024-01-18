@@ -1,3 +1,14 @@
+% Miguel Angel Gomez, 2024. gomezlma(at)inta.es
+% -------------------------------------------------------------------------
+%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+% This file is part of GNSS-SDR.
+%
+% Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+% SPDX-License-Identifier: GPL-3.0-or-later
+%
+% -------------------------------------------------------------------------
+%
 % SpirentMotion2struct Convert CSV file motionV1.csv to a struct.
 %   refSolution = SpirentMotion2struct(path_to_motion_V1_csv) parse the CSV motionV1.CSV to a struct refSolution
 %   refSolution has the following fields:
@@ -26,16 +37,7 @@
 % -------------------------------------------------------------------------
 %  USE EXAMPLE: refSolution = SpirentMotion2struct('..\log_spirent\motion_V1_SPF_LD_05.csv')
 % -------------------------------------------------------------------------
-%
-% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
-% This file is part of GNSS-SDR.
-%
-% Copyright (C) 2010-2019  (see AUTHORS file for a list of contributors)
-% SPDX-License-Identifier: GPL-3.0-or-later
-%
-% -------------------------------------------------------------------------
-% SPDX-FileCopyrightText: 2022 gomezlma(at)inta.es
-% SPDX-License-Identifier: GPL-3.0-or-later
+
 
 
 

@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sat Nov 26 22:18:25 2022
-
-@author: miguel
+% Miguel Angel Gomez, 2024. gomezlma(at)inta.es
+% -------------------------------------------------------------------------
+%
+% GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+% This file is part of GNSS-SDR.
+%
+% Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
+% SPDX-License-Identifier: GPL-3.0-or-later
+%
+% -------------------------------------------------------------------------
+%
 """
 #%%
 import numpy as np

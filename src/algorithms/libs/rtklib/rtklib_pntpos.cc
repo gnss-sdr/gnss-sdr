@@ -690,8 +690,8 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
     double *resp, char *msg,
-    std::vector<double> &tropo_vec, 
-    std::vector<double> &iono_vec, 
+    std::vector<double> &tropo_vec,
+    std::vector<double> &iono_vec,
     std::vector<double> &pr_corrected_code_bias_vec,
     std::vector<double> &pr_residual_vec,
     std::vector<double> &doppler_residual_vec)
@@ -906,8 +906,8 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
             std::vector<double> pr_residual_vec;
             std::vector<double> doppler_residual_vec;
             /* estimate receiver position without a satellite */
-             if (!estpos(obs_e, n - 1, rs_e, dts_e, vare_e, svh_e, nav, opt, &sol_e, azel_e,
-                     vsat_e, resp_e, msg_e, iono_vec, tropo_vec, pr_corrected_code_bias_vec,pr_residual_vec,doppler_residual_vec))
+            if (!estpos(obs_e, n - 1, rs_e, dts_e, vare_e, svh_e, nav, opt, &sol_e, azel_e,
+                    vsat_e, resp_e, msg_e, iono_vec, tropo_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec))
                 {
                     trace(3, "raim_fde: exsat=%2d (%s)\n", obs[i].sat, msg);
                     continue;

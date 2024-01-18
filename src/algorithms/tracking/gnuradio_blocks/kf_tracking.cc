@@ -657,13 +657,13 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
                             double old_code_phase_chips = d_x_old_old(0);
 
                             if (cmd->enable_carrier_nco_cmd)
-                            {
-                                d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
-                            }
+                                {
+                                    d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
+                                }
                             else
-                            {
-                                // std::cout << "correction not applied" << std::endl;
-                            }
+                                {
+                                    // std::cout << "correction not applied" << std::endl;
+                                }
 
                             // set vtl corrections flag to inform VTL from gnss_synchro object
                             d_vtl_cmd_applied_now = true;

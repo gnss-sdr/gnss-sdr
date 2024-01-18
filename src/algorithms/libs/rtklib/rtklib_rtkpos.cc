@@ -2802,7 +2802,7 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
 
     /* rover position by single point positioning */
     if (!pntpos(obs, nu, nav, &rtk->opt, &rtk->sol, nullptr, rtk->ssat, msg, tropo_vec,
-            iono_vec, pr_corrected_code_bias_vec,pr_residual_vec,doppler_residual_vec))
+            iono_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec))
         {
             errmsg(rtk, "point pos error (%s)\n", msg);
             if (!rtk->opt.dynamics)
@@ -2842,9 +2842,9 @@ int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav,
             return 1;
         }
     if (opt->mode == PMODE_MOVEB)
-        { /*  moving baseline */
+        {   /*  moving baseline */
             /* estimate position/velocity of base station */
-             if (!pntpos(obs + nu, nr, nav, &rtk->opt, &solb, nullptr, nullptr, msg, tropo_vec,
+            if (!pntpos(obs + nu, nr, nav, &rtk->opt, &solb, nullptr, nullptr, msg, tropo_vec,
                     iono_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec))
                 {
                     errmsg(rtk, "base station position error (%s)\n", msg);

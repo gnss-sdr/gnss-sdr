@@ -602,7 +602,7 @@ void *rtksvrthread(void *arg)
                     std::vector<double> pr_residual;
                     std::vector<double> doppler_residual;
                     rtkpos(&svr->rtk, obs.data, obs.n, &svr->nav, tropo_vec,
-                        iono_vec, pr_corrected_code_bias_vec,pr_residual,doppler_residual);
+                        iono_vec, pr_corrected_code_bias_vec, pr_residual, doppler_residual);
                     rtksvrunlock(svr);
 
                     if (svr->rtk.sol.stat != SOLQ_NONE)

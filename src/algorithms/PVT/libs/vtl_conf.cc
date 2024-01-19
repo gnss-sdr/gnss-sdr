@@ -19,4 +19,5 @@
 
 Vtl_Conf::Vtl_Conf()
 {
+    
 }

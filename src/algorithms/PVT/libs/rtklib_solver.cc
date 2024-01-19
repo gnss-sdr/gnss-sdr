@@ -2197,7 +2197,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
 
                             // VTL (optional) MULTIPLEXED FILE RECORDING - Record results to file
-                            if (enable_vtl == true)
+                            //if (enable_vtl == true)
 
                                 try
                                     {

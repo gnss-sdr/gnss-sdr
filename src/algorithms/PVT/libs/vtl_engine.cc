@@ -15,6 +15,7 @@
  */
 
 #include "vtl_engine.h"
+#include "rtklib_rtkcmn.h"
 #include "iostream"
 #include <fstream>
 
@@ -442,19 +443,17 @@ std::vector<double> Vtl_Engine::get_accel_var_ecef_m_s2()
     return temp;
 }
 
-double Vtl_Engine::get_latitude()
+std::vector<double> Vtl_Engine::get_geodetic_rad_m()
 {
-    return -1.0;
-}
+    std::array<double, 3> temp_ecef = {kf_x[0], kf_x[1], kf_x[2]};
+    std::array<double, 3> temp_geo = {42, 42, 42};
 
-double Vtl_Engine::get_longitude()
-{
-    return -1.0;
-}
+    ecef2pos(temp_ecef.data(), temp_geo.data());
 
-double Vtl_Engine::get_height()
-{
-    return -1.0;
+    std::vector<double> dest;
+    dest.insert(dest.begin(), std::begin(temp_geo), std::end(temp_geo));
+
+    return dest;
 }
 
 double Vtl_Engine::get_user_clock_offset_s()

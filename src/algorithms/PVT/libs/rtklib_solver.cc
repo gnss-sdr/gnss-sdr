@@ -2197,107 +2197,107 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 }
 
                             // VTL (optional) MULTIPLEXED FILE RECORDING - Record results to file
-                            //if (enable_vtl == true)
+                            // if (enable_vtl == true)
+                            try
+                                {
+                                    double tmp_double;
+                                    uint32_t tmp_uint32;
+                                    // TOW
+                                    tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
+                                    // WEEK
+                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
+                                    // PVT GPS time
+                                    tmp_double = gnss_observables_map.cbegin()->second.RX_time;
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // VTL filtered User clock offset [s]
+                                    tmp_double = vtl_engine.get_user_clock_offset_s();
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // VTL filtered User clock offset drift[s/s]
+                                    tmp_double = vtl_engine.get_user_clock_offset_drift_s_s();
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                try
-                                    {
-                                        double tmp_double;
-                                        uint32_t tmp_uint32;
-                                        // TOW
-                                        tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
-                                        // WEEK
-                                        tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
-                                        // PVT GPS time
-                                        tmp_double = gnss_observables_map.cbegin()->second.RX_time;
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        // VTL filtered User clock offset [s]
-                                        tmp_double = vtl_engine.get_user_clock_offset_s();
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        // VTL filtered User clock offset drift[s/s]
-                                        tmp_double = vtl_engine.get_user_clock_offset_drift_s_s();
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // rtklib User clock offset drift[s/s]
+                                    tmp_double = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        // rtklib User clock offset drift[s/s]
-                                        tmp_double = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] + ECEF ACC X,Y,X [m/s] (9 x double)
+                                    std::vector<double> p_vec_m = vtl_engine.get_position_ecef_m();
+                                    tmp_double = p_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] + ECEF ACC X,Y,X [m/s] (9 x double)
-                                        std::vector<double> p_vec_m = vtl_engine.get_position_ecef_m();
-                                        tmp_double = p_vec_m[0];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = p_vec_m[1];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = p_vec_m[2];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    std::vector<double> v_vec_m = vtl_engine.get_velocity_ecef_m_s();
+                                    tmp_double = v_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        std::vector<double> v_vec_m = vtl_engine.get_velocity_ecef_m_s();
-                                        tmp_double = v_vec_m[0];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = v_vec_m[1];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = v_vec_m[2];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    std::vector<double> a_vec_m = vtl_engine.get_accel_ecef_m_s2();
+                                    tmp_double = a_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        std::vector<double> a_vec_m = vtl_engine.get_accel_ecef_m_s2();
-                                        tmp_double = a_vec_m[0];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = a_vec_m[1];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = a_vec_m[2];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // position/velocity/acceleration variance/ (units^2)  (9 x double)
 
-                                        // position/velocity/acceleration variance/ (units^2)  (9 x double)
-
-                                        std::vector<double> p_var_vec_m = vtl_engine.get_position_var_ecef_m();
-                                        tmp_double = p_var_vec_m[0];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = p_var_vec_m[1];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = p_var_vec_m[2];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    std::vector<double> p_var_vec_m = vtl_engine.get_position_var_ecef_m();
+                                    tmp_double = p_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
 
-                                        std::vector<double> v_var_vec_m = vtl_engine.get_velocity_var_ecef_m_s();
-                                        tmp_double = v_var_vec_m[0];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = v_var_vec_m[1];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = v_var_vec_m[2];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    std::vector<double> v_var_vec_m = vtl_engine.get_velocity_var_ecef_m_s();
+                                    tmp_double = v_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        vector<double> a_var_vec_m = vtl_engine.get_accel_var_ecef_m_s2();
-                                        tmp_double = a_var_vec_m[0];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = a_var_vec_m[1];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        tmp_double = a_var_vec_m[2];
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    vector<double> a_var_vec_m = vtl_engine.get_accel_var_ecef_m_s2();
+                                    tmp_double = a_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        // GEO user position Latitude [deg]
-                                        tmp_double = this->get_latitude();
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        // GEO user position Longitude [deg]
-                                        tmp_double = this->get_longitude();
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
-                                        // GEO user position Height [m]
-                                        tmp_double = this->get_height();
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // GEO user position Latitude [rad]
+                                    vector<double> geo_vec_m = vtl_engine.get_geodetic_rad_m();
+                                    tmp_double = geo_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // GEO user position Longitude [rad]
+                                    tmp_double = geo_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // GEO user position Height [m]
+                                    tmp_double = geo_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
 
-                                        // NUMBER OF VALID SATS
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&pvt_sol.ns), sizeof(uint8_t));
+                                    // NUMBER OF VALID SATS
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&pvt_sol.ns), sizeof(uint8_t));
 
-                                        // GDOP / PDOP / HDOP / VDOP
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[0]), sizeof(double));
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[1]), sizeof(double));
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));
-                                        d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[3]), sizeof(double));
-                                    }
-                                catch (const std::ofstream::failure &e)
-                                    {
-                                        LOG(WARNING) << "Exception writing VTL dump file " << e.what();
-                                    }
+                                    // GDOP / PDOP / HDOP / VDOP
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[0]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[1]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[3]), sizeof(double));
+                                }
+                            catch (const std::ofstream::failure &e)
+                                {
+                                    LOG(WARNING) << "Exception writing VTL dump file " << e.what();
+                                }
                         }
                 }
         }

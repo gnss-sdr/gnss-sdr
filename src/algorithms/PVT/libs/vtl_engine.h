@@ -53,9 +53,7 @@ public:
     std::vector<double> get_position_var_ecef_m();    // get_position_var_ecef_m
     std::vector<double> get_velocity_var_ecef_m_s();  // get_velocity_var_ecef_m_s
     std::vector<double> get_accel_var_ecef_m_s2();    // get_accel_var_ecef_m_s2
-    double get_latitude();                            // get_latitude
-    double get_longitude();                           // get_longitude
-    double get_height();                              // get_height
+    std::vector<double> get_geodetic_rad_m();         // get_geodetic_rad_m
     double get_user_clock_offset_s();                 // get_user_clock_offset_s;
     double get_user_clock_offset_drift_s_s();         // get_user_clock_offset_drift_s/s;
 

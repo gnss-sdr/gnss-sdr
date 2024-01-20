@@ -74,16 +74,12 @@ bool Galileo_Inav_Message::CRC_test(const std::bitset<GALILEO_DATA_FRAME_BITS>& 
 uint64_t Galileo_Inav_Message::read_navigation_unsigned(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    const int32_t num_of_slices = parameter.size();
-    for (int32_t i = 0; i < num_of_slices; i++)
+    for (const auto& p : parameter)
         {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int j = 0; j < p.second; j++)
                 {
                     value <<= 1U;  // shift left
-                    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1;  // insert the bit
-                        }
+                    value |= static_cast<uint64_t>(bits[GALILEO_DATA_JK_BITS - p.first - j]);
                 }
         }
     return value;
@@ -93,16 +89,12 @@ uint64_t Galileo_Inav_Message::read_navigation_unsigned(const std::bitset<GALILE
 uint8_t Galileo_Inav_Message::read_octet_unsigned(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint8_t value = 0;
-    const int32_t num_of_slices = parameter.size();
-    for (int32_t i = 0; i < num_of_slices; i++)
+    for (const auto& p : parameter)
         {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int j = 0; j < p.second; j++)
                 {
                     value <<= 1;  // shift left
-                    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1;  // insert the bit
-                        }
+                    value |= static_cast<uint8_t>(bits[GALILEO_DATA_JK_BITS - p.first - j]);
                 }
         }
     return value;
@@ -112,16 +104,12 @@ uint8_t Galileo_Inav_Message::read_octet_unsigned(const std::bitset<GALILEO_DATA
 uint64_t Galileo_Inav_Message::read_page_type_unsigned(const std::bitset<GALILEO_PAGE_TYPE_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     uint64_t value = 0ULL;
-    const int32_t num_of_slices = parameter.size();
-    for (int32_t i = 0; i < num_of_slices; i++)
+    for (const auto& p : parameter)
         {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int j = 0; j < p.second; j++)
                 {
-                    value <<= 1U;  // shift left
-                    if (static_cast<int>(bits[GALILEO_PAGE_TYPE_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1ULL;  // insert the bit
-                        }
+                    value <<= 1;  // shift left
+                    value |= static_cast<uint64_t>(bits[GALILEO_PAGE_TYPE_BITS - p.first - j]);
                 }
         }
     return value;
@@ -130,29 +118,12 @@ uint64_t Galileo_Inav_Message::read_page_type_unsigned(const std::bitset<GALILEO
 
 int64_t Galileo_Inav_Message::read_navigation_signed(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    int64_t value = 0LL;
-    const int32_t num_of_slices = parameter.size();
-
-    // read the MSB and perform the sign extension
-    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first]) == 1)
+    int64_t value = (bits[GALILEO_DATA_JK_BITS - parameter[0].first] == 1) ? -1LL : 0LL;
+    for (const auto& p : parameter)
         {
-            value ^= 0xFFFFFFFFFFFFFFFFLL;  // 64 bits variable
-        }
-    else
-        {
-            value &= 0LL;
-        }
-
-    for (int32_t i = 0; i < num_of_slices; i++)
-        {
-            for (int32_t j = 0; j < parameter[i].second; j++)
+            for (int32_t j = 0; j < p.second; j++)
                 {
-                    value *= 2;                   // shift left the signed integer
-                    value &= 0xFFFFFFFFFFFFFFFE;  // reset the corresponding bit (for the 64 bits variable)
-                    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[i].first - j]) == 1)
-                        {
-                            value += 1LL;  // insert the bit
-                        }
+                    value = (value << 1) | static_cast<int64_t>(bits[GALILEO_DATA_JK_BITS - p.first - j]);
                 }
         }
     return value;
@@ -161,15 +132,7 @@ int64_t Galileo_Inav_Message::read_navigation_signed(const std::bitset<GALILEO_D
 
 bool Galileo_Inav_Message::read_navigation_bool(const std::bitset<GALILEO_DATA_JK_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
-    bool value;
-    if (static_cast<int>(bits[GALILEO_DATA_JK_BITS - parameter[0].first]) == 1)
-        {
-            value = true;
-        }
-    else
-        {
-            value = false;
-        }
+    bool value = bits[GALILEO_DATA_JK_BITS - parameter[0].first];
     return value;
 }
 

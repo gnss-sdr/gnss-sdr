@@ -27,6 +27,7 @@ find_library(BLAS_LIBRARIES
         /opt/local/lib/lapack
         /opt/local/lib/
         /usr/local/opt/lapack/lib
+        /opt/homebrew/opt/lapack/lib
     NO_DEFAULT_PATH
     NO_SYSTEM_ENVIRONMENT_PATH
     NO_CMAKE_ENVIRONMENT_PATH
@@ -47,6 +48,7 @@ find_library(LAPACK_LIBRARIES
         ${BLAS_ROOT_USER_DEFINED}/lapack
         /opt/local/lib/lapack
         /usr/local/opt/lapack/lib
+        /opt/homebrew/opt/lapack/lib
     NO_DEFAULT_PATH
     NO_SYSTEM_ENVIRONMENT_PATH
     NO_CMAKE_ENVIRONMENT_PATH

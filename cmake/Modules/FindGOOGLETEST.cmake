@@ -47,6 +47,7 @@ find_path(LIBGTEST_DEV_DIR
         /usr/include/gtest
         /usr/local/src/googletest/googletest
         /opt/local/src/gtest-1.7.0
+        /opt/homebrew/opt/googletest/include/googletest/googletest
 )
 
 find_path(GTEST_INCLUDE_DIRS
@@ -57,6 +58,7 @@ find_path(GTEST_INCLUDE_DIRS
         /usr/include
         /usr/local/include
         /opt/local/src/gtest-1.7.0/include
+        /opt/homebrew/opt/googletest/include
 )
 
 include(FindPackageHandleStandardArgs)

@@ -1387,15 +1387,17 @@ OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
     nma_position_filled = std::array<int8_t, 15>{};
     // Fill TOW and WN
     nma_msg.WN_sf0 = WN_0;
-    int32_t TOW_sf0 = TOW_5 - 24;
+    int32_t TOW_sf0 = TOW_5 - 24; // TODO - why not TOW_0?
     if (TOW_sf0 < 0)
         {
             TOW_sf0 += 604800;
         }
     nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
-    // TODO - draft for retrieving NavData for use during Tag verification.
-    nma_msg.t0e_1 = static_cast<uint32_t>(t0e_1);
-    nma_msg.IOD_nav = static_cast<uint32_t>(IOD_nav_1);
+//    nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_0);
+    // get ephemeris, clock and iono correction datn and GST-UTC and GST-GPS converstion parameters (may be incomplete)
+    nma_msg.EphemerisData = get_ephemeris();
+    nma_msg.IonoData = get_iono();
+    nma_msg.UtcModelData = get_utc_model();
     return nma_msg;
 }
 

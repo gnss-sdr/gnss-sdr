@@ -39,7 +39,9 @@ class ReedSolomon;  // Forward declaration of the ReedSolomon class
  * \{ */
 /** \addtogroup System_Parameters
  * \{ */
-
+/*!
+ * \brief This class fills the OSNMA_msg structure with the data received from the telemetry blocks.
+ */
 class OSNMA_msg
 {
 public:
@@ -47,13 +49,15 @@ public:
     std::array<uint32_t, 15> mack{};
     std::array<uint8_t, 15> hkroot{};
     uint32_t PRN{};
-    uint32_t WN_sf0{};
+    uint32_t WN_sf0{}; // TODO - this is present in UtcModelData already
     uint32_t TOW_sf0{};
-    // TODO - NavData to be retrieved correctly
     std::vector<uint8_t> EphemerisClockAndStatusData {};
     std::vector<uint8_t> TimingData {};
-    uint32_t t0e_1{};
-    uint32_t IOD_nav{};
+    Galileo_Ephemeris EphemerisData {};
+    Galileo_Iono IonoData {};
+    Galileo_Utc_Model UtcModelData {};
+
+
 };
 
 /*!

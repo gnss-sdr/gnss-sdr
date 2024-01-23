@@ -151,7 +151,7 @@ std::array<double, 4> Geohash::bounds(std::string geohash) const
 
     for (char chr : geohash)
         {
-            int idx = base32.find(chr);
+            auto idx = static_cast<int>(base32.find(chr));
             if (idx == -1)
                 {
                     throw std::runtime_error("Invalid geohash");

@@ -61,8 +61,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   covariances with the following optional parameters (here with their default
   values): `PVT.kf_measures_ecef_pos_sd_m=1.0`, in [m];
   `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
-  `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
-  `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+  `PVT.kf_system_ecef_pos_sd_m=2.0`, in [m]; and
+  `PVT.kf_system_ecef_vel_sd_ms=0.5`, in [m/s].
 
 ### Improvements in Scalability:
 

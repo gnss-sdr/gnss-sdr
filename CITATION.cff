@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2023 C. Fernandez-Prades carles.fernandez(at)cttc.es
+# SPDX-FileCopyrightText: 2024 C. Fernandez-Prades carles.fernandez(at)cttc.es
 ---
 authors:
   - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
@@ -87,6 +87,11 @@ authors:
     email: into.paakkonen@aalto.fi
     family-names: "Pääkkönen"
     given-names: Into
+  - alias: Perrielornitorrinco
+    affiliation: "Instituto Nacional de Técnica Aeroespacial"
+    email: iperrie@inta.es
+    give-names: Irene
+    familiy-names: "Pérez Riega"
   - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
     email: david.pubill@cttc.cat
     family-names: Pubill
@@ -94,6 +99,10 @@ authors:
   - alias: antonioramosdet
     family-names: Ramos
     given-names: Antonio
+  - alias: seanstone
+    email: seanstone5923@gmail.com
+    family-name: Shin
+    given-name: En
   - alias: jschindehette
     email: jschindehette@geontech.com
     family-names: Schindehette

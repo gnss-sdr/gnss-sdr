@@ -312,6 +312,7 @@ int PositionSystemTest::configure_receiver()
 
             // Set PVT
             config->set_property("PVT.implementation", "RTKLIB_PVT");
+            config->set_property("PVT.enable_pvt_kf", "true"), 
             config->set_property("PVT.positioning_mode", "PPP_Static");
             config->set_property("PVT.output_rate_ms", std::to_string(output_rate_ms));
             config->set_property("PVT.display_rate_ms", std::to_string(display_rate_ms));

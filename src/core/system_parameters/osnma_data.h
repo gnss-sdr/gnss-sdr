@@ -18,6 +18,9 @@
 #ifndef GNSS_SDR_OSNMA_DATA_H
 #define GNSS_SDR_OSNMA_DATA_H
 
+#include "galileo_ephemeris.h"
+#include "galileo_iono.h"
+#include "galileo_utc_model.h"
 #include <array>
 #include <cstdint>
 #include <string>
@@ -119,6 +122,24 @@ public:
     std::vector<uint8_t> key;
 };
 
+class NavData
+{
+public:
+    NavData() = default;
+    Galileo_Ephemeris EphemerisData;
+    Galileo_Iono IonoData;
+    Galileo_Utc_Model UtcData;
+    void generate_eph_iono_vector(); // TODO check with Carles procedure and compare with v2
+    void generate_eph_iono_vector2();
+    void generate_utc_vector(); // TODO
+    std::vector<uint8_t> get_eph_iono_vector(); // TODO
+    std::vector<uint8_t> get_utc_vector(); // TODO
+private:
+    std::vector<uint8_t> ephemeris_iono_vector;
+    std::vector<uint8_t> utc_vector;
+
+};
+
 /*!
  * \brief This class handles ONSMA data
  * See https://www.gsc-europa.eu/sites/default/files/sites/all/files/Galileo_OSNMA_User_ICD_for_Test_Phase_v1.0.pdf
@@ -132,6 +153,7 @@ public:
     DSM_PKR_message d_dsm_pkr_message;
     DSM_KROOT_message d_dsm_kroot_message;
     MACK_message d_mack_message;
+    NavData d_nav_data;
 };
 
 

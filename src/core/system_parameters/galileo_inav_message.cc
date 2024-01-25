@@ -1384,6 +1384,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
 OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
 {
+    // TODO - why PRN of word 4 is done separately?
     nma_position_filled = std::array<int8_t, 15>{};
     // Fill TOW and WN
     nma_msg.WN_sf0 = WN_0;

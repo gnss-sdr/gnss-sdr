@@ -73,6 +73,7 @@ private:
     void process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
 
     boost::circular_buffer<MACK_message> d_old_mack_message;
+    boost::circular_buffer<NavData> d_old_navdata_buffer; // buffer that holds last 10 received navdata messages
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
     std::unique_ptr<Gnss_Crypto> d_crypto;
 

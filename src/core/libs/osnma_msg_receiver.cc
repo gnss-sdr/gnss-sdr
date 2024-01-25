@@ -145,7 +145,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
     //  Send the resulting decoded NMA data (if available) to PVT
     if (d_new_data == true) // TODO where is it set to true?
         {
-            auto osnma_data_ptr = std::make_shared<OSNMA_data>(d_osnma_data); // C: why create new object and pass it empty to Pvt?
+            auto osnma_data_ptr = std::make_shared<OSNMA_data>(d_osnma_data);
             this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(osnma_data_ptr));
             d_new_data = false;
             // d_osnma_data = OSNMA_data();
@@ -821,9 +821,14 @@ void osnma_msg_receiver::read_mack_body()
 
 void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
-    // TODO - is it filled at this point always?
-    d_old_mack_message.push_back(d_osnma_data.d_mack_message); // C: old mack message is needed  for
-    
+    d_old_mack_message.push_back(d_osnma_data.d_mack_message); // last 10 MACKs are needed to be stored as per ICD
+    // populate d_nav_data with three classes of osnma_msg
+    d_osnma_data.d_nav_data.EphemerisData = osnma_msg->EphemerisData;
+    d_osnma_data.d_nav_data.IonoData = osnma_msg->IonoData;
+    d_osnma_data.d_nav_data.UtcData = osnma_msg->UtcModelData;
+    d_osnma_data.d_nav_data.generate_eph_iono_vector2();
+    d_osnma_data.d_nav_data.generate_utc_vector();
+    d_old_navdata_buffer.push_back(d_osnma_data.d_nav_data); // last 10 NavData messages are needed to be stored as per ICD
     // MACSEQ validation - case no FLX Tags
 
     // retrieve data to verify MACK tags

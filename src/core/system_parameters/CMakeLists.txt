@@ -30,6 +30,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_navigation_message.cc
     reed_solomon.cc
     osnma_dsm_reader.cc
+    osnma_data.cc
 )
 
 set(SYSTEM_PARAMETERS_HEADERS

@@ -72,6 +72,7 @@ private:
     void read_mack_body();
     void process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
 
+//    Galileo_Utc_Model galileo_utc_model;
     boost::circular_buffer<MACK_message> d_old_mack_message;
     boost::circular_buffer<NavData> d_old_navdata_buffer; // buffer that holds last 10 received navdata messages
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
@@ -91,7 +92,7 @@ private:
     uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint32_t d_GST_0 {};
     uint32_t d_GST_SIS {};
-    std::time_t d_receiver_time {};
+    std::time_t d_receiver_time {}; // PVT time computed by the local receiver
 };
 
 

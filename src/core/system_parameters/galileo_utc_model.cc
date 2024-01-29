@@ -17,8 +17,19 @@
 #include "galileo_utc_model.h"
 #include <cmath>
 
+void Galileo_Utc_Model::init(const Galileo_Utc_Model& data)
+{
+    A0 = data.A0;
+    A1 = data.A1;
+    Delta_tLS = data.Delta_tLS;
+    Delta_tLSF = data.Delta_tLSF;
+    DN = data.DN;
+    tot = data.tot;
+    WNot = data.WNot;
+    WN_LSF = data.WN_LSF;
 
-double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
+}
+double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN)
 {
     double t_Utc;
     double t_Utc_daytime;
@@ -76,4 +87,5 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
 double Galileo_Utc_Model::UTC_time_to_GST(double t_Utc, int32_t WN) const
 {
     // TODO
+    return 0;
 }

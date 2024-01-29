@@ -41,19 +41,29 @@ public:
      */
     Galileo_Utc_Model() = default;
 
+    /**
+     * @brief Initialize the Galileo_UTC_Model with the provided data.
+     *
+     * This function initializes the Galileo_UTC_Model object with the given data.
+     *
+     * @param data The Galileo_UTC_Model object containing the data.
+     */
+    static void init(const Galileo_Utc_Model& data);
+
     // double TOW;
-    double GST_to_UTC_time(double t_e, int32_t WN) const;  //!< GST-UTC Conversion Algorithm and Parameters
+    static double GST_to_UTC_time(double t_e, int32_t WN);  //!< GST-UTC Conversion Algorithm and Parameters
     double UTC_time_to_GST(double t_Utc, int32_t WN) const;
 
+    // TODO - make them private?
     // Word type 6: GST-UTC conversion parameters
-    double A0{};
-    double A1{};
-    int32_t Delta_tLS{};
-    int32_t tot{};   //!< UTC data reference Time of Week [s]
-    int32_t WNot{};  //!< UTC data reference Week number [week]
-    int32_t WN_LSF{};
-    int32_t DN{};
-    int32_t Delta_tLSF{};
+    static double A0;
+    static double A1;
+    static int32_t Delta_tLS;
+    static int32_t tot;   //!< UTC data reference Time of Week [s]
+    static int32_t WNot;  //!< UTC data reference Week number [week]
+    static int32_t WN_LSF;
+    static int32_t DN;
+    static int32_t Delta_tLSF;
 
     // GPS to Galileo GST conversion parameters
     double A_0G{};

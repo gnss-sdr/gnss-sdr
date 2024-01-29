@@ -23,6 +23,7 @@
 #include "gnss_satellite.h"
 #include "osnma_dsm_reader.h"       // for OSNMA_DSM_Reader
 #include "pvt_interface.h"
+#include "galileo_utc_model.h"      // for Galileo_Utc_Model
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <cmath>
@@ -54,9 +55,11 @@ osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, 
 
 osnma_msg_receiver::osnma_msg_receiver(
     const std::string& pemFilePath,
-    const std::string& merkleFilePath) : gr::block("osnma_msg_receiver",
+    const std::string& merkleFilePath,
+    const Galileo_Utc_Model &utc_model) : gr::block("osnma_msg_receiver",
                                              gr::io_signature::make(0, 0, 0),
-                                             gr::io_signature::make(0, 0, 0))
+                                             gr::io_signature::make(0, 0, 0)),
+                                              galileo_utc_model(utc_model)
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
     d_crypto = std::make_unique<Gnss_Crypto>(pemFilePath, merkleFilePath);
@@ -93,7 +96,9 @@ void osnma_msg_receiver::msg_handler_pvt_to_osnma(const pmt::pmt_t& msg)
 {
     try
         {
-            d_receiver_time = wht::any_cast<std::time_t>(pmt::any_ref(msg)); // C: TODO - check if this is the correct way to get the time from the PVT block
+            // receive the UTC time
+            auto utc_time_from_pvt = wht::any_cast<std::time_t>(pmt::any_ref(msg)); // C: TODO - check if this is the correct way to get the time from the PVT block
+
         }
     catch (const pmt::exception& e)
         {
@@ -122,6 +127,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 
                     // compare local time with OSNMA subframe time
                     d_GST_SIS = nma_msg->TOW_sf0 + nma_msg->WN_sf0 * 604800; // TODO - unsure about this operation and of the -24 seconds,...
+                    auto utc = galileo_utc_model.GST_to_UTC_time(d_GST_SIS, static_cast<int>(nma_msg->WN_sf0));
                     double_t T_L = 15; // TODO - to define the maximum allowed time difference between local time and OSNMA subframe time
                     if(abs(d_GST_SIS - d_receiver_time) <= T_L)
                         {

@@ -57,7 +57,7 @@ public:
 
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
-    osnma_msg_receiver(const std::string& pemFilePath, const std::string& merkleFilePath);
+    osnma_msg_receiver(const std::string& pemFilePath, const std::string& merkleFilePath, const Galileo_Utc_Model &galileo_utc_model);
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
     void msg_handler_pvt_to_osnma(const pmt::pmt_t& msg);
@@ -83,6 +83,7 @@ private:
     std::array<uint8_t, 60> d_mack_message{}; // C: 480 b
 
     OSNMA_data d_osnma_data{};
+    Galileo_Utc_Model galileo_utc_model;
     bool d_new_data{false};
     bool d_public_key_verified{false};
     bool d_kroot_verified{false};

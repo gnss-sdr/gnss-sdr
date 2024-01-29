@@ -72,3 +72,8 @@ double Galileo_Utc_Model::GST_to_UTC_time(double t_e, int32_t WN) const
     t_Utc = secondsOfWeekBeforeToday + t_Utc_daytime;
     return t_Utc;
 }
+
+double Galileo_Utc_Model::UTC_time_to_GST(double t_Utc, int32_t WN) const
+{
+    // TODO
+}

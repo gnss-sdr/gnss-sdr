@@ -43,6 +43,7 @@ public:
 
     // double TOW;
     double GST_to_UTC_time(double t_e, int32_t WN) const;  //!< GST-UTC Conversion Algorithm and Parameters
+    double UTC_time_to_GST(double t_Utc, int32_t WN) const;
 
     // Word type 6: GST-UTC conversion parameters
     double A0{};

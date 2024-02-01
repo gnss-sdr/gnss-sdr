@@ -171,7 +171,7 @@ void ad936x_iio_custom::configure_params(struct iio_device *phy,
             pos = it->find('=');
             if (pos == std::string::npos)
                 {
-                    std::cerr << "Misformed line: " << *it << std::endl;
+                    std::cerr << "Malformed line: " << *it << std::endl;
                     continue;
                 }
 
@@ -686,7 +686,7 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
         }
 
     std::cout << "AD936x Front-end configuration summary: \n";
-    std::cout << "RF frequency tunned in AD936x: " << freq_ << " [Hz]\n";
+    std::cout << "RF frequency tuned in AD936x: " << freq_ << " [Hz]\n";
     std::cout << "Baseband sampling frequency: " << sample_rate_sps << " [SPS]\n";
     std::cout << "RX chain gain: " << rf_gain_rx0_ << " [dB][only valid in manual mode]\n";
     std::cout << "RX chain gain mode: " << gain_mode_rx0_ << "\n";

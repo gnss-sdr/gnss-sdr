@@ -7,7 +7,6 @@
 
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
 add_subdirectory(system-tests/libs)
-include(RemoveDuplicates)
 
 ################################################################################
 # Google Test - https://github.com/google/googletest
@@ -646,7 +645,6 @@ if(ENABLE_UNIT_TESTING)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
     endif()
-    remove_duplicate_linked_libraries(run_tests)
     if(ENABLE_STRIP)
         set_target_properties(run_tests PROPERTIES LINK_FLAGS "-s")
     endif()
@@ -769,7 +767,6 @@ if(ENABLE_FPGA)
     target_include_directories(gps_l1_ca_dll_pll_tracking_test_fpga
         INTERFACE ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
     )
-    remove_duplicate_linked_libraries(gps_l1_ca_dll_pll_tracking_test_fpga)
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
         RUNTIME DESTINATION bin
         COMPONENT "fpga-test"
@@ -859,7 +856,6 @@ if(ENABLE_SYSTEM_TESTING)
     )
     if(NOT ENABLE_PACKAGING)
         add_system_test(ttff)
-        remove_duplicate_linked_libraries(ttff)
     endif()
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
@@ -881,7 +877,6 @@ if(ENABLE_SYSTEM_TESTING)
                 )
             endif()
         endif()
-        remove_duplicate_linked_libraries(position_test)
         if(NOT GNSSSIMULATOR_FOUND OR ENABLE_GNSS_SIM_INSTALL)
             if(NOT CMAKE_CROSSCOMPILING)
                 add_dependencies(position_test gnss-sim)
@@ -942,7 +937,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         PRIVATE
             ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
     )
-    remove_duplicate_linked_libraries(flowgraph_test)
     add_test(flowgraph_test flowgraph_test)
 
     set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
@@ -997,7 +991,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     if(ENABLE_FPGA)
         target_compile_definitions(gnss_block_test PRIVATE -DENABLE_FPGA=1)
     endif()
-    remove_duplicate_linked_libraries(gnss_block_test)
+
     add_test(gnss_block_test gnss_block_test)
 
     set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)
@@ -1034,7 +1028,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             core_receiver
             algorithms_libs
     )
-    remove_duplicate_linked_libraries(gnuradio_block_test)
+
     add_test(gnuradio_block_test gnuradio_block_test)
 
     set_property(TEST gnuradio_block_test PROPERTY TIMEOUT 30)
@@ -1068,7 +1062,7 @@ target_include_directories(matio_test
     INTERFACE
         ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
 )
-remove_duplicate_linked_libraries(matio_test)
+
 add_test(matio_test matio_test)
 
 set_property(TEST matio_test PROPERTY TIMEOUT 30)
@@ -1117,7 +1111,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DPMT_USES_BOOST_ANY=1
         )
     endif()
-    remove_duplicate_linked_libraries(acq_test)
+
     add_test(acq_test acq_test)
 
     if(USE_GENERIC_LAMBDAS)
@@ -1213,7 +1207,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DPMT_USES_BOOST_ANY=1
         )
     endif()
-    remove_duplicate_linked_libraries(trk_test)
+
     add_test(trk_test trk_test)
 
     set_property(TEST trk_test PROPERTY TIMEOUT 30)
@@ -1244,7 +1238,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
             core_receiver
     )
-    remove_duplicate_linked_libraries(control_thread_test)
+
     add_test(control_thread_test control_thread_test)
 
     set_property(TEST control_thread_test PROPERTY TIMEOUT 30)

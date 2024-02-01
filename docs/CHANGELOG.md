@@ -14,6 +14,18 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Usability
+
+- Tidy up the `conf/` folder.
+
+## [GNSS-SDR v0.0.19.1](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19.1) - 2024-01-26
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10579595.svg)](https://doi.org/10.5281/zenodo.10579595)
+
+- Fix formatting of the `CITATION.cff` file.
+
+## [GNSS-SDR v0.0.19](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19) - 2024-01-23
+
 ### Improvements in Efficiency:
 
 - Fixed some performance inefficiencies detected by Coverity Scan.
@@ -61,8 +73,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   covariances with the following optional parameters (here with their default
   values): `PVT.kf_measures_ecef_pos_sd_m=1.0`, in [m];
   `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
-  `PVT.kf_system_ecef_pos_sd_m=0.01`, in [m]; and
-  `PVT.kf_system_ecef_vel_sd_ms=0.001`, in [m/s].
+  `PVT.kf_system_ecef_pos_sd_m=2.0`, in [m]; and
+  `PVT.kf_system_ecef_vel_sd_ms=0.5`, in [m/s].
 
 ### Improvements in Scalability:
 

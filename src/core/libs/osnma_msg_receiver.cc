@@ -127,11 +127,9 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 
                     // compare local time with OSNMA subframe time
                     d_GST_SIS = nma_msg->TOW_sf0 + nma_msg->WN_sf0 * 604800; // TODO - unsure about this operation and of the -24 seconds,...
-                    // instantiate galileo_utc_model and call init function, then call GST_to_UTC_time
-                    Galileo_Utc_Model::init(nma_msg->utc_data);
-                    double_t utc = Galileo_Utc_Model::GST_to_UTC_time(static_cast<double>(d_GST_SIS), static_cast<int>(nma_msg->WN_sf0));
-                    double_t T_L = 15.0; // TODO - to define the maximum allowed time difference between local time and OSNMA subframe time
-                    if(abs(utc - d_receiver_time) <= T_L)
+                    auto utc = galileo_utc_model.GST_to_UTC_time(d_GST_SIS, static_cast<int>(nma_msg->WN_sf0));
+                    double_t T_L = 15; // TODO - to define the maximum allowed time difference between local time and OSNMA subframe time
+                    if(abs(d_GST_SIS - d_receiver_time) <= T_L)
                         {
                             process_osnma_message(nma_msg);
                         }

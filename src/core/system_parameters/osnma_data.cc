@@ -102,7 +102,7 @@ void NavData::generate_eph_iono_vector2()
     for (auto& var : variables)
     {
         // extract the bits from the variable
-        uint64_t binary_representation; // FIXME types have more bits than the specification size, e.g. 32 bits vs 10 bits
+        uint64_t binary_representation;
         memcpy(&binary_representation, var.first, var.second / 8);
 
         // Append the bits to the buffer and update the bit count

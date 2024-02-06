@@ -12,6 +12,18 @@ SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc
 
 All notable changes to GNSS-SDR will be documented in this file.
 
+## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
+
+### Improvements in Usability
+
+- Tidy up the `conf/` folder.
+
+## [GNSS-SDR v0.0.19.1](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19.1) - 2024-01-26
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10579595.svg)](https://doi.org/10.5281/zenodo.10579595)
+
+- Fix formatting of the `CITATION.cff` file.
+
 ## [GNSS-SDR v0.0.19](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19) - 2024-01-23
 
 ### Improvements in Efficiency:

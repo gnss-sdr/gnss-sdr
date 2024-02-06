@@ -90,8 +90,8 @@ authors:
   - alias: Perrielornitorrinco
     affiliation: "Instituto Nacional de Técnica Aeroespacial"
     email: iperrie@inta.es
-    give-names: Irene
-    familiy-names: "Pérez Riega"
+    given-names: Irene
+    family-names: "Pérez Riega"
   - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
     email: david.pubill@cttc.cat
     family-names: Pubill
@@ -101,8 +101,8 @@ authors:
     given-names: Antonio
   - alias: seanstone
     email: seanstone5923@gmail.com
-    family-name: Shin
-    given-name: En
+    family-names: Shin
+    given-names: En
   - alias: jschindehette
     email: jschindehette@geontech.com
     family-names: Schindehette

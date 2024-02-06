@@ -164,6 +164,14 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
 }
 
 
+/**
+ * @brief Reads the NMA header from the given input and stores the values in the d_osnma_data structure.
+ *
+ * The NMA header consists of several fields: d_nma_header.nmas, d_nma_header.cid, d_nma_header.cpks, and d_nma_header.reserved.
+ * Each field is retrieved using the corresponding getter functions from the d_dsm_reader auxiliary object.
+ *
+ * @param nma_header The input containing the NMA header.
+ */
 void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
 {
     d_osnma_data.d_nma_header.nmas = d_dsm_reader->get_nmas(nma_header);
@@ -173,6 +181,11 @@ void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
 }
 
 
+/**
+ * @brief Read the DSM header from the given dsm_header and populate the d_osnma_data structure.
+ *
+ * @param dsm_header The DSM header.
+ */
 void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
 {
     d_osnma_data.d_dsm_header.dsm_id = d_dsm_reader->get_dsm_id(dsm_header);
@@ -189,15 +202,17 @@ void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
  * */
 void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
+    // Fill d_dsm_message
     size_t index = 0;
     for (const auto* it = osnma_msg->hkroot.cbegin() + 2; it != osnma_msg->hkroot.cend(); ++it)
         {
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][SIZE_DSM_BLOCKS_BYTES * d_osnma_data.d_dsm_header.dsm_block_id + index] = *it;
             index++;
         }
+    // First block indicates number of blocks in DSM message
     if (d_osnma_data.d_dsm_header.dsm_block_id == 0)
         {
-            // Get number of blocks in message
+
             uint8_t nb = d_dsm_reader->get_number_blocks_index(d_dsm_message[d_osnma_data.d_dsm_header.dsm_id][0]);
             uint16_t number_of_blocks = 0;
             if (d_osnma_data.d_dsm_header.dsm_id < 12)
@@ -263,7 +278,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
         }
     std::cout << "]" << std::endl;
 
-    // is message complete? -> Process DSM message
+    // if all inner blocks available -> Process DSM message
     if ((d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] != 0) &&
         (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == std::accumulate(d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cbegin(), d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id].cend(), 0)))
         {
@@ -479,9 +494,15 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
     d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
 }
 
-// reads Mack message
+
+/**
+ * @brief Reads the Mack message from the given OSNMA_msg object.
+ *
+ * @param osnma_msg The OSNMA_msg object containing the Mack message.
+ */
 void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
+    // Retrieve Mack message
     uint32_t index = 0;
     for (uint32_t value : osnma_msg->mack)
         {
@@ -491,6 +512,7 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
             d_mack_message[index + 3] = static_cast<uint8_t>(value & 0x000000FF);
             index = index + 4;
         }
+
     // compute time of subrame and kroot time of applicability, used in read_mack_body and process_mack_message
     // TODO - find a better placement
     d_GST_SIS = osnma_msg->TOW_sf0 + osnma_msg->WN_sf0 * 604800; // TODO - unsure about this operation and of the -24 seconds,...
@@ -501,10 +523,22 @@ void osnma_msg_receiver::read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma
             read_mack_header();
             read_mack_body();
             process_mack_message(osnma_msg);
+            // TODO - shorten the MACK processing for the cases where no TK verified or no Kroot verified (warm and cold start)
+            // still, for instance the NAvData and Mack storage (within process_mack_message) makes sense.
         }
 }
 
 
+/**
+ * \brief Reads the MACk header from the d_mack_message array and updates the d_osnma_data structure.
+ * \details This function reads the message ACK header from the d_mack_message array and updates the d_osnma_data structure with the parsed data. The header consists of three fields
+*: tag0, macseq, and cop. The size of the fields is determined by the number of tag length (lt) bits specified in OSNMA_TABLE_11 for the corresponding tag size in d_osnma_data.d_dsm_k
+*root_message.ts. The lt_bits value is used to calculate the values of tag0, macseq, and cop based on the lt_bits value and the values of the elements of d_mack_message array.
+ * \pre The d_mack_message array and d_osnma_data.d_dsm_kroot_message.ts field must be properly populated.
+ * \post The d_osnma_data.d_mack_message.header.tag0, d_osnma_data.d_mack_message.header.macseq, and d_osnma_data.d_mack_message.header.cop fields are updated with the parsed values
+*.
+ * \returns None.
+ */
 void osnma_msg_receiver::read_mack_header()
 { // C: TODO - still to review computations.
     uint8_t lt_bits = 0;
@@ -566,8 +600,19 @@ void osnma_msg_receiver::read_mack_header()
 }
 
 
+/**
+ * @brief Reads the message body and verify Tesla key
+ *
+ * \details It retrieves all the tags and tag-info associated. Then it attempts to verify the Tesla Key by computing the
+ * number of hashes of distance between the key-to-verify and the Kroot and iteratively hashing the result, until the required number of hashes
+ * is achieved. The result is then compared with the Kroot. If the two values match, the Tesla key is verified.
+ *
+ * @return None
+ */
+ // TODO - function's name not representative of logic,..., take the TK verification out?
 void osnma_msg_receiver::read_mack_body()
 {
+    // retrieve tag length
     uint8_t lt_bits = 0;
     const auto it = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
     if (it != OSNMA_TABLE_11.cend())
@@ -578,6 +623,7 @@ void osnma_msg_receiver::read_mack_body()
         {
             return;
         }
+    // retrieve key length
     uint16_t lk_bits = 0;
     const auto it2 = OSNMA_TABLE_10.find(d_osnma_data.d_dsm_kroot_message.ks);
     if (it2 != OSNMA_TABLE_10.cend())
@@ -588,9 +634,11 @@ void osnma_msg_receiver::read_mack_body()
         {
             return;
         }
-    uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0)); // C: compute number of tags
+    // compute number  of tags in the given Mack message as per Eq. 8 ICD
+    uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0));
     d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
-    for (uint16_t k = 0; k < (nt - 1); k++) // C: retrieve Tag&Info
+    // retrieve tags and tag-info associated with the tags
+    for (uint16_t k = 0; k < (nt - 1); k++)
         {
             uint64_t tag = 0;
             uint8_t PRN_d = 0;
@@ -745,13 +793,15 @@ void osnma_msg_receiver::read_mack_body()
             d_osnma_data.d_mack_message.key[key_index_bytes] = d_mack_message[i];
         }
 
-    // compute number of hashes required
+    // compute I: number of hashes required - Eq. 19 ICD
+    // TODO - this assumes that the baseline is Kroot, but there is the following possibility:
+    // - available K verified from another iteration, hence is nonsense to go back to the Kroot, when I could perform only, say, two hashes.
     uint8_t num_of_hashes_needed = (d_GST_Sf - d_GST_0) / 30 + 1;
     uint32_t GST_SFi = d_GST_Sf;
     std::vector<uint8_t> K_II = d_osnma_data.d_mack_message.key;
     std::vector<uint8_t> K_I; // result of the recursive hash operations
     uint8_t size_hash_f = d_osnma_data.d_dsm_kroot_message.ks / 8;
-    // compute the current tesla key , GST_SFi and K_II change in each iteration
+    // compute the tesla key for current SF (GST_SFi and K_II change in each iteration)
     for (uint8_t i = 1; i < num_of_hashes_needed ; i++)
         {
             // build message digest m = (K_I+1 || GST_SFi || alpha)
@@ -762,13 +812,12 @@ void osnma_msg_receiver::read_mack_body()
             msg.push_back((d_GST_Sf & 0x00FF0000) >> 16);
             msg.push_back((d_GST_Sf & 0x0000FF00) >> 8);
             msg.push_back(d_GST_Sf & 0x000000FF);
-
-            for (uint8_t k = 5; k >= 0;k--)
+            // extract alpha
+            for (int k = 5; k >= 0;k--)
                 {
                     // TODO: static extracts the MSB in case from larger to shorter int?
                     msg.push_back(static_cast<uint8_t>((d_osnma_data.d_dsm_kroot_message.alpha >> (i * 8)) & 0xFF)); // extract first 6 bytes of alpha.
                 }
-
             // compute hash
             std::vector<uint8_t> hash;
             if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
@@ -790,58 +839,61 @@ void osnma_msg_receiver::read_mack_body()
                     K_I.push_back(hash[i]);
                 }
 
-            // set parameters
+            // set parameters for next iteration
             GST_SFi -= 30; // next SF time is the actual minus 30 seconds
             K_II = K_I; // next key is the actual one
             K_I.clear(); // empty the actual one for a new computation
         }
     // compare computed current key against received key
-    bool result_comparison; // TODO - not needed?
     if(K_I.size() != d_osnma_data.d_mack_message.key.size())
         {
             std::cout << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
         }
     if (K_II == d_osnma_data.d_mack_message.key)
         {
-            result_comparison = true;
             std::cout << "Galileo OSNMA: tesla key verified successfully " << std::endl;
             // TODO - propagate result
             // TODO - save current tesla key as latest one?
             // TODO - Tags Sequence Verification: check ADKD[i] follows MACLT sequence
-
-
         }
     else
 
         {
-            result_comparison = false;
             std::cout << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
         }
 }
 
 
+/**
+ * @brief Verifies the tags.
+ *
+ * \details This function is responsible for processing the MACK message received (480 bits). It stores the last 10 MACK
+ * messages and last 10 NavData messages. It also performs MACSEQ validation and compares
+ * the ADKD of Mack tags with MACLT defined ADKDs. Finally, it verifies the tags.
+ *
+ * @param osnma_msg A reference to OSNMA_msg containing the MACK message to be processed.
+ */
 void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
     d_old_mack_message.push_back(d_osnma_data.d_mack_message); // last 10 MACKs are needed to be stored as per ICD
-    // populate d_nav_data with three classes of osnma_msg
+    // populate d_nav_data with three classes of osnma_msg - needed for the tag verification
     d_osnma_data.d_nav_data.EphemerisData = osnma_msg->EphemerisData;
     d_osnma_data.d_nav_data.IonoData = osnma_msg->IonoData;
     d_osnma_data.d_nav_data.UtcData = osnma_msg->UtcModelData;
     d_osnma_data.d_nav_data.generate_eph_iono_vector2();
     d_osnma_data.d_nav_data.generate_utc_vector();
     d_old_navdata_buffer.push_back(d_osnma_data.d_nav_data); // last 10 NavData messages are needed to be stored as per ICD
-    // MACSEQ validation - case no FLX Tags
 
     // retrieve data to verify MACK tags
     uint8_t msg {0};
-    uint8_t nt {0};
+//    uint8_t nt {0};
     std::vector<std::string> sq1{};
     std::vector<std::string> sq2{};
     const auto it = OSNMA_TABLE_16.find(d_osnma_data.d_dsm_kroot_message.maclt);
     if (it != OSNMA_TABLE_16.cend())
         {
-            uint8_t msg = it->second.msg;
-            uint8_t nt = it->second.nt;
+//            uint8_t msg = it->second.msg;
+//            uint8_t nt = it->second.nt;
             std::vector<std::string> sq1 = it->second.sequence1;
             std::vector<std::string> sq2 = it->second.sequence2;
         }
@@ -850,6 +902,7 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
           return;
         }
     std::vector<std::string> sequence;
+    // Assign relevant sequence based on subframe time
     if (d_GST_Sf % 60 == 0)
         {
             sequence = sq1;
@@ -885,15 +938,15 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
 
     // MACSEQ verification
 
-    // Case no tags defined as FLX in the MACLT
-    std::vector<uint8_t> m(5 + flxTags.size()); // C: ICD - Eq. 22
+    // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
+    std::vector<uint8_t> m(5 + flxTags.size());
     m[0] = static_cast<uint8_t>(osnma_msg->PRN);  // PRN_A
     m[1] = static_cast<uint8_t>((d_GST_Sf & 0xFF000000) >> 24);
     m[2] = static_cast<uint8_t>((d_GST_Sf & 0x00FF0000) >> 16);
     m[3] = static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8);
     m[4] = static_cast<uint8_t>(d_GST_Sf & 0x000000FF);
 
-    // Case tags flexible
+    // Case tags flexible - Eq. 21 ICD
     for (uint8_t i = 0; i < flxTags.size() ; i++)
         {
             m[i+5] = d_osnma_data.d_mack_message.tag_and_info[flxTags[i]].tag_info.PRN_d;
@@ -902,6 +955,7 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
     std::vector<uint8_t> applicable_key;
     // if ADKD=12, pick d_old_mack_message.front() if d_old_mack_message[10] is full
     // otherwise pick d_old_mack_message.back()
+    // compute mac
     applicable_key = d_old_mack_message.back().key;
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
@@ -919,7 +973,10 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
             mac_msb = (mac[0] << 8) + mac[1];
         }
     uint16_t computed_macseq = (mac_msb & 0xFFF0) >> 4; // TODO - double check, it was 0x0FFF which presuposes little endian...
-    int num_tags_added = 0;
+
+//    int num_tags_added = 0;
+
+    // Verify tags if MACSEQ is authenticated
     if (computed_macseq == d_osnma_data.d_mack_message.header.macseq)
         {
             std::cout << "OSNMA: MACSEQ authenticated for PRN_A "
@@ -928,13 +985,15 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                       << osnma_msg->TOW_sf0 << ". Verifying tags. "
                       << std::endl;
 
-            uint8_t l_t_verified = 0; // tag bits verified
-            uint8_t i = 0;
             // TODO - configuration file must define which tags shall be verified
-            // e.g. NavDataVerification: A == ALL, T == Timing Parameters, ECS == Ephemeris,Clock and Status.
-            std::string navDataToVerify = "EphemerisClockAndStatus"; // ADKD 0
-            // Timing Parameters ADKD 4
-            // EphemerisClockAndStatus ADKD 12 10+ Delay
+            // e.g. NavDataVerification: A{0,12,4} == ALL, T == Timing Parameters {4}, ECS == Ephemeris,Clock and Status{0,12}.
+            std::string navDataToVerify = "EphemerisIonoAndClock"; // ADKD 0 +1 delay ADKD 12 +10 delay
+            // std::string navDataToVerify = "TimingParameters"; ADKD 4 +1 delay
+            // std::string navDataToVerify = "ALL";
+            std::vector<uint8_t> adkd;
+//            uint8_t adkd;
+            adkd = {0,12,4};
+
             m.clear();
             uint8_t lt_bits = 0;
             const auto it2 = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
@@ -946,21 +1005,73 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                 {
                     return; // C: TODO if Tag length is 0, what is the action? no verification possible of NavData for sure.
                 }
-            while (i < d_osnma_data.d_mack_message.tag_and_info.size() && l_t_verified < d_Lt_min)
+
+
+
+
+            // Verify each tag
+            // std::string tagsToVerify = "all"; // Ephemeris, UTC, SlowEphemeris, all
+            // all -> process ADKD 0, 12 and 4
+            // Ephemeris -> process ADKD 0 and 12 only (and if 12, then the applicable key has 10 subframes delay)
+            // UTC -> process ADKD 4 only
+            uint8_t i = 0;
+            while (i < d_osnma_data.d_mack_message.tag_and_info.size() &&
+                std::find(adkd.begin(),adkd.end(),d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD) != adkd.end())
                 {
+                    // select applicable tesla key
+                    if (d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 0)
+                        {
+                            applicable_key = d_old_mack_message.back().key; // SF - 1
+                        }
+                    else if (d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 12)
+                            {
+                                // check is the buffer is full or not
+                                if (d_old_mack_message.size() == d_old_mack_message.capacity())
+                                    {
+                                        applicable_key = d_old_mack_message.front().key; // SF - 10
+                                    }
+                                else
+                                    {
+                                        std::cout << "Galileo OSNMA: Old MACK message buffer is not full. Cannot verify slow mac. " << std::endl;
+                                    }
+                            }
+                    else if (d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 4)
+                        {
+                            applicable_key = d_old_mack_message.back().key; // SF - 1
+                        }
+                    else
+                        {
+                        std::cout << "Galileo OSNMA: Unknown ADKD. " << std::endl;
+                        }
+
                     // compute m
                     m.push_back(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.PRN_d);
-                    m.push_back(osnma_msg->PRN);
+                    for(int i = 24; i >= 0; i -= 8)
+                        {
+                            m.push_back((osnma_msg->PRN >> i) & 0xFF);
+                        }
                     m.push_back(static_cast<uint8_t>((d_GST_Sf & 0xFF000000) >> 24));
                     m.push_back(static_cast<uint8_t>((d_GST_Sf & 0x00FF0000) >> 16));
                     m.push_back(static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8));
                     m.push_back(static_cast<uint8_t>(d_GST_Sf & 0x000000FF));
-                    m.push_back(i+1); // CTRauto
+                    m.push_back(i+1); // CTR
                     m.push_back(d_osnma_data.d_nma_header.nmas);
-                    // TODO - other ADKD need different data.
-                    // TODO - store buffer the NavData of 11 last subframes, ADKD 0 and 12 => NavData belongs to SF-1
-                    m.insert(m.end(),osnma_msg->EphemerisClockAndStatusData.begin(),osnma_msg->EphemerisClockAndStatusData.end()) ;
+                    if(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 0 ||
+                        d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 12)
+                        {
+                            m.insert(m.end(),osnma_msg->EphemerisClockAndStatusData.begin(),osnma_msg->EphemerisClockAndStatusData.end()) ;
+                        }
+                    else if(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 4)
+                        {
+                            m.insert(m.end(),osnma_msg->TimingData.begin(),osnma_msg->TimingData.end()) ;
+                        }
+                    else
+                        {
+                            std::cout << "Galileo OSNMA: Unknown ADKD. " << std::endl;
+                        }
                     i = 0;
+                    // check that m has an integer number of bytes, if not, add padding zeroes
+
                     while (i<10/*TODO - number of padding zeroes to be computed*/)
                         {
                             m.push_back(0);
@@ -977,7 +1088,7 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                             mac = d_crypto->computeCMAC_AES(applicable_key, m);
                         }
 
-                    // compute tag = trunc(l_t, mac(K,m)) Eq. 23 ICD
+                    // truncate the computed mac: trunc(l_t, mac(K,m)) Eq. 23 ICD
                     uint64_t computed_mac = static_cast<uint64_t>(mac[0]) << (lt_bits - 8);
                     computed_mac += (static_cast<uint64_t>(mac[1]) << (lt_bits - 16));
                     if (lt_bits == 20)
@@ -1008,15 +1119,34 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                     // Compare computed tag with received one truncated
                     if (d_osnma_data.d_mack_message.tag_and_info[i].tag == computed_mac)
                         {
-                            std::cout << "Galileo OSNMA: Tag verification successful " << std::endl;
-                            l_t_verified += lt_bits;
+                            if(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 0 || d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 12)
+                                {
+                                    std::cout << "Galileo OSNMA: Tag verification successful - Ephemeris, Clock and Ionospheric data " << std::endl;
+                                    d_Lt_verified_eph += lt_bits;
+                                }
+                            else if(d_osnma_data.d_mack_message.tag_and_info[i].tag_info.ADKD == 4)
+                                {
+                                    std::cout << "Galileo OSNMA: Tag verification successful - Timing data " << std::endl;
+                                    d_Lt_verified_utc += lt_bits;
+                                }
                         }
                     else
                         {
                             std::cout << "Galileo OSNMA: Tag verification failed " << std::endl;
                         }
 
+                    if (d_Lt_verified_eph >= d_Lt_min)
+                        {
+                            std::cout << "Galileo OSNMA: Ephemeris, Clock and Ionospheric data verified successfully " << std::endl;
+                            d_Lt_verified_eph = 0;
+                        }
+                    if (d_Lt_verified_utc >= d_Lt_min)
+                        {
+                            std::cout << "Galileo OSNMA: Timing data verified successfully " << std::endl;
+                            d_Lt_verified_utc = 0;
+                        }
                 }
+
         }
 }
 

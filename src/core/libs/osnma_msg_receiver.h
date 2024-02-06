@@ -88,6 +88,8 @@ private:
     bool d_kroot_verified{false};
     uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification
     uint8_t d_Lt_min {}; // minimum equivalent tag length
+    uint8_t d_Lt_verified_eph {0}; // verified tag bits - ephemeris
+    uint8_t d_Lt_verified_utc {0}; // verified tag bits - timing
     uint32_t d_GST_0 {};
     uint32_t d_GST_SIS {};
     std::time_t d_receiver_time {};

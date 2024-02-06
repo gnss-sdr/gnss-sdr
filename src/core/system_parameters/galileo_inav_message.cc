@@ -1382,6 +1382,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 }
 
 
+/**
+ * @brief Get data relevant for Galileo OSNMA
+ *
+ * \details This function retrieves various parameters and data to compose the OSNMA_msg.
+ * It fills the TOW and WN fields of the message and retrieves ephemeris, iono, and
+ *
+ * @return The OSNMA message
+ */
 OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
 {
     // TODO - why PRN of word 4 is done separately?
@@ -1394,7 +1402,6 @@ OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
             TOW_sf0 += 604800;
         }
     nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
-//    nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_0);
     // get ephemeris, clock and iono correction datn and GST-UTC and GST-GPS converstion parameters (may be incomplete)
     nma_msg.EphemerisData = get_ephemeris();
     nma_msg.IonoData = get_iono();

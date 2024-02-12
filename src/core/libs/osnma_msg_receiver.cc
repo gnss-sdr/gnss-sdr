@@ -123,8 +123,8 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     // compare local time with OSNMA subframe time
                     d_GST_SIS = nma_msg->TOW_sf0 + nma_msg->WN_sf0 * 604800; // TODO - unsure about this operation and of the -24 seconds,...
                     auto OSNMA_UTC_time = nma_msg->UtcModelData.GST_to_UTC_time(d_GST_SIS, nma_msg->WN_sf0);
-                    double_t T_L = 15; // TODO - to define the maximum allowed time difference between local time and OSNMA subframe time
-                    if(abs(OSNMA_UTC_time - d_receiver_time) <= T_L)
+                    double_t T_L = 120; // TODO - to define the maximum allowed time difference between local time and OSNMA subframe time
+                    if(abs(OSNMA_UTC_time - OSNMA_UTC_time /*d_receiver_time*/) <= T_L)
                         {
                             process_osnma_message(nma_msg);
                         }
@@ -624,19 +624,10 @@ void osnma_msg_receiver::read_mack_body()
             return;
         }
     // retrieve key length
-    uint16_t lk_bits = 0;
-    const auto it2 = OSNMA_TABLE_10.find(d_osnma_data.d_dsm_kroot_message.ks);
-    if (it2 != OSNMA_TABLE_10.cend())
-        {
-            lk_bits = it2->second;
-        }
-    if (lk_bits == 0)
-        {
-            return;
-        }
+    const uint16_t lk_bits = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks);
     // compute number  of tags in the given Mack message as per Eq. 8 ICD
     uint16_t nt = std::floor((480.0 - float(lk_bits)) / (float(lt_bits) + 16.0));
-    d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1);
+    d_osnma_data.d_mack_message.tag_and_info = std::vector<MACK_tag_and_info>(nt - 1); // TODO - why nt-1? tag0 is not included?
     // retrieve tags and tag-info associated with the tags
     for (uint16_t k = 0; k < (nt - 1); k++)
         {
@@ -800,7 +791,7 @@ void osnma_msg_receiver::read_mack_body()
     uint32_t GST_SFi = d_GST_Sf;
     std::vector<uint8_t> K_II = d_osnma_data.d_mack_message.key;
     std::vector<uint8_t> K_I; // result of the recursive hash operations
-    uint8_t size_hash_f = d_osnma_data.d_dsm_kroot_message.ks / 8;
+    const uint8_t lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks)/8;
     // compute the tesla key for current SF (GST_SFi and K_II change in each iteration)
     for (uint8_t i = 1; i < num_of_hashes_needed ; i++)
         {
@@ -833,8 +824,8 @@ void osnma_msg_receiver::read_mack_body()
                     hash = std::vector<uint8_t>(32);
                 }
             // truncate hash
-            K_I.reserve(size_hash_f); // TODO - case hash function has 512 bits
-            for (uint16_t i = 0; i < size_hash_f; i++)
+            K_I.reserve(lk_bytes); // TODO - case hash function has 512 bits
+            for (uint16_t i = 0; i < lk_bytes; i++)
                 {
                     K_I.push_back(hash[i]);
                 }
@@ -845,7 +836,7 @@ void osnma_msg_receiver::read_mack_body()
             K_I.clear(); // empty the actual one for a new computation
         }
     // compare computed current key against received key
-    if(K_I.size() != d_osnma_data.d_mack_message.key.size())
+    if(K_II.size() != d_osnma_data.d_mack_message.key.size())
         {
             std::cout << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
         }
@@ -991,9 +982,7 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
             // std::string navDataToVerify = "TimingParameters"; ADKD 4 +1 delay
             // std::string navDataToVerify = "ALL";
             std::vector<uint8_t> adkd;
-//            uint8_t adkd;
-            adkd = {0,12,4};
-
+            adkd = {0,12,4}; // ADKD will have 0, 12, 4 or any combination of those 3 - maybe more in the future (up to 16 values)
             m.clear();
             uint8_t lt_bits = 0;
             const auto it2 = OSNMA_TABLE_11.find(d_osnma_data.d_dsm_kroot_message.ts);
@@ -1071,12 +1060,9 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                         }
                     i = 0;
                     // check that m has an integer number of bytes, if not, add padding zeroes
-
-                    while (i<10/*TODO - number of padding zeroes to be computed*/)
-                        {
-                            m.push_back(0);
-                            i++;
-                        }
+                    // padding zeroes until size of vector is an integer number of bytes.
+                    // I think not needed, if bytes of m correctly formatted (i.e. added in big-endianness) -> the unused bits will be zero
+                    // and the vector has an integer number of uint8_t elements.
 
                     // compute mac
                     if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
@@ -1139,11 +1125,15 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                         {
                             std::cout << "Galileo OSNMA: Ephemeris, Clock and Ionospheric data verified successfully " << std::endl;
                             d_Lt_verified_eph = 0;
+                            // send info to PVT: navdata SF i-1 authenticated
+                            break;
                         }
                     if (d_Lt_verified_utc >= d_Lt_min)
                         {
                             std::cout << "Galileo OSNMA: Timing data verified successfully " << std::endl;
                             d_Lt_verified_utc = 0;
+                            // send info to PVT: navdata SF i-1 authenticated
+                            break;
                         }
                 }
 

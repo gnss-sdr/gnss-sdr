@@ -337,7 +337,7 @@ set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 ################################################################################
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.6.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
-set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
+set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.26")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "25.0")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
@@ -348,6 +348,9 @@ set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.3")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
 # Downgrade versions if requirements are not met
+if(CMAKE_VERSION VERSION_LESS "3.22")
+    set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
+endif()
 if(CMAKE_VERSION VERSION_LESS "3.16")
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.5.0")
 endif()
@@ -1729,6 +1732,9 @@ ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configu
         if(GNSSSDR_GLOG_LOCAL_VERSION VERSION_GREATER 0.5.0)
             set(GLOG_GTEST -DWITH_GTEST=FALSE)
         endif()
+        if(NOT (CMAKE_VERSION VERSION_LESS "3.22"))
+            set(GNSSSDR_GLOG_LOCAL_GFLAGS -DCMAKE_REQUIRED_INCLUDES=${GFlags_INCLUDE_DIRS})
+        endif()
         ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
             DEPENDS ${TARGET_GFLAGS}
             PREFIX ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
@@ -1743,6 +1749,7 @@ ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configu
                 -DBUILD_SHARED_LIBS=OFF
                 ${GLOG_GTEST}
                 -DBUILD_TESTING=OFF
+                "${GNSSSDR_GLOG_LOCAL_GFLAGS}"
             BUILD_COMMAND "${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}"
             BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
             UPDATE_COMMAND ""
@@ -1799,6 +1806,9 @@ ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configu
                 )
             endif()
         endif()
+    endif()
+    if(NOT (CMAKE_VERSION VERSION_LESS "3.22"))
+        target_precompile_headers(Glog::glog INTERFACE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/glog/export.h)
     endif()
 
     if(LIBUNWIND_FOUND)

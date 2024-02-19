@@ -25,6 +25,7 @@
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
+#include <unistd.h>    // for close
 
 Fpga_Switch::Fpga_Switch(const std::string &device_name)
 {

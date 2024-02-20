@@ -15,7 +15,6 @@
  * -----------------------------------------------------------------------------
  */
 
-
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "gps_acq_assist.h"
@@ -39,10 +38,11 @@ DECLARE_string(log_dir);
 
 int main(int argc, char **argv)
 {
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
+
     try
         {
             testing::InitGoogleTest(&argc, argv);
+            gflags::ParseCommandLineFlags(&argc, &argv, true);
         }
     catch (...)
         {

@@ -592,7 +592,8 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 
     // get osnma message if the needed nav data is available
     auto adkd_4_12_nav_data_available = d_flag_osnma_iono_and_time && d_flag_osnma_ephemeris;
-    if (d_band == '1' && d_inav_nav.have_new_nma() == true && adkd_4_12_nav_data_available == true && d_flag_osnma_utc_model == true)
+    auto newOSNMA = d_inav_nav.have_new_nma();
+    if (d_band == '1' && newOSNMA && adkd_4_12_nav_data_available == true && d_flag_osnma_utc_model == true)
         {
             const std::shared_ptr<OSNMA_msg> tmp_obj = std::make_shared<OSNMA_msg>(d_inav_nav.get_osnma_msg());
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));

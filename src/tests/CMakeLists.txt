@@ -7,6 +7,7 @@
 
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
 add_subdirectory(system-tests/libs)
+include_directories("${GNSSSDR_SOURCE_DIR}/src/core/receiver")
 
 ################################################################################
 # Google Test - https://github.com/google/googletest
@@ -1266,4 +1267,38 @@ endif()
 
 if(ENABLE_BENCHMARKS)
     add_subdirectory(benchmarks)
+endif()
+
+
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
+    set(GNSS_CRYPTO_TEST_SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/osnma/gnss_crypto_test.cc)
+
+    # Configure the test executable:
+    if(USE_CMAKE_TARGET_SOURCES)
+        add_executable(gnss_crypto_test)
+        target_sources(gnss_crypto_test PRIVATE ${GNSS_CRYPTO_TEST_SOURCES})
+    else()
+        add_executable(gnss_crypto_test ${GNSS_CRYPTO_TEST_SOURCES})
+    endif()
+
+    # Link libraries that gnss_crypto_test requires:
+    target_link_libraries(gnss_crypto_test
+            PRIVATE
+            Boost::thread
+            Gflags::gflags
+            Glog::glog
+            GTest::GTest
+            GTest::Main
+            core_system_parameters
+    )
+
+    # Include any directories your test needs for header files:
+    target_include_directories(gnss_crypto_test
+            PRIVATE
+            #${GNSSSDR_SOURCE_DIR}/src/algorithms,
+            #${GNSSSDR_SOURCE_DIR}/src/core,
+            #${GNSSSDR_SOURCE_DIR}/src/core/receiver,
+            ${GNSSSDR_SOURCE_DIR}/src/core/system_parameters)
 endif()

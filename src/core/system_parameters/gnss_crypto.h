@@ -67,6 +67,10 @@ private:
 #endif
 #else
     gnutls_pubkey_t d_PublicKey{};
+    void set_ecc_key(const std::vector<uint8_t>& pK, const std::vector<uint8_t> ecP);
+    static void my_log_func(int level, const char* msg);
+    void print_pubkey_hex(gnutls_pubkey_t);
+    bool pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest);
 #endif
     std::vector<uint8_t> d_x_4_0;
     std::vector<uint8_t> d_x_3_1;

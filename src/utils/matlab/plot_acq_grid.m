@@ -30,10 +30,10 @@ execution = 4;
 %     9 BDS. B3
 %    10 BDS. B2a
 
-signal_type = 8;
+signal_type = 1;
 
 %%% True for light grid representation
-lite_view = true;
+lite_view = false;
 
 %%% If lite_view, it sets the number of samples per chip in the graphical representation
 n_samples_per_chip = 3;
@@ -83,8 +83,8 @@ switch(signal_type)
         system = 'C';
         signal = '5C';
 end
-filename = [path file '_' system '_' signal '_ch_' num2str(channel) '_' num2str(execution) '_sat_' num2str(sat) '.mat'];
-load(filename);
+%filename = [path file '_' system '_' signal '_ch_' num2str(channel) '_' num2str(execution) '_sat_' num2str(sat) '.mat'];
+load("acq_dump_G_1C_ch_0_1_sat_1.mat");
 [n_fft, n_dop_bins] = size(acq_grid);
 [d_max, f_max] = find(acq_grid == max(max(acq_grid)));
 freq = (0 : n_dop_bins - 1) * double(doppler_step) - double(doppler_max);

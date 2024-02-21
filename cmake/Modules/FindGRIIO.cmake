@@ -96,6 +96,7 @@ find_library(IIO_LIBRARIES
           /usr/lib/sparc64-linux-gnu
           /usr/lib/x86_64-linux-gnux32
           /usr/lib/sh4-linux-gnu
+          /usr/lib/loongarch64-linux-gnu
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib

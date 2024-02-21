@@ -89,6 +89,7 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/alpha-linux-gnu
         /usr/lib/riscv64-linux-gnu
+        /usr/lib/loongarch64-linux-gnu
         /usr/local/lib
         /usr/local/lib64
         /usr/local/lib/i386

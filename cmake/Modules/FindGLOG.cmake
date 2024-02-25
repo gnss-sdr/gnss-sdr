@@ -179,3 +179,8 @@ if(GLOG_FOUND AND NOT TARGET Glog::glog)
         INTERFACE_LINK_LIBRARIES "${GLOG_LIBRARIES}"
     )
 endif()
+
+# Fix for glog 0.7.0
+if(EXISTS ${GLOG_INCLUDE_DIRS}/export.h)
+    target_precompile_headers(Glog::glog INTERFACE ${GLOG_INCLUDE_DIRS}/export.h)
+endif()

@@ -22,7 +22,6 @@
 #include "gnss_crypto.h"
 #include "gnss_satellite.h"
 #include "osnma_dsm_reader.h"       // for OSNMA_DSM_Reader
-#include "pvt_interface.h"
 #include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <cmath>
@@ -63,6 +62,9 @@ osnma_msg_receiver::osnma_msg_receiver(
     d_old_mack_message.set_capacity(10);
     //  register OSNMA input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("OSNMA_from_TLM"));
+    // register OSNMA output message port to PVT block
+    this->message_port_register_out(pmt::mp("OSNMA_to_PVT"));
+
     this->set_msg_handler(pmt::mp("OSNMA_from_TLM"),
 #if HAS_GENERIC_LAMBDA
         [this](auto&& PH1) { msg_handler_osnma(PH1); });
@@ -73,33 +75,9 @@ osnma_msg_receiver::osnma_msg_receiver(
         boost::bind(&osnma_msg_receiver::msg_handler_osnma, this, _1));
 #endif
 #endif
-    // register OSNMA input message port from PVT block
-    this->message_port_register_in(pmt::mp("pvt_to_osnma"));
-    this->set_msg_handler(pmt::mp("pvt_to_osnma"),
-#if HAS_GENERIC_LAMBDA
-        [this](auto&& PH1) { msg_handler_pvt_to_osnma(PH1); });
-#else
-#if USE_BOOST_BIND_PLACEHOLDERS
-        boost::bind(&osnma_msg_receiver::msg_handler_pvt_to_osnma, this, boost::placeholders::_1));
-#else
-        boost::bind(&osnma_msg_receiver::msg_handler_pvt_to_osnma, this, _1));
-#endif
-#endif
-    // register OSNMA output message port to PVT block
-    this->message_port_register_out(pmt::mp("OSNMA_to_PVT"));
 }
 
-void osnma_msg_receiver::msg_handler_pvt_to_osnma(const pmt::pmt_t& msg)
-{
-    try
-        {
-            d_receiver_time = wht::any_cast<std::time_t>(pmt::any_ref(msg)); // C: TODO - check if this is the correct way to get the time from the PVT block
-        }
-    catch (const pmt::exception& e)
-        {
-            LOG(WARNING) << "osnma_msg_receiver pmt exception: " << e.what();
-        }
-}
+
 void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 {
     // requires mutex with msg_handler_osnma function called by the scheduler
@@ -135,6 +113,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 //                                }
 //                        }
 
+                    process_osnma_message(nma_msg);
                 }
             else
                 {

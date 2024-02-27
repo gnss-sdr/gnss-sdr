@@ -60,7 +60,6 @@ private:
     osnma_msg_receiver(const std::string& pemFilePath, const std::string& merkleFilePath);
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
-    void msg_handler_pvt_to_osnma(const pmt::pmt_t& msg);
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_nma_header(uint8_t nma_header);
     void read_dsm_header(uint8_t dsm_header);

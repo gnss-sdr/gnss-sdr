@@ -1815,6 +1815,9 @@ ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configu
     endif()
     if(NOT (CMAKE_VERSION VERSION_LESS "3.22"))
         target_precompile_headers(Glog::glog INTERFACE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/glog/export.h)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            set(CMAKE_CXX_COMPILE_OPTIONS_USE_PCH -Winvalid-pch -x c++-header -include ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/glog/export.h)
+        endif()
     endif()
 
     if(LIBUNWIND_FOUND)

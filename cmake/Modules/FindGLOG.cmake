@@ -183,4 +183,7 @@ endif()
 # Fix for glog 0.7.0
 if(EXISTS ${GLOG_INCLUDE_DIRS}/export.h)
     target_precompile_headers(Glog::glog INTERFACE ${GLOG_INCLUDE_DIRS}/export.h)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(CMAKE_CXX_COMPILE_OPTIONS_USE_PCH -Winvalid-pch -x c++-header -include ${GLOG_INCLUDE_DIRS}/export.h)
+    endif()
 endif()

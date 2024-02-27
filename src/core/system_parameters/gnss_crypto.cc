@@ -548,11 +548,11 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 
 #endif
 #else
-//    // GNU-TLS
-//    gnutls_global_init();
-//    // debug info gnu-tls remove when not needed anymore!
-//    gnutls_global_set_log_level(9);
-//    gnutls_global_set_log_function(Gnss_Crypto::my_log_func);
+    // GNU-TLS
+    gnutls_global_init();
+    // debug info gnu-tls remove when not needed anymore!
+    gnutls_global_set_log_level(9);
+    gnutls_global_set_log_function(Gnss_Crypto::my_log_func);
 
     unsigned int bit_size;
     if (gnutls_pubkey_get_pk_algorithm(d_PublicKey, &bit_size) != GNUTLS_PK_ECDSA)
@@ -574,7 +574,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         {
             std::cerr << "GnuTLS error: " << gnutls_strerror(ret) << std::endl;
         }
-//    gnutls_global_deinit();
+    gnutls_global_deinit();
 #endif
     return success;
 }

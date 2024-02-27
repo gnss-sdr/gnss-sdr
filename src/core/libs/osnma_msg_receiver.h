@@ -65,6 +65,8 @@ private:
     void read_nma_header(uint8_t nma_header);
     void read_dsm_header(uint8_t dsm_header);
     void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void local_time_verification(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void process_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
     bool verify_dsm_pkr(DSM_PKR_message message);
     void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
@@ -86,13 +88,15 @@ private:
     bool d_new_data{false};
     bool d_public_key_verified{false};
     bool d_kroot_verified{false};
+    bool d_tesla_key_verified{false};
     uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification
     uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint8_t d_Lt_verified_eph {0}; // verified tag bits - ephemeris
     uint8_t d_Lt_verified_utc {0}; // verified tag bits - timing
     uint32_t d_GST_0 {};
     uint32_t d_GST_SIS {};
-    std::time_t d_receiver_time {};
+    std::time_t d_receiver_time {0};
+    const uint8_t d_T_L{30}; // s RG Section 2.1
 };
 
 

@@ -867,20 +867,12 @@ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/inst
 The script explains what it will do, and then it pauses before doing it. There
 are more installation options [here](https://docs.brew.sh/Installation.html).
 
-Install pip3:
-
-```
-$ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-$ sudo python3 get-pip.py
-```
-
 Install the required dependencies:
 
 ```
 $ brew update && brew upgrade
 $ brew install armadillo cmake hdf5 gflags glog gnuradio libmatio log4cpp \
-    openssl pkg-config protobuf pugixml
-$ pip3 install mako
+    openssl pkg-config protobuf pugixml pyhon-mako
 $ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
 ```

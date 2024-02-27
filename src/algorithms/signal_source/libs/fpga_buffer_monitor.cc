@@ -31,6 +31,7 @@
 #include <fstream>     // for string, ofstream
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
+#include <unistd.h>    // for close
 #include <utility>     // for move
 
 

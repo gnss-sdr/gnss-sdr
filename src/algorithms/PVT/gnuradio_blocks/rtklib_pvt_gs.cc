@@ -188,8 +188,6 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     this->message_port_register_out(pmt::mp("pvt_to_trk"));
     // Send PVT status to gnss_flowgraph
     this->message_port_register_out(pmt::mp("status"));
-    // Send PVT time to OSNMA
-    this->message_port_register_out(pmt::mp("pvt_to_osnma"));
 
     // GPS Ephemeris data message port in
     this->message_port_register_in(pmt::mp("telemetry"));
@@ -2141,7 +2139,6 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // #### solve PVT and store the corrected observable set
                     if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0))
                         {
-                            this->message_port_pub(pmt::mp("pvt_to_osnma"), pmt::make_any(convert_to_time_t(d_internal_pvt_solver->get_position_UTC_time())));
                             d_pvt_errors_counter = 0;  // Reset consecutive PVT error counter
                             const double Rx_clock_offset_s = d_internal_pvt_solver->get_time_offset_s();
 

@@ -6,6 +6,7 @@ docs/doxygen/Doxyfile
 docs/html
 docs/latex
 docs/GNSS-SDR_manual.pdf
+conf/*
 src/tests/data/output.dat
 thirdparty/
 src/utils/nav-listener/build

@@ -14,9 +14,19 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
-### Improvements in Usability
+### Improvements in Portability:
+
+- Fix building against google-glog 0.7.0
+- Find dependencies in the loongarch64 architecture.
+
+### Improvements in Usability:
 
 - Tidy up the `conf/` folder.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
 
 ## [GNSS-SDR v0.0.19.1](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19.1) - 2024-01-26
 
@@ -102,7 +112,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   overkilling nine (the ninth decimal place worths up to 110 microns).
   Similarly, height in meters is now reported with two decimal places instead of
   three, and velocity in m/s also with two decimal places instead of three.
-- Fixed the rate at which KLM, GPX, GeoJSON, and NMEA annotations are made. The
+- Fixed the rate at which KML, GPX, GeoJSON, and NMEA annotations are made. The
   rate is now set by `PVT.output_rate_ms` (`500` ms by default), and can be
   particularized by `PVT.kml_rate_ms`, `PVT.gpx_rate_ms`, `PVT.geojson_rate_ms`,
   and `PVT.nmea_rate_ms`. Those values should be multiples of

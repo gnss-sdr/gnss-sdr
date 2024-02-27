@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: uraimo/run-on-arch-action@v2.6.0
+      - uses: uraimo/run-on-arch-action@v2.7.1
         name: Build in non-x86 container
         # continue-on-error: ${{ contains(fromJson('["ppc64le", "s390x"]'), matrix.arch) }}
         id: build

@@ -71,6 +71,7 @@ macro(_FIND_GLOG_LIBRARIES _var)
                 /usr/lib/x86_64-linux-gnux32
                 /usr/lib/alpha-linux-gnu
                 /usr/lib/riscv64-linux-gnu
+                /usr/lib/loongarch64-linux-gnu
                 /usr/local/lib
                 /usr/local/lib64
                 /opt/local/lib
@@ -177,4 +178,9 @@ if(GLOG_FOUND AND NOT TARGET Glog::glog)
         INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
         INTERFACE_LINK_LIBRARIES "${GLOG_LIBRARIES}"
     )
+endif()
+
+# Fix for glog 0.7.0
+if(EXISTS ${GLOG_INCLUDE_DIRS}/export.h)
+    set_target_properties(Glog::glog PROPERTIES INTERFACE_COMPILE_DEFINITIONS "GLOG_USE_GLOG_EXPORT")
 endif()

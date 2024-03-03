@@ -4,10 +4,14 @@
 # SPDX-FileCopyrightText: 2011-2020 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCHITECTURE_STRING "(64 bits)")
+if(CMAKE_VERSION VERSION_LESS 3.19)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(ARCHITECTURE_STRING "(64 bits)")
+    else()
+        set(ARCHITECTURE_STRING "(32 bits)")
+    endif()
 else()
-    set(ARCHITECTURE_STRING "(32 bits)")
+    set(ARCHITECTURE_STRING "(${CMAKE_HOST_SYSTEM_PROCESSOR})")
 endif()
 
 if(EXISTS "/etc/lsb-release")

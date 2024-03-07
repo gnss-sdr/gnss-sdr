@@ -19,6 +19,7 @@
 #define GNSS_SDR_OSNMA_DATA_H
 
 #include "galileo_ephemeris.h"
+#include "galileo_inav_message.h"
 #include "galileo_iono.h"
 #include "galileo_utc_model.h"
 #include <array>
@@ -125,18 +126,20 @@ public:
 class NavData
 {
 public:
-    NavData() = default;
+    NavData()=default;
+    void init(const std::shared_ptr<OSNMA_msg> &osnma_msg);
+    std::vector<uint8_t> ephemeris_iono_vector{};
+    std::vector<uint8_t> utc_vector{};
+    uint32_t PRNa{};
+    uint32_t WN_sf0{};
+    uint32_t TOW_sf0{};
+private:
     Galileo_Ephemeris EphemerisData;
     Galileo_Iono IonoData;
     Galileo_Utc_Model UtcData;
-    void generate_eph_iono_vector(); // TODO check with Carles procedure and compare with v2
-    void generate_eph_iono_vector2();
+    void generate_eph_iono_vector(); // TODO pass data directly fro Telemetry Decoder (if bits are in the needed order)
     void generate_utc_vector(); // TODO
-    std::vector<uint8_t> get_eph_iono_vector(); // TODO
-    std::vector<uint8_t> get_utc_vector(); // TODO
-private:
-    std::vector<uint8_t> ephemeris_iono_vector;
-    std::vector<uint8_t> utc_vector;
+
 
 };
 

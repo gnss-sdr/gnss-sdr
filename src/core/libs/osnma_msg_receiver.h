@@ -68,13 +68,14 @@ private:
     void process_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
     bool verify_dsm_pkr(DSM_PKR_message message);
-    void read_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void read_and_process_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_header();
     void read_mack_body();
     void process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
 
-    boost::circular_buffer<MACK_message> d_old_mack_message;
-    boost::circular_buffer<NavData> d_old_navdata_buffer; // buffer that holds last 10 received navdata messages
+    //boost::circular_buffer<MACK_message> d_old_mack_message;
+    boost::circular_buffer<OSNMA_data> d_old_OSNMA_buffer; // buffer that holds last 12 received OSNMA messages, including current one at back()
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
     std::unique_ptr<Gnss_Crypto> d_crypto;
 
@@ -92,10 +93,14 @@ private:
     uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint8_t d_Lt_verified_eph {0}; // verified tag bits - ephemeris
     uint8_t d_Lt_verified_utc {0}; // verified tag bits - timing
+    uint8_t const d_T_L{30}; // s RG Section 2.1
+    uint8_t const d_delta_COP{30}; // s SIS ICD Table 14
     uint32_t d_GST_0 {};
     uint32_t d_GST_SIS {};
     std::time_t d_receiver_time {0};
-    const uint8_t d_T_L{30}; // s RG Section 2.1
+    enum tags_to_verify{all,utc,slow_eph, eph, none}; // TODO is this safe? I hope so
+    tags_to_verify d_tags_allowed{tags_to_verify::all};
+    std::vector<uint8_t> d_tags_to_verify{0,4,12};
 };
 
 

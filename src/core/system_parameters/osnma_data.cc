@@ -16,37 +16,27 @@
 
 #include "osnma_data.h"
 #include <cstring>
+#include <iostream>
 
+/**
+ * @brief Constructs a NavData object with the given osnma_msg.
+ * \details Packs the ephemeris, iono and utc data from the current subframe into the NavData structure. It also gets the PRNa and the GST.
+ * @param osnma_msg The shared pointer to the OSNMA_msg object.
+ */
+void NavData::init(const std::shared_ptr<OSNMA_msg> &osnma_msg)
+{
+    EphemerisData = osnma_msg->EphemerisData;
+    IonoData = osnma_msg->IonoData;
+    UtcData = osnma_msg->UtcModelData;
+    generate_eph_iono_vector();
+    generate_utc_vector();
+    PRNa = osnma_msg->PRN;
+    WN_sf0 = osnma_msg->WN_sf0;
+    TOW_sf0 = osnma_msg->TOW_sf0;
+};
 void NavData::generate_eph_iono_vector()
 {
     ephemeris_iono_vector.clear();
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>((EphemerisData.IOD_nav & 0b0000'0000'0000'0000'0000'0011'1111'1100) >> 2));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>((EphemerisData.IOD_nav & 0b0000'0000'0000'0000'0000'0000'0000'0011) << 6
-                                    | (EphemerisData.toe & 0b0000'0000'0000'0000'0011'1111'1111'1111) >> 8));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(EphemerisData.toe));
-    uint64_t binary_representation;
-    memcpy(&binary_representation, &EphemerisData.M_0, sizeof(EphemerisData.M_0));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 8)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 16)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 24)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 32)));
-    memcpy(&binary_representation, &EphemerisData.ecc, sizeof(EphemerisData.ecc));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 8)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 16)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 24)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 32)));
-    memcpy(&binary_representation, &EphemerisData.sqrtA, sizeof(EphemerisData.sqrtA));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 8)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 16)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 24)));
-    ephemeris_iono_vector.push_back(static_cast<uint8_t>(binary_representation >> (64 - 32)));
-
-    // TODO: Implement the function to generate the rest of pages
-}
-
-void NavData::generate_eph_iono_vector2()
-{
-    std::vector<uint8_t> eph_iono_vector;
     uint64_t bit_buffer = 0; // variable to store the bits to be extracted, it can contain bits from different variables
     int bit_count = 0; // Number of bits in the buffer, i.e. to be extracted
 
@@ -113,7 +103,7 @@ void NavData::generate_eph_iono_vector2()
         {
             // Extract the 8 bits starting from last bit position and add them to the vector
             uint8_t extracted_bits = (bit_buffer >> (bit_count - 8)) & 0xFF;
-            eph_iono_vector.push_back(extracted_bits);
+            ephemeris_iono_vector.push_back(extracted_bits);
 
             // Remove the extracted bits from the buffer
             bit_count -= 8;
@@ -125,7 +115,7 @@ void NavData::generate_eph_iono_vector2()
     // If there are any bits left in the buffer, add them to the vector
     if (bit_count > 0)
     {
-        eph_iono_vector.push_back(static_cast<uint8_t>(bit_buffer));
+        ephemeris_iono_vector.push_back(static_cast<uint8_t>(bit_buffer));
     }
 }
 
@@ -172,14 +162,4 @@ void NavData::generate_utc_vector()
         {
             utc_vector.push_back(static_cast<uint8_t>(bit_buffer));
         }
-}
-
-std::vector<uint8_t> NavData::get_eph_iono_vector()
-{
-    return ephemeris_iono_vector;
-}
-
-std::vector<uint8_t> NavData::get_utc_vector()
-{
-    return utc_vector;
 }

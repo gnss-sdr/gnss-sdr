@@ -403,9 +403,9 @@ $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/Linux
 $ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
-$ wget https://sourceforge.net/projects/arma/files/armadillo-12.0.1.tar.xz
-$ tar xvfz armadillo-12.0.1.tar.xz
-$ cd armadillo-12.0.1
+$ wget https://sourceforge.net/projects/arma/files/armadillo-12.8.1.tar.xz
+$ tar xvfz armadillo-12.8.1.tar.xz
+$ cd armadillo-12.8.1
 $ cmake .
 $ make
 $ sudo make install
@@ -433,9 +433,9 @@ $ sudo ldconfig
 #### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging
 
 ```
-$ wget https://github.com/google/glog/archive/v0.6.0.tar.gz
-$ tar xvfz v0.6.0.tar.gz
-$ cd glog-0.6.0
+$ wget https://github.com/google/glog/archive/v0.7.0.tar.gz
+$ tar xvfz v0.7.0.tar.gz
+$ cd glog-0.7.0
 $ mkdir build && cd build
 $ cmake ..
 $ make
@@ -460,9 +460,9 @@ GNSS-SDR can also work well with
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.23/matio-1.5.23.tar.gz
-$ tar xvfz matio-1.5.23.tar.gz
-$ cd matio-1.5.23
+$ wget https://github.com/tbeu/matio/releases/download/v1.5.26/matio-1.5.26.tar.gz
+$ tar xvfz matio-1.5.26.tar.gz
+$ cd matio-1.5.26
 $ ./configure
 $ make
 $ sudo make install
@@ -489,9 +489,9 @@ For more options, please check the
 #### Install [Pugixml](https://pugixml.org/ "Pugixml's Homepage"), a light-weight C++ XML processing library
 
 ```
-$ wget https://github.com/zeux/pugixml/releases/download/v1.13/pugixml-1.13.tar.gz
-$ tar xvfz pugixml-1.13.tar.gz
-$ cd pugixml-1.13
+$ wget https://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.14.tar.gz
+$ tar xvfz pugixml-1.14.tar.gz
+$ cd pugixml-1.14
 $ mkdir build && cd build
 $ cmake ..
 $ make
@@ -502,8 +502,8 @@ $ sudo ldconfig
 #### Download [GoogleTest](https://github.com/google/googletest "Googletest Homepage")
 
 ```
-$ wget https://github.com/google/googletest/archive/refs/tags/v1.13.0.zip
-$ unzip v1.13.0.zip
+$ wget https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+$ unzip v1.14.0.zip
 ```
 
 Please **DO NOT build or install** Google Test. Every user needs to compile
@@ -527,10 +527,10 @@ downloaded resides. Just type in your terminal (or add it to your
 `$HOME/.bashrc` file for a permanent solution) the following line:
 
 ```
-export GTEST_DIR=/home/username/googletest-1.13.0
+export GTEST_DIR=/home/username/googletest-1.14.0
 ```
 
-changing `/home/username/googletest-1.13.0` by the actual path where you
+changing `/home/username/googletest-1.14.0` by the actual path where you
 unpacked Google Test. If the CMake script does not find that folder, or the
 environment variable is not defined, or the source code is not installed by a
 package, then it will download a fresh copy of the Google Test source code and
@@ -872,7 +872,7 @@ Install the required dependencies:
 ```
 $ brew update && brew upgrade
 $ brew install armadillo cmake hdf5 gflags glog gnuradio libmatio log4cpp \
-    openssl pkg-config protobuf pugixml pyhon-mako
+    openssl pkg-config protobuf pugixml python-mako
 $ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
 ```

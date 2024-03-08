@@ -58,6 +58,12 @@ public:
     bool CRC_test(std::bitset<GLONASS_GNAV_STRING_BITS>& bits) const;
 
     /*!
+     * \brief Check and (if needed and possible) correct information bits for GLONASS GNAV strings
+     * \param[in,out] bits_io Bits of the string message (information and Hamming codes)
+     */
+    bool hamming_correct(std::bitset<GLONASS_GNAV_STRING_BITS>& bits_io) const;
+
+    /*!
      * \brief Computes the frame number being decoded given the satellite slot number
      * \param satellite_slot_number [in] Satellite slot number identifier
      * \returns Frame number being decoded, 0 if operation was not successful.

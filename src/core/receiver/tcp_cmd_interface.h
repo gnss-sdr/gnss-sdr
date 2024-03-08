@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <ctime>
 #include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -37,6 +38,7 @@
 
 
 class PvtInterface;
+class ChannelInterface;
 
 class TcpCmdInterface
 {
@@ -57,6 +59,7 @@ public:
     std::array<float, 3> get_LLH() const;
 
     void set_pvt(std::shared_ptr<PvtInterface> PVT_sptr);
+    void set_channels(std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr);
 
 private:
     std::unordered_map<std::string, std::function<std::string(const std::vector<std::string> &)>>
@@ -73,6 +76,25 @@ private:
 
     std::shared_ptr<Concurrent_Queue<pmt::pmt_t>> control_queue_;
     std::shared_ptr<PvtInterface> PVT_sptr_;
+    std::shared_ptr<std::vector<std::shared_ptr<ChannelInterface>>> channels_sptr_;
+
+    const std::map<std::string, std::string> map_signal_pretty_name_{
+        {"1C", "L1 C/A"},
+        {"1B", "E1"},
+        {"1G", "L1 C/A"},
+        {"2S", "L2C"},
+        {"2G", "L2 C/A"},
+        {"5X", "E5a"},
+        {"7X", "E5b"},
+        {"L5", "L5"},
+        {"B1", "B1I"},
+        {"B3", "B3I"}};
+
+    const std::map<uint32_t, std::string> map_state_name_{
+        {0, "STBY"},
+        {1, "ACQ"},
+        {2, "TRK"},
+        {3, "DROP"}};
 
     float rx_latitude_;
     float rx_longitude_;

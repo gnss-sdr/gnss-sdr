@@ -30,6 +30,9 @@
 #include <openssl/hmac.h>
 #include <openssl/pem.h>
 #if USE_OPENSSL_3
+#include <iomanip>
+#include <openssl/bio.h>
+#include <openssl/err.h>
 #include <openssl/evp.h>
 #define OPENSSL_ENGINE nullptr
 #else
@@ -41,7 +44,6 @@
 #include <gnutls/x509.h>
 #include <iomanip>
 #endif
-
 
 Gnss_Crypto::Gnss_Crypto(const std::string& pemFilePath, const std::string& merkleTreePath)
 {
@@ -492,6 +494,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
 
 bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature)
 {
+    std::vector<uint8_t> digest = this->computeSHA256(message);
     if (!have_public_key())
         {
             std::cerr << "GnuTLS error: public key not available"<< std::endl;
@@ -501,7 +504,8 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
     EVP_PKEY_CTX* ctx;
-    ctx = EVP_PKEY_CTX_new(d_PublicKey, nullptr /* no engine */);
+    print_pubkey_hex(d_PublicKey);
+    ctx = EVP_PKEY_CTX_new(d_PublicKey, nullptr);
     bool do_operation = true;
 
     if (!ctx)
@@ -519,7 +523,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     int verification = 0;
     if (do_operation)
         {
-            verification = EVP_PKEY_verify(ctx, signature.data(), signature.size(), message.data(), message.size());
+            verification = EVP_PKEY_verify(ctx, signature.data(), signature.size(), digest.data(), digest.size());
         }
     EVP_PKEY_CTX_free(ctx);
     if (verification == 1)
@@ -528,7 +532,9 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         }
     else
         {
-            std::cerr << "OpenSSL: message authentication failed" << std::endl;
+            unsigned long errCode = ERR_get_error();
+            char* err = ERR_error_string(errCode, NULL);
+            std::cerr << "OpenSSL: message authentication failed: " << err <<  std::endl;
         }
 #else
     auto digest = this->computeSHA256(message);
@@ -619,7 +625,28 @@ std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<ui
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
 #if USE_OPENSSL_FALLBACK
-    // TODO
+    BIO *bio = NULL;
+    EVP_PKEY *pkey = NULL;
+    bio = BIO_new_mem_buf(publicKey.data(), publicKey.size());
+    if (!bio) {
+            std::cerr << "Failed to create BIO for key \n";
+            return;
+        }
+
+        pkey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);
+        BIO_free(bio);
+
+        if (!pkey) {
+            std::cerr << "OpenSSL: error setting the public key "
+                      << ". Aborting import" << std::endl;
+            return;
+        }
+        print_pubkey_hex(pkey);
+
+        if(!pubkey_copy(pkey, &d_PublicKey))
+            return
+
+        EVP_PKEY_free(pkey);
 #else
 //    // GNU-TLS
 //    gnutls_global_init();
@@ -668,62 +695,145 @@ std::vector<uint8_t> Gnss_Crypto::get_public_key()
     return {};
 }
 
- void Gnss_Crypto::my_log_func(int level, const char *msg) {
-    fprintf(stderr, "<GnuTLS %d> %s", level, msg);}
+// TODO make them compilable with any prepro directive
+// void Gnss_Crypto::my_log_func(int level, const char *msg) {
+//    fprintf(stderr, "<GnuTLS %d> %s", level, msg);}
+//
+// // gnutls-specific functions
 
- // gnutls-specific functions
- void Gnss_Crypto::print_pubkey_hex(gnutls_pubkey_t pubkey)
- {
-     gnutls_datum_t key_datum;
-     int ret;
+#if USE_OPENSSL_FALLBACK
+bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
+{
+    // Open a memory buffer
+    BIO* mem_bio = BIO_new(BIO_s_mem());
+    if (mem_bio == NULL)
+        {
+            return false;
+        }
 
-     // Export the public key from pubkey to memory in DER format
-     ret = gnutls_pubkey_export2(pubkey, GNUTLS_X509_FMT_PEM, &key_datum);
-     if (ret < 0) {
-             std::cerr << "Failed to export public key: " << gnutls_strerror(ret) << std::endl;
-             return;
-         }
+    // Export the public key from src into the memory buffer in PEM format
+    if (!PEM_write_bio_PUBKEY(mem_bio, src))
+        {
+            BIO_free(mem_bio);
+            return false;
+        }
 
-     std::stringstream ss;
+    // Add a null-terminator to the data in the memory buffer
+    //BIO_write(mem_bio, "\0", 1);
 
-     // Iterate through each byte in key_datum.data and print its hex value
-     for (unsigned int i = 0; i < key_datum.size; ++i) {
-             ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<std::uint32_t>(key_datum.data[i]);
-         }
+    // Read the data from the memory buffer
+    char* bio_data;
+    long data_len = BIO_get_mem_data(mem_bio, &bio_data);
 
-     std::cout << "Public key in hex format: 0x" << ss.str() << std::endl;
+    // Create a new memory buffer and load the data into it
+    BIO* mem_bio2 = BIO_new_mem_buf(bio_data, data_len);
+    if (mem_bio2 == NULL)
+        {
+            BIO_free(mem_bio);
+            return false;
+        }
 
-     // Free the memory allocated to key_datum.data
-     gnutls_free(key_datum.data);
- }
+    // Read the public key from the new memory buffer
+    *dest = PEM_read_bio_PUBKEY(mem_bio2, NULL, NULL, NULL);
+    if (*dest == NULL)
+        {
+            BIO_free(mem_bio);
+            BIO_free(mem_bio2);
+            return false;
+        }
 
- bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
- {
-     gnutls_datum_t key_datum;
-     int ret;
+    // Clean up
+    BIO_free(mem_bio);
+    BIO_free(mem_bio2);
 
-     // Export the public key from src to memory
-     ret = gnutls_pubkey_export2(src, GNUTLS_X509_FMT_PEM, &key_datum);
-     if(ret < 0) {
-             gnutls_free(key_datum.data);
-             return false;
-         }
+    return true;
+}
+void Gnss_Crypto::print_pubkey_hex(EVP_PKEY* pubkey)
+{
+    BIO* mem_bio = BIO_new(BIO_s_mem());
+    if (!mem_bio) {
+            std::cerr << "Failed to create new memory BIO\n";
+            return;
+        }
 
-     // Initialize dest
-     ret = gnutls_pubkey_init(dest);
-     if(ret < 0) {
-             gnutls_free(key_datum.data);
-             return false;
-         }
+    if (!PEM_write_bio_PUBKEY(mem_bio, pubkey)){
+            std::cerr << "Failed to write public key to BIO\n";
+            BIO_free(mem_bio);
+            return;
+        }
 
-     // Import the public key data from key_datum to dest
-     ret = gnutls_pubkey_import(*dest, &key_datum, GNUTLS_X509_FMT_PEM);
-     gnutls_free(key_datum.data);
+    BUF_MEM* mem_ptr;
+    BIO_get_mem_ptr(mem_bio, &mem_ptr); // Fetch the underlying BUF_MEM structure from the BIO.
 
-     if(ret < 0) {
-             gnutls_pubkey_deinit(*dest);
-             return false;
-         }
+    std::stringstream ss;
 
-     return true;
- }
+    // Iterate through each byte in mem_ptr->data and print its hex value.
+    for (size_t i = 0; i < mem_ptr->length; i++) {
+            ss << std::hex << std::setw(2) << std::setfill('0') <<
+                static_cast<int>(static_cast<unsigned char>(mem_ptr->data[i]));
+        }
+
+    std::cout << "Public key in hex format: 0x" << ss.str() << std::endl;
+
+    BIO_free(mem_bio);
+}
+#else
+     bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
+     {
+         gnutls_datum_t key_datum;
+         int ret;
+
+         // Export the public key from src to memory
+         ret = gnutls_pubkey_export2(src, GNUTLS_X509_FMT_PEM, &key_datum);
+         if (ret < 0)
+             {
+                 gnutls_free(key_datum.data);
+                 return false;
+             }
+
+         // Initialize dest
+         ret = gnutls_pubkey_init(dest);
+         if (ret < 0)
+             {
+                 gnutls_free(key_datum.data);
+                 return false;
+             }
+
+         // Import the public key data from key_datum to dest
+         ret = gnutls_pubkey_import(*dest, &key_datum, GNUTLS_X509_FMT_PEM);
+         gnutls_free(key_datum.data);
+
+         if (ret < 0)
+             {
+                 gnutls_pubkey_deinit(*dest);
+                 return false;
+             }
+
+         return true;
+     }
+
+      void Gnss_Crypto::print_pubkey_hex(gnutls_pubkey_t pubkey)
+      {
+          gnutls_datum_t key_datum;
+          int ret;
+
+          // Export the public key from pubkey to memory in DER format
+          ret = gnutls_pubkey_export2(pubkey, GNUTLS_X509_FMT_PEM, &key_datum);
+          if (ret < 0) {
+                  std::cerr << "Failed to export public key: " << gnutls_strerror(ret) << std::endl;
+                  return;
+              }
+
+          std::stringstream ss;
+
+          // Iterate through each byte in key_datum.data and print its hex value
+          for (unsigned int i = 0; i < key_datum.size; ++i) {
+                  ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<std::uint32_t>(key_datum.data[i]);
+              }
+
+          std::cout << "Public key in hex format: 0x" << ss.str() << std::endl;
+
+          // Free the memory allocated to key_datum.data
+          gnutls_free(key_datum.data);
+      }
+#endif

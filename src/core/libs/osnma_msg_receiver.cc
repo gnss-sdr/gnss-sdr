@@ -1109,7 +1109,7 @@ void osnma_msg_receiver::process_mack_message(const std::shared_ptr<OSNMA_msg>& 
                                     // && it->tag_info.cop == applicable_COP // TODO - I think this may be skipped as the relevant is the COP distance.
                                     && it->tag_info.PRN_d == applicable_PRNd)
                                 {
-                                    if(verify_tag(it.operator*(), applicable_OSNMA, k,applicable_key ))
+                                    if(verify_tag(it.operator*(), applicable_OSNMA, k,applicable_key,applicable_NavData))
                                         {
                                             nt++;
                                         }

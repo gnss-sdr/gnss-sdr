@@ -60,8 +60,10 @@ public:
 
 private:
 #if USE_OPENSSL_FALLBACK
+    bool pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest);
+    void print_pubkey_hex(EVP_PKEY* pubkey);
 #if USE_OPENSSL_3
-    EVP_PKEY* d_PublicKey;
+    EVP_PKEY* d_PublicKey{};
 #else
     EC_KEY* d_PublicKey = nullptr;
 #endif

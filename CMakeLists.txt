@@ -2173,7 +2173,8 @@ find_library(GNUTLS_OPENSSL_LIBRARY
         /usr/local/lib64
         /opt/local/lib
 )
-if(NOT GNUTLS_OPENSSL_LIBRARY)
+#if(NOT GNUTLS_OPENSSL_LIBRARY)
+if(GNUTLS_OPENSSL_LIBRARY)
     if(GnuTLS_FOUND)
         message(STATUS " But it was not built with openssl compatibility.")
     endif()
@@ -2188,6 +2189,7 @@ if(NOT GNUTLS_OPENSSL_LIBRARY)
         PURPOSE "Used for the SUPL protocol implementation."
         TYPE REQUIRED
     )
+    message("OPENSSL_FOUND: " ${OPENSSL_FOUND})
     if(OPENSSL_FOUND)
         set_package_properties(GnuTLS PROPERTIES
             PURPOSE "Not found, but OpenSSL can replace it."

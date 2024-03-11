@@ -134,6 +134,7 @@ target_include_directories(core_system_parameters
 )
 
 if(OPENSSL_FOUND)
+    message("OPENSSL_FOUND: " ${OPENSSL_FOUND})
     if(TARGET OpenSSL::SSL)
         target_link_libraries(core_system_parameters
             PUBLIC
@@ -150,10 +151,14 @@ if(OPENSSL_FOUND)
         )
     endif()
     if(OPENSSL_VERSION)
+        message("OPENSSL_VERSION: " ${OPENSSL_VERSION})
         if(OPENSSL_VERSION VERSION_GREATER "3.0.0")
-            target_compile_definitions(core_system_parameters PUBLIC -DUSE_OPENSSL_3=1)
+            target_compile_definitions(core_system_parameters PUBLIC -DUSE_OPENSSL_FALLBACK=1 -DUSE_OPENSSL_3=1)
+            message("USE_OPENSSL_3: " ${DUSE_OPENSSL_3})
+            message("USE_OPENSSL_FALLBACK:" ${USE_OPENSSL_FALLBACK})
         endif()
     endif()
+
 else()
     target_link_libraries(core_system_parameters
         PUBLIC

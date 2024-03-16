@@ -72,14 +72,23 @@ private:
     void read_mack_header();
     void read_mack_body();
     void process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData &data);
+    bool verify_tesla_key(std::vector<uint8_t>& key);
+    void const display_data();
     bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
+    bool verify_tag(Tag& tag);
+    bool is_next_subframe();
+    bool nav_data_available(Tag& t);
 
-    //boost::circular_buffer<MACK_message> d_old_mack_message;
+    std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data; // map holding NavData sorted by SVID and TOW.
     boost::circular_buffer<OSNMA_data> d_old_OSNMA_buffer; // buffer that holds last 12 received OSNMA messages, including current one at back()
+    std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys; // tesla keys over time, sorted by TOW
+    std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
+    std::multimap<uint32_t, Tag> d_tags_awaiting_verify; // container with tags to verify from arbitrary SVIDs, sorted by TOW
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
     std::unique_ptr<Gnss_Crypto> d_crypto;
 
-    std::array<std::array<uint8_t, 256>, 16> d_dsm_message{}; // C: each dsm[0-15] has 2048 bits
+    std::array<std::array<uint8_t, 256>, 16> d_dsm_message{}; // structure for recording DSM blocks, when filled it sends them to parse and resets itself.
     std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};
     std::array<uint16_t, 16> d_number_of_blocks{};
     std::array<uint8_t, 60> d_mack_message{}; // C: 480 b
@@ -103,7 +112,9 @@ private:
     enum tags_to_verify{all,utc,slow_eph, eph, none}; // TODO is this safe? I hope so
     tags_to_verify d_tags_allowed{tags_to_verify::all};
     std::vector<uint8_t> d_tags_to_verify{0,4,12};
-    bool is_next_subframe();
+    void remove_verified_tags();
+    void control_tags_awaiting_verify_size();
+    bool verify_macseq(MACK_message& message);
 };
 
 

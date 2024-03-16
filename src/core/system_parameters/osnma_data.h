@@ -121,6 +121,8 @@ public:
     MACK_header header;
     std::vector<MACK_tag_and_info> tag_and_info;
     std::vector<uint8_t> key;
+    uint32_t TOW; // TODO duplicated variable
+    uint32_t PRNa;
 };
 
 class NavData
@@ -157,9 +159,44 @@ public:
     DSM_KROOT_message d_dsm_kroot_message;
     MACK_message d_mack_message;
     NavData d_nav_data;
+
 };
 
+class Tag
+{
+public:
+    enum e_verification_status{
+        SUCCESS,
+        FAIL,
+        UNVERIFIED};
+    Tag(const MACK_tag_and_info& MTI, uint32_t TOW, uint32_t PRNa)
+        : tag_id(id_counter++),
+          TOW(TOW),
+          PRNa(PRNa),
+          status(UNVERIFIED),
+          received_tag(MTI.tag),
+          computed_tag(0),
+          PRN_d(MTI.tag_info.PRN_d),
+          ADKD(MTI.tag_info.ADKD),
+          cop(MTI.tag_info.cop)
 
+    {
+    }
+
+    const uint32_t tag_id;
+    uint32_t TOW;
+    uint32_t PRNa;
+    e_verification_status status;
+    uint64_t received_tag;
+    std::vector<uint8_t> build_message();
+
+    uint32_t static id_counter;
+    uint64_t computed_tag;
+
+    uint8_t PRN_d;
+    uint8_t ADKD;
+    uint8_t cop;
+};
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_OSNMA_DATA_H

@@ -163,3 +163,9 @@ void NavData::generate_utc_vector()
             utc_vector.push_back(static_cast<uint8_t>(bit_buffer));
         }
 }
+
+std::vector<uint8_t> Tag::build_message()
+{
+    // TODO
+    return std::vector<uint8_t>();
+}

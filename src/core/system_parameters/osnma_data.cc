@@ -163,3 +163,4 @@ void NavData::generate_utc_vector()
             utc_vector.push_back(static_cast<uint8_t>(bit_buffer));
         }
 }
+

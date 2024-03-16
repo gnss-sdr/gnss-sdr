@@ -89,7 +89,9 @@ private:
     bool d_public_key_verified{false};
     bool d_kroot_verified{false};
     bool d_tesla_key_verified{false};
+    bool d_flag_debug{false};
     uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification
+    uint32_t d_old_GST_SIS{0};
     uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint8_t d_Lt_verified_eph {0}; // verified tag bits - ephemeris
     uint8_t d_Lt_verified_utc {0}; // verified tag bits - timing
@@ -101,6 +103,7 @@ private:
     enum tags_to_verify{all,utc,slow_eph, eph, none}; // TODO is this safe? I hope so
     tags_to_verify d_tags_allowed{tags_to_verify::all};
     std::vector<uint8_t> d_tags_to_verify{0,4,12};
+    bool is_next_subframe();
 };
 
 

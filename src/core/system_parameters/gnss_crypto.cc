@@ -502,6 +502,45 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         }
     bool success = false;
 #if USE_OPENSSL_FALLBACK
+
+    EVP_MD_CTX *mdctx = NULL; // verification context; a struct that wraps the message to be verified.
+    int ret = 0; // error
+
+    /* Create the Message Digest Context */
+    if(!(mdctx = EVP_MD_CTX_new())) goto err; // Allocates and returns a digest context.
+
+    /* Initialize `key` with a public key */
+    // hashes cnt bytes of data at d into the verification context ctx
+    if(1 != EVP_DigestVerifyInit(mdctx, NULL /*TODO null?*/, EVP_sha256(), NULL, d_PublicKey)) goto err;
+
+    /* Initialize `key` with a public key */
+    if(1 != EVP_DigestVerifyUpdate(mdctx, message.data(), message.size())) goto err;
+
+
+    if( 1== EVP_DigestVerifyFinal(mdctx, signature.data(), signature.size()))
+        {
+            return true;
+        }
+    else
+        {
+            unsigned long errCode = ERR_get_error();
+            int lib_code = ERR_GET_LIB(errCode);
+            char* err = ERR_error_string(errCode, NULL);
+            const char* error_string = ERR_error_string(errCode, NULL);
+            std::cerr << "OpenSSL: message authentication failed: " << err /*<<
+                      "from library with code " << lib_code <<
+                " error string: " <<  error_string */<< std::endl;
+        }
+err:
+    if(ret != 1)
+        {
+            /* Do some error handling */
+            // notify other blocks
+            std::cout << "ECDSA_Verify_OSSL()::error " << ret  << std::endl;
+
+        }
+
+
 #if USE_OPENSSL_3
     EVP_PKEY_CTX* ctx;
     print_pubkey_hex(d_PublicKey);
@@ -695,11 +734,6 @@ std::vector<uint8_t> Gnss_Crypto::get_public_key()
     return {};
 }
 
-// TODO make them compilable with any prepro directive
-// void Gnss_Crypto::my_log_func(int level, const char *msg) {
-//    fprintf(stderr, "<GnuTLS %d> %s", level, msg);}
-//
-// // gnutls-specific functions
 
 #if USE_OPENSSL_FALLBACK
 bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
@@ -777,8 +811,11 @@ void Gnss_Crypto::print_pubkey_hex(EVP_PKEY* pubkey)
 
     BIO_free(mem_bio);
 }
-#else
-     bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
+#else  // gnutls-specific functions
+ void Gnss_Crypto::my_log_func(int level, const char *msg){
+    fprintf(stderr, "<GnuTLS %d> %s", level, msg);}
+
+ bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
      {
          gnutls_datum_t key_datum;
          int ret;
@@ -812,7 +849,7 @@ void Gnss_Crypto::print_pubkey_hex(EVP_PKEY* pubkey)
          return true;
      }
 
-      void Gnss_Crypto::print_pubkey_hex(gnutls_pubkey_t pubkey)
+ void Gnss_Crypto::print_pubkey_hex(gnutls_pubkey_t pubkey)
       {
           gnutls_datum_t key_datum;
           int ret;

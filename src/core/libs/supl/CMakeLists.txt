@@ -49,7 +49,8 @@ endif()
 if(OPENSSL_FOUND)
     target_compile_definitions(core_libs_supl PUBLIC -DUSE_OPENSSL_FALLBACK=1)
 endif()
-
+message("OPENSSL_FOUND: " ${OPENSSL_FOUND})
+message("USE_OPENSSL_FALLBACK:" ${USE_OPENSSL_FALLBACK})
 target_link_libraries(core_libs_supl
     PUBLIC
         ${GNUTLS_LIBRARIES}

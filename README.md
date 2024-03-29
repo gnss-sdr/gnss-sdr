@@ -396,7 +396,7 @@ or manually as explained below, and then please follow instructions on how to
 
 ### Manual installation of other required dependencies
 
-#### Install [Armadillo](http://arma.sourceforge.net/ "Armadillo's Homepage"), a C++ linear algebra library
+#### Install [Armadillo](https://arma.sourceforge.net/ "Armadillo's Homepage"), a C++ linear algebra library
 
 ```
 $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
@@ -469,7 +469,7 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
-#### Install [Protocol Buffers](https://developers.google.com/protocol-buffers/ "Protocol Buffers' Homepage"), a portable mechanism for serialization of structured data
+#### Install [Protocol Buffers](https://protobuf.dev/ "Protocol Buffers' Homepage"), a portable mechanism for serialization of structured data
 
 GNSS-SDR requires Protocol Buffers v3.0.0 or later. If the packages that come
 with your distribution are older than that (_e.g._, Ubuntu 16.04 Xenial came
@@ -886,7 +886,7 @@ $ brew install lapack
 ### Other package managers
 
 GNU Radio and other dependencies can also be installed using other package
-managers than Macports, such as [Fink](http://www.finkproject.org/ "Fink").
+managers than Macports, such as [Fink](https://www.finkproject.org/ "Fink").
 Since the version of Python that ships with OS X is great for learning but it is
 not good for development, you could have another Python executable in a
 non-standard location. If that is the case, you need to inform GNSS-SDR's
@@ -976,7 +976,7 @@ do so.
 </p>
 
 - **GNSS-SDR in embedded platforms**: we provide a Software Development Kit
-  (SDK) based on [OpenEmbedded](http://www.openembedded.org/wiki/Main_Page) for
+  (SDK) based on [OpenEmbedded](https://www.openembedded.org/wiki/Main_Page) for
   cross-compiling GNSS-SDR in your desktop computer and for producing
   executables that can run in embedded platforms, such as Xilinx's Zynq and
   ZynqMP architectures, Raspberry Pi, and many others. Please check
@@ -1991,11 +1991,11 @@ PVT.rtcm_MT1077_rate_ms=1000
   Notation (JSON) supported by numerous mapping and GIS software packages,
   including [OpenLayers](https://openlayers.org),
   [Leaflet](https://leafletjs.com), [MapServer](https://mapserver.org/),
-  [GeoServer](http://geoserver.org), [GeoDjango](https://www.djangoproject.com),
-  [GDAL](https://gdal.org/), and [CartoDB](https://cartodb.com). It is also
-  possible to use GeoJSON with [PostGIS](https://postgis.net/) and
-  [Mapnik](https://mapnik.org/), both of which handle the format via the GDAL
-  OGR conversion library. The
+  [GeoServer](https://geoserver.org/),
+  [GeoDjango](https://www.djangoproject.com), [GDAL](https://gdal.org/), and
+  [CartoDB](https://cartodb.com). It is also possible to use GeoJSON with
+  [PostGIS](https://postgis.net/) and [Mapnik](https://mapnik.org/), both of
+  which handle the format via the GDAL OGR conversion library. The
   [Google Maps Javascript API](https://developers.google.com/maps/documentation/javascript/)
   v3 directly supports the
   [integration of GeoJSON data layers](https://developers.google.com/maps/documentation/javascript/examples/layer-data-simple),
@@ -2008,8 +2008,9 @@ PVT.rtcm_MT1077_rate_ms=1000
   (OGC KML), and it is maintained by the Open Geospatial Consortium, Inc. (OGC).
   KML files can be displayed in geobrowsers such as
   [Google Earth](https://www.google.com/earth/),
-  [Marble](https://marble.kde.org), [osgEarth](http://osgearth.org), or used
-  with the [NASA World Wind SDK for Java](https://worldwind.arc.nasa.gov/java/).
+  [Marble](https://marble.kde.org),
+  [osgEarth](https://github.com/gwaldron/osgearth), or used with the
+  [NASA World Wind SDK for Java](https://worldwind.arc.nasa.gov/java/).
 
 - **GPX** (the GPS Exchange Format) is a lightweight XML data format for the
   interchange of GPS data (waypoints, routes, and tracks) between applications
@@ -2044,9 +2045,11 @@ PVT.rtcm_MT1077_rate_ms=1000
   (usually with other data unknown to the original receiver, such as better
   models of the atmospheric conditions at time of measurement). RINEX files can
   be used by software packages such as
-  [GNSSTK](https://github.com/SGL-UT/gnsstk), [RTKLIB](http://www.rtklib.com/),
-  and [gLAB](https://gage.upc.edu/gLAB/). GNSS-SDR by default generates RINEX
-  version [3.02](ftp://igs.org/pub/data/format/rinex302.pdf). If
+  [GNSSTK](https://github.com/SGL-UT/gnsstk), [RTKLIB](https://www.rtklib.com/),
+  and
+  [gLAB](https://gage.upc.edu/en/learning-materials/software-tools/glab-tool-suite).
+  GNSS-SDR by default generates RINEX version
+  [3.02](ftp://igs.org/pub/data/format/rinex302.pdf). If
   [2.11](ftp://igs.org/pub/data/format/rinex211.txt) is needed, it can be
   requested through the `rinex_version` parameter in the configuration file:
 

@@ -77,19 +77,19 @@ As outputs, it provides:
 In principle, GNSS-SDR can be built in any Unix-like system. In practice, it depends on being able to install all the required dependencies. See the <a href="https://gnss-sdr.org/build-and-install/" target="_blank">building guide</a> page for details about the project's
 dependencies and build process. Mainly, it consists on installing <a href="https://www.gnuradio.org/" target="_blank">GNU Radio</a> plus some few more libraries:
 
-\li <a href="http://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
+\li <a href="https://arma.sourceforge.net/" target="_blank">Armadillo</a>, a C++ linear algebra library,
 \li <a href="https://www.boost.org/" target="_blank">Boost</a>, a set of free peer-reviewed portable C++ source libraries,
 \li <a href="https://github.com/gflags/gflags" target="_blank">Gflags</a>, a library that implements commandline flags processing,
 \li <a href="https://github.com/google/glog" target="_blank">Glog</a>, a library that implements application-level logging,
 \li <a href="https://github.com/google/googletest" target="_blank">Googletest</a>, Google's framework for writing C++ tests,
 \li <a href="https://www.makotemplates.org/" target="_blank">Mako</a>, a template library written in Python,
 \li <a href="https://github.com/tbeu/matio" target="_blank">Matio</a>, a MATLAB MAT File I/O Library,
-\li <a href="https://developers.google.com/protocol-buffers" target="_blank">Protocol Buffers</a>, a language-neutral, platform-neutral extensible mechanism for serializing structured data,
+\li <a href="https://protobuf.dev/" target="_blank">Protocol Buffers</a>, a language-neutral, platform-neutral extensible mechanism for serializing structured data,
 \li <a href="https://pugixml.org/" target="_blank">PugiXML</a>, a light-weight, simple and fast XML parser for C++ with XPath support,
 \li <a href="https://www.libvolk.org" target="_blank">Volk</a>, a Vector-Optimized Library of Kernels which provides an abstraction of optimized math routines targeting several SIMD processors,
 
 and, optionally,
-\li GNU Radio modules for hardware interface (<a href="https://github.com/gnuradio/gnuradio/tree/main/gr-uhd" target="_blank">gr-uhd</a>, <a href="http://git.osmocom.org/gr-osmosdr" target="_blank">gr-osmosdr</a>, <a href="https://github.com/analogdevicesinc/gr-iio" target="_blank">gr-iio</a>),
+\li GNU Radio modules for hardware interface (<a href="https://github.com/gnuradio/gnuradio/tree/main/gr-uhd" target="_blank">gr-uhd</a>, <a href="https://gitea.osmocom.org/sdr/gr-osmosdr" target="_blank">gr-osmosdr</a>, <a href="https://github.com/analogdevicesinc/gr-iio" target="_blank">gr-iio</a>),
 \li <a href="https://github.com/google/benchmark" target="_blank">Benchmark</a>, a library to benchmark code snippets,
 \li <a href="https://github.com/gperftools/gperftools" target="_blank">Gperftools</a>, which provides fast, multi-threaded malloc() and performance analysis tools.
 

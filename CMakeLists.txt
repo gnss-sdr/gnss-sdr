@@ -1927,7 +1927,7 @@ endif()
 
 
 ################################################################################
-# Armadillo - http://arma.sourceforge.net/
+# Armadillo - https://arma.sourceforge.net/
 ################################################################################
 if(ENABLE_OWN_ARMADILLO)
     unset(Armadillo::armadillo CACHE)
@@ -1939,7 +1939,7 @@ else()
 endif()
 
 set_package_properties(Armadillo PROPERTIES
-    URL "http://arma.sourceforge.net/"
+    URL "https://arma.sourceforge.net/"
     PURPOSE "Used for matrix computations."
     TYPE REQUIRED
 )
@@ -2538,7 +2538,7 @@ endif()
 ################################################################################
 find_package(Protobuf)
 set_package_properties(Protobuf PROPERTIES
-    URL "https://developers.google.com/protocol-buffers/"
+    URL "https://protobuf.dev/"
     PURPOSE "Used to serialize output data in a way that can be read by other applications."
     TYPE REQUIRED
 )

@@ -872,9 +872,10 @@ Install the required dependencies:
 ```
 $ brew update && brew upgrade
 $ brew install armadillo cmake hdf5 gflags glog gnuradio libmatio log4cpp \
-    openssl pkg-config protobuf pugixml python-mako
+    openssl pkg-config protobuf pugixml
 $ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
+¢ pip3 install mako
 ```
 
 For macOS versions older than Sonoma, you will also need LAPACK:

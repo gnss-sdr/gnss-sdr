@@ -23,6 +23,8 @@
  * \details Packs the ephemeris, iono and utc data from the current subframe into the NavData structure. It also gets the PRNa and the GST.
  * @param osnma_msg The shared pointer to the OSNMA_msg object.
  */
+
+uint32_t Tag::id_counter = 0;
 void NavData::init(const std::shared_ptr<OSNMA_msg> &osnma_msg)
 {
     EphemerisData = osnma_msg->EphemerisData;

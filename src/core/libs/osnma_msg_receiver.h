@@ -71,10 +71,10 @@ private:
     void read_and_process_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_header();
     void read_mack_body();
-    void process_mack_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void process_mack_message();
     void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData &data);
-    bool verify_tesla_key(std::vector<uint8_t>& key);
-    void const display_data();
+    bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
+    void display_data();
     bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
     bool verify_tag(Tag& tag);
     bool is_next_subframe();
@@ -114,7 +114,7 @@ private:
     std::vector<uint8_t> d_tags_to_verify{0,4,12};
     void remove_verified_tags();
     void control_tags_awaiting_verify_size();
-    bool verify_macseq(MACK_message& message);
+    bool verify_macseq();
 };
 
 

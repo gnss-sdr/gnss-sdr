@@ -6,7 +6,7 @@
 
 # - Find pcap
 # Find the PCAP includes and library
-# http://www.tcpdump.org/
+# https://www.tcpdump.org/
 #
 # The environment variable PCAPDIR allows to specify where to find
 # libpcap in non standard location.

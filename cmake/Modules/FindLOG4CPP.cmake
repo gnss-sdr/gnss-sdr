@@ -121,7 +121,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LOG4CPP DEFAULT_MSG LOG4CPP_INCLUDE_DIRS LOG4CPP_LIBRARIES)
 
 set_package_properties(LOG4CPP PROPERTIES
-    URL "http://log4cpp.sourceforge.net/"
+    URL "https://log4cpp.sourceforge.net/"
 )
 
 if(LOG4CPP_FOUND AND PC_LOG4CPP_VERSION)

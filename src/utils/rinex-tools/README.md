@@ -17,7 +17,7 @@ observation files.
 
 Requirements:
 
-- [Armadillo](http://arma.sourceforge.net/): A C++ library for linear algebra
+- [Armadillo](https://arma.sourceforge.net/): A C++ library for linear algebra
   and scientific computing. This program requires version 9.800 or higher. If
   your installed Armadillo version is older, see below.
 - [Gflags](https://github.com/gflags/gflags): A C++ library that implements

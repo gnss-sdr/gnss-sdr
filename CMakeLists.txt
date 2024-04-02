@@ -339,11 +339,11 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.26")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "25.0")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "26.1")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.14.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
-set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.0.0")
+set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.3")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 
@@ -1927,7 +1927,7 @@ endif()
 
 
 ################################################################################
-# Armadillo - http://arma.sourceforge.net/
+# Armadillo - https://arma.sourceforge.net/
 ################################################################################
 if(ENABLE_OWN_ARMADILLO)
     unset(Armadillo::armadillo CACHE)
@@ -1939,7 +1939,7 @@ else()
 endif()
 
 set_package_properties(Armadillo PROPERTIES
-    URL "http://arma.sourceforge.net/"
+    URL "https://arma.sourceforge.net/"
     PURPOSE "Used for matrix computations."
     TYPE REQUIRED
 )
@@ -2540,7 +2540,7 @@ endif()
 ################################################################################
 find_package(Protobuf)
 set_package_properties(Protobuf PROPERTIES
-    URL "https://developers.google.com/protocol-buffers/"
+    URL "https://protobuf.dev/"
     PURPOSE "Used to serialize output data in a way that can be read by other applications."
     TYPE REQUIRED
 )

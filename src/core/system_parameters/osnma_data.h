@@ -159,7 +159,6 @@ public:
     DSM_KROOT_message d_dsm_kroot_message;
     MACK_message d_mack_message;
     NavData d_nav_data;
-
 };
 
 class Tag

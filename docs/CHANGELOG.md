@@ -328,7 +328,7 @@ https://gnss-sdr.org/design-forces/
 - Fixed building against GNU Radio v3.10.X.Y, which does not support the C++20
   standard.
 - Fixed building against GNU Radio v3.10.X.Y, which replaced
-  [log4cpp](http://log4cpp.sourceforge.net/) by the
+  [log4cpp](https://log4cpp.sourceforge.net/) by the
   [spdlog](https://github.com/gabime/spdlog) and
   [fmt](https://github.com/fmtlib/fmt) libraries.
 - Updated `cpu_features` library for improved processor detection.
@@ -475,8 +475,7 @@ https://gnss-sdr.org/design-forces/
   inconsistencies in the configuration file.
 - Fix segmentation fault if the RINEX output was disabled.
 - Added a feature that optionally enables the remote monitoring of GPS and
-  Galileo ephemeris using UDP and
-  [Protocol Buffers](https://developers.google.com/protocol-buffers).
+  Galileo ephemeris using UDP and [Protocol Buffers](https://protobuf.dev/).
 - Now building the software passing the `-DENABLE_FPGA=ON` to CMake does not
   make the receiver unusable when running on non-FPGA-enabled platforms. On
   FPGA-enabled platforms, now it is possible to run non-FPGA-enabled

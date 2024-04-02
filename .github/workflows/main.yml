@@ -40,6 +40,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'      
       - name: install dependencies
         run: |
           brew update
@@ -53,8 +56,10 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew link --overwrite python@3.12
           brew install ninja hdf5 automake armadillo lapack libmatio \
-          gflags glog gnuradio log4cpp openssl pugixml protobuf python-mako
+          gflags glog gnuradio log4cpp openssl pugixml protobuf
+          pip3 install mako
       - name: configure
         run: cd build && cmake -GNinja ..
       - name: build
@@ -68,6 +73,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: install dependencies
         run: |
           brew update
@@ -81,8 +89,10 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+          brew link --overwrite python@3.12
           brew install ninja pkg-config hdf5 automake armadillo lapack libmatio \
-          gflags glog gnuradio log4cpp openssl pugixml protobuf python-mako
+          gflags glog gnuradio log4cpp openssl pugixml protobuf
+          pip3 install mako          
       - name: configure
         run: cd build && cmake -GXcode ..
       - name: build
@@ -115,6 +125,9 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: install dependencies
         run: |
           brew update
@@ -128,15 +141,17 @@ jobs:
           rm /usr/local/bin/pydoc3.1* || true
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-          brew install llvm pkg-config hdf5 armadillo lapack gflags glog gnuradio libmatio \
-          log4cpp openssl pugixml protobuf python-mako
+          brew link --overwrite python@3.12
+          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio \
+          gflags glog gnuradio log4cpp openssl pugixml protobuf llvm
+          pip3 install mako    
           ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
-          ln -s $(brew --prefix llvm)/bin/run-clang-tidy /usr/local/bin
+          ln -s $(brew --prefix llvm)/bin/run-clang-tidy.py /usr/local/bin
       - name: Prepare run
         run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.14.0 core_monitor core_libs pvt_libs
       - name: run clang-tidy
-        run: cd build && run-clang-tidy -fix
+        run: cd build && /usr/local/opt/llvm/bin/run-clang-tidy -fix
       - name: check
         run: |
           git diff > clang_tidy.patch

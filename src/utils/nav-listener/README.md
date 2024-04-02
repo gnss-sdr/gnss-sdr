@@ -17,7 +17,7 @@ as a example on how to retrieve data using the `nav_message.proto` file.
 # Build the software
 
 This software requires [Boost](https://www.boost.org/) and
-[Protocol Buffers](https://developers.google.com/protocol-buffers).
+[Protocol Buffers](https://protobuf.dev/).
 
 In a terminal, type:
 

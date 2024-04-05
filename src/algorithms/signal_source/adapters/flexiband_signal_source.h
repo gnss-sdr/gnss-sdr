@@ -66,10 +66,10 @@ public:
     gr::basic_block_sptr get_right_block(int RF_channel) override;
 
 private:
-    boost::shared_ptr<gr::block> flexiband_source_;
+    gnss_shared_ptr<gr::block> flexiband_source_;
 
-    std::vector<boost::shared_ptr<gr::block>> char_to_float;
-    std::vector<boost::shared_ptr<gr::block>> float_to_complex_;
+    std::vector<gnss_shared_ptr<gr::block>> char_to_float;
+    std::vector<gnss_shared_ptr<gr::block>> float_to_complex_;
     std::vector<gr::blocks::null_sink::sptr> null_sinks_;
 
     std::string item_type_;

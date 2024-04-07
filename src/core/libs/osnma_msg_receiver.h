@@ -74,14 +74,13 @@ private:
     void process_mack_message();
     void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData &data);
     bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
-    void display_data();
-    bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
+    void display_data();bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
     bool verify_tag(Tag& tag);
     bool is_next_subframe();
-    bool nav_data_available(Tag& t);
+    bool tag_has_nav_data_available(Tag& t);
+    bool tag_has_key_available(Tag& t);
 
     std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data; // map holding NavData sorted by SVID and TOW.
-    boost::circular_buffer<OSNMA_data> d_old_OSNMA_buffer; // buffer that holds last 12 received OSNMA messages, including current one at back()
     std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys; // tesla keys over time, sorted by TOW
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify; // container with tags to verify from arbitrary SVIDs, sorted by TOW
@@ -100,7 +99,7 @@ private:
     bool d_tesla_key_verified{false};
     bool d_flag_debug{false};
     uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification
-    uint32_t d_old_GST_SIS{0};
+    uint32_t d_last_verified_key_GST{0};
     uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint8_t d_Lt_verified_eph {0}; // verified tag bits - ephemeris
     uint8_t d_Lt_verified_utc {0}; // verified tag bits - timing
@@ -114,7 +113,7 @@ private:
     std::vector<uint8_t> d_tags_to_verify{0,4,12};
     void remove_verified_tags();
     void control_tags_awaiting_verify_size();
-    bool verify_macseq();
+    bool verify_macseq(const MACK_message& mack);
 };
 
 

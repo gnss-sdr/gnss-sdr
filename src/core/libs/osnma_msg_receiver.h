@@ -74,6 +74,7 @@ private:
     void process_mack_message();
     void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData &data);
     bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
+    std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes);
     void display_data();bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
     bool verify_tag(Tag& tag);
     bool is_next_subframe();
@@ -98,7 +99,7 @@ private:
     bool d_kroot_verified{false};
     bool d_tesla_key_verified{false};
     bool d_flag_debug{false};
-    uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification
+    uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification TODO need really to be global var?
     uint32_t d_last_verified_key_GST{0};
     uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint8_t d_Lt_verified_eph {0}; // verified tag bits - ephemeris

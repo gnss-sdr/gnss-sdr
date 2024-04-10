@@ -468,6 +468,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
             std::cerr << "OpenSSL: error reading the Public Key from file " << pemFilePath << ". Aborting import" << std::endl;
             return;
         }
+
 #else
     // Import the PEM data
     gnutls_datum_t pemDatum = {const_cast<unsigned char*>(reinterpret_cast<unsigned char*>(pemContent.data())), static_cast<unsigned int>(pemContent.size())};
@@ -489,6 +490,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
     gnutls_pubkey_deinit(pubkey);
 #endif
     std::cout << "Public key successfully read from file " << pemFilePath << std::endl;
+    print_pubkey_hex(d_PublicKey);
 }
 
 
@@ -497,48 +499,48 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     std::vector<uint8_t> digest = this->computeSHA256(message);
     if (!have_public_key())
         {
-            std::cerr << "GnuTLS error: public key not available"<< std::endl;
+            std::cerr << "Galileo OSNMA::Kroot verification error::Public key not available"<< std::endl;
             return false;
         }
     bool success = false;
 #if USE_OPENSSL_FALLBACK
-
-    EVP_MD_CTX *mdctx = NULL; // verification context; a struct that wraps the message to be verified.
-    int ret = 0; // error
-
-    /* Create the Message Digest Context */
-    if(!(mdctx = EVP_MD_CTX_new())) goto err; // Allocates and returns a digest context.
-
-    /* Initialize `key` with a public key */
-    // hashes cnt bytes of data at d into the verification context ctx
-    if(1 != EVP_DigestVerifyInit(mdctx, NULL /*TODO null?*/, EVP_sha256(), NULL, d_PublicKey)) goto err;
-
-    /* Initialize `key` with a public key */
-    if(1 != EVP_DigestVerifyUpdate(mdctx, message.data(), message.size())) goto err;
-
-
-    if( 1== EVP_DigestVerifyFinal(mdctx, signature.data(), signature.size()))
-        {
-            return true;
-        }
-    else
-        {
-            unsigned long errCode = ERR_get_error();
-            int lib_code = ERR_GET_LIB(errCode);
-            char* err = ERR_error_string(errCode, NULL);
-            const char* error_string = ERR_error_string(errCode, NULL);
-            std::cerr << "OpenSSL: message authentication failed: " << err /*<<
-                      "from library with code " << lib_code <<
-                " error string: " <<  error_string */<< std::endl;
-        }
-err:
-    if(ret != 1)
-        {
-            /* Do some error handling */
-            // notify other blocks
-            std::cout << "ECDSA_Verify_OSSL()::error " << ret  << std::endl;
-
-        }
+// using low-level API to test function -- it works in unit tests, not in real bytes.
+//    EVP_MD_CTX *mdctx = NULL; // verification context; a struct that wraps the message to be verified.
+//    int ret = 0; // error
+//
+//    /* Create the Message Digest Context */
+//    if(!(mdctx = EVP_MD_CTX_new())) goto err; // Allocates and returns a digest context.
+//
+//    /* Initialize `key` with a public key */
+//    // hashes cnt bytes of data at d into the verification context ctx
+//    if(1 != EVP_DigestVerifyInit(mdctx, NULL /*TODO null?*/, EVP_sha256(), NULL, d_PublicKey)) goto err;
+//
+//    /* Initialize `key` with a public key */
+//    if(1 != EVP_DigestVerifyUpdate(mdctx, message.data(), message.size())) goto err;
+//
+//
+//    if( 1 == EVP_DigestVerifyFinal(mdctx, signature.data(), signature.size()))
+//        {
+//            return true;
+//        }
+//    else
+//        {
+//            unsigned long errCode = ERR_get_error();
+//            int lib_code = ERR_GET_LIB(errCode);
+//            char* err = ERR_error_string(errCode, NULL);
+//            const char* error_string = ERR_error_string(errCode, NULL);
+//            std::cerr << "OpenSSL: message authentication failed: " << err /*<<
+//                      "from library with code " << lib_code <<
+//                " error string: " <<  error_string */<< std::endl;
+//        }
+//err:
+//    if(ret != 1)
+//        {
+//            /* Do some error handling */
+//            // notify other blocks
+//            std::cout << "ECDSA_Verify_OSSL()::error " << ret  << std::endl;
+//
+//        }
 
 
 #if USE_OPENSSL_3

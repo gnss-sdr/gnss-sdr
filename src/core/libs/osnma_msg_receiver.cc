@@ -128,9 +128,10 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
     read_nma_header(osnma_msg->hkroot[0]);
     read_dsm_header(osnma_msg->hkroot[1]);
     read_dsm_block(osnma_msg);
-    local_time_verification(osnma_msg);
     process_dsm_block(osnma_msg); // will process dsm block if received a complete one, then will call mack processing upon re-setting the dsm block to 0
-    read_and_process_mack_block(osnma_msg); // only process them if a least 3 available.
+    if(d_osnma_data.d_dsm_kroot_message.towh_k != 0)
+        local_time_verification(osnma_msg);
+    read_and_process_mack_block(osnma_msg); // only process them if at least 3 available.
 }
 
 
@@ -260,7 +261,7 @@ void osnma_msg_receiver::local_time_verification(const std::shared_ptr<OSNMA_msg
     d_GST_SIS = (osnma_msg->WN_sf0 & 0x00000FFF) << 20 | (osnma_msg->TOW_sf0 & 0x000FFFFF);
     //std::cout << "Galileo OSNMA: d_GST_SIS: " << d_GST_SIS << std::endl;
     //d_GST_0 = d_osnma_data.d_dsm_kroot_message.towh_k + 604800 * d_osnma_data.d_dsm_kroot_message.wn_k + 30;
-    d_GST_0 = ((d_osnma_data.d_dsm_kroot_message.wn_k  & 0x00000FFF) << 20 | (d_osnma_data.d_dsm_kroot_message.towh_k & 0x000FFFFF)) + 30;
+    d_GST_0 = ((d_osnma_data.d_dsm_kroot_message.wn_k  & 0x00000FFF) << 20 | (d_osnma_data.d_dsm_kroot_message.towh_k & 0x000FFFFF)) + 30; // applicable time (GST_Kroot + 30)
     //d_GST_0 = d_osnma_data.d_dsm_kroot_message.towh_k + 604800 * d_osnma_data.d_dsm_kroot_message.wn_k + 30;
     // TODO store list of SVs sending OSNMA and if received ID matches one stored, then just increment time 30s for that ID.
     if(d_receiver_time != 0)
@@ -350,6 +351,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
     // DSM-KROOT message
     if (d_osnma_data.d_dsm_header.dsm_id < 12)
         {
+            // Parse Kroot message
             LOG(WARNING) << "OSNMA: DSM-KROOT message received.";
             d_osnma_data.d_dsm_kroot_message.nb_dk = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
             d_osnma_data.d_dsm_kroot_message.pkid = d_dsm_reader->get_pkid(dsm_msg);
@@ -364,10 +366,10 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             d_osnma_data.d_dsm_kroot_message.wn_k = d_dsm_reader->get_wn_k(dsm_msg);
             d_osnma_data.d_dsm_kroot_message.towh_k = d_dsm_reader->get_towh_k(dsm_msg);
             d_osnma_data.d_dsm_kroot_message.alpha = d_dsm_reader->get_alpha(dsm_msg);
-
+            // Kroot field
             const uint16_t l_lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
             d_osnma_data.d_dsm_kroot_message.kroot = d_dsm_reader->get_kroot(dsm_msg, l_lk_bytes);
-
+            // DS field
             std::string hash_function = d_dsm_reader->get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
             uint16_t l_ds_bits = 0;
             const auto it = OSNMA_TABLE_15.find(hash_function);
@@ -381,6 +383,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 {
                     d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + l_lk_bytes + k];
                 }
+            // Padding
             const uint16_t l_dk_bits = d_dsm_reader->get_l_dk_bits(d_osnma_data.d_dsm_kroot_message.nb_dk);
             const uint16_t l_dk_bytes = l_dk_bits / 8;
             const uint16_t l_pdk_bytes = (l_dk_bytes - 13 - l_lk_bytes - l_ds_bytes);
@@ -406,7 +409,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         {
                             MSG.push_back(dsm_msg[i]);
                         }
-                    std::vector<uint8_t> message = MSG; // C: MSG == M || DS from ICD. Eq. 7
+                    std::vector<uint8_t> message = MSG; // MSG = (M | DS) from ICD. Eq. 7
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
                             MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
@@ -435,12 +438,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     // Check that the padding bits received match the computed values
                     if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_truncated)
                         {
-
                             LOG(WARNING) << "OSNMA: DSM-KROOT message received ok.";
                             std::cout << "Galileo OSNMA: KROOT with CID=" << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid)
                                       << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
-                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
+                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600 << std::endl;
+                            local_time_verification(osnma_msg);
                             d_kroot_verified = d_crypto->verify_signature(message, d_osnma_data.d_dsm_kroot_message.ds);
                             if (d_kroot_verified)
                                 {
@@ -1091,179 +1094,51 @@ void osnma_msg_receiver::display_data()
 }
 bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW)
 {
-    if(d_tesla_key_verified)
+    uint32_t num_of_hashes_needed;
+    uint32_t GST_SFi = d_receiver_time - 30;
+    std::vector<uint8_t> hash;
+    const uint8_t lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks)/8;
+    std::vector<uint8_t> validated_key;
+    if(d_tesla_key_verified){ // have to go up to last verified key
+            validated_key = d_tesla_keys.rbegin()->second;
+            num_of_hashes_needed = (d_receiver_time - d_last_verified_key_GST) / 30; // Eq. 19 ICD modified
+            std::cout << "Galileo OSNMA: TESLA verification ("<< num_of_hashes_needed << " hashes) need to be performed up to closest verified TESLA key " << std::endl;
+
+             hash = hash_chain(num_of_hashes_needed, key, GST_SFi, lk_bytes);
+        }
+    else{// have to go until Kroot
+            validated_key = d_osnma_data.d_dsm_kroot_message.kroot;
+            num_of_hashes_needed = (d_receiver_time - d_GST_0) / 30 + 1; // Eq. 19 ICD
+            std::cout << "Galileo OSNMA: TESLA verification ("<< num_of_hashes_needed << " hashes) need to be performed up to Kroot " << std::endl;
+
+            hash = hash_chain(num_of_hashes_needed, key, GST_SFi, lk_bytes);
+        }
+
+    if(hash.size() != key.size())
         {
-            // TODO - find out I bt. both tesla keys, then hash until then, then compare.
-            // retrieve latest tesla key from d_tesla_keys
-            std::vector<uint8_t> validated_key = d_tesla_keys.rbegin()->second;
-            // compute hashes needed
-            uint32_t num_of_hashes_needed = (d_GST_SIS - d_last_verified_key_GST) / 30; // Eq. 19 ICD modified
-            std::cout << "Galileo OSNMA: TESLA verification ("<< num_of_hashes_needed << " hashes) need to be performed. " << std::endl;
-            // hash current key until num_hashes  and compare
-            auto start = std::chrono::high_resolution_clock::now();
-            uint32_t GST_SFi = d_GST_SIS; // TODO
-            std::vector<uint8_t> K_II = key;
-            std::vector<uint8_t> K_I; // result of the recursive hash operations
-            const uint8_t lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks)/8;
-            // compute the tesla key for current SF (GST_SFi and K_II change in each iteration)
-            for (uint32_t i = 1; i < num_of_hashes_needed ; i++)
-                {
-                    // build message digest m = (K_I+1 || GST_SFi || alpha)
-                    std::vector<uint8_t> msg(K_II.size() + sizeof(GST_SFi) + sizeof(d_osnma_data.d_dsm_kroot_message.alpha));
-                    std::copy(K_II.begin(),K_II.end(),msg.begin());
-
-                    msg.push_back((d_GST_Sf & 0xFF000000) >> 24);
-                    msg.push_back((d_GST_Sf & 0x00FF0000) >> 16);
-                    msg.push_back((d_GST_Sf & 0x0000FF00) >> 8);
-                    msg.push_back(d_GST_Sf & 0x000000FF);
-                    // extract alpha
-                    for (int k = 5; k >= 0;k--)
-                        {
-                            // TODO: static extracts the MSB in case from larger to shorter int?
-                            msg.push_back(static_cast<uint8_t>((d_osnma_data.d_dsm_kroot_message.alpha >> (i * 8)) & 0xFF)); // extract first 6 bytes of alpha.
-                        }
-                    // compute hash
-                    std::vector<uint8_t> hash;
-                    if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
-                        {
-                            hash = d_crypto->computeSHA256(msg);
-                        }
-                    else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
-                        {
-                            hash = d_crypto->computeSHA3_256(msg);
-                        }
-                    else
-                        {
-                            hash = std::vector<uint8_t>(32);
-                        }
-                    // truncate hash
-                    K_I.reserve(lk_bytes); // TODO - case hash function has 512 bits
-                    for (uint16_t i = 0; i < lk_bytes; i++)
-                        {
-                            K_I.push_back(hash[i]);
-                        }
-
-                    // set parameters for next iteration
-                    GST_SFi -= 30; // next SF time is the actual minus 30 seconds
-                    K_II = K_I; // next key is the actual one
-                    K_I.clear(); // empty the actual one for a new computation
-                }
-            // compare computed current key against received key
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            std::cout << "Galileo OSNMA: TESLA verification ("<< num_of_hashes_needed << " hashes) took " << elapsed.count() << " seconds.\n";
-
-            if(K_II.size() != key.size())
-                {
-                    std::cout << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
-                    return false;
-                }
-            if (K_II == validated_key)
-                {
-                    std::cout << "Galileo OSNMA: tesla key verified successfully " << std::endl;
-                    d_tesla_keys.insert(std::pair(TOW,key));
-                    d_last_verified_key_GST = d_GST_SIS;
-                    d_tesla_key_verified = true; // TODO this boolean only shows that a tesla key is verified, re-setting it all the time is not beautiful
-                    // case one verified and after a time another one not, what would happen in the next MAck processed is that because false
-                    // it would try to verifiy against kroot, but it could as well try against last validated key. This needs to be adressed in the future.
-                }
-            else
-
-                {
-                    std::cerr << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
-                    if(d_flag_debug){
-                            d_last_verified_key_GST = d_GST_SIS;
-                            d_tesla_key_verified = true;
-                        }
-
-                    else
-                        d_tesla_key_verified = false;
-                }
-            return d_tesla_key_verified;
+            std::cout << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
+            return false;
         }
-    else
-        {// have to go until Kroot
-            uint32_t num_of_hashes_needed = (d_GST_SIS - d_GST_0) / 30 + 1; // Eq. 19 ICD
-            std::cout << "Galileo OSNMA: TESLA verification ("<< num_of_hashes_needed << " hashes) need to be performed. " << std::endl;
-            auto start = std::chrono::high_resolution_clock::now();
-            uint32_t GST_SFi = d_GST_SIS;
-            std::vector<uint8_t> K_II = key;
-            std::vector<uint8_t> K_I; // result of the recursive hash operations
-            const uint8_t lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks)/8;
-            // compute the tesla key for current SF (GST_SFi and K_II change in each iteration)
-            for (uint32_t i = 1; i < num_of_hashes_needed ; i++)
-                {
-                    // build message digest m = (K_I+1 || GST_SFi || alpha)
-                    std::vector<uint8_t> msg(K_II.size() + sizeof(GST_SFi) + sizeof(d_osnma_data.d_dsm_kroot_message.alpha));
-                    std::copy(K_II.begin(),K_II.end(),msg.begin());
-
-                    msg.push_back((d_GST_Sf & 0xFF000000) >> 24);
-                    msg.push_back((d_GST_Sf & 0x00FF0000) >> 16);
-                    msg.push_back((d_GST_Sf & 0x0000FF00) >> 8);
-                    msg.push_back(d_GST_Sf & 0x000000FF);
-                    // extract alpha
-                    for (int k = 5; k >= 0;k--)
-                        {
-                            // TODO: static extracts the MSB in case from larger to shorter int?
-                            msg.push_back(static_cast<uint8_t>((d_osnma_data.d_dsm_kroot_message.alpha >> (i * 8)) & 0xFF)); // extract first 6 bytes of alpha.
-                        }
-                    // compute hash
-                    std::vector<uint8_t> hash;
-                    if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
-                        {
-                            hash = d_crypto->computeSHA256(msg);
-                        }
-                    else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
-                        {
-                            hash = d_crypto->computeSHA3_256(msg);
-                        }
-                    else
-                        {
-                            hash = std::vector<uint8_t>(32);
-                        }
-                    // truncate hash
-                    K_I.reserve(lk_bytes); // TODO - case hash function has 512 bits
-                    for (uint16_t i = 0; i < lk_bytes; i++)
-                        {
-                            K_I.push_back(hash[i]);
-                        }
-
-                    // set parameters for next iteration
-                    GST_SFi -= 30; // next SF time is the actual minus 30 seconds
-                    K_II = K_I; // next key is the actual one
-                    K_I.clear(); // empty the actual one for a new computation
-                }
-            // compare computed current key against received key
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> elapsed = end - start;
-            std::cout << "Galileo OSNMA: TESLA verification ("<< num_of_hashes_needed << " hashes) took " << elapsed.count() << " seconds.\n";
-
-            if(K_II.size() != key.size())
-                {
-                    std::cout << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
-                    return false;
-                }
-            if (K_II == d_osnma_data.d_dsm_kroot_message.kroot)
-                {
-                    std::cout << "Galileo OSNMA: tesla key verified successfully " << std::endl;
+    if (hash == validated_key)
+        {
+            std::cout << "Galileo OSNMA: tesla key verified successfully " << std::endl;
+            d_tesla_keys.insert(std::pair(TOW,key));
+            d_tesla_key_verified = true;
+            d_last_verified_key_GST = d_receiver_time;
+            // TODO - propagate result
+            // TODO - save current tesla key as latest one? propose a map with <GST_Sf, TeslaKey>
+            // TODO - Tags Sequence Verification: check ADKD[i] follows MACLT sequence
+        }
+    else{
+            std::cerr << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
+            if(d_flag_debug){
                     d_tesla_keys.insert(std::pair(TOW,key));
+                    d_last_verified_key_GST = d_receiver_time;
                     d_tesla_key_verified = true;
-                    d_last_verified_key_GST = d_GST_SIS;
-                    // TODO - propagate result
-                    // TODO - save current tesla key as latest one? propose a map with <GST_Sf, TeslaKey>
-                    // TODO - Tags Sequence Verification: check ADKD[i] follows MACLT sequence
+                    // TODO - if intermediate verification fails, can one still use the former verified tesla key or should go to Kroot or even retrieve new Kroot?
                 }
-            else
-
-                {
-                    std::cerr << "Galileo OSNMA: Error during tesla key verification. " << std::endl;
-                    if(d_flag_debug){
-                        d_last_verified_key_GST = d_GST_SIS;
-                        d_tesla_key_verified = true;
-                        }
-                }
-            return d_tesla_key_verified;
         }
+    return d_tesla_key_verified;
 
 }
 /**
@@ -1448,4 +1323,63 @@ bool osnma_msg_receiver::tag_has_key_available(Tag& t){
         }
     std::cout << "Galileo OSNMA: hasKey = false " << std::endl;
     return false;
+}
+std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    std::vector<uint8_t> K_II = {0x2D,0xC3,0xA3,0xCD,0xB1,0x17,0xFA,0xAD,0xB8,0x3B,0x5F,0x0B,0x6F,0xEA,0x88,0xEB};//key;
+    std::vector<uint8_t> K_I; // result of the recursive hash operations
+    GST_SFi = 0x4E054600;
+    std::vector<uint8_t> msg;
+    // compute the tesla key for current SF (GST_SFi and K_II change in each iteration)
+    for (uint32_t i = 1; i <= num_of_hashes_needed ; i++)
+        {
+            // build message digest m = (K_I+1 || GST_SFi || alpha)
+            msg.reserve(K_II.size() + sizeof(GST_SFi) + sizeof(d_osnma_data.d_dsm_kroot_message.alpha));
+            std::copy(K_II.begin(),K_II.end(),std::back_inserter(msg));
+
+            msg.push_back((GST_SFi & 0xFF000000) >> 24);
+            msg.push_back((GST_SFi & 0x00FF0000) >> 16);
+            msg.push_back((GST_SFi & 0x0000FF00) >> 8);
+            msg.push_back(GST_SFi & 0x000000FF);
+            // extract alpha
+            d_osnma_data.d_dsm_kroot_message.alpha = 0x610BDF26D77B;
+            for (int k = 5; k >= 0;k--)
+                {
+                    // TODO: static extracts the MSB in case from larger to shorter int?
+                    msg.push_back(static_cast<uint8_t>((d_osnma_data.d_dsm_kroot_message.alpha >> (k * 8)) & 0xFF)); // extract first 6 bytes of alpha.
+                }
+            // compute hash
+            std::vector<uint8_t> hash;
+            if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
+                {
+                    hash = d_crypto->computeSHA256(msg);
+                }
+            else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
+                {
+                    hash = d_crypto->computeSHA3_256(msg);
+                }
+            else
+                {
+                    hash = std::vector<uint8_t>(32);
+                }
+            // truncate hash
+            K_I.reserve(lk_bytes); // TODO - case hash function has 512 bits
+            for (int k = 0; k < lk_bytes; k++)
+                {
+                    K_I.push_back(hash[k]);
+                }
+            // set parameters for next iteration
+            GST_SFi -= 30; // next SF time is the actual minus 30 seconds
+            K_II = K_I; // next key is the actual one
+            K_I.clear(); // empty the actual one for a new computation
+            msg.clear();
+        }
+    if(GST_SFi + 30 != d_GST_0 - 30 && d_tesla_key_verified == false)
+        std::cout << "Galileo OSNMA: TESLA verification error. Kroot time mismatch! \n"; // ICD. Eq. 18
+    // compare computed current key against received key
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Galileo OSNMA: TESLA verification ("<< num_of_hashes_needed << " hashes) took " << elapsed.count() << " seconds.\n";
+    return K_II;
 }

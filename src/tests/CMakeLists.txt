@@ -8,6 +8,8 @@
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
 add_subdirectory(system-tests/libs)
 
+include(XcodeDeleteDuplicates)
+
 ################################################################################
 # Google Test - https://github.com/google/googletest
 ################################################################################
@@ -645,6 +647,7 @@ if(ENABLE_UNIT_TESTING)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
     endif()
+    xcode_delete_duplicates(run_tests)
     if(ENABLE_STRIP)
         set_target_properties(run_tests PROPERTIES LINK_FLAGS "-s")
     endif()
@@ -823,6 +826,9 @@ function(add_system_test executable)
             ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${executable}>
         )
     endif()
+
+    xcode_delete_duplicates(${executable})
+
     if(ENABLE_CLANG_TIDY)
         if(CLANG_TIDY_EXE)
             set_target_properties(${executable}
@@ -937,6 +943,9 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         PRIVATE
             ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
     )
+
+    xcode_delete_duplicates(flowgraph_test)
+
     add_test(flowgraph_test flowgraph_test)
 
     set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
@@ -992,6 +1001,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_compile_definitions(gnss_block_test PRIVATE -DENABLE_FPGA=1)
     endif()
 
+    xcode_delete_duplicates(gnss_block_test)
+
     add_test(gnss_block_test gnss_block_test)
 
     set_property(TEST gnss_block_test PROPERTY TIMEOUT 60)
@@ -1029,6 +1040,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
     )
 
+    xcode_delete_duplicates(gnuradio_block_test)
+
     add_test(gnuradio_block_test gnuradio_block_test)
 
     set_property(TEST gnuradio_block_test PROPERTY TIMEOUT 30)
@@ -1062,6 +1075,8 @@ target_include_directories(matio_test
     INTERFACE
         ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
 )
+
+xcode_delete_duplicates(matio_test)
 
 add_test(matio_test matio_test)
 
@@ -1111,6 +1126,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DPMT_USES_BOOST_ANY=1
         )
     endif()
+
+    xcode_delete_duplicates(acq_test)
 
     add_test(acq_test acq_test)
 
@@ -1208,6 +1225,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         )
     endif()
 
+    xcode_delete_duplicates(trk_test)
+
     add_test(trk_test trk_test)
 
     set_property(TEST trk_test PROPERTY TIMEOUT 30)
@@ -1238,6 +1257,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
             core_receiver
     )
+
+    xcode_delete_duplicates(control_thread_test)
 
     add_test(control_thread_test control_thread_test)
 

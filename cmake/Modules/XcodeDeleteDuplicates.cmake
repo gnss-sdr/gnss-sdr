@@ -10,7 +10,7 @@ endif()
 set(__INCLUDED_XCODE_DELETE_DUPLICATES_CMAKE TRUE)
 
 function(xcode_delete_duplicates target)
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0")
             # A bug in Xcode 15 adds duplicate flags to the linker. In addition, the
             # `-warn_duplicate_libraries` is now enabled by default which may result

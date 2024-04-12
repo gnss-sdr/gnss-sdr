@@ -34,7 +34,7 @@ FlexibandSignalSource::FlexibandSignalSource(const ConfigurationInterface* confi
     Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "Flexiband_Signal_Source"s), in_stream_(in_stream), out_stream_(out_stream)
 {
-    const std::string default_item_type("byte");
+    const std::string default_item_type("gr_complex");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
 
     const std::string default_firmware_file("flexiband_I-1b.bit");

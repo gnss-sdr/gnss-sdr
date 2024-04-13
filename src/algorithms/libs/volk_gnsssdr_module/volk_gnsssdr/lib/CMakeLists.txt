@@ -4,7 +4,7 @@
 # SPDX-FileCopyrightText: 2010-2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-include(XcodeDeleteDuplicates)
+include(XcodeRemoveWarningDuplicates)
 
 ########################################################################
 # header file detection
@@ -597,7 +597,7 @@ if(NOT (ENABLE_STATIC_LIBS AND (CMAKE_GENERATOR STREQUAL Xcode)))
         target_link_libraries(volk_gnsssdr PUBLIC ${volk_gnsssdr_libraries})
     endif()
 
-    xcode_delete_duplicates(volk_gnsssdr)
+    xcode_remove_warning_duplicates(volk_gnsssdr)
 
     target_include_directories(volk_gnsssdr
         PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
@@ -680,7 +680,7 @@ if(ENABLE_STATIC_LIBS)
     )
     set_target_properties(volk_gnsssdr_static PROPERTIES OUTPUT_NAME volk_gnsssdr)
 
-    xcode_delete_duplicates(volk_gnsssdr_static)
+    xcode_remove_warning_duplicates(volk_gnsssdr_static)
 
     install(TARGETS volk_gnsssdr_static
         EXPORT VOLK_GNSSSDR-export
@@ -709,7 +709,7 @@ if(ENABLE_TESTING)
         )
     endif()
 
-    xcode_delete_duplicates(volk_gnsssdr_test_all)
+    xcode_remove_warning_duplicates(volk_gnsssdr_test_all)
 
     foreach(kernel ${h_files})
         get_filename_component(kernel ${kernel} NAME)

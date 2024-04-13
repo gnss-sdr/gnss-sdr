@@ -77,8 +77,8 @@ if(UNIX)
     )
 endif()
 
-include(XcodeDeleteDuplicates)
-xcode_delete_duplicates(volk_gnsssdr_profile)
+include(XcodeRemoveWarningDuplicates)
+xcode_remove_warning_duplicates(volk_gnsssdr_profile)
 
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
@@ -109,7 +109,7 @@ if(UNIX)
     )
 endif()
 
-xcode_delete_duplicates(volk_gnsssdr-config-info)
+xcode_remove_warning_duplicates(volk_gnsssdr-config-info)
 
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)

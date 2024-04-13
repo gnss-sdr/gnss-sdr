@@ -8,7 +8,7 @@
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
 add_subdirectory(system-tests/libs)
 
-include(XcodeDeleteDuplicates)
+include(XcodeRemoveWarningDuplicates)
 
 ################################################################################
 # Google Test - https://github.com/google/googletest
@@ -647,7 +647,7 @@ if(ENABLE_UNIT_TESTING)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
     endif()
-    xcode_delete_duplicates(run_tests)
+    xcode_remove_warning_duplicates(run_tests)
     if(ENABLE_STRIP)
         set_target_properties(run_tests PROPERTIES LINK_FLAGS "-s")
     endif()
@@ -827,7 +827,7 @@ function(add_system_test executable)
         )
     endif()
 
-    xcode_delete_duplicates(${executable})
+    xcode_remove_warning_duplicates(${executable})
 
     if(ENABLE_CLANG_TIDY)
         if(CLANG_TIDY_EXE)
@@ -944,7 +944,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
     )
 
-    xcode_delete_duplicates(flowgraph_test)
+    xcode_remove_warning_duplicates(flowgraph_test)
 
     add_test(flowgraph_test flowgraph_test)
 
@@ -1001,7 +1001,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_compile_definitions(gnss_block_test PRIVATE -DENABLE_FPGA=1)
     endif()
 
-    xcode_delete_duplicates(gnss_block_test)
+    xcode_remove_warning_duplicates(gnss_block_test)
 
     add_test(gnss_block_test gnss_block_test)
 
@@ -1040,7 +1040,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             algorithms_libs
     )
 
-    xcode_delete_duplicates(gnuradio_block_test)
+    xcode_remove_warning_duplicates(gnuradio_block_test)
 
     add_test(gnuradio_block_test gnuradio_block_test)
 
@@ -1076,7 +1076,7 @@ target_include_directories(matio_test
         ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
 )
 
-xcode_delete_duplicates(matio_test)
+xcode_remove_warning_duplicates(matio_test)
 
 add_test(matio_test matio_test)
 
@@ -1127,7 +1127,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         )
     endif()
 
-    xcode_delete_duplicates(acq_test)
+    xcode_remove_warning_duplicates(acq_test)
 
     add_test(acq_test acq_test)
 
@@ -1225,7 +1225,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         )
     endif()
 
-    xcode_delete_duplicates(trk_test)
+    xcode_remove_warning_duplicates(trk_test)
 
     add_test(trk_test trk_test)
 
@@ -1258,7 +1258,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             core_receiver
     )
 
-    xcode_delete_duplicates(control_thread_test)
+    xcode_remove_warning_duplicates(control_thread_test)
 
     add_test(control_thread_test control_thread_test)
 

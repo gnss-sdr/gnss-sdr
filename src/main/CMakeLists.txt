@@ -65,8 +65,8 @@ if(ENABLE_STRIP)
     set_target_properties(gnss-sdr PROPERTIES LINK_FLAGS "-s")
 endif()
 
-include(XcodeDeleteDuplicates)
-xcode_delete_duplicates(gnss-sdr)
+include(XcodeRemoveWarningDuplicates)
+xcode_remove_warning_duplicates(gnss-sdr)
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

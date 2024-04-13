@@ -102,8 +102,8 @@ if(PMT_USES_BOOST_ANY)
     )
 endif()
 
-include(XcodeDeleteDuplicates)
-xcode_delete_duplicates(front-end-cal)
+include(XcodeRemoveWarningDuplicates)
+xcode_remove_warning_duplicates(front-end-cal)
 
 if(ENABLE_STRIP)
     set_target_properties(front-end-cal PROPERTIES LINK_FLAGS "-s")

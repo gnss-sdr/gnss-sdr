@@ -110,6 +110,9 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         set_target_properties(obsdiff PROPERTIES LINK_FLAGS "-s")
     endif()
 
+    include(XcodeRemoveWarningDuplicates)
+    xcode_remove_warning_duplicates(obsdiff)
+
     add_custom_command(TARGET obsdiff POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:obsdiff>
         ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:obsdiff>

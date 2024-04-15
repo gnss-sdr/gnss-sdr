@@ -371,8 +371,8 @@ if(CMAKE_VERSION VERSION_LESS "3.4")
     set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 endif()
 
-if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13"
-  OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0))
+if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13" OR
+  (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0))
     set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
 endif()
 
@@ -2792,8 +2792,8 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
 
             if(NOT TARGET protobuf::protoc)
                 add_executable(protobuf::protoc IMPORTED)
-                add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
             endif()
+            add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
             unset(Protobuf_PROTOC_EXECUTABLE)
             set(PROTOBUF_PROTOC_EXECUTABLE "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc")
             set_target_properties(protobuf::protoc PROPERTIES

@@ -372,7 +372,9 @@ if(CMAKE_VERSION VERSION_LESS "3.4")
 endif()
 
 if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13" OR
-  (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0))
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0)) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11")))
     set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
 endif()
 
@@ -2537,7 +2539,13 @@ endif()
 ################################################################################
 # Protocol Buffers https://github.com/protocolbuffers/protobuf
 ################################################################################
-find_package(Protobuf)
+if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11")))
+    find_package(Protobuf 21.12 EXACT)
+else()
+    find_package(Protobuf)
+endif()
 set_package_properties(Protobuf PROPERTIES
     URL "https://protobuf.dev/"
     PURPOSE "Used to serialize output data in a way that can be read by other applications."
@@ -2679,7 +2687,9 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                         DESCRIPTION "An open-source collection of C++ code designed to augment the C++ standard library"
                     )
                 endif()
-                message(STATUS "The Abseil library (https://github.com/abseil/abseil-cpp) >= v20230117 is required to be installed before building Protocol Buffers >22.x on the fly.")
+                if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0"))
+                    message(STATUS "The Abseil library (https://github.com/abseil/abseil-cpp) >= v20230117 is required to be installed before building Protocol Buffers >22.x on the fly.")
+                endif()
                 message(STATUS " Instead, Protocol Buffers v21.12 will be built, which does not require Abseil.")
                 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
             endif()

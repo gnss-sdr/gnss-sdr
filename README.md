@@ -278,7 +278,7 @@ $ zypper install cmake git gcc-c++ boost-devel libboost_atomic-devel \
        libboost_system-devel libboost_filesystem-devel libboost_chrono-devel \
        libboost_thread-devel libboost_serialization-devel log4cpp-devel \
        gnuradio-devel pugixml-devel libpcap-devel armadillo-devel libtool \
-       automake hdf5-devel openssl-devel python3-Mako protobuf-devel
+       automake hdf5-devel openssl-devel python3-Mako libmatio-devel
 ```
 
 If you are using openSUSE Tumbleweed:

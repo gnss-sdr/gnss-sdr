@@ -149,6 +149,7 @@ void osnma_msg_receiver::read_nma_header(uint8_t nma_header)
     d_osnma_data.d_nma_header.cid = d_dsm_reader->get_cid(nma_header);
     d_osnma_data.d_nma_header.cpks = d_dsm_reader->get_cpks(nma_header);
     d_osnma_data.d_nma_header.reserved = d_dsm_reader->get_nma_header_reserved(nma_header);
+    std::cout<< "NMAS: " << static_cast<int>(d_osnma_data.d_nma_header.nmas)  << " CPKS: " << static_cast<int>(d_osnma_data.d_nma_header.cpks)  << std::endl;
 }
 
 
@@ -438,7 +439,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     // Check that the padding bits received match the computed values
                     if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_truncated)
                         {
-                            LOG(WARNING) << "OSNMA: DSM-KROOT message received ok.";
+                            LOG(WARNING) << "Galileo OSNMA: DSM-KROOT message received ok.";
                             std::cout << "Galileo OSNMA: KROOT with CID=" << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid)
                                       << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)

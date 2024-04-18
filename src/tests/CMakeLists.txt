@@ -1302,3 +1302,37 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             #${GNSSSDR_SOURCE_DIR}/src/core/receiver,
             ${GNSSSDR_SOURCE_DIR}/src/core/system_parameters)
 endif()
+
+
+if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
+    set(OSNMA_MSG_RECEIVER_TEST_SOURCES
+            ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/osnma/osnma_msg_receiver_test.cc)
+
+    # Configure the test executable:
+    if(USE_CMAKE_TARGET_SOURCES)
+        add_executable(osnma_msg_receiver_test)
+        target_sources(osnma_msg_receiver_test PRIVATE ${OSNMA_MSG_RECEIVER_TEST_SOURCES})
+    else()
+        add_executable(osnma_msg_receiver_test ${OSNMA_MSG_RECEIVER_TEST_SOURCES})
+    endif()
+
+    # Link libraries that gnss_crypto_test requires:
+    target_link_libraries(osnma_msg_receiver_test
+            PRIVATE
+            Boost::thread
+            Gflags::gflags
+            Glog::glog
+            GTest::GTest
+            GTest::Main
+            core_libs
+    )
+
+    # Include any directories your test needs for header files:
+    target_include_directories(osnma_msg_receiver_test
+            PRIVATE
+            #${GNSSSDR_SOURCE_DIR}/src/algorithms,
+            #${GNSSSDR_SOURCE_DIR}/src/core,
+            #${GNSSSDR_SOURCE_DIR}/src/core/receiver,
+            ${GNSSSDR_SOURCE_DIR}/src/core/system_parameters)
+endif()

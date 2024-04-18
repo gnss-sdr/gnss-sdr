@@ -18,6 +18,8 @@
 
 #ifndef GNSS_SDR_OSNMA_MSG_RECEIVER_H
 #define GNSS_SDR_OSNMA_MSG_RECEIVER_H
+#define FRIEND_TEST(test_case_name, test_name)\
+friend class test_case_name##_##test_name##_Test
 
 #include "galileo_inav_message.h"  // for OSNMA_msg
 #include "gnss_block_interface.h"  // for gnss_shared_ptr
@@ -54,7 +56,6 @@ class osnma_msg_receiver : public gr::block
 {
 public:
     ~osnma_msg_receiver() = default;  //!< Default destructor
-
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
     osnma_msg_receiver(const std::string& pemFilePath, const std::string& merkleFilePath);
@@ -115,6 +116,9 @@ private:
     void remove_verified_tags();
     void control_tags_awaiting_verify_size();
     bool verify_macseq(const MACK_message& mack);
+
+    FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
+    FRIEND_TEST(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation);
 };
 
 

@@ -1315,6 +1315,40 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                 break;
             }
 
+        case 22:  // Word Type 22: ARAIM Integrity Support Message (ISM)
+            DLOG(INFO) << "Word type 22 arrived";
+            ism_constellation_id = read_octet_unsigned(data_jk_bits, ISM_CONSTELLATION_ID_BIT);
+            ism_service_level_id = read_octet_unsigned(data_jk_bits, ISM_SERVICE_LEVEL_ID_BIT);
+            ism_crc = static_cast<uint32_t>(read_navigation_unsigned(data_jk_bits, ISM_CRC_BIT));
+            gal_ism.set_ism_crc(ism_crc);
+            if (gal_ism.check_ism_crc(data_jk_bits))
+                {
+                    DLOG(INFO) << "I/NAV ARAIM Integrity Support Message CRC OK";
+                    gal_ism.set_ism_constellation_id(ism_constellation_id);
+                    gal_ism.set_ism_service_level_id(ism_service_level_id);
+                    if (ism_constellation_id == 0)
+                        {
+                            DLOG(INFO) << "I/NAV ARAIM Integrity Support Message in Test";
+                        }
+                    if (ism_constellation_id == 1)
+                        {
+                            if (ism_service_level_id == 2)
+                                {
+                                    gal_ism.set_ism_wn(static_cast<uint16_t>(read_navigation_unsigned(data_jk_bits, ISM_WN_BIT)));
+                                    gal_ism.set_ism_t0(static_cast<uint16_t>(read_navigation_unsigned(data_jk_bits, ISM_T0_BIT)));
+                                    gal_ism.set_ism_mask_msb(read_navigation_bool(data_jk_bits, ISM_MASK_MSB_BIT));
+                                    gal_ism.set_ism_mask(static_cast<uint32_t>(read_navigation_unsigned(data_jk_bits, ISM_MASK_BIT)));
+                                    gal_ism.set_ism_pconst(read_octet_unsigned(data_jk_bits, ISM_PCONST_BIT));
+                                    gal_ism.set_ism_psat(read_octet_unsigned(data_jk_bits, ISM_PSAT_BIT));
+                                    gal_ism.set_ism_ura(read_octet_unsigned(data_jk_bits, ISM_URA_BIT));
+                                    gal_ism.set_ism_ure(read_octet_unsigned(data_jk_bits, ISM_URE_BIT));
+                                    gal_ism.set_ism_bnom(read_octet_unsigned(data_jk_bits, ISM_BNOM_BIT));
+                                    gal_ism.set_ism_Tvalidity(read_octet_unsigned(data_jk_bits, ISM_TVALIDITY_BIT));
+                                }
+                        }
+                }
+            break;
+
         case 0:  // Word type 0: I/NAV Spare Word
             Time_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TIME_0_BIT));
             DLOG(INFO) << "Time_0= " << Time_0;
@@ -1335,4 +1369,10 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
         }
     return page_number;
+}
+
+
+Galileo_ISM Galileo_Inav_Message::get_galileo_ism() const
+{
+    return gal_ism;
 }

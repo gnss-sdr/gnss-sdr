@@ -274,6 +274,23 @@ constexpr int32_t BITS_IN_OCTET = 8;
 constexpr int32_t FIRST_RS_BIT = 7;
 constexpr int32_t FIRST_RS_BIT_AFTER_IODNAV = 17;
 
+/* Page 22 */
+const std::vector<std::pair<int32_t, int32_t>> ISM_CONSTELLATION_ID_BIT({{7, 3}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_SERVICE_LEVEL_ID_BIT({{10, 3}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_WN_BIT({{13, 12}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_T0_BIT({{25, 9}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_MASK_MSB_BIT({{34, 1}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_MASK_BIT({{35, 32}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_PCONST_BIT({{67, 4}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_PSAT_BIT({{71, 4}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_URA_BIT({{75, 4}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_URE_BIT({{79, 4}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_BNOM_BIT({{83, 4}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_TVALIDITY_BIT({{87, 4}});
+const std::vector<std::pair<int32_t, int32_t>> ISM_CRC_BIT({{97, 32}});
+constexpr int32_t GALILEO_ISM_CRC_DATA_BITS = 96;
+constexpr int32_t GALILEO_ISM_CRC_DATA_BYTES = 12;
+
 /* Page 0 */
 const std::vector<std::pair<int32_t, int32_t>> TIME_0_BIT({{7, 2}});
 const std::vector<std::pair<int32_t, int32_t>> WN_0_BIT({{97, 12}});

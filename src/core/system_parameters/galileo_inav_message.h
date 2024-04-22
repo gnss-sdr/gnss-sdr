@@ -23,6 +23,7 @@
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
+#include "galileo_ism.h"
 #include "galileo_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::unique_ptr in C++11
 #include <bitset>
@@ -113,6 +114,8 @@ public:
      * \brief Returns a Galileo_Ephemeris object filled with the latest reduced CED received
      */
     Galileo_Ephemeris get_reduced_ced() const;
+
+    Galileo_ISM get_galileo_ism() const;
 
     inline bool get_flag_CRC_test() const
     {
@@ -236,6 +239,7 @@ private:
     std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_3(const std::vector<uint8_t>& decoded) const;
     std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_4(const std::vector<uint8_t>& decoded) const;
 
+    Galileo_ISM gal_ism{};
     std::string page_Even{};
 
     std::vector<uint8_t> rs_buffer;   // Reed-Solomon buffer
@@ -398,6 +402,10 @@ private:
     uint8_t IODnav_LSB18{};
     uint8_t IODnav_LSB19{};
     uint8_t IODnav_LSB20{};
+
+    uint32_t ism_crc{};
+    uint8_t ism_constellation_id{};
+    uint8_t ism_service_level_id{};
 
     bool flag_CRC_test{};
     bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received

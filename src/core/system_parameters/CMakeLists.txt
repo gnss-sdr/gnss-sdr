@@ -19,6 +19,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     galileo_fnav_message.cc
     galileo_has_data.cc
     galileo_inav_message.cc
+    galileo_ism.cc
     galileo_reduced_ced.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
@@ -55,6 +56,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_fnav_message.h
     galileo_has_data.h
     galileo_inav_message.h
+    galileo_ism.h
     galileo_reduced_ced.h
     sbas_ephemeris.h
     gps_cnav_ephemeris.h
@@ -115,6 +117,7 @@ target_link_libraries(core_system_parameters
         Boost::date_time
         Boost::serialization
     PRIVATE
+        Boost::headers
         Gflags::gflags
         Glog::glog
 )

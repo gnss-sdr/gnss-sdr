@@ -108,6 +108,7 @@ find_library(MATIO_LIBRARY
       /usr/lib/x86_64-linux-gnux32
       /usr/lib/x86_64-kfreebsd-gnu
       /usr/lib/i386-kfreebsd-gnu
+      /usr/lib/loongarch64-linux-gnu
       /usr/local/lib
       /usr/local/lib64
       /opt/local/lib

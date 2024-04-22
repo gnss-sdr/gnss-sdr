@@ -1034,7 +1034,7 @@ double *zeros(int n, int m)
         {
             return nullptr;
         }
-    if (!(p = static_cast<double *>(calloc(sizeof(double), n * m))))
+    if (!(p = static_cast<double *>(calloc(n * m, sizeof(double)))))
         {
             fatalerr("matrix memory allocation error: n=%d,m=%d\n", n, m);
         }

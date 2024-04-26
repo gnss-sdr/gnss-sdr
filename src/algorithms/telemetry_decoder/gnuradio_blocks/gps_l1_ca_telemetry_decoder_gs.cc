@@ -153,6 +153,19 @@ gps_l1_ca_telemetry_decoder_gs::~gps_l1_ca_telemetry_decoder_gs()
 {
     DLOG(INFO) << "GPS L1 C/A Telemetry decoder block (channel " << d_channel << ") destructor called.";
     size_t pos = 0;
+
+    if( subframe_data_file.is_open())
+    {
+         try
+                {
+                    subframe_data_file.close();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "*** Exception in destructor closing the subframe file " << ex.what();
+                }
+    }
+
     if (d_dump_file.is_open() == true)
         {
             pos = d_dump_file.tellp();
@@ -228,6 +241,20 @@ void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
     d_nav.set_channel(channel);
     DLOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
+    if( subframe_data_file.is_open()==false)
+    {       
+        try
+        {
+            std::string file_name = subframe_file_prefix+std::to_string(channel)+std::string(".csv");
+            subframe_data_file.open(file_name.data());
+        }
+        catch(const std::ofstream::failure &e)
+        {
+            std::cerr << "*** Fail to open subframe file for channel "+ channel << "\n"
+            << e.what() << "\n";
+        }        
+    }
+
     if (d_dump == true)
         {
             if (d_dump_file.is_open() == false)
@@ -349,7 +376,7 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_inver
                         }
                     d_nav_msg_packet.nav_message = subframe_bits.to_string();
                 }
-            const int32_t subframe_ID = d_nav.subframe_decoder(subframe.data());  // decode the subframe
+            const int32_t subframe_ID = d_nav.subframe_decoder(subframe.data(),&subframe_data_file);  // decode the subframe
             if (subframe_ID > 0 && subframe_ID < 6)
                 {
                     switch (subframe_ID)

@@ -89,6 +89,9 @@ private:
     std::string d_dump_filename;
     std::ofstream d_dump_file;
 
+    std::ofstream subframe_data_file;
+    std::string subframe_file_prefix = "./RawNavMessagesChannel-";
+
     boost::circular_buffer<float> d_symbol_history;
 
     uint64_t d_sample_counter;

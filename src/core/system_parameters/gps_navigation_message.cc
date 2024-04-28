@@ -24,6 +24,8 @@
 #include <iostream>  // for operator<<, cout
 #include <limits>    // for std::numeric_limits
 
+#include <fstream>
+
 
 Gps_Navigation_Message::Gps_Navigation_Message()
 {
@@ -78,7 +80,7 @@ int64_t Gps_Navigation_Message::read_navigation_signed(const std::bitset<GPS_SUB
 }
 
 
-int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
+int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe, std::ofstream* subframe_writer)
 {
     uint32_t gps_word;
 
@@ -96,6 +98,12 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe)
         }
 
     const auto subframe_ID = static_cast<int32_t>(read_navigation_unsigned(subframe_bits, SUBFRAME_ID));
+
+    if(subframe_writer!=nullptr)
+    {        
+        *subframe_writer << subframe_ID << ",";
+        *subframe_writer << subframe_bits << "\n";
+    }
 
     // Decode all 5 sub-frames
     switch (subframe_ID)

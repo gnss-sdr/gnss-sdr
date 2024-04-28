@@ -90,7 +90,7 @@ private:
     std::ofstream d_dump_file;
 
     std::ofstream subframe_data_file;
-    std::string subframe_file_prefix = "/mnt/c/Documents and Settings/Admin/gnss-sdr/data_treatment/subframes/subframe_";
+    std::string subframe_file_prefix = "./RawNavMessagesChannel-";
 
     boost::circular_buffer<float> d_symbol_history;
 

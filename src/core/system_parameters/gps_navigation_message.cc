@@ -101,9 +101,9 @@ int32_t Gps_Navigation_Message::subframe_decoder(const char* subframe, std::ofst
 
     if(subframe_writer!=nullptr)
     {        
-        *subframe_writer << "*" << subframe_ID << "*";
-        *subframe_writer << subframe_bits << "\n"; 
-    }    
+        *subframe_writer << subframe_ID << ",";
+        *subframe_writer << subframe_bits << "\n";
+    }
 
     // Decode all 5 sub-frames
     switch (subframe_ID)

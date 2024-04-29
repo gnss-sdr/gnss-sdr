@@ -23,13 +23,18 @@
 #include "gnss_sdr_fft.h"
 #include "gnss_sdr_flags.h"
 #include "gps_l2c_signal_replica.h"
-#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <algorithm>  // for copy_n
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     const ConfigurationInterface* configuration,
@@ -47,10 +52,17 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
 
     LOG(INFO) << "role " << role;
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     fs_in_ = acq_parameters_.fs_in;

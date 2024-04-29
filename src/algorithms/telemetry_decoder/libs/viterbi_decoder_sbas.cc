@@ -16,9 +16,14 @@
  */
 
 #include "viterbi_decoder_sbas.h"
-#include <glog/logging.h>
 #include <algorithm>  // for fill_n
 #include <ostream>    // for operator<<, basic_ostream, char_traits
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // logging
 #define EVENT 2   // logs important events which don't occur every block

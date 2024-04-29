@@ -18,8 +18,13 @@
 
 #include "channel_fsm.h"
 #include "channel_event.h"
-#include <glog/logging.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 ChannelFsm::ChannelFsm()
     : queue_(nullptr),

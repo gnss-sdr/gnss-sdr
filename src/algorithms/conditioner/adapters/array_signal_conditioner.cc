@@ -17,9 +17,13 @@
 
 #include "array_signal_conditioner.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // Constructor
 ArraySignalConditioner::ArraySignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,

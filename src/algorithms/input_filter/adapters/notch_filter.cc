@@ -19,8 +19,12 @@
 #include "configuration_interface.h"
 #include "notch_cc.h"
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 NotchFilter::NotchFilter(const ConfigurationInterface* configuration,
     const std::string& role,

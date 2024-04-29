@@ -34,7 +34,6 @@
 #ifndef GNSS_SDR_GNUPLOT_I_H
 #define GNSS_SDR_GNUPLOT_I_H
 
-#include <gflags/gflags.h>
 #include <cmath>
 #include <cstdlib>  // for getenv()
 #include <cstring>  // for strncpy
@@ -47,7 +46,13 @@
 #include <sys/stat.h>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
 DEFINE_bool(show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
+#else
+#include <absl/flags/flag.h>
+ABSL_FLAG(bool, show_plots, true, "Show plots on screen. Disable for non-interactive testing.");
+#endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__TOS_WIN__)
 // defined for 32 and 64-bit environments

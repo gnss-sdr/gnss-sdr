@@ -45,7 +45,6 @@
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <matio.h>                   // for Mat_VarCreate
@@ -60,6 +59,12 @@
 #include <memory>
 #include <numeric>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

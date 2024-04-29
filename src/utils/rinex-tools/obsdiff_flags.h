@@ -18,6 +18,7 @@
 #ifndef GNSS_SDR_OBSDIFF_FLAGS_H
 #define GNSS_SDR_OBSDIFF_FLAGS_H
 
+#if USE_GLOG_AND_GFLAGS
 #include <gflags/gflags.h>
 
 DEFINE_double(skip_obs_transitory_s, 30.0, "Skip the initial observable outputs to avoid transitory results [s]");
@@ -33,5 +34,24 @@ DEFINE_string(rover_rinex_obs, "base.obs", "Filename of test RINEX observation f
 DEFINE_string(system, "G", "GNSS satellite system: G for GPS, E for Galileo");
 DEFINE_string(signal, "1C", "GNSS signal: 1C for GPS L1 CA, 1B for Galileo E1");
 DEFINE_bool(remove_rx_clock_error, false, "Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers)");
+#else
+#include <absl/flags/flag.h>
+#include <cstdint>
+#include <string>
 
+ABSL_FLAG(double, skip_obs_transitory_s, 30.0, "Skip the initial observable outputs to avoid transitory results [s]");
+ABSL_FLAG(double, skip_obs_ends_s, 5.0, "Skip the lasts observable outputs to avoid transitory results [s]");
+ABSL_FLAG(bool, single_diffs, false, "Compute also the single difference errors for Accumulated Carrier Phase and Carrier Doppler (requires LO synchronization between receivers)");
+ABSL_FLAG(bool, compare_with_5X, false, "Compare the E5a Doppler and Carrier Phases with the E5 full bw in RINEX (expect discrepancy due to the center frequencies difference)");
+ABSL_FLAG(bool, dupli_sat, false, "Enable special observable test mode where the scenario contains duplicated satellite orbits");
+ABSL_FLAG(bool, single_diff, false, "Enable special observable test mode using only rover observables");
+ABSL_FLAG(std::string, dupli_sat_prns, "1,2,3,4", "List of duplicated satellites PRN pairs (i.e. 1,2,3,4 indicates that the PRNs 1,2 share the same orbit. The same applies for PRNs 3,4)");
+ABSL_FLAG(std::string, base_rinex_obs, "base.obs", "Filename of reference RINEX observation file");
+ABSL_FLAG(std::string, rinex_nav, "base.nav", "Filename of reference RINEX navigation file");
+ABSL_FLAG(std::string, rover_rinex_obs, "base.obs", "Filename of test RINEX observation file");
+ABSL_FLAG(std::string, system, "G", "GNSS satellite system: G for GPS, E for Galileo");
+ABSL_FLAG(std::string, signal, "1C", "GNSS signal: 1C for GPS L1 CA, 1B for Galileo E1");
+ABSL_FLAG(bool, remove_rx_clock_error, false, "Compute and remove the receivers clock error prior to compute observable differences (requires a valid RINEX nav file for both receivers)");
+
+#endif
 #endif

@@ -19,8 +19,13 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "obs_conf.h"
-#include <glog/logging.h>
 #include <ostream>  // for operator<<
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 HybridObservables::HybridObservables(const ConfigurationInterface* configuration,
     const std::string& role,
@@ -45,7 +50,11 @@ HybridObservables::HybridObservables(const ConfigurationInterface* configuration
     conf.always_output_gs = configuration->property("PVT.an_output_enabled", conf.always_output_gs) || configuration->property(role + ".always_output_gs", conf.always_output_gs);
     conf.enable_E6 = configuration->property("PVT.use_e6_for_pvt", conf.enable_E6);
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_carrier_smoothing_factor == DEFAULT_CARRIER_SMOOTHING_FACTOR)
+#else
+    if (absl::GetFlag(FLAGS_carrier_smoothing_factor) == DEFAULT_CARRIER_SMOOTHING_FACTOR)
+#endif
         {
             conf.smoothing_factor = configuration->property(role + ".smoothing_factor", conf.smoothing_factor);
         }

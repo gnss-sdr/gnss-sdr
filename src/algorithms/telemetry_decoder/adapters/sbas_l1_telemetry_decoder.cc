@@ -18,8 +18,12 @@
 
 #include "sbas_l1_telemetry_decoder.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(
     const ConfigurationInterface* configuration,

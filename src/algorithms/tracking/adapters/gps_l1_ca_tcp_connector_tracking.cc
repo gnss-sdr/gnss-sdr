@@ -24,8 +24,13 @@
 #include "gps_l1_ca_tcp_connector_tracking.h"
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 GpsL1CaTcpConnectorTracking::GpsL1CaTcpConnectorTracking(

@@ -46,7 +46,6 @@
 #include "channel_fsm.h"
 #include "gnss_sdr_fft.h"
 #include <armadillo>
-#include <glog/logging.h>
 #include <gnuradio/block.h>
 #include <gnuradio/gr_complex.h>              // for gr_complex
 #include <gnuradio/thread/thread.h>           // for scoped_lock
@@ -59,6 +58,7 @@
 #include <queue>
 #include <string>
 #include <utility>
+
 
 #if HAS_STD_SPAN
 #include <span>
@@ -196,16 +196,7 @@ public:
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
-    inline void set_doppler_center(int32_t doppler_center)
-    {
-        gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
-        if (doppler_center != d_doppler_center)
-            {
-                DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
-                d_doppler_center = doppler_center;
-                update_grid_doppler_wipeoffs();
-            }
-    }
+    void set_doppler_center(int32_t doppler_center);
 
     /*!
      * \brief Parallel Code Phase Search Acquisition signal processing.

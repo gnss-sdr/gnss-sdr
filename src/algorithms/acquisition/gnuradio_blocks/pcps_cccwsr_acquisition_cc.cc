@@ -22,7 +22,6 @@
 
 #include "pcps_cccwsr_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"  // TWO_PI
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -31,6 +30,12 @@
 #include <exception>
 #include <sstream>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 pcps_cccwsr_acquisition_cc_sptr pcps_cccwsr_make_acquisition_cc(

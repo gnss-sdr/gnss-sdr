@@ -80,11 +80,15 @@ namespace gnsstk = gpstk;
 #endif
 #endif
 
+#if USE_GLOG_AND_GFLAGS
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
 using namespace google;
 }
+#endif
+#else
+#include <absl/flags/parse.h>
 #endif
 
 // Create the lists of GNSS satellites
@@ -422,8 +426,12 @@ void carrier_phase_double_diff(
                       << " [Cycles]\n";
             std::cout.precision(ss);
 
-            // plots
+// plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Double diff Carrier Phase error [Cycles]");
@@ -506,8 +514,12 @@ void carrier_phase_single_diff(
                       << " [Cycles]\n";
             std::cout.precision(ss);
 
-            // plots
+// plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Single diff Carrier Phase error [Cycles]");
@@ -614,7 +626,11 @@ void carrier_doppler_double_diff(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Double diff Carrier Doppler error [Hz]");
@@ -697,7 +713,11 @@ void carrier_doppler_single_diff(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Single diff Carrier Doppler error [Hz]");
@@ -805,7 +825,11 @@ void code_pseudorange_double_diff(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Double diff Pseudorange error [m]");
@@ -890,7 +914,11 @@ void code_pseudorange_single_diff(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Single diff Pseudorange error [m]");
@@ -1039,7 +1067,11 @@ void coderate_phaserate_consistence(
     std::cout.precision(ss);
 
     // plots
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_show_plots)
+#else
+    if (absl::GetFlag(FLAGS_show_plots))
+#endif
         {
             Gnuplot g3("linespoints");
             g3.set_title(data_title + "Code rate - phase rate [m/s]");
@@ -1123,7 +1155,11 @@ void code_phase_diff(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Code range - Carrier phase range [m]");
@@ -1396,13 +1432,23 @@ void RINEX_doublediff_dupli_sat()
 {
     // special test mode for duplicated satellites
     // read rinex receiver-under-test observations
+#if USE_GLOG_AND_GFLAGS
     std::map<int, arma::mat> rover_obs = ReadRinexObs(FLAGS_rover_rinex_obs, 'G', std::string("1C"));
+#else
+    std::map<int, arma::mat> rover_obs = ReadRinexObs(absl::GetFlag(FLAGS_rover_rinex_obs), 'G', std::string("1C"));
+#endif
+
+
     if (rover_obs.empty())
         {
             return;
         }
-    // Cut measurement initial transitory of the measurements
+        // Cut measurement initial transitory of the measurements
+#if USE_GLOG_AND_GFLAGS
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
+#else
+    double initial_transitory_s = absl::GetFlag(FLAGS_skip_obs_transitory_s);
+#endif
     std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]\n";
     arma::uvec index;
     for (auto& rover_ob : rover_obs)
@@ -1415,7 +1461,11 @@ void RINEX_doublediff_dupli_sat()
         }
 
     std::vector<unsigned int> prn_pairs;
+#if USE_GLOG_AND_GFLAGS
     std::stringstream ss(FLAGS_dupli_sat_prns);
+#else
+    std::stringstream ss(absl::GetFlag(FLAGS_dupli_sat_prns));
+#endif
     unsigned int i;
     while (ss >> i)
         {
@@ -1463,11 +1513,17 @@ void RINEX_doublediff_dupli_sat()
 
 void RINEX_doublediff(bool remove_rx_clock_error)
 {
+#if USE_GLOG_AND_GFLAGS
     // read rinex base observations
     std::map<int, arma::mat> base_obs = ReadRinexObs(FLAGS_base_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
     // read rinex receiver-under-test (rover) observations
     std::map<int, arma::mat> rover_obs = ReadRinexObs(FLAGS_rover_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
-
+#else
+    // read rinex base observations
+    std::map<int, arma::mat> base_obs = ReadRinexObs(absl::GetFlag(FLAGS_base_rinex_obs), absl::GetFlag(FLAGS_system).c_str()[0], absl::GetFlag(FLAGS_signal));
+    // read rinex receiver-under-test (rover) observations
+    std::map<int, arma::mat> rover_obs = ReadRinexObs(absl::GetFlag(FLAGS_rover_rinex_obs), absl::GetFlag(FLAGS_system).c_str()[0], absl::GetFlag(FLAGS_signal));
+#endif
     if (base_obs.empty() or rover_obs.empty())
         {
             return;
@@ -1478,14 +1534,24 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     double rover_rx_clock_error_s = 0.0;
     if (remove_rx_clock_error == true)
         {
+#if USE_GLOG_AND_GFLAGS
             base_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_base_rinex_obs);
             rover_rx_clock_error_s = compute_rx_clock_error(FLAGS_rinex_nav, FLAGS_rover_rinex_obs);
+#else
+            base_rx_clock_error_s = compute_rx_clock_error(absl::GetFlag(FLAGS_rinex_nav), absl::GetFlag(FLAGS_base_rinex_obs));
+            rover_rx_clock_error_s = compute_rx_clock_error(absl::GetFlag(FLAGS_rinex_nav), absl::GetFlag(FLAGS_rover_rinex_obs));
+#endif
         }
 
     double common_clock_error_s = rover_rx_clock_error_s - base_rx_clock_error_s;
 
     // Cut measurement initial transitory of the measurements
+
+#if USE_GLOG_AND_GFLAGS
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
+#else
+    double initial_transitory_s = absl::GetFlag(FLAGS_skip_obs_transitory_s);
+#endif
     std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]\n";
     arma::uvec index;
     for (auto& rover_ob : rover_obs)
@@ -1535,7 +1601,11 @@ void RINEX_doublediff(bool remove_rx_clock_error)
     base_obs_time = base_obs.begin()->second.col(0);
     rover_obs_time = rover_obs.begin()->second.col(0);
 
+#if USE_GLOG_AND_GFLAGS
     double skip_ends_s = FLAGS_skip_obs_ends_s;
+#else
+    double skip_ends_s = absl::GetFlag(FLAGS_skip_obs_ends_s);
+#endif
     std::cout << "Skipping last " << skip_ends_s << " [s] of observations\n";
     for (auto& rover_ob : rover_obs)
         {
@@ -1653,16 +1723,24 @@ void RINEX_doublediff(bool remove_rx_clock_error)
 
 void RINEX_singlediff()
 {
+#if USE_GLOG_AND_GFLAGS
     // read rinex receiver-under-test observations
     std::map<int, arma::mat> rover_obs = ReadRinexObs(FLAGS_rover_rinex_obs, FLAGS_system.c_str()[0], FLAGS_signal);
-
+#else
+    // read rinex receiver-under-test observations
+    std::map<int, arma::mat> rover_obs = ReadRinexObs(absl::GetFlag(FLAGS_rover_rinex_obs), absl::GetFlag(FLAGS_system).c_str()[0], absl::GetFlag(FLAGS_signal));
+#endif
     if (rover_obs.empty())
         {
             return;
         }
 
-    // Cut measurement initial transitory of the measurements
+        // Cut measurement initial transitory of the measurements
+#if USE_GLOG_AND_GFLAGS
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
+#else
+    double initial_transitory_s = absl::GetFlag(FLAGS_skip_obs_transitory_s);
+#endif
     std::cout << "Skipping initial transitory of " << initial_transitory_s << " [s]\n";
     arma::uvec index;
     for (auto& rover_ob : rover_obs)
@@ -1677,7 +1755,11 @@ void RINEX_singlediff()
     // also skip last seconds of the observations (some artifacts are present in some RINEX endings)
     arma::colvec rover_obs_time = rover_obs.begin()->second.col(0);
 
+#if USE_GLOG_AND_GFLAGS
     double skip_ends_s = FLAGS_skip_obs_ends_s;
+#else
+    double skip_ends_s = absl::GetFlag(FLAGS_skip_obs_ends_s);
+#endif
     std::cout << "Skipping last " << skip_ends_s << " [s] of observations\n";
     for (auto& rover_ob : rover_obs)
         {
@@ -1727,12 +1809,22 @@ void RINEX_singlediff()
 int main(int argc, char** argv)
 {
     std::cout << "Running RINEX observables difference tool...\n";
+#if USE_GLOG_AND_GFLAGS
     gflags::ParseCommandLineFlags(&argc, &argv, true);
+#else
+    absl::ParseCommandLine(argc, argv);
+#endif
     try
         {
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_single_diff)
                 {
                     if (FLAGS_dupli_sat)
+#else
+            if (absl::GetFlag(FLAGS_single_diff))
+                {
+                    if (absl::GetFlag(FLAGS_dupli_sat))
+#endif
                         {
                             RINEX_doublediff_dupli_sat();
                         }
@@ -1743,27 +1835,39 @@ int main(int argc, char** argv)
                 }
             else
                 {
+#if USE_GLOG_AND_GFLAGS
                     RINEX_doublediff(FLAGS_remove_rx_clock_error);
+#else
+                    RINEX_doublediff(absl::GetFlag(FLAGS_remove_rx_clock_error));
+#endif
                 }
         }
     catch (const gnsstk::Exception& e)
         {
             std::cerr << e;
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
     catch (const std::exception& e)
         {
             std::cerr << "Exception: " << e.what();
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
     catch (...)
         {
             std::cerr << "Unknown error\n";
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
+#if USE_GLOG_AND_GFLAGS
     gflags::ShutDownCommandLineFlags();
+#endif
     return 0;
 }

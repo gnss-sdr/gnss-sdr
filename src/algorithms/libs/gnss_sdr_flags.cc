@@ -1,7 +1,7 @@
 /*!
  * \file gnss_sdr_flags.cc
  * \brief Helper file for gnss-sdr commandline flags
- * \author Carles Fernandez-Prades, 2018. cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2018-2024. cfernandez(at)cttc.es
  *
  *
  * -----------------------------------------------------------------------------
@@ -9,7 +9,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -19,9 +19,8 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_filesystem.h"
 #include <iostream>
-#include <string>
 
-
+#if USE_GLOG_AND_GFLAGS
 DEFINE_string(c, "-", "Path to the configuration file (if set, overrides --config_file).");
 
 DEFINE_string(config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"),
@@ -234,4 +233,27 @@ DEFINE_validator(dll_bw_hz, &ValidateDllBw);
 DEFINE_validator(pll_bw_hz, &ValidatePllBw);
 DEFINE_validator(carrier_smoothing_factor, &ValidateCarrierSmoothingFactor);
 
+#endif
+
+#else
+ABSL_FLAG(std::string, c, "-", "Path to the configuration file (if set, overrides --config_file).");
+ABSL_FLAG(std::string, config_file, std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"), "Path to the configuration file.");
+ABSL_FLAG(std::string, log_dir, "", "Directory for log files");
+ABSL_FLAG(std::string, s, "-", "If defined, path to the file containing the signal samples (overrides the configuration file and --signal_source).");
+ABSL_FLAG(std::string, signal_source, "-", "If defined, path to the file containing the signal samples (overrides the configuration file).");
+ABSL_FLAG(std::string, timestamp_source, "-", "If defined, path to the file containing the signal timestamp data (overrides the configuration file).");
+ABSL_FLAG(bool, rf_shutdown, true, "If set to false, AD9361 RF channels are not shut down when exiting the program. Useful to leave the AD9361 configured and running.");
+ABSL_FLAG(int32_t, doppler_max, 0, "If defined, sets the maximum Doppler value in the search grid, in Hz (overrides the configuration file).");
+ABSL_FLAG(int32_t, doppler_step, 0, "If defined, sets the frequency step in the search grid, in Hz (overrides the configuration file).");
+ABSL_FLAG(int32_t, cn0_samples, 20, "Number of correlator outputs used for CN0 estimation.");
+ABSL_FLAG(int32_t, cn0_min, 25, "Minimum valid CN0 (in dB-Hz).");
+ABSL_FLAG(int32_t, max_carrier_lock_fail, 5000, "Maximum number of carrier lock failures before dropping a satellite.");
+ABSL_FLAG(int32_t, max_lock_fail, 50, "Maximum number of code lock failures before dropping a satellite.");
+ABSL_FLAG(double, carrier_lock_th, 0.7, "Carrier lock threshold (in rad).");
+ABSL_FLAG(double, dll_bw_hz, 0.0, "If defined, bandwidth of the DLL low pass filter, in Hz (overrides the configuration file).");
+ABSL_FLAG(double, pll_bw_hz, 0.0, "If defined, bandwidth of the PLL low pass filter, in Hz (overrides the configuration file).");
+ABSL_FLAG(int32_t, carrier_smoothing_factor, DEFAULT_CARRIER_SMOOTHING_FACTOR, "Sets carrier smoothing factor M (overrides the configuration file)");
+ABSL_FLAG(std::string, RINEX_version, "-", "If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.");
+ABSL_FLAG(std::string, RINEX_name, "-", "If defined, specifies the RINEX files base name");
+ABSL_FLAG(bool, keyboard, true, "If set to false, it disables the keyboard listener (so the receiver cannot be stopped with q+[Enter])");
 #endif

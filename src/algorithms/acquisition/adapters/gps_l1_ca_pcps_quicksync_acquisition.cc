@@ -22,8 +22,13 @@
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
 #include <algorithm>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_STD_SPAN
 #include <span>
@@ -58,10 +63,17 @@ GpsL1CaPcpsQuickSyncAcquisition::GpsL1CaPcpsQuickSyncAcquisition(
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
 
     // -- Find number of samples per spreading code -------------------------
     code_length_ = static_cast<unsigned int>(round(fs_in_ / (GPS_L1_CA_CODE_RATE_CPS / GPS_L1_CA_CODE_LENGTH_CHIPS)));

@@ -16,12 +16,28 @@ target_link_libraries(gnss-sdr
     PRIVATE
         algorithms_libs
         core_receiver
+        gnss_sdr_flags
         Boost::headers
         Boost::thread
-        Gflags::gflags
-        Glog::glog
         Threads::Threads
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(gnss-sdr PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(gnss-sdr PUBLIC -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(gnss-sdr PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+    if(NOT ENABLE_LOG)
+        message(STATUS "Internal logging is not enabled")
+        if(CMAKE_VERSION VERSION_GREATER 3.11.0)
+            target_compile_definitions(gnss-sdr INTERFACE -DABSL_MIN_LOG_LEVEL=3)
+        else()
+            set_property(TARGET gnss-sdr APPEND PROPERTY
+                INTERFACE_COMPILE_DEFINITIONS ABSL_MIN_LOG_LEVEL=3
+            )
+        endif()
+    endif()
+endif()
 
 target_compile_definitions(gnss-sdr PRIVATE -DGNSS_SDR_VERSION="${VERSION}")
 
@@ -53,6 +69,10 @@ if(ENABLE_GPERFTOOLS)
                 Gperftools::tcmalloc
         )
     endif()
+endif()
+
+if(NOT ENABLE_LOG)
+    target_compile_definitions(gnss-sdr PRIVATE -DABSL_MIN_LOG_LEVEL=3)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

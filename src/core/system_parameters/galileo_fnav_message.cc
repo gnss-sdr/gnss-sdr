@@ -23,10 +23,15 @@
 #include "galileo_fnav_message.h"
 #include <boost/crc.hpp>  // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>
-#include <glog/logging.h>
 #include <algorithm>  // for reverse
 #include <iostream>   // for string, operator<<
 #include <iterator>   // for back_insert_iterator
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using CRC_Galileo_FNAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
 

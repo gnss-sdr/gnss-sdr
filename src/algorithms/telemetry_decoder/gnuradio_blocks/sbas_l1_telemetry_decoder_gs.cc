@@ -17,7 +17,6 @@
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "gnss_synchro.h"
 #include "viterbi_decoder_sbas.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
 #include <algorithm>        // for copy
@@ -26,6 +25,12 @@
 #include <exception>  // for exception
 #include <iomanip>    // for operator<<, setw
 #include <utility>    // for std::move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // logging levels
 #define EVENT 2      // logs important events which don't occur every block

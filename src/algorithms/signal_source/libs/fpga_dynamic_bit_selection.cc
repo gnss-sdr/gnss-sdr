@@ -21,11 +21,16 @@
 
 #include "fpga_dynamic_bit_selection.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
 #include <unistd.h>    // for close
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Fpga_dynamic_bit_selection::Fpga_dynamic_bit_selection(bool enable_rx1_band, bool enable_rx2_band)
     : d_map_base_freq_band_1(nullptr),

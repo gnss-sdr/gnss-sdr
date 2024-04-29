@@ -52,8 +52,10 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         add_dependencies(obsdiff armadillo-${armadillo_RELEASE})
     endif()
-    if(NOT GFLAGS_FOUND)
-        add_dependencies(obsdiff gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+    if(ENABLE_GLOG_AND_GFLAGS)
+        if(NOT GFLAGS_FOUND)
+            add_dependencies(obsdiff gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+        endif()
     endif()
     if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
         add_dependencies(obsdiff gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
@@ -101,10 +103,16 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         PRIVATE
             Armadillo::armadillo
             Threads::Threads
-            Gflags::gflags
             Matio::matio
             Gnsstk::gnsstk
     )
+
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(obsdiff PRIVATE Gflags::gflags)
+        target_compile_definitions(obsdiff PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(obsdiff PRIVATE absl::flags absl::flags_parse)
+    endif()
 
     if(ENABLE_STRIP)
         set_target_properties(obsdiff PROPERTIES LINK_FLAGS "-s")

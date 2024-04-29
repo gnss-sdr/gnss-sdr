@@ -24,11 +24,16 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
-#include <glog/logging.h>
 #include <algorithm>  // for max
 #include <exception>
 #include <iostream>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 

@@ -18,12 +18,16 @@
 
 #include "gen_signal_source.h"
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <gnuradio/message.h>
 #include <sstream>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // Constructor
 GenSignalSource::GenSignalSource(std::shared_ptr<GNSSBlockInterface> signal_generator,

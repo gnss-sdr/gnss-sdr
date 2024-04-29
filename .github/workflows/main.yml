@@ -57,8 +57,7 @@ jobs:
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew link --overwrite python@3.12
-          brew install ninja hdf5 automake armadillo lapack libmatio \
-          gflags glog gnuradio log4cpp openssl pugixml protobuf
+          brew install ninja hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf
           pip3 install mako
       - name: configure
         run: cd build && cmake -GNinja ..
@@ -90,8 +89,7 @@ jobs:
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew link --overwrite python@3.12
-          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio \
-          gflags glog gnuradio log4cpp openssl pugixml protobuf
+          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf
           pip3 install mako          
       - name: configure
         run: cd build && cmake -GXcode ..
@@ -142,16 +140,15 @@ jobs:
           rm /usr/local/bin/python3.1* || true
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew link --overwrite python@3.12
-          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio \
-          gflags glog gnuradio log4cpp openssl pugixml protobuf llvm
-          pip3 install mako    
+          brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf llvm
+          pip3 install mako
           ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/run-clang-tidy.py /usr/local/bin
       - name: Prepare run
         run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.14.0 core_monitor core_libs pvt_libs
       - name: run clang-tidy
-        run: cd build && /usr/local/opt/llvm/bin/run-clang-tidy -fix
+        run: cd build && /opt/homebrew/opt/llvm/bin/run-clang-tidy -fix
       - name: check
         run: |
           git diff > clang_tidy.patch
@@ -243,8 +240,13 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: install dependencies
-        run: pip3 install mako
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mako
       - name: configure
         run: cd build && cmake ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
       - name: build
@@ -256,8 +258,13 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: install dependencies
-        run: pip3 install mako
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mako
       - name: configure
         run: cd build && cmake -GXcode ../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr
       - name: build

@@ -26,9 +26,14 @@
 #include "display.h"
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
-#include <glog/logging.h>
 #include <algorithm>
 #include <array>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 BeidouB3iDllPllTracking::BeidouB3iDllPllTracking(
     const ConfigurationInterface* configuration,

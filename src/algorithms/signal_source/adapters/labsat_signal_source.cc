@@ -18,9 +18,14 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_string_literals.h"
 #include "labsat23_source.h"
-#include <glog/logging.h>
 #include <iostream>
 #include <sstream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 

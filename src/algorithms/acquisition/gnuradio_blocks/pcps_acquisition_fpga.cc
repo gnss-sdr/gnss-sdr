@@ -21,11 +21,16 @@
 #include "pcps_acquisition_fpga.h"
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
-#include <glog/logging.h>
 #include <cmath>     // for ceil
 #include <iostream>  // for operator<<
 #include <utility>   // for move
 
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 pcps_acquisition_fpga_sptr pcps_make_acquisition_fpga(Acq_Conf_Fpga& conf_)
 {
@@ -284,6 +289,16 @@ void pcps_acquisition_fpga::set_active(bool active)
                     d_active = false;
                     send_negative_acquisition();
                 }
+        }
+}
+
+
+void pcps_acquisition_fpga::set_doppler_center(int32_t doppler_center)
+{
+    if (doppler_center != d_doppler_center)
+        {
+            DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
+            d_doppler_center = doppler_center;
         }
 }
 

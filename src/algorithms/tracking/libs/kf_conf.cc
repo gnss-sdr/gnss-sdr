@@ -21,13 +21,21 @@
 #include "kf_conf.h"
 #include "gnss_sdr_flags.h"
 #include "item_type_helpers.h"
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Kf_Conf::Kf_Conf() : item_type("gr_complex"),
                      dump_filename("./Kf_dump.dat"),
                      fs_in(2000000.0),
+#if USE_GLOG_AND_GFLAGS
                      carrier_lock_th(FLAGS_carrier_lock_th),
+#else
+                     carrier_lock_th(absl::GetFlag(FLAGS_carrier_lock_th)),
+#endif
                      code_disc_sd_chips(0.2),
                      carrier_disc_sd_rads(0.3),
                      code_phase_sd_chips(0.15),
@@ -52,12 +60,22 @@ Kf_Conf::Kf_Conf() : item_type("gr_complex"),
                      vector_length(0U),
                      smoother_length(10),
                      extend_correlation_symbols(1),
+#if USE_GLOG_AND_GFLAGS
                      cn0_samples(FLAGS_cn0_samples),
+#else
+                     cn0_samples(absl::GetFlag(FLAGS_cn0_samples)),
+#endif
                      cn0_smoother_samples(200),
                      carrier_lock_test_smoother_samples(25),
+#if USE_GLOG_AND_GFLAGS
                      cn0_min(FLAGS_cn0_min),
                      max_code_lock_fail(FLAGS_max_lock_fail),
                      max_carrier_lock_fail(FLAGS_max_carrier_lock_fail),
+#else
+                     cn0_min(absl::GetFlag(FLAGS_cn0_min)),
+                     max_code_lock_fail(absl::GetFlag(FLAGS_max_lock_fail)),
+                     max_carrier_lock_fail(absl::GetFlag(FLAGS_max_carrier_lock_fail)),
+#endif
                      system('G'),
                      track_pilot(true),
                      enable_doppler_correction(false),

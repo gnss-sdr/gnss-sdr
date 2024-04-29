@@ -64,7 +64,6 @@
 #include <boost/exception/exception.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>  // for nvp, make_nvp
-#include <glog/logging.h>               // for LOG
 #include <gnuradio/io_signature.h>      // for io_signature
 #include <pmt/pmt_sugar.h>              // for mp
 #include <algorithm>                    // for sort, unique
@@ -81,6 +80,12 @@
 #include <sys/msg.h>                    // for msgctl
 #include <typeinfo>                     // for std::type_info, typeid
 #include <utility>                      // for pair
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

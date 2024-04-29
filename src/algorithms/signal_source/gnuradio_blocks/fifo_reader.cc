@@ -16,7 +16,12 @@
  */
 
 #include "fifo_reader.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // initial construction; pass to private constructor
 FifoReader::sptr FifoReader::make(const std::string &file_name, const std::string &sample_type)

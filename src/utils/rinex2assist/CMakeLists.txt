@@ -79,10 +79,16 @@ if(Boost_FOUND)
             Boost::iostreams
             Boost::serialization
             ${GNSSTK_LIBRARY}
-            Gflags::gflags
             Threads::Threads
             core_system_parameters
     )
+
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(rinex2assist PRIVATE Gflags::gflags)
+        target_compile_definitions(rinex2assist PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(rinex2assist PRIVATE absl::flags absl::flags_parse)
+    endif()
 
     if(GNSSTK_USES_GPSTK_NAMESPACE)
         target_compile_definitions(rinex2assist PUBLIC -DGNSSTK_USES_GPSTK_NAMESPACE=1)

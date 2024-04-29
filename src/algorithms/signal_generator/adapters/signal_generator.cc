@@ -25,10 +25,14 @@
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <cstdint>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 SignalGenerator::SignalGenerator(const ConfigurationInterface* configuration,
     const std::string& role, unsigned int in_stream,

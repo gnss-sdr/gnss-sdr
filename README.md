@@ -222,9 +222,9 @@ Once you have installed these packages, you can jump directly to
 If you are using Arch Linux:
 
 ```
-$ pacman -S gcc make cmake pkgconf git boost boost-libs log4cpp libvolk gnuradio \
-       blas lapack gflags google-glog openssl pugixml libmatio protobuf \
-       python-mako libpcap gtest
+$ pacman -S gcc make cmake pkgconf git boost boost-libs libvolk gnuradio \
+       blas lapack hdf5 openssl pugixml libmatio protobuf libpcap gtest \
+       python-mako
 ```
 
 Once you have installed these packages, you can jump directly to
@@ -430,6 +430,10 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
+Please note that GFlags is replaced by the
+[Abseil Flags Library](https://abseil.io/docs/cpp/guides/flags) if Abseil >=
+v20240116 is available in your system.
+
 #### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging
 
 ```
@@ -442,6 +446,10 @@ $ make
 $ sudo make install
 $ sudo ldconfig
 ```
+
+Please note that Glog is replaced by the
+[Abseil Logging Library](https://abseil.io/docs/cpp/guides/logging) if Abseil >=
+v20240116 is available in your system.
 
 #### Install the GnuTLS or OpenSSL libraries
 
@@ -832,7 +840,7 @@ $ sudo port selfupdate
 $ sudo port upgrade outdated
 $ sudo port install armadillo cmake pkgconfig protobuf3-cpp pugixml gnutls
 $ sudo port install gnuradio +uhd +grc +zeromq
-$ sudo port install boost matio libad9361-iio libiio google-glog +gflags
+$ sudo port install boost matio libad9361-iio libiio
 $ sudo port install py311-mako
 $ sudo port install doxygen +docs
 ```
@@ -871,8 +879,7 @@ Install the required dependencies:
 
 ```
 $ brew update && brew upgrade
-$ brew install armadillo cmake hdf5 gflags glog gnuradio libmatio log4cpp \
-    openssl pkg-config protobuf pugixml
+$ brew install armadillo cmake hdf5 gnuradio libmatio openssl pkg-config protobuf pugixml
 $ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
 ¢ pip3 install mako

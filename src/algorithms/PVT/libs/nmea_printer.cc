@@ -23,7 +23,6 @@
 #include "gnss_sdr_filesystem.h"
 #include "rtklib_solution.h"
 #include "rtklib_solver.h"
-#include <glog/logging.h>
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -31,6 +30,12 @@
 #include <iostream>  // for cout, cerr
 #include <termios.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 Nmea_Printer::Nmea_Printer(const std::string& filename,

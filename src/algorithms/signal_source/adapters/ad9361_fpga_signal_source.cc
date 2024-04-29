@@ -31,7 +31,6 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <iio.h>
 #include <algorithm>  // for std::max
 #include <chrono>     // for std::chrono
@@ -44,6 +43,11 @@
 #include <unistd.h>   // for write
 #include <vector>     // fr std::vector
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 

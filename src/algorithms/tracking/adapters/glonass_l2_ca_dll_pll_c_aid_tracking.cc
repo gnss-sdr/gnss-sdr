@@ -25,7 +25,12 @@
 #include "GLONASS_L1_L2_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 GlonassL2CaDllPllCAidTracking::GlonassL2CaDllPllCAidTracking(
@@ -46,15 +51,30 @@ GlonassL2CaDllPllCAidTracking::GlonassL2CaDllPllCAidTracking(
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     bool dump = configuration->property(role_ + ".dump", false);
     float pll_bw_hz = configuration->property(role_ + ".pll_bw_hz", static_cast<float>(50.0));
+
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_pll_bw_hz != 0.0)
         {
             pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
         }
+#else
+    if (absl::GetFlag(FLAGS_pll_bw_hz) != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_pll_bw_hz));
+        }
+#endif
     float dll_bw_hz = configuration->property(role_ + ".dll_bw_hz", static_cast<float>(2.0));
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_dll_bw_hz != 0.0)
         {
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
+#else
+    if (absl::GetFlag(FLAGS_dll_bw_hz) != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_dll_bw_hz));
+        }
+#endif
     float pll_bw_narrow_hz = configuration->property(role_ + ".pll_bw_narrow_hz", static_cast<float>(20.0));
     float dll_bw_narrow_hz = configuration->property(role_ + ".dll_bw_narrow_hz", static_cast<float>(2.0));
     int extend_correlation_ms = configuration->property(role_ + ".extend_correlation_ms", 1);

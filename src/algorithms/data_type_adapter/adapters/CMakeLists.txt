@@ -53,10 +53,15 @@ target_link_libraries(data_type_adapters
         Gnuradio::blocks
         data_type_gr_blocks
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Volk::volk
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(data_type_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(data_type_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(data_type_adapters PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

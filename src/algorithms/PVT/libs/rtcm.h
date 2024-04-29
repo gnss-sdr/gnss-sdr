@@ -29,7 +29,6 @@
 #include "gps_ephemeris.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
 #include <algorithm>  // for std::max, std::min, std::copy_n
 #include <array>
 #include <bitset>
@@ -46,6 +45,12 @@
 #include <thread>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 /** \addtogroup PVT
  * \{ */

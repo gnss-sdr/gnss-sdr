@@ -21,11 +21,16 @@
  */
 
 #include "fpga_switch.h"
-#include <glog/logging.h>
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
 #include <unistd.h>    // for close
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Fpga_Switch::Fpga_Switch(const std::string &device_name)
 {

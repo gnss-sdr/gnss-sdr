@@ -39,6 +39,12 @@
 #include <iostream>
 #include <map>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 
 pcps_acquisition_sptr pcps_make_acquisition(const Acq_Conf& conf_)
 {
@@ -893,6 +899,18 @@ void pcps_acquisition::calculate_threshold()
     const int num_bins = effective_fft_size * num_doppler_bins;
 
     d_threshold = static_cast<float>(2.0 * boost::math::gamma_p_inv(2.0 * (d_acq_parameters.bit_transition_flag ? 1 : d_acq_parameters.max_dwells), std::pow(1.0 - pfa, 1.0 / static_cast<float>(num_bins))));
+}
+
+
+void pcps_acquisition::set_doppler_center(int32_t doppler_center)
+{
+    gr::thread::scoped_lock lock(d_setlock);  // require mutex with work function called by the scheduler
+    if (doppler_center != d_doppler_center)
+        {
+            DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
+            d_doppler_center = doppler_center;
+            update_grid_doppler_wipeoffs();
+        }
 }
 
 

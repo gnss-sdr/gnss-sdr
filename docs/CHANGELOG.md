@@ -16,8 +16,37 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Portability:
 
-- Fix building against google-glog 0.7.0
+- Fix building against google-glog 0.7.0.
 - Find dependencies in the loongarch64 architecture.
+- Soft transition from [GFlags](https://github.com/gflags/gflags) and
+  [Google Logging (glog)](https://github.com/google/glog) to Abseil
+  [Logging](https://abseil.io/docs/cpp/guides/logging) and
+  [Flags](https://abseil.io/docs/cpp/guides/flags) libraries. While gflags and
+  glog have dutifully served GNSS-SDR for over a decade, they are now showing
+  signs of aging. The latest version of gflags dates back six years now, with
+  its last commit in the master branch occurring two years ago. Glog remains
+  well maintained, with its latest version v0.7.0 released in February 2024, but
+  with no active development of new features and stuck at C++14. Abseil, on the
+  other hand, represents a contemporary evolution in software development,
+  supports C++17 and C++20, and has absorbed the functionalities of flags and
+  logging from its predecessors. Furthermore, as Abseil has become a
+  prerequisite for the latest versions of Protocol Buffers, its eventual
+  inclusion in GNSS-SDR's indirect dependencies is inevitable. Leveraging Abseil
+  allows for eliminating the need for gflags and glog, thereby reducing the
+  number of mandatory dependencies for GNSS-SDR in forthcoming GNU/Linux
+  distributions. For seamless integration, GNSS-SDR requires a quite recent
+  minimum version of Abseil, v20240116. If an older version is detected, the
+  library will not be utilized, and GNSS-SDR will fall back to using gflags and
+  glog, which still can be used and are fully supported. A new CMake
+  configuration option `-DENABLE_GLOG_AND_GFLAGS=ON` is available to force the
+  usage of glog and gflags instead of Abseil, even if a valid version of that
+  library is present. If the Abseil version installed in your system is too old
+  but you still want to try it, you can also force the downloading and building
+  of a recent version with the new CMake configuration flag
+  `-DENABLE_OWN_ABSEIL=ON` (requires CMake >= 3.24, otherwise it has no effect).
+  This change has a downside in maintainability, since the source code becomes
+  plagued with preprocessor directives required to maintain compatibility both
+  with gflags and glog, and with Abseil.
 
 ### Improvements in Usability:
 

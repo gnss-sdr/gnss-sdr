@@ -29,12 +29,16 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
-#include <glog/logging.h>
 #include <algorithm>  // for std::max
 #include <cmath>      // for ceil, floor
 #include <iostream>   // for std::cout, std:cerr
 #include <utility>    // for std::move
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -93,7 +97,8 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
                 }
         }
 
-    // override value with commandline flag, if present
+// override value with commandline flag, if present
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_signal_source != "-")
         {
             filename_ = FLAGS_signal_source;
@@ -102,6 +107,16 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
         {
             filename_ = FLAGS_s;
         }
+#else
+    if (absl::GetFlag(FLAGS_signal_source) != "-")
+        {
+            filename_ = absl::GetFlag(FLAGS_signal_source);
+        }
+    if (absl::GetFlag(FLAGS_s) != "-")
+        {
+            filename_ = absl::GetFlag(FLAGS_s);
+        }
+#endif
     if (sampling_frequency_ == 0)
         {
             std::cerr << "Warning: parameter " << role_ << ".sampling_frequency is not set, this could lead to wrong results.\n"

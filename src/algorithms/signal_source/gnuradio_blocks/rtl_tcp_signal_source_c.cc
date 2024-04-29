@@ -20,9 +20,13 @@
 #include "rtl_tcp_commands.h"
 #include <boost/bind/bind.hpp>
 #include <boost/thread/thread.hpp>
-#include <glog/logging.h>
 #include <map>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 namespace ip = boost::asio::ip;
 

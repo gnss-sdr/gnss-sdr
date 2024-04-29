@@ -28,7 +28,6 @@
 #include "gps_l1_ca_pcps_acquisition.h"
 #include "in_memory_configuration.h"
 #include "test_flags.h"
-#include <glog/logging.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -38,6 +37,12 @@
 #include <chrono>
 #include <memory>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -132,7 +137,7 @@ protected:
 
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro{};
+    Gnss_Synchro gnss_synchro;
     size_t item_size;
     unsigned int doppler_max{5000};
     unsigned int doppler_step{100};
@@ -150,7 +155,12 @@ void GpsL1CaPcpsAcquisitionTest::init()
     config->set_property("Acquisition_1C.implementation", "GPS_L1_CA_PCPS_Acquisition");
     config->set_property("Acquisition_1C.item_type", "gr_complex");
     config->set_property("Acquisition_1C.coherent_integration_time_ms", "1");
+
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             config->set_property("Acquisition_1C.dump", "true");
         }
@@ -185,8 +195,12 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid() const
     std::vector<int> *doppler = &acq_dump.doppler;
     std::vector<unsigned int> *samples = &acq_dump.samples;
     std::vector<std::vector<float> > *mag = &acq_dump.mag;
-
+#if USE_GLOG_AND_GFLAGS
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+    const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
+
     if (gnuplot_executable.empty())
         {
             std::cout << "WARNING: Although the flag plot_acq_grid has been set to TRUE,\n";
@@ -204,7 +218,11 @@ void GpsL1CaPcpsAcquisitionTest::plot_grid() const
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("lines");
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_show_plots)
+#else
+                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                         {
                             g1.showonscreen();  // window output
                         }
@@ -286,7 +304,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
 
     init();
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             std::string data_str = "./tmp-acq-gps1";
             if (fs::exists(data_str))
@@ -354,7 +376,11 @@ TEST_F(GpsL1CaPcpsAcquisitionTest /*unused*/, ValidationOfResults /*unused*/)
     EXPECT_LE(doppler_error_hz, 666) << "Doppler error exceeds the expected value: 666 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             plot_grid();
         }

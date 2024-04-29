@@ -16,8 +16,12 @@
  */
 
 #include "pvt_kf.h"
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 void Pvt_Kf::init_Kf(const arma::vec& p,
     const arma::vec& v,

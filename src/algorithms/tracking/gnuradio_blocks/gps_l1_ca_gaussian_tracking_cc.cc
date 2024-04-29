@@ -30,7 +30,6 @@
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -44,6 +43,11 @@
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 gps_l1_ca_gaussian_tracking_cc_sptr gps_l1_ca_gaussian_make_tracking_cc(
     uint32_t order,
@@ -126,7 +130,11 @@ Gps_L1_Ca_Gaussian_Tracking_cc::Gps_L1_Ca_Gaussian_Tracking_cc(
       d_cn0_estimation_counter(0),
       d_carrier_lock_test(1),
       d_CN0_SNV_dB_Hz(0),
+#if USE_GLOG_AND_GFLAGS
       d_carrier_lock_threshold(FLAGS_carrier_lock_th),
+#else
+      d_carrier_lock_threshold(absl::GetFlag(FLAGS_carrier_lock_th)),
+#endif
       d_carrier_lock_fail_counter(0),
       d_enable_tracking(false),
       d_pull_in(false),
@@ -154,8 +162,11 @@ Gps_L1_Ca_Gaussian_Tracking_cc::Gps_L1_Ca_Gaussian_Tracking_cc(
 
     multicorrelator_cpu.init(2 * d_current_prn_length_samples, d_n_correlator_taps);
 
+#if USE_GLOG_AND_GFLAGS
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-
+#else
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(absl::GetFlag(FLAGS_cn0_samples));
+#endif
     systemName["G"] = std::string("GPS");
     systemName["S"] = std::string("SBAS");
 
@@ -746,7 +757,12 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
             d_rem_code_phase_chips = d_code_freq_chips * (d_rem_code_phase_samples / static_cast<double>(d_fs_in));
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
+
+#if USE_GLOG_AND_GFLAGS
             if (d_cn0_estimation_counter < FLAGS_cn0_samples)
+#else
+            if (d_cn0_estimation_counter < absl::GetFlag(FLAGS_cn0_samples))
+#endif
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = d_correlator_outs[1];  // prompt
@@ -755,12 +771,21 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
             else
                 {
                     d_cn0_estimation_counter = 0;
+#if USE_GLOG_AND_GFLAGS
                     // Code lock indicator
                     d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD_S);
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
                     // Loss of lock detection
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+#else
+                    // Code lock indicator
+                    d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples), GPS_L1_CA_CODE_PERIOD_S);
+                    // Carrier lock indicator
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples));
+                    // Loss of lock detection
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+#endif
                         {
                             // if (d_channel == 1)
                             // std::cout << "Carrier Lock Test Fail in channel " << d_channel << ": " << d_carrier_lock_test << " < " << d_carrier_lock_threshold << "," << nfail++ << '\n';
@@ -774,7 +799,11 @@ int Gps_L1_Ca_Gaussian_Tracking_cc::general_work(int noutput_items __attribute__
                                     d_carrier_lock_fail_counter--;
                                 }
                         }
+#if USE_GLOG_AND_GFLAGS
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
+#else
+                    if (d_carrier_lock_fail_counter > absl::GetFlag(FLAGS_max_lock_fail))
+#endif
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

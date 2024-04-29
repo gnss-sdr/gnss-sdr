@@ -27,10 +27,15 @@ target_link_libraries(signal_generator_adapters
         Gnuradio::pmt
         signal_generator_gr_blocks
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         core_system_parameters
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_generator_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(signal_generator_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_generator_adapters PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(signal_generator_adapters
     PUBLIC

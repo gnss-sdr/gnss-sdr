@@ -29,8 +29,14 @@ target_link_libraries(obs_adapters
         core_system_parameters
     PRIVATE
         gnss_sdr_flags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(obs_adapters PRIVATE Glog::glog)
+    target_compile_definitions(obs_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(obs_adapters PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

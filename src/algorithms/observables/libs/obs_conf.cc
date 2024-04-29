@@ -18,6 +18,12 @@
 #include "obs_conf.h"
 #include "gnss_sdr_flags.h"
 
+#if USE_GLOG_AND_GFLAGS
 Obs_Conf::Obs_Conf() : smoothing_factor(FLAGS_carrier_smoothing_factor)
 {
 }
+#else
+Obs_Conf::Obs_Conf() : smoothing_factor(absl::GetFlag(FLAGS_carrier_smoothing_factor))
+{
+}
+#endif

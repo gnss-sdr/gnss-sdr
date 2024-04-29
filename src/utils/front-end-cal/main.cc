@@ -40,8 +40,6 @@
 #include <boost/any.hpp>              // for bad_any_cast
 #include <boost/exception/exception.hpp>
 #include <boost/lexical_cast.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
 #include <gnuradio/block.h>  // for block
 #include <gnuradio/blocks/file_sink.h>
 #include <gnuradio/blocks/file_source.h>
@@ -70,6 +68,23 @@
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#else
+#include <absl/flags/flag.h>
+#include <absl/flags/parse.h>
+#include <absl/flags/usage.h>
+#include <absl/flags/usage_config.h>
+#include <absl/log/globals.h>
+#include <absl/log/initialize.h>
+#include <absl/log/log.h>
+#include <absl/log/log_sink.h>
+#include <absl/log/log_sink_registry.h>
+
+
+#endif
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
@@ -81,14 +96,39 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+#if USE_GLOG_AND_GFLAGS
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
 using namespace google;
 }
 #endif
-
 DECLARE_string(log_dir);
+#else
+class FrontEndCalLogSink : public absl::LogSink
+{
+public:
+    FrontEndCalLogSink()
+    {
+        if (!absl::GetFlag(FLAGS_log_dir).empty())
+            {
+                logfile.open(absl::GetFlag(FLAGS_log_dir) + "/front_end_cal.log");
+            }
+        else
+            {
+                logfile.open(GetTempDir() + "/front_end_cal.log");
+            }
+    }
+    void Send(const absl::LogEntry& entry) override
+    {
+        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
+    }
+
+private:
+    std::ofstream logfile;
+};
+std::string FrontEndCalVersionString() { return std::string(FRONT_END_CAL_VERSION) + "\n"; }
+#endif
 
 Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
 Concurrent_Map<Gps_Iono> global_gps_iono_map;
@@ -100,7 +140,7 @@ Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 bool stop;
 Concurrent_Queue<int> channel_internal_queue;
 std::vector<Gnss_Synchro> gnss_sync_vector;
-Gnss_Synchro gnss_synchro{};
+Gnss_Synchro gnss_synchro;
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class FrontEndCal_msg_rx;
@@ -277,10 +317,17 @@ int main(int argc, char** argv)
                 "This program comes with ABSOLUTELY NO WARRANTY;\n" +
                 "See COPYING file to see a copy of the General Public License\n \n");
 
+#if USE_GLOG_AND_GFLAGS
             gflags::SetUsageMessage(intro_help);
             google::SetVersionString(FRONT_END_CAL_VERSION);
             gflags::ParseCommandLineFlags(&argc, &argv, true);
-
+#else
+            absl::FlagsUsageConfig empty_config;
+            empty_config.version_string = &FrontEndCalVersionString;
+            absl::SetFlagsUsageConfig(empty_config);
+            absl::SetProgramUsageMessage(intro_help);
+            absl::ParseCommandLine(argc, argv);
+#endif
             std::cout << "Initializing... Please wait.\n";
         }
     catch (const std::exception& e)
@@ -289,8 +336,16 @@ int main(int argc, char** argv)
             std::cout << "front-end-cal program ended.\n";
             return 1;
         }
+
+#if USE_GLOG_AND_GFLAGS
     google::InitGoogleLogging(argv[0]);
     if (FLAGS_log_dir.empty())
+#else
+    absl::LogSink* fecLogSink = new FrontEndCalLogSink;
+    absl::AddLogSink(fecLogSink);
+    absl::InitializeLog();
+    if (absl::GetFlag(FLAGS_log_dir).empty())
+#endif
         {
             std::cout << "Logging will be done at "
                       << "/tmp"
@@ -302,29 +357,49 @@ int main(int argc, char** argv)
         {
             try
                 {
+#if USE_GLOG_AND_GFLAGS
                     const fs::path p(FLAGS_log_dir);
+#else
+                    const fs::path p(absl::GetFlag(FLAGS_log_dir));
+#endif
                     if (!fs::exists(p))
                         {
                             std::cout << "The path "
+#if USE_GLOG_AND_GFLAGS
                                       << FLAGS_log_dir
+#else
+                                      << absl::GetFlag(FLAGS_log_dir)
+#endif
                                       << " does not exist, attempting to create it"
                                       << '\n';
                             errorlib::error_code ec;
                             if (!fs::create_directory(p, ec))
                                 {
+#if USE_GLOG_AND_GFLAGS
                                     std::cerr << "Could not create the " << FLAGS_log_dir << " folder. Front-end-cal program ended.\n";
                                     gflags::ShutDownCommandLineFlags();
+#else
+                                    std::cerr << "Could not create the " << absl::GetFlag(FLAGS_log_dir) << " folder. Front-end-cal program ended.\n";
+#endif
                                     return 1;
                                 }
                         }
                     std::cout << "Logging with be done at "
+#if USE_GLOG_AND_GFLAGS
                               << FLAGS_log_dir << '\n';
+#else
+                              << absl::GetFlag(FLAGS_log_dir) << '\n';
+#endif
                 }
             catch (const std::exception& e)
                 {
                     std::cerr << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                     std::cerr << "Could not create the " << FLAGS_log_dir << " folder. Front-end-cal program ended.\n";
                     gflags::ShutDownCommandLineFlags();
+#else
+                    std::cerr << "Could not create the " << absl::GetFlag(FLAGS_log_dir) << " folder. Front-end-cal program ended.\n";
+#endif
                     return 1;
                 }
         }
@@ -335,7 +410,11 @@ int main(int argc, char** argv)
             FrontEndCal front_end_cal;
 
             // 1. Load configuration parameters from config file
+#if USE_GLOG_AND_GFLAGS
             std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(FLAGS_config_file);
+#else
+            std::shared_ptr<ConfigurationInterface> configuration = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_config_file));
+#endif
             front_end_cal.set_configuration(configuration);
 
             // 2. Get SUPL information from server: Ephemeris record, assistance info and TOW
@@ -541,7 +620,9 @@ int main(int argc, char** argv)
                     else
                         {
                             std::cout << "Unable to get Ephemeris SUPL assistance. TOW is unknown!\n";
+#if USE_GLOG_AND_GFLAGS
                             gflags::ShutDownCommandLineFlags();
+#endif
                             std::cout << "GNSS-SDR Front-end calibration program ended.\n";
                             return 0;
                         }
@@ -549,7 +630,9 @@ int main(int argc, char** argv)
             catch (const boost::exception& e)
                 {
                     std::cout << "Exception in getting Global ephemeris map\n";
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     std::cout << "GNSS-SDR Front-end calibration program ended.\n";
                     return 0;
                 }
@@ -568,7 +651,9 @@ int main(int argc, char** argv)
             if (doppler_measurements_map.empty())
                 {
                     std::cout << "Sorry, no GPS satellites detected in the front-end capture, please check the antenna setup...\n";
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     std::cout << "GNSS-SDR Front-end calibration program ended.\n";
                     return 0;
                 }
@@ -673,17 +758,22 @@ int main(int argc, char** argv)
     catch (const std::exception& e)
         {
             std::cerr << "Exception: " << e.what();
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
     catch (...)
         {
             std::cerr << "Unknown error\n";
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
-
+#if USE_GLOG_AND_GFLAGS
     gflags::ShutDownCommandLineFlags();
+#endif
     std::cout << "GNSS-SDR Front-end calibration program ended.\n";
     return 0;
 }

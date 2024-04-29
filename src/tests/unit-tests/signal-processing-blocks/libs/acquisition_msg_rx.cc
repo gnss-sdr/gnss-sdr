@@ -17,10 +17,17 @@
  */
 
 #include "acquisition_msg_rx.h"
-#include <gflags/gflags.h>
-#include <glog/logging.h>
 #include <cstdint>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#else
+#include <absl/flags/flag.h>
+#include <absl/log/log.h>
+#endif
+
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>

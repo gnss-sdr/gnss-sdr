@@ -34,7 +34,7 @@ DEFINE_int32(plot_decimate, 1, "Decimate plots");
 #else
 #include <absl/flags/flag.h>
 #if defined GNUPLOT_EXECUTABLE
-ABSL_FLAG(std::string, std::string(GNUPLOT_EXECUTABLE), "Gnuplot binary path");
+ABSL_FLAG(std::string, gnuplot_executable, std::string(GNUPLOT_EXECUTABLE), "Gnuplot binary path");
 #elif !defined GNUPLOT_EXECUTABLE
 ABSL_FLAG(std::string, gnuplot_executable, "", "Gnuplot binary path");
 #endif

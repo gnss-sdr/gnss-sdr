@@ -60,7 +60,7 @@ if(Boost_FOUND)
     endif()
 
     if("${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
-        set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+        set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     endif()
 
     # Do not show warnings raised by GPSTk v3.0.0

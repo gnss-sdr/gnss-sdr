@@ -177,8 +177,10 @@ static inline std::string GetTempDir()
     // Use first directory from list of existing temporary directories.
     return temp_directories_list.front();
 }
-#endif
 
+bool ValidateFlags();
+
+#endif
 
 /** \} */
 /** \} */

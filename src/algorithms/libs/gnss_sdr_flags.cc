@@ -68,7 +68,7 @@ DEFINE_bool(keyboard, true, "If set to false, it disables the keyboard listener 
 
 static bool ValidateC(const char* flagname, const std::string& value)
 {
-    if (fs::exists(value) or value == "-")
+    if (fs::exists(value) || value == "-")
         {  // value is ok
             return true;
         }
@@ -79,7 +79,7 @@ static bool ValidateC(const char* flagname, const std::string& value)
 
 static bool ValidateConfigFile(const char* flagname, const std::string& value)
 {
-    if (fs::exists(value) or value == std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"))
+    if (fs::exists(value) || value == std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf"))
         {  // value is ok
             return true;
         }
@@ -90,7 +90,7 @@ static bool ValidateConfigFile(const char* flagname, const std::string& value)
 
 static bool ValidateS(const char* flagname, const std::string& value)
 {
-    if (fs::exists(value) or value == "-")
+    if (fs::exists(value) || value == "-")
         {  // value is ok
             return true;
         }
@@ -101,7 +101,7 @@ static bool ValidateS(const char* flagname, const std::string& value)
 
 static bool ValidateSignalSource(const char* flagname, const std::string& value)
 {
-    if (fs::exists(value) or value == "-")
+    if (fs::exists(value) || value == "-")
         {  // value is ok
             return true;
         }
@@ -256,4 +256,112 @@ ABSL_FLAG(int32_t, carrier_smoothing_factor, DEFAULT_CARRIER_SMOOTHING_FACTOR, "
 ABSL_FLAG(std::string, RINEX_version, "-", "If defined, specifies the RINEX version (2.11 or 3.02). Overrides the configuration file.");
 ABSL_FLAG(std::string, RINEX_name, "-", "If defined, specifies the RINEX files base name");
 ABSL_FLAG(bool, keyboard, true, "If set to false, it disables the keyboard listener (so the receiver cannot be stopped with q+[Enter])");
+
+bool ValidateFlags()
+{
+    bool success = true;
+
+    auto value_c = absl::GetFlag(FLAGS_c);
+    if (!(fs::exists(value_c) || value_c == "-"))
+        {
+            std::cerr << "Invalid value for flag -c. The file '" << value_c << "' does not exist.\n";
+            success = false;
+        }
+
+    auto value_config_file = absl::GetFlag(FLAGS_config_file);
+    if (!(fs::exists(value_config_file) || value_config_file == std::string(GNSSSDR_INSTALL_DIR "/share/gnss-sdr/conf/default.conf")))
+        {
+            std::cerr << "Invalid value for flag -config_file. The file '" << value_config_file << "' does not exist.\n";
+            success = false;
+        }
+
+    auto value_s = absl::GetFlag(FLAGS_s);
+    if (!(fs::exists(value_s) || value_s == "-"))
+        {
+            std::cerr << "Invalid value for flag -s. The file '" << value_s << "' does not exist.\n";
+            success = false;
+        }
+
+    auto value_signal_source = absl::GetFlag(FLAGS_signal_source);
+    if (!(fs::exists(value_signal_source) || value_signal_source == "-"))
+        {
+            std::cerr << "Invalid value for flag -signal_source. The file '" << value_signal_source << "' does not exist.\n";
+            success = false;
+        }
+
+    auto value_doppler_max = absl::GetFlag(FLAGS_doppler_max);
+    const int32_t max_doppler_value = 1000000;
+    if (value_doppler_max < 0 || value_doppler_max > max_doppler_value)
+        {
+            std::cerr << "Invalid value for flag -doppler_max. Allowed range is 0 < doppler_max < " << max_doppler_value << " Hz.\n";
+            success = false;
+        }
+
+    auto value_doppler_step = absl::GetFlag(FLAGS_doppler_step);
+    const int32_t max_value_doppler_step = 10000;
+    if (value_doppler_step < 0 || value_doppler_step > max_value_doppler_step)
+        {
+            std::cerr << "Invalid value for flag -doppler_step: " << value_doppler_step << ". Allowed range is 0 < doppler_step < " << max_value_doppler_step << " Hz.\n";
+            success = false;
+        }
+
+    auto value_cn0_samples = absl::GetFlag(FLAGS_cn0_samples);
+    const int32_t max_value_cn0_samples = 10000;
+    if (value_cn0_samples < 0 || value_cn0_samples > max_value_cn0_samples)
+        {
+            std::cerr << "Invalid value for flag -cn0_samples: " << value_cn0_samples << ". Allowed range is 0 < cn0_samples < " << max_value_cn0_samples << " Hz.\n";
+            success = false;
+        }
+
+    auto value_cn0_min = absl::GetFlag(FLAGS_cn0_min);
+    const int32_t max_value_cn0_min = 100;
+    if (value_cn0_min < 0 || value_cn0_min > max_value_cn0_min)
+        {
+            std::cerr << "Invalid value for flag -cn0_min: " << value_cn0_min << ". Allowed range is 0 < cn0_min < " << max_value_cn0_min << " Hz.\n";
+            success = false;
+        }
+
+    auto value_max_lock_fail = absl::GetFlag(FLAGS_max_lock_fail);
+    const int32_t max_value_max_lock_fail = 10000;
+    if (value_max_lock_fail < 0 || value_max_lock_fail > max_value_max_lock_fail)
+        {
+            std::cerr << "Invalid value for flag -max_lock_fail: " << value_max_lock_fail << ". Allowed range is 0 < max_lock_fail < " << max_value_max_lock_fail << " Hz.\n";
+            success = false;
+        }
+
+    auto value_carrier_lock_th = absl::GetFlag(FLAGS_carrier_lock_th);
+    const double max_value_carrier_lock_th = 1.508;
+    if (value_carrier_lock_th < 0.0 || value_carrier_lock_th > max_value_carrier_lock_th)
+        {
+            std::cerr << "Invalid value for flag -carrier_lock_th: " << value_carrier_lock_th << ". Allowed range is 0 < carrier_lock_th < " << max_value_carrier_lock_th << " Hz.\n";
+            success = false;
+        }
+
+    auto value_dll_bw_hz = absl::GetFlag(FLAGS_dll_bw_hz);
+    const double max_value_dll_bw_hz = 10000.0;
+    if (value_dll_bw_hz < 0.0 || value_dll_bw_hz > max_value_dll_bw_hz)
+        {
+            std::cerr << "Invalid value for flag -dll_bw_hz: " << value_dll_bw_hz << ". Allowed range is 0 < dll_bw_hz < " << max_value_dll_bw_hz << " Hz.\n";
+            success = false;
+        }
+
+    auto value_pll_bw_hz = absl::GetFlag(FLAGS_pll_bw_hz);
+    const double max_value_pll_bw_hz = 10000.0;
+    if (value_pll_bw_hz < 0.0 || value_pll_bw_hz > max_value_pll_bw_hz)
+        {
+            std::cerr << "Invalid value for flag -pll_bw_hz: " << value_pll_bw_hz << ". Allowed range is 0 < pll_bw_hz < " << max_value_pll_bw_hz << " Hz.\n";
+            success = false;
+        }
+
+    auto value_carrier_smoothing_factor = absl::GetFlag(FLAGS_carrier_smoothing_factor);
+    const int32_t min_value_carrier_smoothing_factor = 1;
+    if (value_carrier_smoothing_factor < min_value_carrier_smoothing_factor)
+        {
+            std::cerr << "Invalid value for flag -carrier_smoothing_factor: " << value_carrier_smoothing_factor << ". Allowed range is 1 <= carrier_smoothing_factor.\n";
+            success = false;
+        }
+
+    return success;
+}
+
 #endif

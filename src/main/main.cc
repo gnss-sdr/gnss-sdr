@@ -125,6 +125,11 @@ int main(int argc, char** argv)
             absl::SetFlagsUsageConfig(empty_config);
             absl::SetProgramUsageMessage(intro_help);
             absl::ParseCommandLine(argc, argv);
+            if (!ValidateFlags())
+                {
+                    std::cout << "GNSS-SDR program ended.\n";
+                    return 1;
+                }
 
 #endif
             std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait.\n";

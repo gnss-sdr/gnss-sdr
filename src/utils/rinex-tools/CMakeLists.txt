@@ -34,7 +34,9 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     endif()
 
     target_include_directories(obsdiff PUBLIC ${GNSSSDR_SOURCE_DIR}/src/tests/common-files)
-    set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+    if("${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
+        set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+    endif()
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(obsdiff
@@ -111,7 +113,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         target_link_libraries(obsdiff PRIVATE Gflags::gflags)
         target_compile_definitions(obsdiff PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(obsdiff PRIVATE absl::flags absl::flags_parse)
+        target_link_libraries(obsdiff PUBLIC absl::flags absl::flags_parse)
     endif()
 
     if(ENABLE_STRIP)

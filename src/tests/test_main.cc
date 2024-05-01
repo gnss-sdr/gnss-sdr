@@ -38,6 +38,7 @@ DECLARE_string(log_dir);
 #include "gnss_sdr_flags.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
+#include <absl/log/flags.h>
 #include <absl/log/globals.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
@@ -220,7 +221,6 @@ int main(int argc, char **argv)
     absl::ParseCommandLine(argc, argv);
     absl::LogSink *testLogSink = new TestingLogSink;
     absl::AddLogSink(testLogSink);
-    // absl::SetMinLogLevel(absl::LogSeverityAtLeast::kInfinity);
     absl::InitializeLog();
 #endif
     try

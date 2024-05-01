@@ -26,7 +26,7 @@ if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(gnss-sdr PRIVATE Gflags::gflags Glog::glog)
     target_compile_definitions(gnss-sdr PUBLIC -DUSE_GLOG_AND_GFLAGS=1)
 else()
-    target_link_libraries(gnss-sdr PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+    target_link_libraries(gnss-sdr PRIVATE absl::flags absl::flags_parse absl::log $<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags> absl::log_initialize absl::log_sink absl::log_sink_registry)
 endif()
 
 if(NOT ENABLE_LOG)

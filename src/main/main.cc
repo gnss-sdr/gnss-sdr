@@ -57,6 +57,7 @@ using namespace google;
 #include <absl/flags/parse.h>
 #include <absl/flags/usage.h>
 #include <absl/flags/usage_config.h>
+#include <absl/log/flags.h>
 #include <absl/log/globals.h>
 #include <absl/log/initialize.h>
 #include <absl/log/log.h>
@@ -124,6 +125,7 @@ int main(int argc, char** argv)
             absl::SetFlagsUsageConfig(empty_config);
             absl::SetProgramUsageMessage(intro_help);
             absl::ParseCommandLine(argc, argv);
+
 #endif
             std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait.\n";
         }
@@ -147,7 +149,6 @@ int main(int argc, char** argv)
 
     if (GOOGLE_STRIP_LOG == 0)
         {
-            // google::InitGoogleLogging(argv[0]);
 #if USE_GLOG_AND_GFLAGS
             google::InitGoogleLogging(argv[0]);
             if (FLAGS_log_dir.empty())
@@ -212,7 +213,13 @@ int main(int argc, char** argv)
                         }
                 }
         }
-
+#if USE_GLOG_AND_GFLAGS
+#else
+    else
+        {
+            absl::SetMinLogLevel(absl::LogSeverityAtLeast::kInfinity);  // do not log
+        }
+#endif
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::time_point<std::chrono::system_clock> end;
     start = std::chrono::system_clock::now();

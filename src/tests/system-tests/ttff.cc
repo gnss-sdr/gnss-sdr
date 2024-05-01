@@ -52,6 +52,7 @@ using namespace google;
 #else
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
+#include <absl/log/flags.h>
 #include <absl/log/log.h>
 #endif
 

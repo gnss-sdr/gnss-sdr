@@ -1406,8 +1406,8 @@ endif()
 ################################################################################
 # Abseil C++ - https://abseil.io/docs/cpp/
 ################################################################################
-if(CMAKE_VERSION VERSION_GREATER 3.13
-    AND NOT (CMAKE_CXX_STANDARD VERSION_LESS 14)
+if(NOT CMAKE_VERSION VERSION_LESS 3.24
+    AND NOT CMAKE_CXX_STANDARD VERSION_LESS 17
     AND NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3.1)
     AND NOT (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
     AND NOT (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12)

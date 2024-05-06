@@ -34,6 +34,9 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
+#include <openssl/ec.h>
+#include <openssl/param_build.h>
+#include <openssl/bn.h>
 #define OPENSSL_ENGINE nullptr
 #else
 #include <openssl/sha.h>
@@ -490,7 +493,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
     gnutls_pubkey_deinit(pubkey);
 #endif
     std::cout << "Public key successfully read from file " << pemFilePath << std::endl;
-    print_pubkey_hex(d_PublicKey);
+    //print_pubkey_hex(d_PublicKey);
 }
 
 
@@ -545,7 +548,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 
 #if USE_OPENSSL_3
     EVP_PKEY_CTX* ctx;
-    print_pubkey_hex(d_PublicKey);
+    //print_pubkey_hex(d_PublicKey);
     ctx = EVP_PKEY_CTX_new(d_PublicKey, nullptr);
     bool do_operation = true;
 
@@ -553,6 +556,42 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         {
             do_operation = false;
         }
+    // convert raw signature into DER format, needed for verify_signature
+    size_t half_size = signature.size() / 2;
+    std::vector<uint8_t> raw_r(signature.begin(), signature.begin() + half_size);
+    std::vector<uint8_t> raw_s(signature.begin() + half_size, signature.end());
+
+    // Convert raw R and S to BIGNUMs
+    BIGNUM* r = BN_bin2bn(raw_r.data(), raw_r.size(), nullptr);
+    BIGNUM* s = BN_bin2bn(raw_s.data(), raw_s.size(), nullptr);
+
+    ECDSA_SIG* sig = ECDSA_SIG_new();
+    if (r == nullptr || s == nullptr || sig == nullptr)
+        {
+            std::cerr << "Failed to allocate memory for BIGNUMs or ECDSA_SIG" << std::endl;
+            return false;
+        }
+
+    if (ECDSA_SIG_set0(sig, r, s) != 1)
+        {
+            std::cerr << "Failed to set R and S values in ECDSA_SIG" << std::endl;
+            ECDSA_SIG_free(sig); // Free the ECDSA_SIG struct as it's no longer needed
+            return false;
+        }
+
+    std::vector<uint8_t> derSignature;
+    unsigned char *derSig = nullptr;
+    int derSigLength = i2d_ECDSA_SIG(sig, &derSig);
+
+    if (derSigLength <= 0)
+        {
+            std::cerr << "Failed to convert ECDSA_SIG to DER format" << std::endl;
+            return false;
+        }
+
+    derSignature.assign(derSig, derSig + derSigLength);
+
+
     if (EVP_PKEY_verify_init(ctx) <= 0)
         {
             do_operation = false;
@@ -564,9 +603,11 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     int verification = 0;
     if (do_operation)
         {
-            verification = EVP_PKEY_verify(ctx, signature.data(), signature.size(), digest.data(), digest.size());
+            verification = EVP_PKEY_verify(ctx, derSignature.data(), derSignature.size(), digest.data(), digest.size());
         }
     EVP_PKEY_CTX_free(ctx);
+    OPENSSL_free(derSig);
+    ECDSA_SIG_free(sig);
     if (verification == 1)
         {
             success = true;
@@ -682,7 +723,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
                       << ". Aborting import" << std::endl;
             return;
         }
-        print_pubkey_hex(pkey);
+        //print_pubkey_hex(pkey);
 
         if(!pubkey_copy(pkey, &d_PublicKey))
             return
@@ -735,7 +776,6 @@ std::vector<uint8_t> Gnss_Crypto::get_public_key()
 #endif
     return {};
 }
-
 
 #if USE_OPENSSL_FALLBACK
 bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
@@ -809,7 +849,7 @@ void Gnss_Crypto::print_pubkey_hex(EVP_PKEY* pubkey)
                 static_cast<int>(static_cast<unsigned char>(mem_ptr->data[i]));
         }
 
-    std::cout << "Public key in hex format: 0x" << ss.str() << std::endl;
+    //std::cout << "Public key in hex format: 0x" << ss.str() << std::endl;
 
     BIO_free(mem_bio);
 }

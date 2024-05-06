@@ -113,6 +113,7 @@ private:
     enum tags_to_verify{all,utc,slow_eph, eph, none}; // TODO is this safe? I hope so
     tags_to_verify d_tags_allowed{tags_to_verify::all};
     std::vector<uint8_t> d_tags_to_verify{0,4,12};
+    std::vector<uint8_t> d_validated_key{};
     void remove_verified_tags();
     void control_tags_awaiting_verify_size();
     bool verify_macseq(const MACK_message& mack);

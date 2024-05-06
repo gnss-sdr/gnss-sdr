@@ -78,20 +78,20 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
             return;
         }
     ip::tcp::endpoint ep(addr, port);
-    socket_.open(ep.protocol(), ec);
+    socket_.open(ep.protocol(), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to open socket.\n";
             LOG(ERROR) << "Failed to open socket.";
         }
 
-    socket_.set_option(boost::asio::socket_base::reuse_address(true), ec);
+    socket_.set_option(boost::asio::socket_base::reuse_address(true), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to set reuse address option: " << ec << '\n';
             LOG(WARNING) << "Failed to set reuse address option";
         }
-    socket_.set_option(boost::asio::socket_base::linger(true, 0), ec);
+    socket_.set_option(boost::asio::socket_base::linger(true, 0), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to set linger option: " << ec << '\n';
@@ -99,8 +99,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
         }
 
     // 3. Connect socket
-
-    socket_.connect(ep, ec);
+    socket_.connect(ep, ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to connect to " << addr << ":" << port
@@ -113,7 +112,7 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
     LOG(INFO) << "Connected to " << addr << ":" << port;
 
     // 4. Set nodelay
-    socket_.set_option(ip::tcp::no_delay(true), ec);
+    socket_.set_option(ip::tcp::no_delay(true), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {
             std::cout << "Failed to set no delay option.\n";

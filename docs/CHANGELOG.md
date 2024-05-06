@@ -14,6 +14,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Interoperability:
+
+- Improved error handling in UDP connections.
+
 ### Improvements in Portability:
 
 - Fix building against google-glog 0.7.0.

@@ -128,12 +128,12 @@ uint8_t OSNMA_DSM_Reader::get_towh_k(const std::vector<uint8_t>& dsm_msg) const
 
 uint64_t OSNMA_DSM_Reader::get_alpha(const std::vector<uint8_t>& dsm_msg) const
 {
-    uint64_t alpha = (static_cast<uint64_t>(dsm_msg[8]) << 40) +
-                     (static_cast<uint64_t>(dsm_msg[9]) << 32) +
-                     (static_cast<uint64_t>(dsm_msg[10]) << 24) +
-                     (static_cast<uint64_t>(dsm_msg[11]) << 16) +
-                     (static_cast<uint64_t>(dsm_msg[12]) << 8) +
-                     (static_cast<uint64_t>(dsm_msg[13]));
+    uint64_t alpha = (static_cast<uint64_t>(dsm_msg[7]) << 40) +
+                     (static_cast<uint64_t>(dsm_msg[8]) << 32) +
+                     (static_cast<uint64_t>(dsm_msg[9]) << 24) +
+                     (static_cast<uint64_t>(dsm_msg[10]) << 16) +
+                     (static_cast<uint64_t>(dsm_msg[11]) << 8) +
+                     (static_cast<uint64_t>(dsm_msg[12]));
     return alpha;
 }
 

@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
+#include <bitset>
+#include <filesystem>
 #include <fstream>
+#include <logging.h>
 #include <osnma_msg_receiver.h>
 #include <vector>
-#include <bitset>
 
 
 struct TestVector
@@ -23,10 +25,13 @@ protected:
     OSNMA_msg osnma_msg{};
     std::array<int8_t, 15> nma_position_filled;
     uint32_t d_GST_SIS{}; // 16 AUG 2023 05 00 01
-    int T {};
     uint32_t TOW{};
     uint32_t WN{};
+    std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0}; // months start with 0 and years since 1900 in std::tm
+    const uint32_t LEAP_SECONDS = 0;//13 + 5;
     void set_time(std::tm& input);
+    std::string log_name {"CONFIG1-2023-08-23-PKID1-OSNMA"};
+    void initializeGoogleLog();
 
     void SetUp() override
     {
@@ -38,6 +43,9 @@ protected:
         std::string pemFilePath = "OSNMA_PublicKey_20230803105952_newPKID_1.pem";
         std::string merkleFilePath = "OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
         osnma = osnma_msg_receiver_make(pemFilePath, merkleFilePath);
+    }
+    void TearDown() override{
+        google::ShutdownGoogleLogging();
     }
 
 public:
@@ -51,18 +59,27 @@ public:
 TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
     // Arrange
     osnma->d_tesla_key_verified = false;
-    osnma->d_osnma_data.d_dsm_kroot_message.kroot = {0x5B, 0xF8, 0xC9, 0xCB, 0xFC, 0xF7, 0x04, 0x22, 0x08, 0x14, 0x75, 0xFD, 0x44, 0x5D, 0xF0, 0xFF};
+    osnma->d_osnma_data.d_dsm_kroot_message.kroot = {0x5B, 0xF8, 0xC9, 0xCB, 0xFC, 0xF7, 0x04, 0x22, 0x08, 0x14, 0x75, 0xFD, 0x44, 0x5D, 0xF0, 0xFF}; // Kroot, TOW 345570 GST_0 - 30
     osnma->d_osnma_data.d_dsm_kroot_message.ks = 4; // TABLE 10 --> 128 bits
-    osnma->d_receiver_time = 345630;
-    osnma->d_GST_0 = 345600;
-    osnma->d_tesla_keys.insert((std::pair<uint32_t, std::vector<uint8_t>>(345600,{0xEF, 0xF9, 0x99, 0x04, 0x0E, 0x19, 0xB5, 0x70, 0x83, 0x50, 0x60, 0xBE, 0xBD, 0x23, 0xED, 0x92})));
-    std::vector<uint8_t> key = {0x2D, 0xC3, 0xA3, 0xCD, 0xB1, 0x17, 0xFA, 0xAD, 0xB8, 0x3B, 0x5F, 0x0B, 0x6F, 0xEA, 0x88, 0xEB};
+    osnma->d_osnma_data.d_dsm_kroot_message.alpha = 0x610BDF26D77B;
+    // local_time_verification would do this operation. TODO - eliminate duplication.
+    osnma->d_GST_SIS = (1248 & 0x00000FFF) << 20 | (345630 & 0x000FFFFF);
+    osnma->d_GST_0 = ((1248  & 0x00000FFF) << 20 | (345600 & 0x000FFFFF)); // applicable time (GST_Kroot + 30)
+    osnma->d_receiver_time =  osnma->d_GST_0 + 30 * std::floor((osnma->d_GST_SIS - osnma->d_GST_0) / 30); // Eq. 3 R.G.//345630;
+
+    osnma->d_tesla_keys.insert((std::pair<uint32_t, std::vector<uint8_t>>(345600,{0xEF, 0xF9, 0x99, 0x04, 0x0E, 0x19, 0xB5, 0x70, 0x83, 0x50, 0x60, 0xBE, 0xBD, 0x23, 0xED, 0x92}))); // K1, not needed, just for reference.
+    std::vector<uint8_t> key = {0x2D, 0xC3, 0xA3, 0xCD, 0xB1, 0x17, 0xFA, 0xAD, 0xB8, 0x3B, 0x5F, 0x0B, 0x6F, 0xEA, 0x88, 0xEB}; // K2
     uint32_t TOW = 345630;
+
 
 
 
     // Act
     bool result = osnma->verify_tesla_key(key, TOW);
+
+
+
+
 
     // Assert
     ASSERT_TRUE(result); // Adjust this according to what you expect
@@ -71,6 +88,7 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
 
 TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 {
+    initializeGoogleLog();
     // Arrange
     std::vector<TestVector> testVectors = readTestVectorsFromFile(/*"/home/cgm/CLionProjects/osnma/src/tests/data/*/"16_AUG_2023_GST_05_00_01.csv");
     bool end_of_hex_stream{false};
@@ -81,11 +99,9 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
     const int SIZE_SUBFRAME_BYTES{SIZE_PAGE_BYTES*SIZE_SUBFRAME_PAGES};
     const int DURATION_SUBFRAME{30};
 
-    std::cout << "OsnmaTestVectorsSimulation:" << std::endl;
-    std::cout << "d_GST_SIS: " << d_GST_SIS << std::endl;
-    std::cout << "T: " << T << std::endl;
-    std::cout << "TOW: " << TOW << std::endl;
-    std::cout << "WN: " << WN << std::endl;
+    std::cout << "OsnmaTestVectorsSimulation:" << " d_GST_SIS= " << d_GST_SIS
+    << ", TOW=" << TOW
+    << ", WN=" << WN << std::endl;
 
 
     // Act
@@ -144,14 +160,11 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
             if(!end_of_hex_stream){
                     offset_byte = byte_index; // update offset for the next subframe
                     d_GST_SIS += DURATION_SUBFRAME;
-                    T = d_GST_SIS % 30;
                     TOW = d_GST_SIS & 0x000FFFFF;
                     WN = (d_GST_SIS & 0xFFF00000) >> 20 ;
-                    std::cout << "OsnmaTestVectorsSimulation:" << std::endl;
-                    std::cout << "d_GST_SIS: " << d_GST_SIS << std::endl;
-                    std::cout << "T: " << T << std::endl;
-                    std::cout << "TOW: " << TOW << std::endl;
-                    std::cout << "WN: " << WN << std::endl;
+                    std::cout << "OsnmaTestVectorsSimulation:" << " d_GST_SIS= " << d_GST_SIS
+                              << ", TOW=" << TOW
+                              << ", WN=" << WN << std::endl;
                 }
 
 
@@ -239,12 +252,20 @@ std::vector<uint8_t> OsnmaMsgReceiverTest::extract_page_bytes(const TestVector& 
     return extracted_bytes;
 }
 
+/**
+ * @brief Sets the time based on the given input.
+ *
+ * This function calculates the week number (WN) and time of week (TOW)
+ * based on the input time and the GST_START_EPOCH. It then stores the
+ * calculated values in the WN and TOW member variables. Finally, it
+ * combines the WN and TOW into a single 32-bit value and stores it in
+ * the d_GST_SIS member variable.
+ *
+ * @param input The input time as a tm struct.
+ */
 void OsnmaMsgReceiverTest::set_time(std::tm& input)
 {
-    // GST epoch (start of GST time)
-    std::tm tm_epoch = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0};
-
-    auto epoch_time_point = std::chrono::system_clock::from_time_t(mktime(&tm_epoch));
+    auto epoch_time_point = std::chrono::system_clock::from_time_t(mktime(&GST_START_EPOCH));
     auto input_time_point = std::chrono::system_clock::from_time_t(mktime(&input));
 
     // Get the duration from epoch in seconds
@@ -255,11 +276,53 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
     uint32_t week_number = duration_sec.count() / sec_in_week;
     uint32_t time_of_week = duration_sec.count() % sec_in_week;
     this->WN =  week_number;
-    this->TOW =  time_of_week;
+    this->TOW =  time_of_week + LEAP_SECONDS;
     // Return the week number and time of week as a pair
 
     this->d_GST_SIS =  (this->WN  & 0x00000FFF) << 20 | (this->TOW & 0x000FFFFF);
-    this->T = d_GST_SIS % 30;
 
 
+}
+
+void OsnmaMsgReceiverTest::initializeGoogleLog()
+{
+    google::InitGoogleLogging(log_name.c_str());
+    FLAGS_minloglevel = 1;
+    FLAGS_logtostderr = 0;  // add this line
+    FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/build/src/tests/logs";
+    if (FLAGS_log_dir.empty())
+        {
+            std::cout << "Logging will be written at "
+                      << std::filesystem::temp_directory_path()
+                      << '\n'
+                      << "Use gnss-sdr --log_dir=/path/to/log to change that.\n";
+        }
+    else
+        {
+            try
+                {
+                    const std::filesystem::path p(FLAGS_log_dir);
+                    if (!std::filesystem::exists(p))
+                        {
+                            std::cout << "The path "
+                                      << FLAGS_log_dir
+                                      << " does not exist, attempting to create it.\n";
+                            std::error_code ec;
+                            if (!std::filesystem::create_directory(p, ec))
+                                {
+                                    std::cout << "Could not create the " << FLAGS_log_dir << " folder.\n";
+                                    gflags::ShutDownCommandLineFlags();
+                                    throw std::runtime_error("Could not create folder for logs");
+                                }
+                        }
+                    std::cout << "Logging will be written at " << FLAGS_log_dir << '\n';
+                }
+            catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << '\n';
+                    std::cerr << "Could not create the " << FLAGS_log_dir << " folder.\n";
+                    gflags::ShutDownCommandLineFlags();
+                    throw;
+                }
+        }
 }

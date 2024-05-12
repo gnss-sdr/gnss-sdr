@@ -40,6 +40,7 @@ friend class test_case_name##_##test_name##_Test
 
 class OSNMA_DSM_Reader;
 class Gnss_Crypto;
+class Osnma_Helper;
 class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
@@ -88,6 +89,7 @@ private:
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify; // container with tags to verify from arbitrary SVIDs, sorted by TOW
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
     std::unique_ptr<Gnss_Crypto> d_crypto;
+    std::unique_ptr<Osnma_Helper> d_helper;
 
     std::array<std::array<uint8_t, 256>, 16> d_dsm_message{}; // structure for recording DSM blocks, when filled it sends them to parse and resets itself.
     std::array<std::array<uint8_t, 16>, 16> d_dsm_id_received{};

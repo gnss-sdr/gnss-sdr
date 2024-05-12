@@ -35,6 +35,9 @@ void NavData::init(const std::shared_ptr<OSNMA_msg> &osnma_msg)
     PRNa = osnma_msg->PRN;
     WN_sf0 = osnma_msg->WN_sf0;
     TOW_sf0 = osnma_msg->TOW_sf0;
+
+    // new parsing, directly parsing bits
+    ephemeris_iono_vector_2 = osnma_msg->EphemerisClockAndStatusData_2;
 };
 void NavData::generate_eph_iono_vector()
 {
@@ -166,8 +169,3 @@ void NavData::generate_utc_vector()
         }
 }
 
-std::vector<uint8_t> Tag::build_message()
-{
-    // TODO
-    return std::vector<uint8_t>();
-}

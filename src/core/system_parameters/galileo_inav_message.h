@@ -51,7 +51,8 @@ public:
     uint32_t PRN{};
     uint32_t WN_sf0{}; // TODO - this is present in UtcModelData already
     uint32_t TOW_sf0{};
-    std::vector<uint8_t> EphemerisClockAndStatusData {};
+    std::vector<uint8_t> EphemerisClockAndStatusData {}; // TODO _2 rename and substitute this
+    std::string EphemerisClockAndStatusData_2{};
     std::vector<uint8_t> TimingData {};
     Galileo_Ephemeris EphemerisData {};
     Galileo_Iono IonoData {};

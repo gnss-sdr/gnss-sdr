@@ -99,6 +99,8 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
     const int SIZE_SUBFRAME_BYTES{SIZE_PAGE_BYTES*SIZE_SUBFRAME_PAGES};
     const int DURATION_SUBFRAME{30};
 
+    const int DUMMY_PAGE{63};
+    bool flag_dummy_page{false};
     std::cout << "OsnmaTestVectorsSimulation:" << " d_GST_SIS= " << d_GST_SIS
     << ", TOW=" << TOW
     << ", WN=" << WN << std::endl;
@@ -107,10 +109,12 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
     // Act
     while (end_of_hex_stream == false){ // loop over all bytes of data. Note all TestVectors have same amount of data.
             for(const TestVector& tv : testVectors) { // loop over all SVs, extract a subframe
+                    std::cout << "OsnmaTestVectorsSimulation: SVID "<< tv.svId << std::endl;
                     auto osnmaMsg_sptr = std::make_shared<OSNMA_msg>();
                     std::array<uint8_t, 15> hkroot{};
                     std::array<uint32_t, 15> mack{};
                     byte_index = offset_byte; // reset byte_index to the offset position for the next test vector. Offset is updated at the end of each Subframe (every 30 s or 450 Bytes)
+                    std::map<uint8_t, std::bitset<128>> words;
                     for (int idx = 0; idx < SIZE_SUBFRAME_PAGES; ++idx)    // extract all pages of a subframe
                         {
                             // extract bytes of complete page (odd+even) -- extract SIZE_PAGE from tv.navBits, starting from byte_index
@@ -133,6 +137,34 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                             bool tail_bits_OK = even_page.substr(even_page.size() - 6) == "000000" && odd_page.substr(odd_page.size() - 6) == "000000";
                             if(!even_odd_OK || !page_type_OK || !tail_bits_OK)
                                 std::cerr<< "OsnmaTestVectorsSimulation: error parsing pages." << std::endl;
+
+                            std::bitset<112> data_k(even_page.substr(2,112));
+                            std::bitset<16> data_j(odd_page.substr(2,16));
+                            std::bitset<112> shifted_data_k = data_k;
+//                            uint8_t word_type = 0;
+//                            for(int i = 0; i < 6; ++i) {
+//                                    word_type |= (data_k[104 + i] << i);
+//                                }
+                            uint8_t word_type = static_cast<uint8_t>((shifted_data_k >>= 106).to_ulong()); // word type is the first 6 bits of the word
+                            std::cout<< "OsnmaTestVectorsSimulation: received Word "<< static_cast<int>(word_type) << std::endl;
+                            if( (word_type >= 1 && word_type <=5) || word_type == 6 || word_type == 10)
+                                {
+                                    // store raw word
+                                    std::bitset<128> data_combined(data_k.to_string() + data_j.to_string());
+                                    words[word_type] = data_combined;
+//                                    std::vector<uint8_t> concatenatedData;
+//                                    for (std::size_t i = 0; i < data_k.size(); i += 8) {
+//                                            std::bitset<8> byte(data_k.to_string().substr(i, 8));
+//                                            concatenatedData.push_back(static_cast<uint8_t>(byte.to_ulong()));
+//                                        }
+//                                    for (std::size_t i = 0; i < data_j.size(); i += 8) {
+//                                            std::bitset<8> byte(data_j.to_string().substr(i, 8));
+//                                            concatenatedData.push_back(static_cast<uint8_t>(byte.to_ulong()));
+//                                        }
+                                }
+                            if(word_type == DUMMY_PAGE)
+                                flag_dummy_page = true;
+                            // place it into osnma object.
                             std::bitset<40> osnmaBits(odd_page.substr(18, 40));
                             // Extract bits for hkroot and mack
                             std::bitset<8> hkrootBits(osnmaBits.to_string().substr(0, 8));
@@ -142,14 +174,76 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 
                             byte_index += SIZE_PAGE_BYTES;
                         }
+                    std::cout<< "----------" << std::endl;
                     if(end_of_hex_stream)
                         break;
+                    if(flag_dummy_page){
+                            flag_dummy_page = false;
+                            continue; // skip this SV
+                        }
                     osnmaMsg_sptr->hkroot = hkroot;
                     osnmaMsg_sptr->mack = mack;
 
                     osnmaMsg_sptr->TOW_sf0 = d_GST_SIS & 0x000FFFFF;
                     osnmaMsg_sptr->WN_sf0 = (d_GST_SIS & 0xFFF00000) >> 20 ;
                     osnmaMsg_sptr->PRN = tv.svId;
+
+                    bool allWordsReceived = true;
+                    for (int i = 1; i <= 5; ++i)
+                        {
+                            if (words.find(i) == words.end() && flag_dummy_page == false)
+                                {
+                                    allWordsReceived = false;
+                                    std::cerr<< "OsnmaTestVectorsSimulation: error parsing words 1->5. "
+                                                 "Word "<< i << " should be received for each subframe but was not." << std::endl;
+                                }
+                        }
+                    if(allWordsReceived)
+                        {
+
+                            // Define the starting position and length of bits to extract for each word
+                            std::map<uint8_t, std::pair<uint8_t, uint8_t>> extractionParams = {
+                                {1, {6, 120}},
+                                {2, {6, 120}},
+                                {3, {6, 122}},
+                                {4, {6, 120}},
+                                {5, {6, 67}},
+                                // TODO words 6 and 10 for TimingData
+                            };
+
+                            // Iterate over the extraction parameters
+                            for (const auto& param : extractionParams) {
+                                    uint8_t wordKey = param.first;
+                                    uint8_t start = param.second.first;
+                                    uint8_t length = param.second.second;
+
+                                    // Extract the required bits
+                                    std::bitset<128> word = words[wordKey];
+
+                                    osnmaMsg_sptr->EphemerisClockAndStatusData_2 += words[wordKey].
+                                                                                    to_string().substr(
+                                                                                            start, length);
+
+//                                    std::bitset<8> byte;
+//                                    int byteIndex = 0;
+//                                    for (uint8_t i = start; i < start + length; ++i) {
+//                                            byte[byteIndex] = word[i];
+//                                            byteIndex++;
+//
+//                                            // Once we have collected 8 bits, we can add them as an uint8_t to the vector
+//                                            if (byteIndex == 8) {
+//                                                    osnmaMsg_sptr->EphemerisClockAndStatusData.push_back(static_cast<uint8_t>(byte.to_ulong()));
+//                                                    byte.reset();
+//                                                    byteIndex = 0;
+//                                                }
+//                                        }
+//
+//                                    // Push remaining bits if it didn't reach 8 bits
+//                                    if (byteIndex > 0) {
+//                                            osnmaMsg_sptr->EphemerisClockAndStatusData.push_back(static_cast<uint8_t>(byte.to_ulong()));
+//                                        }
+                                }
+                        }
 
                     auto temp_obj = pmt::make_any(osnmaMsg_sptr);
 
@@ -169,9 +263,6 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 
 
         }
-
-
-
     // Assert
     // TODO
 }

@@ -121,7 +121,8 @@ public:
     MACK_header header;
     std::vector<MACK_tag_and_info> tag_and_info;
     std::vector<uint8_t> key;
-    uint32_t TOW; // TODO duplicated variable
+    uint32_t TOW; // TODO duplicated variable, also in NavData
+    uint32_t WN;
     uint32_t PRNa;
 };
 
@@ -131,6 +132,7 @@ public:
     NavData()=default;
     void init(const std::shared_ptr<OSNMA_msg> &osnma_msg);
     std::vector<uint8_t> ephemeris_iono_vector{};
+    std::string ephemeris_iono_vector_2{};
     std::vector<uint8_t> utc_vector{};
     uint32_t PRNa{};
     uint32_t WN_sf0{};
@@ -168,10 +170,12 @@ public:
         SUCCESS,
         FAIL,
         UNVERIFIED};
-    Tag(const MACK_tag_and_info& MTI, uint32_t TOW, uint32_t PRNa)
+    Tag(const MACK_tag_and_info& MTI, uint32_t TOW,uint32_t WN, uint32_t PRNa,uint8_t CTR)
         : tag_id(id_counter++),
-          TOW(TOW),
+          TOW(TOW), // TODO missing for build_message WN for GST computation, CTR, NMAS, NavData missing
+          WN(WN),
           PRNa(PRNa),
+          CTR(CTR),
           status(UNVERIFIED),
           received_tag(MTI.tag),
           computed_tag(0),
@@ -184,10 +188,11 @@ public:
 
     const uint32_t tag_id;
     uint32_t TOW;
+    uint32_t WN;
     uint32_t PRNa;
+    uint8_t CTR;
     e_verification_status status;
     uint64_t received_tag;
-    std::vector<uint8_t> build_message();
 
     uint32_t static id_counter;
     uint64_t computed_tag;

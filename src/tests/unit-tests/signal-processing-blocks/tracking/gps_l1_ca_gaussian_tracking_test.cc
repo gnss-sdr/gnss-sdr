@@ -60,8 +60,11 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+#if USE_GLOG_AND_GFLAGS
 DEFINE_bool(plot_gps_l1_gaussian_tracking_test, false, "Plots results of GpsL1CAGaussianTrackingTest with gnuplot");
-
+#else
+ABSL_FLAG(bool, plot_gps_l1_gaussian_tracking_test, false, "Plots results of GpsL1CAGaussianTrackingTest with gnuplot");
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CAGaussianTrackingTest_msg_rx;
@@ -139,10 +142,15 @@ public:
 
     std::string implementation = "GPS_L1_CA_Gaussian_Tracking";
 
+#if USE_GLOG_AND_GFLAGS
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
-
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
+#else
+    const int baseband_sampling_freq = absl::GetFlag(FLAGS_fs_gen_sps);
+    std::string filename_rinex_obs = absl::GetFlag(FLAGS_filename_rinex_obs);
+    std::string filename_raw_data = absl::GetFlag(FLAGS_filename_raw_data);
+#endif
 
     int configure_generator();
     int generate_signal();
@@ -181,6 +189,7 @@ public:
 
 int GpsL1CAGaussianTrackingTest::configure_generator()
 {
+#if USE_GLOG_AND_GFLAGS
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
 
@@ -196,6 +205,24 @@ int GpsL1CAGaussianTrackingTest::configure_generator()
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
+#else
+    // Configure signal generator
+    generator_binary = absl::GetFlag(FLAGS_generator_binary);
+
+    p1 = std::string("-rinex_nav_file=") + absl::GetFlag(FLAGS_rinex_nav_file);
+    if (absl::GetFlag(FLAGS_dynamic_position).empty())
+        {
+            p2 = std::string("-static_position=") + absl::GetFlag(FLAGS_static_position) + std::string(",") + std::to_string(absl::GetFlag(FLAGS_duration) * 10);
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(absl::GetFlag(FLAGS_dynamic_position));
+        }
+    p3 = std::string("-rinex_obs_file=") + absl::GetFlag(FLAGS_filename_rinex_obs);  // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + absl::GetFlag(FLAGS_filename_raw_data);     // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);    // Baseband sampling frequency [MSps]
+#endif
+
     return 0;
 }
 
@@ -231,16 +258,27 @@ void GpsL1CAGaussianTrackingTest::configure_receiver()
     gnss_synchro.System = 'G';
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
+#if USE_GLOG_AND_GFLAGS
     gnss_synchro.PRN = FLAGS_test_satellite_PRN;
+#else
+    gnss_synchro.PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
 
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
     // Set Tracking
     config->set_property("Tracking_1C.implementation", implementation);
     config->set_property("Tracking_1C.item_type", "gr_complex");
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_dll_bw_hz != 0.0)
         {
             config->set_property("Tracking_1C.dll_bw_hz", std::to_string(FLAGS_dll_bw_hz));
         }
+#else
+    if (absl::GetFlag(FLAGS_dll_bw_hz) != 0.0)
+        {
+            config->set_property("Tracking_1C.dll_bw_hz", std::to_string(absl::GetFlag(FLAGS_dll_bw_hz)));
+        }
+#endif
     else
         {
             config->set_property("Tracking_1C.dll_bw_hz", "2.0");
@@ -376,18 +414,28 @@ TEST_F(GpsL1CAGaussianTrackingTest, ValidationOfResults)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_disable_generator == false)
         {
             generate_signal();
         }
-
+#else
+    if (absl::GetFlag(FLAGS_disable_generator) == false)
+        {
+            generate_signal();
+        }
+#endif
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     configure_receiver();
 
     // open true observables log file written by the simulator
     Tracking_True_Obs_Reader true_obs_data;
+#if USE_GLOG_AND_GFLAGS
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
+#else
+    int test_satellite_PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << '\n';
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN));
@@ -404,7 +452,11 @@ TEST_F(GpsL1CAGaussianTrackingTest, ValidationOfResults)
     // load acquisition data based on the first epoch of the true observations
     ASSERT_EQ(true_obs_data.read_binary_obs(), true)
         << "Failure reading true tracking dump file.\n"
+#if USE_GLOG_AND_GFLAGS
         << "Maybe sat PRN #" + std::to_string(FLAGS_test_satellite_PRN) +
+#else
+        << "Maybe sat PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) +
+#endif
                " is not available?";
 
     // restart the epoch counter
@@ -522,10 +574,15 @@ TEST_F(GpsL1CAGaussianTrackingTest, ValidationOfResults)
 
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "Signal tracking completed in " << elapsed_seconds.count() << " seconds.\n";
-
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_gps_l1_gaussian_tracking_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+    if (absl::GetFlag(FLAGS_plot_gps_l1_gaussian_tracking_test) == true)
+        {
+            const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
             if (gnuplot_executable.empty())
                 {
                     std::cout << "WARNING: Although the flag plot_gps_l1_tracking_test has been set to TRUE,\n";
@@ -549,18 +606,30 @@ TEST_F(GpsL1CAGaussianTrackingTest, ValidationOfResults)
                                     t = t + GPS_L1_CA_CODE_PERIOD_S;
                                 }
                             Gnuplot g1("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             g1.set_title("GPS L1 C/A signal tracking correlators' output (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                            g1.set_title("GPS L1 C/A signal tracking correlators' output (satellite PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                             g1.set_grid();
                             g1.set_xlabel("Time [s]");
                             g1.set_ylabel("Correlators' output");
                             g1.cmd("set key box opaque");
+#if USE_GLOG_AND_GFLAGS
                             auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
+#else
+                            auto decimate = static_cast<unsigned int>(absl::GetFlag(FLAGS_plot_decimate));
+#endif
                             g1.plot_xy(timevec, prompt, "Prompt", decimate);
                             g1.plot_xy(timevec, early, "Early", decimate);
                             g1.plot_xy(timevec, late, "Late", decimate);
                             g1.savetops("Correlators_outputs");
                             g1.savetopdf("Correlators_outputs", 18);
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g1.showonscreen();  // window output
                                 }
@@ -570,7 +639,11 @@ TEST_F(GpsL1CAGaussianTrackingTest, ValidationOfResults)
                                 }
 
                             Gnuplot g2("points");
+#if USE_GLOG_AND_GFLAGS
                             g2.set_title("Constellation diagram (satellite PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                            g2.set_title("Constellation diagram (satellite PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                             g2.set_grid();
                             g2.set_xlabel("Inphase");
                             g2.set_ylabel("Quadrature");
@@ -578,7 +651,11 @@ TEST_F(GpsL1CAGaussianTrackingTest, ValidationOfResults)
                             g2.plot_xy(promptI, promptQ);
                             g2.savetops("Constellation");
                             g2.savetopdf("Constellation", 18);
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g2.showonscreen();  // window output
                                 }

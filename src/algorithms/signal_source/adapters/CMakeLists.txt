@@ -169,9 +169,15 @@ target_link_libraries(signal_source_adapters
         algorithms_libs
         gnss_sdr_flags
         core_system_parameters
-        Glog::glog
         Volk::volk
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_source_adapters PRIVATE Glog::glog)
+    target_compile_definitions(signal_source_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_source_adapters PRIVATE absl::flags absl::log)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(signal_source_adapters

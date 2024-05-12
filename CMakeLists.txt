@@ -16,7 +16,7 @@ endif()
 # Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
-cmake_minimum_required(VERSION 2.8.12...3.28)
+cmake_minimum_required(VERSION 2.8.12...3.29)
 project(gnss-sdr CXX C)
 
 set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
@@ -74,9 +74,20 @@ option(ENABLE_PACKAGING "Enable software packaging" OFF)
 
 option(ENABLE_OWN_GLOG "Download glog and link it to gflags" OFF)
 
+option(ENABLE_GLOG_AND_GFLAGS "Force using Google glog and Gflags instead of Abseil" OFF)
+
+option(ENABLE_OWN_ABSEIL "Forces downloading and building of Abseil" OFF)
+if(CMAKE_VERSION VERSION_LESS 3.24)
+    set(ENABLE_OWN_ABSEIL OFF)
+endif()
+if(ENABLE_OWN_ABSEIL)
+    set(ENABLE_OWN_GLOG OFF)
+    set(ENABLE_GLOG_AND_GFLAGS OFF)
+endif()
+
 option(ENABLE_OWN_ARMADILLO "Download and build Armadillo locally" OFF)
 
-option(ENABLE_LOG "Enable logging" ON)
+option(ENABLE_LOG "Enable internal logging" ON)
 
 option(ENABLE_ARMA_NO_DEBUG OFF)
 
@@ -211,7 +222,7 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
     include(DetectLinuxDistro)
     if(CMAKE_CROSSCOMPILING)
-        message(STATUS "Configuring GNSS-SDR v${VERSION} to be cross-compiled on ${LINUX_DISTRIBUTION} ${LINUX_VER} (${CMAKE_HOST_SYSTEM_PROCESSOR}) for ${CMAKE_SYSTEM_PROCESSOR} ${ARCHITECTURE_STRING}")
+        message(STATUS "Configuring GNSS-SDR v${VERSION} to be cross-compiled on ${LINUX_DISTRIBUTION} ${LINUX_VER} (${CMAKE_HOST_SYSTEM_PROCESSOR}) for ${CMAKE_SYSTEM_PROCESSOR}")
     else()
         message(STATUS "Configuring GNSS-SDR v${VERSION} to be built on GNU/Linux ${LINUX_DISTRIBUTION} ${LINUX_VER} ${ARCHITECTURE_STRING}")
     endif()
@@ -329,6 +340,7 @@ set(GNSSSDR_MATIO_MIN_VERSION "1.5.3")
 set(GNSSSDR_PROTOBUF_MIN_VERSION "3.0.0")
 set(GNSSSDR_PYTHON_MIN_VERSION "2.7")
 set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
+set(GNSSSDR_ABSEIL_MIN_VERSION "20240116")
 
 
 
@@ -338,14 +350,15 @@ set(GNSSSDR_PYTHON3_MIN_VERSION "3.4")
 set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.0")
-set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.26")
+set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.27")
 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "26.1")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.14.0")
-set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "master")
+set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.3")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
+set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abseil.io/about/releases)
 
 # Downgrade versions if requirements are not met
 if(CMAKE_VERSION VERSION_LESS "3.22")
@@ -371,7 +384,10 @@ if(CMAKE_VERSION VERSION_LESS "3.4")
     set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.10")
 endif()
 
-if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13")
+if(CMAKE_CROSSCOMPILING OR CMAKE_VERSION VERSION_LESS "3.13" OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0.0)) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11")))
     set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
 endif()
 
@@ -1154,7 +1170,7 @@ if(NOT VOLKGNSSSDR_FOUND)
 
     if(CMAKE_GENERATOR STREQUAL Xcode)
         set(VOLK_GNSSSDR_BUILD_COMMAND "xcodebuild"
-            "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
+            "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
         )
     endif()
 
@@ -1389,316 +1405,427 @@ endif()
 
 
 ################################################################################
-# gflags - https://github.com/gflags/gflags
+# Abseil C++ - https://abseil.io/docs/cpp/
 ################################################################################
-set(LOCAL_GFLAGS FALSE)
-if(ENABLE_OWN_GLOG)
-    unset(Glog::glog CACHE)
-    unset(GLOG_FOUND CACHE)
-    unset(Gflags::gflags CACHE)
-    unset(GLAGS_FOUND CACHE)
-    set(GFLAGS_GREATER_20 TRUE)
-else()
-    unset(Glog::glog CACHE)
-    unset(GLOG_FOUND CACHE)
-    find_package(GLOG)
-    if(GLOG_FOUND)
-        unset(GFLAGS_GREATER_20 CACHE)
-        find_package(GFLAGS)
-    endif()
-endif()
-set_package_properties(GFLAGS PROPERTIES
-    PURPOSE "Used for commandline flags management."
-    TYPE REQUIRED
-)
-if(NOT GFLAGS_FOUND)
-    set(ENABLE_OWN_GLOG ON)
-    if(GFLAGS_VERSION)
-        message(STATUS " A version of the gflags library equal or higher than v${GNSSSDR_GFLAGS_MIN_VERSION} has not been found.")
-    else()
-        message(STATUS " The gflags library has not been found.")
-    endif()
-    message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded, built, and statically linked automatically")
-    message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
-    set(GFLAGS_BUILD_COMMAND ${CMAKE_COMMAND}
-        "--build" "${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}"
-        "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-    )
-    if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(GFLAGS_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>)
-    endif()
-    if(CMAKE_TOOLCHAIN_FILE)
-        set(GFLAGS_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-    endif()
+if(NOT CMAKE_VERSION VERSION_LESS 3.24
+    AND NOT CMAKE_CXX_STANDARD VERSION_LESS 17
+    AND NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.3.1)
+    AND NOT (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
+    AND NOT (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12)
+    AND NOT ENABLE_OWN_GLOG
+    AND NOT ENABLE_GLOG_AND_GFLAGS)
+    # See https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
 
-    if(CMAKE_VERSION VERSION_LESS 3.2)
-        ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            GIT_REPOSITORY https://github.com/gflags/gflags.git
-            GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            BINARY_DIR ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
-                -DBUILD_STATIC_LIBS=ON
-                -DBUILD_gflags_LIB=ON
-                -DBUILD_gflags_nothreads_LIB=ON
-                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                ${GFLAGS_TOOLCHAIN_FILE}
-                -DGFLAGS_NAMESPACE=google
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND ${GFLAGS_BUILD_COMMAND}
-            UPDATE_COMMAND ""
-            PATCH_COMMAND ""
-            INSTALL_COMMAND ""
+    if(ENABLE_OWN_ABSEIL)
+        include(FetchContent)
+        set(ABSEIL_BUILD_COMMAND ${CMAKE_COMMAND}
+            "--build" "${GNSSSDR_BINARY_DIR}/abseil-cpp"
+            "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            "--target" "install"
         )
-    else()
-        set(GFLAGS_BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX})
-        if((CMAKE_BUILD_TYPE STREQUAL Debug) OR (CMAKE_BUILD_TYPE STREQUAL NoOptWithASM) OR
-            (CMAKE_BUILD_TYPE STREQUAL Coverage) OR (CMAKE_BUILD_TYPE STREQUAL ASAN))  # Workaround for Ninja generator
-            set(GFLAGS_BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags_debug${CMAKE_STATIC_LIBRARY_SUFFIX})
+        if(CMAKE_GENERATOR STREQUAL Xcode)
+            set(ABSEIL_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>)
         endif()
-        if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
-            set(PARALLEL_BUILD "--parallel 2")
+        if(CMAKE_TOOLCHAIN_FILE)
+            set(ABSEIL_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
         endif()
-        ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            GIT_REPOSITORY https://github.com/gflags/gflags.git
-            GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            BINARY_DIR ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
-            CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
-                -DBUILD_STATIC_LIBS=ON
-                -DBUILD_gflags_LIB=ON
-                -DBUILD_gflags_nothreads_LIB=ON
-                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                ${GFLAGS_TOOLCHAIN_FILE}
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-            BUILD_COMMAND "${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}"
-            BUILD_BYPRODUCTS ${GFLAGS_BUILD_BYPRODUCTS}
-            UPDATE_COMMAND ""
-            PATCH_COMMAND ""
-            INSTALL_COMMAND ""
+        set(ABSL_PROPAGATE_CXX_STD ON)
+        FetchContent_Declare(
+            absl
+            GIT_REPOSITORY https://github.com/abseil/abseil-cpp
+            GIT_TAG ${GNSSSDR_ABSL_LOCAL_VERSION}
+            SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/abseil-cpp
+            CMAKE_ARGS -DABSL_PROPAGATE_CXX_STD=ON -ABSL_BUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/abseil-cpp ${ABSEIL_TOOLCHAIN_FILE}
+            BINARY_DIR ${GNSSSDR_BINARY_DIR}/abseil-cpp
+            BUILD_COMMAND ${ABSEIL_BUILD_COMMAND}
+            OVERRIDE_FIND_PACKAGE # Requires CMake 3.24
         )
-    endif()
-    # Note: -DBUILD_gflags_nothreads_LIB=ON is required as a workaround to a bug in gflags 2.2.2. This is fixed in gflags master branch
-
-    set(GFlags_INCLUDE_DIRS
-        ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include CACHE PATH "Local Gflags headers"
-    )
-
-    if(CMAKE_VERSION VERSION_LESS "3.0.2")
-        set(GFlags_LIBS
-            ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
+        FetchContent_MakeAvailable(absl)
+        set(absl_FOUND TRUE)
+        set(ENABLE_GLOG_AND_GFLAGS OFF)
+    else()
+        find_package(absl)
+        set_package_properties(absl PROPERTIES
+            URL "https://github.com/abseil/abseil-cpp"
+            PURPOSE "Making use of Abseil's log and flags libraries."
+            TYPE OPTIONAL
         )
-    endif()
-
-    if(NOT TARGET Gflags::gflags)
-        file(MAKE_DIRECTORY ${GFlags_INCLUDE_DIRS})
-        add_library(Gflags::gflags STATIC IMPORTED)
-        add_dependencies(Gflags::gflags gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-        set_target_properties(Gflags::gflags PROPERTIES
-            IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-            IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"
-            MAP_IMPORTED_CONFIG_NOOPTWITHASM Debug
-            MAP_IMPORTED_CONFIG_COVERAGE Debug
-            MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
-            MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
-            MAP_IMPORTED_CONFIG_ASAN Debug
-            IMPORTED_LOCATION_NONE ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags_debug${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
-            IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
-            INTERFACE_INCLUDE_DIRECTORIES ${GFlags_INCLUDE_DIRS}
-            INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX}
-        )
-        if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
-            if(MSVC)
-                set(MSVC_POSTFIX _static)
-            endif()
-            set_target_properties(Gflags::gflags PROPERTIES
-                IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}_debug${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
-                INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX}
+        if(absl_FOUND)
+            set_package_properties(absl PROPERTIES
+                DESCRIPTION "A collection of C++ library code designed to augment the C++ standard library (found: v${absl_VERSION})"
+            )
+        else()
+            set_package_properties(absl PROPERTIES
+                DESCRIPTION "A collection of C++ library code designed to augment the C++ standard library"
+            )
+        endif()
+        if("${absl_VERSION}" VERSION_LESS ${GNSSSDR_ABSEIL_MIN_VERSION})
+            unset(absl_FOUND CACHE)
+            set(absl_FOUND FALSE)
+            set(ENABLE_GLOG_AND_GFLAGS ON)
+            set_package_properties(absl PROPERTIES
+                DESCRIPTION "A collection of C++ library code designed to augment the C++ standard library (found: v${absl_VERSION}, but it is too old and it will not be used)"
             )
         endif()
     endif()
+endif()
 
-    if(MSVC)
-        target_link_libraries(Gflags::gflags INTERFACE shlwapi.lib)
+
+if(NOT absl_FOUND)
+    set(ENABLE_GLOG_AND_GFLAGS ON)
+    ################################################################################
+    # gflags - https://github.com/gflags/gflags
+    ################################################################################
+    set(LOCAL_GFLAGS FALSE)
+    if(ENABLE_OWN_GLOG)
+        unset(Glog::glog CACHE)
+        unset(GLOG_FOUND CACHE)
+        unset(Gflags::gflags CACHE)
+        unset(GLAGS_FOUND CACHE)
+        set(GFLAGS_GREATER_20 TRUE)
+    else()
+        unset(Glog::glog CACHE)
+        unset(GLOG_FOUND CACHE)
+        find_package(GLOG)
+        if(GLOG_FOUND)
+            unset(GFLAGS_GREATER_20 CACHE)
+            find_package(GFLAGS)
+        endif()
     endif()
-
-    set(LOCAL_GFLAGS TRUE CACHE STRING "GFlags downloaded, built, and statically linked automatically" FORCE)
     set_package_properties(GFLAGS PROPERTIES
-        PURPOSE "Gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} and Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+        PURPOSE "Used for commandline flags management."
+        TYPE REQUIRED
     )
-    if(CMAKE_VERSION VERSION_LESS 3.2)
-        set_property(TARGET Gflags::gflags APPEND PROPERTY
-            INTERFACE_COMPILE_DEFINITIONS GFLAGS_OLD_NAMESPACE=1
-        )
-    endif()
-endif()
-
-
-
-################################################################################
-# glog - https://github.com/google/glog
-################################################################################
-set_package_properties(GLOG PROPERTIES
-    PURPOSE "Used for runtime internal logging."
-    TYPE REQUIRED
-)
-if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
-    message(STATUS " glog library has not been found")
     if(NOT GFLAGS_FOUND)
-        message(STATUS " or it is likely not linked to gflags.")
-    endif()
-    message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded, built, and statically linked automatically")
-    message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
-    find_package(LIBUNWIND)
-    set_package_properties(LIBUNWIND PROPERTIES
-        PURPOSE "Needed by glog."
-        TYPE OPTIONAL
-    )
-    if(NOT ${LOCAL_GFLAGS})
-        if(NOT TARGET gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-            add_library(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} UNKNOWN IMPORTED)
+        set(ENABLE_OWN_GLOG ON)
+        if(GFLAGS_VERSION)
+            message(STATUS " A version of the gflags library equal or higher than v${GNSSSDR_GFLAGS_MIN_VERSION} has not been found.")
+        else()
+            message(STATUS " The gflags library has not been found.")
         endif()
-        set_property(TARGET gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} PROPERTY IMPORTED_LOCATION "${GFlags_LIBS}")
-        string(REPLACE /include "" GFLAGS_PREFIX_PATH ${GFlags_INCLUDE_DIRS})
-    else()
-        set(GFLAGS_PREFIX_PATH ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-    endif()
-    set(TARGET_GFLAGS gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
-    set(GLOG_MAKE_PROGRAM ${CMAKE_COMMAND}
-        "--build" "${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}"
-        "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-    )
-    if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(GLOG_MAKE_PROGRAM "xcodebuild" "-configuration"
-            $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>
+        message(STATUS " gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} will be downloaded, built, and statically linked automatically")
+        message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
+        set(GFLAGS_BUILD_COMMAND ${CMAKE_COMMAND}
+            "--build" "${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}"
+            "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
         )
-    endif()
-    if(CMAKE_TOOLCHAIN_FILE)
-        set(GLOG_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-    endif()
+        if(CMAKE_GENERATOR STREQUAL Xcode)
+            set(GFLAGS_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>)
+        endif()
+        if(CMAKE_TOOLCHAIN_FILE)
+            set(GFLAGS_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
+        endif()
 
-    if(CMAKE_VERSION VERSION_LESS 3.3)
-        if(CMAKE_VERSION VERSION_LESS 3.0)
-            set(GLOG_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
-            set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
-            if(${LOCAL_GFLAGS})
-                set(GFLAGS_LIBRARY_DIR_TO_LINK ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib)
-            else()
-                set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
-            endif()
-            if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-                set(GFLAGS_LIBRARIES_TO_LINK "${GFLAGS_LIBRARIES_TO_LINK} -lc++")
-                set(GLOG_EXPORT_CXX_LIBRARIES "export CXXFLAGS=\"-stdlib=libc++\"")
-            endif()
-            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-                set(GLOG_EXPORT_C_COMPILER "export CC=clang")
-                set(GLOG_EXPORT_CXX_COMPILER "export CXX=clang++")
-            endif()
-            if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-                set(GLOG_EXPORT_C_COMPILER "export CC=gcc")
-                set(GLOG_EXPORT_CXX_COMPILER "export CXX=g++")
-            endif()
-            file(WRITE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
-"#!/bin/sh
-export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
-export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
-export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK}\"
-${GLOG_EXPORT_CXX_LIBRARIES}
-${GLOG_EXPORT_C_COMPILER}
-${GLOG_EXPORT_CXX_COMPILER}
-cd ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
-aclocal
-automake --add-missing
-autoreconf -vfi
-cd ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure --enable-shared=no"
-            )
-
-            file(COPY ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
-                DESTINATION ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-                FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-                    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-            )
-
-            set(GLOG_CONFIGURE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure_with_gflags)
-
-            # Ensure that aclocal and libtool are present
-            if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
-                if(EXISTS "/usr/bin/libtoolize")
-                    if(EXISTS "/usr/bin/aclocal" OR
-                        EXISTS "/usr/bin/aclocal-1.16" OR
-                        EXISTS "/usr/bin/aclocal-1.15" OR
-                        EXISTS "/usr/bin/aclocal-1.14" OR
-                        EXISTS "/usr/bin/aclocal-1.13" OR
-                        EXISTS "/usr/bin/aclocal-1.11" OR
-                        EXISTS "/usr/bin/aclocal-1.10")
-                        # Everything ok, we can move on
-                    else()
-                        message(" aclocal has not been found.")
-                        message(" You can try to install it by typing:")
-                        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-                            message(" sudo yum groupinstall 'Development Tools'")
-                        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-                            message(" sudo zypper install automake")
-                        else()
-                            message(" sudo apt-get install automake")
-                        endif()
-                        message(FATAL_ERROR "aclocal is required to build glog from source")
-                    endif()
-                else()
-                    message(" libtool has not been found.")
-                    message(" You can try to install it by typing:")
-                    if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-                        message(" sudo yum groupinstall 'Development Tools'")
-                    elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
-                        message(" sudo zypper install libtoool")
-                    else()
-                        message(" sudo apt-get install libtool")
-                    endif()
-                    message(FATAL_ERROR "libtool is required to build glog from source")
-                endif()
-            endif()
-
-            if(GLOG_MAKE_PROGRAM MATCHES "ninja")
-                find_program(GLOG_MAKE_EXECUTABLE make
-                    PATHS
-                        /usr/bin
-                        /usr/local/bin
-                )
-                if(NOT GLOG_MAKE_EXECUTABLE)
-                    message(FATAL_ERROR "make is required to build Glog from source.")
-                endif()
-                set(GLOG_MAKE_PROGRAM ${GLOG_MAKE_EXECUTABLE})
-            endif()
-            ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-                DEPENDS ${TARGET_GFLAGS}
-                PREFIX ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-                GIT_REPOSITORY https://github.com/google/glog/
-                GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
-                SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-                BINARY_DIR ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-                CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
-                BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
+        if(CMAKE_VERSION VERSION_LESS 3.2)
+            ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/gflags/gflags.git
+                GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                BINARY_DIR ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
+                    -DBUILD_STATIC_LIBS=ON
+                    -DBUILD_gflags_LIB=ON
+                    -DBUILD_gflags_nothreads_LIB=ON
+                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                    ${GFLAGS_TOOLCHAIN_FILE}
+                    -DGFLAGS_NAMESPACE=google
+                    -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                BUILD_COMMAND ${GFLAGS_BUILD_COMMAND}
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
                 INSTALL_COMMAND ""
             )
-            set(GLOG_LIBRARIES
-                ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+        else()
+            set(GFLAGS_BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX})
+            if((CMAKE_BUILD_TYPE STREQUAL Debug) OR (CMAKE_BUILD_TYPE STREQUAL NoOptWithASM) OR
+                (CMAKE_BUILD_TYPE STREQUAL Coverage) OR (CMAKE_BUILD_TYPE STREQUAL ASAN))  # Workaround for Ninja generator
+                set(GFLAGS_BUILD_BYPRODUCTS ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags_debug${CMAKE_STATIC_LIBRARY_SUFFIX})
+            endif()
+            if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode))
+                set(PARALLEL_BUILD "--parallel 2")
+            endif()
+            ExternalProject_Add(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                PREFIX ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                GIT_REPOSITORY https://github.com/gflags/gflags.git
+                GIT_TAG v${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gflags/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                BINARY_DIR ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}
+                CMAKE_ARGS -DBUILD_SHARED_LIBS=OFF
+                    -DBUILD_STATIC_LIBS=ON
+                    -DBUILD_gflags_LIB=ON
+                    -DBUILD_gflags_nothreads_LIB=ON
+                    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                    ${GFLAGS_TOOLCHAIN_FILE}
+                    -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                BUILD_COMMAND "${GFLAGS_BUILD_COMMAND} ${PARALLEL_BUILD}"
+                BUILD_BYPRODUCTS ${GFLAGS_BUILD_BYPRODUCTS}
+                UPDATE_COMMAND ""
+                PATCH_COMMAND ""
+                INSTALL_COMMAND ""
             )
-            set(GLOG_INCLUDE_DIRS
-                ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
-                ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+        endif()
+        # Note: -DBUILD_gflags_nothreads_LIB=ON is required as a workaround to a bug in gflags 2.2.2. This is fixed in gflags master branch
+
+        set(GFlags_INCLUDE_DIRS
+            ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/include CACHE PATH "Local Gflags headers"
+        )
+
+        if(CMAKE_VERSION VERSION_LESS "3.0.2")
+            set(GFlags_LIBS
+                ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
             )
-        else()  # CMake > 3.0 but < 3.3
+        endif()
+
+        if(NOT TARGET Gflags::gflags)
+            file(MAKE_DIRECTORY ${GFlags_INCLUDE_DIRS})
+            add_library(Gflags::gflags STATIC IMPORTED)
+            add_dependencies(Gflags::gflags gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+            set_target_properties(Gflags::gflags PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"
+                MAP_IMPORTED_CONFIG_NOOPTWITHASM Debug
+                MAP_IMPORTED_CONFIG_COVERAGE Debug
+                MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
+                MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
+                MAP_IMPORTED_CONFIG_ASAN Debug
+                IMPORTED_LOCATION_NONE ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags_debug${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
+                IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${CMAKE_STATIC_LIBRARY_SUFFIX}
+                INTERFACE_INCLUDE_DIRECTORIES ${GFlags_INCLUDE_DIRS}
+                INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/${CMAKE_FIND_LIBRARY_PREFIXES}gflags$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX}
+            )
+            if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
+                if(MSVC)
+                    set(MSVC_POSTFIX _static)
+                endif()
+                set_target_properties(Gflags::gflags PROPERTIES
+                    IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}_debug${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/Release/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}gflags${MSVC_POSTFIX}$<$<CONFIG:Debug>:_debug>${CMAKE_STATIC_LIBRARY_SUFFIX}
+                )
+            endif()
+        endif()
+
+        if(MSVC)
+            target_link_libraries(Gflags::gflags INTERFACE shlwapi.lib)
+        endif()
+
+        set(LOCAL_GFLAGS TRUE CACHE STRING "GFlags downloaded, built, and statically linked automatically" FORCE)
+        set_package_properties(GFLAGS PROPERTIES
+            PURPOSE "Gflags v${GNSSSDR_GFLAGS_LOCAL_VERSION} and Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
+        )
+        if(CMAKE_VERSION VERSION_LESS 3.2)
+            set_property(TARGET Gflags::gflags APPEND PROPERTY
+                INTERFACE_COMPILE_DEFINITIONS GFLAGS_OLD_NAMESPACE=1
+            )
+        endif()
+    endif()
+
+
+
+    ################################################################################
+    # glog - https://github.com/google/glog
+    ################################################################################
+    set_package_properties(GLOG PROPERTIES
+        PURPOSE "Used for runtime internal logging."
+        TYPE REQUIRED
+    )
+    if(NOT GLOG_FOUND OR ${LOCAL_GFLAGS})
+        message(STATUS " glog library has not been found")
+        if(NOT GFLAGS_FOUND)
+            message(STATUS " or it is likely not linked to gflags.")
+        endif()
+        message(STATUS " glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded, built, and statically linked automatically")
+        message(STATUS " when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'.")
+        find_package(LIBUNWIND)
+        set_package_properties(LIBUNWIND PROPERTIES
+            PURPOSE "Needed by glog."
+            TYPE OPTIONAL
+        )
+        if(NOT ${LOCAL_GFLAGS})
+            if(NOT TARGET gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+                add_library(gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} UNKNOWN IMPORTED)
+            endif()
+            set_property(TARGET gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION} PROPERTY IMPORTED_LOCATION "${GFlags_LIBS}")
+            string(REPLACE /include "" GFLAGS_PREFIX_PATH ${GFlags_INCLUDE_DIRS})
+        else()
+            set(GFLAGS_PREFIX_PATH ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+        endif()
+        set(TARGET_GFLAGS gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+        set(GLOG_MAKE_PROGRAM ${CMAKE_COMMAND}
+            "--build" "${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}"
+            "--config" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+        )
+        if(CMAKE_GENERATOR STREQUAL Xcode)
+            set(GLOG_MAKE_PROGRAM "xcodebuild" "-configuration"
+                $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>
+            )
+        endif()
+        if(CMAKE_TOOLCHAIN_FILE)
+            set(GLOG_TOOLCHAIN_FILE -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
+        endif()
+
+        if(CMAKE_VERSION VERSION_LESS 3.3)
+            if(CMAKE_VERSION VERSION_LESS 3.0)
+                set(GLOG_MAKE_PROGRAM ${CMAKE_MAKE_PROGRAM})
+                set(GFLAGS_LIBRARIES_TO_LINK ${GFlags_LIBS})
+                if(${LOCAL_GFLAGS})
+                    set(GFLAGS_LIBRARY_DIR_TO_LINK ${GNSSSDR_BINARY_DIR}/gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION}/lib)
+                else()
+                    set(GFLAGS_LIBRARY_DIR_TO_LINK ${GFlags_LIBRARY_DIRS})
+                endif()
+                if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+                    set(GFLAGS_LIBRARIES_TO_LINK "${GFLAGS_LIBRARIES_TO_LINK} -lc++")
+                    set(GLOG_EXPORT_CXX_LIBRARIES "export CXXFLAGS=\"-stdlib=libc++\"")
+                endif()
+                if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                    set(GLOG_EXPORT_C_COMPILER "export CC=clang")
+                    set(GLOG_EXPORT_CXX_COMPILER "export CXX=clang++")
+                endif()
+                if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                    set(GLOG_EXPORT_C_COMPILER "export CC=gcc")
+                    set(GLOG_EXPORT_CXX_COMPILER "export CXX=g++")
+                endif()
+                file(WRITE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
+    "#!/bin/sh
+    export CPPFLAGS=-I${GFlags_INCLUDE_DIRS}
+    export LDFLAGS=-L${GFLAGS_LIBRARY_DIR_TO_LINK}
+    export LIBS=\"${GFLAGS_LIBRARIES_TO_LINK}\"
+    ${GLOG_EXPORT_CXX_LIBRARIES}
+    ${GLOG_EXPORT_C_COMPILER}
+    ${GLOG_EXPORT_CXX_COMPILER}
+    cd ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/
+    aclocal
+    automake --add-missing
+    autoreconf -vfi
+    cd ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+    ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure --enable-shared=no"
+                )
+
+                file(COPY ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/tmp/configure_with_gflags
+                    DESTINATION ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+                        GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+                )
+
+                set(GLOG_CONFIGURE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configure_with_gflags)
+
+                # Ensure that aclocal and libtool are present
+                if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+                    if(EXISTS "/usr/bin/libtoolize")
+                        if(EXISTS "/usr/bin/aclocal" OR
+                            EXISTS "/usr/bin/aclocal-1.16" OR
+                            EXISTS "/usr/bin/aclocal-1.15" OR
+                            EXISTS "/usr/bin/aclocal-1.14" OR
+                            EXISTS "/usr/bin/aclocal-1.13" OR
+                            EXISTS "/usr/bin/aclocal-1.11" OR
+                            EXISTS "/usr/bin/aclocal-1.10")
+                            # Everything ok, we can move on
+                        else()
+                            message(" aclocal has not been found.")
+                            message(" You can try to install it by typing:")
+                            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                                message(" sudo yum groupinstall 'Development Tools'")
+                            elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                                message(" sudo zypper install automake")
+                            else()
+                                message(" sudo apt-get install automake")
+                            endif()
+                            message(FATAL_ERROR "aclocal is required to build glog from source")
+                        endif()
+                    else()
+                        message(" libtool has not been found.")
+                        message(" You can try to install it by typing:")
+                        if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                            message(" sudo yum groupinstall 'Development Tools'")
+                        elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                            message(" sudo zypper install libtoool")
+                        else()
+                            message(" sudo apt-get install libtool")
+                        endif()
+                        message(FATAL_ERROR "libtool is required to build glog from source")
+                    endif()
+                endif()
+
+                if(GLOG_MAKE_PROGRAM MATCHES "ninja")
+                    find_program(GLOG_MAKE_EXECUTABLE make
+                        PATHS
+                            /usr/bin
+                            /usr/local/bin
+                    )
+                    if(NOT GLOG_MAKE_EXECUTABLE)
+                        message(FATAL_ERROR "make is required to build Glog from source.")
+                    endif()
+                    set(GLOG_MAKE_PROGRAM ${GLOG_MAKE_EXECUTABLE})
+                endif()
+                ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    DEPENDS ${TARGET_GFLAGS}
+                    PREFIX ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/google/glog/
+                    GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
+                    SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    BINARY_DIR ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    CONFIGURE_COMMAND ${GLOG_CONFIGURE} --prefix=<INSTALL_DIR>
+                    BUILD_COMMAND "${GLOG_MAKE_PROGRAM}"
+                    UPDATE_COMMAND ""
+                    PATCH_COMMAND ""
+                    INSTALL_COMMAND ""
+                )
+                set(GLOG_LIBRARIES
+                    ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/.libs/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                )
+                set(GLOG_INCLUDE_DIRS
+                    ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+                    ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+                )
+            else()  # CMake > 3.0 but < 3.3
+                ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    DEPENDS ${TARGET_GFLAGS}
+                    PREFIX ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    GIT_REPOSITORY https://github.com/google/glog/
+                    GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
+                    SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    BINARY_DIR ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                        -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
+                        ${GLOG_TOOLCHAIN_FILE}
+                        -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+                    BUILD_COMMAND ${GLOG_MAKE_PROGRAM}
+                    UPDATE_COMMAND ""
+                    PATCH_COMMAND ""
+                    INSTALL_COMMAND ""
+                )
+                set(GLOG_INCLUDE_DIRS
+                    ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
+                    ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
+                    ${GFlags_INCLUDE_DIRS}
+                )
+            endif()
+        else()  # CMake > 3.3
+            set(GLOG_BUILD_BYPRODUCTS
+                ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+            )
+            if((CMAKE_BUILD_TYPE STREQUAL Debug) OR (CMAKE_BUILD_TYPE STREQUAL NoOptWithASM) OR
+                (CMAKE_BUILD_TYPE STREQUAL Coverage) OR (CMAKE_BUILD_TYPE STREQUAL ASAN))  # Workaround for Ninja generator
+                set(GLOG_BUILD_BYPRODUCTS
+                    ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
+                )
+            endif()
+            if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode) AND NOT CMAKE_CROSSCOMPILING)
+                set(PARALLEL_BUILD "--parallel 2")
+            endif()
+            if(GNSSSDR_GLOG_LOCAL_VERSION VERSION_GREATER 0.5.0)
+                set(GLOG_GTEST -DWITH_GTEST=FALSE)
+            endif()
+            if(NOT (CMAKE_VERSION VERSION_LESS "3.22"))
+                set(GNSSSDR_GLOG_LOCAL_GFLAGS -DCMAKE_REQUIRED_INCLUDES=${GFlags_INCLUDE_DIRS})
+            endif()
             ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 DEPENDS ${TARGET_GFLAGS}
                 PREFIX ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
@@ -1707,11 +1834,15 @@ ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configu
                 SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 BINARY_DIR ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
                 CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                     -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
                     ${GLOG_TOOLCHAIN_FILE}
                     -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-                BUILD_COMMAND ${GLOG_MAKE_PROGRAM}
+                    -DBUILD_SHARED_LIBS=OFF
+                    ${GLOG_GTEST}
+                    -DBUILD_TESTING=OFF
+                    "${GNSSSDR_GLOG_LOCAL_GFLAGS}"
+                BUILD_COMMAND "${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}"
+                BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
                 UPDATE_COMMAND ""
                 PATCH_COMMAND ""
                 INSTALL_COMMAND ""
@@ -1722,120 +1853,64 @@ ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/configu
                 ${GFlags_INCLUDE_DIRS}
             )
         endif()
-    else()  # CMake > 3.3
-        set(GLOG_BUILD_BYPRODUCTS
-            ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-        )
-        if((CMAKE_BUILD_TYPE STREQUAL Debug) OR (CMAKE_BUILD_TYPE STREQUAL NoOptWithASM) OR
-            (CMAKE_BUILD_TYPE STREQUAL Coverage) OR (CMAKE_BUILD_TYPE STREQUAL ASAN))  # Workaround for Ninja generator
-            set(GLOG_BUILD_BYPRODUCTS
-                ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
-            )
-        endif()
-        if((CMAKE_VERSION VERSION_GREATER 3.12.0) AND NOT (CMAKE_GENERATOR STREQUAL Xcode) AND NOT CMAKE_CROSSCOMPILING)
-            set(PARALLEL_BUILD "--parallel 2")
-        endif()
-        if(GNSSSDR_GLOG_LOCAL_VERSION VERSION_GREATER 0.5.0)
-            set(GLOG_GTEST -DWITH_GTEST=FALSE)
-        endif()
-        if(NOT (CMAKE_VERSION VERSION_LESS "3.22"))
-            set(GNSSSDR_GLOG_LOCAL_GFLAGS -DCMAKE_REQUIRED_INCLUDES=${GFlags_INCLUDE_DIRS})
-        endif()
-        ExternalProject_Add(glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            DEPENDS ${TARGET_GFLAGS}
-            PREFIX ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            GIT_REPOSITORY https://github.com/google/glog/
-            GIT_TAG v${GNSSSDR_GLOG_LOCAL_VERSION}
-            SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            BINARY_DIR ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                -DCMAKE_PREFIX_PATH=${GFLAGS_PREFIX_PATH}
-                ${GLOG_TOOLCHAIN_FILE}
-                -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
-                -DBUILD_SHARED_LIBS=OFF
-                ${GLOG_GTEST}
-                -DBUILD_TESTING=OFF
-                "${GNSSSDR_GLOG_LOCAL_GFLAGS}"
-            BUILD_COMMAND "${GLOG_MAKE_PROGRAM} ${PARALLEL_BUILD}"
-            BUILD_BYPRODUCTS ${GLOG_BUILD_BYPRODUCTS}
-            UPDATE_COMMAND ""
-            PATCH_COMMAND ""
-            INSTALL_COMMAND ""
-        )
-        set(GLOG_INCLUDE_DIRS
-            ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src
-            ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}
-            ${GFlags_INCLUDE_DIRS}
-        )
-    endif()
 
-    add_dependencies(glog-${GNSSSDR_GLOG_LOCAL_VERSION} Gflags::gflags)
+        add_dependencies(glog-${GNSSSDR_GLOG_LOCAL_VERSION} Gflags::gflags)
 
-    # Create Glog::glog target
-    if(NOT TARGET Glog::glog)
-        file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
-        file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION})
-        add_library(Glog::glog STATIC IMPORTED)
-        add_dependencies(Glog::glog glog-${GNSSSDR_GLOG_LOCAL_VERSION})
-        if(CMAKE_VERSION VERSION_LESS 3.0)
-            set_target_properties(Glog::glog PROPERTIES
-                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                IMPORTED_LOCATION "${GLOG_LIBRARIES}"
-                INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
-                INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
-                INTERFACE_LINK_LIBRARIES "${GLOG_LIBRARIES}"
-            )
-        else()
-            set_target_properties(Glog::glog PROPERTIES
-                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
-                IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"
-                MAP_IMPORTED_CONFIG_NOOPTWITHASM Debug
-                MAP_IMPORTED_CONFIG_COVERAGE Debug
-                MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
-                MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
-                MAP_IMPORTED_CONFIG_ASAN Debug
-                IMPORTED_LOCATION_NONE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-                IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-                INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
-                INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog$<$<CONFIG:Debug>:d>${CMAKE_STATIC_LIBRARY_SUFFIX}
-            )
-            if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
+        # Create Glog::glog target
+        if(NOT TARGET Glog::glog)
+            file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/glog/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/src)
+            file(MAKE_DIRECTORY ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION})
+            add_library(Glog::glog STATIC IMPORTED)
+            add_dependencies(Glog::glog glog-${GNSSSDR_GLOG_LOCAL_VERSION})
+            if(CMAKE_VERSION VERSION_LESS 3.0)
                 set_target_properties(Glog::glog PROPERTIES
-                    IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/Release/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
-                    INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}glog$<$<CONFIG:Debug>:d>${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                    IMPORTED_LOCATION "${GLOG_LIBRARIES}"
+                    INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+                    INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+                    INTERFACE_LINK_LIBRARIES "${GLOG_LIBRARIES}"
                 )
+            else()
+                set_target_properties(Glog::glog PROPERTIES
+                    IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                    IMPORTED_CONFIGURATIONS "None;Debug;Release;RelWithDebInfo;MinSizeRel"
+                    MAP_IMPORTED_CONFIG_NOOPTWITHASM Debug
+                    MAP_IMPORTED_CONFIG_COVERAGE Debug
+                    MAP_IMPORTED_CONFIG_O2WITHASM RelWithDebInfo
+                    MAP_IMPORTED_CONFIG_O3WITHASM RelWithDebInfo
+                    MAP_IMPORTED_CONFIG_ASAN Debug
+                    IMPORTED_LOCATION_NONE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    INTERFACE_INCLUDE_DIRECTORIES "${GLOG_INCLUDE_DIRS}"
+                    INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/${CMAKE_FIND_LIBRARY_PREFIXES}glog$<$<CONFIG:Debug>:d>${CMAKE_STATIC_LIBRARY_SUFFIX}
+                )
+                if((CMAKE_GENERATOR STREQUAL Xcode) OR MSVC)
+                    set_target_properties(Glog::glog PROPERTIES
+                        IMPORTED_LOCATION_DEBUG ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}glogd${CMAKE_STATIC_LIBRARY_SUFFIX}
+                        IMPORTED_LOCATION_RELEASE ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/Release/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                        IMPORTED_LOCATION_RELWITHDEBINFO ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                        IMPORTED_LOCATION_MINSIZEREL ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}glog${CMAKE_STATIC_LIBRARY_SUFFIX}
+                        INTERFACE_LINK_LIBRARIES ${GNSSSDR_BINARY_DIR}/glog-${GNSSSDR_GLOG_LOCAL_VERSION}/$<$<CONFIG:Debug>:Debug/>$<$<CONFIG:Release>:Release/>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo/>$<$<CONFIG:MinSizeRel>:MinSizeRel/>${CMAKE_FIND_LIBRARY_PREFIXES}glog$<$<CONFIG:Debug>:d>${CMAKE_STATIC_LIBRARY_SUFFIX}
+                    )
+                endif()
             endif()
         endif()
-    endif()
-    if(NOT (CMAKE_VERSION VERSION_LESS "3.22"))
-        set_target_properties(Glog::glog PROPERTIES
-            INTERFACE_COMPILE_DEFINITIONS "GLOG_USE_GLOG_EXPORT;GLOG_USE_GFLAGS"
-            INTERFACE_COMPILE_FEATURES "cxx_std_14")
-    endif()
+        if(NOT (CMAKE_VERSION VERSION_LESS "3.22"))
+            set_target_properties(Glog::glog PROPERTIES
+                INTERFACE_COMPILE_DEFINITIONS "GLOG_USE_GLOG_EXPORT;GLOG_USE_GFLAGS"
+                INTERFACE_COMPILE_FEATURES "cxx_std_14")
+        endif()
 
-    if(LIBUNWIND_FOUND)
-        target_link_libraries(Glog::glog INTERFACE Libunwind::libunwind)
-    endif()
-    set(LOCAL_GLOG TRUE CACHE STRING "Glog downloaded, built, and statically linked automatically" FORCE)
+        if(LIBUNWIND_FOUND)
+            target_link_libraries(Glog::glog INTERFACE Libunwind::libunwind)
+        endif()
+        set(LOCAL_GLOG TRUE CACHE STRING "Glog downloaded, built, and statically linked automatically" FORCE)
 
-    set_package_properties(GLOG PROPERTIES
-        PURPOSE "Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
-    )
-endif()
-
-if(NOT ENABLE_LOG)
-    message(STATUS "Internal logging is not enabled")
-    if(CMAKE_VERSION VERSION_GREATER 3.11.0)
-        target_compile_definitions(Glog::glog INTERFACE -DGOOGLE_STRIP_LOG=1)
-    else()
-        set_property(TARGET Glog::glog APPEND PROPERTY
-            INTERFACE_COMPILE_DEFINITIONS GOOGLE_STRIP_LOG=1
+        set_package_properties(GLOG PROPERTIES
+            PURPOSE "Glog v${GNSSSDR_GLOG_LOCAL_VERSION} will be downloaded, built, and statically linked when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'."
         )
     endif()
 endif()
@@ -2538,7 +2613,17 @@ endif()
 ################################################################################
 # Protocol Buffers https://github.com/protocolbuffers/protobuf
 ################################################################################
-find_package(Protobuf)
+if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9.0")) OR
+  ((CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11")))
+    if(CMAKE_VERSION VERSION_LESS 3.19)
+        find_package(Protobuf)
+    else()
+        find_package(Protobuf 3.0...21.12)
+    endif()
+else()
+    find_package(Protobuf)
+endif()
 set_package_properties(Protobuf PROPERTIES
     URL "https://protobuf.dev/"
     PURPOSE "Used to serialize output data in a way that can be read by other applications."
@@ -2645,12 +2730,6 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
         endif()
     else()
         if(CMAKE_VERSION VERSION_GREATER "3.13")
-            find_package(absl)
-            set_package_properties(absl PROPERTIES
-                URL "https://github.com/abseil/abseil-cpp"
-                PURPOSE "Abseil-cpp >= 20230117 required to be installed before building Protocol Buffers >22.x on the fly."
-                TYPE OPTIONAL
-            )
             if(absl_FOUND)
                 if(absl_VERSION)
                     if(${absl_VERSION} VERSION_LESS "20230117")
@@ -2661,6 +2740,10 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                     unset(absl_FOUND CACHE)
                     set(absl_FOUND OFF)
                 endif()
+            endif()
+            if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0"))
+                unset(absl_FOUND CACHE)
+                set(absl_FOUND OFF)
             endif()
             if(absl_FOUND)
                 set_package_properties(absl PROPERTIES
@@ -2676,7 +2759,9 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
                         DESCRIPTION "An open-source collection of C++ code designed to augment the C++ standard library"
                     )
                 endif()
-                message(STATUS "The Abseil library (https://github.com/abseil/abseil-cpp) >= v20230117 is required to be installed before building Protocol Buffers >22.x on the fly.")
+                if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0"))
+                    message(STATUS "The Abseil library (https://github.com/abseil/abseil-cpp) >= v20230117 is required to be installed before building Protocol Buffers >22.x on the fly.")
+                endif()
                 message(STATUS " Instead, Protocol Buffers v21.12 will be built, which does not require Abseil.")
                 set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "21.12")
             endif()
@@ -2789,8 +2874,8 @@ if((NOT Protobuf_FOUND) OR (NOT Protobuf_PROTOC_EXECUTABLE) OR (${Protobuf_VERSI
 
             if(NOT TARGET protobuf::protoc)
                 add_executable(protobuf::protoc IMPORTED)
-                add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
             endif()
+            add_dependencies(protobuf::protoc protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION})
             unset(Protobuf_PROTOC_EXECUTABLE)
             set(PROTOBUF_PROTOC_EXECUTABLE "${GNSSSDR_BINARY_DIR}/protobuf-${GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION}/bin/protoc")
             set_target_properties(protobuf::protoc PROPERTIES
@@ -3464,8 +3549,10 @@ add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks 
 add_feature_info(ENABLE_ARMA_NO_DEBUG ENABLE_ARMA_NO_DEBUG "Enables passing the ARMA_NO_DEBUG macro to Armadillo, hence disabling bound checking.")
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
 add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")
+add_feature_info(ENABLE_GLOG_AND_GFLAGS ENABLE_GLOG_AND_GFLAGS "Forces the usage of Google glog and Gflags instead of Abseil.")
+add_feature_info(ENABLE_OWN_ABSEIL ENABLE_OWN_ABSEIL "Forces downloading and building Abseil. Supersedes ENABLE_OWN_GLOG.")
 add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
-add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging with Google glog.")
+add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging.")
 add_feature_info(ENABLE_ORC ENABLE_ORC "Use the Optimized Inner Loop Runtime Compiler (ORC) for building volk_gnsssdr.")
 add_feature_info(ENABLE_STRIP ENABLE_STRIP "Enables the generation of stripped binaries (without debugging symbols).")
 add_feature_info(ENABLE_UNIT_TESTING ENABLE_UNIT_TESTING "Enables building of Unit Tests.")

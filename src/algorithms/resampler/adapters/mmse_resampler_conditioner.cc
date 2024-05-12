@@ -17,11 +17,16 @@
 
 #include "mmse_resampler_conditioner.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <cmath>
 #include <limits>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 MmseResamplerConditioner::MmseResamplerConditioner(
     const ConfigurationInterface* configuration,

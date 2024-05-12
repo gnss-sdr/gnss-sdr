@@ -18,10 +18,15 @@
 #include "acq_conf_fpga.h"
 #include "item_type_helpers.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <cmath>
 #include <iostream>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role, uint32_t sel_queue_fpga, uint32_t blk_exp, uint32_t downsampling_factor_default, double chip_rate, double code_length_chips)

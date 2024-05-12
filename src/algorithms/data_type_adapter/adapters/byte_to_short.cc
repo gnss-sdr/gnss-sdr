@@ -16,8 +16,13 @@
 
 #include "byte_to_short.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 ByteToShort::ByteToShort(const ConfigurationInterface* configuration,

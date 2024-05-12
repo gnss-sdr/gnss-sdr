@@ -16,8 +16,12 @@
 
 #include "ishort_to_complex.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 IshortToComplex::IshortToComplex(const ConfigurationInterface* configuration,
     const std::string& role,

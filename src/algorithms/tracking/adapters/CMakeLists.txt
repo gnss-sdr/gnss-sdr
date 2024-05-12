@@ -100,8 +100,14 @@ target_link_libraries(tracking_adapters
         tracking_gr_blocks
     PRIVATE
         gnss_sdr_flags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(tracking_adapters PRIVATE Glog::glog)
+    target_compile_definitions(tracking_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(tracking_adapters PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(tracking_adapters
     PUBLIC

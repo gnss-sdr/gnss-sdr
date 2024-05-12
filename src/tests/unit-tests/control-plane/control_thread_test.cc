@@ -26,8 +26,6 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
 #include <boost/lexical_cast.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <pmt/pmt.h>
 #include <chrono>
@@ -39,6 +37,12 @@
 #include <thread>
 #include <unistd.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 class ControlThreadTest : public ::testing::Test
 {

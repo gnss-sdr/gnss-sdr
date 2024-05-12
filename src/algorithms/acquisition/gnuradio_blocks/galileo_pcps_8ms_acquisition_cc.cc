@@ -17,7 +17,6 @@
 
 #include "galileo_pcps_8ms_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -26,6 +25,11 @@
 #include <exception>
 #include <sstream>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 galileo_pcps_8ms_acquisition_cc_sptr galileo_pcps_8ms_make_acquisition_cc(
     uint32_t sampled_ms,

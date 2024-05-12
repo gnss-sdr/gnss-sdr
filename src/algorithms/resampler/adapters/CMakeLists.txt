@@ -38,10 +38,15 @@ target_link_libraries(resampler_adapters
     PUBLIC
         resampler_gr_blocks
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Volk::volk
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(resampler_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(resampler_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(resampler_adapters PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(resampler_adapters
     PUBLIC

@@ -30,7 +30,6 @@
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <pmt/pmt.h>
@@ -45,6 +44,12 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -146,7 +151,11 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
       d_cn0_estimation_counter(0),
       d_carrier_lock_test(1),
       d_CN0_SNV_dB_Hz(0),
+#if USE_GLOG_AND_GFLAGS
       d_carrier_lock_threshold(FLAGS_carrier_lock_th),
+#else
+      d_carrier_lock_threshold(absl::GetFlag(FLAGS_carrier_lock_th)),
+#endif
       d_carrier_lock_fail_counter(0),
       d_enable_extended_integration(false),
       d_preamble_synchronized(false),
@@ -189,8 +198,12 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
-
+#if USE_GLOG_AND_GFLAGS
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
+#else
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(absl::GetFlag(FLAGS_cn0_samples));
+#endif
+
     systemName["R"] = std::string("Glonass");
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_vector_length));
@@ -747,8 +760,13 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                             d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES, GLONASS_L1_CA_CODE_PERIOD_S);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES);
-                            // Loss of lock detection
+                            // Loss of lock detectionç
+
+#if USE_GLOG_AND_GFLAGS
                             if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+#else
+                            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+#endif
                                 {
                                     d_carrier_lock_fail_counter++;
                                 }
@@ -759,7 +777,11 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                                             d_carrier_lock_fail_counter--;
                                         }
                                 }
+#if USE_GLOG_AND_GFLAGS
                             if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
+#else
+                            if (d_carrier_lock_fail_counter > absl::GetFlag(FLAGS_max_lock_fail))
+#endif
                                 {
                                     std::cout << "Loss of lock in channel " << d_channel << "!\n";
                                     LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

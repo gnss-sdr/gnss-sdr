@@ -22,7 +22,11 @@
 #include <chrono>
 #include <memory>
 
+#if USE_GLOG_AND_GFLAGS
 DEFINE_int32(fft_speed_iterations_test, 100, "Number of averaged iterations in FFT length timing test");
+#else
+ABSL_FLAG(int32_t, fft_speed_iterations_test, 100, "Number of averaged iterations in FFT length timing test");
+#endif
 
 TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
 {
@@ -43,23 +47,39 @@ TEST(FFTSpeedTest, ArmadilloVSGNURadioExecutionTime)
             std::copy_n(d_arma_fft.memptr(), d_fft_size, d_gr_fft->get_inbuf());
 
             start = std::chrono::system_clock::now();
+#if USE_GLOG_AND_GFLAGS
             for (int k = 0; k < FLAGS_fft_speed_iterations_test; k++)
+#else
+            for (int k = 0; k < absl::GetFlag(FLAGS_fft_speed_iterations_test); k++)
+#endif
                 {
                     d_gr_fft->execute();
                 }
             end = std::chrono::system_clock::now();
             elapsed_seconds = end - start;
+#if USE_GLOG_AND_GFLAGS
             d_execution_time = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_speed_iterations_test);
+#else
+            d_execution_time = elapsed_seconds.count() / static_cast<double>(absl::GetFlag(FLAGS_fft_speed_iterations_test));
+#endif
             std::cout << "GNU Radio FFT execution time for length = " << d_fft_size << " : " << d_execution_time * 1e6 << " [us]\n";
 
             start = std::chrono::system_clock::now();
+#if USE_GLOG_AND_GFLAGS
             for (int k = 0; k < FLAGS_fft_speed_iterations_test; k++)
+#else
+            for (int k = 0; k < absl::GetFlag(FLAGS_fft_speed_iterations_test); k++)
+#endif
                 {
                     d_arma_fft_result = arma::fft(d_arma_fft);
                 }
             end = std::chrono::system_clock::now();
             elapsed_seconds = end - start;
+#if USE_GLOG_AND_GFLAGS
             d_execution_time = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_speed_iterations_test);
+#else
+            d_execution_time = elapsed_seconds.count() / static_cast<double>(absl::GetFlag(FLAGS_fft_speed_iterations_test));
+#endif
             std::cout << "Armadillo FFT execution time for length = " << d_fft_size << " : " << d_execution_time * 1e6 << " [us]\n";
         });
 }

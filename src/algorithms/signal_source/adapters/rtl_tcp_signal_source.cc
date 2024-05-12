@@ -22,10 +22,15 @@
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <boost/exception/diagnostic_information.hpp>
-#include <glog/logging.h>
 #include <cstdint>
 #include <iostream>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 

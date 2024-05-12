@@ -29,8 +29,6 @@
 #include "tracking_true_obs_reader.h"
 #include <armadillo>
 #include <boost/thread.hpp>  // to test the FPGA we have to create a simultaneous task to send the samples using the DMA and stop the test
-#include <gflags/gflags.h>
-#include <glog/logging.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/interleaved_char_to_complex.h>
@@ -46,6 +44,14 @@
 #include <iostream>
 #include <unistd.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
+#include <glog/logging.h>
+#else
+#include <absl/flags/flag.h>
+#include <absl/log/log.h>
+#endif
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
@@ -232,11 +238,15 @@ public:
     std::string p4;
     std::string p5;
 
+#if USE_GLOG_AND_GFLAGS
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
-
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
-
+#else
+    const int baseband_sampling_freq = absl::GetFlag(FLAGS_fs_gen_sps);
+    std::string filename_rinex_obs = absl::GetFlag(FLAGS_filename_rinex_obs);
+    std::string filename_raw_data = absl::GetFlag(FLAGS_filename_raw_data);
+#endif
     int configure_generator();
     int generate_signal();
     void check_results_doppler(arma::vec &true_time_s, arma::vec &true_value,
@@ -266,7 +276,8 @@ public:
 
 int GpsL1CADllPllTrackingTestFpga::configure_generator()
 {
-    // Configure signal generator
+// Configure signal generator
+#if USE_GLOG_AND_GFLAGS
     generator_binary = FLAGS_generator_binary;
 
     p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
@@ -281,6 +292,23 @@ int GpsL1CADllPllTrackingTestFpga::configure_generator()
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
+#else
+    generator_binary = absl::GetFlag(FLAGS_generator_binary);
+
+    p1 = std::string("-rinex_nav_file=") + absl::GetFlag(FLAGS_rinex_nav_file);
+    if (absl::GetFlag(FLAGS_dynamic_position).empty())
+        {
+            p2 = std::string("-static_position=") + absl::GetFlag(FLAGS_static_position) + std::string(",") + std::to_string(absl::GetFlag(FLAGS_duration) * 10);
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(absl::GetFlag(FLAGS_dynamic_position));
+        }
+    p3 = std::string("-rinex_obs_file=") + absl::GetFlag(FLAGS_filename_rinex_obs);  // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + absl::GetFlag(FLAGS_filename_raw_data);     // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);    // Baseband sampling frequency [MSps]
+#endif
+
     return 0;
 }
 
@@ -317,7 +345,11 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
     gnss_synchro.System = 'G';
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
+#if USE_GLOG_AND_GFLAGS
     gnss_synchro.PRN = FLAGS_test_satellite_PRN;
+#else
+    gnss_synchro.PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
 
     config->set_property("GNSS-SDR.internal_fs_sps",
         std::to_string(baseband_sampling_freq));
@@ -464,7 +496,11 @@ TEST_F(GpsL1CADllPllTrackingTestFpga, ValidationOfResultsFpga)
 
     // open true observables log file written by the simulator
     Tracking_True_Obs_Reader true_obs_data;
+#if USE_GLOG_AND_GFLAGS
     int test_satellite_PRN = FLAGS_test_satellite_PRN;
+#else
+    int test_satellite_PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
     std::cout << "Testing satellite PRN=" << test_satellite_PRN << '\n';
     std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
     true_obs_file.append(std::to_string(test_satellite_PRN));

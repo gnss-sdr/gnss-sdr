@@ -53,22 +53,24 @@ bool Gnss_Synchro_Udp_Sink::write_gnss_synchro(const std::vector<Gnss_Synchro>& 
         {
             outbound_data = serdes.createProtobuffer(stocks);
         }
-    for (const auto& endpoint : endpoints)
-        {
-            socket.open(endpoint.protocol(), error);
 
-            try
+    try
+        {
+            for (const auto& endpoint : endpoints)
                 {
-                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
+                    socket.open(endpoint.protocol(), error);  // NOLINT(bugprone-unused-return-value)
+
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)  // this can throw
                         {
-                            std::cerr << "Gnss_Synchro_Udp_Sink sent 0 bytes\n";
+                            return false;
                         }
                 }
-            catch (boost::system::system_error const& e)
-                {
-                    std::cerr << e.what() << '\n';
-                    return false;
-                }
         }
+    catch (const boost::system::system_error& e)
+        {
+            std::cerr << "Error sending data: " << e.what() << '\n';
+            return false;
+        }
+
     return true;
 }

@@ -16,7 +16,6 @@
 
 #include "pcps_quicksync_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -24,6 +23,12 @@
 #include <cmath>
 #include <exception>
 #include <sstream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 pcps_quicksync_acquisition_cc_sptr pcps_quicksync_make_acquisition_cc(

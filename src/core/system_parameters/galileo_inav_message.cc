@@ -21,12 +21,16 @@
 #include "reed_solomon.h"
 #include <boost/crc.hpp>             // for boost::crc_basic, boost::crc_optimal
 #include <boost/dynamic_bitset.hpp>  // for boost::dynamic_bitset
-#include <glog/logging.h>            // for DLOG
 #include <algorithm>                 // for reverse
 #include <iostream>                  // for operator<<
 #include <limits>                    // for std::numeric_limits
 #include <numeric>                   // for std::accumulate
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using CRC_Galileo_INAV_type = boost::crc_optimal<24, 0x1864CFBU, 0x0, 0x0, false, false>;
 

@@ -21,7 +21,6 @@
 
 #include "fpga_acquisition.h"
 #include "MATH_CONSTANTS.h"  // for TWO_PI
-#include <glog/logging.h>    // for LOG
 #include <cmath>             // for log2
 #include <fcntl.h>           // libraries used by the GIPO
 #include <iostream>          // for operator<<
@@ -29,6 +28,11 @@
 #include <unistd.h>          // for write, close, read, ssize_t
 #include <utility>           // for move
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \

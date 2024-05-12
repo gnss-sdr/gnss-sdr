@@ -41,6 +41,8 @@
 #include <gnuradio/blocks/skiphead.h>
 #include <gnuradio/top_block.h>
 #include <pmt/pmt.h>
+#include <cstdint>
+#include <string>
 #include <thread>
 #include <utility>
 
@@ -55,6 +57,7 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+#if USE_GLOG_AND_GFLAGS
 DEFINE_string(config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
 DEFINE_string(acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");
 DEFINE_string(acq_test_implementation, std::string("GPS_L1_CA_PCPS_Acquisition"), "Acquisition block implementation under test. Alternatives: GPS_L1_CA_PCPS_Acquisition, GPS_L1_CA_PCPS_Acquisition_Fine_Doppler, Galileo_E1_PCPS_Ambiguous_Acquisition, GLONASS_L1_CA_PCPS_Acquisition, GLONASS_L2_CA_PCPS_Acquisition, GPS_L2_M_PCPS_Acquisition, Galileo_E5a_Pcps_Acquisition, GPS_L5i_PCPS_Acquisition");
@@ -86,6 +89,39 @@ DEFINE_int32(acq_test_fake_PRN, 33, "PRN number of a non-present satellite");
 DEFINE_int32(acq_test_iterations, 1, "Number of iterations (same signal, different noise realization)");
 DEFINE_bool(plot_acq_test, false, "Plots results with gnuplot, if available");
 DEFINE_int32(acq_test_skiphead, 0, "Number of samples to skip in the input file");
+#else
+ABSL_FLAG(std::string, config_file_ptest, std::string(""), "File containing alternative configuration parameters for the acquisition performance test.");
+ABSL_FLAG(std::string, acq_test_input_file, std::string(""), "File containing raw signal data, must be in int8_t format. The signal generator will not be used.");
+ABSL_FLAG(std::string, acq_test_implementation, std::string("GPS_L1_CA_PCPS_Acquisition"), "Acquisition block implementation under test. Alternatives: GPS_L1_CA_PCPS_Acquisition, GPS_L1_CA_PCPS_Acquisition_Fine_Doppler, Galileo_E1_PCPS_Ambiguous_Acquisition, GLONASS_L1_CA_PCPS_Acquisition, GLONASS_L2_CA_PCPS_Acquisition, GPS_L2_M_PCPS_Acquisition, Galileo_E5a_Pcps_Acquisition, GPS_L5i_PCPS_Acquisition");
+
+ABSL_FLAG(int32_t, acq_test_doppler_max, 5000, "Maximum Doppler, in Hz");
+ABSL_FLAG(int32_t, acq_test_doppler_step, 125, "Doppler step, in Hz.");
+ABSL_FLAG(int32_t, acq_test_coherent_time_ms, 1, "Acquisition coherent time, in ms");
+ABSL_FLAG(int32_t, acq_test_max_dwells, 1, "Number of non-coherent integrations.");
+ABSL_FLAG(bool, acq_test_bit_transition_flag, false, "Bit transition flag.");
+ABSL_FLAG(bool, acq_test_make_two_steps, false, "Perform second step in a thinner grid.");
+ABSL_FLAG(int32_t, acq_test_second_nbins, 4, "If --acq_test_make_two_steps is set to true, this parameter sets the number of bins done in the acquisition refinement stage.");
+ABSL_FLAG(int32_t, acq_test_second_doppler_step, 10, "If --acq_test_make_two_steps is set to true, this parameter sets the Doppler step applied in the acquisition refinement stage, in Hz.");
+
+ABSL_FLAG(int32_t, acq_test_signal_duration_s, 2, "Generated signal duration, in s");
+ABSL_FLAG(int32_t, acq_test_num_meas, 0, "Number of measurements per run. 0 means the complete file.");
+ABSL_FLAG(double, acq_test_cn0_init, 30.0, "Initial CN0, in dBHz.");
+ABSL_FLAG(double, acq_test_cn0_final, 45.0, "Final CN0, in dBHz.");
+ABSL_FLAG(double, acq_test_cn0_step, 3.0, "CN0 step, in dB.");
+
+ABSL_FLAG(double, acq_test_threshold_init, 3.0, "Initial acquisition threshold");
+ABSL_FLAG(double, acq_test_threshold_final, 4.0, "Final acquisition threshold");
+ABSL_FLAG(double, acq_test_threshold_step, 0.5, "Acquisition threshold step");
+
+ABSL_FLAG(double, acq_test_pfa_init, 1e-5, "Set initial threshold via probability of false alarm. Disable with -1.0");
+
+ABSL_FLAG(int32_t, acq_test_PRN, 1, "PRN number of a present satellite");
+ABSL_FLAG(int32_t, acq_test_fake_PRN, 33, "PRN number of a non-present satellite");
+
+ABSL_FLAG(int32_t, acq_test_iterations, 1, "Number of iterations (same signal, different noise realization)");
+ABSL_FLAG(bool, plot_acq_test, false, "Plots results with gnuplot, if available");
+ABSL_FLAG(int32_t, acq_test_skiphead, 0, "Number of samples to skip in the input file");
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class AcqPerfTest_msg_rx;
@@ -160,9 +196,15 @@ protected:
         config = std::make_shared<InMemoryConfiguration>();
         item_size = sizeof(gr_complex);
         gnss_synchro = Gnss_Synchro();
+#if USE_GLOG_AND_GFLAGS
         doppler_max = static_cast<unsigned int>(FLAGS_acq_test_doppler_max);
         doppler_step = static_cast<unsigned int>(FLAGS_acq_test_doppler_step);
+#else
+        doppler_max = static_cast<unsigned int>(absl::GetFlag(FLAGS_acq_test_doppler_max));
+        doppler_step = static_cast<unsigned int>(absl::GetFlag(FLAGS_acq_test_doppler_step));
+#endif
         stop = false;
+#if USE_GLOG_AND_GFLAGS
         if (FLAGS_acq_test_input_file.empty())
             {
                 cn0_vector.push_back(FLAGS_acq_test_cn0_init);
@@ -173,6 +215,18 @@ protected:
                         aux = aux + FLAGS_acq_test_cn0_step;
                     }
             }
+#else
+        if (absl::GetFlag(FLAGS_acq_test_input_file).empty())
+            {
+                cn0_vector.push_back(absl::GetFlag(FLAGS_acq_test_cn0_init));
+                double aux = absl::GetFlag(FLAGS_acq_test_cn0_init) + absl::GetFlag(FLAGS_acq_test_cn0_step);
+                while (aux <= absl::GetFlag(FLAGS_acq_test_cn0_final))
+                    {
+                        cn0_vector.push_back(aux);
+                        aux = aux + absl::GetFlag(FLAGS_acq_test_cn0_step);
+                    }
+            }
+#endif
         else
             {
                 cn0_vector = {0.0};
@@ -182,14 +236,22 @@ protected:
             {
                 signal_id = "1C";
                 system_id = 'G';
+#if USE_GLOG_AND_GFLAGS
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                 min_integration_ms = 1;
             }
         else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fine_Doppler")
             {
                 signal_id = "1C";
                 system_id = 'G';
+#if USE_GLOG_AND_GFLAGS
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                 min_integration_ms = 1;
             }
         else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition")
@@ -197,40 +259,65 @@ protected:
                 signal_id = "1B";
                 system_id = 'E';
                 min_integration_ms = 4;
+#if USE_GLOG_AND_GFLAGS
                 if (FLAGS_acq_test_coherent_time_ms == 1)
+#else
+                if (absl::GetFlag(FLAGS_acq_test_coherent_time_ms) == 1)
+#endif
                     {
                         coherent_integration_time_ms = 4;
                     }
                 else
                     {
+#if USE_GLOG_AND_GFLAGS
                         coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                        coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                     }
             }
         else if (implementation == "GLONASS_L1_CA_PCPS_Acquisition")
             {
                 signal_id = "1G";
                 system_id = 'R';
+#if USE_GLOG_AND_GFLAGS
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                 min_integration_ms = 1;
             }
         else if (implementation == "GLONASS_L2_CA_PCPS_Acquisition")
             {
                 signal_id = "2G";
                 system_id = 'R';
+#if USE_GLOG_AND_GFLAGS
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                 min_integration_ms = 1;
             }
         else if (implementation == "GPS_L2_M_PCPS_Acquisition")
             {
                 signal_id = "2S";
                 system_id = 'G';
+#if USE_GLOG_AND_GFLAGS
                 if (FLAGS_acq_test_coherent_time_ms == 1)
+#else
+                if (absl::GetFlag(FLAGS_acq_test_coherent_time_ms) == 1)
+#endif
+
                     {
                         coherent_integration_time_ms = 20;
                     }
                 else
                     {
+#if USE_GLOG_AND_GFLAGS
                         coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                        coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                     }
                 min_integration_ms = 20;
             }
@@ -238,25 +325,37 @@ protected:
             {
                 signal_id = "5X";
                 system_id = 'E';
+#if USE_GLOG_AND_GFLAGS
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                 min_integration_ms = 1;
             }
         else if (implementation == "GPS_L5i_PCPS_Acquisition")
             {
                 signal_id = "L5";
                 system_id = 'G';
+#if USE_GLOG_AND_GFLAGS
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
             }
         else
             {
                 signal_id = "1C";
                 system_id = 'G';
+#if USE_GLOG_AND_GFLAGS
                 coherent_integration_time_ms = FLAGS_acq_test_coherent_time_ms;
+#else
+                coherent_integration_time_ms = absl::GetFlag(FLAGS_acq_test_coherent_time_ms);
+#endif
                 min_integration_ms = 1;
             }
 
         init();
-
+#if USE_GLOG_AND_GFLAGS
         if (FLAGS_acq_test_pfa_init > 0.0)
             {
                 pfa_vector.push_back(FLAGS_acq_test_pfa_init);
@@ -279,11 +378,36 @@ protected:
                         aux = aux + static_cast<float>(FLAGS_acq_test_threshold_step);
                     }
             }
+#else
+        if (absl::GetFlag(FLAGS_acq_test_pfa_init) > 0.0)
+            {
+                pfa_vector.push_back(absl::GetFlag(FLAGS_acq_test_pfa_init));
+                float aux = 1.0;
+                while ((absl::GetFlag(FLAGS_acq_test_pfa_init) * std::pow(10, aux)) < 1)
+                    {
+                        pfa_vector.push_back(absl::GetFlag(FLAGS_acq_test_pfa_init) * std::pow(10, aux));
+                        aux = aux + 1.0;
+                    }
+                pfa_vector.push_back(0.999);
+            }
+        else
+            {
+                auto aux = static_cast<float>(absl::GetFlag(FLAGS_acq_test_threshold_init));
+                pfa_vector.push_back(aux);
+                aux = aux + static_cast<float>(absl::GetFlag(FLAGS_acq_test_threshold_step));
+                while (aux <= static_cast<float>(absl::GetFlag(FLAGS_acq_test_threshold_final)))
+                    {
+                        pfa_vector.push_back(aux);
+                        aux = aux + static_cast<float>(absl::GetFlag(FLAGS_acq_test_threshold_step));
+                    }
+            }
+#endif
 
         num_thresholds = pfa_vector.size();
 
         // the gnss simulator does not dump the trk observables for the last 100 ms of generated signal
         int aux2;
+#if USE_GLOG_AND_GFLAGS
         if (FLAGS_acq_test_bit_transition_flag)
             {
                 aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (FLAGS_acq_test_coherent_time_ms * 2.0) - 1);
@@ -300,7 +424,24 @@ protected:
             {
                 num_of_measurements = static_cast<unsigned int>(aux2);
             }
-
+#else
+        if (absl::GetFlag(FLAGS_acq_test_bit_transition_flag))
+            {
+                aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (absl::GetFlag(FLAGS_acq_test_coherent_time_ms) * 2.0) - 1);
+            }
+        else
+            {
+                aux2 = floor((generated_signal_duration_s * ms_per_s - 100) / (absl::GetFlag(FLAGS_acq_test_coherent_time_ms) * absl::GetFlag(FLAGS_acq_test_max_dwells)) - 1);
+            }
+        if ((absl::GetFlag(FLAGS_acq_test_num_meas) > 0) && (absl::GetFlag(FLAGS_acq_test_num_meas) < aux2))
+            {
+                num_of_measurements = static_cast<unsigned int>(absl::GetFlag(FLAGS_acq_test_num_meas));
+            }
+        else
+            {
+                num_of_measurements = static_cast<unsigned int>(aux2);
+            }
+#endif
         Pd.resize(cn0_vector.size());
         for (int i = 0; i < static_cast<int>(cn0_vector.size()); i++)
             {
@@ -323,7 +464,12 @@ protected:
     std::vector<double> cn0_vector;
     std::vector<float> pfa_vector;
 
+#if USE_GLOG_AND_GFLAGS
     int N_iterations = FLAGS_acq_test_iterations;
+#else
+    int N_iterations = absl::GetFlag(FLAGS_acq_test_iterations);
+#endif
+
     void init();
 
     int configure_generator(double cn0);
@@ -353,19 +499,31 @@ protected:
 
     int message;
     std::thread ch_thread;
-
+#if USE_GLOG_AND_GFLAGS
     std::string implementation = FLAGS_acq_test_implementation;
-
     const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
+#else
+    std::string implementation = absl::GetFlag(FLAGS_acq_test_implementation);
+    const double baseband_sampling_freq = static_cast<double>(absl::GetFlag(FLAGS_fs_gen_sps));
+#endif
+
     int coherent_integration_time_ms;
     const int in_acquisition = 1;
     const int dump_channel = 0;
 
+#if USE_GLOG_AND_GFLAGS
     int generated_signal_duration_s = FLAGS_acq_test_signal_duration_s;
+#else
+    int generated_signal_duration_s = absl::GetFlag(FLAGS_acq_test_signal_duration_s);
+#endif
     unsigned int num_of_measurements;
     unsigned int measurement_counter = 0;
 
+#if USE_GLOG_AND_GFLAGS
     unsigned int observed_satellite = FLAGS_acq_test_PRN;
+#else
+    unsigned int observed_satellite = absl::GetFlag(FLAGS_acq_test_PRN);
+#endif
     std::string path_str = "./acq-perf-test";
 
     int num_thresholds;
@@ -388,8 +546,13 @@ private:
     std::string p5;
     std::string p6;
 
+#if USE_GLOG_AND_GFLAGS
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
+#else
+    std::string filename_rinex_obs = absl::GetFlag(FLAGS_filename_rinex_obs);
+    std::string filename_raw_data = absl::GetFlag(FLAGS_filename_raw_data);
+#endif
     char system_id;
 
     double compute_stdev_precision(const std::vector<double>& vec);
@@ -449,6 +612,7 @@ void AcquisitionPerformanceTest::stop_queue()
 int AcquisitionPerformanceTest::configure_generator(double cn0)
 {
     // Configure signal generator
+#if USE_GLOG_AND_GFLAGS
     generator_binary = FLAGS_generator_binary;
 
     p1 = std::string("-rinex_nav_file=") + FLAGS_rinex_nav_file;
@@ -464,6 +628,24 @@ int AcquisitionPerformanceTest::configure_generator(double cn0)
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
     p6 = std::string("-CN0_dBHz=") + std::to_string(cn0);
+#else
+    generator_binary = absl::GetFlag(FLAGS_generator_binary);
+
+    p1 = std::string("-rinex_nav_file=") + absl::GetFlag(FLAGS_rinex_nav_file);
+    if (absl::GetFlag(FLAGS_dynamic_position).empty())
+        {
+            p2 = std::string("-static_position=") + absl::GetFlag(FLAGS_static_position) + std::string(",") + std::to_string(std::min(generated_signal_duration_s * 10, 3000));
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(absl::GetFlag(FLAGS_dynamic_position));
+        }
+    p3 = std::string("-rinex_obs_file=") + absl::GetFlag(FLAGS_filename_rinex_obs);  // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + absl::GetFlag(FLAGS_filename_raw_data);     // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);    // Baseband sampling frequency [MSps]
+    p6 = std::string("-CN0_dBHz=") + std::to_string(cn0);
+#endif
+
     return 0;
 }
 
@@ -498,7 +680,11 @@ int AcquisitionPerformanceTest::generate_signal()
 
 int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsigned int iter)
 {
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_config_file_ptest.empty())
+#else
+    if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
         {
             config = std::make_shared<InMemoryConfiguration>();
             const int sampling_rate_internal = baseband_sampling_freq;
@@ -514,13 +700,23 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
 
             config->set_property("Acquisition.threshold", std::to_string(pfa));
             // if (FLAGS_acq_test_pfa_init > 0.0) config->supersede_property("Acquisition.pfa", std::to_string(pfa));
+
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_acq_test_pfa_init > 0.0)
+#else
+            if (absl::GetFlag(FLAGS_acq_test_pfa_init) > 0.0)
+#endif
                 {
                     config->supersede_property("Acquisition.pfa", std::to_string(pfa));
                 }
 
             config->set_property("Acquisition.coherent_integration_time_ms", std::to_string(coherent_integration_time_ms));
+
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_acq_test_bit_transition_flag)
+#else
+            if (absl::GetFlag(FLAGS_acq_test_bit_transition_flag))
+#endif
                 {
                     config->set_property("Acquisition.bit_transition_flag", "true");
                 }
@@ -528,18 +724,30 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
                 {
                     config->set_property("Acquisition.bit_transition_flag", "false");
                 }
-
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_acq_test_max_dwells));
+#else
+            config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_acq_test_max_dwells)));
+#endif
 
             config->set_property("Acquisition.repeat_satellite", "true");
 
             config->set_property("Acquisition.blocking", "true");
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_acq_test_make_two_steps)
                 {
                     config->set_property("Acquisition.make_two_steps", "true");
                     config->set_property("Acquisition.second_nbins", std::to_string(FLAGS_acq_test_second_nbins));
                     config->set_property("Acquisition.second_doppler_step", std::to_string(FLAGS_acq_test_second_doppler_step));
                 }
+#else
+            if (absl::GetFlag(FLAGS_acq_test_make_two_steps))
+                {
+                    config->set_property("Acquisition.make_two_steps", "true");
+                    config->set_property("Acquisition.second_nbins", std::to_string(absl::GetFlag(FLAGS_acq_test_second_nbins)));
+                    config->set_property("Acquisition.second_doppler_step", std::to_string(absl::GetFlag(FLAGS_acq_test_second_doppler_step)));
+                }
+#endif
             else
                 {
                     config->set_property("Acquisition.make_two_steps", "false");
@@ -557,7 +765,11 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
         }
     else
         {
+#if USE_GLOG_AND_GFLAGS
             config_f = std::make_shared<FileConfiguration>(FLAGS_config_file_ptest);
+#else
+            config_f = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_config_file_ptest));
+#endif
             config = nullptr;
         }
     return 0;
@@ -567,13 +779,21 @@ int AcquisitionPerformanceTest::configure_receiver(double cn0, float pfa, unsign
 int AcquisitionPerformanceTest::run_receiver()
 {
     std::string file;
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_acq_test_input_file.empty())
+#else
+    if (absl::GetFlag(FLAGS_acq_test_input_file).empty())
+#endif
         {
             file = "./" + filename_raw_data;
         }
     else
         {
+#if USE_GLOG_AND_GFLAGS
             file = FLAGS_acq_test_input_file;
+#else
+            file = absl::GetFlag(FLAGS_acq_test_input_file);
+#endif
         }
     const char* file_name = file.c_str();
     gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
@@ -582,7 +802,11 @@ int AcquisitionPerformanceTest::run_receiver()
 
     top_block = gr::make_top_block("Acquisition test");
     auto msg_rx = AcqPerfTest_msg_rx_make(channel_internal_queue);
+#if USE_GLOG_AND_GFLAGS
     gr::blocks::skiphead::sptr skiphead = gr::blocks::skiphead::make(sizeof(gr_complex), FLAGS_acq_test_skiphead);
+#else
+    gr::blocks::skiphead::sptr skiphead = gr::blocks::skiphead::make(sizeof(gr_complex), absl::GetFlag(FLAGS_acq_test_skiphead));
+#endif
 
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
     gnss_synchro = Gnss_Synchro();
@@ -681,9 +905,15 @@ int AcquisitionPerformanceTest::count_executions(const std::string& basename, un
 
 void AcquisitionPerformanceTest::plot_results()
 {
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_test) == true)
+        {
+            const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
             if (gnuplot_executable.empty())
                 {
                     std::cout << "WARNING: Although the flag plot_gps_l1_tracking_test has been set to TRUE,\n";
@@ -700,7 +930,11 @@ void AcquisitionPerformanceTest::plot_results()
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g1.showonscreen();  // window output
                                 }
@@ -736,7 +970,11 @@ void AcquisitionPerformanceTest::plot_results()
                             g1.savetopdf("ROC", 18);
 
                             Gnuplot g2("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g2.showonscreen();  // window output
                                 }
@@ -798,8 +1036,11 @@ TEST_F(AcquisitionPerformanceTest, ROC)
             std::vector<double> meas_Pd_;
             std::vector<double> meas_Pd_correct_;
             std::vector<double> meas_Pfa_;
-
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_acq_test_input_file.empty())
+#else
+            if (absl::GetFlag(FLAGS_acq_test_input_file).empty())
+#endif
                 {
                     std::cout << "Execution for CN0 = " << it << " dB-Hz\n";
                 }
@@ -807,7 +1048,11 @@ TEST_F(AcquisitionPerformanceTest, ROC)
             // Do N_iterations of the experiment
             for (int pfa_iter = 0; pfa_iter < static_cast<int>(pfa_vector.size()); pfa_iter++)
                 {
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_acq_test_pfa_init > 0.0)
+#else
+                    if (absl::GetFlag(FLAGS_acq_test_pfa_init) > 0.0)
+#endif
                         {
                             std::cout << "Setting threshold for Pfa = " << pfa_vector[pfa_iter] << '\n';
                         }
@@ -816,16 +1061,25 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                             std::cout << "Setting threshold to " << pfa_vector[pfa_iter] << '\n';
                         }
 
-                    // Configure the signal generator
+                        // Configure the signal generator
+
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_acq_test_input_file.empty())
+#else
+                    if (absl::GetFlag(FLAGS_acq_test_input_file).empty())
+#endif
                         {
                             configure_generator(it);
                         }
 
                     for (int iter = 0; iter < N_iterations; iter++)
                         {
-                            // Generate signal raw signal samples and observations RINEX file
+// Generate signal raw signal samples and observations RINEX file
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_acq_test_input_file.empty())
+#else
+                            if (absl::GetFlag(FLAGS_acq_test_input_file).empty())
+#endif
                                 {
                                     generate_signal();
                                 }
@@ -834,11 +1088,19 @@ TEST_F(AcquisitionPerformanceTest, ROC)
                                 {
                                     if (k == 0)
                                         {
+#if USE_GLOG_AND_GFLAGS
                                             observed_satellite = FLAGS_acq_test_PRN;
+#else
+                                            observed_satellite = absl::GetFlag(FLAGS_acq_test_PRN);
+#endif
                                         }
                                     else
                                         {
+#if USE_GLOG_AND_GFLAGS
                                             observed_satellite = FLAGS_acq_test_fake_PRN;
+#else
+                                            observed_satellite = absl::GetFlag(FLAGS_acq_test_fake_PRN);
+#endif
                                         }
                                     init();
 

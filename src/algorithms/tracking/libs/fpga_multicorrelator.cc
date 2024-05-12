@@ -21,13 +21,18 @@
  */
 
 #include "fpga_multicorrelator.h"
-#include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <fcntl.h>  // for O_RDWR, O_RSYNC
 #include <string>
 #include <sys/mman.h>  // for PROT_READ, PROT_WRITE, MAP_SHARED
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \

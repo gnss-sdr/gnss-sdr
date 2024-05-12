@@ -59,7 +59,10 @@ if(Boost_FOUND)
         add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
     endif()
 
-    set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk
+    if("${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
+        set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+    endif()
+
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(rinex2assist
@@ -79,10 +82,16 @@ if(Boost_FOUND)
             Boost::iostreams
             Boost::serialization
             ${GNSSTK_LIBRARY}
-            Gflags::gflags
             Threads::Threads
             core_system_parameters
     )
+
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(rinex2assist PRIVATE Gflags::gflags)
+        target_compile_definitions(rinex2assist PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(rinex2assist PRIVATE absl::flags absl::flags_parse)
+    endif()
 
     if(GNSSTK_USES_GPSTK_NAMESPACE)
         target_compile_definitions(rinex2assist PUBLIC -DGNSSTK_USES_GPSTK_NAMESPACE=1)

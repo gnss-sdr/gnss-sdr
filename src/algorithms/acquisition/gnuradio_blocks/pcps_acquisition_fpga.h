@@ -29,7 +29,6 @@
 #include "acq_conf_fpga.h"
 #include "channel_fsm.h"
 #include "fpga_acquisition.h"
-#include <glog/logging.h>
 #include <cstdint>  // for uint32_t
 #include <memory>   // for shared_ptr
 #include <string>   // for string
@@ -156,14 +155,7 @@ public:
      * \brief Set Doppler center frequency for the grid search. It will refresh the Doppler grid.
      * \param doppler_center - Frequency center of the search grid [Hz].
      */
-    inline void set_doppler_center(int32_t doppler_center)
-    {
-        if (doppler_center != d_doppler_center)
-            {
-                DLOG(INFO) << " Doppler assistance for Channel: " << d_channel << " => Doppler: " << doppler_center << "[Hz]";
-                d_doppler_center = doppler_center;
-            }
-    }
+    void set_doppler_center(int32_t doppler_center);
 
     /*!
      * \brief This function triggers a HW reset of the FPGA PL.

@@ -23,10 +23,15 @@
 #include "galileo_e5_signal_replica.h"
 #include "gnss_sdr_flags.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <algorithm>
 #include <array>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GalileoE5aDllPllTrackingFpga::GalileoE5aDllPllTrackingFpga(
     const ConfigurationInterface *configuration,

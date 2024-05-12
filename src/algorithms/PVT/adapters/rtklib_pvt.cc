@@ -26,8 +26,12 @@
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
-#include <glog/logging.h>              // for LOG
 #include <iostream>                    // for std::cout
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 #if USE_STD_COMMON_FACTOR
 #include <numeric>
 namespace bc = std;
@@ -88,6 +92,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // RINEX version
     pvt_output_parameters.rinex_version = configuration->property(role + ".rinex_version", 3);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_RINEX_version == "3.01" || FLAGS_RINEX_version == "3.02" || FLAGS_RINEX_version == "3")
         {
             pvt_output_parameters.rinex_version = 3;
@@ -96,13 +101,29 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             pvt_output_parameters.rinex_version = 2;
         }
+#else
+    if (absl::GetFlag(FLAGS_RINEX_version) == "3.01" || absl::GetFlag(FLAGS_RINEX_version) == "3.02" || absl::GetFlag(FLAGS_RINEX_version) == "3")
+        {
+            pvt_output_parameters.rinex_version = 3;
+        }
+    else if (absl::GetFlag(FLAGS_RINEX_version) == "2.10" || absl::GetFlag(FLAGS_RINEX_version) == "2.11" || absl::GetFlag(FLAGS_RINEX_version) == "2")
+        {
+            pvt_output_parameters.rinex_version = 2;
+        }
+#endif
     pvt_output_parameters.rinexobs_rate_ms = bc::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.rinex_name = configuration->property(role + ".rinex_name", std::string("-"));
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_RINEX_name != "-")
         {
             pvt_output_parameters.rinex_name = FLAGS_RINEX_name;
         }
-
+#else
+    if (absl::GetFlag(FLAGS_RINEX_name) != "-")
+        {
+            pvt_output_parameters.rinex_name = absl::GetFlag(FLAGS_RINEX_name);
+        }
+#endif
     // RTCM Printer settings
     pvt_output_parameters.flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
     pvt_output_parameters.rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);

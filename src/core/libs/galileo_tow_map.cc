@@ -16,10 +16,15 @@
 
 
 #include "galileo_tow_map.h"
-#include <glog/logging.h>  // for LOG
-#include <limits>          // for std::numeric_limits
-#include <memory>          // for std::shared
-#include <typeinfo>        // for typeid
+#include <limits>    // for std::numeric_limits
+#include <memory>    // for std::shared
+#include <typeinfo>  // for typeid
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

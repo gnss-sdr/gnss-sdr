@@ -25,7 +25,6 @@
 #include "in_memory_configuration.h"
 #include "signal_generator.h"
 #include "signal_generator_c.h"
-#include <glog/logging.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -33,9 +32,15 @@
 #include <gtest/gtest.h>
 #include <pmt/pmt.h>
 #include <chrono>
+#include <cstdint>
 #include <stdexcept>
 #include <thread>
 #include <utility>
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 #if HAS_GENERIC_LAMBDA
 #else
 #include <boost/bind/bind.hpp>
@@ -51,9 +56,13 @@ namespace wht = boost;
 namespace wht = std;
 #endif
 
+#if USE_GLOG_AND_GFLAGS
 DEFINE_double(value_threshold, 1, "Value of the threshold for the acquisition");
 DEFINE_int32(value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
-
+#else
+ABSL_FLAG(double, value_threshold, 1, "Value of the threshold for the acquisition");
+ABSL_FLAG(int32_t, value_CN0_dB_0, 44, "Value for the CN0_dB_0 in channel 0");
+#endif
 
 // ######## GNURADIO BLOCK MESSAGE RECEVER #########
 class GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test_msg_rx;
@@ -304,7 +313,11 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
 
     config->set_property("SignalSource.system_0", "G");
     config->set_property("SignalSource.PRN_0", "10");
+#if USE_GLOG_AND_GFLAGS
     config->set_property("SignalSource.CN0_dB_0", std::to_string(FLAGS_value_CN0_dB_0));
+#else
+    config->set_property("SignalSource.CN0_dB_0", std::to_string(absl::GetFlag(FLAGS_value_CN0_dB_0)));
+#endif
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
 
@@ -354,7 +367,11 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_2()
     config->set_property("Acquisition_1C.coherent_integration_time_ms",
         std::to_string(integration_time_ms));
     config->set_property("Acquisition_1C.max_dwells", "1");
+#if USE_GLOG_AND_GFLAGS
     config->set_property("Acquisition_1C.threshold", std::to_string(FLAGS_value_threshold));
+#else
+    config->set_property("Acquisition_1C.threshold", std::to_string(absl::GetFlag(FLAGS_value_threshold)));
+#endif
     config->set_property("Acquisition_1C.doppler_max", "10000");
     config->set_property("Acquisition_1C.doppler_step", "100");
     config->set_property("Acquisition_1C.bit_transition_flag", "false");
@@ -395,7 +412,11 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
 
     config->set_property("SignalSource.system_0", "G");
     config->set_property("SignalSource.PRN_0", "10");
+#if USE_GLOG_AND_GFLAGS
     config->set_property("SignalSource.CN0_dB_0", std::to_string(FLAGS_value_CN0_dB_0));
+#else
+    config->set_property("SignalSource.CN0_dB_0", std::to_string(absl::GetFlag(FLAGS_value_CN0_dB_0)));
+#endif
     config->set_property("SignalSource.doppler_Hz_0", std::to_string(expected_doppler_hz));
     config->set_property("SignalSource.delay_chips_0", std::to_string(expected_delay_chips));
 
@@ -830,10 +851,19 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                             filenamepd.str("");
                             filenamepd << "../data/test_statistics_" << gnss_synchro.System
                                        << "_" << gnss_synchro.Signal << "_sat_"
+#if USE_GLOG_AND_GFLAGS
                                        << gnss_synchro.PRN << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
+#else
+                                       << gnss_synchro.PRN << "CN0_dB_0_" << absl::GetFlag(FLAGS_value_CN0_dB_0) << "_dBHz.csv";
 
+#endif
                             pdpfafile.open(filenamepd.str().c_str(), std::ios::app | std::ios::out);
+
+#if USE_GLOG_AND_GFLAGS
                             pdpfafile << FLAGS_value_threshold << "," << Pd << "," << Pfa_p << "," << Pmd << '\n';
+#else
+                            pdpfafile << absl::GetFlag(FLAGS_value_threshold) << "," << Pd << "," << Pfa_p << "," << Pmd << '\n';
+#endif
                             pdpfafile.close();
                         }
                 }
@@ -848,10 +878,18 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                             filenamepf.str("");
                             filenamepf << "../data/test_statistics_" << gnss_synchro.System
                                        << "_" << gnss_synchro.Signal << "_sat_"
+#if USE_GLOG_AND_GFLAGS
                                        << gnss_synchro.PRN << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
-
+#else
+                                       << gnss_synchro.PRN << "CN0_dB_0_" << absl::GetFlag(FLAGS_value_CN0_dB_0) << "_dBHz.csv";
+#endif
                             pdpfafile.open(filenamepf.str().c_str(), std::ios::app | std::ios::out);
+
+#if USE_GLOG_AND_GFLAGS
                             pdpfafile << FLAGS_value_threshold << "," << Pfa_a << '\n';
+#else
+                            pdpfafile << absl::GetFlag(FLAGS_value_threshold) << "," << Pfa_a << '\n';
+#endif
                             pdpfafile.close();
                         }
                 }

@@ -15,8 +15,13 @@
  */
 
 #include "gnss_satellite.h"
-#include <glog/logging.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)

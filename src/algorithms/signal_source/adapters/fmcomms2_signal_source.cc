@@ -24,11 +24,16 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
-#include <glog/logging.h>
 #include <algorithm>  // for max
 #include <exception>
 #include <iostream>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -70,7 +75,11 @@ Fmcomms2SignalSource::Fmcomms2SignalSource(const ConfigurationInterface *configu
       rf_dc_(configuration->property(role + ".rf_dc", true)),
       bb_dc_(configuration->property(role + ".bb_dc", true)),
       filter_auto_(configuration->property(role + ".filter_auto", false)),
+#if USE_GLOG_AND_GFLAGS
       rf_shutdown_(configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown)),
+#else
+      rf_shutdown_(configuration->property(role + ".rf_shutdown", absl::GetFlag(FLAGS_rf_shutdown))),
+#endif
       dump_(configuration->property(role + ".dump", false))
 {
     if (filter_auto_)

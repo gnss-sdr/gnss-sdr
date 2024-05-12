@@ -20,7 +20,6 @@
 #include "galileo_has_page.h"
 #include "gnss_sdr_make_unique.h"
 #include "has_simple_printer.h"
-#include <gflags/gflags.h>
 #include <gtest/gtest.h>
 #include <bitset>
 #include <cstddef>
@@ -35,8 +34,14 @@
 // Usage:
 // ./run_tests --gtest_filter=HAS_Test.Decoder
 // ./run_tests --gtest_filter=HAS_Test.Decoder --has_data_test_file=../data/HAS_Messages_sample/encoded/Sample_HAS_Pages_Encoded_20210713_08.txt --start_page_test_file=70
+
+#if USE_GLOG_AND_GFLAGS
 DEFINE_string(has_data_test_file, std::string(""), "File containing encoded HAS pages (format: [time sat_id HAS_page_in_hex] in each line)");
 DEFINE_int32(start_page_test_file, 0, "Starting page in case of reading HAS pages from a file");
+#else
+ABSL_FLAG(std::string, has_data_test_file, std::string(""), "File containing encoded HAS pages (format: [time sat_id HAS_page_in_hex] in each line)");
+ABSL_FLAG(int32_t, start_page_test_file, 0, "Starting page in case of reading HAS pages from a file");
+#endif
 
 #if PMT_USES_BOOST_ANY
 namespace wht = boost;
@@ -212,7 +217,11 @@ private:
 TEST(HAS_Test, Decoder)
 {
     Read_Encoded_Pages read_pages{};
+#if USE_GLOG_AND_GFLAGS
     EXPECT_TRUE(read_pages.read_data(FLAGS_has_data_test_file));
+#else
+    EXPECT_TRUE(read_pages.read_data(absl::GetFlag(FLAGS_has_data_test_file)));
+#endif
     auto gal_e6_has_rx_ = galileo_e6_has_msg_receiver_make();
     auto has_tester = HasDecoderTester_make();
     std::unique_ptr<Has_Simple_Printer> has_simple_printer = nullptr;
@@ -224,10 +233,17 @@ TEST(HAS_Test, Decoder)
     if (!known_data)
         {
             has_simple_printer = std::make_unique<Has_Simple_Printer>();
+#if USE_GLOG_AND_GFLAGS
             if (static_cast<size_t>(FLAGS_start_page_test_file) < read_pages.get_number_pages())
                 {
                     init = FLAGS_start_page_test_file;
                 }
+#else
+            if (static_cast<size_t>(absl::GetFlag(FLAGS_start_page_test_file)) < read_pages.get_number_pages())
+                {
+                    init = absl::GetFlag(FLAGS_start_page_test_file);
+                }
+#endif
             else
                 {
                     std::cerr << "The flag --start_page_test_file is set beyond the total number of pages in the file (" << read_pages.get_number_pages() << "), ignoring it.\n";

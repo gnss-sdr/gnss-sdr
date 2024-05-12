@@ -19,12 +19,16 @@
 #include "pulse_blanking_filter.h"
 #include "configuration_interface.h"
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include <gnuradio/filter/firdes.h>
 #include <cmath>
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configuration,
     std::string role,

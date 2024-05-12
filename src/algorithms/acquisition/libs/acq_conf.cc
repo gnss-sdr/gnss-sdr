@@ -17,8 +17,13 @@
 
 #include "acq_conf.h"
 #include "item_type_helpers.h"
-#include <glog/logging.h>
 #include <cmath>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 void Acq_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,

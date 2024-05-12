@@ -20,16 +20,23 @@
 #include <armadillo>
 #include <chrono>
 #include <complex>
+#include <cstdint>
 
-
+#if USE_GLOG_AND_GFLAGS
 DEFINE_int32(size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
-
+#else
+ABSL_FLAG(int32_t, size_carrier_test, 100000, "Size of the arrays used for complex carrier testing");
+#endif
 
 TEST(ComplexCarrierTest, StandardComplexImplementation)
 {
-    // Dynamic allocation creates new usable space on the program STACK
-    // (an area of RAM specifically allocated to the program)
+// Dynamic allocation creates new usable space on the program STACK
+// (an area of RAM specifically allocated to the program)
+#if USE_GLOG_AND_GFLAGS
     auto* output = new std::complex<float>[FLAGS_size_carrier_test];
+#else
+    auto* output = new std::complex<float>[absl::GetFlag(FLAGS_size_carrier_test)];
+#endif
     const double _f = 2000.0;
     const double _fs = 2000000.0;
     const auto phase_step = (TWO_PI * _f) / _fs;
@@ -37,8 +44,11 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
-
+#if USE_GLOG_AND_GFLAGS
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
+#else
+    for (int i = 0; i < absl::GetFlag(FLAGS_size_carrier_test); i++)
+#endif
         {
             output[i] = std::complex<float>(cos(phase), sin(phase));
             phase += phase_step;
@@ -46,18 +56,32 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
+
+#if USE_GLOG_AND_GFLAGS
     std::cout << "A " << FLAGS_size_carrier_test
+#else
+    std::cout << "A " << absl::GetFlag(FLAGS_size_carrier_test)
+#endif
               << "-length complex carrier in standard C++ (dynamic allocation) generated in " << elapsed_seconds.count() * 1e6
               << " microseconds\n";
 
     std::complex<float> expected(1, 0);
+#if USE_GLOG_AND_GFLAGS
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
+#else
+    std::vector<std::complex<float>> mag(absl::GetFlag(FLAGS_size_carrier_test));
+    for (int i = 0; i < absl::GetFlag(FLAGS_size_carrier_test); i++)
+#endif
         {
             mag[i] = output[i] * std::conj(output[i]);
         }
     delete[] output;
+#if USE_GLOG_AND_GFLAGS
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
+#else
+    for (int i = 0; i < absl::GetFlag(FLAGS_size_carrier_test); i++)
+#endif
         {
             ASSERT_FLOAT_EQ(std::norm(expected), std::norm(mag[i]));
         }
@@ -69,7 +93,12 @@ TEST(ComplexCarrierTest, StandardComplexImplementation)
 TEST(ComplexCarrierTest, C11ComplexImplementation)
 {
     // declaration: load data onto the program data segment
+
+#if USE_GLOG_AND_GFLAGS
     std::vector<std::complex<float>> output(FLAGS_size_carrier_test);
+#else
+    std::vector<std::complex<float>> output(absl::GetFlag(FLAGS_size_carrier_test));
+#endif
     const double _f = 2000.0;
     const double _fs = 2000000.0;
     const auto phase_step = (TWO_PI * _f) / _fs;
@@ -78,20 +107,34 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
+#if USE_GLOG_AND_GFLAGS
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
+#else
+    for (int i = 0; i < absl::GetFlag(FLAGS_size_carrier_test); i++)
+#endif
         {
             output[i] = std::complex<float>(cos(phase), sin(phase));
             phase += phase_step;
         }
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
+
+#if USE_GLOG_AND_GFLAGS
     std::cout << "A " << FLAGS_size_carrier_test
+#else
+    std::cout << "A " << absl::GetFlag(FLAGS_size_carrier_test)
+#endif
               << "-length complex carrier in standard C++ (declaration) generated in " << elapsed_seconds.count() * 1e6
               << " microseconds\n";
     ASSERT_LE(0, elapsed_seconds.count() * 1e6);
     std::complex<float> expected(1, 0);
+#if USE_GLOG_AND_GFLAGS
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
+#else
+    std::vector<std::complex<float>> mag(absl::GetFlag(FLAGS_size_carrier_test));
+    for (int i = 0; i < absl::GetFlag(FLAGS_size_carrier_test); i++)
+#endif
         {
             mag[i] = output[i] * std::conj(output[i]);
             ASSERT_FLOAT_EQ(std::norm(expected), std::norm(mag[i]));
@@ -101,8 +144,11 @@ TEST(ComplexCarrierTest, C11ComplexImplementation)
 
 TEST(ComplexCarrierTest, OwnComplexImplementation)
 {
+#if USE_GLOG_AND_GFLAGS
     std::vector<std::complex<float>> output(FLAGS_size_carrier_test);
-
+#else
+    std::vector<std::complex<float>> output(absl::GetFlag(FLAGS_size_carrier_test));
+#endif
     double _f = 2000.0;
     double _fs = 2000000.0;
     std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -112,18 +158,31 @@ TEST(ComplexCarrierTest, OwnComplexImplementation)
 
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
+#if USE_GLOG_AND_GFLAGS
     std::cout << "A " << FLAGS_size_carrier_test
+#else
+    std::cout << "A " << absl::GetFlag(FLAGS_size_carrier_test)
+#endif
               << "-length complex carrier using fixed point generated in " << elapsed_seconds.count() * 1e6
               << " microseconds\n";
 
     std::complex<float> expected(1, 0);
+
+#if USE_GLOG_AND_GFLAGS
     std::vector<std::complex<float>> mag(FLAGS_size_carrier_test);
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
+#else
+    std::vector<std::complex<float>> mag(absl::GetFlag(FLAGS_size_carrier_test));
+    for (int i = 0; i < absl::GetFlag(FLAGS_size_carrier_test); i++)
+#endif
         {
             mag[i] = output[i] * std::conj(output[i]);
         }
-
+#if USE_GLOG_AND_GFLAGS
     for (int i = 0; i < FLAGS_size_carrier_test; i++)
+#else
+    for (int i = 0; i < absl::GetFlag(FLAGS_size_carrier_test); i++)
+#endif
         {
             ASSERT_NEAR(std::norm(expected), std::norm(mag[i]), 0.0001);
         }

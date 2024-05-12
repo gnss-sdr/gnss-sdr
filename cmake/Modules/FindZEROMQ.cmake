@@ -46,6 +46,7 @@ find_library(ZEROMQ_LIBRARIES
         /usr/lib/powerpc64-linux-gnu
         /usr/lib/powerpc64le-linux-gnu
         /usr/lib/riscv64-linux-gnu
+        /usr/lib/loongarch64-linux-gnu
         /usr/lib/s390x-linux-gnu
         /usr/lib/sh4-linux-gnu
         /usr/lib/sparc64-linux-gnu

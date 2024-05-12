@@ -74,10 +74,15 @@ target_link_libraries(signal_source_libs
         Boost::headers
         Gnuradio::runtime
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         core_libs
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_source_libs PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(signal_source_libs PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_source_libs PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(signal_source_libs
     PUBLIC

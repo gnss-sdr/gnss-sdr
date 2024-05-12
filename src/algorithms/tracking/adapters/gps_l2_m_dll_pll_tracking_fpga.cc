@@ -30,12 +30,17 @@
 #include "gnss_synchro.h"
 #include "gps_l2c_signal_replica.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <algorithm>
 #include <array>
 #include <cmath>  // for round
 #include <iostream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GpsL2MDllPllTrackingFpga::GpsL2MDllPllTrackingFpga(
     const ConfigurationInterface* configuration,

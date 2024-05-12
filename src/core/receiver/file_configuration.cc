@@ -21,10 +21,14 @@
 
 #include "file_configuration.h"
 #include "gnss_sdr_make_unique.h"
-#include <glog/logging.h>
 #include <iostream>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 FileConfiguration::FileConfiguration(std::string filename)
     : filename_(std::move(filename))

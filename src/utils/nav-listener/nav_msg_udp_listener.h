@@ -31,6 +31,7 @@ private:
     boost::asio::ip::udp::socket socket;
     boost::system::error_code error;
     boost::asio::ip::udp::endpoint endpoint;
+    bool connected_socket;
 };
 
 #endif

@@ -26,8 +26,14 @@ target_link_libraries(channel_adapters
         channel_libs
     PRIVATE
         gnss_sdr_flags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(channel_adapters PRIVATE Glog::glog)
+    target_compile_definitions(channel_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(channel_adapters PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(channel_adapters
     PUBLIC

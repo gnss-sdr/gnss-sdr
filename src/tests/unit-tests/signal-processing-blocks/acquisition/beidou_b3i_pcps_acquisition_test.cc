@@ -29,7 +29,6 @@
 #include "in_memory_configuration.h"
 #include "test_flags.h"
 #include <boost/make_shared.hpp>
-#include <glog/logging.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -38,6 +37,12 @@
 #include <pmt/pmt.h>
 #include <chrono>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -138,7 +143,7 @@ protected:
 
     gr::top_block_sptr top_block;
     std::shared_ptr<InMemoryConfiguration> config;
-    Gnss_Synchro gnss_synchro{};
+    Gnss_Synchro gnss_synchro;
     size_t item_size;
     unsigned int doppler_max;
     unsigned int doppler_step;

@@ -31,7 +31,6 @@
 #include "in_memory_configuration.h"
 #include "test_flags.h"
 #include <boost/make_shared.hpp>
-#include <glog/logging.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/blocks/file_source.h>
 #include <gnuradio/blocks/null_sink.h>
@@ -162,7 +161,11 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::init()
     config->set_property("GNSS-SDR.internal_fs_sps", "4000000");
     config->set_property("Acquisition_1B.item_type", "gr_complex");
     config->set_property("Acquisition_1B.coherent_integration_time_ms", "4");
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             config->set_property("Acquisition_1B.dump", "true");
         }
@@ -198,7 +201,11 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
     std::vector<unsigned int>* samples = &acq_dump.samples;
     std::vector<std::vector<float>>* mag = &acq_dump.mag;
 
+#if USE_GLOG_AND_GFLAGS
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+    const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
     if (gnuplot_executable.empty())
         {
             std::cout << "WARNING: Although the flag plot_acq_grid has been set to TRUE,\n";
@@ -216,7 +223,11 @@ void GalileoE1PcpsAmbiguousAcquisitionTest::plot_grid()
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("lines");
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_show_plots)
+#else
+                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                         {
                             g1.showonscreen();  // window output
                         }
@@ -291,7 +302,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             std::string data_str = "./tmp-acq-gal1";
             if (fs::exists(data_str))
@@ -368,7 +383,11 @@ TEST_F(GalileoE1PcpsAmbiguousAcquisitionTest, ValidationOfResults)
     EXPECT_LE(doppler_error_hz, 166) << "Doppler error exceeds the expected value: 166 Hz = 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.175) << "Delay error exceeds the expected value: 0.175 chips";
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             plot_grid();
         }

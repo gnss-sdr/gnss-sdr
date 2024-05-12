@@ -50,7 +50,6 @@
 #include "rtklib_rtkcmn.h"         // for utc2gpst
 #include <armadillo>               // for interaction with geofunctions
 #include <boost/lexical_cast.hpp>  // for bad_lexical_cast
-#include <glog/logging.h>          // for LOG
 #include <pmt/pmt.h>               // for make_any
 #include <algorithm>               // for find, min
 #include <chrono>                  // for milliseconds
@@ -65,6 +64,12 @@
 #include <stdexcept>               // for invalid_argument
 #include <sys/ipc.h>               // for IPC_CREAT
 #include <sys/msg.h>               // for msgctl, msgget
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifdef ENABLE_FPGA
 #include <boost/chrono.hpp>  // for steady_clock
@@ -89,7 +94,7 @@ ControlThread::ControlThread()
     signal(SIGINT, ControlThread::handle_signal);
     signal(SIGTERM, ControlThread::handle_signal);
     signal(SIGHUP, ControlThread::handle_signal);
-
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_c == "-")
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
@@ -98,6 +103,16 @@ ControlThread::ControlThread()
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
+#else
+    if (absl::GetFlag(FLAGS_c) == "-")
+        {
+            configuration_ = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_config_file));
+        }
+    else
+        {
+            configuration_ = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_c));
+        }
+#endif
     // Basic configuration checks
     auto aux = std::dynamic_pointer_cast<FileConfiguration>(configuration_);
     conf_file_has_section_ = aux->has_section();
@@ -405,8 +420,12 @@ int ControlThread::run()
 
     // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
-    // start the keyboard_listener thread
+// start the keyboard_listener thread
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_keyboard)
+#else
+    if (absl::GetFlag(FLAGS_keyboard))
+#endif
         {
             keyboard_thread_ = std::thread(&ControlThread::keyboard_listener, this);
         }
@@ -445,7 +464,11 @@ int ControlThread::run()
 #endif
 
     // Terminate keyboard thread
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_keyboard && keyboard_thread_.joinable())
+#else
+    if (absl::GetFlag(FLAGS_keyboard) && keyboard_thread_.joinable())
+#endif
         {
             pthread_t id = keyboard_thread_.native_handle();
             keyboard_thread_.detach();

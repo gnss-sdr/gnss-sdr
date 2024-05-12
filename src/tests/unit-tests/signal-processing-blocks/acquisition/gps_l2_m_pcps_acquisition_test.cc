@@ -160,7 +160,11 @@ void GpsL2MPcpsAcquisitionTest::init()
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_frequency_hz));
     config->set_property("Acquisition_2S.implementation", "GPS_L2_M_PCPS_Acquisition");
     config->set_property("Acquisition_2S.item_type", "gr_complex");
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             config->set_property("Acquisition_2S.dump", "true");
         }
@@ -195,7 +199,11 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
     std::vector<unsigned int> *samples = &acq_dump.samples;
     std::vector<std::vector<float>> *mag = &acq_dump.mag;
 
+#if USE_GLOG_AND_GFLAGS
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+    const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
     if (gnuplot_executable.empty())
         {
             std::cout << "WARNING: Although the flag plot_acq_grid has been set to TRUE,\n";
@@ -213,7 +221,11 @@ void GpsL2MPcpsAcquisitionTest::plot_grid()
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("impulses");
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_show_plots)
+#else
+                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                         {
                             g1.showonscreen();  // window output
                         }
@@ -290,7 +302,11 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     double expected_delay_samples = 1;  // 2004;
     double expected_doppler_hz = 1200;  // 3000;
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             std::string data_str = "./tmp-acq-gps2";
             if (fs::exists(data_str))
@@ -372,7 +388,11 @@ TEST_F(GpsL2MPcpsAcquisitionTest, ValidationOfResults)
     EXPECT_LE(doppler_error_hz, 200) << "Doppler error exceeds the expected value: 2/(3*integration period)";
     EXPECT_LT(delay_error_chips, 0.5) << "Delay error exceeds the expected value: 0.5 chips";
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_acq_grid == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_acq_grid) == true)
+#endif
         {
             plot_grid();
         }

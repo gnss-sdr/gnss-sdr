@@ -29,13 +29,18 @@
 #include "in_memory_configuration.h"
 #include "test_flags.h"
 #include <boost/make_shared.hpp>
-#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <chrono>
 #include <cmath>    // for abs, pow, floor
 #include <fcntl.h>  // for O_WRONLY
 #include <pthread.h>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifdef GR_GREATER_38
 #include <gnuradio/analog/sig_source.h>

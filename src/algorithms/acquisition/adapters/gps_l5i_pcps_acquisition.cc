@@ -23,8 +23,14 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "gps_l5_signal_replica.h"
-#include <glog/logging.h>
 #include <algorithm>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 #if HAS_STD_SPAN
 #include <span>
 namespace own = std;
@@ -51,10 +57,17 @@ GpsL5iPcpsAcquisition::GpsL5iPcpsAcquisition(
 
     DLOG(INFO) << "role " << role;
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
 
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);

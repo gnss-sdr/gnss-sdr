@@ -109,9 +109,14 @@ target_link_libraries(algorithms_libs
         core_system_parameters
         Volk::volk
         Volkgnsssdr::volkgnsssdr
-        Gflags::gflags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(algorithms_libs PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(algorithms_libs PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(algorithms_libs PRIVATE absl::flags absl::log)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(algorithms_libs
@@ -208,13 +213,14 @@ else()
     target_link_libraries(gnss_sdr_flags PRIVATE Boost::filesystem Boost::system)
 endif()
 
-target_link_libraries(gnss_sdr_flags
-    PUBLIC
-        Gflags::gflags
-)
-
-if(GFLAGS_GREATER_20 OR ${LOCAL_GFLAGS})
-    target_compile_definitions(gnss_sdr_flags PRIVATE -DGFLAGS_GREATER_2_0=1)
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(gnss_sdr_flags PUBLIC Gflags::gflags)
+    target_compile_definitions(gnss_sdr_flags PUBLIC -DUSE_GLOG_AND_GFLAGS=1)
+    if(GFLAGS_GREATER_20 OR "${LOCAL_GFLAGS}")
+        target_compile_definitions(gnss_sdr_flags PRIVATE -DGFLAGS_GREATER_2_0=1)
+    endif()
+else()
+    target_link_libraries(gnss_sdr_flags PUBLIC absl::flags)
 endif()
 
 target_compile_definitions(gnss_sdr_flags

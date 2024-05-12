@@ -18,7 +18,12 @@
 
 #include "file_signal_source.h"
 #include "gnss_sdr_string_literals.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 

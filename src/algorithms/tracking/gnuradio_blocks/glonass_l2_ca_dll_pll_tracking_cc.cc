@@ -30,7 +30,6 @@
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <algorithm>
@@ -43,6 +42,12 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #define CN0_ESTIMATION_SAMPLES 10
 
@@ -107,7 +112,11 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
       d_acq_sample_stamp(0),
       d_carrier_lock_test(1),
       d_CN0_SNV_dB_Hz(0),
+#if USE_GLOG_AND_GFLAGS
       d_carrier_lock_threshold(FLAGS_carrier_lock_th),
+#else
+      d_carrier_lock_threshold(absl::GetFlag(FLAGS_carrier_lock_th)),
+#endif
       d_cn0_estimation_counter(0),
       d_carrier_lock_fail_counter(0),
       d_enable_tracking(false),
@@ -135,7 +144,11 @@ Glonass_L2_Ca_Dll_Pll_Tracking_cc::Glonass_L2_Ca_Dll_Pll_Tracking_cc(
 
     multicorrelator_cpu.init(2 * d_current_prn_length_samples, d_n_correlator_taps);
 
+#if USE_GLOG_AND_GFLAGS
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
+#else
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(absl::GetFlag(FLAGS_cn0_samples));
+#endif
 
     systemName["R"] = std::string("Glonass");
 
@@ -596,7 +609,12 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                     // Carrier lock indicator
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES);
                     // Loss of lock detection
+
+#if USE_GLOG_AND_GFLAGS
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+#else
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+#endif
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -607,7 +625,11 @@ int Glonass_L2_Ca_Dll_Pll_Tracking_cc::general_work(int noutput_items __attribut
                                     d_carrier_lock_fail_counter--;
                                 }
                         }
+#if USE_GLOG_AND_GFLAGS
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
+#else
+                    if (d_carrier_lock_fail_counter > absl::GetFlag(FLAGS_max_lock_fail))
+#endif
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

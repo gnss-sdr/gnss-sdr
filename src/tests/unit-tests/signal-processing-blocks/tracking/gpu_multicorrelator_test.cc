@@ -20,14 +20,19 @@
 #include "gps_sdr_signal_replica.h"
 #include <chrono>
 #include <complex>
+#include <cstdint>
 #include <cuda.h>
 #include <cuda_profiler_api.h>
 #include <cuda_runtime.h>
 #include <thread>
 
-
+#if USE_GLOG_AND_GFLAGS
 DEFINE_int32(gpu_multicorrelator_iterations_test, 1000, "Number of averaged iterations in GPU multicorrelator test timing test");
 DEFINE_int32(gpu_multicorrelator_max_threads_test, 12, "Number of maximum concurrent correlators in GPU multicorrelator test timing test");
+#else
+ABSL_FLAG(int32_t, gpu_multicorrelator_iterations_test, 1000, "Number of averaged iterations in GPU multicorrelator test timing test");
+ABSL_FLAG(int32_t, gpu_multicorrelator_max_threads_test, 12, "Number of maximum concurrent correlators in GPU multicorrelator test timing test");
+#endif
 
 void run_correlator_gpu(cuda_multicorrelator* correlator,
     float d_rem_carrier_phase_rad,
@@ -37,7 +42,11 @@ void run_correlator_gpu(cuda_multicorrelator* correlator,
     int correlation_size,
     int d_n_correlator_taps)
 {
+#if USE_GLOG_AND_GFLAGS
     for (int k = 0; k < FLAGS_cpu_multicorrelator_iterations_test; k++)
+#else
+    for (int k = 0; k < absl::GetFlag(FLAGS_cpu_multicorrelator_iterations_test); k++)
+#endif
         {
             correlator->Carrier_wipeoff_multicorrelator_resampler_cuda(d_rem_carrier_phase_rad,
                 d_carrier_phase_step_rad,
@@ -53,7 +62,11 @@ TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
+#if USE_GLOG_AND_GFLAGS
     int max_threads = FLAGS_gpu_multicorrelator_max_threads_test;
+#else
+    int max_threads = absl::GetFlag(FLAGS_gpu_multicorrelator_max_threads_test);
+#endif
     std::vector<std::thread> thread_pool;
     cuda_multicorrelator* correlator_pool[max_threads];
     unsigned int correlation_sizes[3] = {2048, 4096, 8192};
@@ -133,7 +146,11 @@ TEST(GpuMulticorrelatorTest, MeasureExecutionTime)
                     thread_pool.clear();
                     end = std::chrono::system_clock::now();
                     elapsed_seconds = end - start;
+#if USE_GLOG_AND_GFLAGS
                     execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(FLAGS_gpu_multicorrelator_iterations_test);
+#else
+                    execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(absl::GetFlag(FLAGS_gpu_multicorrelator_iterations_test));
+#endif
                     std::cout << "GPU Multicorrelator execution time for length=" << correlation_sizes[correlation_sizes_idx] << " : " << execution_times[correlation_sizes_idx] << " [s]\n";
                 }
         });

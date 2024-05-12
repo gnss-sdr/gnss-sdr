@@ -24,7 +24,6 @@
 #include "gps_cnav_iono.h"       // for Gps_CNAV_Iono
 #include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
 #include "tlm_utils.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
@@ -37,6 +36,11 @@
 #include <memory>           // for shared_ptr, make_shared
 #include <utility>          // for std::move
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 gps_l2c_telemetry_decoder_gs_sptr
 gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)

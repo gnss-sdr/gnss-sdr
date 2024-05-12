@@ -26,12 +26,11 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception/exception.hpp>
-#include <gflags/gflags.h>
-#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <cerrno>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <numeric>
 #include <random>
@@ -41,19 +40,38 @@
 #include <sys/types.h>
 #include <thread>
 
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
+#include <glog/logging.h>
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
 using namespace google;
 }
 #endif
+#else
+#include <absl/flags/flag.h>
+#include <absl/flags/parse.h>
+#include <absl/log/flags.h>
+#include <absl/log/log.h>
+#endif
 
+
+#if USE_GLOG_AND_GFLAGS
 DEFINE_int32(fs_in, 4000000, "Sampling rate, in Samples/s");
 DEFINE_int32(max_measurement_duration, 90, "Maximum time waiting for a position fix, in seconds");
 DEFINE_int32(num_measurements, 2, "Number of measurements");
 DEFINE_string(device_address, "192.168.40.2", "USRP device IP address");
 DEFINE_string(subdevice, "A:0", "USRP subdevice");
 DEFINE_string(config_file_ttff, std::string(""), "File containing the configuration parameters for the TTFF test.");
+#else
+ABSL_FLAG(int32_t, fs_in, 4000000, "Sampling rate, in Samples/s");
+ABSL_FLAG(int32_t, max_measurement_duration, 90, "Maximum time waiting for a position fix, in seconds");
+ABSL_FLAG(int32_t, num_measurements, 2, "Number of measurements");
+ABSL_FLAG(std::string, device_address, "192.168.40.2", "USRP device IP address");
+ABSL_FLAG(std::string, subdevice, "A:0", "USRP subdevice");
+ABSL_FLAG(std::string, config_file_ttff, std::string(""), "File containing the configuration parameters for the TTFF test.");
+#endif
 
 // For GPS NAVIGATION (L1)
 Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -121,8 +139,11 @@ void TtffTest::config_1()
 {
     config = std::make_shared<InMemoryConfiguration>();
 
+#if USE_GLOG_AND_GFLAGS
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(FLAGS_fs_in));
+#else
 
+#endif
     // Set the assistance system parameters
     config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
     config->set_property("GNSS-SDR.SUPL_gps_ephemeris_port", std::to_string(7275));
@@ -137,11 +158,15 @@ void TtffTest::config_1()
     config->set_property("SignalSource.item_type", "cshort");
     config->set_property("SignalSource.implementation", "UHD_Signal_Source");
     config->set_property("SignalSource.freq", std::to_string(central_freq));
-    config->set_property("SignalSource.sampling_frequency", std::to_string(FLAGS_fs_in));
     config->set_property("SignalSource.gain", std::to_string(gain_dB));
+#if USE_GLOG_AND_GFLAGS
+    config->set_property("SignalSource.sampling_frequency", std::to_string(FLAGS_fs_in));
     config->set_property("SignalSource.subdevice", FLAGS_subdevice);
     config->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
     config->set_property("SignalSource.device_address", FLAGS_device_address);
+#else
+
+#endif
 
     // Set the Signal Conditioner
     config->set_property("SignalConditioner.implementation", "Signal_Conditioner");
@@ -166,13 +191,21 @@ void TtffTest::config_1()
     config->set_property("InputFilter.band2_error", std::to_string(band2_error));
     config->set_property("InputFilter.filter_type", "bandpass");
     config->set_property("InputFilter.grid_density", std::to_string(grid_density));
+#if USE_GLOG_AND_GFLAGS
     config->set_property("InputFilter.sampling_frequency", std::to_string(FLAGS_fs_in));
+#else
+
+#endif
     config->set_property("InputFilter.IF", std::to_string(zero));
     config->set_property("Resampler.implementation", "Pass_Through");
     config->set_property("Resampler.dump", "false");
     config->set_property("Resampler.item_type", "gr_complex");
+#if USE_GLOG_AND_GFLAGS
     config->set_property("Resampler.sample_freq_in", std::to_string(FLAGS_fs_in));
     config->set_property("Resampler.sample_freq_out", std::to_string(FLAGS_fs_in));
+#else
+
+#endif
 
     // Set the number of Channels
     config->set_property("Channels_1C.count", std::to_string(number_of_channels));
@@ -228,6 +261,7 @@ void TtffTest::config_1()
 
 void TtffTest::config_2()
 {
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_config_file_ttff.empty())
         {
             std::string path = std::string(TEST_PATH);
@@ -242,6 +276,9 @@ void TtffTest::config_2()
     int d_sampling_rate;
     d_sampling_rate = config2->property("GNSS-SDR.internal_fs_sps", FLAGS_fs_in);
     config2->set_property("SignalSource.samples", std::to_string(d_sampling_rate * FLAGS_max_measurement_duration));
+#else
+
+#endif
 }
 
 
@@ -377,7 +414,12 @@ void TtffTest::print_TTFF_report(const std::vector<double> &ttff_v, const std::s
         {
             stm << "Disabled.\n";
         }
+#if USE_GLOG_AND_GFLAGS
     stm << "Valid measurements (" << ttff.size() << "/" << FLAGS_num_measurements << "): ";
+#else
+    stm << "Valid measurements (" << ttff.size() << "/" << absl::GetFlag(FLAGS_num_measurements) << "): ";
+#endif
+
     for (double ttff_ : ttff)
         {
             stm << ttff_ << " ";
@@ -427,12 +469,19 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
     config2->set_property("GNSS-SDR.SUPL_gps_enabled", "false");
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "false");
     config2->set_property("PVT.flag_rtcm_server", "false");
-
+#if USE_GLOG_AND_GFLAGS
     for (int n = 0; n < FLAGS_num_measurements; n++)
+#else
+    for (int n = 0; n < absl::GetFlag(FLAGS_num_measurements); n++)
+#endif
         {
             // Create a new ControlThread object with a smart pointer
             std::shared_ptr<ControlThread> control_thread;
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_config_file_ttff.empty())
+#else
+            if (absl::GetFlag(FLAGS_config_file_ttff).empty())
+#endif
                 {
                     control_thread = std::make_shared<ControlThread>(config);
                 }
@@ -441,8 +490,13 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
                     control_thread = std::make_shared<ControlThread>(config2);
                 }
 
-            // record startup time
+                // record startup time
+#if USE_GLOG_AND_GFLAGS
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << '\n';
+#else
+            std::cout << "Starting measurement " << num_measurements + 1 << " / " << absl::GetFlag(FLAGS_num_measurements) << '\n';
+
+#endif
             std::chrono::time_point<std::chrono::system_clock> start;
             std::chrono::time_point<std::chrono::system_clock> end;
             start = std::chrono::system_clock::now();
@@ -470,7 +524,11 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
 
             num_measurements = num_measurements + 1;
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds.\n";
+#if USE_GLOG_AND_GFLAGS
             if (n < FLAGS_num_measurements - 1)
+#else
+            if (n < absl::GetFlag(FLAGS_num_measurements) - 1)
+#endif
                 {
                     std::random_device r;
                     std::default_random_engine e1(r());
@@ -484,8 +542,13 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
                 }
         }
 
-    // Print TTFF report
+        // Print TTFF report
+
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_config_file_ttff.empty())
+#else
+    if (absl::GetFlag(FLAGS_config_file_ttff).empty())
+#endif
         {
             print_TTFF_report(TTFF_v, config);
         }
@@ -513,11 +576,19 @@ TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
     config2->set_property("GNSS-SDR.SUPL_read_gps_assistance_xml", "true");
     config2->set_property("PVT.flag_rtcm_server", "false");
 
+#if USE_GLOG_AND_GFLAGS
     for (int n = 0; n < FLAGS_num_measurements; n++)
+#else
+    for (int n = 0; n < absl::GetFlag(FLAGS_num_measurements); n++)
+#endif
         {
             // Create a new ControlThread object with a smart pointer
             std::shared_ptr<ControlThread> control_thread;
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_config_file_ttff.empty())
+#else
+            if (absl::GetFlag(FLAGS_config_file_ttff).empty())
+#endif
                 {
                     control_thread = std::make_shared<ControlThread>(config);
                 }
@@ -525,8 +596,12 @@ TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
                 {
                     control_thread = std::make_shared<ControlThread>(config2);
                 }
-            // record startup time
+                // record startup time
+#if USE_GLOG_AND_GFLAGS
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << '\n';
+#else
+            std::cout << "Starting measurement " << num_measurements + 1 << " / " << absl::GetFlag(FLAGS_num_measurements) << '\n';
+#endif
             std::chrono::time_point<std::chrono::system_clock> start;
             std::chrono::time_point<std::chrono::system_clock> end;
             start = std::chrono::system_clock::now();
@@ -555,7 +630,11 @@ TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
 
             num_measurements = num_measurements + 1;
             std::cout << "Just finished measurement " << num_measurements << ", which took " << ttff << " seconds.\n";
+#if USE_GLOG_AND_GFLAGS
             if (n < FLAGS_num_measurements - 1)
+#else
+            if (n < absl::GetFlag(FLAGS_num_measurements) - 1)
+#endif
                 {
                     std::random_device r;
                     std::default_random_engine e1(r());
@@ -569,8 +648,13 @@ TEST_F(TtffTest /*unused*/, HotStart /*unused*/)
                 }
         }
 
-    // Print TTFF report
+        // Print TTFF report
+
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_config_file_ttff.empty())
+#else
+    if (absl::GetFlag(FLAGS_config_file_ttff).empty())
+#endif
         {
             print_TTFF_report(TTFF_v, config);
         }
@@ -594,8 +678,12 @@ int main(int argc, char **argv)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
+#if USE_GLOG_AND_GFLAGS
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
+#else
+    absl::ParseCommandLine(argc, argv);
+#endif
 
     // Start queue thread
     std::thread receive_msg_thread(receive_msg);
@@ -629,6 +717,8 @@ int main(int argc, char **argv)
     receive_msg_thread.join();
     msgctl(sysv_msqid, IPC_RMID, nullptr);
 
+#if USE_GLOG_AND_GFLAGS
     gflags::ShutDownCommandLineFlags();
+#endif
     return res;
 }

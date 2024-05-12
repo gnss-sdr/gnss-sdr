@@ -29,30 +29,72 @@
 #include "concurrent_queue.h"
 #include "control_thread.h"
 #include "gnss_sdr_filesystem.h"
+#include "gnss_sdr_flags.h"
 #include "gnss_sdr_make_unique.h"
 #include "gps_acq_assist.h"
 #include <boost/exception/diagnostic_information.hpp>  // for diagnostic_information
 #include <boost/exception/exception.hpp>               // for exception
 #include <boost/thread/exceptions.hpp>                 // for thread_resource_error
-#include <gflags/gflags.h>                             // for ShutDownCommandLineFlags
-#include <glog/logging.h>                              // for FLAGS_log_dir
 #include <chrono>                                      // for time_point
 #include <exception>                                   // for exception
+#include <fstream>                                     // for ofstream
 #include <iostream>                                    // for operator<<
 #include <memory>                                      // for unique_ptr
+#include <ostream>                                     // fro std::flush
 #include <string>                                      // for string
 
-#if CUDA_GPU_ACCEL
-// For the CUDA runtime routines (prefixed with "cuda_")
-#include <cuda_runtime.h>
-#endif
-
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>  // for ShutDownCommandLineFlags
+#include <glog/logging.h>
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
 using namespace google;
 }
 #endif
+#else
+#include <absl/flags/flag.h>
+#include <absl/flags/parse.h>
+#include <absl/flags/usage.h>
+#include <absl/flags/usage_config.h>
+#include <absl/log/flags.h>
+#include <absl/log/globals.h>
+#include <absl/log/initialize.h>
+#include <absl/log/log.h>
+#include <absl/log/log_sink.h>
+#include <absl/log/log_sink_registry.h>
+std::string GnssSdrVersionString() { return std::string("gnss-sdr version ") + std::string(GNSS_SDR_VERSION) + "\n"; }
+class GnssSdrLogSink : public absl::LogSink
+{
+public:
+    GnssSdrLogSink()
+    {
+        if (!absl::GetFlag(FLAGS_log_dir).empty())
+            {
+                filename = absl::GetFlag(FLAGS_log_dir) + "/gnss-sdr.log";
+            }
+        else
+            {
+                filename = GetTempDir() + "/gnss-sdr.log";
+            }
+        logfile.open(filename);
+    }
+    void Send(const absl::LogEntry& entry) override
+    {
+        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
+    }
+
+private:
+    std::ofstream logfile;
+    std::string filename;
+};
+#endif
+
+#if CUDA_GPU_ACCEL
+// For the CUDA runtime routines (prefixed with "cuda_")
+#include <cuda_runtime.h>
+#endif
+
 
 /*
  * Concurrent queues that communicates the Telemetry Decoder
@@ -69,14 +111,27 @@ int main(int argc, char** argv)
         {
             const std::string intro_help(
                 std::string("\nGNSS-SDR is an Open Source GNSS Software Defined Receiver\n") +
-                "Copyright (C) 2010-2023 (see AUTHORS file for a list of contributors)\n" +
+                "Copyright (C) 2010-2024 (see AUTHORS file for a list of contributors)\n" +
                 "This program comes with ABSOLUTELY NO WARRANTY;\n" +
                 "See COPYING file to see a copy of the General Public License\n \n");
-
             const std::string gnss_sdr_version(GNSS_SDR_VERSION);
+#if USE_GLOG_AND_GFLAGS
             gflags::SetUsageMessage(intro_help);
             gflags::SetVersionString(gnss_sdr_version);
             gflags::ParseCommandLineFlags(&argc, &argv, true);
+#else
+            absl::FlagsUsageConfig empty_config;
+            empty_config.version_string = &GnssSdrVersionString;
+            absl::SetFlagsUsageConfig(empty_config);
+            absl::SetProgramUsageMessage(intro_help);
+            absl::ParseCommandLine(argc, argv);
+            if (!ValidateFlags())
+                {
+                    std::cout << "GNSS-SDR program ended.\n";
+                    return 1;
+                }
+
+#endif
             std::cout << "Initializing GNSS-SDR v" << gnss_sdr_version << " ... Please wait.\n";
         }
     catch (const std::exception& e)
@@ -99,8 +154,15 @@ int main(int argc, char** argv)
 
     if (GOOGLE_STRIP_LOG == 0)
         {
+#if USE_GLOG_AND_GFLAGS
             google::InitGoogleLogging(argv[0]);
             if (FLAGS_log_dir.empty())
+#else
+            absl::LogSink* theSink = new GnssSdrLogSink;
+            absl::AddLogSink(theSink);
+            absl::InitializeLog();
+            if (absl::GetFlag(FLAGS_log_dir).empty())
+#endif
                 {
                     std::cout << "Logging will be written at "
                               << fs::temp_directory_path()
@@ -111,32 +173,58 @@ int main(int argc, char** argv)
                 {
                     try
                         {
+#if USE_GLOG_AND_GFLAGS
                             const fs::path p(FLAGS_log_dir);
+#else
+                            const fs::path p(absl::GetFlag(FLAGS_log_dir));
+#endif
                             if (!fs::exists(p))
                                 {
                                     std::cout << "The path "
+#if USE_GLOG_AND_GFLAGS
                                               << FLAGS_log_dir
+#else
+                                              << absl::GetFlag(FLAGS_log_dir)
+#endif
                                               << " does not exist, attempting to create it.\n";
                                     errorlib::error_code ec;
                                     if (!fs::create_directory(p, ec))
                                         {
+#if USE_GLOG_AND_GFLAGS
                                             std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended.\n";
                                             gflags::ShutDownCommandLineFlags();
+#else
+                                            std::cerr << "Could not create the " << absl::GetFlag(FLAGS_log_dir) << " folder. GNSS-SDR program ended.\n";
+#endif
                                             return 1;
                                         }
                                 }
+#if USE_GLOG_AND_GFLAGS
                             std::cout << "Logging will be written at " << FLAGS_log_dir << '\n';
+#else
+                            std::cout << "Logging will be written at " << absl::GetFlag(FLAGS_log_dir) << '\n';
+#endif
                         }
                     catch (const std::exception& e)
                         {
                             std::cerr << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                             std::cerr << "Could not create the " << FLAGS_log_dir << " folder. GNSS-SDR program ended.\n";
                             gflags::ShutDownCommandLineFlags();
+#else
+                            std::cerr << "Could not create the " << absl::GetFlag(FLAGS_log_dir) << " folder. GNSS-SDR program ended.\n";
+#endif
                             return 1;
                         }
                 }
         }
-
+#if USE_GLOG_AND_GFLAGS
+#else
+    else
+        {
+            absl::SetMinLogLevel(absl::LogSeverityAtLeast::kInfinity);  // do not log
+        }
+#endif
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::time_point<std::chrono::system_clock> end;
     start = std::chrono::system_clock::now();
@@ -201,7 +289,11 @@ int main(int argc, char** argv)
               << elapsed_seconds.count()
               << " [seconds]\n";
 
+#if USE_GLOG_AND_GFLAGS
     gflags::ShutDownCommandLineFlags();
+#else
+    absl::FlushLogSinks();
+#endif
     std::cout << "GNSS-SDR program ended.\n";
     return return_code;
 }

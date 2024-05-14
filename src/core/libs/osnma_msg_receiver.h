@@ -122,6 +122,7 @@ private:
 
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation);
+    FRIEND_TEST(OsnmaMsgReceiverTest, TagVerification);
 };
 
 

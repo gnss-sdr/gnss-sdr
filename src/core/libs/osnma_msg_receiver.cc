@@ -873,6 +873,7 @@ void osnma_msg_receiver::process_mack_message()
                     if (ret || d_flag_debug){
                             for(std::size_t i = 0; i < mack->tag_and_info.size(); ++i)
                                 {
+                                    // add tags of current mack to the verification queue
                                     auto& tag = mack->tag_and_info[i];
                                     Tag t(tag, mack->TOW, mack->WN, mack->PRNa, i + 2); // tag0 (mack header) has CTR1, so first tag of MTI has CTR = 2.
                                     d_tags_awaiting_verify.insert(std::pair(mack->TOW, t));
@@ -1002,7 +1003,7 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
     std::vector<uint8_t> m;
     m.push_back(static_cast<uint8_t>(tag.PRN_d));
     m.push_back(static_cast<uint8_t>(tag.PRNa));
-    uint32_t GST = d_helper->compute_gst(tag.TOW, tag.WN);
+    uint32_t GST = d_helper->compute_gst( tag.WN,tag.TOW);
     std::vector<uint8_t> GST_uint8 = d_helper->gst_to_uint8(GST);
     m.insert(m.end(),GST_uint8.begin(),GST_uint8.end());
     m.push_back(tag.CTR);
@@ -1012,8 +1013,8 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
     m.push_back(two_bits_nmas);
 
     // convert std::string to vector<uint8_t>
-    std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.TOW][tag.PRNa].ephemeris_iono_vector_2;
-    std::vector<uint8_t> ephemeris_iono_vector_2_bytes(ephemeris_iono_vector_2.begin(), ephemeris_iono_vector_2.end());
+    std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.PRNa][tag.TOW].ephemeris_iono_vector_2;
+    std::vector<uint8_t> ephemeris_iono_vector_2_bytes = d_helper->bytes(ephemeris_iono_vector_2);
 
     // Convert and add ephemeris_iono_vector_2 into the vector
     for (uint8_t byte : ephemeris_iono_vector_2_bytes) {
@@ -1205,7 +1206,8 @@ void osnma_msg_receiver::control_tags_awaiting_verify_size()
 /**
  * @brief Verifies the MACSEQ of a received MACK_message.
  *
- * \details checks for each tag in the retrieved mack message if its flexible (MACSEQ) or not (MACSEQ/MACLT depending on configuration param. (TODO)
+ * \details checks for each tag in the retrieved mack message if its flexible (MACSEQ) or not (MACSEQ/MACLT depending on configuration param, and
+ * verifies according to Eqs. 20, 21 SIS ICD.
  * @param message The MACK_message to verify.
  * @return True if the MACSEQ is valid, false otherwise.
  */
@@ -1218,7 +1220,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     std::vector<std::string> sq2{};
     std::vector<std::string> applicable_sequence;
     const auto it = OSNMA_TABLE_16.find(d_osnma_data.d_dsm_kroot_message.maclt);
-    // TODO as per RG example appears that the seq. q shall also be validated ageints either next or former Sf (depending on GST)
+    // TODO as per RG example appears that the seq. q shall also be validated against either next or former Sf (depending on GST)
     if (it != OSNMA_TABLE_16.cend())
         {
             sq1 = it->second.sequence1;

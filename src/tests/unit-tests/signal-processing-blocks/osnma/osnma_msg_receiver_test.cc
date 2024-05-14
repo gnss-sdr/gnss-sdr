@@ -58,6 +58,7 @@ public:
 
 TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
     // Arrange
+    // ----------
     osnma->d_tesla_key_verified = false;
     osnma->d_osnma_data.d_dsm_kroot_message.kroot = {0x5B, 0xF8, 0xC9, 0xCB, 0xFC, 0xF7, 0x04, 0x22, 0x08, 0x14, 0x75, 0xFD, 0x44, 0x5D, 0xF0, 0xFF}; // Kroot, TOW 345570 GST_0 - 30
     osnma->d_osnma_data.d_dsm_kroot_message.ks = 4; // TABLE 10 --> 128 bits
@@ -75,6 +76,7 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
 
 
     // Act
+    // ----------
     bool result = osnma->verify_tesla_key(key, TOW);
 
 
@@ -82,7 +84,8 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
 
 
     // Assert
-    ASSERT_TRUE(result); // Adjust this according to what you expect
+    // ----------
+    ASSERT_TRUE(result);
 
 }
 
@@ -342,7 +345,6 @@ std::vector<uint8_t> OsnmaMsgReceiverTest::extract_page_bytes(const TestVector& 
 
     return extracted_bytes;
 }
-
 /**
  * @brief Sets the time based on the given input.
  *
@@ -374,7 +376,6 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
 
 
 }
-
 void OsnmaMsgReceiverTest::initializeGoogleLog()
 {
     google::InitGoogleLogging(log_name.c_str());
@@ -416,4 +417,53 @@ void OsnmaMsgReceiverTest::initializeGoogleLog()
                     throw;
                 }
         }
+}
+
+
+TEST_F(OsnmaMsgReceiverTest, TagVerification) {
+    // Arrange
+    // ----------
+    osnma->d_tesla_key_verified = false;
+    osnma->d_osnma_data.d_dsm_kroot_message.kroot = {0x5B, 0xF8, 0xC9, 0xCB, 0xFC, 0xF7, 0x04, 0x22, 0x08, 0x14, 0x75, 0xFD, 0x44, 0x5D, 0xF0, 0xFF}; // Kroot, TOW 345570 GST_0 - 30
+    osnma->d_osnma_data.d_dsm_kroot_message.ks = 4; // TABLE 10 --> 128 bits
+    osnma->d_osnma_data.d_dsm_kroot_message.alpha = 0x610BDF26D77B;
+    // local_time_verification would do this operation. TODO - eliminate duplication.
+    osnma->d_GST_SIS = (1248 & 0x00000FFF) << 20 | (345630 & 0x000FFFFF);
+    osnma->d_GST_0 = ((1248  & 0x00000FFF) << 20 | (345600 & 0x000FFFFF)); // applicable time (GST_Kroot + 30)
+    osnma->d_receiver_time =  osnma->d_GST_0 + 30 * std::floor((osnma->d_GST_SIS - osnma->d_GST_0) / 30); // Eq. 3 R.G.//345630;
+
+    osnma->d_tesla_keys.insert((std::pair<uint32_t, std::vector<uint8_t>>(345600,{0xEF, 0xF9, 0x99, 0x04, 0x0E, 0x19, 0xB5, 0x70, 0x83, 0x50, 0x60, 0xBE, 0xBD, 0x23, 0xED, 0x92}))); // K1, not needed, just for reference.
+    std::vector<uint8_t> key = {0x2D, 0xC3, 0xA3, 0xCD, 0xB1, 0x17, 0xFA, 0xAD, 0xB8, 0x3B, 0x5F, 0x0B, 0x6F, 0xEA, 0x88, 0xEB}; // K2
+
+
+    uint32_t TOW = 345630;
+    uint32_t WN = 1248;
+    uint32_t PRNa = 0;
+    uint8_t CTR = 2;
+
+    osnma->d_osnma_data.d_dsm_kroot_message.ts = 0x00;
+    osnma->d_tesla_keys[TOW] = {0xEF, 0xF9};
+    osnma->d_osnma_data.d_dsm_kroot_message.mf = 0x00;
+    osnma->d_satellite_nav_data[PRNa][TOW].ephemeris_iono_vector_2 = "";
+    osnma->d_osnma_data.d_nma_header.nmas = 0b00000010;
+
+    MACK_tag_and_info MTI;
+    MTI.tag = 0x00;
+    MTI.tag_info.PRN_d = 0;
+    MTI.tag_info.ADKD = 0;
+    MTI.tag_info.cop = 0;
+    Tag t(MTI, TOW, WN, PRNa, CTR);
+
+    // Act
+    // ----------
+    bool result = osnma->verify_tag(t);
+
+
+
+
+
+    // Assert
+    // ----------
+    ASSERT_TRUE(result);
+
 }

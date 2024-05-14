@@ -78,7 +78,6 @@ Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 int main(int argc, char **argv)
 {
 #if USE_GLOG_AND_GFLAGS
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
     try
         {
             testing::InitGoogleTest(&argc, argv);

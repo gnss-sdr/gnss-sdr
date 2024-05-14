@@ -15,6 +15,7 @@
  */
 
 #include "osnma_helper.h"
+#include <bitset>
 
 uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const
 {
@@ -24,11 +25,32 @@ uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const
 
 std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
 {
-    std::vector<uint8_t> res(4);
+    std::vector<uint8_t> res;
 
-    res[1] = static_cast<uint8_t>((GST & 0xFF000000) >> 24);
-    res[2] = static_cast<uint8_t>((GST & 0x00FF0000) >> 16);
-    res[3] = static_cast<uint8_t>((GST & 0x0000FF00) >> 8);
-    res[4] = static_cast<uint8_t>(GST & 0x000000FF);
+    res.push_back(static_cast<uint8_t>((GST & 0xFF000000) >> 24));
+    res.push_back(static_cast<uint8_t>((GST & 0x00FF0000) >> 16));
+    res.push_back(static_cast<uint8_t>((GST & 0x0000FF00) >> 8));
+    res.push_back(static_cast<uint8_t>(GST & 0x000000FF));
     return res;
+}
+
+std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) {
+    std::vector<uint8_t> bytes;
+
+    // Determine the size of the padding needed.
+    size_t padding_size = binaryString.size() % 8;
+
+    std::string padded_binary = binaryString;
+
+    if (padding_size != 0) {
+            padding_size = 8 - padding_size;  // Compute padding size
+            padded_binary.append(padding_size, '0');  // Append zeros to the binary string
+        }
+
+    for (size_t i = 0; i < padded_binary.size(); i += 8) {
+            uint8_t byte = std::bitset<8>(padded_binary.substr(i, 8)).to_ulong();
+            bytes.push_back(byte);
+        }
+
+    return bytes;
 }

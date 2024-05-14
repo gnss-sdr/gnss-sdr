@@ -873,6 +873,7 @@ void osnma_msg_receiver::process_mack_message()
                     if (ret || d_flag_debug){
                             for(std::size_t i = 0; i < mack->tag_and_info.size(); ++i)
                                 {
+                                    // add tags of current mack to the verification queue
                                     auto& tag = mack->tag_and_info[i];
                                     Tag t(tag, mack->TOW, mack->WN, mack->PRNa, i + 2); // tag0 (mack header) has CTR1, so first tag of MTI has CTR = 2.
                                     d_tags_awaiting_verify.insert(std::pair(mack->TOW, t));
@@ -998,11 +999,13 @@ bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
 }
 bool osnma_msg_receiver::verify_tag(Tag& tag)
 {
+    // TODO case tag0, to be verified here?, PRNd not needed for it
     // build message
     std::vector<uint8_t> m;
-    m.push_back(static_cast<uint8_t>(tag.PRN_d));
+    if(tag.CTR != 1)
+        m.push_back(static_cast<uint8_t>(tag.PRN_d));
     m.push_back(static_cast<uint8_t>(tag.PRNa));
-    uint32_t GST = d_helper->compute_gst(tag.TOW, tag.WN);
+    uint32_t GST = d_helper->compute_gst( tag.WN,tag.TOW);
     std::vector<uint8_t> GST_uint8 = d_helper->gst_to_uint8(GST);
     m.insert(m.end(),GST_uint8.begin(),GST_uint8.end());
     m.push_back(tag.CTR);
@@ -1012,8 +1015,8 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
     m.push_back(two_bits_nmas);
 
     // convert std::string to vector<uint8_t>
-    std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.TOW][tag.PRNa].ephemeris_iono_vector_2;
-    std::vector<uint8_t> ephemeris_iono_vector_2_bytes(ephemeris_iono_vector_2.begin(), ephemeris_iono_vector_2.end());
+    std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.PRNa][tag.TOW-30].ephemeris_iono_vector_2;
+    std::vector<uint8_t> ephemeris_iono_vector_2_bytes = d_helper->bytes(ephemeris_iono_vector_2);
 
     // Convert and add ephemeris_iono_vector_2 into the vector
     for (uint8_t byte : ephemeris_iono_vector_2_bytes) {
@@ -1035,15 +1038,21 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
                         }
                 }
         }
-
+//    m = {
+//        0x02, 0x4E, 0x05, 0x46, 0x3C, 0x01, 0x83, 0xA5, 0x91, 0x05, 0x1D, 0x69, 0x25, 0x80, 0x07, 0x6B,
+//        0x3E, 0xEA, 0x81, 0x41, 0xBF, 0x03, 0xAD, 0xCB, 0x5A, 0xAD, 0xB2, 0x77, 0xAF, 0x6F, 0xCF, 0x21,
+//        0xFB, 0x98, 0xFF, 0x7E, 0x83, 0xAF, 0xFC, 0x37, 0x02, 0x03, 0xB0, 0xD8, 0xE1, 0x0E, 0xB1, 0x4D,
+//        0x11, 0x18, 0xE6, 0xB0, 0xE8, 0x20, 0x01, 0xA0, 0x00, 0xE5, 0x91, 0x00, 0x06, 0xD3, 0x1F, 0x00,
+//        0x02, 0x68, 0x05, 0x4A, 0x02, 0xC2, 0x26, 0x07, 0xF7, 0xFC, 0x00
+//    };
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(d_tesla_keys[tag.TOW], m);
+            mac = d_crypto->computeHMAC_SHA_256(d_tesla_keys[tag.TOW+30], m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1) // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(d_tesla_keys[tag.TOW], m);
+            mac = d_crypto->computeCMAC_AES(d_tesla_keys[tag.TOW+30], m);
         }
 
     // truncate the computed mac: trunc(l_t, mac(K,m)) Eq. 23 ICD
@@ -1205,7 +1214,8 @@ void osnma_msg_receiver::control_tags_awaiting_verify_size()
 /**
  * @brief Verifies the MACSEQ of a received MACK_message.
  *
- * \details checks for each tag in the retrieved mack message if its flexible (MACSEQ) or not (MACSEQ/MACLT depending on configuration param. (TODO)
+ * \details checks for each tag in the retrieved mack message if its flexible (MACSEQ) or not (MACSEQ/MACLT depending on configuration param, and
+ * verifies according to Eqs. 20, 21 SIS ICD.
  * @param message The MACK_message to verify.
  * @return True if the MACSEQ is valid, false otherwise.
  */
@@ -1218,7 +1228,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     std::vector<std::string> sq2{};
     std::vector<std::string> applicable_sequence;
     const auto it = OSNMA_TABLE_16.find(d_osnma_data.d_dsm_kroot_message.maclt);
-    // TODO as per RG example appears that the seq. q shall also be validated ageints either next or former Sf (depending on GST)
+    // TODO as per RG example appears that the seq. q shall also be validated against either next or former Sf (depending on GST)
     if (it != OSNMA_TABLE_16.cend())
         {
             sq1 = it->second.sequence1;
@@ -1317,7 +1327,7 @@ bool osnma_msg_receiver::tag_has_nav_data_available(Tag& t)
             // PRN was found, check if TOW exists in inner map
             LOG(INFO) << "Galileo OSNMA: hasData = true " << std::endl;
             std::map<uint32_t, NavData>& tow_map = prn_it->second;
-            auto tow_it = tow_map.find(t.TOW);
+            auto tow_it = tow_map.find(t.TOW-30); // TODO check ADKD to decide
             if (tow_it != tow_map.end()) {
                     return true;
                 } else {

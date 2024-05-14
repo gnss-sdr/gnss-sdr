@@ -58,6 +58,7 @@ public:
 
 TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
     // Arrange
+    // ----------
     osnma->d_tesla_key_verified = false;
     osnma->d_osnma_data.d_dsm_kroot_message.kroot = {0x5B, 0xF8, 0xC9, 0xCB, 0xFC, 0xF7, 0x04, 0x22, 0x08, 0x14, 0x75, 0xFD, 0x44, 0x5D, 0xF0, 0xFF}; // Kroot, TOW 345570 GST_0 - 30
     osnma->d_osnma_data.d_dsm_kroot_message.ks = 4; // TABLE 10 --> 128 bits
@@ -75,6 +76,7 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
 
 
     // Act
+    // ----------
     bool result = osnma->verify_tesla_key(key, TOW);
 
 
@@ -82,7 +84,8 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
 
 
     // Assert
-    ASSERT_TRUE(result); // Adjust this according to what you expect
+    // ----------
+    ASSERT_TRUE(result);
 
 }
 
@@ -342,7 +345,6 @@ std::vector<uint8_t> OsnmaMsgReceiverTest::extract_page_bytes(const TestVector& 
 
     return extracted_bytes;
 }
-
 /**
  * @brief Sets the time based on the given input.
  *
@@ -374,7 +376,6 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
 
 
 }
-
 void OsnmaMsgReceiverTest::initializeGoogleLog()
 {
     google::InitGoogleLogging(log_name.c_str());
@@ -416,4 +417,71 @@ void OsnmaMsgReceiverTest::initializeGoogleLog()
                     throw;
                 }
         }
+}
+
+
+TEST_F(OsnmaMsgReceiverTest, TagVerification) {
+    // Arrange
+    // ----------
+    // Tag0
+    uint32_t TOW_Tag0 = 345660;
+    uint32_t TOW_NavData = TOW_Tag0 - 30;
+    uint32_t TOW_Key_Tag0 = TOW_Tag0 + 30 ;
+    uint32_t WN = 1248;
+    uint32_t PRNa = 2;
+    uint8_t CTR = 1;
+
+    osnma->d_osnma_data.d_dsm_kroot_message.ts = 9; // 40 bit
+    osnma->d_tesla_keys[TOW_Key_Tag0] = {0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6, 0x5E, 0xBF, 0x00, 0x6A, 0xD8, 0xDB, 0xBC, 0x73}; // K4
+    osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
+    osnma->d_satellite_nav_data[PRNa][TOW_NavData].ephemeris_iono_vector_2 = "0000000011101001011001000100000101000111010110100100100101100000000000011101101011001111101110101010000001010000011011111100000011101011011100101101011010101011011011001001110111101011110110111111001111001000011111101110011000111111110111111010000011101011111111110000110111000000100000001110110000110110001110000100001110101100010100110100010001000110001110011010110000111010000010000000000001101000000000000011100101100100010000000000000110110100110001111100000000000000100110100000000101010010100000001011000010001001100000011111110111111111000000000000";
+    osnma->d_osnma_data.d_nma_header.nmas = 0b10;
+
+    MACK_tag_and_info MTI;
+    MTI.tag = static_cast<uint64_t>(0xE37BC4F858);
+    MTI.tag_info.PRN_d = 0x02;
+    MTI.tag_info.ADKD = 0x00;
+    MTI.tag_info.cop = 0x0F;
+    Tag t0(MTI, TOW_Tag0, WN, PRNa, CTR);
+
+
+
+    // Act
+    // ----------
+    bool result_tag0 = osnma->verify_tag(t0);
+
+
+
+
+
+    // Assert
+    // ----------
+    //ASSERT_TRUE(result_tag0);
+
+    // Tag3
+    uint32_t TOW_Tag3 = 345660;
+    uint32_t TOW_NavData_Tag3 = TOW_Tag3 - 30;
+    uint32_t TOW_Key_Tag3 = TOW_Tag0 + 30 ;
+    WN = 1248;
+    PRNa = 2;
+    CTR = 3;
+
+    osnma->d_osnma_data.d_dsm_kroot_message.ts = 9; // 40 bit
+    osnma->d_tesla_keys[TOW_Key_Tag3] = {0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6, 0x5E, 0xBF, 0x00, 0x6A, 0xD8, 0xDB, 0xBC, 0x73}; // K4
+    osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
+    osnma->d_satellite_nav_data[PRNa][TOW_NavData].ephemeris_iono_vector_2 =
+        "111111111111111111111111111111110000000000000000000000010001001001001000"
+        "111000001000100111100010010111111111011110111111111001001100000100000000";
+    osnma->d_osnma_data.d_nma_header.nmas = 0b10;
+
+    MTI.tag = static_cast<uint64_t>(0x7BB238C883);
+    MTI.tag_info.PRN_d = 0x02;
+    MTI.tag_info.ADKD = 0x04;
+    MTI.tag_info.cop = 0x0F;
+    Tag t3(MTI, TOW_Tag0, WN, PRNa, CTR);
+
+    bool result_tag3 = osnma->verify_tag(t3);
+
+    ASSERT_TRUE(result_tag3);
+
 }

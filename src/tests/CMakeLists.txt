@@ -1344,17 +1344,13 @@ else()
     endif()
 endif()
 
-if(ENABLE_BENCHMARKS)
-    add_subdirectory(benchmarks)
-endif()
-
+######################################################### gnss_crypto_test
 
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(GNSS_CRYPTO_TEST_SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/osnma/gnss_crypto_test.cc)
 
-    # Configure the test executable:
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(gnss_crypto_test)
         target_sources(gnss_crypto_test PRIVATE ${GNSS_CRYPTO_TEST_SOURCES})
@@ -1362,33 +1358,39 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         add_executable(gnss_crypto_test ${GNSS_CRYPTO_TEST_SOURCES})
     endif()
 
-    # Link libraries that gnss_crypto_test requires:
     target_link_libraries(gnss_crypto_test
             PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             GTest::GTest
             GTest::Main
             core_system_parameters
+            Pugixml::pugixml
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(gnss_crypto_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(gnss_crypto_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(gnss_crypto_test PRIVATE absl::flags absl::flags_parse absl::log $<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags> absl::log_initialize)
+    endif()
 
-    # Include any directories your test needs for header files:
     target_include_directories(gnss_crypto_test
             PRIVATE
-            #${GNSSSDR_SOURCE_DIR}/src/algorithms,
-            #${GNSSSDR_SOURCE_DIR}/src/core,
-            #${GNSSSDR_SOURCE_DIR}/src/core/receiver,
             ${GNSSSDR_SOURCE_DIR}/src/core/system_parameters)
+
+    xcode_remove_warning_duplicates(gnss_crypto_test) # TODO - unsure if needed
+
+    add_test(gnss_crypto_test gnss_crypto_test)
+
+    set_property(TEST gnss_crypto_test PROPERTY TIMEOUT 1)
 endif()
 
+######################################################### osnma_msg_receiver_test
 
 if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     set(OSNMA_MSG_RECEIVER_TEST_SOURCES
             ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
             ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/osnma/osnma_msg_receiver_test.cc)
 
-    # Configure the test executable:
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(osnma_msg_receiver_test)
         target_sources(osnma_msg_receiver_test PRIVATE ${OSNMA_MSG_RECEIVER_TEST_SOURCES})
@@ -1396,22 +1398,31 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         add_executable(osnma_msg_receiver_test ${OSNMA_MSG_RECEIVER_TEST_SOURCES})
     endif()
 
-    # Link libraries that gnss_crypto_test requires:
     target_link_libraries(osnma_msg_receiver_test
             PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             GTest::GTest
             GTest::Main
             core_libs
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(osnma_msg_receiver_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(osnma_msg_receiver_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(osnma_msg_receiver_test PRIVATE absl::flags absl::flags_parse absl::log $<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags> absl::log_initialize)
+    endif()
 
-    # Include any directories your test needs for header files:
+    xcode_remove_warning_duplicates(osnma_msg_receiver_test) # TODO - unsure if needed
+
+    add_test(osnma_msg_receiver_test osnma_msg_receiver_test)
+
+    set_property(TEST osnma_msg_receiver_test PROPERTY TIMEOUT 1)
+
     target_include_directories(osnma_msg_receiver_test
             PRIVATE
-            #${GNSSSDR_SOURCE_DIR}/src/algorithms,
-            #${GNSSSDR_SOURCE_DIR}/src/core,
-            #${GNSSSDR_SOURCE_DIR}/src/core/receiver,
             ${GNSSSDR_SOURCE_DIR}/src/core/system_parameters)
+endif()
+
+if(ENABLE_BENCHMARKS)
+    add_subdirectory(benchmarks)
 endif()

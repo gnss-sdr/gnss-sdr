@@ -40,8 +40,8 @@ protected:
 
         std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0};
         set_time(input_time);
-        std::string pemFilePath = "OSNMA_PublicKey_20230803105952_newPKID_1.pem";
-        std::string merkleFilePath = "OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
+        std::string pemFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230803105952_newPKID_1.pem";
+        std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
         osnma = osnma_msg_receiver_make(pemFilePath, merkleFilePath);
     }
     void TearDown() override{
@@ -93,7 +93,11 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 {
     initializeGoogleLog();
     // Arrange
-    std::vector<TestVector> testVectors = readTestVectorsFromFile(/*"/home/cgm/CLionProjects/osnma/src/tests/data/*/"16_AUG_2023_GST_05_00_01.csv");
+    std::vector<TestVector> testVectors = readTestVectorsFromFile("/home/cgm/CLionProjects/osnma/data/16_AUG_2023_GST_05_00_01.csv");
+    if (testVectors.empty()){
+            ASSERT_TRUE(false);
+        }
+
     bool end_of_hex_stream{false};
     int offset_byte{0};
     int byte_index{0}; // index containing the last byte position of the hex stream that was retrieved. Takes advantage that all TVs have same size

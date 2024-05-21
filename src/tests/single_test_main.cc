@@ -86,7 +86,6 @@ int main(int argc, char **argv)
     catch (...)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
-    google::InitGoogleLogging(argv[0]);
 #else
     absl::ParseCommandLine(argc, argv);
     try

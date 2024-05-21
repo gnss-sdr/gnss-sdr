@@ -123,6 +123,8 @@ private:
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation);
     FRIEND_TEST(OsnmaMsgReceiverTest, TagVerification);
+    FRIEND_TEST(OsnmaMsgReceiverTest, BuildTagMessageM0);
+    std::vector<uint8_t> build_message(const Tag& tag);
 };
 
 

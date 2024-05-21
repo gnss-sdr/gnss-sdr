@@ -1001,50 +1001,8 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
 {
     // TODO case tag0, to be verified here?, PRNd not needed for it
     // build message
-    std::vector<uint8_t> m;
-    if(tag.CTR != 1)
-        m.push_back(static_cast<uint8_t>(tag.PRN_d));
-    m.push_back(static_cast<uint8_t>(tag.PRNa));
-    uint32_t GST = d_helper->compute_gst( tag.WN,tag.TOW);
-    std::vector<uint8_t> GST_uint8 = d_helper->gst_to_uint8(GST);
-    m.insert(m.end(),GST_uint8.begin(),GST_uint8.end());
-    m.push_back(tag.CTR);
-    // Extracts only two bits from d_osnma_data.d_nma_header.nmas
-    uint8_t two_bits_nmas = d_osnma_data.d_nma_header.nmas & 0b00000011;
-    two_bits_nmas = two_bits_nmas << 6;
-    m.push_back(two_bits_nmas);
+    std::vector<uint8_t> m = build_message(tag);
 
-    // convert std::string to vector<uint8_t>
-    std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.PRNa][tag.TOW-30].ephemeris_iono_vector_2;
-    std::vector<uint8_t> ephemeris_iono_vector_2_bytes = d_helper->bytes(ephemeris_iono_vector_2);
-
-    // Convert and add ephemeris_iono_vector_2 into the vector
-    for (uint8_t byte : ephemeris_iono_vector_2_bytes) {
-            m.back() |= (byte >> 2);  // First take the 6 MSB bits of byte and add to m
-            m.push_back(byte << 6);  // Then take the last 2 bits of byte, shift them to MSB position and insert the new element into m
-        }
-    if(m.back() == 0) {
-            m.pop_back();  // Remove the last element if its value is 0 (only padding was added)
-        }
-    else {
-            // Pad with zeros if the last element wasn't full
-            for (int bits = 2; bits < 8; bits += 2) {
-                    // Check if the last element in the vector has 2 '00' bits in its LSB position
-                    if((m.back() & 0b00000011) == 0) {
-                            m.back() <<= 2;  // Shift the existing bits  to make room for new 2 bits
-                        }
-                    else {
-                            break;  // If it does not have 2 '00' bits in its LSB position, then the padding is complete
-                        }
-                }
-        }
-//    m = {
-//        0x02, 0x4E, 0x05, 0x46, 0x3C, 0x01, 0x83, 0xA5, 0x91, 0x05, 0x1D, 0x69, 0x25, 0x80, 0x07, 0x6B,
-//        0x3E, 0xEA, 0x81, 0x41, 0xBF, 0x03, 0xAD, 0xCB, 0x5A, 0xAD, 0xB2, 0x77, 0xAF, 0x6F, 0xCF, 0x21,
-//        0xFB, 0x98, 0xFF, 0x7E, 0x83, 0xAF, 0xFC, 0x37, 0x02, 0x03, 0xB0, 0xD8, 0xE1, 0x0E, 0xB1, 0x4D,
-//        0x11, 0x18, 0xE6, 0xB0, 0xE8, 0x20, 0x01, 0xA0, 0x00, 0xE5, 0x91, 0x00, 0x06, 0xD3, 0x1F, 0x00,
-//        0x02, 0x68, 0x05, 0x4A, 0x02, 0xC2, 0x26, 0x07, 0xF7, 0xFC, 0x00
-//    };
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
         {
@@ -1098,6 +1056,47 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
             return true;
     else
             return false;
+}
+std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
+{
+    std::vector<uint8_t> m;
+    if(tag.CTR != 1)
+        m.push_back(static_cast<uint8_t>(tag.PRN_d));
+    m.push_back(static_cast<uint8_t>(tag.PRNa));
+    uint32_t GST = d_helper->compute_gst( tag.WN,tag.TOW);
+    std::vector<uint8_t> GST_uint8 = d_helper->gst_to_uint8(GST);
+    m.insert(m.end(),GST_uint8.begin(),GST_uint8.end());
+    m.push_back(tag.CTR);
+    // Extracts only two bits from d_osnma_data.d_nma_header.nmas
+    uint8_t two_bits_nmas = d_osnma_data.d_nma_header.nmas & 0b00000011;
+    two_bits_nmas = two_bits_nmas << 6;
+    m.push_back(two_bits_nmas);
+
+    // convert std::string to vector<uint8_t>
+    std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.PRNa][tag.TOW-30].ephemeris_iono_vector_2;
+    std::vector<uint8_t> ephemeris_iono_vector_2_bytes = d_helper->bytes(ephemeris_iono_vector_2);
+
+    // Convert and add ephemeris_iono_vector_2 into the vector
+    for (uint8_t byte : ephemeris_iono_vector_2_bytes) {
+            m.back() |= (byte >> 2);  // First take the 6 MSB bits of byte and add to m
+            m.push_back(byte << 6);  // Then take the last 2 bits of byte, shift them to MSB position and insert the new element into m
+        }
+    if(m.back() == 0) {
+            m.pop_back();  // Remove the last element if its value is 0 (only padding was added)
+        }
+    else {
+            // Pad with zeros if the last element wasn't full
+            for (int bits = 2; bits < 8; bits += 2) {
+                    // Check if the last element in the vector has 2 '00' bits in its LSB position
+                    if((m.back() & 0b00000011) == 0) {
+                            m.back() <<= 2;  // Shift the existing bits  to make room for new 2 bits
+                        }
+                    else {
+                            break;  // If it does not have 2 '00' bits in its LSB position, then the padding is complete
+                        }
+                }
+        }
+    return m;
 }
 void osnma_msg_receiver::add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData& data)
 {

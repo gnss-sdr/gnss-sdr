@@ -44,9 +44,6 @@ protected:
         std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
         osnma = osnma_msg_receiver_make(pemFilePath, merkleFilePath);
     }
-    void TearDown() override{
-        google::ShutdownGoogleLogging();
-    }
 
 public:
     static std::vector<uint8_t> parseNavBits(const std::string& hex);
@@ -122,6 +119,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                     std::array<uint32_t, 15> mack{};
                     byte_index = offset_byte; // reset byte_index to the offset position for the next test vector. Offset is updated at the end of each Subframe (every 30 s or 450 Bytes)
                     std::map<uint8_t, std::bitset<128>> words;
+
                     for (int idx = 0; idx < SIZE_SUBFRAME_PAGES; ++idx)    // extract all pages of a subframe
                         {
                             // extract bytes of complete page (odd+even) -- extract SIZE_PAGE from tv.navBits, starting from byte_index
@@ -225,8 +223,6 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                     uint8_t length = param.second.second;
 
                                     // Extract the required bits
-                                    std::bitset<128> word = words[wordKey];
-
                                     osnmaMsg_sptr->EphemerisClockAndStatusData_2 += words[wordKey].
                                                                                     to_string().substr(
                                                                                             start, length);
@@ -333,6 +329,19 @@ std::string OsnmaMsgReceiverTest::bytes_to_str(const std::vector<uint8_t>& bytes
         }
     return bit_string;
 }
+
+/**
+ * @brief Extracts a range of bytes from a TestVector's navBits vector.
+ *
+ * This function extracts a extracts the bytes of complete page (odd+even)
+ * from the navBits vector of a TestVector object.
+ *
+ *
+ * @param tv The TestVector object from which to extract bytes.
+ * @param byte_index The index of the first byte to extract.
+ * @param num_bytes The number of bytes to extract.
+ * @return A vector containing the extracted bytes, or an empty vector if extraction is not possible.
+ */
 std::vector<uint8_t> OsnmaMsgReceiverTest::extract_page_bytes(const TestVector& tv, const int byte_index, const int num_bytes)
 {
     // Ensure we don't go beyond the end of tv.navBits

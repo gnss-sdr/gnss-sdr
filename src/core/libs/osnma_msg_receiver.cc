@@ -570,7 +570,7 @@ void osnma_msg_receiver::read_and_process_mack_block(const std::shared_ptr<OSNMA
 
     // update the structure with newly coming NavData
     d_osnma_data.d_nav_data.init(osnma_msg); // TODO refactor it
-    add_satellite_data(d_osnma_data.d_nav_data.PRNa,d_osnma_data.d_nav_data.TOW_sf0,d_osnma_data.d_nav_data); // TODO change place
+    add_satellite_data(osnma_msg->PRN,osnma_msg->TOW_sf0,d_osnma_data.d_nav_data); // TODO change place
 // DEBUG PARSING MACK MESSAGES WHEN DSM-KROOT NOT YET AVAILABLE
 //    d_osnma_data.d_dsm_kroot_message.ts = 9;
 //    d_osnma_data.d_dsm_kroot_message.ks = 4;
@@ -860,6 +860,7 @@ void osnma_msg_receiver::process_mack_message()
                 LOG(WARNING) << "But it will be processed for debugging purposes.";
         }
     // verify tesla key and add it to the container of verified keys if successful
+    // TODO not verify tesla key for each satellite if already verified.
     bool retV = verify_tesla_key(d_osnma_data.d_mack_message.key, d_osnma_data.d_nav_data.TOW_sf0);
     if(retV){
             d_tesla_keys.insert(std::pair(d_osnma_data.d_nav_data.TOW_sf0, d_osnma_data.d_mack_message.key));
@@ -1004,13 +1005,19 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
     std::vector<uint8_t> m = build_message(tag);
 
     std::vector<uint8_t> mac;
-    if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
+    std::vector<uint8_t> applicable_key;
+    if (tag.ADKD == 0 || tag.ADKD == 4)
+        applicable_key = d_tesla_keys[tag.TOW + 30];
+    else // ADKD 12
+        applicable_key = d_tesla_keys[tag.TOW + 300];
+
+     if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(d_tesla_keys[tag.TOW+30], m);
+            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1) // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(d_tesla_keys[tag.TOW+30], m);
+            mac = d_crypto->computeCMAC_AES(applicable_key, m);
         }
 
     // truncate the computed mac: trunc(l_t, mac(K,m)) Eq. 23 ICD
@@ -1073,7 +1080,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
     m.push_back(two_bits_nmas);
 
     // convert std::string to vector<uint8_t>
-    std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.PRNa][tag.TOW-30].ephemeris_iono_vector_2;
+     std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.PRNa][tag.TOW - 30].ephemeris_iono_vector_2;
     std::vector<uint8_t> ephemeris_iono_vector_2_bytes = d_helper->bytes(ephemeris_iono_vector_2);
 
     // Convert and add ephemeris_iono_vector_2 into the vector

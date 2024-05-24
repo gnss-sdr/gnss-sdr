@@ -2623,6 +2623,8 @@ else()
     find_package(Protobuf)
 
     if((CMAKE_BUILD_TYPE STREQUAL "Debug") AND Protobuf_FOUND AND absl_FOUND)
+        # This Regular Expression is used to convert the version string provided by `find_package(Protobuf)` into the
+        # appropriate binary version string. So, for instance, "4.25.3" becomes "25.3.0".
         string(REGEX REPLACE "^[0-9]+\.([0-9]+\.[0-9]+)$" "\\1.0" PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
         if((PROTOBUF_LIBRARY_VERSION VERSION_GREATER_EQUAL "22") AND (PROTOBUF_LIBRARY_VERSION VERSION_LESS "26"))
             find_package(PkgConfig REQUIRED)

@@ -2621,6 +2621,16 @@ if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSI
     endif()
 else()
     find_package(Protobuf)
+
+    if((CMAKE_BUILD_TYPE STREQUAL "Debug") AND Protobuf_FOUND AND absl_FOUND)
+        # This Regular Expression is used to convert the version string provided by `find_package(Protobuf)` into the
+        # appropriate binary version string. So, for instance, "4.25.3" becomes "25.3.0".
+        string(REGEX REPLACE "^[0-9]+\.([0-9]+\.[0-9]+)$" "\\1.0" PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
+        if((PROTOBUF_LIBRARY_VERSION VERSION_GREATER_EQUAL "22") AND (PROTOBUF_LIBRARY_VERSION VERSION_LESS "26"))
+            pkg_check_modules(protobuf REQUIRED IMPORTED_TARGET protobuf=${PROTOBUF_LIBRARY_VERSION})
+            target_link_libraries(protobuf::libprotobuf INTERFACE PkgConfig::protobuf)
+        endif()
+    endif()
 endif()
 set_package_properties(Protobuf PROPERTIES
     URL "https://protobuf.dev/"

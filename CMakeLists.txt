@@ -2627,7 +2627,6 @@ else()
         # appropriate binary version string. So, for instance, "4.25.3" becomes "25.3.0".
         string(REGEX REPLACE "^[0-9]+\.([0-9]+\.[0-9]+)$" "\\1.0" PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
         if((PROTOBUF_LIBRARY_VERSION VERSION_GREATER_EQUAL "22") AND (PROTOBUF_LIBRARY_VERSION VERSION_LESS "26"))
-            find_package(PkgConfig REQUIRED)
             pkg_check_modules(protobuf REQUIRED IMPORTED_TARGET protobuf=${PROTOBUF_LIBRARY_VERSION})
             target_link_libraries(protobuf::libprotobuf INTERFACE PkgConfig::protobuf)
         endif()

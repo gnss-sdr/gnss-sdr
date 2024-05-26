@@ -264,7 +264,7 @@ void GNSSFlowgraph::init()
         }
 
     /*
-     * Instantiate the receiver av message monitor block, if required
+     * Instantiate the receiver nav message monitor block, if required
      */
     enable_navdata_monitor_ = configuration_->property("NavDataMonitor.enable_monitor", false);
     if (enable_navdata_monitor_)

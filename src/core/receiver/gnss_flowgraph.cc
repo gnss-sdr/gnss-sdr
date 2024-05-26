@@ -264,7 +264,7 @@ void GNSSFlowgraph::init()
         }
 
     /*
-     * Instantiate the receiver av message monitor block, if required
+     * Instantiate the receiver nav message monitor block, if required
      */
     enable_navdata_monitor_ = configuration_->property("NavDataMonitor.enable_monitor", false);
     if (enable_navdata_monitor_)
@@ -966,7 +966,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                         }
                                     else
                                         {
-                                            if (j == 0)
+                                            if (j == 0 || !src->get_right_block(j))
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
                                                     LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << signal_conditioner_ID;

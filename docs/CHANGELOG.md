@@ -17,6 +17,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 ### Improvements in Interoperability:
 
 - Improved error handling in UDP connections.
+- Make it possible to receive multiple constellations using a single channel
+  wideband device (HackRF/LimeSDR/USRP). Demonstration:
+  https://www.youtube.com/watch?v=ZQs2sFchJ6w
+  https://www.youtube.com/watch?v=HnZkKj9a-QM
 
 ### Improvements in Portability:
 

@@ -351,12 +351,12 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.0")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.27")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "26.1")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "27.0")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.14.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.3")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.4")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abseil.io/about/releases)
 
@@ -2623,6 +2623,16 @@ if(((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND (CMAKE_CXX_COMPILER_VERSION VERSI
     endif()
 else()
     find_package(Protobuf)
+
+    if((CMAKE_BUILD_TYPE STREQUAL "Debug") AND Protobuf_FOUND AND absl_FOUND)
+        # This Regular Expression is used to convert the version string provided by `find_package(Protobuf)` into the
+        # appropriate binary version string. So, for instance, "4.25.3" becomes "25.3.0".
+        string(REGEX REPLACE "^[0-9]+\.([0-9]+\.[0-9]+)$" "\\1.0" PROTOBUF_LIBRARY_VERSION "${Protobuf_VERSION}")
+        if((PROTOBUF_LIBRARY_VERSION VERSION_GREATER_EQUAL "22") AND (PROTOBUF_LIBRARY_VERSION VERSION_LESS "26"))
+            pkg_check_modules(protobuf REQUIRED IMPORTED_TARGET protobuf=${PROTOBUF_LIBRARY_VERSION})
+            target_link_libraries(protobuf::libprotobuf INTERFACE PkgConfig::protobuf)
+        endif()
+    endif()
 endif()
 set_package_properties(Protobuf PROPERTIES
     URL "https://protobuf.dev/"

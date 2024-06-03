@@ -113,7 +113,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
     // Act
     while (end_of_hex_stream == false){ // loop over all bytes of data. Note all TestVectors have same amount of data.
             for(const TestVector& tv : testVectors) { // loop over all SVs, extract a subframe
-                    std::cout << "OsnmaTestVectorsSimulation: SVID "<< tv.svId << std::endl;
+                    std::cout << "OsnmaTestVectorsSimulation: SVID (PRN_a) "<< tv.svId << std::endl;
                     auto osnmaMsg_sptr = std::make_shared<OSNMA_msg>();
                     std::array<uint8_t, 15> hkroot{};
                     std::array<uint32_t, 15> mack{};
@@ -191,7 +191,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 
                     osnmaMsg_sptr->TOW_sf0 = d_GST_SIS & 0x000FFFFF;
                     osnmaMsg_sptr->WN_sf0 = (d_GST_SIS & 0xFFF00000) >> 20 ;
-                    osnmaMsg_sptr->PRN = tv.svId;
+                    osnmaMsg_sptr->PRN = tv.svId; // PRNa
 
                     bool allWordsReceived = true;
                     for (int i = 1; i <= 5; ++i)
@@ -216,7 +216,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                 // TODO words 6 and 10 for TimingData
                             };
 
-                            // Iterate over the extraction parameters
+                            // Fill NavData bits -- Iterate over the extraction parameters
                             for (const auto& param : extractionParams) {
                                     uint8_t wordKey = param.first;
                                     uint8_t start = param.second.first;

@@ -90,6 +90,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 {
     initializeGoogleLog();
     // Arrange
+    // ----------
     std::vector<TestVector> testVectors = readTestVectorsFromFile("/home/cgm/CLionProjects/osnma/data/16_AUG_2023_GST_05_00_01.csv");
     if (testVectors.empty()){
             ASSERT_TRUE(false);
@@ -98,10 +99,10 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
     bool end_of_hex_stream{false};
     int offset_byte{0};
     int byte_index{0}; // index containing the last byte position of the hex stream that was retrieved. Takes advantage that all TVs have same size
-    const int SIZE_PAGE_BYTES{240/8};
-    const int SIZE_SUBFRAME_PAGES{15};
-    const int SIZE_SUBFRAME_BYTES{SIZE_PAGE_BYTES*SIZE_SUBFRAME_PAGES};
-    const int DURATION_SUBFRAME{30};
+    const int SIZE_PAGE_BYTES{240/8}; // total bytes of a page
+    const int SIZE_SUBFRAME_PAGES{15}; // number of pages of a subframe
+    const int SIZE_SUBFRAME_BYTES{SIZE_PAGE_BYTES*SIZE_SUBFRAME_PAGES}; // total bytes of a subframe
+    const int DURATION_SUBFRAME{30}; // duration of a subframe, in seconds
 
     const int DUMMY_PAGE{63};
     bool flag_dummy_page{false};
@@ -110,7 +111,11 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
     << ", WN=" << WN << std::endl;
 
 
+
+
+
     // Act
+    // ----------
     while (end_of_hex_stream == false){ // loop over all bytes of data. Note all TestVectors have same amount of data.
             for(const TestVector& tv : testVectors) { // loop over all SVs, extract a subframe
                     std::cout << "OsnmaTestVectorsSimulation: SVID (PRN_a) "<< tv.svId << std::endl;
@@ -118,7 +123,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                     std::array<uint8_t, 15> hkroot{};
                     std::array<uint32_t, 15> mack{};
                     byte_index = offset_byte; // reset byte_index to the offset position for the next test vector. Offset is updated at the end of each Subframe (every 30 s or 450 Bytes)
-                    std::map<uint8_t, std::bitset<128>> words;
+                    std::map<uint8_t, std::bitset<128>> words; // structure containing <WORD_NUMBER> and <EXTRACTED_BITS>
 
                     for (int idx = 0; idx < SIZE_SUBFRAME_PAGES; ++idx)    // extract all pages of a subframe
                         {
@@ -179,6 +184,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 
                             byte_index += SIZE_PAGE_BYTES;
                         }
+
                     std::cout<< "----------" << std::endl;
                     if(end_of_hex_stream)
                         break;
@@ -193,17 +199,21 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                     osnmaMsg_sptr->WN_sf0 = (d_GST_SIS & 0xFFF00000) >> 20 ;
                     osnmaMsg_sptr->PRN = tv.svId; // PRNa
 
-                    bool allWordsReceived = true;
+                    // TODO - refactor this logic, currently it is split
+
+                    // check if words 1--> 5 words are received
+                    bool ephClockStatusWordsReceived = true;
                     for (int i = 1; i <= 5; ++i)
                         {
-                            if (words.find(i) == words.end() && flag_dummy_page == false)
+                            if (words.find(i) == words.end())
                                 {
-                                    allWordsReceived = false;
+                                    ephClockStatusWordsReceived = false;
                                     std::cerr<< "OsnmaTestVectorsSimulation: error parsing words 1->5. "
                                                  "Word "<< i << " should be received for each subframe but was not." << std::endl;
                                 }
                         }
-                    if(allWordsReceived)
+                    // extract bits as needed by osnma block
+                    if(ephClockStatusWordsReceived)
                         {
 
                             // Define the starting position and length of bits to extract for each word
@@ -222,32 +232,38 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                     uint8_t start = param.second.first;
                                     uint8_t length = param.second.second;
 
-                                    // Extract the required bits
+                                    // Extract the required bits and fill osnma block
                                     osnmaMsg_sptr->EphemerisClockAndStatusData_2 += words[wordKey].
                                                                                     to_string().substr(
                                                                                             start, length);
-
-//                                    std::bitset<8> byte;
-//                                    int byteIndex = 0;
-//                                    for (uint8_t i = start; i < start + length; ++i) {
-//                                            byte[byteIndex] = word[i];
-//                                            byteIndex++;
-//
-//                                            // Once we have collected 8 bits, we can add them as an uint8_t to the vector
-//                                            if (byteIndex == 8) {
-//                                                    osnmaMsg_sptr->EphemerisClockAndStatusData.push_back(static_cast<uint8_t>(byte.to_ulong()));
-//                                                    byte.reset();
-//                                                    byteIndex = 0;
-//                                                }
-//                                        }
-//
-//                                    // Push remaining bits if it didn't reach 8 bits
-//                                    if (byteIndex > 0) {
-//                                            osnmaMsg_sptr->EphemerisClockAndStatusData.push_back(static_cast<uint8_t>(byte.to_ulong()));
-//                                        }
                                 }
                         }
 
+                    // check w6 && w10 is received
+                    bool timingWordsReceived = words.find(6) != words.end() &&
+                                               words.find(10) != words.end();
+
+                    // extract bits as needed by osnma block
+                    if(timingWordsReceived){
+                            // Define the starting position and length of bits to extract for each word
+                            std::map<uint8_t, std::pair<uint8_t, uint8_t>> extractionParams = {
+                                {6, {6, 99}},
+                                {10, {86, 42}}
+                            };
+
+                            // Fill NavData bits -- Iterate over the extraction parameters
+                            for (const auto& param : extractionParams)
+                                {
+                                    uint8_t wordKey = param.first;
+                                    uint8_t start = param.second.first;
+                                    uint8_t length = param.second.second;
+
+                                    // Extract the required bits and fill osnma block
+                                    osnmaMsg_sptr->TimingData_2 += words[wordKey].to_string().substr(
+                                        start, length);
+                                }
+
+                        }
                     auto temp_obj = pmt::make_any(osnmaMsg_sptr);
 
                     osnma->msg_handler_osnma(temp_obj); // osnma entry point
@@ -266,8 +282,12 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 
 
         }
+
+
     // Assert
-    // TODO
+    // ----------
+
+    // TODO - create global vars with failed tags and compare to total tags (Tag Id for example)
 }
 
 std::vector<TestVector> OsnmaMsgReceiverTest::readTestVectorsFromFile(const std::string& filename)
@@ -527,7 +547,7 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification) {
     osnma->d_osnma_data.d_dsm_kroot_message.ts = 9; // 40 bit
     osnma->d_tesla_keys[TOW_Key_Tag3] = {0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6, 0x5E, 0xBF, 0x00, 0x6A, 0xD8, 0xDD, 0xBC, 0x73}; // K4
     osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
-    osnma->d_satellite_nav_data[PRNa][TOW_NavData].ephemeris_iono_vector_2 =
+    osnma->d_satellite_nav_data[PRNa][TOW_NavData].utc_vector_2 =
         "111111111111111111111111111111110000000000000000000000010001001001001000"
         "111000001000100111100010010111111111011110111111111001001100000100000000";
     osnma->d_osnma_data.d_nma_header.nmas = 0b10;

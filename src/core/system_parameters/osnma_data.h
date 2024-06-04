@@ -134,6 +134,7 @@ public:
     std::vector<uint8_t> ephemeris_iono_vector{};
     std::string ephemeris_iono_vector_2{};
     std::vector<uint8_t> utc_vector{};
+    std::string utc_vector_2{};
     uint32_t PRNa{};
     uint32_t WN_sf0{};
     uint32_t TOW_sf0{};

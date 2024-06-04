@@ -1082,12 +1082,24 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
     two_bits_nmas = two_bits_nmas << 6;
     m.push_back(two_bits_nmas);
 
+    // Add applicable NavData bits to message
+    std::string applicable_nav_data;
+    std::vector<uint8_t> applicable_nav_data_bytes;
+    if (tag.ADKD == 0 || tag.ADKD == 12)
+        {
+            applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].ephemeris_iono_vector_2;
+        }
+    else if (tag.ADKD == 4)
+        {
+            applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].utc_vector_2;
+        }
+    else
+        std::cerr<<"Galileo OSNMA :: Tag verification :: unknown ADKD" <<"\n";
     // convert std::string to vector<uint8_t>
-     std::string ephemeris_iono_vector_2 = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].ephemeris_iono_vector_2;
-    std::vector<uint8_t> ephemeris_iono_vector_2_bytes = d_helper->bytes(ephemeris_iono_vector_2);
+    applicable_nav_data_bytes = d_helper->bytes(applicable_nav_data);
 
-    // Convert and add ephemeris_iono_vector_2 into the vector
-    for (uint8_t byte : ephemeris_iono_vector_2_bytes) {
+    // Convert and add NavData bytes into the message, taking care of that NMAS has only 2 bits
+    for (uint8_t byte : applicable_nav_data_bytes) {
             m.back() |= (byte >> 2);  // First take the 6 MSB bits of byte and add to m
             m.push_back(byte << 6);  // Then take the last 2 bits of byte, shift them to MSB position and insert the new element into m
         }

@@ -54,6 +54,7 @@ public:
     std::vector<uint8_t> EphemerisClockAndStatusData {}; // TODO _2 rename and substitute this
     std::string EphemerisClockAndStatusData_2{};
     std::vector<uint8_t> TimingData {};
+    std::string TimingData_2{};
     Galileo_Ephemeris EphemerisData {};
     Galileo_Iono IonoData {};
     Galileo_Utc_Model UtcModelData {};

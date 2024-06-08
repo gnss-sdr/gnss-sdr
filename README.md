@@ -59,60 +59,60 @@ information about this open-source, software-defined GNSS receiver.
 <summary><b>(click to expand)</b></summary>
 <!-- MarkdownTOC -->
 
-1. [Table of Contents](#table-of-contents)
-2. [How to build GNSS-SDR](#how-to-build-gnss-sdr)
-   1. [GNU/Linux](#gnulinux)
-      1. [Alternative 1: Install dependencies using software packages](#alternative-1-install-dependencies-using-software-packages)
-         1. [Debian / Ubuntu](#debian--ubuntu)
-         2. [AlmaLinux](#almalinux)
-         3. [Arch Linux](#arch-linux)
-         4. [CentOS](#centos)
-         5. [Fedora](#fedora)
-         6. [openSUSE](#opensuse)
-         7. [Rocky Linux](#rocky-linux)
-      2. [Alternative 2: Install dependencies using PyBOMBS](#alternative-2-install-dependencies-using-pybombs)
-      3. [Manual installation of other required dependencies](#manual-installation-of-other-required-dependencies)
-         1. [Install Armadillo, a C++ linear algebra library](#install-armadillo-a-c-linear-algebra-library)
-         2. [Install Gflags, a commandline flags processing module for C++](#install-gflags-a-commandline-flags-processing-module-for-c)
-         3. [Install Glog, a library that implements application-level logging](#install-glog-a-library-that-implements-application-level-logging)
-         4. [Install the GnuTLS or OpenSSL libraries](#install-the-gnutls-or-openssl-libraries)
-         5. [Install Matio, MATLAB MAT file I/O library](#install-matio-matlab-mat-file-io-library)
-         6. [Install Protocol Buffers, a portable mechanism for serialization of structured data](#install-protocol-buffers-a-portable-mechanism-for-serialization-of-structured-data)
-         7. [Install Pugixml, a light-weight C++ XML processing library](#install-pugixml-a-light-weight-c-xml-processing-library)
-         8. [Download GoogleTest](#download-googletest)
-      4. [Clone GNSS-SDR's Git repository](#clone-gnss-sdrs-git-repository)
-      5. [Build and install GNSS-SDR](#build-and-install-gnss-sdr)
-         1. [Build OSMOSDR support (OPTIONAL)](#build-osmosdr-support-optional)
-         2. [Build FMCOMMS2 based SDR Hardware support (OPTIONAL)](#build-fmcomms2-based-sdr-hardware-support-optional)
-         3. [Build OpenCL support (OPTIONAL)](#build-opencl-support-optional)
-         4. [Build CUDA support (OPTIONAL)](#build-cuda-support-optional)
-   2. [macOS](#macos)
-      1. [Macports](#macports)
-      2. [Homebrew](#homebrew)
-      3. [Other package managers](#other-package-managers)
-      4. [Build GNSS-SDR](#build-gnss-sdr)
-   3. [Other builds](#other-builds)
-3. [Updating GNSS-SDR](#updating-gnss-sdr)
-4. [Getting started](#getting-started)
-5. [Using GNSS-SDR](#using-gnss-sdr)
-   1. [Control plane](#control-plane)
-      1. [Configuration](#configuration)
-      2. [GNSS block factory](#gnss-block-factory)
-   2. [Signal Processing plane](#signal-processing-plane)
-      1. [Signal Source](#signal-source)
-      2. [Signal Conditioner](#signal-conditioner)
-         1. [Data type adapter](#data-type-adapter)
-         2. [Input filter](#input-filter)
-         3. [Resampler](#resampler)
-      3. [Channel](#channel)
-         1. [Acquisition](#acquisition)
-         2. [Tracking](#tracking)
-         3. [Decoding of the navigation message](#decoding-of-the-navigation-message)
-      4. [Observables](#observables)
-      5. [Computation of Position, Velocity, and Time](#computation-of-position-velocity-and-time)
-6. [About the software license](#about-the-software-license)
-7. [Publications and Credits](#publications-and-credits)
-8. [Ok, now what?](#ok-now-what)
+- [Table of Contents](#table-of-contents)
+- [How to build GNSS-SDR](#how-to-build-gnss-sdr)
+  - [GNU/Linux](#gnulinux)
+    - [Alternative 1: Install dependencies using software packages](#alternative-1-install-dependencies-using-software-packages)
+      - [Debian / Ubuntu](#debian--ubuntu)
+      - [AlmaLinux](#almalinux)
+      - [Arch Linux](#arch-linux)
+      - [CentOS](#centos)
+      - [Fedora](#fedora)
+      - [openSUSE](#opensuse)
+      - [Rocky Linux](#rocky-linux)
+    - [Alternative 2: Install dependencies using PyBOMBS](#alternative-2-install-dependencies-using-pybombs)
+    - [Manual installation of other required dependencies](#manual-installation-of-other-required-dependencies)
+      - [Install Armadillo, a C++ linear algebra library](#install-armadillo-a-c-linear-algebra-library)
+      - [Install Gflags, a commandline flags processing module for C++](#install-gflags-a-commandline-flags-processing-module-for-c)
+      - [Install Glog, a library that implements application-level logging](#install-glog-a-library-that-implements-application-level-logging)
+      - [Install the GnuTLS or OpenSSL libraries](#install-the-gnutls-or-openssl-libraries)
+      - [Install Matio, MATLAB MAT file I/O library](#install-matio-matlab-mat-file-io-library)
+      - [Install Protocol Buffers, a portable mechanism for serialization of structured data](#install-protocol-buffers-a-portable-mechanism-for-serialization-of-structured-data)
+      - [Install Pugixml, a light-weight C++ XML processing library](#install-pugixml-a-light-weight-c-xml-processing-library)
+      - [Download GoogleTest](#download-googletest)
+    - [Clone GNSS-SDR's Git repository](#clone-gnss-sdrs-git-repository)
+    - [Build and install GNSS-SDR](#build-and-install-gnss-sdr)
+      - [Build OSMOSDR support (OPTIONAL)](#build-osmosdr-support-optional)
+      - [Build FMCOMMS2 based SDR Hardware support (OPTIONAL)](#build-fmcomms2-based-sdr-hardware-support-optional)
+      - [Build OpenCL support (OPTIONAL)](#build-opencl-support-optional)
+      - [Build CUDA support (OPTIONAL)](#build-cuda-support-optional)
+  - [macOS](#macos)
+    - [Macports](#macports)
+    - [Homebrew](#homebrew)
+    - [Other package managers](#other-package-managers)
+    - [Build GNSS-SDR](#build-gnss-sdr)
+  - [Other builds](#other-builds)
+- [Updating GNSS-SDR](#updating-gnss-sdr)
+- [Getting started](#getting-started)
+- [Using GNSS-SDR](#using-gnss-sdr)
+  - [Control plane](#control-plane)
+    - [Configuration](#configuration)
+    - [GNSS block factory](#gnss-block-factory)
+  - [Signal Processing plane](#signal-processing-plane)
+    - [Signal Source](#signal-source)
+    - [Signal Conditioner](#signal-conditioner)
+      - [Data type adapter](#data-type-adapter)
+      - [Input filter](#input-filter)
+      - [Resampler](#resampler)
+    - [Channel](#channel)
+      - [Acquisition](#acquisition)
+      - [Tracking](#tracking)
+      - [Decoding of the navigation message](#decoding-of-the-navigation-message)
+    - [Observables](#observables)
+    - [Computation of Position, Velocity, and Time](#computation-of-position-velocity-and-time)
+- [About the software license](#about-the-software-license)
+- [Publications and Credits](#publications-and-credits)
+- [Ok, now what?](#ok-now-what)
 
 <!-- /MarkdownTOC -->
 </details>
@@ -437,9 +437,9 @@ v20240116 is available in your system.
 #### Install [Glog](https://github.com/google/glog "Glog's Homepage"), a library that implements application-level logging
 
 ```
-$ wget https://github.com/google/glog/archive/v0.7.0.tar.gz
-$ tar xvfz v0.7.0.tar.gz
-$ cd glog-0.7.0
+$ wget https://github.com/google/glog/archive/v0.7.1.tar.gz
+$ tar xvfz v0.7.1.tar.gz
+$ cd glog-0.7.1
 $ mkdir build && cd build
 $ cmake ..
 $ make
@@ -468,9 +468,9 @@ GNSS-SDR can also work well with
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
 ```
-$ wget https://github.com/tbeu/matio/releases/download/v1.5.26/matio-1.5.26.tar.gz
-$ tar xvfz matio-1.5.26.tar.gz
-$ cd matio-1.5.26
+$ wget https://github.com/tbeu/matio/releases/download/v1.5.26/matio-1.5.27.tar.gz
+$ tar xvfz matio-1.5.27.tar.gz
+$ cd matio-1.5.27
 $ ./configure
 $ make
 $ sudo make install

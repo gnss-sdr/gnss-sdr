@@ -24,7 +24,7 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ### Improvements in Portability:
 
-- Fix building against google-glog 0.7.0.
+- Fix building against google-glog 0.7.x.
 - Find dependencies in the loongarch64 architecture.
 - Soft transition from [GFlags](https://github.com/gflags/gflags) and
   [Google Logging (glog)](https://github.com/google/glog) to Abseil

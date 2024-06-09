@@ -14,6 +14,7 @@ struct TestVector
     std::vector<uint8_t> navBits;
 };
 
+// TODO - parametrize class for different configurations (config_1, config_2, etc.. potentially 5 or 6 more) an make sure wont affect current TEST_F
 class OsnmaMsgReceiverTest : public ::testing::Test
 {
 protected:
@@ -30,18 +31,22 @@ protected:
     std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0}; // months start with 0 and years since 1900 in std::tm
     const uint32_t LEAP_SECONDS = 0;//13 + 5;
     void set_time(std::tm& input);
-    std::string log_name {"CONFIG1-2023-08-23-PKID1-OSNMA"};
+//    std::string log_name {"CONFIG1-2023-08-23-PKID1-OSNMA"};
+    std::string log_name {"CONFIG2-2023-07-20-PKID2-MT2-OSNMA"};
     void initializeGoogleLog();
 
     void SetUp() override
     {
-        flag_CRC_test = false;
+        flag_CRC_test = false; // TODO what for?
         page_even = "";
 
-        std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0};
+//        std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0};
+        std::tm input_time = {0, 0, 0, 20, 7 - 1, 2023 - 1900, 0};
         set_time(input_time);
-        std::string pemFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230803105952_newPKID_1.pem";
-        std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
+//        std::string pemFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230803105952_newPKID_1.pem";
+//        std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
+        std::string pemFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230720113300_newPKID_2.pem";
+        std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230720113300_newPKID_2.xml";
         osnma = osnma_msg_receiver_make(pemFilePath, merkleFilePath);
     }
 
@@ -91,7 +96,8 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
     initializeGoogleLog();
     // Arrange
     // ----------
-    std::vector<TestVector> testVectors = readTestVectorsFromFile("/home/cgm/CLionProjects/osnma/data/16_AUG_2023_GST_05_00_01.csv");
+//    std::vector<TestVector> testVectors = readTestVectorsFromFile("/home/cgm/CLionProjects/osnma/data/16_AUG_2023_GST_05_00_01.csv");
+    std::vector<TestVector> testVectors = readTestVectorsFromFile("/home/cgm/CLionProjects/osnma/data/27_JUL_2023_GST_00_00_01.csv");
     if (testVectors.empty()){
             ASSERT_TRUE(false);
         }
@@ -116,7 +122,10 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 
     // Act
     // ----------
-    while (end_of_hex_stream == false){ // loop over all bytes of data. Note all TestVectors have same amount of data.
+
+    // loop over all bytes of data. Note: all TestVectors have same amount of data.
+    while (end_of_hex_stream == false){
+            // loop over all SVs, extract a subframe
             for(const TestVector& tv : testVectors) { // loop over all SVs, extract a subframe
                     std::cout << "OsnmaTestVectorsSimulation: SVID (PRN_a) "<< tv.svId << std::endl;
                     auto osnmaMsg_sptr = std::make_shared<OSNMA_msg>();
@@ -162,15 +171,6 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                     // store raw word
                                     std::bitset<128> data_combined(data_k.to_string() + data_j.to_string());
                                     words[word_type] = data_combined;
-//                                    std::vector<uint8_t> concatenatedData;
-//                                    for (std::size_t i = 0; i < data_k.size(); i += 8) {
-//                                            std::bitset<8> byte(data_k.to_string().substr(i, 8));
-//                                            concatenatedData.push_back(static_cast<uint8_t>(byte.to_ulong()));
-//                                        }
-//                                    for (std::size_t i = 0; i < data_j.size(); i += 8) {
-//                                            std::bitset<8> byte(data_j.to_string().substr(i, 8));
-//                                            concatenatedData.push_back(static_cast<uint8_t>(byte.to_ulong()));
-//                                        }
                                 }
                             if(word_type == DUMMY_PAGE)
                                 flag_dummy_page = true;
@@ -192,6 +192,8 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                             flag_dummy_page = false;
                             continue; // skip this SV
                         }
+
+                    // Fill osnma object
                     osnmaMsg_sptr->hkroot = hkroot;
                     osnmaMsg_sptr->mack = mack;
 
@@ -201,7 +203,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
 
                     // TODO - refactor this logic, currently it is split
 
-                    // check if words 1--> 5 words are received
+                    // check if words 1--> 5 words are received => fill EphClockStatus data vector
                     bool ephClockStatusWordsReceived = true;
                     for (int i = 1; i <= 5; ++i)
                         {
@@ -239,10 +241,9 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                 }
                         }
 
-                    // check w6 && w10 is received
+                    // check w6 && w10 is received => fill TimingData data vector
                     bool timingWordsReceived = words.find(6) != words.end() &&
                                                words.find(10) != words.end();
-
                     // extract bits as needed by osnma block
                     if(timingWordsReceived){
                             // Define the starting position and length of bits to extract for each word
@@ -264,6 +265,8 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                 }
 
                         }
+
+                    // Call the handler, as if it came from telemetry decoder block
                     auto temp_obj = pmt::make_any(osnmaMsg_sptr);
 
                     osnma->msg_handler_osnma(temp_obj); // osnma entry point
@@ -412,7 +415,7 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
 void OsnmaMsgReceiverTest::initializeGoogleLog()
 {
     google::InitGoogleLogging(log_name.c_str());
-    FLAGS_minloglevel = 1;
+    FLAGS_minloglevel = 0; // INFO
     FLAGS_logtostderr = 0;  // add this line
     FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/build/src/tests/logs";
     if (FLAGS_log_dir.empty())

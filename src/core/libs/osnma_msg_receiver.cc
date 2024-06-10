@@ -223,19 +223,19 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
         }
     // Annotate bid
     d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][d_osnma_data.d_dsm_header.dsm_block_id] = 1;
-    // TODO FIXME   Galileo OSNMA: Available blocks for DSM_ID 6: [ - - - - - X - - - - - - - - - - ] in the first received Sf.. size 16?
-    LOG(INFO) << "Galileo OSNMA: Available blocks for DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id) << ": [ ";
+    std::stringstream available_blocks;
+    available_blocks << "Galileo OSNMA: Available blocks for DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id) << ": [ ";
     if (d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] == 0) // block 0 not received yet
         {
             for (auto id_received : d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id])
                 {
                     if (id_received == 0)
                         {
-                            LOG(INFO) << "- ";
+                            available_blocks << "- ";
                         }
                     else
                         {
-                            LOG(INFO) << "X ";
+                            available_blocks << "X ";
                         }
                 }
         }
@@ -245,15 +245,16 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                 {
                     if (d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][k] == 0)
                         {
-                            LOG(INFO) << "- ";
+                            available_blocks << "- ";
                         }
                     else
                         {
-                            LOG(INFO) << "X ";
+                            available_blocks << "X ";
                         }
                 }
         }
-    LOG(INFO) << "]" << std::endl;
+    available_blocks<< "]" << std::endl;
+    LOG(INFO) << available_blocks.str() << std::endl;
 }
 
 /**
@@ -402,7 +403,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             const uint16_t check_l_dk = 104 * std::ceil(1.0 + static_cast<float>((l_lk_bytes * 8.0) + l_ds_bits) / 104.0);
             if (l_dk_bits != check_l_dk)
                 {
-                    LOG(ERROR) << "Galileo OSNMA: Failed length reading" << std::endl;
+                    LOG(ERROR) << "Galileo OSNMA: Failed length reading of DSM-KROOT message" << std::endl;
                 }
             else
                 {
@@ -475,58 +476,59 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
         }
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
         {
-            LOG(WARNING) << "OSNMA: DSM-PKR message received.";
+            LOG(WARNING) << "Galileo OSNMA: DSM-PKR message received.";
             // Save DSM-PKR message
             d_osnma_data.d_dsm_pkr_message.nb_dp = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
             d_osnma_data.d_dsm_pkr_message.mid = d_dsm_reader->get_mid(dsm_msg);
-            for (int k = 0; k > 128; k++)
+            for (int k = 0; k < 128; k++)
                 {
                     d_osnma_data.d_dsm_pkr_message.itn[k] = dsm_msg[k + 1];
                 }
             d_osnma_data.d_dsm_pkr_message.npkt = d_dsm_reader->get_npkt(dsm_msg);
             d_osnma_data.d_dsm_pkr_message.npktid = d_dsm_reader->get_npktid(dsm_msg);
 
-            uint32_t l_npk = 0;
+            uint32_t l_npk_bytes = 0;
             const auto it = OSNMA_TABLE_5.find(d_osnma_data.d_dsm_pkr_message.npkt);
             if (it != OSNMA_TABLE_5.cend())
                 {
                     const auto it2 = OSNMA_TABLE_6.find(it->second);
                     if (it2 != OSNMA_TABLE_6.cend())
                         {
-                            l_npk = it2->second / 8;
+                            l_npk_bytes = it2->second / 8;
                         }
                 }
-            uint32_t l_dp = dsm_msg.size();
+            uint32_t l_dp_bytes = dsm_msg.size();
             if (d_osnma_data.d_dsm_pkr_message.npkt == 4)
                 {
                     LOG(WARNING) << "OSNMA: OAM received";
-                    l_npk = l_dp - 130;  // bytes
+                    l_npk_bytes = l_dp_bytes - 130;  // bytes
                 }
 
-            d_osnma_data.d_dsm_pkr_message.npk = std::vector<uint8_t>(l_npk, 0);  // ECDSA Public Key
-            for (uint32_t k = 0; k > l_npk; k++)
+            d_osnma_data.d_dsm_pkr_message.npk = std::vector<uint8_t>(l_npk_bytes, 0);  // ECDSA Public Key
+            for (uint32_t k = 0; k < l_npk_bytes; k++)
                 {
                     d_osnma_data.d_dsm_pkr_message.npk[k] = dsm_msg[k + 130];
                 }
 
-            uint32_t l_pd = l_dp - 130 - l_npk;
-            uint32_t check_l_dp = 104 * std::ceil(static_cast<float>(1040.0 + l_npk * 8.0) / 104.0);
-            if (l_dp != check_l_dp)
+            uint32_t l_pd_bytes = l_dp_bytes - 130 - l_npk_bytes;
+            uint32_t check_l_dp_bytes = 104 * std::ceil(static_cast<float>(1040.0 + l_npk_bytes * 8.0) / 104.0) / 8;
+            if (l_dp_bytes != check_l_dp_bytes)
                 {
-                    LOG(ERROR) << "Galileo OSNMA: Failed length reading" << std::endl;
+                    LOG(ERROR) << "Galileo OSNMA: Failed length reading of DSM-PKR message" << std::endl;
                 }
             else
                 {
-                    d_osnma_data.d_dsm_pkr_message.p_dp = std::vector<uint8_t>(l_pd, 0);
-                    for (uint32_t k = 0; k < l_pd; k++)
+                    d_osnma_data.d_dsm_pkr_message.p_dp = std::vector<uint8_t>(l_pd_bytes, 0);
+                    for (uint32_t k = 0; k < l_pd_bytes; k++)
                         {
-                            d_osnma_data.d_dsm_pkr_message.p_dp[k] = dsm_msg[l_dp - l_pd + k];
+                            d_osnma_data.d_dsm_pkr_message.p_dp[k] = dsm_msg[l_dp_bytes - l_pd_bytes + k];
                         }
+                    // TODO: kroot fields are 0 in case no DSM-KROOT received yet, need to take this into account.
                     // std::vector<uint8_t> mi;  //  (NPKT + NPKID + NPK)
                     LOG(INFO) << "Galileo OSNMA: DSM-PKR with CID=" << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid)
-                              << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
-                              << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
-                              << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600
+                              << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_pkr_message.npktid)
+                              /*<< ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
+                              << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600*/
                               << " received" << std::endl;
                     // C: NPK verification against Merkle tree root.
                     if (!d_public_key_verified)
@@ -962,35 +964,39 @@ bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
     // TODO create function for recursively apply hash
 
     // build base leaf m_i
-//    auto leaf = message.mid;
     std::vector<uint8_t> m_i;
     m_i.reserve(2 + message.npk.size());
-    m_i[0] = message.npkt;
-    m_i[1] = message.npktid;
-    for (uint8_t i = 2; i < m_i.size(); i++)
+    m_i.push_back((message.npkt << 4) + message.npktid);
+    for (uint8_t i = 0; i < message.npk.size(); i++)
         {
             m_i.push_back(message.npk[i]);
         }
 
     // compute intermediate leafs' values
-    std::vector<uint8_t> x_0,x_1,x_2,x_3,x_4;
-//    uint8_t  k = 0;
-    x_0 = d_crypto->computeSHA256(m_i);
-    x_0.insert(x_0.end(),message.itn.begin(),&message.itn[31]);
-    x_1 = d_crypto->computeSHA256(x_0);
-    x_1.insert(x_1.end(),&message.itn[32],&message.itn[63]);
-    x_2 = d_crypto->computeSHA256(x_1);
-    x_2.insert(x_2.end(),&message.itn[64],&message.itn[95]);
-    x_3 = d_crypto->computeSHA256(x_2);
-    x_3.insert(x_3.end(),&message.itn[96],&message.itn[127]);
-    // root leaf computation
-    x_4 = d_crypto->computeSHA256(x_3);
+//    std::vector<uint8_t> x_0,x_1,x_2,x_3,x_4;
+    LOG(INFO) << "Galileo OSNMA: DSM-PKR :: leaf provided: m_" << static_cast<int>(message.mid) << std::endl;
 
-    // C: d_crypto->getMerkleRoot([m_0:m_15]) I realised I could have done this...
-    // C: ... but why computing all the possible results?  I have only one leaf in each osnma message...
-    // verify that computed root matches merkle root
+    std::vector<uint8_t> x_next, x_current = d_crypto->computeSHA256(m_i);
+    for (size_t i = 0 ; i < 4 ; i++)
+    {
+        x_next.clear();
+        bool leaf_is_on_right = ((message.mid / (1 << (i))) % 2) == 1;
 
-    if(x_4 == d_crypto->getMerkleRoot())
+        if (leaf_is_on_right) {
+                // Leaf is on the right -> first the itn, then concatenate the leaf
+                x_next.insert(x_next.end(), &message.itn[32*i], &message.itn[32*i + 32]);
+                x_next.insert(x_next.end(), x_current.begin(), x_current.end());
+            } else {
+                // Leaf is on the left -> first the leaf, then concatenate the itn
+                x_next.insert(x_next.end(), x_current.begin(), x_current.end());
+                x_next.insert(x_next.end(), &message.itn[32*i], &message.itn[32*i + 32]);
+            }
+
+        // Compute the next node.
+        x_current = d_crypto->computeSHA256(x_next);
+    }
+
+    if(x_current == d_crypto->getMerkleRoot())
         {
             LOG(INFO) << "Galileo OSNMA: DSM-PKR verified successfully! " << std::endl;
             return true;

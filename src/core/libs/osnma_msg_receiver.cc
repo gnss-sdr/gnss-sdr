@@ -1255,7 +1255,7 @@ void osnma_msg_receiver::control_tags_awaiting_verify_size()
 bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
 {
     // MACSEQ verification
-    //d_GST_Sf = d_GST_SIS - 30; // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received..
+    d_GST_Sf = d_GST_SIS - 30; // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received..
     std::vector<uint8_t> applicable_key = d_tesla_keys[mack.TOW + 30]; // current tesla key ie transmitted in the next subframe
     std::vector<std::string> sq1{};
     std::vector<std::string> sq2{};
@@ -1310,7 +1310,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
     std::vector<uint8_t> m(5 + 2 * flxTags.size()); // each flx tag brings two bytes
     m[0] = static_cast<uint8_t>(mack.PRNa);  // PRN_A - SVID of the satellite transmiting the tag
-    m[1] = static_cast<uint8_t>((d_GST_Sf & 0xFF000000) >> 24);
+    m[1] = static_cast<uint8_t>((d_GST_Sf & 0xFF000000) >> 24); // TODO d_GST_Sf left useless
     m[2] = static_cast<uint8_t>((d_GST_Sf & 0x00FF0000) >> 16);
     m[3] = static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8);
     m[4] = static_cast<uint8_t>(d_GST_Sf & 0x000000FF);
@@ -1321,10 +1321,6 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
             m[2*i + 6] = mack.tag_and_info[flxTags[i]].tag_info.ADKD << 4 |
                            mack.tag_and_info[flxTags[i]].tag_info.cop;
         }
-    //    m = {0x18, 0x4f, 0x93, 0x53, 0x04, 0x05, 0x0f, 0x1f, 0x0f};
-    //    applicable_key = {0x11, 0x26, 0x47, 0x3b, 0x0e, 0x05, 0x05, 0x35,
-    //        0xb0, 0xf2, 0xa7, 0x24, 0x00, 0x22, 0xba, 0x8f};
-    //    applicable_OSNMA.d_mack_message.header.macseq = 0xbb8;
     // compute mac
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256

@@ -32,7 +32,7 @@ protected:
     const uint32_t LEAP_SECONDS = 0;//13 + 5;
     void set_time(std::tm& input);
 //    std::string log_name {"CONFIG1-2023-08-23-PKID1-OSNMA"};
-    std::string log_name {"CONFIG2-2023-07-20-PKID2-MT2-OSNMA"};
+    std::string log_name {"CONFIG2-2023-07-27-PKID2-MT2-OSNMA"};
     void initializeGoogleLog();
 
     void SetUp() override
@@ -41,7 +41,7 @@ protected:
         page_even = "";
 
 //        std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0};
-        std::tm input_time = {0, 0, 0, 20, 7 - 1, 2023 - 1900, 0};
+        std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0};
         set_time(input_time);
 //        std::string pemFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230803105952_newPKID_1.pem";
 //        std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230803105953_newPKID_1.xml";

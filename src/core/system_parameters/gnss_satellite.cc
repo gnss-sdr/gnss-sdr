@@ -391,7 +391,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("IIF");  // Plane C
                     break;
                 case 28:
-                    block_ = std::string("IIR");  // Plane B
+                    block_ = std::string("III");  // Plane B
                     break;
                 case 29:
                     block_ = std::string("IIR-M");  // Plane C

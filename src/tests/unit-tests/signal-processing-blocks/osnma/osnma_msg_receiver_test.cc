@@ -408,6 +408,8 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
     this->TOW =  time_of_week + LEAP_SECONDS;
     // Return the week number and time of week as a pair
 
+    // TODO: d_GST_SIS or d_receiver_time? doubt
+    // I am assuming that local realisation of receiver is identical to SIS GST time coming from W5 or W0
     this->d_GST_SIS =  (this->WN  & 0x00000FFF) << 20 | (this->TOW & 0x000FFFFF);
 
 

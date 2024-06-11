@@ -91,15 +91,19 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                 {
                     const auto nma_msg = wht::any_cast<std::shared_ptr<OSNMA_msg>>(pmt::any_ref(msg));
                     const auto sat = Gnss_Satellite(std::string("Galileo"), nma_msg->PRN);
-                    LOG(WARNING) << "Galileo OSNMA: Subframe received starting at "
-                              << "WN="
-                              << nma_msg->WN_sf0
-                              << ", TOW="
-                              << nma_msg->TOW_sf0
-                              << ", from satellite "
-                              << sat;
 
-                            process_osnma_message(nma_msg);
+                    std::ostringstream output_message;
+                    output_message << "Galileo OSNMA: Subframe received starting at "
+                        << "WN="
+                        << nma_msg->WN_sf0
+                        << ", TOW="
+                        << nma_msg->TOW_sf0
+                        << ", from satellite "
+                        << sat;
+                    LOG(WARNING) << output_message.str();
+                    std::cout << output_message.str() << std::endl;
+
+                    process_osnma_message(nma_msg);
 
                 }
             else
@@ -1079,6 +1083,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
     if(tag.CTR != 1)
         m.push_back(static_cast<uint8_t>(tag.PRN_d));
     m.push_back(static_cast<uint8_t>(tag.PRNa));
+    // TODO: maybe here I have to use d_receiver_time instead of d_GST_SIS which is what I am computing
     uint32_t GST = d_helper->compute_gst( tag.WN,tag.TOW);
     std::vector<uint8_t> GST_uint8 = d_helper->gst_to_uint8(GST);
     m.insert(m.end(),GST_uint8.begin(),GST_uint8.end());
@@ -1091,7 +1096,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
     // Add applicable NavData bits to message
     std::string applicable_nav_data;
     std::vector<uint8_t> applicable_nav_data_bytes;
-    if (tag.ADKD == 0 || tag.ADKD == 12)
+    if (tag.ADKD == 0 || tag.ADKD == 12) // note: for ADKD=12 still the same logic applies. Only the Key selection is shifted 10 Subframes into the future.
         {
             applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].ephemeris_iono_vector_2;
         }
@@ -1100,7 +1105,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
             applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].utc_vector_2;
         }
     else
-        std::cerr<<"Galileo OSNMA :: Tag verification :: unknown ADKD" <<"\n";
+        LOG(ERROR) <<"Galileo OSNMA :: Tag verification :: unknown ADKD" <<"\n";
     // convert std::string to vector<uint8_t>
     applicable_nav_data_bytes = d_helper->bytes(applicable_nav_data);
 
@@ -1255,7 +1260,7 @@ void osnma_msg_receiver::control_tags_awaiting_verify_size()
 bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
 {
     // MACSEQ verification
-    d_GST_Sf = d_GST_SIS - 30; // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received..
+    d_GST_Sf = d_receiver_time - 30; // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received..
     std::vector<uint8_t> applicable_key = d_tesla_keys[mack.TOW + 30]; // current tesla key ie transmitted in the next subframe
     std::vector<std::string> sq1{};
     std::vector<std::string> sq2{};

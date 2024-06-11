@@ -34,6 +34,16 @@ std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
     return res;
 }
 
+/**
+ * @brief Convert a binary string to a vector of bytes.
+ *
+ * This function takes a binary string and converts it into a vector of uint8_t bytes.
+ * The binary string is padded with zeros if necessary to ensure that the total number
+ * of bits is a multiple of a byte.
+ *
+ * @param binaryString The binary string to be converted.
+ * @return The vector of bytes converted from the binary string.
+ */
 std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) {
     std::vector<uint8_t> bytes;
 

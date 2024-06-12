@@ -23,7 +23,6 @@
 #include "gnss_satellite.h"
 #include "osnma_dsm_reader.h"       // for OSNMA_DSM_Reader
 #include "osnma_helper.h"
-#include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <cmath>
 #include <cstddef>
@@ -31,6 +30,12 @@
 #include <iostream>
 #include <numeric>
 #include <typeinfo>  // for typeid
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>  // for DLOG
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

@@ -96,8 +96,8 @@ set(SYSTEM_PARAMETERS_HEADERS
     Galileo_OSNMA.h
     osnma_data.h
     osnma_dsm_reader.h
-        osnma_helper.cc
-        osnma_helper.h
+    osnma_helper.cc
+    osnma_helper.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)
@@ -123,6 +123,8 @@ target_link_libraries(core_system_parameters
     PUBLIC
         Boost::date_time
         Boost::serialization
+    PRIVATE
+        Pugixml::pugixml    
 )
 
 if(ENABLE_GLOG_AND_GFLAGS)

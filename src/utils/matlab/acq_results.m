@@ -65,14 +65,14 @@ switch(acq.file.signal)
         signal = '5C';
 end
 
-filename = [acq.file.path acq.file.file '_' system '_' signal...
-    '_ch_' num2str(acq.file.dump_channel) '_' num2str(acq.file.execution)...
-    '_sat_' num2str(acq.file.satellite) '.mat']; % Final acquisition filename
-
+%filename = [acq.file.path acq.file.file '_' system '_' signal...
+    % '_ch_' num2str(acq.file.dump_channel) '_' num2str(acq.file.execution)...
+    % '_sat_' num2str(acq.file.satellite) '.mat']; % Final acquisition filename
+filename = acq.file.file;
 load(filename); % Load acquisition file
 
 %% 2. Compute parameters of interest (freq, tau, freq_max, tau_max). 
-
+max(max(acq_grid))
 [tau_max, freq_max] = find(acq_grid == max(max(acq_grid)));  % Find tau and freq max in acq_grid
 freq = -doppler_max:doppler_step:(doppler_max-doppler_step); % Doppler shift [Hz]
 tau = linspace(0, n_chips, size(acq_grid, 1));               % Code delay wrt reference [chips]

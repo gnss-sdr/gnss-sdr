@@ -12,18 +12,18 @@
 % Author: J. Alfaro
 % -------------------------------------------------------------------------
 %
-clear; clc;
-close all;
+% clear; clc;
+% close all;
 %% Output blocks activation flags
-acq.flag = 0; % 1: compute acquisition block; 0: ignore acquisition block
-trk.flag = 1; % 1: compute tracking block; 0: ignore tracking block
+acq.flag = 1; % 1: compute acquisition block; 0: ignore acquisition block
+trk.flag = 0; % 1: compute tracking block; 0: ignore tracking block
 tel.flag = 0; % 1: compute telemetry dec. block; 0: ignore telemetry dec. block
 obs.flag = 0; % 1: compute observables block; 0: ignore observables block
 
 %% Acquisition block
 % Filename settings
-acq.file.path         = 'C:\Users\juanc\OneDrive\Documentos\gnss-sdr-next\src\utils\matlab\'; % Path to acquition file
-acq.file.file         = 'acq_dump'; % Filename to acquition file
+acq.file.path         = 'D:\FGI_GNSS_Spoofing\GPS_acquisition_TGS_L1\'; % Path to acquition file
+acq.file.file         = 'D:\FGI_GNSS_Spoofing\TG_SFMC\GPS_acquisition_TGS_L1_241\acq_ch_G_1C_ch_0_2537_sat_15.mat'; % Filename to acquition file
 acq.file.dump_channel = 0; % Channel number defined by dump_channel, default 0
 acq.file.execution    = 1; % Dump number
 acq.file.satellite    = 1; % Targeted satellite’s PRN number

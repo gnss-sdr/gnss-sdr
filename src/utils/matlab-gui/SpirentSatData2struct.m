@@ -12,7 +12,7 @@
 % SpirentSatData2struct Convert CSV file sat_data_V1A1.csv to a struct.
 %   refSolution = SpirentSatData2struct(path_to_sat_V1_csv) parse the CSV sat_data_V1A1.CSV to a struct refSatData
 %   refSatData has the following fields:
-%
+%  
 % refSatData.GALILEO.series(i).Sat_ID(j) = GAL(k,3);
 %             refSatData.GALILEO.series(i).Sat_ID(j)     
 %             refSatData.GALILEO.series(i).Sat_PRN(j)   
@@ -183,7 +183,7 @@ if(~isempty(indGPS))
             refSatData.GPS.series(i).ant_elevation(j)    = GPS(k,34);	
             refSatData.GPS.series(i).range_rate(j)    = GPS(k,35);	
             refSatData.GPS.series(i).pr_Error_rate(j)    = GPS(k,36);	
-            refSatData.GPS.series(i).doppler_shift(j)    = GPS(k,37); 
+            refSatData.GPS.series(i).doppler_shift(j)    = GPS(k,40); %
             refSatData.GPS.series(i).delta_range(j)    = GPS(k,42); 
             refSatData.GPS.series(i).sat_Acc_X(j)    = GPS(k,47);	
             refSatData.GPS.series(i).sat_Acc_Y(j)    = GPS(k,48);	

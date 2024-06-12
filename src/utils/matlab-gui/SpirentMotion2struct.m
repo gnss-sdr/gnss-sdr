@@ -108,6 +108,20 @@ function [refSolution] = SpirentMotion2struct(path_to_motion_V1_csv)
     refSolution.height=motionV1(:,16);
 
     refSolution.dop=motionV1(:,38);
+    
+    % Dummy variables to match the same number of variables as SDR PVT
+    % file
+    refSolution.dummy1 = 0;
+    refSolution.dummy2 = 0;
+    refSolution.dummy3 = 0;
+    refSolution.dummy4 = 0;
+    refSolution.dummy5 = 0;
+    refSolution.dummy6 = 0;
+    refSolution.dummy7 = 0;
+    refSolution.dummy8 = 0;
+    refSolution.dummy9 = 0;
+    refSolution.dummy10 = 0;
+    refSolution.dummy11 = 0;
 
     % Clear temporary variables
     clear motionV1

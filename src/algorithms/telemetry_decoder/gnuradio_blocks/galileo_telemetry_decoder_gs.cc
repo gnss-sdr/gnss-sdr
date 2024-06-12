@@ -471,7 +471,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             d_first_eph_sent = true;  // do not send reduced CED anymore, since we have the full ephemeris set
 
-            d_flag_osnma_ephemeris = true;
+            d_flag_osnma_adkd_0_12 = true; // W1-> W5 available
         }
     else
         {
@@ -522,7 +522,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                               << " dB-Hz" << TEXT_RESET << std::endl;
                 }
 
-            d_flag_osnma_iono_and_time = true;
         }
 
     if (d_inav_nav.have_new_utc_model() == true)
@@ -559,7 +558,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             d_delta_t = tmp_obj->A_0G + tmp_obj->A_1G * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G), 64.0)));
             DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
 
-            d_flag_osnma_utc_model = true;
+            d_flag_osnma_adkd_4_utc = true;
         }
 
     if (d_inav_nav.have_new_almanac() == true)
@@ -593,15 +592,28 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
             DLOG(INFO) << "d_nav.WN_0=" << d_inav_nav.get_Galileo_week();
+
+            d_flag_osnma_adkd_4_gst = true;
         }
 
     // get osnma message if the needed nav data is available
-    auto adkd_4_12_nav_data_available = d_flag_osnma_iono_and_time && d_flag_osnma_ephemeris;
-    auto newOSNMA = d_inav_nav.have_new_nma();
-    if (d_band == '1' && newOSNMA && adkd_4_12_nav_data_available == true && d_flag_osnma_utc_model == true)
+    bool adkd_4_nav_data_available = d_flag_osnma_adkd_4_utc && d_flag_osnma_adkd_4_gst;
+    auto newOSNMA = d_inav_nav.have_new_nma();if (d_band == '1' && newOSNMA && (adkd_4_nav_data_available == true || d_flag_osnma_adkd_0_12 == true))
         {
+
+
             const std::shared_ptr<OSNMA_msg> tmp_obj = std::make_shared<OSNMA_msg>(d_inav_nav.get_osnma_msg());
+
+            if(adkd_4_nav_data_available)
+                tmp_obj->TimingData_2 = d_inav_nav.get_osnma_adkd_4_nav_bits();
+            if(d_flag_osnma_adkd_0_12)
+                tmp_obj->EphemerisClockAndStatusData_2 = d_inav_nav.get_osnma_adkd_0_12_nav_bits();
+
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
+
+            d_flag_osnma_adkd_4_utc= false;
+            d_flag_osnma_adkd_4_gst = false;
+            d_flag_osnma_adkd_0_12 = false;
         }
 }
 

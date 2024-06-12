@@ -614,6 +614,7 @@ void Galileo_Inav_Message::read_page_1(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "A_1= " << A_1;
     flag_ephemeris_1 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_1 = data_bits.to_string().substr(5,120);
 }
 
 
@@ -635,6 +636,7 @@ void Galileo_Inav_Message::read_page_2(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "iDot_2= " << iDot_2;
     flag_ephemeris_2 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_2 = data_bits.to_string().substr(5,120);
 }
 
 
@@ -664,6 +666,7 @@ void Galileo_Inav_Message::read_page_3(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "SISA_3= " << SISA_3;
     flag_ephemeris_3 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_3 = data_bits.to_string().substr(5, 122);
 }
 
 
@@ -697,6 +700,7 @@ void Galileo_Inav_Message::read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "spare_4 = " << spare_4;
     flag_ephemeris_4 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_4 = data_bits.to_string().substr(5, 120);
 }
 
 
@@ -1016,6 +1020,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_iono_and_GST = true;  // set to false externally
             flag_TOW_set = true;       // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            nav_bits_word_5 = data_jk_bits.to_string().substr(5, 67);
             break;
 
         case 6:  // Word type 6: GST-UTC conversion parameters
@@ -1045,6 +1050,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_utc_model = true;  // set to false externally
             flag_TOW_set = true;    // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            nav_bits_word_6 =  data_jk_bits.to_string().substr(5, 99);
             break;
 
         case 7:  // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
@@ -1201,6 +1207,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
             flag_almanac_4 = true;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            nav_bits_word_10 = data_jk_bits.to_string().substr(85, 42);
             break;
 
         case 16:  // Word type 16: Reduced Clock and Ephemeris Data (CED) parameters
@@ -1424,4 +1431,21 @@ bool Galileo_Inav_Message::have_new_nma()
         {
             return false;
         }
+}
+std::string Galileo_Inav_Message::get_osnma_adkd_4_nav_bits()
+{
+    nav_bits_adkd_4 = nav_bits_word_6 + nav_bits_word_10;
+    nav_bits_word_6 = "";
+    nav_bits_word_10 = "";
+    return nav_bits_adkd_4;
+}
+std::string Galileo_Inav_Message::get_osnma_adkd_0_12_nav_bits()
+{
+    nav_bits_adkd_0_12 = nav_bits_word_1 + nav_bits_word_2 + nav_bits_word_3 + nav_bits_word_4 + nav_bits_word_5;
+    nav_bits_word_1 = "";
+    nav_bits_word_2 = "";
+    nav_bits_word_3 = "";
+    nav_bits_word_4 = "";
+    nav_bits_word_5 = "";
+    return nav_bits_adkd_0_12;
 }

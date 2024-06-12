@@ -139,6 +139,16 @@ public:
      */
     OSNMA_msg get_osnma_msg();
 
+    /*
+     * @brief Retrieves the OSNMA ADKD 4 NAV bits. Resets the string.
+     */
+    std::string get_osnma_adkd_4_nav_bits();
+
+    /*
+     * @brief Retrieves the OSNMA ADKD 0/12 NAV bits. Resets the string.
+     */
+    std::string get_osnma_adkd_0_12_nav_bits();
+
     inline bool get_flag_CRC_test() const
     {
         return flag_CRC_test;
@@ -430,6 +440,15 @@ private:
     uint8_t page_position_in_inav_subframe{255};
     std::array<int8_t, 15> nma_position_filled{};
     OSNMA_msg nma_msg{};
+    std::string nav_bits_adkd_4{};
+    std::string nav_bits_word_6{};
+    std::string nav_bits_word_10{};
+    std::string nav_bits_adkd_0_12{};
+    std::string nav_bits_word_1{};
+    std::string nav_bits_word_2{};
+    std::string nav_bits_word_3{};
+    std::string nav_bits_word_4{};
+    std::string nav_bits_word_5{};
 
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};

@@ -728,10 +728,10 @@ private:
                                 {
                                     if (first == true)
                                         {
-                                            LOG(INFO) << "Client says:";
+                                            DLOG(INFO) << "Client says:";
                                             first = false;
                                         }
-                                    LOG(INFO) << client_says;
+                                    DLOG(INFO) << client_says;
                                     client_says = client_says.substr(80, client_says.length() - 80);
                                 }
                             do_read_message_header();

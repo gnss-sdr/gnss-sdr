@@ -37,8 +37,8 @@ void NavData::init(const std::shared_ptr<OSNMA_msg> &osnma_msg)
     TOW_sf0 = osnma_msg->TOW_sf0;
 
     // new parsing, directly parsing bits
-    ephemeris_iono_vector_2 = osnma_msg->EphemerisClockAndStatusData_2;
-    utc_vector_2 = osnma_msg->TimingData_2;
+//    ephemeris_iono_vector_2 = osnma_msg->EphemerisClockAndStatusData_2;
+//    utc_vector_2 = osnma_msg->TimingData_2;
 };
 void NavData::generate_eph_iono_vector()
 {

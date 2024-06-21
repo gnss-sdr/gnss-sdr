@@ -95,7 +95,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
             if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_msg>).hash_code())
                 {
                     const auto nma_msg = wht::any_cast<std::shared_ptr<OSNMA_msg>>(pmt::any_ref(msg));
-                    const auto sat = Gnss_Satellite(std::string("Galileo"), nma_msg->PRN);
+                    const auto sat = Gnss_Satellite(std::string("Galileo"), nma_msg->PRN); // TODO remove if unneeded
 
                     std::ostringstream output_message;
                     output_message << "Galileo OSNMA: Subframe received starting at "
@@ -110,6 +110,27 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 
                     process_osnma_message(nma_msg);
 
+                    std::cout << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size() << std::endl;
+                }
+            else if (msg_type_hash_code == typeid(std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>).hash_code())
+                {
+                    // TODO - PRNa is a typo here, I think for d_satellite_nav_data, is PRN_d the name to use
+                    const auto inav_data = wht::any_cast<std::shared_ptr<std::tuple<uint32_t, std::string,uint32_t>>>(pmt::any_ref(msg));
+                    uint32_t PRNa = std::get<0>(*inav_data);
+                    std::string nav_data = std::get<1>(*inav_data);;
+                    uint32_t TOW = std::get<2>(*inav_data);
+
+                    // iono data => 549 bits, utc data, 141 bits.
+                    if(nav_data.size() == 549)
+                        {
+                            d_satellite_nav_data[PRNa][TOW].ephemeris_iono_vector_2 = nav_data;
+                        }
+                    else if(nav_data.size() == 141)
+                        {
+                            d_satellite_nav_data[PRNa][TOW].utc_vector_2 = nav_data;
+                        }
+                    else
+                        LOG(ERROR) << "osnma_msg_receiver incorrect navData parsing!";
                 }
             else
                 {
@@ -581,7 +602,7 @@ void osnma_msg_receiver::read_and_process_mack_block(const std::shared_ptr<OSNMA
 
     // update the structure with newly coming NavData
     d_osnma_data.d_nav_data.init(osnma_msg); // TODO refactor it
-    add_satellite_data(osnma_msg->PRN,osnma_msg->TOW_sf0,d_osnma_data.d_nav_data); // TODO change place
+//    add_satellite_data(osnma_msg->PRN,osnma_msg->TOW_sf0,d_osnma_data.d_nav_data); // TODO change place
 // DEBUG PARSING MACK MESSAGES WHEN DSM-KROOT NOT YET AVAILABLE
 //    d_osnma_data.d_dsm_kroot_message.ts = 9;
 //    d_osnma_data.d_dsm_kroot_message.ks = 4;
@@ -923,14 +944,18 @@ void osnma_msg_receiver::process_mack_message()
                         {
                             it.second.status = Tag::SUCCESS;
                             LOG(WARNING) << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id= "
-                                      << it.second.tag_id
-                                      << ", TOW="
-                                      << it.second.TOW
-                                      << ", ADKD="
-                                      << static_cast<unsigned>(it.second.ADKD)
-                                      << ", from satellite "
-                                      << it.second.PRNa
-                                      << std::endl;
+                            << it.second.tag_id
+                            << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                            << it.second.received_tag << std::dec
+                            << ", TOW="
+                            << it.second.TOW
+                            << ", ADKD="
+                            << static_cast<unsigned>(it.second.ADKD)
+                            << ", PRNa="
+                            << static_cast<unsigned>(it.second.PRNa)
+                            << ", PRNd="
+                            << static_cast<unsigned>(it.second.PRN_d)
+                            << std::endl;
                         }
                         /* TODO notify PVT via pmt
                          * have_new_data() true
@@ -939,27 +964,36 @@ void osnma_msg_receiver::process_mack_message()
                     else
                     {
                         it.second.status = Tag::FAIL;
-                        LOG(ERROR) << "Galileo OSNMA: Tag verification :: FAILURE  for tag Id= "
-                                  << it.second.tag_id
-                                  << ", TOW="
-                                  << it.second.TOW
-                                  << ", ADKD="
-                                  << static_cast<unsigned>(it.second.ADKD)
-                                  << ", from satellite "
-                                  << it.second.PRNa
-                                  << std::endl;
+                        LOG(ERROR) << "Galileo OSNMA: Tag verification :: FAILURE  for tag Id="
+                        << it.second.tag_id
+                        << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                        << it.second.received_tag << std::dec
+                        << ", TOW="
+                        << it.second.TOW
+                        << ", ADKD="
+                        << static_cast<unsigned>(it.second.ADKD)
+                        << ", PRNa="
+                        << static_cast<unsigned>(it.second.PRNa)
+                        << ", PRNd="
+                        << static_cast<unsigned>(it.second.PRN_d)
+                        << std::endl;
                     }
                 }
             else {
                     LOG(WARNING) << "Galileo OSNMA: Tag verification :: SKIPPED  for Tag Id= "
-                              << it.second.tag_id
-                              << ", TOW="
-                              << it.second.TOW
-                              << ", ADKD="
-                              << static_cast<unsigned>(it.second.ADKD)
-                              << ", from satellite "
-                              << it.second.PRNa
-                              << " due to missing key or navData. ";
+                                << it.second.tag_id
+                                << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                                << it.second.received_tag << std::dec
+                                << ", TOW="
+                                << it.second.TOW
+                                << ", ADKD="
+                                << static_cast<unsigned>(it.second.ADKD)
+                                << ", PRNa="
+                                << static_cast<unsigned>(it.second.PRNa)
+                                << ", PRNd="
+                                << static_cast<unsigned>(it.second.PRN_d)
+                                << ". Key available ("<< tag_has_key_available(it.second) <<"),  navData ("<< tag_has_nav_data_available(it.second) <<"). "
+                                << std::endl;
                 }
         }
 
@@ -1078,7 +1112,23 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
 
     // Compare computed tag with received one truncated
     if (tag.received_tag == computed_mac)
+        {
+            std::cout << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id= "
+                         << tag.tag_id
+                         << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                         << tag.received_tag << std::dec
+                         << ", TOW="
+                         << tag.TOW
+                         << ", ADKD="
+                         << static_cast<unsigned>(tag.ADKD)
+                         << ", PRNa="
+                         << static_cast<unsigned>(tag.PRNa)
+                         << ", PRNd="
+                         << static_cast<unsigned>(tag.PRN_d)
+                         << std::endl;
             return true;
+        }
+
     else
             return false;
 }
@@ -1219,17 +1269,27 @@ void osnma_msg_receiver::remove_verified_tags()
     for (auto it = d_tags_awaiting_verify.begin(); it != d_tags_awaiting_verify.end() ; ){
             if (it->second.status == Tag::SUCCESS || it->second.status == Tag::FAIL)
                 {
-                    LOG(INFO) << "Galileo OSNMA: delete tag for tag Id= "
-                              << it->second.tag_id << ", PRN_a= "
-                              << it->second.PRNa << ", TOW="
-                              << it->second.TOW << ", ADKD= "
-                              << static_cast<unsigned>(it->second.ADKD) << ", status= "
-                              << it->second.status << std::endl;
+                    LOG(INFO) << "Galileo OSNMA: Tag verification :: DELETE tag Id="
+                              << it->second.tag_id
+                              << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                              << it->second.received_tag << std::dec
+                              << ", TOW="
+                              << it->second.TOW
+                              << ", ADKD="
+                              << static_cast<unsigned>(it->second.ADKD)
+                              << ", PRNa="
+                              << static_cast<unsigned>(it->second.PRNa)
+                              << ", PRNd="
+                              << static_cast<unsigned>(it->second.PRN_d)
+                              << ", status= "
+                              << it->second.status
+                              << std::endl;
                     it = d_tags_awaiting_verify.erase(it);
                 }
             else
                 ++it;
         }
+    std::cout << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size() << std::endl;
 }
 /**
  * @brief Control the size of the tags awaiting verification multimap.

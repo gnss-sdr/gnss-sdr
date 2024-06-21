@@ -185,7 +185,7 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                             if (page_position_in_inav_subframe != 255)
                                 {
                                     if (page_position_in_inav_subframe == 0)
-                                        {
+                                        { // TODO - is it redundant? receiving Word 2 already resets this
                                             nma_position_filled = std::array<int8_t, 15>{};
                                             nma_msg.mack = std::array<uint32_t, 15>{};
                                             nma_msg.hkroot = std::array<uint8_t, 15>{};
@@ -215,7 +215,7 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
         }
 }
 
-
+// C: tells if W1-->W4 available from same blcok
 bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
     if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_ephemeris_4 == true) and (flag_iono_and_GST == true))
@@ -349,7 +349,7 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
     return false;
 }
 
-
+// C: tells if W5 is available
 bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
     if ((flag_iono_and_GST == true) and (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
@@ -361,7 +361,7 @@ bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new io
     return false;
 }
 
-
+// C: tells if W6 is available
 bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc data set stored in the galileo navigation class
 {
     if (flag_utc_model == true)
@@ -373,9 +373,13 @@ bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc d
     return false;
 }
 
-
+// flag_almanac_4 tells if W10 available.
 bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac data set stored in the galileo navigation class
 {
+//    if(flag_almanac_4)
+//        {
+//            flag_adkd_4_complete = true;
+//        }
     if ((flag_almanac_1 == true) and (flag_almanac_2 == true) and (flag_almanac_3 == true) and (flag_almanac_4 == true))
         {
             // All Almanac data have been received
@@ -614,7 +618,7 @@ void Galileo_Inav_Message::read_page_1(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "A_1= " << A_1;
     flag_ephemeris_1 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
-    nav_bits_word_1 = data_bits.to_string().substr(5,120);
+    nav_bits_word_1 = data_bits.to_string().substr(6,120);
 }
 
 
@@ -636,7 +640,7 @@ void Galileo_Inav_Message::read_page_2(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "iDot_2= " << iDot_2;
     flag_ephemeris_2 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
-    nav_bits_word_2 = data_bits.to_string().substr(5,120);
+    nav_bits_word_2 = data_bits.to_string().substr(6,120);
 }
 
 
@@ -666,7 +670,7 @@ void Galileo_Inav_Message::read_page_3(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "SISA_3= " << SISA_3;
     flag_ephemeris_3 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
-    nav_bits_word_3 = data_bits.to_string().substr(5, 122);
+    nav_bits_word_3 = data_bits.to_string().substr(6, 122);
 }
 
 
@@ -700,7 +704,7 @@ void Galileo_Inav_Message::read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "spare_4 = " << spare_4;
     flag_ephemeris_4 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
-    nav_bits_word_4 = data_bits.to_string().substr(5, 120);
+    nav_bits_word_4 = data_bits.to_string().substr(6, 120);
 }
 
 
@@ -872,10 +876,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 2:  // Word type 2: Ephemeris (2/4)
             {
+                // start of subframe, reset osnma parameters TODO - refactor
                 page_position_in_inav_subframe = 0;
                 nma_msg.mack = std::array<uint32_t, 15>{};
                 nma_msg.hkroot = std::array<uint8_t, 15>{};
                 nma_position_filled = std::array<int8_t, 15>{};
+                reset_osnma_nav_bits_adkd4();
+                reset_osnma_nav_bits_adkd0_12();
+
                 read_page_2(data_jk_bits);
                 if (enable_rs)
                     {
@@ -1020,7 +1028,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_iono_and_GST = true;  // set to false externally
             flag_TOW_set = true;       // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
-            nav_bits_word_5 = data_jk_bits.to_string().substr(5, 67);
+            nav_bits_word_5 = data_jk_bits.to_string().substr(6, 67);
             break;
 
         case 6:  // Word type 6: GST-UTC conversion parameters
@@ -1050,7 +1058,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_utc_model = true;  // set to false externally
             flag_TOW_set = true;    // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
-            nav_bits_word_6 =  data_jk_bits.to_string().substr(5, 99);
+            nav_bits_word_6 =  data_jk_bits.to_string().substr(6, 99);
             break;
 
         case 7:  // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
@@ -1207,7 +1215,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
             flag_almanac_4 = true;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
-            nav_bits_word_10 = data_jk_bits.to_string().substr(85, 42);
+            nav_bits_word_10 = data_jk_bits.to_string().substr(86, 42);
             break;
 
         case 16:  // Word type 16: Reduced Clock and Ephemeris Data (CED) parameters
@@ -1387,6 +1395,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             nma_position_filled = std::array<int8_t, 15>{};
             nma_msg.mack = std::array<uint32_t, 15>{};
             nma_msg.hkroot = std::array<uint8_t, 15>{};
+            reset_osnma_nav_bits_adkd4();
+            reset_osnma_nav_bits_adkd0_12();
         }
 
     return page_number;
@@ -1407,7 +1417,7 @@ OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
     nma_position_filled = std::array<int8_t, 15>{};
     // Fill TOW and WN
     nma_msg.WN_sf0 = WN_0;
-    int32_t TOW_sf0 = TOW_5 - 24; // TODO - why not TOW_0?
+    int32_t TOW_sf0 = TOW_5 - 24; // according to OS SIS ICD, TOW of word 5 is 25 seconds after Sf start
     if (TOW_sf0 < 0)
         {
             TOW_sf0 += 604800;
@@ -1435,17 +1445,24 @@ bool Galileo_Inav_Message::have_new_nma()
 std::string Galileo_Inav_Message::get_osnma_adkd_4_nav_bits()
 {
     nav_bits_adkd_4 = nav_bits_word_6 + nav_bits_word_10;
-    nav_bits_word_6 = "";
-    nav_bits_word_10 = "";
+
     return nav_bits_adkd_4;
 }
 std::string Galileo_Inav_Message::get_osnma_adkd_0_12_nav_bits()
 {
     nav_bits_adkd_0_12 = nav_bits_word_1 + nav_bits_word_2 + nav_bits_word_3 + nav_bits_word_4 + nav_bits_word_5;
+    return nav_bits_adkd_0_12;
+}
+void Galileo_Inav_Message::reset_osnma_nav_bits_adkd0_12()
+{
     nav_bits_word_1 = "";
     nav_bits_word_2 = "";
     nav_bits_word_3 = "";
     nav_bits_word_4 = "";
     nav_bits_word_5 = "";
-    return nav_bits_adkd_0_12;
+}
+void Galileo_Inav_Message::reset_osnma_nav_bits_adkd4()
+{
+    nav_bits_word_6 = "";
+    nav_bits_word_10 = "";
 }

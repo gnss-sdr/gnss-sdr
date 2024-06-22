@@ -109,8 +109,6 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     std::cout << output_message.str() << std::endl;
 
                     process_osnma_message(nma_msg);
-
-                    std::cout << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size() << std::endl;
                 }
             else if (msg_type_hash_code == typeid(std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>).hash_code())
                 {
@@ -915,6 +913,7 @@ void osnma_msg_receiver::process_mack_message()
                                     d_tags_awaiting_verify.insert(std::pair(mack->TOW, t));
                                     LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: SUCCESS for Mack at TOW=" << mack->TOW << ", PRN" << mack->PRNa;
                                 }
+                            std::cout << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size() << std::endl;
                             mack = d_macks_awaiting_MACSEQ_verification.erase(mack);
                         }
                     else
@@ -980,7 +979,8 @@ void osnma_msg_receiver::process_mack_message()
                     }
                 }
             else {
-                    LOG(WARNING) << "Galileo OSNMA: Tag verification :: SKIPPED  for Tag Id= "
+                    it.second.skipped ++;
+                    LOG(WARNING) << "Galileo OSNMA: Tag verification :: SKIPPED (x"<< it.second.skipped <<")for Tag Id= "
                                 << it.second.tag_id
                                 << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                                 << it.second.received_tag << std::dec
@@ -1268,6 +1268,25 @@ void osnma_msg_receiver::remove_verified_tags()
 {
     for (auto it = d_tags_awaiting_verify.begin(); it != d_tags_awaiting_verify.end() ; ){
             if (it->second.status == Tag::SUCCESS || it->second.status == Tag::FAIL)
+                {
+                    LOG(INFO) << "Galileo OSNMA: Tag verification :: DELETE tag Id="
+                              << it->second.tag_id
+                              << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                              << it->second.received_tag << std::dec
+                              << ", TOW="
+                              << it->second.TOW
+                              << ", ADKD="
+                              << static_cast<unsigned>(it->second.ADKD)
+                              << ", PRNa="
+                              << static_cast<unsigned>(it->second.PRNa)
+                              << ", PRNd="
+                              << static_cast<unsigned>(it->second.PRN_d)
+                              << ", status= "
+                              << it->second.status
+                              << std::endl;
+                    it = d_tags_awaiting_verify.erase(it);
+                }
+            else if (it->second.skipped >= 10)
                 {
                     LOG(INFO) << "Galileo OSNMA: Tag verification :: DELETE tag Id="
                               << it->second.tag_id

@@ -182,8 +182,8 @@ public:
           computed_tag(0),
           PRN_d(MTI.tag_info.PRN_d),
           ADKD(MTI.tag_info.ADKD),
-          cop(MTI.tag_info.cop)
-
+          cop(MTI.tag_info.cop),
+          skipped(0)
     {
     }
 
@@ -201,6 +201,7 @@ public:
     uint8_t PRN_d;
     uint8_t ADKD;
     uint8_t cop;
+    uint32_t skipped;
 };
 /** \} */
 /** \} */

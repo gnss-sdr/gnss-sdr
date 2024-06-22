@@ -121,10 +121,12 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     // iono data => 549 bits, utc data, 141 bits.
                     if(nav_data.size() == 549)
                         {
+                            LOG(INFO) << "Galileo OSNMA: received ADKD=0/12 navData, PRN_d (" << PRNa << ") " << "TOW_sf=" << TOW <<std::endl;
                             d_satellite_nav_data[PRNa][TOW].ephemeris_iono_vector_2 = nav_data;
                         }
                     else if(nav_data.size() == 141)
                         {
+                            LOG(INFO) << "Galileo OSNMA: received ADKD=4 navData, PRN_d (" << PRNa << ") " << "TOW_sf=" << TOW <<std::endl;
                             d_satellite_nav_data[PRNa][TOW].utc_vector_2 = nav_data;
                         }
                     else
@@ -132,7 +134,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                 }
             else
                 {
-                    LOG(WARNING) << "osnma_msg_receiver received an unknown object type!";
+                    LOG(ERROR) << "osnma_msg_receiver received an unknown object type!";
                 }
         }
     catch (const wht::bad_any_cast& e)
@@ -1286,7 +1288,7 @@ void osnma_msg_receiver::remove_verified_tags()
                               << std::endl;
                     it = d_tags_awaiting_verify.erase(it);
                 }
-            else if (it->second.skipped >= 10)
+            else if (it->second.skipped >= 20)
                 {
                     LOG(INFO) << "Galileo OSNMA: Tag verification :: DELETE tag Id="
                               << it->second.tag_id

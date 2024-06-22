@@ -225,19 +225,31 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                 {3, {6, 122}},
                                 {4, {6, 120}},
                                 {5, {6, 67}},
-                                // TODO words 6 and 10 for TimingData
                             };
 
                             // Fill NavData bits -- Iterate over the extraction parameters
+                            std::string nav_data_ADKD_0_12 = "";
                             for (const auto& param : extractionParams) {
                                     uint8_t wordKey = param.first;
                                     uint8_t start = param.second.first;
                                     uint8_t length = param.second.second;
 
                                     // Extract the required bits and fill osnma block
-                                    osnmaMsg_sptr->EphemerisClockAndStatusData_2 += words[wordKey].
+                                    nav_data_ADKD_0_12 += words[wordKey].
                                                                                     to_string().substr(
                                                                                             start, length);
+                                }
+                            // send to osnma block
+                            bool check_size_is_ok = nav_data_ADKD_0_12.size() == 549;
+                            if(check_size_is_ok)
+                                {
+                                    std::cout << "Galileo OSNMA: sending ADKD=0/12 navData, PRN_d (" << tv.svId << ") " << "TOW_sf=" << osnmaMsg_sptr->TOW_sf0 <<std::endl;
+                                    const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string,uint32_t>>( // < PRNd , navDataBits, TOW_Sosf>
+                                        tv.svId,
+                                        nav_data_ADKD_0_12,
+                                        osnmaMsg_sptr->TOW_sf0);
+                                    osnma->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
+
                                 }
                         }
 
@@ -252,6 +264,7 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                 {10, {86, 42}}
                             };
 
+                            std::string nav_data_ADKD_4 = "";
                             // Fill NavData bits -- Iterate over the extraction parameters
                             for (const auto& param : extractionParams)
                                 {
@@ -260,8 +273,20 @@ TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
                                     uint8_t length = param.second.second;
 
                                     // Extract the required bits and fill osnma block
-                                    osnmaMsg_sptr->TimingData_2 += words[wordKey].to_string().substr(
+                                    nav_data_ADKD_4 += words[wordKey].to_string().substr(
                                         start, length);
+                                }
+                            // send to osnma block
+                            bool check_size_is_ok = nav_data_ADKD_4.size() == 141;
+                            if(check_size_is_ok)
+                                {
+                                    std::cout << "Galileo OSNMA: sending ADKD=04 navData, PRN_d (" << tv.svId << ") " << "TOW_sf=" << osnmaMsg_sptr->TOW_sf0 <<std::endl;
+                                    const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string,uint32_t>>( // < PRNd , navDataBits, TOW_Sosf>
+                                        tv.svId,
+                                        nav_data_ADKD_4,
+                                        osnmaMsg_sptr->TOW_sf0);
+                                    osnma->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
+
                                 }
 
                         }

@@ -36,6 +36,7 @@
 class Gnss_Crypto
 {
 public:
+    Gnss_Crypto() = default;
     Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath);
     ~Gnss_Crypto();
 

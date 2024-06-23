@@ -56,6 +56,15 @@
 #endif
 
 
+Gnss_Crypto::Gnss_Crypto()
+{
+#if USE_OPENSSL_FALLBACK
+#else  // GnuTLS
+    gnutls_global_init();
+#endif
+}
+
+
 Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath)
 {
 #if USE_OPENSSL_FALLBACK

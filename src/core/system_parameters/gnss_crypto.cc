@@ -34,6 +34,7 @@
 #if USE_OPENSSL_3
 #include <openssl/bio.h>
 #include <openssl/bn.h>
+#include <openssl/core_names.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/param_build.h>
@@ -315,23 +316,58 @@ std::vector<uint8_t> Gnss_Crypto::computeHMAC_SHA_256(const std::vector<uint8_t>
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
     std::vector<uint8_t> hmac(EVP_MAX_MD_SIZE);
+    size_t output_length = 0;
+    // Create the context for the HMAC operation
+    EVP_MAC* mac = EVP_MAC_fetch(nullptr, "HMAC", nullptr);
+    if (!mac)
+        {
+            LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to fetch HMAC";
+            return output;
+        }
 
-    // Create HMAC-SHA256 context
-    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-    EVP_PKEY* pkey = EVP_PKEY_new_mac_key(EVP_PKEY_HMAC, nullptr, key.data(), key.size());
+    EVP_MAC_CTX* ctx = EVP_MAC_CTX_new(mac);
+    if (!ctx)
+        {
+            EVP_MAC_free(mac);
+            LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to create HMAC context";
+            return output;
+        }
 
-    // Initialize HMAC-SHA256 context
-    EVP_DigestSignInit(ctx, nullptr, EVP_sha256(), nullptr, pkey);
+    // Initialize the HMAC context with the key and the SHA-256 algorithm
+    OSSL_PARAM params[] = {
+        OSSL_PARAM_construct_utf8_string(OSSL_ALG_PARAM_DIGEST, const_cast<char*>("SHA256"), 0),
+        OSSL_PARAM_construct_end()};
 
-    // Compute HMAC-SHA256
-    EVP_DigestSignUpdate(ctx, input.data(), input.size());
-    size_t macLength;
-    EVP_DigestSignFinal(ctx, hmac.data(), &macLength);
+    if (EVP_MAC_init(ctx, key.data(), key.size(), params) <= 0)
+        {
+            EVP_MAC_CTX_free(ctx);
+            EVP_MAC_free(mac);
+            LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to initialize HMAC context";
+            return output;
+        }
 
-    EVP_PKEY_free(pkey);
-    EVP_MD_CTX_free(ctx);
+    // Update the HMAC context with the input data
+    if (EVP_MAC_update(ctx, input.data(), input.size()) <= 0)
+        {
+            EVP_MAC_CTX_free(ctx);
+            EVP_MAC_free(mac);
+            LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to update HMAC context";
+            return output;
+        }
 
-    hmac.resize(macLength);
+    // Finalize the HMAC and retrieve the output
+    if (EVP_MAC_final(ctx, hmac.data(), &output_length, hmac.size()) <= 0)
+        {
+            EVP_MAC_CTX_free(ctx);
+            EVP_MAC_free(mac);
+            LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to finalize HMAC";
+            return output;
+        }
+
+    // Clean up the HMAC context
+    EVP_MAC_CTX_free(ctx);
+    EVP_MAC_free(mac);
+    hmac.resize(output_length);
     output = hmac;
 #else
     std::vector<uint8_t> hmac(32);

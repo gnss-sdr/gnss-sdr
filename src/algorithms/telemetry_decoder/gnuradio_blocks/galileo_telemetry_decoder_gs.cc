@@ -439,7 +439,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         }
 
     // 4. Push the new navigation data to the queues
-    if (d_inav_nav.have_new_ephemeris() == true)
+    if (d_inav_nav.have_new_ephemeris() == true) // C: tells if W1-->W4 available from same blcok (and W5!)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
@@ -471,12 +471,26 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
             d_first_eph_sent = true;  // do not send reduced CED anymore, since we have the full ephemeris set
 
-            d_flag_osnma_adkd_0_12 = true; // W1-> W5 available
+//            d_flag_osnma_adkd_0_12 = true; // W1-> W5 available
+            // extract bits, reset container.
+            bool check_size_is_ok = d_inav_nav.get_osnma_adkd_0_12_nav_bits().size() == 549;
+            if(check_size_is_ok)
+                {
+                    std::cout << "Galileo OSNMA: sending ADKD=0/12 navData, PRN_d (" << d_satellite.get_PRN() << ") " << "TOW_sf=" << d_inav_nav.get_TOW5() - 24 <<std::endl;
+                    const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string,uint32_t>>( // < PRNd , navDataBits, TOW_Sosf>
+                        d_satellite.get_PRN(),
+                        d_inav_nav.get_osnma_adkd_0_12_nav_bits(),
+                        d_inav_nav.get_TOW5() - 24);
+                    this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj_osnma));
+                    d_inav_nav.reset_osnma_nav_bits_adkd0_12();
+                }
+
+
         }
     else
         {
             // If we still do not have ephemeris, check if we have a reduced CED
-            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))
+            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true)) // C: W16 has some Eph. params, uneeded for OSNMa I guess
                 {
                     const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_reduced_ced());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
@@ -492,7 +506,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 }
         }
 
-    if (d_inav_nav.have_new_iono_and_GST() == true)
+    if (d_inav_nav.have_new_iono_and_GST() == true) // C: W5
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_inav_nav.get_iono());
@@ -521,10 +535,9 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                               << d_satellite << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
                               << " dB-Hz" << TEXT_RESET << std::endl;
                 }
-
         }
 
-    if (d_inav_nav.have_new_utc_model() == true)
+    if (d_inav_nav.have_new_utc_model() == true) // C: tells if W6 is available
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
@@ -561,7 +574,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             d_flag_osnma_adkd_4_utc = true;
         }
 
-    if (d_inav_nav.have_new_almanac() == true)
+    if (d_inav_nav.have_new_almanac() == true) // flag_almanac_4 tells if W10 available.
         {
             const std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
@@ -597,23 +610,32 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         }
 
     // get osnma message if the needed nav data is available
-    bool adkd_4_nav_data_available = d_flag_osnma_adkd_4_utc && d_flag_osnma_adkd_4_gst;
-    auto newOSNMA = d_inav_nav.have_new_nma();if (d_band == '1' && newOSNMA && (adkd_4_nav_data_available == true || d_flag_osnma_adkd_0_12 == true))
+    bool adkd_4_nav_data_available = d_flag_osnma_adkd_4_utc && d_flag_osnma_adkd_4_gst; // supposition: data did not change bt. flags reset and now.
+
+    //    bool adkd_4_nav_data_available = d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141; // newApproach: let decoder decide when block starts and let it fill the data, and just check for length
+    if(adkd_4_nav_data_available /*&& d_inav_nav.is_TOW5_set() not needed cause W6 has TOW also.*/)
         {
+            bool check_size_is_ok = d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141;
+            if(check_size_is_ok)
+                {
+                    std::cout << "Galileo OSNMA: sending ADKD=4 navData, PRN_d (" << d_satellite.get_PRN() << ") " << "TOW_sf=" << d_inav_nav.get_TOW6() - 4 <<std::endl;
 
+                    const auto tmp_obj = std::make_shared<std::tuple<uint32_t, std::string,uint32_t>>( // < PRNd , navDataBits, TOW_Sosf> // TODO conversion from W6 to W_Start_of_subframe
+                        d_satellite.get_PRN(),
+                        d_inav_nav.get_osnma_adkd_4_nav_bits(),
+                        d_inav_nav.get_TOW6() - 4);
+                    this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
+                    d_inav_nav.reset_osnma_nav_bits_adkd4();
+                }
 
+        }
+    auto newOSNMA = d_inav_nav.have_new_nma();
+    if (d_band == '1' && newOSNMA)
+        {
             const std::shared_ptr<OSNMA_msg> tmp_obj = std::make_shared<OSNMA_msg>(d_inav_nav.get_osnma_msg());
-
-            if(adkd_4_nav_data_available)
-                tmp_obj->TimingData_2 = d_inav_nav.get_osnma_adkd_4_nav_bits();
-            if(d_flag_osnma_adkd_0_12)
-                tmp_obj->EphemerisClockAndStatusData_2 = d_inav_nav.get_osnma_adkd_0_12_nav_bits();
 
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
 
-            d_flag_osnma_adkd_4_utc= false;
-            d_flag_osnma_adkd_4_gst = false;
-            d_flag_osnma_adkd_0_12 = false;
         }
 }
 

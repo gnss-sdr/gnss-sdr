@@ -83,7 +83,7 @@ private:
     bool tag_has_nav_data_available(Tag& t);
     bool tag_has_key_available(Tag& t);
 
-    std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data; // map holding NavData sorted by SVID and TOW.
+    std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data; // map holding NavData sorted by SVID (first key) and TOW (second key).
     std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys; // tesla keys over time, sorted by TOW
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify; // container with tags to verify from arbitrary SVIDs, sorted by TOW

@@ -30,6 +30,7 @@
 #include <openssl/ecdsa.h>
 #include <openssl/hmac.h>
 #include <openssl/pem.h>
+#include <openssl/x509.h>
 #if USE_OPENSSL_3
 #include <openssl/bio.h>
 #include <openssl/bn.h>
@@ -47,13 +48,23 @@
 #include <gnutls/x509.h>
 #endif
 
-Gnss_Crypto::Gnss_Crypto(const std::string& pemFilePath, const std::string& merkleTreePath)
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>  // for DLOG
+#else
+#include <absl/log/log.h>
+#endif
+
+
+Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath)
 {
 #if USE_OPENSSL_FALLBACK
 #else  // GnuTLS
     gnutls_global_init();
 #endif
-    readPublicKeyFromPEM(pemFilePath);
+    if (!readPublicKeyFromCRT(certFilePath))
+        {
+            readPublicKeyFromPEM(PEMFILE_DEFAULT);
+        }
     read_merkle_xml(merkleTreePath);
 }
 
@@ -69,10 +80,10 @@ Gnss_Crypto::~Gnss_Crypto()
         }
 #endif
 #else  // GnuTLS
-    if (d_PublicKey != NULL)
+    if (d_PublicKey != nullptr)
         {
             gnutls_pubkey_deinit(d_PublicKey);
-            d_PublicKey = NULL;
+            d_PublicKey = nullptr;
         }
     gnutls_global_deinit();
 #endif
@@ -145,11 +156,11 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
             std::string signalVersion = galHeader.child("signalVersion").text().get();
             std::string dataVersion = galHeader.child("dataVersion").text().get();
 
-            std::cout << "  Source: " << source.child_value("mission") << " - " << source.child_value("segment") << " - " << source.child_value("element") << std::endl;
-            std::cout << "  Destination: " << destination.child_value("mission") << " - " << destination.child_value("segment") << " - " << destination.child_value("element") << std::endl;
-            std::cout << "  Issue Date: " << issueDate << std::endl;
-            std::cout << "  Signal Version: " << signalVersion << std::endl;
-            std::cout << "  Data Version: " << dataVersion << std::endl;
+            LOG(INFO) << "OSNMA Merkletree - Source: " << source.child_value("mission") << " - " << source.child_value("segment") << " - " << source.child_value("element");
+            LOG(INFO) << "OSNMA Merkletree - Destination: " << destination.child_value("mission") << " - " << destination.child_value("segment") << " - " << destination.child_value("element");
+            LOG(INFO) << "OSNMA Merkletree - Issue Date: " << issueDate;
+            LOG(INFO) << "OSNMA Merkletree - Signal Version: " << signalVersion;
+            LOG(INFO) << "OSNMA Merkletree - Data Version: " << dataVersion;
 
             // Accessing data from the body
             pugi::xml_node merkleTree = body.child("MerkleTree");
@@ -157,8 +168,8 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
             int n = std::stoi(merkleTree.child_value("N"));
             std::string hashFunction = merkleTree.child_value("HashFunction");
 
-            std::cout << "  N: " << n << std::endl;
-            std::cout << "  Hash Function: " << hashFunction << std::endl;
+            LOG(INFO) << "OSNMA Merkletree - N: " << n;
+            LOG(INFO) << "OSNMA Merkletree - Hash Function: " << hashFunction;
 
             for (pugi::xml_node publicKey : merkleTree.children("PublicKey"))
                 {
@@ -168,21 +179,21 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
                     std::string point = publicKey.child_value("point");
                     std::string pkType = publicKey.child_value("PKType");
 
-                    std::cout << "  Public Key: " << i << std::endl;
-                    std::cout << "  PKID: " << pkid << std::endl;
-                    std::cout << "  Length in Bits: " << lengthInBits << std::endl;
-                    std::cout << "  Point: " << point << std::endl;
-                    std::cout << "  PK Type: " << pkType << std::endl;
+                    LOG(INFO) << "OSNMA Merkletree - Public Key: " << i;
+                    LOG(INFO) << "OSNMA Merkletree - PKID: " << pkid;
+                    LOG(INFO) << "OSNMA Merkletree - Length in Bits: " << lengthInBits;
+                    LOG(INFO) << "OSNMA Merkletree - Point: " << point;
+                    LOG(INFO) << "OSNMA Merkletree - PK Type: " << pkType;
                 }
             for (pugi::xml_node treeNode : merkleTree.children("TreeNode"))
                 {
                     int j = std::stoi(treeNode.child_value("j"));
                     int i = std::stoi(treeNode.child_value("i"));
                     int lengthInBits = std::stoi(treeNode.child_value("lengthInBits"));
-                    std::cout << "  Node length (bits): " << lengthInBits << std::endl;
+                    LOG(INFO) << "OSNMA Merkletree - Node length (bits): " << lengthInBits;
                     std::string x_ji = treeNode.child_value("x_ji");
-                    std::cout << "  Size string (bytes): " << x_ji.size() << std::endl;
-                    std::cout << "  m_" << j << "_" << i << " = " << x_ji << std::endl;
+                    LOG(INFO) << "OSNMA Merkletree - Size string (bytes): " << x_ji.size();
+                    LOG(INFO) << "OSNMA Merkletree - m_" << j << "_" << i << " = " << x_ji;
                     if (j == 4 && i == 0)
                         {
                             d_x_4_0 = convert_from_hex_str(x_ji);
@@ -220,7 +231,8 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
             d_x_0_1 = convert_from_hex_str("AA1A8B68E5DB293106B5BC8806F9790E8ACF8DC2D28A6EF6C1AC7233A9813D3F");
             return;
         }
-    std::cout << "Merkle Tree successfully read from file " << merkleFilePath << std::endl;
+    std::cout << "OSNMA Merkle Tree successfully read from file " << merkleFilePath << std::endl;
+    LOG(INFO) << "OSNMA Merkle Tree successfully read from file " << merkleFilePath;
 }
 
 
@@ -451,7 +463,8 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
     BIO_free(bio);
     if (d_PublicKey == nullptr)
         {
-            std::cerr << "OpenSSL: error reading the Public Key from file " << pemFilePath << ". Aborting import" << std::endl;
+            std::cerr << "OpenSSL: error reading the OSNMA Public Key from file " << pemFilePath << ". Aborting import" << std::endl;
+            LOG(INFO) << "OpenSSL: error reading the OSNMA Public Key from file " << pemFilePath << ". Aborting import";
             return;
         }
 #else  // GnuTLS
@@ -464,17 +477,105 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
     if (ret != GNUTLS_E_SUCCESS)
         {
             gnutls_pubkey_deinit(pubkey);
-            std::cerr << "GnuTLS: error reading the Public Key from file "
+            std::cerr << "GnuTLS: error reading the OSNMA Public Key from file "
                       << pemFilePath
                       << ". Aborting import" << std::endl;
             std::cerr << "GnuTLS error: " << gnutls_strerror(ret) << std::endl;
+            LOG(INFO) << "GnuTLS: error reading the OSNMA Public Key from file " << pemFilePath << ". Aborting import";
             return;
         }
 
     pubkey_copy(pubkey, &d_PublicKey);
     gnutls_pubkey_deinit(pubkey);
 #endif
-    std::cout << "Public key successfully read from file " << pemFilePath << std::endl;
+    std::cout << "OSNMA Public key successfully read from file " << pemFilePath << std::endl;
+    LOG(INFO) << "OSNMA Public key successfully read from file " << pemFilePath;
+}
+
+
+bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
+{
+#if USE_OPENSSL_FALLBACK
+    // Open the .crt file
+    std::ifstream crtFile(crtFilePath, std::ios::binary);
+    if (!crtFile.is_open())
+        {
+            std::cerr << "Unable to open file: " << crtFilePath << std::endl;
+            return false;
+        }
+
+    // Read certificate
+    std::vector<char> buffer((std::istreambuf_iterator<char>(crtFile)), std::istreambuf_iterator<char>());
+    BIO* bio = BIO_new_mem_buf(buffer.data(), buffer.size());
+    if (!bio)
+        {
+            std::cerr << "Unable to create BIO for file: " << crtFilePath << std::endl;
+            return false;
+        }
+    X509* cert = PEM_read_bio_X509(bio, nullptr, nullptr, nullptr);
+    if (!cert)
+        {
+            std::cerr << "Unable to read certificate from file: " << crtFilePath << std::endl;
+            BIO_free(bio);
+            return false;
+        }
+
+    // Read the public key from the certificate
+    EVP_PKEY* pubkey = X509_get_pubkey(cert);
+    if (!pubkey)
+        {
+            std::cerr << "Failed to extract the public key" << std::endl;
+            X509_free(cert);
+            return false;
+        }
+    pubkey_copy(pubkey, &d_PublicKey);
+    EVP_PKEY_free(pubkey);
+    BIO_free(bio);
+    X509_free(cert);
+#else  // GnuTLS
+    // Open the .crt file
+    std::ifstream crtFile(crtFilePath, std::ios::binary);
+    if (!crtFile.is_open())
+        {
+            // CRT file not found
+            // If it was not the default, maybe it is a configuration error
+            if (crtFilePath != CRTFILE_DEFAULT)
+                {
+                    std::cerr << "File " << crtFilePath << " not found" << std::endl;
+                }
+            return false;
+        }
+
+    std::vector<char> buffer((std::istreambuf_iterator<char>(crtFile)), std::istreambuf_iterator<char>());
+
+    gnutls_x509_crt_t cert;
+    gnutls_x509_crt_init(&cert);
+    int ret = gnutls_x509_crt_import(cert, (const gnutls_datum_t*)&buffer, GNUTLS_X509_FMT_PEM);
+    if (ret < 0)
+        {
+            std::cerr << "Failed to import certificate: " << gnutls_strerror(ret) << std::endl;
+            gnutls_x509_crt_deinit(cert);
+            return false;
+        }
+
+    gnutls_pubkey_t pubkey;
+    gnutls_pubkey_init(&pubkey);
+
+    ret = gnutls_pubkey_import_x509(pubkey, cert, 0);
+    if (ret < 0)
+        {
+            std::cerr << "Failed to import public key: " << gnutls_strerror(ret) << std::endl;
+            gnutls_pubkey_deinit(pubkey);
+            gnutls_x509_crt_deinit(cert);
+            return false;
+        }
+    pubkey_copy(pubkey, &d_PublicKey);
+    gnutls_x509_crt_deinit(cert);
+    gnutls_pubkey_deinit(pubkey);
+#endif
+    std::cout << "OSNMA Public key successfully read from file " << crtFilePath << std::endl;
+    LOG(INFO) << "OSNMA Public key successfully read from file " << crtFilePath;
+    return true;
 }
 
 
@@ -551,18 +652,21 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     if (verification == 1)
         {
             success = true;
+            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
         }
     else
         {
             unsigned long errCode = ERR_get_error();
-            char* err = ERR_error_string(errCode, NULL);
-            std::cerr << "OpenSSL: message authentication failed: " << err << std::endl;
+            char* err = ERR_error_string(errCode, nullptr);
+            std::cerr << "OpenSSL: OSNMA message authentication failed: " << err << std::endl;
+            LOG(WARNING) << "OpenSSL: OSNMA message authentication failed: " << err;
         }
 #else
     int verification = ECDSA_verify(0, digest.data(), SHA256_DIGEST_LENGTH, signature.data(), static_cast<int>(signature.size()), d_PublicKey);
     if (verification == 1)
         {
             success = true;
+            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
         }
     else if (verification == 0)
         {
@@ -570,9 +674,9 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         }
     else
         {
-            std::cerr << "OpenSSL: message authentication failed" << std::endl;
+            std::cerr << "OpenSSL: OSNMA message authentication failed" << std::endl;
+            LOG(WARNING) << "OpenSSL: OSNMA message authentication failed";
         }
-
 #endif
 #else  // GnuTLS
     // Convert signature to DER format
@@ -590,9 +694,14 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     // Verify the DER-encoded signature
     int ret = gnutls_pubkey_verify_hash2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA256, 0, &digest_data, &der_sig_data);
     success = (ret >= 0);
-    if (!success)
+    if (success)
         {
-            std::cerr << "GnuTLS: message authentication failed: " << gnutls_strerror(ret) << std::endl;
+            LOG(INFO) << "GnuTLS: OSNMA signature authenticated successfully";
+        }
+    else
+        {
+            std::cerr << "GnuTLS: OSNMA message authentication failed: " << gnutls_strerror(ret) << std::endl;
+            LOG(WARNING) << "GnuTLS: OSNMA message authentication failed: " << gnutls_strerror(ret);
         }
 #endif
     return success;
@@ -638,8 +747,8 @@ std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<ui
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
 #if USE_OPENSSL_FALLBACK
-    BIO* bio = NULL;
-    EVP_PKEY* pkey = NULL;
+    BIO* bio = nullptr;
+    EVP_PKEY* pkey = nullptr;
     bio = BIO_new_mem_buf(publicKey.data(), publicKey.size());
     if (!bio)
         {
@@ -647,12 +756,13 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
             return;
         }
 
-    pkey = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);
+    pkey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
     BIO_free(bio);
 
     if (!pkey)
         {
-            std::cerr << "OpenSSL: error setting the public key." << std::endl;
+            std::cerr << "OpenSSL: error setting the OSNMA public key." << std::endl;
+            LOG(INFO) << "OpenSSL: error setting the OSNMA public key.";
             return;
         }
 
@@ -677,6 +787,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     pubkey_copy(pubkey, &d_PublicKey);
     gnutls_pubkey_deinit(pubkey);
 #endif
+    LOG(INFO) << "OSNMA Public Key successfully set up.";
 }
 
 
@@ -685,7 +796,7 @@ bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
 {
     // Open a memory buffer
     BIO* mem_bio = BIO_new(BIO_s_mem());
-    if (mem_bio == NULL)
+    if (mem_bio == nullptr)
         {
             return false;
         }
@@ -703,15 +814,15 @@ bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
 
     // Create a new memory buffer and load the data into it
     BIO* mem_bio2 = BIO_new_mem_buf(bio_data, data_len);
-    if (mem_bio2 == NULL)
+    if (mem_bio2 == nullptr)
         {
             BIO_free(mem_bio);
             return false;
         }
 
     // Read the public key from the new memory buffer
-    *dest = PEM_read_bio_PUBKEY(mem_bio2, NULL, NULL, NULL);
-    if (*dest == NULL)
+    *dest = PEM_read_bio_PUBKEY(mem_bio2, nullptr, nullptr, nullptr);
+    if (*dest == nullptr)
         {
             BIO_free(mem_bio);
             BIO_free(mem_bio2);

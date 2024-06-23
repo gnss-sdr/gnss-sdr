@@ -36,12 +36,9 @@
 class Gnss_Crypto
 {
 public:
-    Gnss_Crypto() = default;
+    Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath);
     ~Gnss_Crypto();
-    Gnss_Crypto(const std::string& pemFilePath, const std::string& merkleTreePath);
 
-    void readPublicKeyFromPEM(const std::string& pemFilePath);
-    void read_merkle_xml(const std::string& merkleFilePath);
     void set_public_key(const std::vector<uint8_t>& publickey);
     bool have_public_key() const;
     bool verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;
@@ -57,6 +54,9 @@ public:
     }
 
 private:
+    void read_merkle_xml(const std::string& merkleFilePath);
+    void readPublicKeyFromPEM(const std::string& pemFilePath);
+    bool readPublicKeyFromCRT(const std::string& crtFilePath);
     std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3

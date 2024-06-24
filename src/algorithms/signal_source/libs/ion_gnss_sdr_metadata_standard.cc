@@ -46,10 +46,14 @@ std::vector<IONMetadataStdFileSource::sptr> GnssMetadataHandler::make_stream_sou
     std::vector<IONMetadataStdFileSource::sptr> sources{};
     for (const auto& file : metadata_.Files())
         {
-            for (const auto& block : file.Lane().Blocks())
+            for (const auto& lane : metadata_.Lanes())
                 {
-                    for (const auto& chunk : block.Chunks())
+                    if (lane.Id() == file.Lane().Id())
                         {
+                            for (const auto& block : lane.Blocks())
+                                {
+                                    for (const auto& chunk : block.Chunks())
+                                        {
                             for (const auto& lump : chunk.Lumps())
                                 {
                                     for (const auto& stream : lump.Streams())
@@ -71,8 +75,11 @@ std::vector<IONMetadataStdFileSource::sptr> GnssMetadataHandler::make_stream_sou
                                                 }
                                         }
                                 }
+                                        }
+                                next_block:
+                                }
+                            break;
                         }
-                next_block:
                 }
         }
 

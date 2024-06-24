@@ -980,7 +980,10 @@ void osnma_msg_receiver::process_mack_message()
                         << std::endl;
                     }
                 }
-            else {
+            else if(it.second.TOW > d_osnma_data.d_nav_data.TOW_sf0){
+                    // case 1: adkd=12 and t.Tow + 300 < current TOW
+                    // case 2: adkd=0/4 and t.Tow + 30 < current TOW
+                    // case 3: any adkd and t.Tow > current TOW
                     it.second.skipped ++;
                     LOG(WARNING) << "Galileo OSNMA: Tag verification :: SKIPPED (x"<< it.second.skipped <<")for Tag Id= "
                                 << it.second.tag_id
@@ -1063,7 +1066,7 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
     if (tag.ADKD == 0 || tag.ADKD == 4)
         applicable_key = d_tesla_keys[tag.TOW + 30];
     else // ADKD 12
-        applicable_key = d_tesla_keys[tag.TOW + 300];
+        applicable_key = d_tesla_keys[tag.TOW + 330];
 
      if (d_osnma_data.d_dsm_kroot_message.mf == 0) // C: HMAC-SHA-256
         {
@@ -1284,7 +1287,7 @@ void osnma_msg_receiver::remove_verified_tags()
                               << ", PRNd="
                               << static_cast<unsigned>(it->second.PRN_d)
                               << ", status= "
-                              << it->second.status
+                              << d_helper->verification_status_str(it->second.status)
                               << std::endl;
                     it = d_tags_awaiting_verify.erase(it);
                 }
@@ -1303,7 +1306,7 @@ void osnma_msg_receiver::remove_verified_tags()
                               << ", PRNd="
                               << static_cast<unsigned>(it->second.PRN_d)
                               << ", status= "
-                              << it->second.status
+                              << d_helper->verification_status_str(it->second.status)
                               << std::endl;
                     it = d_tags_awaiting_verify.erase(it);
                 }
@@ -1478,14 +1481,14 @@ bool osnma_msg_receiver::tag_has_key_available(Tag& t){
         }
     else if (t.ADKD == 12)
         {
-            auto it = d_tesla_keys.find(t.TOW + 300);
+            auto it = d_tesla_keys.find(t.TOW + 330);
             if (it != d_tesla_keys.end())
                 {
                     LOG(INFO)<< "Galileo OSNMA: hasKey = true " << std::endl;
                     return true;
                 }
         }
-    LOG(INFO) << "Galileo OSNMA: hasKey = false " << std::endl;
+    LOG(INFO) << "Galileo OSNMA: hasKey = false ";
     return false;
 }
 std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes)

@@ -64,3 +64,13 @@ std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) {
 
     return bytes;
 }
+
+std::string Osnma_Helper::verification_status_str(int status)
+{
+        switch (status) {
+            case 0: return "SUCCESS";
+            case 1: return "FAIL";
+            case 2: return "UNVERIFIED";
+            default: return "UNKNOWN";
+            }
+}

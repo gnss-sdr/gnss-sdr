@@ -29,7 +29,7 @@ public:
     uint32_t compute_gst(uint32_t WN, uint32_t TOW) const;
     std::vector<uint8_t> gst_to_uint8(uint32_t GST) const;
     std::vector<uint8_t> bytes(const std::string& binaryString);
+    std::string verification_status_str(int status);
 };
-
 
 #endif  // GNSS_SDR_OSNMA_HELPER_H

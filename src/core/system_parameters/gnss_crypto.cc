@@ -38,6 +38,7 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/param_build.h>
+#include <openssl/params.h>
 #define OPENSSL_ENGINE nullptr
 #else
 #include <openssl/sha.h>
@@ -416,35 +417,62 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
     std::vector<uint8_t> output(16);
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
-    std::vector<uint8_t> mac(EVP_MAX_MD_SIZE);  // CMAC-AES output size
+    std::vector<uint8_t> aux(EVP_MAX_MD_SIZE);  // CMAC-AES output size
+    size_t output_length = 0;
 
-    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-    EVP_MAC* cmac = EVP_MAC_fetch(nullptr, "CMAC-AES", nullptr);
+    // Create the context for the CMAC operation
+    EVP_MAC* mac = EVP_MAC_fetch(nullptr, "CMAC", nullptr);
+    if (!mac)
+        {
+            LOG(INFO) << "OSNMA CMAC-AES: Failed to fetch CMAC";
+            return output;
+        }
 
-    EVP_MAC_CTX* cmacCtx = EVP_MAC_CTX_new(cmac);
+    EVP_MAC_CTX* ctx = EVP_MAC_CTX_new(mac);
+    if (!ctx)
+        {
+            LOG(INFO) << "OSNMA CMAC-AES: Failed to create CMAC context";
+            return output;
+        }
 
-    OSSL_PARAM params[4];
-    params[0] = OSSL_PARAM_construct_utf8_string("key", (char*)key.data(), key.size());
-    params[1] = OSSL_PARAM_construct_octet_string("iv", nullptr, 0);   // Set IV to nullptr
-    params[2] = OSSL_PARAM_construct_octet_string("aad", nullptr, 0);  // Set AAD to nullptr
-    params[3] = OSSL_PARAM_construct_end();
+    // Initialize the CMAC context with the key and the AES algorithm
+    OSSL_PARAM params[] = {
+        OSSL_PARAM_construct_utf8_string(OSSL_MAC_PARAM_CIPHER, const_cast<char*>("AES-128-CBC"), 0),
+        OSSL_PARAM_construct_octet_string(OSSL_MAC_PARAM_KEY, const_cast<unsigned char*>(key.data()), key.size()),
+        OSSL_PARAM_construct_end()};
 
-    // Set AES-128 CMAC cipher and key
-    EVP_MAC_init(cmacCtx, nullptr, 0, params);
+    if (EVP_MAC_init(ctx, nullptr, 0, params) <= 0)
+        {
+            EVP_MAC_CTX_free(ctx);
+            EVP_MAC_free(mac);
+            LOG(INFO) << "OSNMA CMAC-AES: Failed to initialize CMAC context";
+            return output;
+        }
 
-    // Compute CMAC-AES
-    EVP_MAC_update(cmacCtx, input.data(), input.size());
-    size_t macLength = mac.size();
-    size_t outputLength = 16;
+    // Update the CMAC context with the input data
+    if (EVP_MAC_update(ctx, input.data(), input.size()) <= 0)
+        {
+            EVP_MAC_CTX_free(ctx);
+            EVP_MAC_free(mac);
+            LOG(INFO) << "OSNMA CMAC-AES: Failed to update CMAC context";
+            return output;
+        }
 
-    EVP_MAC_final(cmacCtx, mac.data(), &macLength, outputLength);
+    // Finalize the CMAC and retrieve the output
+    if (EVP_MAC_final(ctx, aux.data(), &output_length, aux.size()) <= 0)
+        {
+            EVP_MAC_CTX_free(ctx);
+            EVP_MAC_free(mac);
+            LOG(INFO) << "OSNMA CMAC-AES: Failed to finalize CMAC";
+            return output;
+        }
 
-    EVP_MAC_free(cmac);
-    EVP_MAC_CTX_free(cmacCtx);
-    EVP_CIPHER_CTX_free(ctx);
+    // Clean up the CMAC context
+    EVP_MAC_CTX_free(ctx);
+    EVP_MAC_free(mac);
 
-    mac.resize(macLength);
-    output = mac;
+    aux.resize(output_length);
+    output = aux;
 #else
     std::vector<uint8_t> mac(16);  // CMAC-AES output size
 

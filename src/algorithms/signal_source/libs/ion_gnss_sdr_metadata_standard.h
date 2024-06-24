@@ -9,6 +9,7 @@
 #include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>
 #include <string>
+#include <filesystem>
 
 class chunk_data_t
 {
@@ -268,6 +269,7 @@ public:
     using sptr = gnss_shared_ptr<IONMetadataStdFileSource>;
 
     IONMetadataStdFileSource(
+        const std::filesystem::path& metadata_filepath,
         const GnssMetadata::File& file,
         const GnssMetadata::Block& block,
         const std::vector<std::string>& stream_ids);

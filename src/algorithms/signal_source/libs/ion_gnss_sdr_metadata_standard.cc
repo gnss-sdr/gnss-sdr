@@ -54,27 +54,28 @@ std::vector<IONMetadataStdFileSource::sptr> GnssMetadataHandler::make_stream_sou
                                 {
                                     for (const auto& chunk : block.Chunks())
                                         {
-                            for (const auto& lump : chunk.Lumps())
-                                {
-                                    for (const auto& stream : lump.Streams())
-                                        {
-                                            if (std::ranges::any_of(stream_ids.begin(), stream_ids.end(), [&](const std::string& it) {
-                                                    return stream.Id() == it;
-                                                }))
+                                            for (const auto& lump : chunk.Lumps())
                                                 {
-                                                    auto source = gnss_make_shared<IONMetadataStdFileSource>(
-                                                        file,
-                                                        block,
-                                                        stream_ids);
+                                                    for (const auto& stream : lump.Streams())
+                                                        {
+                                                            if (std::ranges::any_of(stream_ids.begin(), stream_ids.end(), [&](const std::string& it) {
+                                                                    return stream.Id() == it;
+                                                                }))
+                                                                {
+                                                                    auto source = gnss_make_shared<IONMetadataStdFileSource>(
+                                                                        metadata_filepath_,
+                                                                        file,
+                                                                        block,
+                                                                        stream_ids);
 
-                                                    sources.push_back(source);
+                                                                    sources.push_back(source);
 
-                                                    // This file source will take care of any other matching streams in this block
-                                                    // We can skip the rest of this block
-                                                    goto next_block;
+                                                                    // This file source will take care of any other matching streams in this block
+                                                                    // We can skip the rest of this block
+                                                                    goto next_block;
+                                                                }
+                                                        }
                                                 }
-                                        }
-                                }
                                         }
                                 next_block:
                                 }
@@ -88,6 +89,7 @@ std::vector<IONMetadataStdFileSource::sptr> GnssMetadataHandler::make_stream_sou
 
 
 IONMetadataStdFileSource::IONMetadataStdFileSource(
+    const std::filesystem::path& metadata_filepath,
     const GnssMetadata::File& file,
     const GnssMetadata::Block& block,
     const std::vector<std::string>& stream_ids)
@@ -98,7 +100,8 @@ IONMetadataStdFileSource::IONMetadataStdFileSource(
       file_metadata_(file),
       block_metadata_(block)
 {
-    fd_ = std::fopen(file.Url().Value().c_str(), "rb");
+    std::filesystem::path data_filepath = metadata_filepath.parent_path() / file.Url().Value();
+    fd_ = std::fopen(data_filepath.c_str(), "rb");
     std::size_t block_offset = file.Offset();
     std::fseek(fd_, file.Offset() + block_offset + block.SizeHeader(), SEEK_SET);
 

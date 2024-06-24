@@ -286,7 +286,7 @@ private:
     void read_chunk_pattern(gr_vector_void_star& output_items);
 
 private:
-    static gr::io_signature::sptr make_output_signature(const GnssMetadata::Block& block);
+    static gr::io_signature::sptr make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids);
 
 private:
     const GnssMetadata::File& file_metadata_;

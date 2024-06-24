@@ -87,7 +87,7 @@ IONMetadataStdFileSource::IONMetadataStdFileSource(
     : gr::sync_block(
           "ion_metadata_standard_source",
           gr::io_signature::make(0, 0, 0),
-          make_output_signature(block)),
+          make_output_signature(block, stream_ids)),
       file_metadata_(file),
       block_metadata_(block)
 {
@@ -149,7 +149,7 @@ void IONMetadataStdFileSource::read_chunk_pattern(gr_vector_void_star& output_it
         }
 }
 
-gr::io_signature::sptr IONMetadataStdFileSource::make_output_signature(const GnssMetadata::Block& block)
+gr::io_signature::sptr IONMetadataStdFileSource::make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids)
 {
     int nstreams = 0;
     std::vector<size_t> item_sizes{};
@@ -160,8 +160,34 @@ gr::io_signature::sptr IONMetadataStdFileSource::make_output_signature(const Gns
                 {
                     for (const auto& stream : lump.Streams())
                         {
-                            ++nstreams;
-                            item_sizes.emplace_back(stream.RateFactor() * stream.Quantization());
+                            if (std::ranges::any_of(stream_ids.begin(), stream_ids.end(), [&](const std::string& it) {
+                                    return stream.Id() == it;
+                                }))
+                                {
+                                    ++nstreams;
+                                    std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
+                                    if (sample_bitsize <= 8)
+                                        {
+                                            item_sizes.push_back(1);
+                                        }
+                                    else if (sample_bitsize <= 16)
+                                        {
+                                            item_sizes.push_back(2);
+                                        }
+                                    else if (sample_bitsize <= 32)
+                                        {
+                                            item_sizes.push_back(4);
+                                        }
+                                    else if (sample_bitsize <= 64)
+                                        {
+                                            item_sizes.push_back(8);
+                                        }
+                                    else
+                                        {
+                                            // This shouldn't happen
+                                            item_sizes.push_back(1);
+                                        }
+                                }
                         }
                 }
         }

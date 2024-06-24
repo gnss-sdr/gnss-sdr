@@ -113,6 +113,7 @@
 #include "tracking_interface.h"
 #include "two_bit_cpx_file_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
+#include "ion_gnss_ms_signal_source.h"
 #include <cstdlib>    // for exit
 #include <exception>  // for exception
 #include <iostream>   // for cerr
@@ -759,6 +760,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     block = std::move(block_);
                 }
 #endif
+            else if (implementation == "ION_Metadata_Standard_Signal_Source")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<IONMetadataStandardSignalSource>(configuration, role, in_streams,
+                        out_streams, queue);
+                    block = std::move(block_);
+                }
 
 #if RAW_ARRAY_DRIVER
             else if (implementation == "Raw_Array_Signal_Source")

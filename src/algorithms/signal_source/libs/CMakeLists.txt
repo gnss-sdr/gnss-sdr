@@ -7,6 +7,7 @@
 
 set(OPT_SIGNAL_SOURCE_LIB_SOURCES "")
 set(OPT_SIGNAL_SOURCE_LIB_HEADERS "")
+
 if(ENABLE_FMCOMMS2 OR ENABLE_AD9361)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ad9361_manager.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ad9361_manager.h)
@@ -42,6 +43,11 @@ if(ENABLE_PLUTOSDR)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} pps_samplestamp.h)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ppstcprx.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ppstcprx.h)
+endif()
+
+if(ENABLE_ION)
+    set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} ion_gnss_sdr_metadata_standard.cc)
+    set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} ion_gnss_sdr_metadata_standard.h)
 endif()
 
 
@@ -137,6 +143,11 @@ if(ENABLE_CLANG_TIDY)
                 CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
         )
     endif()
+endif()
+
+if(ENABLE_ION)
+    target_include_directories(signal_source_libs PUBLIC ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/source/api/inc)
+    target_link_libraries(signal_source_libs PUBLIC api xml)
 endif()
 
 set_property(TARGET signal_source_libs APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

@@ -29,8 +29,9 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
     reed_solomon.cc
-    osnma_dsm_reader.cc
     osnma_data.cc
+    osnma_dsm_reader.cc
+    osnma_helper.cc
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
@@ -96,7 +97,6 @@ set(SYSTEM_PARAMETERS_HEADERS
     Galileo_OSNMA.h
     osnma_data.h
     osnma_dsm_reader.h
-    osnma_helper.cc
     osnma_helper.h
 )
 

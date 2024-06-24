@@ -19,6 +19,7 @@
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "gps_acq_assist.h"
+#include "gnss_sdr_flags.h"
 #include <gtest/gtest.h>
 #include <fstream>
 #include <iostream>
@@ -36,7 +37,6 @@ using namespace google;
 DECLARE_string(log_dir);
 #endif
 #else
-#include "gnss_sdr_flags.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <absl/log/flags.h>
@@ -44,7 +44,6 @@ DECLARE_string(log_dir);
 #include <absl/log/log.h>
 #include <absl/log/log_sink.h>
 #include <absl/log/log_sink_registry.h>
-
 class TestLogSink : public absl::LogSink
 {
 public:

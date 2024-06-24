@@ -151,7 +151,8 @@ void GpsL1CaPcpsAcquisition::init()
 void GpsL1CaPcpsAcquisition::set_local_code()
 {
     volk_gnsssdr::vector<std::complex<float>> code(code_length_);
-
+    gnss_synchro_->PRN=136;
+    std::cout << "PRN" << gnss_synchro_->PRN << std::endl;
     if (acq_parameters_.use_automatic_resampler)
         {
             gps_l1_ca_code_gen_complex_sampled(code, gnss_synchro_->PRN, acq_parameters_.resampled_fs, 0);

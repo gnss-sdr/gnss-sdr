@@ -19,6 +19,7 @@
 #include "gps_sdr_signal_replica.h"
 #include <array>
 #include <bitset>
+#include <iostream>
 
 const auto AUX_CEIL = [](float x) { return static_cast<int32_t>(static_cast<int64_t>((x) + 1)); };
 
@@ -43,14 +44,17 @@ void gps_l1_ca_code_gen_int(own::span<int32_t> dest, int32_t prn, uint32_t chip_
         145 /*PRN120*/, 175, 52, 21, 237, 235, 886, 657, 634, 762,
         355, 1012, 176, 603, 130, 359, 595, 68, 386 /*PRN138*/};
 
+
     // compute delay array index for given PRN number
     if (120 <= prn && prn <= 138)
         {
             prn_idx = prn - 88;  // SBAS PRNs are at array indices 31 to 50 (offset: -120+33-1 =-88)
+            std::cout << "Deberia" << std::endl;
         }
     else
         {
             prn_idx = prn - 1;
+            std::cout << "No Deberia" << std::endl;
         }
 
     // A simple error check

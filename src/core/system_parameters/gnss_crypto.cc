@@ -60,6 +60,11 @@
 Gnss_Crypto::Gnss_Crypto()
 {
 #if USE_OPENSSL_FALLBACK
+#if !(USE_OPENSSL_3 || USE_OPENSSL_111)
+    LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
+                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of OpenSSL"
+                 << " and rebuild GNSS-SDR against it.";
+#endif
 #else  // GnuTLS
     gnutls_global_init();
 #endif
@@ -69,6 +74,11 @@ Gnss_Crypto::Gnss_Crypto()
 Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath)
 {
 #if USE_OPENSSL_FALLBACK
+#if !(USE_OPENSSL_3 || USE_OPENSSL_111)
+    LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
+                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of OpenSSL"
+                 << " and rebuild GNSS-SDR against it.";
+#endif
 #else  // GnuTLS
     gnutls_global_init();
 #endif
@@ -296,7 +306,7 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
 {
     std::vector<uint8_t> output(32);  // SHA256 hash size
 #if USE_OPENSSL_FALLBACK
-#if USE_OPENSSL_3
+#if USE_OPENSSL_3 || USE_OPENSSL_111
     EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
     const EVP_MD* md = EVP_sha3_256();
 
@@ -308,7 +318,7 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
     // SHA3-256 not implemented in OpenSSL 1.0, it was introduced in OpenSSL 1.1.1
     if (!input.empty())
         {
-            // TODO
+            // do nothing
         }
 #endif
 #else  // GnuTLS

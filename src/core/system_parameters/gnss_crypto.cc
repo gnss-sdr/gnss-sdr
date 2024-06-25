@@ -60,6 +60,11 @@
 Gnss_Crypto::Gnss_Crypto()
 {
 #if USE_OPENSSL_FALLBACK
+#if !(USE_OPENSSL_3 || USE_OPENSSL_111)
+    LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
+                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of OpenSSL"
+                 << " and rebuild GNSS-SDR against it.";
+#endif
 #else  // GnuTLS
     gnutls_global_init();
 #endif
@@ -69,6 +74,11 @@ Gnss_Crypto::Gnss_Crypto()
 Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath)
 {
 #if USE_OPENSSL_FALLBACK
+#if !(USE_OPENSSL_3 || USE_OPENSSL_111)
+    LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
+                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of OpenSSL"
+                 << " and rebuild GNSS-SDR against it.";
+#endif
 #else  // GnuTLS
     gnutls_global_init();
 #endif
@@ -296,7 +306,7 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
 {
     std::vector<uint8_t> output(32);  // SHA256 hash size
 #if USE_OPENSSL_FALLBACK
-#if USE_OPENSSL_3
+#if USE_OPENSSL_3 || USE_OPENSSL_111
     EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
     const EVP_MD* md = EVP_sha3_256();
 
@@ -305,7 +315,11 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
     EVP_DigestFinal_ex(mdctx, output.data(), nullptr);
     EVP_MD_CTX_free(mdctx);
 #else
-    // SHA3-256 not implemented in OpenSSL < 3.0
+    // SHA3-256 not implemented in OpenSSL 1.0, it was introduced in OpenSSL 1.1.1
+    if (!input.empty())
+        {
+            // do nothing
+        }
 #endif
 #else  // GnuTLS
     std::vector<uint8_t> output_aux(32);
@@ -380,24 +394,16 @@ std::vector<uint8_t> Gnss_Crypto::computeHMAC_SHA_256(const std::vector<uint8_t>
     hmac.resize(output_length);
     output = hmac;
 #else
-    std::vector<uint8_t> hmac(32);
-    // Create HMAC context
-    HMAC_CTX* ctx = HMAC_CTX_new();
-    HMAC_Init_ex(ctx, key.data(), key.size(), EVP_sha256(), nullptr);
+    unsigned int outputLength = EVP_MAX_MD_SIZE;
+    unsigned char* result = HMAC(EVP_sha256(), key.data(), key.size(), input.data(), input.size(), output.data(), &outputLength);
+    if (result == nullptr)
+        {
+            LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to compute HMAC-SHA256";
+            return output;
+        }
 
-    // Update HMAC context with the message
-    HMAC_Update(ctx, input.data(), input.size());
-
-    // Finalize HMAC computation
-    unsigned int hmacLen;
-    HMAC_Final(ctx, hmac.data(), &hmacLen);
-
-    // Clean up HMAC context
-    HMAC_CTX_free(ctx);
-
-    // Resize the HMAC vector to the actual length
-    hmac.resize(hmacLen);
-    output = hmac;
+    // Resize the output vector to the actual length of the HMAC-SHA256 output
+    output.resize(outputLength);
 #endif
 #else  // GnuTLS
     std::vector<uint8_t> output_aux(32);
@@ -595,6 +601,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 
     // Read the public key from the certificate
     EVP_PKEY* pubkey = X509_get_pubkey(cert);
+#if USE_OPENSSL_3
     if (!pubkey)
         {
             std::cerr << "Failed to extract the public key" << std::endl;
@@ -603,6 +610,18 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         }
     pubkey_copy(pubkey, &d_PublicKey);
     EVP_PKEY_free(pubkey);
+#else
+    EC_KEY* ec_pubkey = EVP_PKEY_get1_EC_KEY(pubkey);
+    EVP_PKEY_free(pubkey);
+    if (!ec_pubkey)
+        {
+            std::cerr << "Failed to extract the public key" << std::endl;
+            X509_free(cert);
+            return false;
+        }
+    pubkey_copy(ec_pubkey, &d_PublicKey);
+    EC_KEY_free(ec_pubkey);
+#endif
     BIO_free(bio);
     X509_free(cert);
 #else  // GnuTLS
@@ -735,7 +754,13 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
             LOG(WARNING) << "OpenSSL: OSNMA message authentication failed: " << err;
         }
 #else
-    int verification = ECDSA_verify(0, digest.data(), SHA256_DIGEST_LENGTH, signature.data(), static_cast<int>(signature.size()), d_PublicKey);
+    std::vector<uint8_t> der_sig;
+    if (!convert_raw_to_der_ecdsa(signature, der_sig))
+        {
+            std::cerr << "Failed to convert raw ECDSA signature to DER format" << std::endl;
+            return false;
+        }
+    int verification = ECDSA_verify(0, digest.data(), SHA256_DIGEST_LENGTH, der_sig.data(), static_cast<int>(der_sig.size()), d_PublicKey);
     if (verification == 1)
         {
             success = true;
@@ -744,6 +769,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     else if (verification == 0)
         {
             std::cerr << "OpenSSL: invalid signature found when verifying message" << std::endl;
+            LOG(WARNING) << "OpenSSL: invalid signature found when verifying message";
         }
     else
         {
@@ -838,12 +864,19 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
             LOG(INFO) << "OpenSSL: error setting the OSNMA public key.";
             return;
         }
-
+#if USE_OPENSSL_3
     if (!pubkey_copy(pkey, &d_PublicKey))
         {
             return;
         }
-
+#else
+    EC_KEY* ec_pkey = EVP_PKEY_get1_EC_KEY(pkey);
+    if (!pubkey_copy(ec_pkey, &d_PublicKey))
+        {
+            return;
+        }
+    EC_KEY_free(ec_pkey);
+#endif
     EVP_PKEY_free(pkey);
 #else  // GnuTLS
     gnutls_pubkey_t pubkey;
@@ -863,53 +896,6 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     LOG(INFO) << "OSNMA Public Key successfully set up.";
 }
 
-
-#if USE_OPENSSL_FALLBACK
-bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
-{
-    // Open a memory buffer
-    BIO* mem_bio = BIO_new(BIO_s_mem());
-    if (mem_bio == nullptr)
-        {
-            return false;
-        }
-
-    // Export the public key from src into the memory buffer in PEM format
-    if (!PEM_write_bio_PUBKEY(mem_bio, src))
-        {
-            BIO_free(mem_bio);
-            return false;
-        }
-
-    // Read the data from the memory buffer
-    char* bio_data;
-    long data_len = BIO_get_mem_data(mem_bio, &bio_data);
-
-    // Create a new memory buffer and load the data into it
-    BIO* mem_bio2 = BIO_new_mem_buf(bio_data, data_len);
-    if (mem_bio2 == nullptr)
-        {
-            BIO_free(mem_bio);
-            return false;
-        }
-
-    // Read the public key from the new memory buffer
-    *dest = PEM_read_bio_PUBKEY(mem_bio2, nullptr, nullptr, nullptr);
-    if (*dest == nullptr)
-        {
-            BIO_free(mem_bio);
-            BIO_free(mem_bio2);
-            return false;
-        }
-
-    // Clean up
-    BIO_free(mem_bio);
-    BIO_free(mem_bio2);
-
-    return true;
-}
-
-#else  // GnuTLS-specific functions
 
 bool Gnss_Crypto::convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const
 {
@@ -958,6 +944,102 @@ bool Gnss_Crypto::convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signa
     return true;
 }
 
+
+#if USE_OPENSSL_FALLBACK
+#if USE_OPENSSL_3
+bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
+{
+    // Open a memory buffer
+    BIO* mem_bio = BIO_new(BIO_s_mem());
+    if (mem_bio == nullptr)
+        {
+            return false;
+        }
+
+    // Export the public key from src into the memory buffer in PEM format
+    if (!PEM_write_bio_PUBKEY(mem_bio, src))
+        {
+            BIO_free(mem_bio);
+            return false;
+        }
+
+    // Read the data from the memory buffer
+    char* bio_data;
+    long data_len = BIO_get_mem_data(mem_bio, &bio_data);
+
+    // Create a new memory buffer and load the data into it
+    BIO* mem_bio2 = BIO_new_mem_buf(bio_data, data_len);
+    if (mem_bio2 == nullptr)
+        {
+            BIO_free(mem_bio);
+            return false;
+        }
+
+    // Read the public key from the new memory buffer
+    *dest = PEM_read_bio_PUBKEY(mem_bio2, nullptr, nullptr, nullptr);
+    if (*dest == nullptr)
+        {
+            BIO_free(mem_bio);
+            BIO_free(mem_bio2);
+            return false;
+        }
+
+    // Clean up
+    BIO_free(mem_bio);
+    BIO_free(mem_bio2);
+
+    return true;
+}
+
+#else  // OpenSSL 1.x
+
+bool Gnss_Crypto::pubkey_copy(EC_KEY* src, EC_KEY** dest)
+{
+    // Open a memory buffer
+    BIO* mem_bio = BIO_new(BIO_s_mem());
+    if (mem_bio == nullptr)
+        {
+            return false;
+        }
+
+    // Export the public key from src into the memory buffer in PEM format
+    if (!PEM_write_bio_EC_PUBKEY(mem_bio, src))
+        {
+            BIO_free(mem_bio);
+            return false;
+        }
+
+    // Read the data from the memory buffer
+    char* bio_data;
+    long data_len = BIO_get_mem_data(mem_bio, &bio_data);
+
+    // Create a new memory buffer and load the data into it
+    BIO* mem_bio2 = BIO_new_mem_buf(bio_data, data_len);
+    if (mem_bio2 == nullptr)
+        {
+            BIO_free(mem_bio);
+            return false;
+        }
+
+    // Read the public key from the new memory buffer
+    *dest = PEM_read_bio_EC_PUBKEY(mem_bio2, nullptr, nullptr, nullptr);
+    if (*dest == nullptr)
+        {
+            BIO_free(mem_bio);
+            BIO_free(mem_bio2);
+            return false;
+        }
+
+    // Clean up
+    BIO_free(mem_bio);
+    BIO_free(mem_bio2);
+
+    return true;
+}
+
+#endif
+
+#else  // GnuTLS-specific functions
 
 bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
 {

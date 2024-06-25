@@ -63,7 +63,6 @@ public:
     uint8_t get_npktid(const std::vector<uint8_t>& dsm_msg) const;
 
 private:
-#if __cplusplus == 201103L
     static constexpr std::uint8_t mask_nmas{0xC0};
     static constexpr std::uint8_t mask_cid{0x30};
     static constexpr std::uint8_t mask_cpks{0x07};
@@ -83,27 +82,6 @@ private:
     static constexpr std::uint8_t mask_dsm_mid{0x0F};
     static constexpr std::uint8_t mask_dsm_npkt{0xF0};
     static constexpr std::uint8_t mask_dsm_npktid{0x0F};
-#else
-    static constexpr std::uint8_t mask_nmas{0b1100'0000};
-    static constexpr std::uint8_t mask_cid{0b0011'0000};
-    static constexpr std::uint8_t mask_cpks{0b0000'1110};
-    static constexpr std::uint8_t mask_nma_header_reserved{0b0000'0001};
-    static constexpr std::uint8_t mask_dsm_id{0b1111'0000};
-    static constexpr std::uint8_t mask_dsm_block_id{0b0000'1111};
-    static constexpr std::uint8_t mask_dsm_number_blocks{0b1111'0000};
-    static constexpr std::uint8_t mask_dsm_pkid{0b0000'1111};
-    static constexpr std::uint8_t mask_dsm_cidkr{0b1100'0000};
-    static constexpr std::uint8_t mask_dsm_reserved1{0b0011'0000};
-    static constexpr std::uint8_t mask_dsm_hf{0b0000'1100};
-    static constexpr std::uint8_t mask_dsm_mf{0b0000'0011};
-    static constexpr std::uint8_t mask_dsm_ks{0b1111'0000};
-    static constexpr std::uint8_t mask_dsm_ts{0b0000'1111};
-    static constexpr std::uint8_t mask_dsm_reserved{0b1111'0000};
-    static constexpr std::uint8_t mask_dsm_wk_k_msbyte{0b0000'1111};
-    static constexpr std::uint8_t mask_dsm_mid{0b0000'1111};
-    static constexpr std::uint8_t mask_dsm_npkt{0b1111'0000};
-    static constexpr std::uint8_t mask_dsm_npktid{0b0000'1111};
-#endif
 };
 
 /** \} */

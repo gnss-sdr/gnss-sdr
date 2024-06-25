@@ -61,11 +61,12 @@ private:
     std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
+    bool pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest);
     EVP_PKEY* d_PublicKey{};
 #else
+    bool pubkey_copy(EC_KEY* src, EC_KEY** dest);
     EC_KEY* d_PublicKey = nullptr;
 #endif
-    bool pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest);
 #else  // GnuTLS
     gnutls_pubkey_t d_PublicKey{};
     bool convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const;

@@ -305,7 +305,11 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
     EVP_DigestFinal_ex(mdctx, output.data(), nullptr);
     EVP_MD_CTX_free(mdctx);
 #else
-    // SHA3-256 not implemented in OpenSSL < 3.0
+    // SHA3-256 not implemented in OpenSSL 1.0, it was introduced in OpenSSL 1.1.1
+    if (!input.empty())
+        {
+            // TODO
+        }
 #endif
 #else  // GnuTLS
     std::vector<uint8_t> output_aux(32);
@@ -384,8 +388,8 @@ std::vector<uint8_t> Gnss_Crypto::computeHMAC_SHA_256(const std::vector<uint8_t>
     unsigned char* result = HMAC(EVP_sha256(), key.data(), key.size(), input.data(), input.size(), output.data(), &outputLength);
     if (result == nullptr)
         {
-             LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to compute HMAC-SHA256";
-             return output;
+            LOG(WARNING) << "OSNMA HMAC_SHA_256 computation failed to compute HMAC-SHA256";
+            return output;
         }
 
     // Resize the output vector to the actual length of the HMAC-SHA256 output
@@ -740,7 +744,13 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
             LOG(WARNING) << "OpenSSL: OSNMA message authentication failed: " << err;
         }
 #else
-    int verification = ECDSA_verify(0, digest.data(), SHA256_DIGEST_LENGTH, signature.data(), static_cast<int>(signature.size()), d_PublicKey);
+    std::vector<uint8_t> der_sig;
+    if (!convert_raw_to_der_ecdsa(signature, der_sig))
+        {
+            std::cerr << "Failed to convert raw ECDSA signature to DER format" << std::endl;
+            return false;
+        }
+    int verification = ECDSA_verify(0, digest.data(), SHA256_DIGEST_LENGTH, der_sig.data(), static_cast<int>(der_sig.size()), d_PublicKey);
     if (verification == 1)
         {
             success = true;
@@ -749,6 +759,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
     else if (verification == 0)
         {
             std::cerr << "OpenSSL: invalid signature found when verifying message" << std::endl;
+            LOG(WARNING) << "OpenSSL: invalid signature found when verifying message";
         }
     else
         {
@@ -876,6 +887,54 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 }
 
 
+bool Gnss_Crypto::convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const
+{
+    if (raw_signature.size() % 2 != 0)
+        {
+            std::cerr << "Invalid raw ECDSA signature size" << std::endl;
+            return false;
+        }
+
+    size_t half_size = raw_signature.size() / 2;
+    std::vector<uint8_t> raw_r(raw_signature.begin(), raw_signature.begin() + half_size);
+    std::vector<uint8_t> raw_s(raw_signature.begin() + half_size, raw_signature.end());
+
+    auto encode_asn1_integer = [](const std::vector<uint8_t>& value) -> std::vector<uint8_t> {
+        std::vector<uint8_t> result;
+        result.push_back(0x02);  // INTEGER tag
+
+        if (value[0] & 0x80)
+            {
+                result.push_back(value.size() + 1);  // Length byte
+                result.push_back(0x00);              // Add leading zero byte to ensure positive integer
+            }
+        else
+            {
+                result.push_back(value.size());  // Length byte
+            }
+
+        result.insert(result.end(), value.begin(), value.end());
+        return result;
+    };
+
+    std::vector<uint8_t> der_r = encode_asn1_integer(raw_r);
+    std::vector<uint8_t> der_s = encode_asn1_integer(raw_s);
+
+    size_t total_length = der_r.size() + der_s.size();
+    der_signature.push_back(0x30);  // SEQUENCE tag
+    if (total_length > 127)
+        {
+            der_signature.push_back(0x81);  // Long form length
+        }
+    der_signature.push_back(static_cast<uint8_t>(total_length));
+
+    der_signature.insert(der_signature.end(), der_r.begin(), der_r.end());
+    der_signature.insert(der_signature.end(), der_s.begin(), der_s.end());
+
+    return true;
+}
+
+
 #if USE_OPENSSL_FALLBACK
 #if USE_OPENSSL_3
 bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
@@ -971,54 +1030,6 @@ bool Gnss_Crypto::pubkey_copy(EC_KEY* src, EC_KEY** dest)
 #endif
 
 #else  // GnuTLS-specific functions
-
-bool Gnss_Crypto::convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const
-{
-    if (raw_signature.size() % 2 != 0)
-        {
-            std::cerr << "Invalid raw ECDSA signature size" << std::endl;
-            return false;
-        }
-
-    size_t half_size = raw_signature.size() / 2;
-    std::vector<uint8_t> raw_r(raw_signature.begin(), raw_signature.begin() + half_size);
-    std::vector<uint8_t> raw_s(raw_signature.begin() + half_size, raw_signature.end());
-
-    auto encode_asn1_integer = [](const std::vector<uint8_t>& value) -> std::vector<uint8_t> {
-        std::vector<uint8_t> result;
-        result.push_back(0x02);  // INTEGER tag
-
-        if (value[0] & 0x80)
-            {
-                result.push_back(value.size() + 1);  // Length byte
-                result.push_back(0x00);              // Add leading zero byte to ensure positive integer
-            }
-        else
-            {
-                result.push_back(value.size());  // Length byte
-            }
-
-        result.insert(result.end(), value.begin(), value.end());
-        return result;
-    };
-
-    std::vector<uint8_t> der_r = encode_asn1_integer(raw_r);
-    std::vector<uint8_t> der_s = encode_asn1_integer(raw_s);
-
-    size_t total_length = der_r.size() + der_s.size();
-    der_signature.push_back(0x30);  // SEQUENCE tag
-    if (total_length > 127)
-        {
-            der_signature.push_back(0x81);  // Long form length
-        }
-    der_signature.push_back(static_cast<uint8_t>(total_length));
-
-    der_signature.insert(der_signature.end(), der_r.begin(), der_r.end());
-    der_signature.insert(der_signature.end(), der_s.begin(), der_s.end());
-
-    return true;
-}
-
 
 bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
 {

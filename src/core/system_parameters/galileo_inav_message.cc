@@ -1417,7 +1417,7 @@ OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
     nma_position_filled = std::array<int8_t, 15>{};
     // Fill TOW and WN
     nma_msg.WN_sf0 = WN_0;
-    int32_t TOW_sf0 = TOW_5 - 24; // according to OS SIS ICD, TOW of word 5 is 25 seconds after Sf start
+    int32_t TOW_sf0 = TOW_5 - 25;//- 24; // according to OS SIS ICD, TOW of word 5 is 25 seconds after Sf start TODO review
     if (TOW_sf0 < 0)
         {
             TOW_sf0 += 604800;

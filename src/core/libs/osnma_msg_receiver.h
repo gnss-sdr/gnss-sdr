@@ -59,7 +59,7 @@ public:
     ~osnma_msg_receiver() = default;  //!< Default destructor
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
-    osnma_msg_receiver(const std::string& pemFilePath, const std::string& merkleFilePath);
+    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath);
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);

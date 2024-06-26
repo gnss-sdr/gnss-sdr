@@ -16,6 +16,8 @@
 
 #include "osnma_helper.h"
 #include <bitset>
+#include <iomanip>
+#include <ios>
 
 uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const
 {
@@ -73,4 +75,13 @@ std::string Osnma_Helper::verification_status_str(int status)
             case 2: return "UNVERIFIED";
             default: return "UNKNOWN";
             }
+}
+std::string Osnma_Helper::convert_to_hex_string(const std::vector<uint8_t>& vector)
+{
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0');
+    for (auto byte : vector) {
+            ss << std::setw(2) << static_cast<int>(byte);
+        }
+    return ss.str();
 }

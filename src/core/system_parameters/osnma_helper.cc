@@ -18,12 +18,14 @@
 #include <bitset>
 #include <iomanip>
 #include <ios>
+#include <sstream>
 
 uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const
 {
     uint32_t GST = (WN & 0x00000FFF) << 20 | (TOW & 0x000FFFFF);
     return GST;
 }
+
 
 std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
 {
@@ -35,6 +37,7 @@ std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
     res.push_back(static_cast<uint8_t>(GST & 0x000000FF));
     return res;
 }
+
 
 /**
  * @brief Convert a binary string to a vector of bytes.
@@ -67,6 +70,7 @@ std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) {
     return bytes;
 }
 
+
 std::string Osnma_Helper::verification_status_str(int status)
 {
         switch (status) {
@@ -76,6 +80,8 @@ std::string Osnma_Helper::verification_status_str(int status)
             default: return "UNKNOWN";
             }
 }
+
+
 std::string Osnma_Helper::convert_to_hex_string(const std::vector<uint8_t>& vector)
 {
     std::stringstream ss;

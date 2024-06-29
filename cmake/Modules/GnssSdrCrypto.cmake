@@ -20,12 +20,12 @@ set_package_properties(OpenSSL
 )
 if(OPENSSL_FOUND)
     set_package_properties(OpenSSL
-        PROPERTIES 
+        PROPERTIES
             DESCRIPTION "Cryptography and SSL/TLS Toolkit (found: v${OPENSSL_VERSION})"
     )
 else()
     set_package_properties(OpenSSL
-        PROPERTIES 
+        PROPERTIES
             DESCRIPTION "OpenSSL has not been found, but GnuTLS with openssl compatibility can replace it"
     )
     ################################################################################
@@ -114,7 +114,7 @@ function(link_to_crypto_dependencies target)
                     PUBLIC
                         OpenSSL::Crypto
                 )
-            endif()  
+            endif()
         else()
             target_link_libraries(core_system_parameters
                 PUBLIC
@@ -131,10 +131,9 @@ function(link_to_crypto_dependencies target)
                 target_compile_definitions(${target} PUBLIC -DUSE_OPENSSL_3=1)
             else()
                 if(NOT OPENSSL_VERSION VERSION_LESS "1.1.1")
-                    target_compile_definitions(${target} PUBLIC -DUSE_OPENSSL_111=1)   
-                else()
+                    target_compile_definitions(${target} PUBLIC -DUSE_OPENSSL_111=1)
                 endif()
-            endif()        
+            endif()
         else()
         endif()
     else()  # GnuTLS

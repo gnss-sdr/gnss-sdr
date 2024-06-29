@@ -105,23 +105,23 @@ endif()
 function(link_to_crypto_dependencies target)
     if(OPENSSL_FOUND)
         if(TARGET OpenSSL::SSL)
-            target_link_libraries(core_system_parameters
+            target_link_libraries(${target}
                 PUBLIC
                     OpenSSL::SSL
             )
             if(TARGET OpenSSL::Crypto)
-                target_link_libraries(core_system_parameters
+                target_link_libraries(${target}
                     PUBLIC
                         OpenSSL::Crypto
                 )
             endif()
         else()
-            target_link_libraries(core_system_parameters
+            target_link_libraries(${target}
                 PUBLIC
                     ${OPENSSL_LIBRARIES}
                     "${OPENSSL_CRYPTO_LIBRARIES}"
             )
-            target_include_directories(core_system_parameters
+            target_include_directories(${target}
                 PUBLIC
                     ${OPENSSL_INCLUDE_DIR}
             )
@@ -137,12 +137,12 @@ function(link_to_crypto_dependencies target)
         else()
         endif()
     else()  # GnuTLS
-        target_link_libraries(core_system_parameters
+        target_link_libraries(${target}
             PUBLIC
                 ${GNUTLS_LIBRARIES}
                 ${GNUTLS_OPENSSL_LIBRARY}
         )
-        target_include_directories(core_system_parameters
+        target_include_directories(${target}
             PUBLIC
                 ${GNUTLS_INCLUDE_DIR}
         )

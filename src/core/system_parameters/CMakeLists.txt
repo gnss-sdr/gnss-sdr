@@ -124,7 +124,7 @@ target_link_libraries(core_system_parameters
         Boost::date_time
         Boost::serialization
     PRIVATE
-        Pugixml::pugixml    
+        Pugixml::pugixml
 )
 
 if(ENABLE_GLOG_AND_GFLAGS)
@@ -140,50 +140,9 @@ target_include_directories(core_system_parameters
         ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
 )
 
-if(OPENSSL_FOUND)
-    message("OPENSSL_FOUND: " ${OPENSSL_FOUND})
-    if(TARGET OpenSSL::SSL)
-        target_link_libraries(core_system_parameters
-            PUBLIC
-                OpenSSL::SSL
-        )
-    else()
-        target_link_libraries(core_system_parameters
-            PUBLIC
-                ${OPENSSL_LIBRARIES}
-        )
-        target_include_directories(core_system_parameters
-            PUBLIC
-                ${OPENSSL_INCLUDE_DIR}
-        )
-    endif()
-    if(OPENSSL_VERSION)
-        message("OPENSSL_VERSION: " ${OPENSSL_VERSION})
-        if(OPENSSL_VERSION VERSION_GREATER "3.0.0")
-            target_compile_definitions(core_system_parameters PUBLIC -DUSE_OPENSSL_FALLBACK=1 -DUSE_OPENSSL_3=1)
-            message("USE_OPENSSL_3: " ${DUSE_OPENSSL_3})
-            message("USE_OPENSSL_FALLBACK:" ${USE_OPENSSL_FALLBACK})
-        else()
-            if(NOT OPENSSL_VERSION VERSION_LESS "1.1.1")
-                target_compile_definitions(core_system_parameters PRIVATE -DUSE_OPENSSL_FALLBACK=1 -DUSE_OPENSSL_111=1)
-            endif()
-        endif()
-    endif()
-
-else()
-    target_link_libraries(core_system_parameters
-        PUBLIC
-            ${GNUTLS_LIBRARIES}
-            ${GNUTLS_OPENSSL_LIBRARY}
-    )
-    target_include_directories(core_system_parameters
-        PUBLIC
-        ${GNUTLS_INCLUDE_DIR}
-    )
-endif()
-if(OPENSSL_FOUND)
-    target_compile_definitions(core_system_parameters PUBLIC -DUSE_OPENSSL_FALLBACK=1)
-endif()
+# links to the appropriate library and defines
+# USE_GNUTLS_FALLBACK, USE_OPENSSL_3, or USE_OPENSSL_111 accordingly.
+link_to_crypto_dependencies(core_system_parameters)
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

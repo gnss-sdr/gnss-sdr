@@ -1367,6 +1367,9 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             GTest::GTest
             GTest::Main
             core_libs
+            Gnuradio::blocks
+            Gnuradio::runtime
+            Gnuradio::filter  # workaround for old systems
     )
     if(ENABLE_GLOG_AND_GFLAGS)
         target_link_libraries(osnma_msg_receiver_test PRIVATE Gflags::gflags Glog::glog)

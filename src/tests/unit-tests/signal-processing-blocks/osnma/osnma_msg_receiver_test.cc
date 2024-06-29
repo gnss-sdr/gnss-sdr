@@ -1,11 +1,14 @@
 #include <gtest/gtest.h>
 #include <bitset>
-#include <filesystem>
 #include <fstream>
-#include <logging.h>
-#include <osnma_msg_receiver.h>
 #include <vector>
+#include "osnma_msg_receiver.h"
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>  // for LOG
+#else
+#include <absl/log/log.h>
+#endif
 
 struct TestVector
 {
@@ -31,11 +34,9 @@ protected:
     void set_time(std::tm& input);
 //    std::string log_name {"CONFIG1-2023-08-16-PKID1-OSNMA"};
     std::string log_name {"CONFIG2-2023-07-27-PKID2-MT2-OSNMA"};
-    void initializeGoogleLog();
 
     void SetUp() override
     {
-        initializeGoogleLog();
 //        std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0}; // conf. 1
         std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0}; // conf. 2
         set_time(input_time);
@@ -545,46 +546,3 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
 
 
 }
-void OsnmaMsgReceiverTest::initializeGoogleLog()
-{
-    google::InitGoogleLogging(log_name.c_str());
-    FLAGS_minloglevel = 0; // INFO
-    FLAGS_logtostderr = 0;  // add this line
-    FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/build/src/tests/logs";
-    if (FLAGS_log_dir.empty())
-        {
-            std::cout << "Logging will be written at "
-                      << std::filesystem::temp_directory_path()
-                      << '\n'
-                      << "Use gnss-sdr --log_dir=/path/to/log to change that.\n";
-        }
-    else
-        {
-            try
-                {
-                    const std::filesystem::path p(FLAGS_log_dir);
-                    if (!std::filesystem::exists(p))
-                        {
-                            std::cout << "The path "
-                                      << FLAGS_log_dir
-                                      << " does not exist, attempting to create it.\n";
-                            std::error_code ec;
-                            if (!std::filesystem::create_directory(p, ec))
-                                {
-                                    std::cout << "Could not create the " << FLAGS_log_dir << " folder.\n";
-                                    gflags::ShutDownCommandLineFlags();
-                                    throw std::runtime_error("Could not create folder for logs");
-                                }
-                        }
-                    std::cout << "Logging will be written at " << FLAGS_log_dir << '\n';
-                }
-            catch (const std::exception& e)
-                {
-                    std::cerr << e.what() << '\n';
-                    std::cerr << "Could not create the " << FLAGS_log_dir << " folder.\n";
-                    gflags::ShutDownCommandLineFlags();
-                    throw;
-                }
-        }
-}
-

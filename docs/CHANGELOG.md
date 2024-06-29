@@ -55,6 +55,15 @@ All notable changes to GNSS-SDR will be documented in this file.
   This change has a downside in maintainability, since the source code becomes
   plagued with preprocessor directives required to maintain compatibility both
   with gflags and glog, and with Abseil.
+- Historically, GNSS-SDR linked against the GnuTLS library for cryptographic
+  functions. If GnuTLS was not found, then the building system looked for and
+  linked against OpenSSL as a fallback. This was due to the OpenSSL 1.x dual
+  license scheme, which was incompatible with GPL v3.0 license, preventing it
+  from being a mandatory dependency for GNSS-SDR in most GNU/Linux
+  distributions. This issue was solved with the release of OpenSSL 3.0.0, which
+  transitioned to the Apache License 2.0, fully compatible with GPL v3.0.
+  Accordingly, the GNSS-SDR building system now looks for OpenSSL in the first
+  place and, if not found, then it looks for GnuTLS as a fallback.
 
 ### Improvements in Usability:
 

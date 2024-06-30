@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <bitset>
+#include <chrono>
 #include <fstream>
 #include <vector>
 #include "osnma_msg_receiver.h"

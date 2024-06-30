@@ -547,7 +547,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
     gnutls_pubkey_deinit(pubkey);
 #else  // OpenSSL
     // Create a BIO object from the string data
-    BIO* bio = BIO_new_mem_buf(pemContent.c_str(), pemContent.length());
+    BIO* bio = BIO_new_mem_buf(const_cast<char*>(pemContent.c_str()), pemContent.length());
     if (!bio)
         {
             std::cerr << "OpenSSL: error creating a BIO object with data read from file " << pemFilePath << ". Aborting import" << std::endl;
@@ -861,7 +861,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 #else  // OpenSSL
     BIO* bio = nullptr;
     EVP_PKEY* pkey = nullptr;
-    bio = BIO_new_mem_buf(publicKey.data(), publicKey.size());
+    bio = BIO_new_mem_buf(const_cast<uint8_t*>(publicKey.data()), publicKey.size());
     if (!bio)
         {
             std::cerr << "Failed to create BIO for key \n";

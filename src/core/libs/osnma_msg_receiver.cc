@@ -317,7 +317,7 @@ void osnma_msg_receiver::local_time_verification(const std::shared_ptr<OSNMA_msg
             // std::cout << "Galileo OSNMA: d_receiver_time: " << d_receiver_time << std::endl;
         }
     // verify time constraint
-    std::time_t delta_T = abs(d_receiver_time - d_GST_SIS);
+    std::time_t delta_T = std::abs(static_cast<int64_t>(d_receiver_time - d_GST_SIS));
     if (delta_T <= d_T_L)
         {
             d_tags_allowed = tags_to_verify::all;

@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #if USE_GNUTLS_FALLBACK
+#include <gnutls/abstract.h>
 #include <gnutls/gnutls.h>
 #else  // OpenSSL
 #include <openssl/ec.h>

@@ -82,6 +82,15 @@ else()
             /opt/local/lib
     )
 
+    find_path(GNUTLS_INCLUDE_DIR NAMES gnutls/gnutls.h
+        PATHS
+            /usr/include
+            /usr/local/include
+            /opt/local/include   # default location in Macports
+            /opt/homebrew/opt/gnutls/include/
+            ${GNUTLS_ROOT_DIR}/include/
+    )
+
     if(NOT GNUTLS_OPENSSL_LIBRARY)
         message(" The GnuTLS library with openssl compatibility enabled has not been found.")
         message(" You can try to install the required libraries by typing:")
@@ -97,6 +106,22 @@ else()
             message(" 'brew install openssl', if you are using Homebrew.")
         endif()
         message(FATAL_ERROR "OpenSSL or the GnuTLS libraries with openssl compatibility are required to build gnss-sdr")
+    endif()
+
+    # Test GnuTLS capabilities
+    file(READ "${GNUTLS_INCLUDE_DIR}/gnutls/gnutls.h" gnutls_gnutls_file_contents)
+    if("${gnutls_gnutls_file_contents}" MATCHES "GNUTLS_SIGN_ECDSA_SHA256")
+        set(GNUTLS_SIGN_ECDSA_SHA256 TRUE)
+    endif()
+    if("${gnutls_gnutls_file_contents}" MATCHES "GNUTLS_DIG_SHA3_256")
+        set(GNUTLS_DIG_SHA3_256 TRUE)
+    endif()
+    if("${gnutls_gnutls_file_contents}" MATCHES "#define GNUTLS_VERSION_MAJOR 2")
+        set(GNUTLS_HMAC_INIT_WITH_DIGEST TRUE)
+    endif()
+    file(READ "${GNUTLS_INCLUDE_DIR}/gnutls/abstract.h" gnutls_abstract_file_contents)
+    if("${gnutls_abstract_file_contents}" MATCHES "gnutls_pubkey_export2")
+        set(GNUTLS_PUBKEY_EXPORT2 TRUE)
     endif()
 endif()
 
@@ -147,5 +172,17 @@ function(link_to_crypto_dependencies target)
                 ${GNUTLS_INCLUDE_DIR}
         )
         target_compile_definitions(${target} PUBLIC -DUSE_GNUTLS_FALLBACK=1)
+        if(GNUTLS_SIGN_ECDSA_SHA256)
+            target_compile_definitions(${target} PRIVATE -DHAVE_GNUTLS_SIGN_ECDSA_SHA256=1)
+        endif()
+        if(GNUTLS_DIG_SHA3_256)
+            target_compile_definitions(${target} PRIVATE -DHAVE_GNUTLS_DIG_SHA3_256=1)
+        endif()
+        if(GNUTLS_PUBKEY_EXPORT2)
+            target_compile_definitions(${target} PRIVATE -DHAVE_GNUTLS_PUBKEY_EXPORT2=1)
+        endif()
+        if(GNUTLS_HMAC_INIT_WITH_DIGEST)
+            target_compile_definitions(${target} PRIVATE -DHAVE_GNUTLS_HMAC_INIT_WITH_DIGEST=1)
+        endif()
     endif()
 endfunction()

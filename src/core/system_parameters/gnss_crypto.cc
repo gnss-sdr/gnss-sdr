@@ -27,7 +27,6 @@
 
 #if USE_GNUTLS_FALLBACK
 #include <cstring>
-#include <gnutls/abstract.h>
 #include <gnutls/crypto.h>
 #include <gnutls/x509.h>
 #else  // OpenSSL
@@ -61,6 +60,11 @@ Gnss_Crypto::Gnss_Crypto()
 {
 #if USE_GNUTLS_FALLBACK
     gnutls_global_init();
+#if !HAVE_GNUTLS_SIGN_ECDSA_SHA256
+    LOG(WARNING) << "The GnuTLS library version you are linking against is too old for some OSNMA functions."
+                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of GnuTLS or OpenSSL"
+                 << " and rebuild GNSS-SDR against it.";
+#endif
 #else  // OpenSSL
 #if !(USE_OPENSSL_3 || USE_OPENSSL_111)
     LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
@@ -75,6 +79,11 @@ Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& mer
 {
 #if USE_GNUTLS_FALLBACK
     gnutls_global_init();
+#if !HAVE_GNUTLS_SIGN_ECDSA_SHA256
+    LOG(WARNING) << "The GnuTLS library version you are linking against is too old for some OSNMA functions."
+                 << " Please do not trust OSNMA ouputs or upgrade your system to a newer version of GnuTLS or OpenSSL"
+                 << " and rebuild GNSS-SDR against it.";
+#endif
 #else  // OpenSSL
 #if !(USE_OPENSSL_3 || USE_OPENSSL_111)
     LOG(WARNING) << "The OpenSSL library version you are linking against is too old for some OSNMA functions."
@@ -305,6 +314,7 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
 {
     std::vector<uint8_t> output(32);  // SHA256 hash size
 #if USE_GNUTLS_FALLBACK
+#if HAVE_GNUTLS_DIG_SHA3_256
     std::vector<uint8_t> output_aux(32);
     gnutls_hash_hd_t hashHandle;
     gnutls_hash_init(&hashHandle, GNUTLS_DIG_SHA3_256);
@@ -312,6 +322,7 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
     gnutls_hash_output(hashHandle, output_aux.data());
     output = output_aux;
     gnutls_hash_deinit(hashHandle, output_aux.data());
+#endif
 #else  // OpenSSL
 #if USE_OPENSSL_3 || USE_OPENSSL_111
     EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
@@ -339,7 +350,11 @@ std::vector<uint8_t> Gnss_Crypto::computeHMAC_SHA_256(const std::vector<uint8_t>
 #if USE_GNUTLS_FALLBACK
     std::vector<uint8_t> output_aux(32);
     gnutls_hmac_hd_t hmac;
+#if HAVE_GNUTLS_HMAC_INIT_WITH_DIGEST
+    gnutls_hmac_init(&hmac, GNUTLS_DIG_SHA256, key.data(), key.size());
+#else
     gnutls_hmac_init(&hmac, GNUTLS_MAC_SHA256, key.data(), key.size());
+#endif
     gnutls_hmac(hmac, input.data(), input.size());
     gnutls_hmac_output(hmac, output_aux.data());
     output = output_aux;
@@ -421,16 +436,15 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
 {
     std::vector<uint8_t> output(16);
 #if USE_GNUTLS_FALLBACK
-    gnutls_cipher_hd_t cipher;
-    std::vector<uint8_t> mac(16);
-    std::vector<uint8_t> message = input;
-    gnutls_datum_t key_data = {const_cast<uint8_t*>(key.data()), static_cast<unsigned int>(key.size())};
-    gnutls_cipher_init(&cipher, GNUTLS_CIPHER_AES_128_CBC, &key_data, nullptr);
-    gnutls_cipher_set_iv(cipher, nullptr, 16);                      // Set IV to zero
-    gnutls_cipher_encrypt(cipher, message.data(), message.size());  // Encrypt the message with AES-128
-    gnutls_cipher_tag(cipher, mac.data(), mac.size());              // Get the CMAC-AES tag
-    output = mac;
-    gnutls_cipher_deinit(cipher);
+    // CMAC-AES not implemented in GnuTLS
+    if (!key.empty())
+        {
+            // do nothing
+        }
+    if (!input.empty())
+        {
+            // do nothing
+        }
 #else  // OpenSSL
 #if USE_OPENSSL_3
     std::vector<uint8_t> aux(EVP_MAX_MD_SIZE);  // CMAC-AES output size
@@ -527,7 +541,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
     std::string pemContent((std::istreambuf_iterator<char>(pemFile)), std::istreambuf_iterator<char>());
 #if USE_GNUTLS_FALLBACK
     // Import the PEM data
-    gnutls_datum_t pemDatum = {const_cast<unsigned char*>(reinterpret_cast<unsigned char*>(pemContent.data())), static_cast<unsigned int>(pemContent.size())};
+    gnutls_datum_t pemDatum = {const_cast<unsigned char*>(reinterpret_cast<unsigned char*>(const_cast<char*>(pemContent.data()))), static_cast<unsigned int>(pemContent.size())};
     gnutls_pubkey_t pubkey;
     gnutls_pubkey_init(&pubkey);
 
@@ -680,6 +694,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
         }
     bool success = false;
 #if USE_GNUTLS_FALLBACK
+#if HAVE_GNUTLS_SIGN_ECDSA_SHA256
     // Convert signature to DER format
     std::vector<uint8_t> der_sig;
     if (!convert_raw_to_der_ecdsa(signature, der_sig))
@@ -704,6 +719,7 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
             std::cerr << "GnuTLS: OSNMA message authentication failed: " << gnutls_strerror(ret) << std::endl;
             LOG(WARNING) << "GnuTLS: OSNMA message authentication failed: " << gnutls_strerror(ret);
         }
+#endif
 #else  // OpenSSL
 #if USE_OPENSSL_3
     EVP_PKEY_CTX* ctx;
@@ -950,7 +966,12 @@ bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
     gnutls_datum_t key_datum;
 
     // Export the public key from src to memory
+#if HAVE_GNUTLS_PUBKEY_EXPORT2
     int ret = gnutls_pubkey_export2(src, GNUTLS_X509_FMT_PEM, &key_datum);
+#else
+    size_t output_stata_size;
+    int ret = gnutls_pubkey_export(src, GNUTLS_X509_FMT_PEM, &key_datum, &output_stata_size);
+#endif
     if (ret < 0)
         {
             gnutls_free(key_datum.data);

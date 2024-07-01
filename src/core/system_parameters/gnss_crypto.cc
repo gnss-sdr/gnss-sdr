@@ -504,20 +504,45 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
     aux.resize(output_length);
     output = aux;
 #else  // OpenSSL 1.x
-    std::vector<uint8_t> mac(16);  // CMAC-AES output size
+    size_t mac_length = 0;  // to hold the length of the MAC output
 
     // Create CMAC context
     CMAC_CTX* cmacCtx = CMAC_CTX_new();
-    CMAC_Init(cmacCtx, key.data(), key.size(), EVP_aes_128_cbc(), nullptr);
+    if (!cmacCtx)
+        {
+            LOG(INFO) << "OSNMA CMAC-AES: Failed to create CMAC context";
+            return output;
+        }
 
-    // Compute CMAC-AES
-    CMAC_Update(cmacCtx, input.data(), input.size());
-    CMAC_Final(cmacCtx, mac.data(), nullptr);
+    // Initialize the CMAC context with the key and cipher
+    if (1 != CMAC_Init(cmacCtx, key.data(), key.size(), EVP_aes_128_cbc(), nullptr))
+        {
+            LOG(INFO) << "OSNMA CMAC-AES: MAC_Init failed";
+            CMAC_CTX_free(cmacCtx);
+            return output;
+        }
+
+    // Compute the CMAC
+    if (1 != CMAC_Update(cmacCtx, input.data(), input.size()))
+        {
+            LOG(INFO) << "OSNMA CMAC-AES: CMAC_Update failed";
+            CMAC_CTX_free(cmacCtx);
+            return output;
+        }
+
+    // Finalize the CMAC computation and retrieve the output
+    if (1 != CMAC_Final(cmacCtx, output.data(), &mac_length))
+        {
+            LOG(INFO) << "OSNMA CMAC-AES:CMAC_Final failed";
+            CMAC_CTX_free(cmacCtx);
+            return output;
+        }
 
     // Clean up CMAC context
     CMAC_CTX_free(cmacCtx);
 
-    output = mac;
+    // Ensure the output vector is properly sized according to the actual MAC length
+    output.resize(mac_length);
 #endif
 #endif
     return output;

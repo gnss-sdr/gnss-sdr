@@ -436,7 +436,32 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
 {
     std::vector<uint8_t> output(16);
 #if USE_GNUTLS_FALLBACK
-    // CMAC-AES not implemented in GnuTLS
+#if HAVE_GNUTLS_MAC_AES_CMAC_128
+    gnutls_hmac_hd_t hmac;
+
+    // Initialize the HMAC context with the CMAC algorithm and key
+    int ret = gnutls_hmac_init(&hmac, GNUTLS_MAC_AES_CMAC_128, key.data(), key.size());
+    if (ret != GNUTLS_E_SUCCESS)
+        {
+            LOG(INFO) << "OSNMA CMAC-AES: gnutls_hmac_init failed: " << gnutls_strerror(ret);
+            return output;
+        }
+
+    // Update the HMAC context with the input data
+    ret = gnutls_hmac(hmac, input.data(), input.size());
+    if (ret != GNUTLS_E_SUCCESS)
+        {
+            LOG(INFO) << "OSNMA CMAC-AES: gnutls_hmac failed: " << gnutls_strerror(ret);
+            gnutls_hmac_deinit(hmac, nullptr);
+            return output;
+        }
+
+    // Retrieve the HMAC output
+    gnutls_hmac_output(hmac, output.data());
+
+    // Clean up the HMAC context
+    gnutls_hmac_deinit(hmac, nullptr);
+#else
     if (!key.empty())
         {
             // do nothing
@@ -445,6 +470,7 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
         {
             // do nothing
         }
+#endif
 #else  // OpenSSL
 #if USE_OPENSSL_3
     std::vector<uint8_t> aux(EVP_MAX_MD_SIZE);  // CMAC-AES output size
@@ -515,7 +541,7 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
         }
 
     // Initialize the CMAC context with the key and cipher
-    if (1 != CMAC_Init(cmacCtx, key.data(), key.size(), EVP_aes_128_cbc(), nullptr))
+    if (CMAC_Init(cmacCtx, key.data(), key.size(), EVP_aes_128_cbc(), nullptr) != 1)
         {
             LOG(INFO) << "OSNMA CMAC-AES: MAC_Init failed";
             CMAC_CTX_free(cmacCtx);
@@ -523,7 +549,7 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
         }
 
     // Compute the CMAC
-    if (1 != CMAC_Update(cmacCtx, input.data(), input.size()))
+    if (CMAC_Update(cmacCtx, input.data(), input.size()) != 1)
         {
             LOG(INFO) << "OSNMA CMAC-AES: CMAC_Update failed";
             CMAC_CTX_free(cmacCtx);
@@ -531,9 +557,9 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
         }
 
     // Finalize the CMAC computation and retrieve the output
-    if (1 != CMAC_Final(cmacCtx, output.data(), &mac_length))
+    if (CMAC_Final(cmacCtx, output.data(), &mac_length) != 1)
         {
-            LOG(INFO) << "OSNMA CMAC-AES:CMAC_Final failed";
+            LOG(INFO) << "OSNMA CMAC-AES: CMAC_Final failed";
             CMAC_CTX_free(cmacCtx);
             return output;
         }

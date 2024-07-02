@@ -353,7 +353,7 @@ int32_t Beidou_Dnav_Navigation_Message::d1_subframe_decoder(std::string const& s
                     d_DeltaT_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_DELTA_T_LSF));
                     i_WN_LSF = static_cast<double>(read_navigation_signed(subframe_bits, D1_WN_LSF));
                     d_A0UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A0UTC));
-                    d_A0UTC = d_A0GPS * D1_A0GPS_LSB;
+                    d_A0UTC = d_A0UTC * D1_A0UTC_LSB;
                     d_A1UTC = static_cast<double>(read_navigation_signed(subframe_bits, D1_A1UTC));
                     d_A1UTC = d_A1UTC * D1_A1UTC_LSB;
 

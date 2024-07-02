@@ -22,10 +22,11 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#if USE_OPENSSL_FALLBACK
-#include <openssl/ec.h>
-#else
+#if USE_GNUTLS_FALLBACK
+#include <gnutls/abstract.h>
 #include <gnutls/gnutls.h>
+#else  // OpenSSL
+#include <openssl/ec.h>
 #endif
 
 /** \addtogroup Core
@@ -60,7 +61,10 @@ private:
     bool readPublicKeyFromCRT(const std::string& crtFilePath);
     bool convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const;
     std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;
-#if USE_OPENSSL_FALLBACK
+#if USE_GNUTLS_FALLBACK
+    bool pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest);
+    gnutls_pubkey_t d_PublicKey{};
+#else  // OpenSSL
 #if USE_OPENSSL_3
     bool pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest);
     EVP_PKEY* d_PublicKey{};
@@ -68,9 +72,6 @@ private:
     bool pubkey_copy(EC_KEY* src, EC_KEY** dest);
     EC_KEY* d_PublicKey = nullptr;
 #endif
-#else  // GnuTLS
-    bool pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest);
-    gnutls_pubkey_t d_PublicKey{};
 #endif
     std::vector<uint8_t> d_x_4_0;
     std::vector<uint8_t> d_x_3_1;
@@ -82,4 +83,5 @@ private:
 
 /** \} */
 /** \} */
+
 #endif  // GNSS_SDR_GNSS_CRYPTO_H

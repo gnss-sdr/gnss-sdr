@@ -121,7 +121,7 @@ void GNSSFlowgraph::init()
             galileo_tow_map_ = nullptr;
         }
 
-    if (configuration_->property("Channels_1B.count", 0) > 0)
+    if (configuration_->property("Channels_1B.count", 0) > 0 && configuration_->property("GNSS-SDR.osnma_enable", true))
         {
             enable_osnma_rx_ = true;
             const auto certFilePath = configuration_->property("GNSS-SDR.osnma_public_key", CRTFILE_DEFAULT);

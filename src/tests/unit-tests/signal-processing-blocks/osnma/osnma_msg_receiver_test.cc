@@ -1,11 +1,15 @@
 #include <gtest/gtest.h>
 #include <bitset>
-#include <filesystem>
+#include <chrono>
 #include <fstream>
-#include <logging.h>
 #include <osnma_msg_receiver.h>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>  // for LOG
+#else
+#include <absl/log/log.h>
+#endif
 
 struct TestVector
 {

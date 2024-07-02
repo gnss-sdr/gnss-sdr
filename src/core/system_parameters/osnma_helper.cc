@@ -18,6 +18,7 @@
 #include <bitset>
 #include <iomanip>
 #include <ios>
+#include <sstream>
 
 uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const
 {

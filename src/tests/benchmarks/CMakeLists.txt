@@ -104,10 +104,15 @@ macro(add_benchmark)
     )
 endmacro()
 
+set(EXTRA_BENCHMARK_DEPENDENCIES "")
+if(ENABLE_GLOG_AND_GFLAGS)
+    set(EXTRA_BENCHMARK_DEPENDENCIES "Gflags::gflags;Glog::glog")
+endif()
+
 add_benchmark(benchmark_copy)
-add_benchmark(benchmark_preamble core_system_parameters)
-add_benchmark(benchmark_detector core_system_parameters)
-add_benchmark(benchmark_reed_solomon core_system_parameters)
+add_benchmark(benchmark_preamble core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
+add_benchmark(benchmark_detector core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
+add_benchmark(benchmark_reed_solomon core_system_parameters ${EXTRA_BENCHMARK_DEPENDENCIES})
 add_benchmark(benchmark_atan2 Gnuradio::runtime)
 
 if(has_std_plus_void)

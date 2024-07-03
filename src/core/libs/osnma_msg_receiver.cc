@@ -601,14 +601,10 @@ void osnma_msg_receiver::read_and_process_mack_block(const std::shared_ptr<OSNMA
         }
 
     // update the structure with newly coming NavData
-    d_osnma_data.d_nav_data.init(osnma_msg);                                                                                                                                    // TODO refactor it
-                                                                                                                                                                                //    add_satellite_data(osnma_msg->PRN,osnma_msg->TOW_sf0,d_osnma_data.d_nav_data); // TODO change place
-                                                                                                                                                                                // DEBUG PARSING MACK MESSAGES WHEN DSM-KROOT NOT YET AVAILABLE
-                                                                                                                                                                                //    d_osnma_data.d_dsm_kroot_message.ts = 9;
-                                                                                                                                                                                //    d_osnma_data.d_dsm_kroot_message.ks = 4;
-                                                                                                                                                                                //    d_osnma_data.d_dsm_kroot_message.kroot =  std::vector<uint8_t>(16);
+    d_osnma_data.d_nav_data.init(osnma_msg);
+
     if (d_kroot_verified || d_tesla_key_verified || d_osnma_data.d_dsm_kroot_message.ts != 0 /*mack parser needs to know the tag size, otherwise cannot parse mack messages*/)  // C: 4 ts <  ts < 10
-        {                                                                                                                                                                       // TODO - correct? with this, MACK would not be processed unless a Kroot is available -- no, if TK available MACK sould go on, this has to change in future
+        {// TODO - correct? with this, MACK would not be processed unless a Kroot is available -- no, if TK available MACK sould go on, this has to change in future
             read_mack_header();
             d_osnma_data.d_mack_message.PRNa = osnma_msg->PRN;  // FIXME this is ugly.
             d_osnma_data.d_mack_message.TOW = osnma_msg->TOW_sf0;
@@ -911,6 +907,9 @@ void osnma_msg_receiver::process_mack_message()
         {
             if (d_tesla_keys.find(mack->TOW + 30) != d_tesla_keys.end())
                 {
+                    // add tag0 first
+                    Tag tag0 (*mack);
+                    d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, tag0));
                     bool ret = verify_macseq(*mack);
                     if (ret || d_flag_debug)
                         {
@@ -1001,6 +1000,7 @@ void osnma_msg_receiver::process_mack_message()
                 }
             else if (it.second.TOW > d_osnma_data.d_nav_data.TOW_sf0)
                 {
+                    // TODO - I dont understand logic. This needs to be reviewed.
                     // case 1: adkd=12 and t.Tow + 300 < current TOW
                     // case 2: adkd=0/4 and t.Tow + 30 < current TOW
                     // case 3: any adkd and t.Tow > current TOW
@@ -1087,7 +1087,6 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
 //              << tag.tag_id
 //              << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
 //              << tag.received_tag << std::dec;
-    // TODO case tag0, to be verified here?, PRNd not needed for it
     // build message
     std::vector<uint8_t> m = build_message(tag);
 
@@ -1428,10 +1427,6 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
         {
             applicable_sequence = sq2;
         }
-    else
-        {
-            LOG(WARNING) << "Galileo OSNMA: Mismatch in the GST verification.";
-        }
     if (mack.tag_and_info.size() != applicable_sequence.size() - 1)
         {
             LOG(WARNING) << "Galileo OSNMA: Number of retrieved tags does not match MACLT sequence size!";
@@ -1450,7 +1445,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
             else if (mack.tag_and_info[i].tag_info.ADKD != std::stoi(applicable_sequence[i + 1]))
                 {
                     LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: ADKD mismatch against MAC Look-up table.";
-                    return false;  // C: suffices one incorrect to abort and not process the rest of the tags
+                    return false;  // TODO macseq shall be individual to each tag, a wrongly verified macseq should not discard the whole MACK tags
                 }
         }
 

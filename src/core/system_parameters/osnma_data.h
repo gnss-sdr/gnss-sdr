@@ -171,7 +171,7 @@ public:
         SUCCESS,
         FAIL,
         UNVERIFIED};
-    Tag(const MACK_tag_and_info& MTI, uint32_t TOW,uint32_t WN, uint32_t PRNa,uint8_t CTR)
+    Tag(const MACK_tag_and_info& MTI, uint32_t TOW,uint32_t WN, uint32_t PRNa,uint8_t CTR) // standard tag constructor, for tags within Tag&Info field
         : tag_id(id_counter++),
           TOW(TOW), // TODO missing for build_message WN for GST computation, CTR, NMAS, NavData missing
           WN(WN),
@@ -186,7 +186,21 @@ public:
           skipped(0)
     {
     }
-
+    Tag(const MACK_message& mack) // constructor for Tag0
+        : tag_id(id_counter++),
+          TOW(mack.TOW), // TODO missing for build_message WN for GST computation, CTR, NMAS, NavData missing
+          WN(mack.WN),
+          PRNa(mack.PRNa),
+          CTR(1),
+          status(UNVERIFIED),
+          received_tag(mack.header.tag0),
+          computed_tag(0),
+          PRN_d(mack.PRNa), // Tag0 are self-authenticating
+          ADKD(0),
+          cop(mack.header.cop),
+          skipped(0)
+    {
+    }
     const uint32_t tag_id;
     uint32_t TOW;
     uint32_t WN;

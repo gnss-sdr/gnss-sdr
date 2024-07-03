@@ -7,6 +7,7 @@
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>  // for LOG
+#include <filesystem>
 #else
 #include <absl/log/log.h>
 #endif
@@ -557,6 +558,7 @@ void OsnmaMsgReceiverTest::initializeGoogleLog()
     FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/build/src/tests/logs";
     if (FLAGS_log_dir.empty())
         {
+
             std::cout << "Logging will be written at "
                       << std::filesystem::temp_directory_path()
                       << '\n'

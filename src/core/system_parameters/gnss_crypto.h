@@ -54,6 +54,9 @@ public:
     {
         return d_x_4_0;
     }
+    inline void setMerkleRoot(std::vector<uint8_t> v){
+        d_x_4_0 = v;
+    }
 
 private:
     void read_merkle_xml(const std::string& merkleFilePath);

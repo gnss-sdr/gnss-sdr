@@ -6,6 +6,8 @@
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
+#include "osnma_helper.h"
+#include "gnss_crypto.h"
 #include <glog/logging.h>  // for LOG
 #include <filesystem>
 #else
@@ -25,6 +27,7 @@ struct TestVector
 class OsnmaMsgReceiverTest : public ::testing::Test
 {
 protected:
+    Osnma_Helper helper;
     osnma_msg_receiver_sptr osnma;
     OSNMA_msg osnma_msg{};
     std::array<int8_t, 15> nma_position_filled;
@@ -59,6 +62,77 @@ public:
     std::vector<uint8_t> extract_page_bytes(const TestVector& tv, const int byte_index, const int num_bytes);
 };
 
+TEST_F(OsnmaMsgReceiverTest, ComputeMerkleRoot)
+{
+    // Arrange
+    // ----------
+    std::vector<uint8_t> computed_merkle_root;
+    std::vector<uint8_t> expected_merkle_root = helper.convert_from_hex_string("A10C440F3AA62453526DB4AF76DF8D9410D35D8277397D7053C700D192702B0D");
+    DSM_PKR_message dsm_pkr_message;
+    dsm_pkr_message.npkt = 0x01;
+    dsm_pkr_message.npktid = 0x2;
+    dsm_pkr_message.mid = 0x01;
+    std::vector<uint8_t> base_leaf = helper.convert_from_hex_string("120303B2CE64BC207BDD8BC4DF859187FCB686320D63FFA091410FC158FBB77980EA");
+
+    std::vector<uint8_t> vec = helper.convert_from_hex_string("7CBE05D9970CFC9E22D0A43A340EF557624453A2E821AADEAC989C405D78BA06"
+        "956380BAB0D2C939EC6208151040CCFFCF1FB7156178FD1255BA0AECAAA253F7"
+        "407B6C5DD4DF059FF8789474061301E1C34881DB7A367A913A3674300E21EAB1"
+        "24EF508389B7D446C3E2ECE8D459FBBD3239A794906F5B1F92469C640164FD87");
+    std::copy(vec.begin(), vec.end(), dsm_pkr_message.itn.begin());
+    dsm_pkr_message.npk = helper.convert_from_hex_string("0303B2CE64BC207BDD8BC4DF859187FCB686320D63FFA091410FC158FBB77980EA");
+
+    // Act
+    // ----------
+    computed_merkle_root = osnma->compute_merke_root(dsm_pkr_message,base_leaf);
+
+    // Assert
+    // ----------
+    ASSERT_EQ(computed_merkle_root, expected_merkle_root);
+}
+
+TEST_F(OsnmaMsgReceiverTest, ComputeBaseLeaf)
+{
+    // Arrange
+    // ----------
+    std::vector<uint8_t> expected_base_leaf = helper.convert_from_hex_string("120303B2CE64BC207BDD8BC4DF859187FCB686320D63FFA091410FC158FBB77980EA");
+    DSM_PKR_message dsm_pkr_message;
+    dsm_pkr_message.npkt = 0x01;
+    dsm_pkr_message.npktid = 0x2;
+    dsm_pkr_message.npk = helper.convert_from_hex_string("0303B2CE64BC207BDD8BC4DF859187FCB686320D63FFA091410FC158FBB77980EA");
+
+    // Act
+    // ----------
+    std::vector<uint8_t> computed_base_leaf = osnma->compute_base_leaf(dsm_pkr_message);
+
+    // Assert
+    // ----------
+    ASSERT_EQ(computed_base_leaf,expected_base_leaf);
+}
+
+TEST_F(OsnmaMsgReceiverTest, VerifyPublicKey){ // values taken from RG A.7
+    // Arrange
+    // ----------
+    osnma->d_crypto->setMerkleRoot(helper.convert_from_hex_string("A10C440F3AA62453526DB4AF76DF8D9410D35D8277397D7053C700D192702B0D"));
+    DSM_PKR_message dsm_pkr_message;
+    dsm_pkr_message.npkt = 0x01;
+    dsm_pkr_message.npktid = 0x2;
+    dsm_pkr_message.mid = 0x01;
+    std::vector<uint8_t> vec = helper.convert_from_hex_string("7CBE05D9970CFC9E22D0A43A340EF557624453A2E821AADEAC989C405D78BA06"
+                                    "956380BAB0D2C939EC6208151040CCFFCF1FB7156178FD1255BA0AECAAA253F7"
+                                    "407B6C5DD4DF059FF8789474061301E1C34881DB7A367A913A3674300E21EAB1"
+                                    "24EF508389B7D446C3E2ECE8D459FBBD3239A794906F5B1F92469C640164FD87");
+    std::copy(vec.begin(), vec.end(), dsm_pkr_message.itn.begin());
+    dsm_pkr_message.npk = helper.convert_from_hex_string("0303B2CE64BC207BDD8BC4DF859187FCB686320D63FFA091410FC158FBB77980EA");
+
+    // Act
+    // ----------
+    bool result = osnma->verify_dsm_pkr(dsm_pkr_message);
+
+    // Assert
+    // ----------
+    ASSERT_TRUE(result);
+
+}
 
 TEST_F(OsnmaMsgReceiverTest, BuildTagMessageM0)
 {
@@ -552,10 +626,10 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
 }
 void OsnmaMsgReceiverTest::initializeGoogleLog()
 {
-    google::InitGoogleLogging(log_name.c_str());
+    google::InitGoogleLogging(log_name.c_str()); // TODO - running all tests causes conflict due to being called twice
     FLAGS_minloglevel = 0; // INFO
     FLAGS_logtostderr = 0;  // add this line
-    FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/build/src/tests/logs";
+    FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/data/build/src/tests/logs";
     if (FLAGS_log_dir.empty())
         {
 

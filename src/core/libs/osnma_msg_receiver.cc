@@ -1027,56 +1027,70 @@ void osnma_msg_receiver::process_mack_message()
 }
 
 
+/**
+ * @brief Verify received DSM-PKR message
+ *
+ * \details This method provides the functionality to verify the DSM-PKR message. The verification includes generating the base leaf
+ * and intermediate leafs, and comparing the computed merkle root leaf with the received one.
+ * \pre DSM_PKR_message correctly filled in especially the 1024 intermediate tree nodes
+ * \returns true if computed merkle root matches received one, false otherwise
+ */
 bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
 {
-    // TODO create function for recursively apply hash
+    std::vector<uint8_t> computed_merkle_root; // x_4_0
+    std::vector<uint8_t> base_leaf = compute_base_leaf(message); // m_i
 
-    // build base leaf m_i
-    std::vector<uint8_t> m_i;
-    m_i.reserve(2 + message.npk.size());
-    m_i.push_back((message.npkt << 4) + message.npktid);
-    for (uint8_t i = 0; i < message.npk.size(); i++)
-        {
-            m_i.push_back(message.npk[i]);
-        }
-
-    // compute intermediate leafs' values
-    //    std::vector<uint8_t> x_0,x_1,x_2,x_3,x_4;
     LOG(INFO) << "Galileo OSNMA: DSM-PKR :: leaf provided: m_" << static_cast<int>(message.mid);
 
+    computed_merkle_root  = compute_merke_root(message, base_leaf);
+
+    if (computed_merkle_root == d_crypto->getMerkleRoot())
+        {
+            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: SUCCESS!." << std::endl;
+            return true;
+        }
+    else
+        {
+            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: FAILURE." << std::endl;
+            return false;
+        }
+}
+std::vector<uint8_t> osnma_msg_receiver::compute_merke_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const
+{
     std::vector<uint8_t> x_next, x_current = d_crypto->computeSHA256(m_i);
     for (size_t i = 0; i < 4; i++)
         {
             x_next.clear();
-            bool leaf_is_on_right = ((message.mid / (1 << (i))) % 2) == 1;
+            bool leaf_is_on_right = ((dsm_pkr_message.mid / (1 << (i))) % 2) == 1;
 
             if (leaf_is_on_right)
                 {
                     // Leaf is on the right -> first the itn, then concatenate the leaf
-                    x_next.insert(x_next.end(), &message.itn[32 * i], &message.itn[32 * i + 32]);
+                    x_next.insert(x_next.end(), &dsm_pkr_message.itn[32 * i], &dsm_pkr_message.itn[32 * i + 32]);
                     x_next.insert(x_next.end(), x_current.begin(), x_current.end());
                 }
             else
                 {
                     // Leaf is on the left -> first the leaf, then concatenate the itn
                     x_next.insert(x_next.end(), x_current.begin(), x_current.end());
-                    x_next.insert(x_next.end(), &message.itn[32 * i], &message.itn[32 * i + 32]);
+                    x_next.insert(x_next.end(), &dsm_pkr_message.itn[32 * i], &dsm_pkr_message.itn[32 * i + 32]);
                 }
 
             // Compute the next node.
             x_current = d_crypto->computeSHA256(x_next);
         }
-
-    if (x_current == d_crypto->getMerkleRoot())
+    return x_current;
+}
+std::vector<uint8_t> osnma_msg_receiver::compute_base_leaf(const DSM_PKR_message& dsm_pkr_message) const
+{  // build base leaf m_i
+    std::vector<uint8_t> m_i;
+    m_i.reserve(2 + dsm_pkr_message.npk.size());
+    m_i.push_back((dsm_pkr_message.npkt << 4) + dsm_pkr_message.npktid);
+    for (uint8_t i = 0; i < dsm_pkr_message.npk.size(); i++)
         {
-            LOG(INFO) << "Galileo OSNMA: DSM-PKR verified successfully! " << std::endl;
-            return true;
+            m_i.push_back(dsm_pkr_message.npk[i]);
         }
-    else
-        {
-            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification unsuccessful !" << std::endl;
-            return false;
-        }
+    return m_i;
 }
 
 

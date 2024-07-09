@@ -47,7 +47,7 @@ std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
  * @param binaryString The binary string to be converted.
  * @return The vector of bytes converted from the binary string.
  */
-std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) {
+std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) const {
     std::vector<uint8_t> bytes;
 
     // Determine the size of the padding needed.
@@ -68,7 +68,7 @@ std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) {
     return bytes;
 }
 
-std::string Osnma_Helper::verification_status_str(int status)
+std::string Osnma_Helper::verification_status_str(const int& status) const
 {
         switch (status) {
             case 0: return "SUCCESS";
@@ -77,7 +77,7 @@ std::string Osnma_Helper::verification_status_str(int status)
             default: return "UNKNOWN";
             }
 }
-std::string Osnma_Helper::convert_to_hex_string(const std::vector<uint8_t>& vector)
+std::string Osnma_Helper::convert_to_hex_string(const std::vector<uint8_t>& vector) const
 {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
@@ -85,4 +85,22 @@ std::string Osnma_Helper::convert_to_hex_string(const std::vector<uint8_t>& vect
             ss << std::setw(2) << static_cast<int>(byte);
         }
     return ss.str();
+}
+
+std::vector<uint8_t> Osnma_Helper::convert_from_hex_string(const std::string& hex_string) const
+{
+    std::vector<uint8_t> result;
+
+    std::string adjusted_hex_string = hex_string;
+    if (hex_string.length() % 2 != 0) {
+            adjusted_hex_string = "0" + hex_string;
+        }
+
+    for (std::size_t i = 0; i < adjusted_hex_string.length(); i += 2) {
+            std::string byte_string = adjusted_hex_string.substr(i, 2);
+            uint8_t byte = static_cast<uint8_t>(std::stoul(byte_string, nullptr, 16));
+            result.push_back(byte);
+        }
+
+    return result;
 }

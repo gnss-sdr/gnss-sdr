@@ -69,26 +69,35 @@ private:
     void local_time_verification(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    bool verify_dsm_pkr(DSM_PKR_message message);
     void read_and_process_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_header();
     void read_mack_body();
     void process_mack_message();
     void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData &data);
-    bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
+    void remove_verified_tags();
+    void control_tags_awaiting_verify_size();
+    std::vector<uint8_t> build_message(const Tag& tag);
     std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes);
-    void display_data();bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
+    std::vector<uint8_t> compute_base_leaf(const DSM_PKR_message& dsm_pkr_message) const;
+    std::vector<uint8_t> compute_merke_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const;
+    void display_data();
+    bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
+    bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
     bool verify_tag(Tag& tag);
     bool is_next_subframe();
     bool tag_has_nav_data_available(Tag& t);
     bool tag_has_key_available(Tag& t);
+    bool verify_macseq(const MACK_message& mack);
+    bool verify_dsm_pkr(DSM_PKR_message message);
 
+    enum tags_to_verify{all,utc,slow_eph, eph, none};
+    tags_to_verify d_tags_allowed{tags_to_verify::all};
     std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data; // map holding NavData sorted by SVID (first key) and TOW (second key).
     std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys; // tesla keys over time, sorted by TOW
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify; // container with tags to verify from arbitrary SVIDs, sorted by TOW
-    std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;
-    std::unique_ptr<Gnss_Crypto> d_crypto;
+    std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader; // osnma parameters parser
+    std::unique_ptr<Gnss_Crypto> d_crypto; // access to cryptographic functions
     std::unique_ptr<Osnma_Helper> d_helper;
 
     std::array<std::array<uint8_t, 256>, 16> d_dsm_message{}; // structure for recording DSM blocks, when filled it sends them to parse and resets itself.
@@ -104,27 +113,26 @@ private:
     bool d_flag_debug{false};
     uint32_t d_GST_Sf {}; // C: used for MACSEQ and Tesla Key verification TODO need really to be global var?
     uint32_t d_last_verified_key_GST{0};
+    uint32_t d_GST_0 {};
+    uint32_t d_GST_SIS {};
+    std::time_t d_receiver_time {0};
     uint8_t d_Lt_min {}; // minimum equivalent tag length
     uint8_t d_Lt_verified_eph {0}; // verified tag bits - ephemeris
     uint8_t d_Lt_verified_utc {0}; // verified tag bits - timing
     uint8_t const d_T_L{30}; // s RG Section 2.1
     uint8_t const d_delta_COP{30}; // s SIS ICD Table 14
-    uint32_t d_GST_0 {};
-    uint32_t d_GST_SIS {};
-    std::time_t d_receiver_time {0};
-    enum tags_to_verify{all,utc,slow_eph, eph, none}; // TODO is this safe? I hope so
-    tags_to_verify d_tags_allowed{tags_to_verify::all};
+
     std::vector<uint8_t> d_tags_to_verify{0,4,12};
     std::vector<uint8_t> d_validated_key{};
-    void remove_verified_tags();
-    void control_tags_awaiting_verify_size();
-    bool verify_macseq(const MACK_message& mack);
 
+    // Provide access to inner functions to Gtest
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation);
     FRIEND_TEST(OsnmaMsgReceiverTest, TagVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, BuildTagMessageM0);
-    std::vector<uint8_t> build_message(const Tag& tag);
+    FRIEND_TEST(OsnmaMsgReceiverTest, VerifyPublicKey);
+    FRIEND_TEST(OsnmaMsgReceiverTest, ComputeBaseLeaf);
+    FRIEND_TEST(OsnmaMsgReceiverTest, ComputeMerkleRoot);
 };
 
 

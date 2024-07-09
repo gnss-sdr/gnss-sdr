@@ -66,7 +66,6 @@ information about this open-source, software-defined GNSS receiver.
       - [Debian / Ubuntu](#debian--ubuntu)
       - [AlmaLinux](#almalinux)
       - [Arch Linux](#arch-linux)
-      - [CentOS](#centos)
       - [Fedora](#fedora)
       - [openSUSE](#opensuse)
       - [Rocky Linux](#rocky-linux)
@@ -126,7 +125,7 @@ This section describes how to set up the compilation environment in GNU/Linux or
 ## GNU/Linux
 
 - Tested distributions: Ubuntu 14.04 LTS and above; Debian 9.0 "stretch" and
-  above; Arch Linux; CentOS 7; Fedora 26 and above; OpenSUSE 42.3 and above.
+  above; Arch Linux; Fedora 26 and above; OpenSUSE 42.3 and above.
 - Supported microprocessor architectures:
   - i386: Intel x86 instruction set (32-bit microprocessors).
   - amd64: also known as x86-64, the 64-bit version of the x86 instruction set,
@@ -225,25 +224,6 @@ If you are using Arch Linux:
 $ pacman -S gcc make cmake pkgconf git boost boost-libs libvolk gnuradio \
        blas lapack hdf5 openssl pugixml libmatio protobuf libpcap gtest \
        python-mako
-```
-
-Once you have installed these packages, you can jump directly to
-[download the source code and build GNSS-SDR](#clone-gnss-sdrs-git-repository).
-
-#### CentOS
-
-If you are using CentOS 7, you can install the dependencies via Extra Packages
-for Enterprise Linux ([EPEL](https://fedoraproject.org/wiki/EPEL)):
-
-```
-$ sudo yum install wget
-$ wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-$ sudo rpm -Uvh epel-release-latest-7.noarch.rpm
-$ sudo yum install make automake gcc gcc-c++ kernel-devel libtool \
-       hdf5-devel cmake git boost-devel boost-date-time boost-system \
-       boost-filesystem boost-thread boost-chrono boost-serialization \
-       log4cpp-devel gnuradio-devel gr-osmosdr-devel blas-devel lapack-devel \
-       armadillo-devel openssl-devel libpcap-devel python-mako python-six pugixml-devel
 ```
 
 Once you have installed these packages, you can jump directly to
@@ -400,7 +380,7 @@ or manually as explained below, and then please follow instructions on how to
 
 ```
 $ sudo apt-get install libblas-dev liblapack-dev       # For Debian/Ubuntu/LinuxMint
-$ sudo yum install lapack-devel blas-devel             # For Fedora/CentOS/RHEL
+$ sudo yum install lapack-devel blas-devel             # For Fedora/RHEL
 $ sudo zypper install lapack-devel blas-devel          # For OpenSUSE
 $ sudo pacman -S blas lapack                           # For Arch Linux
 $ wget https://sourceforge.net/projects/arma/files/armadillo-14.0.0.tar.xz
@@ -455,7 +435,7 @@ v20240116 is available in your system.
 
 ```
 $ sudo apt-get install libgnutls-openssl-dev    # For Debian/Ubuntu/LinuxMint
-$ sudo yum install openssl-devel                # For Fedora/CentOS/RHEL
+$ sudo yum install openssl-devel                # For Fedora/RHEL
 $ sudo zypper install openssl-devel             # For OpenSUSE
 $ sudo pacman -S openssl                        # For Arch Linux
 ```

@@ -51,7 +51,7 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
     /usr/sbin
 )
 
-if(Boost_FOUND)
+if(TARGET Boost::iostreams AND TARGET Boost::serialization)
     message(STATUS "The rinex2assist utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(rinex2assist)

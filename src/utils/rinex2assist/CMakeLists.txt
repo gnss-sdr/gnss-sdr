@@ -59,7 +59,7 @@ if(Boost_FOUND)
         add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
     endif()
 
-    if("${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
+    if(GNSSTK_VERSION AND "${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
         set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     endif()
 

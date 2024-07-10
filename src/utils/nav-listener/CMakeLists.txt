@@ -4,7 +4,7 @@
 # SPDX-FileCopyrightText: 2021 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.9...3.23)
+cmake_minimum_required(VERSION 3.9...3.30)
 project(nav-msg-listener CXX)
 
 set(CMAKE_CXX_STANDARD 11)

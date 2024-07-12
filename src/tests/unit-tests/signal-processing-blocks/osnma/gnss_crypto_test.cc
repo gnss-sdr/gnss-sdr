@@ -1,5 +1,10 @@
 #include "gnss_crypto.h"
+#include "gnss_sdr_filesystem.h"
+#include "gnss_sdr_make_unique.h"
 #include <gtest/gtest.h>
+#include <fstream>
+#include <iterator>
+
 class GnssCryptoTest : public ::testing::Test
 {
 };
@@ -7,7 +12,7 @@ class GnssCryptoTest : public ::testing::Test
 
 TEST(GnssCryptoTest, TestComputeSHA_256)
 {
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
     std::vector<uint8_t> message{0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x77, 0x6F, 0x72, 0x6C, 0x64, 0x0A};  // Hello world
 
     std::vector<uint8_t> expected_output = {
@@ -23,7 +28,7 @@ TEST(GnssCryptoTest, TestComputeSHA_256)
 
 TEST(GnssCryptoTest, TestComputeSHA3_256)
 {
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
     std::vector<uint8_t> message{0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x77, 0x6F, 0x72, 0x6C, 0x64, 0x0A};  // Hello world
 
     std::vector<uint8_t> expected_output = {
@@ -39,7 +44,7 @@ TEST(GnssCryptoTest, TestComputeSHA3_256)
 
 TEST(GnssCryptoTest, VerifySignature)
 {
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
 
     // RG example  - import crt certificate - result: FAIL
     std::vector<uint8_t> message = {0x82, 0x10, 0x49, 0x22, 0x04, 0xE0, 0x60, 0x61, 0x0B, 0xDF, 0x26, 0xD7, 0x7B, 0x5B, 0xF8, 0xC9, 0xCB, 0xFC, 0xF7, 0x04, 0x22, 0x08, 0x14, 0x75, 0xFD, 0x44, 0x5D, 0xF0, 0xFF};
@@ -61,7 +66,7 @@ TEST(GnssCryptoTest, VerifySignature)
 
 TEST(GnssCryptoTest, VerifyPubKeyImport)
 {
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
 
     std::vector<uint8_t> publicKey{// PEM
         0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x42, 0x45, 0x47, 0x49, 0x4E, 0x20, 0x50, 0x55, 0x42, 0x4C, 0x49, 0x43, 0x20, 0x4B, 0x45, 0x59, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x0A,
@@ -80,10 +85,52 @@ TEST(GnssCryptoTest, VerifyPubKeyImport)
 }
 
 
+TEST(GnssCryptoTest, VerifyPublicKeyStorage)
+{
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
+
+    const std::string f1("./osnma_test_file1.pem");
+    const std::string f2("./osnma_test_file2.pem");
+
+    std::vector<uint8_t> publicKey{
+        0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x42, 0x45, 0x47, 0x49, 0x4E, 0x20, 0x50, 0x55, 0x42, 0x4C, 0x49, 0x43, 0x20, 0x4B, 0x45, 0x59, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x0A,
+        0x4D, 0x46, 0x6B, 0x77, 0x45, 0x77, 0x59, 0x48, 0x4B, 0x6F, 0x5A, 0x49, 0x7A, 0x6A, 0x30, 0x43, 0x41, 0x51, 0x59, 0x49, 0x4B, 0x6F, 0x5A, 0x49,
+        0x7A, 0x6A, 0x30, 0x44, 0x41, 0x51, 0x63, 0x44, 0x51, 0x67, 0x41, 0x45, 0x41, 0x37, 0x4C, 0x4F, 0x5A, 0x4C, 0x77, 0x67, 0x65, 0x39, 0x32, 0x4C, 0x78, 0x4E, 0x2B,
+        0x46, 0x6B, 0x59, 0x66, 0x38, 0x74, 0x6F, 0x59, 0x79, 0x44, 0x57, 0x50, 0x2F, 0x0A, 0x6F, 0x4A, 0x46, 0x42, 0x44, 0x38, 0x46, 0x59, 0x2B, 0x37,
+        0x64, 0x35, 0x67, 0x4F, 0x71, 0x49, 0x61, 0x45, 0x32, 0x52, 0x6A, 0x50, 0x41, 0x6E, 0x4B, 0x49, 0x36, 0x38, 0x73, 0x2F, 0x4F, 0x4B, 0x2F, 0x48, 0x50, 0x67, 0x6F,
+        0x4C, 0x6B, 0x4F, 0x32, 0x69, 0x6A, 0x51, 0x38, 0x78, 0x41, 0x5A, 0x79, 0x44, 0x64, 0x50, 0x42, 0x31, 0x64, 0x48, 0x53, 0x51, 0x3D, 0x3D, 0x0A,
+        0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x45, 0x4E, 0x44, 0x20, 0x50, 0x55, 0x42, 0x4C, 0x49, 0x43, 0x20, 0x4B, 0x45, 0x59, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x0A};
+
+    d_crypto->set_public_key(publicKey);
+    bool result = d_crypto->store_public_key(f1);
+
+    ASSERT_TRUE(result);
+
+    auto d_crypto2 = std::make_unique<Gnss_Crypto>(f1, "");
+    bool result2 = d_crypto2->store_public_key(f2);
+    ASSERT_TRUE(result2);
+
+    std::ifstream t(f1);
+    std::string content_file((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+
+    std::ifstream t2(f2);
+    std::string content_file2((std::istreambuf_iterator<char>(t2)), std::istreambuf_iterator<char>());
+
+    ASSERT_EQ(content_file, content_file2);
+
+    std::vector<uint8_t> readkey = d_crypto2->getPublicKey();
+    ASSERT_EQ(publicKey, readkey);
+
+    errorlib::error_code ec;
+    ASSERT_TRUE(fs::remove(fs::path(f1), ec));
+    ASSERT_TRUE(fs::remove(fs::path(f2), ec));
+}
+
+
 // Unit test for computeHMAC_SHA_256 function.
 TEST(GnssCryptoTest, TestComputeHMACSHA256)
 {
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
 
     std::vector<uint8_t> key = {
         0x24, 0x24, 0x3B, 0x76, 0xF9, 0x14, 0xB1, 0xA7,
@@ -107,7 +154,7 @@ TEST(GnssCryptoTest, TestComputeHMACSHA256)
 TEST(GnssCryptoTest, TestComputeHMACSHA256_m0)
 {
     // key and message generated from RG A.6.5.1
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
 
     std::vector<uint8_t> key = {// RG K4 @ 345690
         0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6,
@@ -134,7 +181,7 @@ TEST(GnssCryptoTest, TestComputeHMACSHA256_m0)
 TEST(GnssCryptoTest, TestComputeHMACSHA256_adkd4)
 {
     // key and message generated from RG A.6.5.2
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
 
     std::vector<uint8_t> key = {// RG K4 @ 345690
         0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6,
@@ -159,7 +206,7 @@ TEST(GnssCryptoTest, TestComputeHMACSHA256_adkd4)
 TEST(GnssCryptoTest, TestComputeCMAC_AES)
 {
     // Tests vectors from https://datatracker.ietf.org/doc/html/rfc4493#appendix-A
-    std::unique_ptr<Gnss_Crypto> d_crypto = std::make_unique<Gnss_Crypto>();
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
 
     std::vector<uint8_t> key = {
         0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6,

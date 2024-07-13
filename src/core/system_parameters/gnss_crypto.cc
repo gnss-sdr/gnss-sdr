@@ -650,11 +650,12 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
             return false;
         }
 
-    std::vector<char> buffer((std::istreambuf_iterator<char>(crtFile)), std::istreambuf_iterator<char>());
+    const std::vector<unsigned char> buffer((std::istreambuf_iterator<char>(crtFile)), std::istreambuf_iterator<char>());
+    const gnutls_datum_t buffer_datum = {const_cast<unsigned char*>(buffer.data()), static_cast<unsigned int>(buffer.size())};
 
     gnutls_x509_crt_t cert;
     gnutls_x509_crt_init(&cert);
-    int ret = gnutls_x509_crt_import(cert, (const gnutls_datum_t*)&buffer, GNUTLS_X509_FMT_PEM);
+    int ret = gnutls_x509_crt_import(cert, &buffer_datum, GNUTLS_X509_FMT_PEM);
     if (ret < 0)
         {
             LOG(INFO) << "GnuTLS: Failed to import certificate: " << gnutls_strerror(ret);

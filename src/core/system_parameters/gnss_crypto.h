@@ -45,12 +45,12 @@ public:
     bool have_public_key() const;
     bool verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;
     bool store_public_key(const std::string& pubKeyFilePath) const;
+    std::vector<uint8_t> getPublicKey() const;
     std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input) const;
     std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input) const;
     std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;
     std::vector<uint8_t> computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;
-    std::vector<uint8_t> getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle) const;
-    std::vector<uint8_t> getPublicKey() const;
+
     inline std::vector<uint8_t> getMerkleRoot() const
     {
         return d_x_4_0;

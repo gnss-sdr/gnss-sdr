@@ -94,6 +94,10 @@ Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& mer
     if (!readPublicKeyFromCRT(certFilePath))
         {
             readPublicKeyFromPEM(certFilePath);
+            if (!have_public_key())
+                {
+                    readPublicKeyFromPEM(PEMFILE_STORED);
+                }
         }
     read_merkle_xml(merkleTreePath);
 }
@@ -160,7 +164,7 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
             // If it was not the default, maybe it is a configuration error, warn user
             if (merkleFilePath != MERKLEFILE_DEFAULT)
                 {
-                    std::cerr << "File " << merkleFilePath << " not found" << std::endl;
+                    LOG(INFO) << "File " << merkleFilePath << " not found";
                 }
             // fill default values
             d_x_4_0 = convert_from_hex_str("C5B2A3BD24E819EF82B17ACE83C0E7F41D34AC9B488CB7CE4D765FDE7DCA0297");
@@ -581,12 +585,6 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
     std::ifstream pemFile(pemFilePath);
     if (!pemFile)
         {
-            // PEM file not found
-            // If it was not the default, maybe it is a configuration error
-            if (pemFilePath != PEMFILE_DEFAULT)
-                {
-                    std::cerr << "File " << pemFilePath << " not found" << std::endl;
-                }
             return;
         }
     std::string pemContent((std::istreambuf_iterator<char>(pemFile)), std::istreambuf_iterator<char>());
@@ -659,7 +657,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     int ret = gnutls_x509_crt_import(cert, (const gnutls_datum_t*)&buffer, GNUTLS_X509_FMT_PEM);
     if (ret < 0)
         {
-            std::cerr << "Failed to import certificate: " << gnutls_strerror(ret) << std::endl;
+            LOG(INFO) << "GnuTLS: Failed to import certificate: " << gnutls_strerror(ret);
             gnutls_x509_crt_deinit(cert);
             return false;
         }
@@ -670,7 +668,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     ret = gnutls_pubkey_import_x509(pubkey, cert, 0);
     if (ret < 0)
         {
-            std::cerr << "Failed to import public key: " << gnutls_strerror(ret) << std::endl;
+            LOG(INFO) << "GnuTLS: Failed to import public key: " << gnutls_strerror(ret);
             gnutls_pubkey_deinit(pubkey);
             gnutls_x509_crt_deinit(cert);
             return false;
@@ -683,7 +681,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     std::ifstream crtFile(crtFilePath, std::ios::binary);
     if (!crtFile.is_open())
         {
-            std::cerr << "Unable to open file: " << crtFilePath << std::endl;
+            LOG(INFO) << "OpenSSL: Unable to open file: " << crtFilePath;
             return false;
         }
 
@@ -692,13 +690,13 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     BIO* bio = BIO_new_mem_buf(buffer.data(), buffer.size());
     if (!bio)
         {
-            std::cerr << "Unable to create BIO for file: " << crtFilePath << std::endl;
+            LOG(INFO) << "OpenSSL: Unable to create BIO for file: " << crtFilePath;
             return false;
         }
     X509* cert = PEM_read_bio_X509(bio, nullptr, nullptr, nullptr);
     if (!cert)
         {
-            std::cerr << "Unable to read certificate from file: " << crtFilePath << std::endl;
+            LOG(INFO) << "OpenSSL: Unable to read certificate from file: " << crtFilePath;
             BIO_free(bio);
             return false;
         }
@@ -708,7 +706,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 #if USE_OPENSSL_3
     if (!pubkey)
         {
-            std::cerr << "Failed to extract the public key" << std::endl;
+            LOG(INFO) << "OpenSSL: Failed to extract the public key";
             X509_free(cert);
             return false;
         }
@@ -719,7 +717,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     EVP_PKEY_free(pubkey);
     if (!ec_pubkey)
         {
-            std::cerr << "Failed to extract the public key" << std::endl;
+            LOG(INFO) << "OpenSSL: Failed to extract the public key";
             X509_free(cert);
             return false;
         }
@@ -870,42 +868,6 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 #endif
 #endif
     return success;
-}
-
-
-std::vector<uint8_t> Gnss_Crypto::getMerkleRoot(const std::vector<std::vector<uint8_t>>& merkle) const
-{
-    if (merkle.empty())
-        {
-            return {};
-        }
-    else if (merkle.size() == 1)
-        {
-            return this->computeSHA3_256(merkle[0]);
-        }
-
-    std::vector<std::vector<uint8_t>> new_merkle = merkle;
-
-    while (new_merkle.size() > 1)
-        {
-            if (new_merkle.size() % 2 == 1)
-                {
-                    new_merkle.push_back(merkle.back());
-                }
-
-            std::vector<std::vector<uint8_t>> result;
-
-            for (size_t i = 0; i < new_merkle.size(); i += 2)
-                {
-                    std::vector<uint8_t> var1 = this->computeSHA3_256(new_merkle[i]);
-                    std::vector<uint8_t> var2 = this->computeSHA3_256(new_merkle[i + 1]);
-                    var1.insert(var1.end(), var2.begin(), var2.end());
-                    std::vector<uint8_t> hash = this->computeSHA3_256(var1);
-                    result.push_back(hash);
-                }
-            new_merkle = result;
-        }
-    return new_merkle[0];
 }
 
 

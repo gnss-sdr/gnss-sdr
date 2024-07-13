@@ -568,6 +568,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                 {
                                     d_public_key_verified = true;
                                     d_crypto->set_public_key(d_osnma_data.d_dsm_pkr_message.npk);
+                                    d_crypto->store_public_key(PEMFILE_STORED);
                                 }
                         }
                 }

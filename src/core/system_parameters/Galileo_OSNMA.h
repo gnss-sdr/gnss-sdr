@@ -160,7 +160,7 @@ const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_15 = {
     {std::string("SHA-256"), 512},
     {std::string("SHA-512"), 1056}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
 
-const std::string PEMFILE_DEFAULT("../data/OSNMA_PublicKey_20240115100000_newPKID_1.pem");
+const std::string PEMFILE_STORED("./OSNMA_PublicKey.pem");
 const std::string CRTFILE_DEFAULT("../data/OSNMA_PublicKey_20240115100000_newPKID_1.crt");
 const std::string MERKLEFILE_DEFAULT("../data/OSNMA_MerkleTree_20240115100000_newPKID_1.xml");
 

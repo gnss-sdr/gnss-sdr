@@ -80,6 +80,7 @@ private:
     std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes);
     std::vector<uint8_t> compute_base_leaf(const DSM_PKR_message& dsm_pkr_message) const;
     std::vector<uint8_t> compute_merke_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const;
+    std::vector<MACK_tag_and_info> verify_macseq_new(const MACK_message& mack);
     void display_data();
     bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
     bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);

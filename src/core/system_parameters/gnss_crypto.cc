@@ -167,12 +167,11 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
                     LOG(INFO) << "File " << merkleFilePath << " not found";
                 }
             // fill default values
-            d_x_4_0 = convert_from_hex_str("C5B2A3BD24E819EF82B17ACE83C0E7F41D34AC9B488CB7CE4D765FDE7DCA0297");
-            d_x_3_1 = convert_from_hex_str("C8314BA8084E0CA101E595E88F170012F1F5CE71EEEFAB27334283E15935E8E6");
-            d_x_2_1 = convert_from_hex_str("6FB21E4DDF3F8E517A5C5B1C6D843F9236707FF11D96F9BA954BFEAA3A44E56B");
-            d_x_1_1 = convert_from_hex_str("86E53A50D345FBDAD49835F3363EE4A7262DB738CBDFC399229AE2803679300D");
-            d_x_0_0 = convert_from_hex_str("40CAA1D70F7B1D370219674A25721311170A49DE4E4A0CE4FE328674E01CF750");
-            d_x_0_1 = convert_from_hex_str("AA1A8B68E5DB293106B5BC8806F9790E8ACF8DC2D28A6EF6C1AC7233A9813D3F");
+            d_x_4_0 = convert_from_hex_str("832E15EDE55655EAC6E399A539477B7C034CCE24C3C93FFC904ACD9BF842F04E");
+            d_x_3_1 = convert_from_hex_str("84DE3669E6DA551292979E5B8D045787FA967C57CC23638A30237614EDD9171A");
+            d_x_2_1 = convert_from_hex_str("DE73D209E4C5BCDC34CD117F2FE40FD08B110009997AD2B3291D3A2CF29943F9");
+            d_x_1_1 = convert_from_hex_str("6AAFDE28017BF0744D42819CE40E3A0CDA1ECA3F7A4EA67E134E7AA714C1E843");
+            d_x_0_1 = convert_from_hex_str("941BD34EA7DF668B6FC5BE75C1D93464D109BC615CB52C8124847FAFB09CBB2B");
             return;
         }
     try
@@ -243,25 +242,20 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
                         {
                             d_x_1_1 = convert_from_hex_str(x_ji);
                         }
-                    if (j == 0 && i == 0)
-                        {
-                            d_x_0_0 = convert_from_hex_str(x_ji);
-                        }
                     if (j == 0 && i == 1)
                         {
-                            d_x_0_0 = convert_from_hex_str(x_ji);
+                            d_x_0_1 = convert_from_hex_str(x_ji);
                         }
                 }
         }
     catch (const std::exception& e)
         {
             std::cerr << "Exception raised reading the " << merkleFilePath << " file: " << e.what() << '\n';
-            d_x_4_0 = convert_from_hex_str("C5B2A3BD24E819EF82B17ACE83C0E7F41D34AC9B488CB7CE4D765FDE7DCA0297");
-            d_x_3_1 = convert_from_hex_str("C8314BA8084E0CA101E595E88F170012F1F5CE71EEEFAB27334283E15935E8E6");
-            d_x_2_1 = convert_from_hex_str("6FB21E4DDF3F8E517A5C5B1C6D843F9236707FF11D96F9BA954BFEAA3A44E56B");
-            d_x_1_1 = convert_from_hex_str("86E53A50D345FBDAD49835F3363EE4A7262DB738CBDFC399229AE2803679300D");
-            d_x_0_0 = convert_from_hex_str("40CAA1D70F7B1D370219674A25721311170A49DE4E4A0CE4FE328674E01CF750");
-            d_x_0_1 = convert_from_hex_str("AA1A8B68E5DB293106B5BC8806F9790E8ACF8DC2D28A6EF6C1AC7233A9813D3F");
+            d_x_4_0 = convert_from_hex_str("832E15EDE55655EAC6E399A539477B7C034CCE24C3C93FFC904ACD9BF842F04E");
+            d_x_3_1 = convert_from_hex_str("84DE3669E6DA551292979E5B8D045787FA967C57CC23638A30237614EDD9171A");
+            d_x_2_1 = convert_from_hex_str("DE73D209E4C5BCDC34CD117F2FE40FD08B110009997AD2B3291D3A2CF29943F9");
+            d_x_1_1 = convert_from_hex_str("6AAFDE28017BF0744D42819CE40E3A0CDA1ECA3F7A4EA67E134E7AA714C1E843");
+            d_x_0_1 = convert_from_hex_str("941BD34EA7DF668B6FC5BE75C1D93464D109BC615CB52C8124847FAFB09CBB2B");
             return;
         }
     std::cout << "OSNMA Merkle Tree successfully read from file " << merkleFilePath << std::endl;

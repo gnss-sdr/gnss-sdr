@@ -55,7 +55,7 @@ public:
     {
         return d_x_4_0;
     }
-    inline void setMerkleRoot(std::vector<uint8_t> v)
+    inline void setMerkleRoot(const std::vector<uint8_t>& v)
     {
         d_x_4_0 = v;
     }
@@ -82,7 +82,6 @@ private:
     std::vector<uint8_t> d_x_3_1;
     std::vector<uint8_t> d_x_2_1;
     std::vector<uint8_t> d_x_1_1;
-    std::vector<uint8_t> d_x_0_0;
     std::vector<uint8_t> d_x_0_1;
 };
 

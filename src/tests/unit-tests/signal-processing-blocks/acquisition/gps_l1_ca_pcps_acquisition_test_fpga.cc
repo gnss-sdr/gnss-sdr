@@ -320,7 +320,7 @@ bool GpsL1CaPcpsAcquisitionTestFpga::acquire_signal()
     // instantiate the FPGA switch and set the
     // switch position to DMA.
     std::shared_ptr<Fpga_Switch> switch_fpga;
-    switch_fpga = std::make_shared<Fpga_Switch>("/dev/uio1");
+    switch_fpga = std::make_shared<Fpga_Switch>();
     switch_fpga->set_switch_position(0);  // set switch position to DMA
 
     // create the correspondign acquisition block according to the desired tracking signal

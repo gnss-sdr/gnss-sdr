@@ -547,7 +547,7 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
             if (src == nullptr)
                 {
                     help_hint_ += " * Check implementation name for SignalSource block.\n";
-                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Fpga_Signal_Source\n";
+                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Fpga_Signal_Source or DMA_Fpga_Signal_Source\n";
                     return 1;
                 }
             if (src->item_size() == 0)

@@ -128,6 +128,7 @@
 #endif
 
 #if ENABLE_FPGA
+#include "dma_fpga_signal_source.h"
 #include "galileo_e1_dll_pll_veml_tracking_fpga.h"
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_dll_pll_tracking_fpga.h"
@@ -811,12 +812,21 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
 #endif
 
-#if AD9361_DRIVER
+#if ENABLE_FPGA and AD9361_DRIVER
             // The AD9361_DRIVER Driver must be instantiated last. In this way, when using the FPGA, and when using the GNSS receiver
             // in post-processing mode, the receiver is configured and ready when the DMA starts sending samples to the receiver.
             else if (implementation == "Ad9361_Fpga_Signal_Source")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Ad9361FpgaSignalSource>(configuration, role, in_streams,
+                        out_streams, queue);
+                    block = std::move(block_);
+                }
+#endif
+
+#if ENABLE_FPGA
+            else if (implementation == "DMA_Fpga_Signal_Source")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<DMAFpgaSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }

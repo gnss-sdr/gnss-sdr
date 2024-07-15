@@ -41,6 +41,14 @@ if(ENABLE_AD9361)
     list(APPEND OPT_DRIVER_HEADERS ad9361_fpga_signal_source.h)
 endif()
 
+if(ENABLE_FPGA)
+    ###############################################
+    # FPGA DMA source
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES dma_fpga_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS dma_fpga_signal_source.h)
+endif()
+
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)
     list(APPEND OPT_DRIVER_SOURCES flexiband_signal_source.cc)
     list(APPEND OPT_DRIVER_HEADERS flexiband_signal_source.h)

@@ -53,8 +53,6 @@ public:
 
     ~Ad9361FpgaSignalSource();
 
-    void start() override;
-
     inline size_t item_size() override
     {
         return item_size_;
@@ -66,13 +64,9 @@ public:
     gr::basic_block_sptr get_right_block() override;
 
 private:
-    const std::string switch_device_name = std::string("AXIS_Switch_v1_0_0");          // Switch UIO device name
-    const std::string dyn_bit_sel_device_name = std::string("dynamic_bits_selector");  // Switch dhnamic bit selector device name
-    const std::string buffer_monitor_device_name = std::string("buffer_monitor");      // buffer monitor device name
     const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
     const std::string default_rf_port_select = std::string("A_BALANCED");
     const std::string default_gain_mode = std::string("slow_attack");
-    const std::string empty_string;
     const double default_tx_attenuation_db = -10.0;
     const double default_manual_gain_rx1 = 64.0;
     const double default_manual_gain_rx2 = 64.0;
@@ -86,33 +80,20 @@ private:
     const uint32_t buffer_monitoring_initial_delay_ms = 2000;
     // sample block size when running in post-processing mode
     const int sample_block_size = 16384;
-
-    void run_DMA_process(const std::string &filename0,
-        const std::string &filename1,
-        uint64_t &samples_to_skip,
-        size_t &item_size,
-        int64_t &samples,
-        bool &repeat,
-        uint32_t &dma_buff_offset_pos,
-        Concurrent_Queue<pmt::pmt_t> *queue);
+    const int32_t switch_to_real_time_mode = 2;
 
     void run_dynamic_bit_selection_process();
     void run_buffer_monitor_process();
 
-    std::thread thread_file_to_dma;
     std::thread thread_dynamic_bit_selection;
     std::thread thread_buffer_monitor;
 
     std::shared_ptr<Fpga_Switch> switch_fpga;
     std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
     std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
-    std::shared_ptr<Fpga_DMA> dma_fpga;
 
-    std::mutex dma_mutex;
     std::mutex dynamic_bit_selection_mutex;
     std::mutex buffer_monitor_mutex;
-
-    Concurrent_Queue<pmt::pmt_t> *queue_;
 
     std::string gain_mode_rx1_;
     std::string gain_mode_rx2_;
@@ -120,8 +101,6 @@ private:
     std::string filter_file_;
     std::string filter_source_;
     std::string filter_filename_;
-    std::string filename0_;
-    std::string filename1_;
 
     double rf_gain_rx1_;
     double rf_gain_rx2_;
@@ -133,19 +112,14 @@ private:
     uint64_t freq1_;  // frequency of local oscillator for ADRV9361-B (if present)
     uint64_t sample_rate_;
     uint64_t bandwidth_;
-    uint64_t samples_to_skip_;
-    int64_t samples_;
     uint64_t freq_dds_tx_hz_;
     uint64_t freq_rf_tx_hz_;
     uint64_t tx_bandwidth_;
 
     float Fpass_;
     float Fstop_;
-    uint32_t num_input_files_;
-    uint32_t dma_buff_offset_pos_;
     uint32_t in_stream_;
     uint32_t out_stream_;
-    int32_t switch_position_;
 
     size_t item_size_;
 
@@ -156,12 +130,10 @@ private:
     bool bb_dc_;
     bool rx1_enable_;
     bool rx2_enable_;
-    bool enable_DMA_;
     bool enable_dynamic_bit_selection_;
     bool enable_ovf_check_buffer_monitor_active_;
     bool dump_;
     bool rf_shutdown_;
-    bool repeat_;
 };
 
 

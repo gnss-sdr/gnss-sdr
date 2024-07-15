@@ -95,6 +95,8 @@ option(ENABLE_STRIP "Create stripped binaries without debugging symbols (in Rele
 
 option(Boost_USE_STATIC_LIBS "Use Boost static libs" OFF)
 
+option(ENABLE_GNUTLS "Forces linking against GnuTLS" OFF)
+
 if(ENABLE_PACKAGING)
     set(ENABLE_ARMA_NO_DEBUG ON)
     set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -3472,6 +3474,7 @@ add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and bui
 add_feature_info(ENABLE_GLOG_AND_GFLAGS ENABLE_GLOG_AND_GFLAGS "Forces the usage of Google glog and Gflags instead of Abseil.")
 add_feature_info(ENABLE_OWN_ABSEIL ENABLE_OWN_ABSEIL "Forces downloading and building Abseil. Supersedes ENABLE_OWN_GLOG.")
 add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
+add_feature_info(ENABLE_GNUTLS ENABLE_GNUTLS "Forces linking against GnuTLS instead of OpenSSL.")
 add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging.")
 add_feature_info(ENABLE_ORC ENABLE_ORC "Use the Optimized Inner Loop Runtime Compiler (ORC) for building volk_gnsssdr.")
 add_feature_info(ENABLE_STRIP ENABLE_STRIP "Enables the generation of stripped binaries (without debugging symbols).")

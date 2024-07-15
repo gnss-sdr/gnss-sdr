@@ -11,7 +11,11 @@
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(OPENSSL_ROOT_DIR /usr/local/opt/openssl) # Trick for Homebrew
 endif()
-find_package(OpenSSL)
+unset(OPENSSL_FOUND CACHE)
+unset(GnuTLS_FOUND CACHE)
+if(NOT ENABLE_GNUTLS)
+    find_package(OpenSSL)
+endif()
 set_package_properties(OpenSSL
     PROPERTIES
         URL "https://www.openssl.org"
@@ -162,7 +166,6 @@ function(link_to_crypto_dependencies target)
                     target_compile_definitions(${target} PUBLIC -DUSE_OPENSSL_111=1)
                 endif()
             endif()
-        else()
         endif()
     else()  # GnuTLS
         target_link_libraries(${target}

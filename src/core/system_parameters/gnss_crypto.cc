@@ -866,6 +866,125 @@ bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const st
 }
 
 
+bool Gnss_Crypto::verify_signature_p521(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const
+{
+    if (!have_public_key())
+        {
+            std::cerr << "Galileo OSNMA KROOT verification error: Public key is not available" << std::endl;
+            return false;
+        }
+    bool success = false;
+
+    // Convert signature to DER format
+    std::vector<uint8_t> der_sig;
+    if (!convert_raw_to_der_ecdsa(signature, der_sig))
+        {
+            LOG(INFO) << "Failed to convert raw ECDSA signature to DER format";
+            return false;
+        }
+#if USE_GNUTLS_FALLBACK
+    // Compute SHA-512 hash of the message
+    std::vector<uint8_t> digest(64);
+    gnutls_hash_hd_t hash;
+    if (gnutls_hash_init(&hash, GNUTLS_DIG_SHA512) != GNUTLS_E_SUCCESS)
+        {
+            LOG(INFO) << "OpenSSL: gnutls_hash_init failed";
+            return false;
+        }
+    gnutls_hash(hash, message.data(), message.size());
+    gnutls_hash_deinit(hash, digest.data());
+
+    gnutls_datum_t digest_data = {const_cast<unsigned char*>(digest.data()), static_cast<unsigned int>(digest.size())};
+    gnutls_datum_t signature_data = {const_cast<unsigned char*>(der_sig.data()), static_cast<unsigned int>(der_sig.size())};
+
+    // Verify the ECDSA signature
+    int ret = gnutls_pubkey_verify_data2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA512, 0, &digest_data, &signature_data);
+    success = (ret >= 0);
+    if (success)
+        {
+            LOG(INFO) << "GnuTLS: OSNMA signature authenticated successfully";
+        }
+    else
+        {
+            std::cerr << "GnuTLS: OSNMA message authentication failed: " << gnutls_strerror(ret) << std::endl;
+            LOG(WARNING) << "GnuTLS: OSNMA message authentication failed: " << gnutls_strerror(ret);
+        }
+#else  // OpenSSL
+    // Compute SHA-512 hash of the message
+    std::vector<uint8_t> digest(SHA512_DIGEST_LENGTH);
+    if (!EVP_Digest(message.data(), message.size(), digest.data(), nullptr, EVP_sha512(), nullptr))
+        {
+            LOG(INFO) << "OpenSSL: EVP_Digest failed";
+            return false;
+        }
+#if USE_OPENSSL_3
+    // Verify the signature
+    EVP_PKEY_CTX* pctx = EVP_PKEY_CTX_new(d_PublicKey, nullptr);
+    if (pctx == nullptr)
+        {
+            LOG(INFO) << "OpenSSL: EVP_PKEY_CTX_new failed";
+            return false;
+        }
+
+    if (EVP_PKEY_verify_init(pctx) <= 0)
+        {
+            LOG(INFO) << "OpenSSL: EVP_PKEY_verify_init failed";
+            EVP_PKEY_CTX_free(pctx);
+            return false;
+        }
+
+    if (EVP_PKEY_CTX_set_signature_md(pctx, EVP_sha512()) <= 0)
+        {
+            LOG(INFO) << "OpenSSL: EVP_PKEY_CTX_set_signature_md failed";
+            EVP_PKEY_CTX_free(pctx);
+            return false;
+        }
+
+    int verification = EVP_PKEY_verify(pctx, der_sig.data(), der_sig.size(), digest.data(), digest.size());
+    EVP_PKEY_CTX_free(pctx);
+
+    if (verification == 1)
+        {
+            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
+            success = true;
+        }
+    else if (verification == 0)
+        {
+            LOG(INFO) << "OpenSSL: invalid signature found when verifying message";
+        }
+    else
+        {
+            LOG(INFO) << "OpenSSL: OSNMA message authentication failed";
+        }
+#else  // OpenSSL 1.x
+    const unsigned char* sig_ptr = der_sig.data();
+    ECDSA_SIG* ecdsa_sig = d2i_ECDSA_SIG(nullptr, &sig_ptr, der_sig.size());
+    if (ecdsa_sig == nullptr)
+        {
+            LOG(INFO) << "OpenSSL: d2i_ECDSA_SIG failed";
+            return false;
+        }
+    int verification = ECDSA_do_verify(digest.data(), digest.size(), ecdsa_sig, d_PublicKey);
+    ECDSA_SIG_free(ecdsa_sig);
+    if (verification == 1)
+        {
+            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
+            success = true;
+        }
+    else if (verification == 0)
+        {
+            LOG(INFO) << "OpenSSL: invalid signature found when verifying message";
+        }
+    else
+        {
+            LOG(INFO) << "OpenSSL: OSNMA message authentication failed";
+        }
+#endif
+#endif
+    return success;
+}
+
+
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
 #if USE_GNUTLS_FALLBACK

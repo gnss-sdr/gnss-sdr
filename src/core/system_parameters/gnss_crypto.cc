@@ -309,7 +309,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p521(const std::vector<uint8_t>& messag
     gnutls_datum_t signature_data = {der_sig.data(), static_cast<unsigned int>(der_sig.size())};
 
     // Verify the ECDSA signature
-    ret = gnutls_pubkey_verify_data2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA512, 0, &digest_data, &signature_data);
+    ret = gnutls_pubkey_verify_hash2(d_PublicKey, GNUTLS_SIGN_ECDSA_SHA512, 0, &digest_data, &signature_data);
 
     if (ret >= 0)
         {

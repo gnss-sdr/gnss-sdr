@@ -171,6 +171,10 @@
 #include "ad9361_fpga_signal_source.h"
 #endif
 
+#if FPGA_MAX2771_EVKIT_DRIVER
+#include "max2771_evkit_fpga_signal_source.h"
+#endif
+
 #if LIMESDR_DRIVER
 #include "limesdr_signal_source.h"
 #endif
@@ -813,11 +817,18 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and AD9361_DRIVER
-            // The AD9361_DRIVER Driver must be instantiated last. In this way, when using the FPGA, and when using the GNSS receiver
-            // in post-processing mode, the receiver is configured and ready when the DMA starts sending samples to the receiver.
             else if (implementation == "Ad9361_Fpga_Signal_Source")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Ad9361FpgaSignalSource>(configuration, role, in_streams,
+                        out_streams, queue);
+                    block = std::move(block_);
+                }
+#endif
+
+#if ENABLE_FPGA and FPGA_MAX2771_EVKIT_DRIVER
+            else if (implementation == "MAX2771_evkit_Fpga_Signal_Source")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<MAX2771EVKITFpgaSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }

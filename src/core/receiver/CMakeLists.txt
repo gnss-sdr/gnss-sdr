@@ -98,6 +98,10 @@ if(ENABLE_AD9361)
     target_compile_definitions(core_receiver PRIVATE -DAD9361_DRIVER=1)
 endif()
 
+if(ENABLE_FPGA_MAX2771_EVKIT)
+    target_compile_definitions(core_receiver PRIVATE -DFPGA_MAX2771_EVKIT_DRIVER=1)
+endif()
+
 if(ENABLE_OSMOSDR)
     if(GROSMOSDR_FOUND)
         target_compile_definitions(core_receiver PRIVATE -DOSMOSDR_DRIVER=1)

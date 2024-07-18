@@ -41,6 +41,14 @@ if(ENABLE_AD9361)
     list(APPEND OPT_DRIVER_HEADERS ad9361_fpga_signal_source.h)
 endif()
 
+if(ENABLE_FPGA_MAX2771_EVKIT)
+    ###############################################
+    # MAX2771 EVKIT DIRECT TO FPGA Hardware
+    ###############################################
+    list(APPEND OPT_DRIVER_SOURCES max2771_evkit_fpga_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS max2771_evkit_fpga_signal_source.h)
+endif()
+
 if(ENABLE_FPGA)
     ###############################################
     # FPGA DMA source
@@ -159,7 +167,7 @@ target_include_directories(signal_source_adapters
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
-if(ENABLE_FPGA OR ENABLE_AD9361)
+if(ENABLE_FPGA OR ENABLE_AD9361 OR ENABLE_FPGA_MAX2771_EVKIT)
     target_link_libraries(signal_source_adapters
         PUBLIC
             signal_source_libs

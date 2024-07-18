@@ -112,7 +112,7 @@ TEST_F(OsnmaMsgReceiverTest, ComputeBaseLeaf)
 TEST_F(OsnmaMsgReceiverTest, VerifyPublicKey){ // values taken from RG A.7
     // Arrange
     // ----------
-    osnma->d_crypto->setMerkleRoot(helper.convert_from_hex_string("A10C440F3AA62453526DB4AF76DF8D9410D35D8277397D7053C700D192702B0D"));
+    osnma->d_crypto->set_merkle_root(helper.convert_from_hex_string("A10C440F3AA62453526DB4AF76DF8D9410D35D8277397D7053C700D192702B0D"));
     DSM_PKR_message dsm_pkr_message;
     dsm_pkr_message.npkt = 0x01;
     dsm_pkr_message.npktid = 0x2;

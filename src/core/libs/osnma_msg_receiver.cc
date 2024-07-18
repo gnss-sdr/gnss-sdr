@@ -457,11 +457,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     std::vector<uint8_t> hash;
                     if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
                         {
-                            hash = d_crypto->computeSHA256(MSG);
+                            hash = d_crypto->compute_SHA_256(MSG);
                         }
                     else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
                         {
-                            hash = d_crypto->computeSHA3_256(MSG);
+                            hash = d_crypto->compute_SHA3_256(MSG);
                         }
                     else
                         {
@@ -483,7 +483,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
                                       << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
                             local_time_verification(osnma_msg);
-                            d_kroot_verified = d_crypto->verify_signature(message, d_osnma_data.d_dsm_kroot_message.ds);
+                            d_kroot_verified = d_crypto->verify_signature_ecdsa_p256(message, d_osnma_data.d_dsm_kroot_message.ds);
                             if (d_kroot_verified)
                                 {
                                     std::cout << "Galileo OSNMA: KROOT authentication successful!" << std::endl;
@@ -1040,7 +1040,7 @@ bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
 
     computed_merkle_root  = compute_merke_root(message, base_leaf);
 
-    if (computed_merkle_root == d_crypto->getMerkleRoot())
+    if (computed_merkle_root == d_crypto->get_merkle_root())
         {
             LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: SUCCESS!." << std::endl;
             return true;
@@ -1053,7 +1053,7 @@ bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
 }
 std::vector<uint8_t> osnma_msg_receiver::compute_merke_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const
 {
-    std::vector<uint8_t> x_next, x_current = d_crypto->computeSHA256(m_i);
+    std::vector<uint8_t> x_next, x_current = d_crypto->compute_SHA_256(m_i);
     for (size_t i = 0; i < 4; i++)
         {
             x_next.clear();
@@ -1073,7 +1073,7 @@ std::vector<uint8_t> osnma_msg_receiver::compute_merke_root(const DSM_PKR_messag
                 }
 
             // Compute the next node.
-            x_current = d_crypto->computeSHA256(x_next);
+            x_current = d_crypto->compute_SHA_256(x_next);
         }
     return x_current;
 }
@@ -1116,11 +1116,11 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
 
     if (d_osnma_data.d_dsm_kroot_message.mf == 0)  // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+            mac = d_crypto->compute_HMAC_SHA_256(applicable_key, m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1)  // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(applicable_key, m);
+            mac = d_crypto->compute_CMAC_AES(applicable_key, m);
         }
 
     // truncate the computed mac: trunc(l_t, mac(K,m)) Eq. 23 ICD
@@ -1484,11 +1484,11 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0)  // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+            mac = d_crypto->compute_HMAC_SHA_256(applicable_key, m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1)  // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(applicable_key, m);
+            mac = d_crypto->compute_CMAC_AES(applicable_key, m);
         }
     // Truncate the twelve MSBits and compare with received MACSEQ
     uint16_t mac_msb = 0;
@@ -1598,11 +1598,11 @@ std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_neede
             std::vector<uint8_t> hash;
             if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
                 {
-                    hash = d_crypto->computeSHA256(msg);
+                    hash = d_crypto->compute_SHA_256(msg);
                 }
             else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
                 {
-                    hash = d_crypto->computeSHA3_256(msg);
+                    hash = d_crypto->compute_SHA3_256(msg);
                 }
             else
                 {
@@ -1729,11 +1729,11 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0)  // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+            mac = d_crypto->compute_HMAC_SHA_256(applicable_key, m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1)  // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(applicable_key, m);
+            mac = d_crypto->compute_CMAC_AES(applicable_key, m);
         }
     // Truncate the twelve MSBits and compare with received MACSEQ
     uint16_t mac_msb = 0;

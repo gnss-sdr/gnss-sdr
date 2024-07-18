@@ -53,24 +53,24 @@ public:
 
     bool have_public_key() const;  //!< Returns true if the ECDSA Public Key is already loaded
 
-    bool verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;             //!< Verify ECDSA-P256 signature (message in hex, signature in raw format)
-    bool verify_signature_ecdsa_p521(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;  //!< Verify ECDSA-P521 signature (message in hex, signature in raw format)
-
     /*!
      * Stores the ECDSA Public Key in a .pem file, which is read in a following run if the .crt file is not found
      */
     bool store_public_key(const std::string& pubKeyFilePath) const;
 
-    std::vector<uint8_t> getPublicKey() const;   //!< Gets the ECDSA Public Key in PEM format
-    std::vector<uint8_t> getMerkleRoot() const;  //!< Gets the Merkle Tree root node (\f$ x_{4,0} \f$)
+    bool verify_signature_ecdsa_p256(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;  //!< Verify ECDSA-P256 signature (message in plain hex, signature in raw format)
+    bool verify_signature_ecdsa_p521(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;  //!< Verify ECDSA-P521 signature (message in plain hex, signature in raw format)
 
-    std::vector<uint8_t> computeSHA256(const std::vector<uint8_t>& input) const;                                         //!< Computes SHA-256 hash
-    std::vector<uint8_t> computeSHA3_256(const std::vector<uint8_t>& input) const;                                       //!< Computes SHA3-256 hash
-    std::vector<uint8_t> computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;  //!< Computes HMAC-SHA-256 message authentication code
-    std::vector<uint8_t> computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;      //!< Computes CMAC-AES message authentication code
+    std::vector<uint8_t> compute_SHA_256(const std::vector<uint8_t>& input) const;                                        //!< Computes SHA-256 hash
+    std::vector<uint8_t> compute_SHA3_256(const std::vector<uint8_t>& input) const;                                       //!< Computes SHA3-256 hash
+    std::vector<uint8_t> compute_HMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;  //!< Computes HMAC-SHA-256 message authentication code
+    std::vector<uint8_t> compute_CMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;      //!< Computes CMAC-AES message authentication code
+
+    std::vector<uint8_t> get_public_key() const;   //!< Gets the ECDSA Public Key in PEM format
+    std::vector<uint8_t> get_merkle_root() const;  //!< Gets the Merkle Tree root node (\f$ x_{4,0} \f$)
 
     void set_public_key(const std::vector<uint8_t>& publickey);  //!< Sets the ECDSA Public Key (publickey in PEM format)
-    void setMerkleRoot(const std::vector<uint8_t>& v);           //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
+    void set_merkle_root(const std::vector<uint8_t>& v);         //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
 
 private:
     void read_merkle_xml(const std::string& merkleFilePath);

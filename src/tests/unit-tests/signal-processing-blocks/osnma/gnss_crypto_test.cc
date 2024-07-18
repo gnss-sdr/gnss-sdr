@@ -96,7 +96,7 @@ TEST(GnssCryptoTest, VerifyPublicKeyStorage)
 
     ASSERT_EQ(content_file, content_file2);
 
-    std::vector<uint8_t> readkey = d_crypto2->getPublicKey();
+    std::vector<uint8_t> readkey = d_crypto2->get_public_key();
     ASSERT_EQ(publicKey, readkey);
 
     errorlib::error_code ec;
@@ -116,7 +116,7 @@ TEST(GnssCryptoTest, TestComputeSHA_256)
         0x43, 0xAC, 0x4E, 0x43, 0xFC, 0x00, 0x4C, 0x89, 0x16, 0x04, 0xB2,
         0x6F, 0x8C, 0x69, 0xE1, 0xE8, 0x3E, 0xA2, 0xAF, 0xC7, 0xC4, 0x8F};
 
-    std::vector<uint8_t> output = d_crypto->computeSHA256(message);
+    std::vector<uint8_t> output = d_crypto->compute_SHA_256(message);
 
     ASSERT_EQ(expected_output, output);
 }
@@ -133,7 +133,7 @@ TEST(GnssCryptoTest, TestComputeSHA3_256)
         0xBB, 0x2C, 0x24, 0x36, 0x72, 0x5E, 0x2E, 0x8D, 0xC7, 0x5B,
         0x99, 0xE7, 0xF6, 0xC4, 0x50, 0x5B, 0x2A, 0x93, 0x6E, 0xB6, 0x3B, 0x3F};
 
-    std::vector<uint8_t> output = d_crypto->computeSHA3_256(message);
+    std::vector<uint8_t> output = d_crypto->compute_SHA3_256(message);
 
     ASSERT_EQ(expected_output, output);
 }
@@ -159,7 +159,7 @@ TEST(GnssCryptoTest, TestComputeHMACSHA256)
         0xB2, 0x7A, 0xCC, 0x22, 0x00, 0xAA, 0xD2, 0x37,
         0xD0, 0x79, 0x06, 0x12, 0x83, 0x40, 0xB7, 0xA6};
 
-    std::vector<uint8_t> output = d_crypto->computeHMAC_SHA_256(key, message);
+    std::vector<uint8_t> output = d_crypto->compute_HMAC_SHA_256(key, message);
 
     ASSERT_EQ(expected_output, output);
 }
@@ -194,7 +194,7 @@ TEST(GnssCryptoTest, TestComputeHMACSHA256_m0)
         0xD2, 0xEA, 0x61, 0xE1, 0xEF, 0x09, 0x11, 0x5C,
         0xFE, 0x70, 0x68, 0x52, 0xBF, 0xF2, 0x3A, 0x83};
 
-    std::vector<uint8_t> output = d_crypto->computeHMAC_SHA_256(key, message);
+    std::vector<uint8_t> output = d_crypto->compute_HMAC_SHA_256(key, message);
 
     ASSERT_EQ(expected_output, output);
 }
@@ -222,7 +222,7 @@ TEST(GnssCryptoTest, TestComputeHMACSHA256_adkd4)
         0x44, 0xAB, 0xEE, 0x4D, 0xCE, 0xB9, 0x3D, 0xCF,
         0x65, 0xCB, 0x3A, 0x5B, 0x81, 0x4A, 0x34, 0xE9};
 
-    std::vector<uint8_t> output = d_crypto->computeHMAC_SHA_256(key, message);
+    std::vector<uint8_t> output = d_crypto->compute_HMAC_SHA_256(key, message);
 
     ASSERT_EQ(expected_output, output);
 }
@@ -245,13 +245,13 @@ TEST(GnssCryptoTest, TestComputeCMAC_AES)
         0x07, 0x0A, 0x16, 0xB4, 0x6B, 0x4D, 0x41, 0x44,
         0xF7, 0x9B, 0xDD, 0x9D, 0xD0, 0x4A, 0x28, 0x7C};
 
-    std::vector<uint8_t> output = d_crypto->computeCMAC_AES(key, message);
+    std::vector<uint8_t> output = d_crypto->compute_CMAC_AES(key, message);
 
     ASSERT_EQ(expected_output, output);
 }
 
 
-TEST(GnssCryptoTest, VerifySignature)
+TEST(GnssCryptoTest, VerifySignatureP256)
 {
     auto d_crypto = std::make_unique<Gnss_Crypto>();
 
@@ -293,12 +293,12 @@ TEST(GnssCryptoTest, VerifySignature)
         0x45, 0x59, 0x2D, 0x2D, 0x2D, 0x2D, 0x2D, 0x0A};
 
     d_crypto->set_public_key(publicKey);
-    bool result = d_crypto->verify_signature(message, signature);
+    bool result = d_crypto->verify_signature_ecdsa_p256(message, signature);
     ASSERT_TRUE(result);
 
     std::vector<uint8_t> wrong_signature = signature;
     wrong_signature[1] = 1;
-    bool result2 = d_crypto->verify_signature(message, wrong_signature);
+    bool result2 = d_crypto->verify_signature_ecdsa_p256(message, wrong_signature);
     ASSERT_TRUE(!result2);
 }
 

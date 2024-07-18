@@ -133,9 +133,73 @@ bool Gnss_Crypto::have_public_key() const
 }
 
 
-bool Gnss_Crypto::verify_signature(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const
+bool Gnss_Crypto::store_public_key(const std::string& pubKeyFilePath) const
 {
-    std::vector<uint8_t> digest = this->computeSHA256(message);
+    if (!have_public_key())
+        {
+            return false;
+        }
+    std::ofstream pubKeyFile(pubKeyFilePath, std::ios::binary);
+    if (!pubKeyFile.is_open())
+        {
+            LOG(INFO) << "Unable to open file: " << pubKeyFilePath;
+            return false;
+        }
+#if USE_GNUTLS_FALLBACK
+    gnutls_datum_t pem_data;
+#if HAVE_GNUTLS_PUBKEY_EXPORT2
+    int ret = gnutls_pubkey_export2(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data);
+#else
+    size_t output_stata_size;
+    int ret = gnutls_pubkey_export(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data, &output_stata_size);
+#endif
+    if (ret != GNUTLS_E_SUCCESS)
+        {
+            LOG(INFO) << "GnuTLS: Failed to export public key: " << gnutls_strerror(ret);
+            return false;
+        }
+
+    pubKeyFile.write((const char*)pem_data.data, pem_data.size);
+    pubKeyFile.close();
+    gnutls_free(pem_data.data);
+#else  // OpenSSL
+    BIO* bio = BIO_new(BIO_s_mem());
+    if (!bio)
+        {
+            LOG(INFO) << "OpenSSL: Failed to create BIO";
+            return false;
+        }
+#if USE_OPENSSL_3
+    if (!PEM_write_bio_PUBKEY(bio, d_PublicKey))
+#else  // OpenSSL 1.x
+    if (!PEM_write_bio_EC_PUBKEY(bio, d_PublicKey))
+#endif
+        {
+            LOG(INFO) << "OpenSSL: Failed to write public key to BIO";
+            BIO_free(bio);
+            return false;
+        }
+
+    char* bio_data;
+    auto bio_len = BIO_get_mem_data(bio, &bio_data);
+    if (bio_len <= 0)
+        {
+            LOG(INFO) << "OpenSSL: Failed to get BIO data";
+            BIO_free(bio);
+            return false;
+        }
+
+    pubKeyFile.write(bio_data, bio_len);
+    pubKeyFile.close();
+    BIO_free(bio);
+#endif
+    return true;
+}
+
+
+bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const
+{
+    std::vector<uint8_t> digest = this->compute_SHA_256(message);
     if (!have_public_key())
         {
             std::cerr << "Galileo OSNMA KROOT verification error: Public key is not available" << std::endl;
@@ -396,130 +460,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p521(const std::vector<uint8_t>& messag
 }
 
 
-bool Gnss_Crypto::store_public_key(const std::string& pubKeyFilePath) const
-{
-    if (!have_public_key())
-        {
-            return false;
-        }
-    std::ofstream pubKeyFile(pubKeyFilePath, std::ios::binary);
-    if (!pubKeyFile.is_open())
-        {
-            LOG(INFO) << "Unable to open file: " << pubKeyFilePath;
-            return false;
-        }
-#if USE_GNUTLS_FALLBACK
-    gnutls_datum_t pem_data;
-#if HAVE_GNUTLS_PUBKEY_EXPORT2
-    int ret = gnutls_pubkey_export2(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data);
-#else
-    size_t output_stata_size;
-    int ret = gnutls_pubkey_export(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data, &output_stata_size);
-#endif
-    if (ret != GNUTLS_E_SUCCESS)
-        {
-            LOG(INFO) << "GnuTLS: Failed to export public key: " << gnutls_strerror(ret);
-            return false;
-        }
-
-    pubKeyFile.write((const char*)pem_data.data, pem_data.size);
-    pubKeyFile.close();
-    gnutls_free(pem_data.data);
-#else  // OpenSSL
-    BIO* bio = BIO_new(BIO_s_mem());
-    if (!bio)
-        {
-            LOG(INFO) << "OpenSSL: Failed to create BIO";
-            return false;
-        }
-#if USE_OPENSSL_3
-    if (!PEM_write_bio_PUBKEY(bio, d_PublicKey))
-#else  // OpenSSL 1.x
-    if (!PEM_write_bio_EC_PUBKEY(bio, d_PublicKey))
-#endif
-        {
-            LOG(INFO) << "OpenSSL: Failed to write public key to BIO";
-            BIO_free(bio);
-            return false;
-        }
-
-    char* bio_data;
-    auto bio_len = BIO_get_mem_data(bio, &bio_data);
-    if (bio_len <= 0)
-        {
-            LOG(INFO) << "OpenSSL: Failed to get BIO data";
-            BIO_free(bio);
-            return false;
-        }
-
-    pubKeyFile.write(bio_data, bio_len);
-    pubKeyFile.close();
-    BIO_free(bio);
-#endif
-    return true;
-}
-
-
-std::vector<uint8_t> Gnss_Crypto::getPublicKey() const
-{
-    if (!have_public_key())
-        {
-            return {};
-        }
-#if USE_GNUTLS_FALLBACK
-    gnutls_datum_t pem_data = {nullptr, 0};
-
-    int ret = gnutls_pubkey_export2(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data);
-    if (ret != GNUTLS_E_SUCCESS)
-        {
-            LOG(INFO) << "GnuTLS: Failed to export public key to PEM format.";
-            return {};
-        }
-    std::vector<uint8_t> output(pem_data.data, pem_data.data + pem_data.size);
-
-    // Free the allocated memory by gnutls_pubkey_export2
-    gnutls_free(pem_data.data);
-#else  // OpenSSL
-    // Create a BIO for the memory buffer
-    BIO* mem = BIO_new(BIO_s_mem());
-    if (!mem)
-        {
-            LOG(INFO) << "OpenSSL: Failed to create BIO.";
-            return {};
-        }
-#if USE_OPENSSL_3
-    if (!PEM_write_bio_PUBKEY(mem, d_PublicKey))
-#else  // OpenSSL 1.x
-    if (!PEM_write_bio_EC_PUBKEY(mem, d_PublicKey))
-#endif
-        {
-            BIO_free(mem);
-            LOG(INFO) << "OpenSSL: Failed to write public key to PEM format.";
-            return {};
-        }
-
-    // Get the length of the data in the BIO
-    BUF_MEM* mem_ptr;
-    BIO_get_mem_ptr(mem, &mem_ptr);
-
-    // Copy the data from the BIO to a std::vector<uint8_t>
-    std::vector<uint8_t> output(mem_ptr->length);
-    memcpy(output.data(), mem_ptr->data, mem_ptr->length);
-
-    // Clean up the BIO
-    BIO_free(mem);
-#endif
-    return output;
-}
-
-
-std::vector<uint8_t> Gnss_Crypto::getMerkleRoot() const
-{
-    return d_x_4_0;
-}
-
-
-std::vector<uint8_t> Gnss_Crypto::computeSHA256(const std::vector<uint8_t>& input) const
+std::vector<uint8_t> Gnss_Crypto::compute_SHA_256(const std::vector<uint8_t>& input) const
 {
     std::vector<uint8_t> output(32);  // SHA256 hash size
 #if USE_GNUTLS_FALLBACK
@@ -564,7 +505,7 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA256(const std::vector<uint8_t>& inpu
 }
 
 
-std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& input) const
+std::vector<uint8_t> Gnss_Crypto::compute_SHA3_256(const std::vector<uint8_t>& input) const
 {
     std::vector<uint8_t> output(32);  // SHA256 hash size
 #if USE_GNUTLS_FALLBACK
@@ -598,7 +539,7 @@ std::vector<uint8_t> Gnss_Crypto::computeSHA3_256(const std::vector<uint8_t>& in
 }
 
 
-std::vector<uint8_t> Gnss_Crypto::computeHMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const
+std::vector<uint8_t> Gnss_Crypto::compute_HMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const
 {
     std::vector<uint8_t> output(32);
 #if USE_GNUTLS_FALLBACK
@@ -686,7 +627,7 @@ std::vector<uint8_t> Gnss_Crypto::computeHMAC_SHA_256(const std::vector<uint8_t>
 }
 
 
-std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const
+std::vector<uint8_t> Gnss_Crypto::compute_CMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const
 {
     std::vector<uint8_t> output(16);
 #if USE_GNUTLS_FALLBACK
@@ -829,6 +770,65 @@ std::vector<uint8_t> Gnss_Crypto::computeCMAC_AES(const std::vector<uint8_t>& ke
 }
 
 
+std::vector<uint8_t> Gnss_Crypto::get_public_key() const
+{
+    if (!have_public_key())
+        {
+            return {};
+        }
+#if USE_GNUTLS_FALLBACK
+    gnutls_datum_t pem_data = {nullptr, 0};
+
+    int ret = gnutls_pubkey_export2(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data);
+    if (ret != GNUTLS_E_SUCCESS)
+        {
+            LOG(INFO) << "GnuTLS: Failed to export public key to PEM format.";
+            return {};
+        }
+    std::vector<uint8_t> output(pem_data.data, pem_data.data + pem_data.size);
+
+    // Free the allocated memory by gnutls_pubkey_export2
+    gnutls_free(pem_data.data);
+#else  // OpenSSL
+    // Create a BIO for the memory buffer
+    BIO* mem = BIO_new(BIO_s_mem());
+    if (!mem)
+        {
+            LOG(INFO) << "OpenSSL: Failed to create BIO.";
+            return {};
+        }
+#if USE_OPENSSL_3
+    if (!PEM_write_bio_PUBKEY(mem, d_PublicKey))
+#else  // OpenSSL 1.x
+    if (!PEM_write_bio_EC_PUBKEY(mem, d_PublicKey))
+#endif
+        {
+            BIO_free(mem);
+            LOG(INFO) << "OpenSSL: Failed to write public key to PEM format.";
+            return {};
+        }
+
+    // Get the length of the data in the BIO
+    BUF_MEM* mem_ptr;
+    BIO_get_mem_ptr(mem, &mem_ptr);
+
+    // Copy the data from the BIO to a std::vector<uint8_t>
+    std::vector<uint8_t> output(mem_ptr->length);
+    memcpy(output.data(), mem_ptr->data, mem_ptr->length);
+
+    // Clean up the BIO
+    BIO_free(mem);
+#endif
+    return output;
+}
+
+
+std::vector<uint8_t> Gnss_Crypto::get_merkle_root() const
+{
+    return d_x_4_0;
+}
+
+
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
 #if USE_GNUTLS_FALLBACK
@@ -884,7 +884,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 }
 
 
-void Gnss_Crypto::setMerkleRoot(const std::vector<uint8_t>& v)
+void Gnss_Crypto::set_merkle_root(const std::vector<uint8_t>& v)
 {
     d_x_4_0 = v;
 }

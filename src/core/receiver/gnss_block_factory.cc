@@ -128,7 +128,7 @@
 #endif
 
 #if ENABLE_FPGA
-#include "dma_fpga_signal_source.h"
+#include "fpga_dma_signal_source.h"
 #include "galileo_e1_dll_pll_veml_tracking_fpga.h"
 #include "galileo_e1_pcps_ambiguous_acquisition_fpga.h"
 #include "galileo_e5a_dll_pll_tracking_fpga.h"
@@ -172,7 +172,7 @@
 #endif
 
 #if FPGA_MAX2771_EVKIT_DRIVER
-#include "max2771_evkit_fpga_signal_source.h"
+#include "fpga_max2771_evkit_signal_source.h"
 #endif
 
 #if LIMESDR_DRIVER
@@ -826,18 +826,18 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and FPGA_MAX2771_EVKIT_DRIVER
-            else if (implementation == "MAX2771_evkit_Fpga_Signal_Source")
+            else if (implementation == "FPGA_MAX2771_EVKIT_Signal_Source")
                 {
-                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<MAX2771EVKITFpgaSignalSource>(configuration, role, in_streams,
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<FPGAMAX2771EVKITSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }
 #endif
 
 #if ENABLE_FPGA
-            else if (implementation == "DMA_Fpga_Signal_Source")
+            else if (implementation == "FPGA_DMA_Signal_Source")
                 {
-                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<DMAFpgaSignalSource>(configuration, role, in_streams,
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<FPGADMASignalSource>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }

@@ -45,16 +45,16 @@ if(ENABLE_FPGA_MAX2771_EVKIT)
     ###############################################
     # MAX2771 EVKIT DIRECT TO FPGA Hardware
     ###############################################
-    list(APPEND OPT_DRIVER_SOURCES max2771_evkit_fpga_signal_source.cc)
-    list(APPEND OPT_DRIVER_HEADERS max2771_evkit_fpga_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES fpga_max2771_evkit_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS fpga_max2771_evkit_signal_source.h)
 endif()
 
 if(ENABLE_FPGA)
     ###############################################
     # FPGA DMA source
     ###############################################
-    list(APPEND OPT_DRIVER_SOURCES dma_fpga_signal_source.cc)
-    list(APPEND OPT_DRIVER_HEADERS dma_fpga_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES fpga_dma_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS fpga_dma_signal_source.h)
 endif()
 
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)

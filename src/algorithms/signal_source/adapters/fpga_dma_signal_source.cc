@@ -1,5 +1,5 @@
 /*!
- * \file dma_fpga_signal_source.cc
+ * \file fpga_dma_signal_source.cc
  * \brief signal source for a DMA connected directly to FPGA accelerators.
  * This source implements only the DMA control. It is NOT compatible with
  * conventional SDR acquisition and tracking blocks.
@@ -16,7 +16,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "dma_fpga_signal_source.h"
+#include "fpga_dma_signal_source.h"
 #include "command_event.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
@@ -37,10 +37,10 @@
 
 using namespace std::string_literals;
 
-DMAFpgaSignalSource::DMAFpgaSignalSource(const ConfigurationInterface *configuration,
+FPGADMASignalSource::FPGADMASignalSource(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
-    : SignalSourceBase(configuration, role, "DMA_Fpga_Signal_Source"s),
+    : SignalSourceBase(configuration, role, "FPGA_DMA_Signal_Source"s),
       queue_(queue),
       filename0_(configuration->property(role + ".filename", empty_string)),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
@@ -223,7 +223,7 @@ DMAFpgaSignalSource::DMAFpgaSignalSource(const ConfigurationInterface *configura
 }
 
 
-DMAFpgaSignalSource::~DMAFpgaSignalSource()
+FPGADMASignalSource::~FPGADMASignalSource()
 {
     std::unique_lock<std::mutex> lock_DMA(dma_mutex);
     enable_DMA_ = false;  // disable the DMA
@@ -251,13 +251,13 @@ DMAFpgaSignalSource::~DMAFpgaSignalSource()
 }
 
 
-void DMAFpgaSignalSource::start()
+void FPGADMASignalSource::start()
 {
     thread_file_to_dma = std::thread([&] { run_DMA_process(filename0_, filename1_, samples_to_skip_, item_size_, samples_, repeat_, dma_buff_offset_pos_, queue_); });
 }
 
 
-void DMAFpgaSignalSource::run_DMA_process(const std::string &filename0_, const std::string &filename1_, uint64_t &samples_to_skip, size_t &item_size, int64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
+void FPGADMASignalSource::run_DMA_process(const std::string &filename0_, const std::string &filename1_, uint64_t &samples_to_skip, size_t &item_size, int64_t &samples, bool &repeat, uint32_t &dma_buff_offset_pos, Concurrent_Queue<pmt::pmt_t> *queue)
 {
     std::ifstream infile1;
     infile1.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -535,7 +535,7 @@ void DMAFpgaSignalSource::run_DMA_process(const std::string &filename0_, const s
 }
 
 
-void DMAFpgaSignalSource::run_dynamic_bit_selection_process()
+void FPGADMASignalSource::run_dynamic_bit_selection_process()
 {
     bool dynamic_bit_selection_active = true;
 
@@ -554,7 +554,7 @@ void DMAFpgaSignalSource::run_dynamic_bit_selection_process()
 }
 
 
-void DMAFpgaSignalSource::connect(gr::top_block_sptr top_block)
+void FPGADMASignalSource::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -563,7 +563,7 @@ void DMAFpgaSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-void DMAFpgaSignalSource::disconnect(gr::top_block_sptr top_block)
+void FPGADMASignalSource::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -572,14 +572,14 @@ void DMAFpgaSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr DMAFpgaSignalSource::get_left_block()
+gr::basic_block_sptr FPGADMASignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
     return {};
 }
 
 
-gr::basic_block_sptr DMAFpgaSignalSource::get_right_block()
+gr::basic_block_sptr FPGADMASignalSource::get_right_block()
 {
     return {};
 }

@@ -120,7 +120,7 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361 OR ENABLE_PLUTOSDR)
     endif()
 endif()
 
-if(ENABLE_FPGA OR ENABLE_AD9361)
+if(ENABLE_FPGA)
     target_link_libraries(signal_source_libs
         PUBLIC
             algorithms_libs

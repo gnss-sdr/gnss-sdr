@@ -167,7 +167,7 @@ target_include_directories(signal_source_adapters
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
-if(ENABLE_FPGA OR ENABLE_AD9361 OR ENABLE_FPGA_MAX2771_EVKIT)
+if(ENABLE_FPGA)
     target_link_libraries(signal_source_adapters
         PUBLIC
             signal_source_libs

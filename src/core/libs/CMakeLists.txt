@@ -52,7 +52,7 @@ if(ENABLE_FPGA)
     )
 endif()
 
-if(ENABLE_FPGA OR ENABLE_AD9361)
+if(ENABLE_FPGA)
     set(CORE_LIBS_SOURCES
         ${CORE_LIBS_SOURCES}
         uio_fpga.cc

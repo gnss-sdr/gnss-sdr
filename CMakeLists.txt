@@ -3348,6 +3348,12 @@ if(ENABLE_AD9361 OR ENABLE_FMCOMMS2)
     endif()
 endif()
 
+##############################################
+# Check FPGA-related signal sources
+##############################################
+if((ENABLE_AD9361 OR ENABLE_FPGA_MAX2771_EVKIT) AND NOT ENABLE_FPGA)
+    message(FATAL_ERROR "ENABLE_AD9361 and ENABLE_FPGA_MAX2771_EVKIT can only be set when ENABLE_FPGA is also set.")
+endif()
 
 
 ##############################################

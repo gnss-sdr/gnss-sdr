@@ -1387,7 +1387,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         target_link_libraries(osnma_msg_receiver_test PRIVATE Gflags::gflags Glog::glog)
         target_compile_definitions(osnma_msg_receiver_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
     else()
-        target_link_libraries(osnma_msg_receiver_test PRIVATE absl::flags absl::flags_parse absl::log $<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags> absl::log_initialize)
+        target_link_libraries(osnma_msg_receiver_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(osnma_msg_receiver_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
 
     xcode_remove_warning_duplicates(osnma_msg_receiver_test) # TODO - unsure if needed

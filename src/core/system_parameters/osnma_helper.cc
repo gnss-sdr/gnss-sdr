@@ -74,7 +74,7 @@ std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) const
 }
 
 
-std::string Osnma_Helper::verification_status_str(const int& status) const
+std::string Osnma_Helper::verification_status_str(int status) const
 {
     switch (status)
         {

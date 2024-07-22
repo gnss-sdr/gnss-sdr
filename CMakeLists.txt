@@ -16,7 +16,7 @@ endif()
 # Build type can still be overridden by setting -DCMAKE_BUILD_TYPE=
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "")
 
-cmake_minimum_required(VERSION 2.8.12...3.29)
+cmake_minimum_required(VERSION 2.8.12...3.30)
 project(gnss-sdr CXX C)
 
 set(GNSSSDR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # Allows to be a sub-project
@@ -349,16 +349,16 @@ set(GNSSSDR_ABSEIL_MIN_VERSION "20240116")
 ################################################################################
 # Versions to download and build (but not to install system-wide) if not found
 ################################################################################
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.0.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.1")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.27")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "27.1")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "27.2")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.14.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.4")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.5")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abseil.io/about/releases)
 
@@ -756,8 +756,18 @@ set(BOOST_COMPONENTS atomic chrono date_time serialization system thread)
 if(NOT ${FILESYSTEM_FOUND})
     set(BOOST_COMPONENTS ${BOOST_COMPONENTS} filesystem)
 endif()
-find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
-
+if(CMAKE_VERSION VERSION_LESS 3.30)
+    find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS} REQUIRED)
+else()
+    find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} COMPONENTS ${BOOST_COMPONENTS})
+    if(NOT Boost_FOUND)
+        message(STATUS "Trying deprecated FindBoost Module ...")
+        if(POLICY CMP0167)
+            cmake_policy(SET CMP0167 OLD)
+            find_package(Boost ${GNSSSDR_BOOST_MIN_VERSION} REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+        endif()
+    endif()
+endif()
 if(NOT Boost_FOUND)
     message(FATAL_ERROR "Fatal error: Boost (version >=${GNSSSDR_BOOST_MIN_VERSION}) required.")
 endif()
@@ -2101,7 +2111,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
                 -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-                -DBUILD_SHARED_LIBS=OFF
+                -DSTATIC_LIB=ON
                 -DBUILD_SMOKE_TEST=OFF
                 -DALLOW_BLAS_LAPACK_MACOS=ON
                 ${ARMADILLO_CXX_VERSION}
@@ -2120,7 +2130,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
                 -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-                -DBUILD_SHARED_LIBS=OFF
+                -DSTATIC_LIB=ON
                 -DBUILD_SMOKE_TEST=OFF
                 -DALLOW_BLAS_LAPACK_MACOS=ON
                 ${ARMADILLO_CXX_VERSION}

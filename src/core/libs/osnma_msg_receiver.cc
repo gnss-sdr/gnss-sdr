@@ -3,14 +3,15 @@
  * \brief GNU Radio block that processes Galileo OSNMA data received from
  * Galileo E1B telemetry blocks. After successful decoding, sends the content to
  * the PVT block.
- * \author Carles Fernandez-Prades, 2023. cfernandez(at)cttc.es
+ * \author Carles Fernandez-Prades, 2023-2024. cfernandez(at)cttc.es
+ * Cesare Ghionoiu Martinez, 2023-2024. c.ghionoiu-martinez@tu-braunschweig.de
  *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -24,12 +25,13 @@
 #include "osnma_dsm_reader.h"  // for OSNMA_DSM_Reader
 #include "osnma_helper.h"
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
-#include <chrono>
 #include <cmath>
 #include <cstddef>
-#include <cstdint>
+#include <iomanip>  // for std::setfill
+#include <ios>      // for std::hex, std::uppercase
 #include <iostream>
-#include <numeric>
+#include <numeric>   // for std::accumulate
+#include <sstream>   // std::stringstream
 #include <typeinfo>  // for typeid
 #include <utility>
 
@@ -101,14 +103,14 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     const auto sat = Gnss_Satellite(std::string("Galileo"), nma_msg->PRN);  // TODO remove if unneeded
 
                     std::ostringstream output_message;
-                    output_message << "Galileo OSNMA: complete OSNMA message received starting at "
+                    output_message << "Galileo OSNMA: data received starting at "
                         << "WN="
                         << nma_msg->WN_sf0
                         << ", TOW="
                         << nma_msg->TOW_sf0
                         << ", from satellite "
                         << sat;
-                    LOG(WARNING) << output_message.str();
+                    LOG(INFO) << output_message.str();
                     std::cout << output_message.str() << std::endl;
 
                     process_osnma_message(nma_msg);
@@ -119,33 +121,34 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     const auto inav_data = wht::any_cast<std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>>(pmt::any_ref(msg));
                     uint32_t PRNa = std::get<0>(*inav_data);
                     std::string nav_data = std::get<1>(*inav_data);
-                    ;
                     uint32_t TOW = std::get<2>(*inav_data);
 
                     // iono data => 549 bits, utc data, 141 bits.
                     if (nav_data.size() == 549)
                         {
-//                            LOG(INFO) << "Galileo OSNMA: received ADKD=0/12 navData, PRN_d (" << PRNa << ") "
-//                                      << "TOW_sf=" << TOW;
+                            // LOG(INFO) << "Galileo OSNMA: received ADKD=0/12 navData, PRN_d (" << PRNa << ") "
+                            //           << "TOW_sf=" << TOW;
                             d_satellite_nav_data[PRNa][TOW].ephemeris_iono_vector_2 = nav_data;
                         }
                     else if (nav_data.size() == 141)
                         {
-//                            LOG(INFO) << "Galileo OSNMA: received ADKD=4 navData, PRN_d (" << PRNa << ") "
-//                                      << "TOW_sf=" << TOW;
+                            // LOG(INFO) << "Galileo OSNMA: received ADKD=4 navData, PRN_d (" << PRNa << ") "
+                            //           << "TOW_sf=" << TOW;
                             d_satellite_nav_data[PRNa][TOW].utc_vector_2 = nav_data;
                         }
                     else
-                        LOG(WARNING) << "osnma_msg_receiver incorrect navData parsing!";
+                        {
+                            LOG(WARNING) << "Galileo OSNMA: osnma_msg_receiver incorrect navData parsing!";
+                        }
                 }
             else
                 {
-                    LOG(WARNING) << "osnma_msg_receiver received an unknown object type!";
+                    LOG(WARNING) << "Galileo OSNMA: osnma_msg_receiver received an unknown object type!";
                 }
         }
     catch (const wht::bad_any_cast& e)
         {
-            LOG(WARNING) << "osnma_msg_receiver Bad any_cast: " << e.what();
+            LOG(WARNING) << "Galileo OSNMA: osnma_msg_receiver Bad any_cast: " << e.what();
         }
 
     //  Send the resulting decoded NMA data (if available) to PVT
@@ -155,7 +158,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
             this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(osnma_data_ptr));
             d_new_data = false;
             // d_osnma_data = OSNMA_data();
-            DLOG(INFO) << "NMA info sent to the PVT block through the OSNMA_to_PVT async message port";
+            DLOG(INFO) << "Galileo OSNMA: NMA info sent to the PVT block through the OSNMA_to_PVT async message port";
         }
 }
 
@@ -172,7 +175,9 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
     read_dsm_block(osnma_msg);
     process_dsm_block(osnma_msg);  // will process dsm block if received a complete one, then will call mack processing upon re-setting the dsm block to 0
     if (d_osnma_data.d_dsm_kroot_message.towh_k != 0)
-        local_time_verification(osnma_msg);
+        {
+            local_time_verification(osnma_msg);
+        }
     read_and_process_mack_block(osnma_msg);  // only process them if at least 3 available.
 }
 
@@ -203,8 +208,6 @@ void osnma_msg_receiver::read_dsm_header(uint8_t dsm_header)
 {
     d_osnma_data.d_dsm_header.dsm_id = d_dsm_reader->get_dsm_id(dsm_header);
     d_osnma_data.d_dsm_header.dsm_block_id = d_dsm_reader->get_dsm_block_id(dsm_header);  // BID
-//    LOG(INFO) << "OSNMA: DSM_ID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
-//    LOG(INFO) << "OSNMA: DSM_BID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id);
     LOG(INFO) << "Galileo OSNMA: Received block DSM_BID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_block_id)
               << " with DSM_ID " << static_cast<uint32_t>(d_osnma_data.d_dsm_header.dsm_id);
 }
@@ -246,7 +249,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
                 }
 
             d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = number_of_blocks;
-            LOG(INFO) << "OSNMA: number_of_blocks=" << static_cast<uint32_t>(number_of_blocks);
+            LOG(INFO) << "Galileo OSNMA: number of blocks in this message: " << static_cast<uint32_t>(number_of_blocks);
             if (number_of_blocks == 0)
                 {
                     // Something is wrong, start over
@@ -275,7 +278,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
         }
     else
         {
-            for (uint8_t k = 0; k < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; k++)
+            for (uint16_t k = 0; k < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; k++)
                 {
                     if (d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][k] == 0)
                         {
@@ -289,7 +292,9 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
         }
     available_blocks << "]";
     LOG(INFO) << available_blocks.str();
+    std::cout << available_blocks.str() << std::endl;
 }
+
 
 /**
  * @brief Function to verify the local time based on GST_SIS and GST_0
@@ -323,7 +328,7 @@ void osnma_msg_receiver::local_time_verification(const std::shared_ptr<OSNMA_msg
             d_tags_allowed = tags_to_verify::all;
             d_tags_to_verify = {0, 4, 12};
             LOG(INFO) << "Galileo OSNMA: time constraint OK ( delta_T=" << delta_T << " s)";
-//            LOG(INFO) << "Galileo OSNMA: d_receiver_time: " << d_receiver_time << " d_GST_SIS: " << d_GST_SIS;
+            // LOG(INFO) << "Galileo OSNMA: d_receiver_time: " << d_receiver_time << " d_GST_SIS: " << d_GST_SIS;
             // std::cout << "( |local_t - GST_SIS| < T_L ) [ |" << static_cast<int>(d_receiver_time - d_GST_SIS)<< " | < " << static_cast<int>(d_T_L) << " ]" << std::endl;
 
             // TODO set flag to false to avoid processing dsm and MACK messages
@@ -334,7 +339,7 @@ void osnma_msg_receiver::local_time_verification(const std::shared_ptr<OSNMA_msg
             d_tags_to_verify = {12};
             LOG(WARNING) << "Galileo OSNMA: time constraint allows only slow MACs to be verified";
             LOG(WARNING) << "Galileo OSNMA: d_receiver_time: " << d_receiver_time << " d_GST_SIS: " << d_GST_SIS;
-            LOG(WARNING) << "( |local_t - GST_SIS| < T_L ) [ |" << static_cast<int>(d_receiver_time - d_GST_SIS) << " | < " << static_cast<int>(d_T_L) << " ]";
+            LOG(WARNING) << "Galileo OSNMA: ( |local_t - GST_SIS| < T_L ) [ |" << static_cast<int>(d_receiver_time - d_GST_SIS) << " | < " << static_cast<int>(d_T_L) << " ]";
         }
     else
         {
@@ -342,7 +347,7 @@ void osnma_msg_receiver::local_time_verification(const std::shared_ptr<OSNMA_msg
             d_tags_to_verify = {};
             LOG(WARNING) << "Galileo OSNMA: time constraint violation";
             LOG(WARNING) << "Galileo OSNMA: d_receiver_time: " << d_receiver_time << " d_GST_SIS: " << d_GST_SIS;
-            LOG(WARNING) << "( |local_t - GST_SIS| < T_L ) [ |" << static_cast<int>(d_receiver_time - d_GST_SIS) << " | < " << static_cast<int>(d_T_L) << " ]";
+            LOG(WARNING) << "Galileo OSNMA: ( |local_t - GST_SIS| < T_L ) [ |" << static_cast<int>(d_receiver_time - d_GST_SIS) << " | < " << static_cast<int>(d_T_L) << " ]";
         }
 }
 
@@ -391,7 +396,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
     if (d_osnma_data.d_dsm_header.dsm_id < 12)
         {
             // Parse Kroot message
-            LOG(INFO) << "OSNMA: DSM-KROOT message received.";
+            LOG(INFO) << "Galileo OSNMA: DSM-KROOT message received.";
             d_osnma_data.d_dsm_kroot_message.nb_dk = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
             d_osnma_data.d_dsm_kroot_message.pkid = d_dsm_reader->get_pkid(dsm_msg);
             d_osnma_data.d_dsm_kroot_message.cidkr = d_dsm_reader->get_cidkr(dsm_msg);
@@ -457,11 +462,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     std::vector<uint8_t> hash;
                     if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
                         {
-                            hash = d_crypto->computeSHA256(MSG);
+                            hash = d_crypto->compute_SHA_256(MSG);
                         }
                     else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
                         {
-                            hash = d_crypto->computeSHA3_256(MSG);
+                            hash = d_crypto->compute_SHA3_256(MSG);
                         }
                     else
                         {
@@ -483,7 +488,14 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
                                       << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
                             local_time_verification(osnma_msg);
-                            d_kroot_verified = d_crypto->verify_signature(message, d_osnma_data.d_dsm_kroot_message.ds);
+                            if(l_ds_bits == 512)
+                                {
+                                    d_kroot_verified = d_crypto->verify_signature_ecdsa_p256(message, d_osnma_data.d_dsm_kroot_message.ds);
+                                }
+                            else if(l_ds_bits == 1056)
+                                {
+                                    d_kroot_verified = d_crypto->verify_signature_ecdsa_p521(message, d_osnma_data.d_dsm_kroot_message.ds);
+                                }
                             if (d_kroot_verified)
                                 {
                                     std::cout << "Galileo OSNMA: KROOT authentication successful!" << std::endl;
@@ -495,6 +507,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                             else
                                 {
                                     LOG(WARNING) << "Galileo OSNMA: KROOT authentication failed.";
+                                    std::cerr << "Galileo OSNMA: KROOT authentication failed." << std::endl;
                                 }
                         }
                     else
@@ -506,7 +519,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
         }
     else if (d_osnma_data.d_dsm_header.dsm_id >= 12 && d_osnma_data.d_dsm_header.dsm_id < 16)
         {
-            LOG(WARNING) << "Galileo OSNMA: DSM-PKR message received.";
+            LOG(INFO) << "Galileo OSNMA: DSM-PKR message received.";
             // Save DSM-PKR message
             d_osnma_data.d_dsm_pkr_message.nb_dp = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
             d_osnma_data.d_dsm_pkr_message.mid = d_dsm_reader->get_mid(dsm_msg);
@@ -530,7 +543,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             uint32_t l_dp_bytes = dsm_msg.size();
             if (d_osnma_data.d_dsm_pkr_message.npkt == 4)
                 {
-                    LOG(WARNING) << "OSNMA: OAM received";
+                    LOG(WARNING) << "Galileo OSNMA: OAM received";
                     l_npk_bytes = l_dp_bytes - 130;  // bytes
                 }
 
@@ -576,8 +589,8 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
     else
         {
             // Reserved message?
-            LOG(WARNING) << "OSNMA Reserved message received";
-            // d_osnma_data = OSNMA_data();
+            LOG(WARNING) << "Galileo OSNMA: Reserved message received";
+            std::cerr << "Galileo OSNMA: Reserved message received" << std::endl;
         }
     d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
 }
@@ -883,15 +896,16 @@ void osnma_msg_receiver::process_mack_message()
 {
     if (d_kroot_verified == false && d_tesla_key_verified == false)
         {
-            LOG(WARNING) << "Galileo OSNMA: MACK cannot be processed. "
-                         << ", "
-                         << "No Kroot nor TESLA key available";
+            LOG(WARNING) << "Galileo OSNMA: MACK cannot be processed, "
+                         << "no Kroot nor TESLA key available.";
             if (!d_flag_debug)
                 {
                     return;  // early return, cannot proceed further without one of the two verified. this equals to having Kroot but no TESLa key yet.
                 }
             else
-                LOG(WARNING) << "But it will be processed for debugging purposes.";
+                {
+                    LOG(WARNING) << "Galileo OSNMA: But it will be processed for debugging purposes.";
+                }
         }
     // verify tesla key and add it to the container of verified keys if successful
     if (d_tesla_keys.find(d_osnma_data.d_nav_data.TOW_sf0) == d_tesla_keys.end())  // check if already available => no need to verify
@@ -914,10 +928,9 @@ void osnma_msg_receiver::process_mack_message()
                     d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, tag0));
 //                    bool ret = verify_macseq(*mack);
                     std::vector<MACK_tag_and_info> macseq_verified_tags = verify_macseq_new(*mack);
-                    for (std::size_t i = 0; i < macseq_verified_tags.size(); ++i)
+                    for (auto & tag_and_info : macseq_verified_tags)
                         {
                             // add tags of current mack to the verification queue
-                            auto& tag_and_info = macseq_verified_tags[i];
                             Tag t(tag_and_info, mack->TOW, mack->WN, mack->PRNa, tag_and_info.counter);
                             d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, t));
                             LOG(INFO) << "Galileo OSNMA: Add Tag Id= "
@@ -933,12 +946,13 @@ void osnma_msg_receiver::process_mack_message()
                                       << ", PRNd="
                                       << static_cast<unsigned>(t.PRN_d);
                         }
-                    std::cout << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size() << std::endl;
+                    LOG(INFO) << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size();
                     mack = d_macks_awaiting_MACSEQ_verification.erase(mack);
 
                 }
             else
-                {  // key not yet available - keep in container until then -- might be deleted if container size exceeds max allowed
+                {
+                    // key not yet available - keep in container until then -- might be deleted if container size exceeds max allowed
                     ++mack;
                 }
         }
@@ -960,18 +974,24 @@ void osnma_msg_receiver::process_mack_message()
                     if (ret)
                         {
                             it.second.status = Tag::SUCCESS;
-                            LOG(WARNING) << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id= "
-                                         << it.second.tag_id
-                                         << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
-                                         << it.second.received_tag << std::dec
-                                         << ", TOW="
-                                         << it.second.TOW
-                                         << ", ADKD="
-                                         << static_cast<unsigned>(it.second.ADKD)
-                                         << ", PRNa="
-                                         << static_cast<unsigned>(it.second.PRNa)
-                                         << ", PRNd="
-                                         << static_cast<unsigned>(it.second.PRN_d);
+                            LOG(INFO) << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id="
+                                      << it.second.tag_id
+                                      << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                                      << it.second.received_tag << std::dec
+                                      << ", TOW="
+                                      << it.second.TOW
+                                      << ", ADKD="
+                                      << static_cast<unsigned>(it.second.ADKD)
+                                      << ", PRNa="
+                                      << static_cast<unsigned>(it.second.PRNa)
+                                      << ", PRNd="
+                                      << static_cast<unsigned>(it.second.PRN_d);
+                            std::cout << "Galileo OSNMA: Tag verification :: SUCCESS for tag ADKD="
+                                      << static_cast<unsigned>(it.second.ADKD)
+                                      << ", PRNa="
+                                      << static_cast<unsigned>(it.second.PRNa)
+                                      << ", PRNd="
+                                      << static_cast<unsigned>(it.second.PRN_d) << std::endl;
                         }
                     /* TODO notify PVT via pmt
                      * have_new_data() true
@@ -980,7 +1000,7 @@ void osnma_msg_receiver::process_mack_message()
                     else
                         {
                             it.second.status = Tag::FAIL;
-                            LOG(WARNING) << "Galileo OSNMA: Tag verification :: FAILURE  for tag Id="
+                            LOG(WARNING) << "Galileo OSNMA: Tag verification :: FAILURE for tag Id="
                                          << it.second.tag_id
                                          << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                                          << it.second.received_tag << std::dec
@@ -992,6 +1012,12 @@ void osnma_msg_receiver::process_mack_message()
                                          << static_cast<unsigned>(it.second.PRNa)
                                          << ", PRNd="
                                          << static_cast<unsigned>(it.second.PRN_d);
+                            std::cerr << "Galileo OSNMA: Tag verification :: FAILURE for tag ADKD="
+                                      << static_cast<unsigned>(it.second.ADKD)
+                                      << ", PRNa="
+                                      << static_cast<unsigned>(it.second.PRNa)
+                                      << ", PRNd="
+                                      << static_cast<unsigned>(it.second.PRN_d) << std::endl;
                         }
                 }
             else if (it.second.TOW > d_osnma_data.d_nav_data.TOW_sf0)
@@ -1031,29 +1057,32 @@ void osnma_msg_receiver::process_mack_message()
  * \pre DSM_PKR_message correctly filled in especially the 1024 intermediate tree nodes
  * \returns true if computed merkle root matches received one, false otherwise
  */
-bool osnma_msg_receiver::verify_dsm_pkr(DSM_PKR_message message)
+bool osnma_msg_receiver::verify_dsm_pkr(const DSM_PKR_message& message) const
 {
-    std::vector<uint8_t> computed_merkle_root; // x_4_0
-    std::vector<uint8_t> base_leaf = compute_base_leaf(message); // m_i
+    const auto base_leaf = get_merkle_tree_leaves(message); // m_i
+    const auto computed_merkle_root = compute_merkle_root(message, base_leaf);  // x_4_0
+    const auto msg_id = static_cast<int>(message.mid);
+    LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: leaf provided for Message ID " << msg_id;
 
-    LOG(INFO) << "Galileo OSNMA: DSM-PKR :: leaf provided: m_" << static_cast<int>(message.mid);
-
-    computed_merkle_root  = compute_merke_root(message, base_leaf);
-
-    if (computed_merkle_root == d_crypto->getMerkleRoot())
+    if (computed_merkle_root == d_crypto->get_merkle_root())
         {
-            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: SUCCESS!." << std::endl;
+            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: SUCCESS.";
+            std::cout << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: SUCCESS." << std::endl;
             return true;
         }
     else
         {
-            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: FAILURE." << std::endl;
+            LOG(WARNING) << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: FAILURE.";
+            std::cerr << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: FAILURE." << std::endl;
             return false;
         }
 }
-std::vector<uint8_t> osnma_msg_receiver::compute_merke_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const
+
+
+std::vector<uint8_t> osnma_msg_receiver::compute_merkle_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const
 {
-    std::vector<uint8_t> x_next, x_current = d_crypto->computeSHA256(m_i);
+    std::vector<uint8_t> x_next;
+    std::vector<uint8_t> x_current = d_crypto->compute_SHA_256(m_i);
     for (size_t i = 0; i < 4; i++)
         {
             x_next.clear();
@@ -1073,16 +1102,20 @@ std::vector<uint8_t> osnma_msg_receiver::compute_merke_root(const DSM_PKR_messag
                 }
 
             // Compute the next node.
-            x_current = d_crypto->computeSHA256(x_next);
+            x_current = d_crypto->compute_SHA_256(x_next);
         }
     return x_current;
 }
-std::vector<uint8_t> osnma_msg_receiver::compute_base_leaf(const DSM_PKR_message& dsm_pkr_message) const
-{  // build base leaf m_i
+
+
+std::vector<uint8_t> osnma_msg_receiver::get_merkle_tree_leaves(const DSM_PKR_message& dsm_pkr_message) const
+{
+    // build base leaf m_i according to OSNMA SIS ICD v1.1, section 6.2 DSM-PKR Verification 
     std::vector<uint8_t> m_i;
-    m_i.reserve(2 + dsm_pkr_message.npk.size());
+    const size_t size_npk = dsm_pkr_message.npk.size();
+    m_i.reserve(1 + size_npk);
     m_i.push_back((dsm_pkr_message.npkt << 4) + dsm_pkr_message.npktid);
-    for (uint8_t i = 0; i < dsm_pkr_message.npk.size(); i++)
+    for (size_t i = 0; i < size_npk; i++)
         {
             m_i.push_back(dsm_pkr_message.npk[i]);
         }
@@ -1090,13 +1123,13 @@ std::vector<uint8_t> osnma_msg_receiver::compute_base_leaf(const DSM_PKR_message
 }
 
 
-bool osnma_msg_receiver::verify_tag(Tag& tag)
+bool osnma_msg_receiver::verify_tag(const Tag& tag) const
 {
     // Debug
-//    LOG(INFO) << "Galileo OSNMA: Tag verification :: Start for tag Id= "
-//              << tag.tag_id
-//              << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
-//              << tag.received_tag << std::dec;
+    //    LOG(INFO) << "Galileo OSNMA: Tag verification :: Start for tag Id= "
+    //              << tag.tag_id
+    //              << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+    //              << tag.received_tag << std::dec;
     // build message
     std::vector<uint8_t> m = build_message(tag);
 
@@ -1104,23 +1137,38 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
     std::vector<uint8_t> applicable_key;
     if (tag.ADKD == 0 || tag.ADKD == 4)
         {
-            applicable_key = d_tesla_keys[tag.TOW + 30];
-//            LOG(INFO) << "|---> Galileo OSNMA :: applicable key: 0x" << d_helper->convert_to_hex_string(applicable_key) << "TOW="<<static_cast<int>(tag.TOW + 30);
+            const auto it = d_tesla_keys.find(tag.TOW + 30);
+            if(it != d_tesla_keys.cend())
+                {
+                    applicable_key = it->second;
+                }
+            else
+                {
+                    return false;
+                }
+            // LOG(INFO) << "|---> Galileo OSNMA :: applicable key: 0x" << d_helper->convert_to_hex_string(applicable_key) << "TOW="<<static_cast<int>(tag.TOW + 30);
         }
-        else  // ADKD 12
-            {
-                applicable_key = d_tesla_keys[tag.TOW + 330];
-//                LOG(INFO) << "|---> Galileo OSNMA :: applicable key: 0x" << d_helper->convert_to_hex_string(applicable_key) << "TOW="<<static_cast<int>(tag.TOW + 330);
-            }
-
+    else  // ADKD 12
+        {
+            const auto it = d_tesla_keys.find(tag.TOW + 330);
+            if(it != d_tesla_keys.cend())
+                {
+                    applicable_key = it->second;
+                }
+            else
+                {
+                    return false;
+                }
+            // LOG(INFO) << "|---> Galileo OSNMA :: applicable key: 0x" << d_helper->convert_to_hex_string(applicable_key) << "TOW="<<static_cast<int>(tag.TOW + 330);
+        }
 
     if (d_osnma_data.d_dsm_kroot_message.mf == 0)  // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+            mac = d_crypto->compute_HMAC_SHA_256(applicable_key, m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1)  // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(applicable_key, m);
+            mac = d_crypto->compute_CMAC_AES(applicable_key, m);
         }
 
     // truncate the computed mac: trunc(l_t, mac(K,m)) Eq. 23 ICD
@@ -1164,12 +1212,20 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
     // Compare computed tag with received one truncated
     if (tag.received_tag == computed_mac)
         {
-            std::cout << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id= "
+            LOG(INFO) << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id="
                       << tag.tag_id
                       << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                       << tag.received_tag << std::dec
                       << ", TOW="
                       << tag.TOW
+                      << ", ADKD="
+                      << static_cast<unsigned>(tag.ADKD)
+                      << ", PRNa="
+                      << static_cast<unsigned>(tag.PRNa)
+                      << ", PRNd="
+                      << static_cast<unsigned>(tag.PRN_d);
+            std::cout << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id="
+                      << tag.tag_id
                       << ", ADKD="
                       << static_cast<unsigned>(tag.ADKD)
                       << ", PRNa="
@@ -1182,11 +1238,13 @@ bool osnma_msg_receiver::verify_tag(Tag& tag)
 }
 
 
-std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
+std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag) const
 {
     std::vector<uint8_t> m;
     if (tag.CTR != 1)
-        m.push_back(static_cast<uint8_t>(tag.PRN_d));
+        {
+            m.push_back(static_cast<uint8_t>(tag.PRN_d));
+        }
     m.push_back(static_cast<uint8_t>(tag.PRNa));
     // TODO: maybe here I have to use d_receiver_time instead of d_GST_SIS which is what I am computing
     uint32_t GST = d_helper->compute_gst(tag.WN, tag.TOW);
@@ -1203,16 +1261,34 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
     std::vector<uint8_t> applicable_nav_data_bytes;
     if (tag.ADKD == 0 || tag.ADKD == 12)  // note: for ADKD=12 still the same logic applies. Only the Key selection is shifted 10 Subframes into the future.
         {
-            applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].ephemeris_iono_vector_2;
-//            LOG(INFO) << "|---> Galileo OSNMA :: applicable NavData (PRN_d="<< static_cast<int>(tag.PRN_d) << ", TOW=" << tag.TOW - 30 <<"): 0b" << applicable_nav_data;
+            const auto it = d_satellite_nav_data.find(tag.PRN_d);
+            if (it != d_satellite_nav_data.cend())
+                {
+                    const auto it2 = it->second.find(tag.TOW - 30);
+                    if (it2 != it->second.cend())
+                        {
+                            applicable_nav_data = it2->second.ephemeris_iono_vector_2;
+                        }
+                }
+            // LOG(INFO) << "|---> Galileo OSNMA :: applicable NavData (PRN_d="<< static_cast<int>(tag.PRN_d) << ", TOW=" << tag.TOW - 30 <<"): 0b" << applicable_nav_data;
         }
     else if (tag.ADKD == 4)
         {
-            applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].utc_vector_2;
-//            LOG(INFO) << "|---> Galileo OSNMA :: applicable NavData (PRN_d="<< static_cast<int>(tag.PRN_d)  << ", TOW=" << tag.TOW - 30 <<"): 0b" << applicable_nav_data;
+            const auto it = d_satellite_nav_data.find(tag.PRN_d);
+            if (it != d_satellite_nav_data.cend())
+                {
+                    const auto it2 = it->second.find(tag.TOW - 30);
+                    if (it2 != it->second.cend())
+                        {
+                            applicable_nav_data = it2->second.utc_vector_2;
+                        }
+                }
+            // LOG(INFO) << "|---> Galileo OSNMA :: applicable NavData (PRN_d="<< static_cast<int>(tag.PRN_d)  << ", TOW=" << tag.TOW - 30 <<"): 0b" << applicable_nav_data;
         }
     else
-        LOG(WARNING) << "Galileo OSNMA :: Tag verification :: unknown ADKD";
+        {
+            LOG(WARNING) << "Galileo OSNMA: Tag verification :: unknown ADKD";
+        }
     // convert std::string to vector<uint8_t>
     applicable_nav_data_bytes = d_helper->bytes(applicable_nav_data);
 
@@ -1283,10 +1359,10 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
     uint32_t GST_SFi = d_receiver_time - 30;  // GST of target key is to be used.
     std::vector<uint8_t> hash;
     const uint8_t lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
-    // std::vector<uint8_t> validated_key;
+    std::vector<uint8_t> validated_key;
     if (d_tesla_key_verified)
         {  // have to go up to last verified key
-            d_validated_key = d_tesla_keys.rbegin()->second;
+            validated_key = d_tesla_keys.rbegin()->second;
             num_of_hashes_needed = (d_receiver_time - d_last_verified_key_GST) / 30;  // Eq. 19 ICD modified
             LOG(INFO) << "Galileo OSNMA: TESLA verification (" << num_of_hashes_needed << " hashes) need to be performed up to closest verified TESLA key";
 
@@ -1294,7 +1370,7 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
         }
     else
         {  // have to go until Kroot
-            d_validated_key = d_osnma_data.d_dsm_kroot_message.kroot;
+            validated_key = d_osnma_data.d_dsm_kroot_message.kroot;
             num_of_hashes_needed = (d_receiver_time - d_GST_0) / 30 + 1;  // Eq. 19 IC
             LOG(INFO) << "Galileo OSNMA: TESLA verification (" << num_of_hashes_needed << " hashes) need to be performed up to Kroot";
 
@@ -1303,20 +1379,22 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
     // truncate hash
     std::vector<uint8_t> computed_key;
     computed_key.reserve(key.size());
-    for (uint16_t i = 0; i < key.size(); i++)
+    for (size_t i = 0; i < key.size(); i++)
         {
             computed_key.push_back(hash[i]);
         }
-    if (computed_key == d_validated_key && num_of_hashes_needed > 0)
+    if (computed_key == validated_key && num_of_hashes_needed > 0)
         {
-            LOG(WARNING) << "Galileo OSNMA:: TESLA key verification :: SUCCESS!";
+            LOG(INFO) << "Galileo OSNMA: TESLA key verification :: SUCCESS!";
+            std::cout << "Galileo OSNMA: TESLA key verification :: SUCCESS!" << std::endl;
             d_tesla_keys.insert(std::pair<uint32_t, std::vector<uint8_t>>(TOW, key));
             d_tesla_key_verified = true;
             d_last_verified_key_GST = d_receiver_time;
         }
     else if (num_of_hashes_needed > 0)
         {
-            LOG(WARNING) << "Galileo OSNMA:: TESLA key verification :: FAILED";
+            LOG(WARNING) << "Galileo OSNMA: TESLA key verification :: FAILED";
+            std::cerr << "Galileo OSNMA: TESLA key verification :: FAILED" << std::endl;
             if (d_flag_debug)
                 {
                     d_tesla_keys.insert(std::pair<uint32_t, std::vector<uint8_t>>(TOW, key));
@@ -1375,9 +1453,11 @@ void osnma_msg_receiver::remove_verified_tags()
                     it = d_tags_awaiting_verify.erase(it);
                 }
             else
-                ++it;
+                {
+                    ++it;
+                }
         }
-    std::cout << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size() << std::endl;
+    LOG(INFO) << "Galileo OSNMA: d_tags_awaiting_verify :: size: " << d_tags_awaiting_verify.size();
 }
 
 
@@ -1394,11 +1474,11 @@ void osnma_msg_receiver::control_tags_awaiting_verify_size()
     while (d_tags_awaiting_verify.size() > 500)
         {
             auto it = d_tags_awaiting_verify.begin();
-            LOG(WARNING) << "Galileo OSNMA: Tag verification :: DELETED tag due to exceeding buffer size. "
-                         << "Tag Id= " << it->second.tag_id
-                         << ", TOW=" << it->first
-                         << ", ADKD=" << static_cast<unsigned>(it->second.ADKD)
-                         << ", from satellite " << it->second.PRNa;
+            LOG(INFO) << "Galileo OSNMA: Tag verification :: DELETED tag due to exceeding buffer size. "
+                      << "Tag Id= " << it->second.tag_id
+                      << ", TOW=" << it->first
+                      << ", ADKD=" << static_cast<unsigned>(it->second.ADKD)
+                      << ", from satellite " << it->second.PRNa;
             d_tags_awaiting_verify.erase(it);
         }
 }
@@ -1446,7 +1526,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     std::vector<uint8_t> flxTags{};
     std::string tempADKD;
     // MACLT verification
-    for (uint8_t i = 0; i < mack.tag_and_info.size(); i++)
+    for (size_t i = 0; i < mack.tag_and_info.size(); i++)
         {
             tempADKD = applicable_sequence[i + 1];
             if (tempADKD == "FLX")
@@ -1463,7 +1543,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
 
     if (flxTags.empty())
         {
-            LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: ADKD matches MAC Look-up table.";
+            LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: ADKD matches MAC Look-up table.";
             return true;
         }
     // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
@@ -1474,7 +1554,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     m[3] = static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8);
     m[4] = static_cast<uint8_t>(d_GST_Sf & 0x000000FF);
     // Case tags flexible - Eq. 21 ICD
-    for (uint8_t i = 0; i < flxTags.size(); i++)
+    for (size_t i = 0; i < flxTags.size(); i++)
         {
             m[2 * i + 5] = mack.tag_and_info[flxTags[i]].tag_info.PRN_d;
             m[2 * i + 6] = mack.tag_and_info[flxTags[i]].tag_info.ADKD << 4 |
@@ -1484,11 +1564,11 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0)  // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+            mac = d_crypto->compute_HMAC_SHA_256(applicable_key, m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1)  // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(applicable_key, m);
+            mac = d_crypto->compute_CMAC_AES(applicable_key, m);
         }
     // Truncate the twelve MSBits and compare with received MACSEQ
     uint16_t mac_msb = 0;
@@ -1499,10 +1579,9 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     uint16_t computed_macseq = (mac_msb & 0xFFF0) >> 4;
     if (computed_macseq == mack.header.macseq)
         {
-            LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: FLX tags verification OK";
+            LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: FLX tags verification OK";
             return true;
         }
-
     else
         {
             LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: FLX tags verification failed";
@@ -1511,14 +1590,14 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
 }
 
 
-bool osnma_msg_receiver::tag_has_nav_data_available(Tag& t)
+bool osnma_msg_receiver::tag_has_nav_data_available(const Tag& t) const
 {
     auto prn_it = d_satellite_nav_data.find(t.PRN_d);
     if (prn_it != d_satellite_nav_data.end())
         {
             // PRN was found, check if TOW exists in inner map
             //LOG(INFO) << "Galileo OSNMA: hasData = true " << std::endl;
-            std::map<uint32_t, NavData>& tow_map = prn_it->second;
+            std::map<uint32_t, NavData> tow_map = prn_it->second;
             auto tow_it = tow_map.find(t.TOW - 30);
             if (tow_it != tow_map.end())
                 {
@@ -1540,7 +1619,7 @@ bool osnma_msg_receiver::tag_has_nav_data_available(Tag& t)
 }
 
 
-bool osnma_msg_receiver::tag_has_key_available(Tag& t)
+bool osnma_msg_receiver::tag_has_key_available(const Tag& t) const
 {
     // check adkd of tag
     // if adkd = 0 or 4 => look for d_tesla_keys[t.TOW+30]
@@ -1570,9 +1649,8 @@ bool osnma_msg_receiver::tag_has_key_available(Tag& t)
 }
 
 
-std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes)
+std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes) const
 {
-    auto start = std::chrono::high_resolution_clock::now();
     std::vector<uint8_t> K_II = key;
     std::vector<uint8_t> K_I;  // result of the recursive hash operations
     std::vector<uint8_t> msg;
@@ -1598,11 +1676,11 @@ std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_neede
             std::vector<uint8_t> hash;
             if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
                 {
-                    hash = d_crypto->computeSHA256(msg);
+                    hash = d_crypto->compute_SHA_256(msg);
                 }
             else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
                 {
-                    hash = d_crypto->computeSHA3_256(msg);
+                    hash = d_crypto->compute_SHA3_256(msg);
                 }
             else
                 {
@@ -1624,19 +1702,25 @@ std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_neede
     // check that the final time matches the Kroot time
     bool check;
     if (!d_tesla_key_verified)
-        check = GST_SFi + 30 == d_GST_0 - 30;
+        {
+            check = GST_SFi + 30 == d_GST_0 - 30;
+        }
     else
-        check = GST_SFi + 30 == d_last_verified_key_GST;
+        {
+            check = GST_SFi + 30 == d_last_verified_key_GST;
+        }
     if (!check)
-        LOG(WARNING) << "Galileo OSNMA: TESLA verification error. Kroot time mismatch!";  // ICD. Eq. 18
+        {
+            LOG(WARNING) << "Galileo OSNMA: TESLA key chain verification error: KROOT time mismatch!";  // ICD. Eq. 18
+            std::cerr << "Galileo OSNMA: TESLA key chain verification error: KROOT time mismatch!" << std::endl;
+        }
     else
-        LOG(INFO) << "Galileo OSNMA: TESLA verification. Kroot time matches!";  // ICD. Eq. 18
-    // compare computed current key against received key
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = end - start;
-//    LOG(INFO) << "Galileo OSNMA: TESLA verification (" << num_of_hashes_needed << " hashes) took " << elapsed.count() << " seconds.";
+        {
+            LOG(INFO) << "Galileo OSNMA: TESLA key chain verification: KROOT time matches.";  // ICD. Eq. 18
+        }
     return K_II;
 }
+
 
 /**
  * @brief Verifies the MAC sequence of a received MACK message.
@@ -1650,11 +1734,16 @@ std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_neede
  */
 std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_message& mack)
 {
-    std::vector<MACK_tag_and_info> verified_tags {};
+    std::vector<MACK_tag_and_info> verified_tags{};
 
     // MACSEQ verification
-    d_GST_Sf = d_receiver_time - 30;                                    // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received..
-    std::vector<uint8_t> applicable_key = d_tesla_keys[mack.TOW + 30];  // current tesla key ie transmitted in the next subframe
+    d_GST_Sf = d_receiver_time - 30;  // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received.
+    std::vector<uint8_t> applicable_key;
+    const auto key_it = d_tesla_keys.find(mack.TOW + 30);  // current tesla key ie transmitted in the next subframe
+    if (key_it != d_tesla_keys.cend())
+        {
+            applicable_key = key_it->second;
+        }
     std::vector<std::string> sq1{};
     std::vector<std::string> sq2{};
     std::vector<std::string> applicable_sequence;
@@ -1682,7 +1771,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     std::vector<uint8_t> flxTags{};
     std::string tempADKD;
     // MACLT verification
-    for (uint8_t i = 0; i < mack.tag_and_info.size(); i++)
+    for (size_t i = 0; i < mack.tag_and_info.size(); i++)
         {
             tempADKD = applicable_sequence[i + 1];
             if (tempADKD == "FLX")
@@ -1692,23 +1781,23 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
             else if (mack.tag_and_info[i].tag_info.ADKD == std::stoi(applicable_sequence[i + 1]))
                 {
                     // fill index of tags failed
-                    LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: ADKD match against MAC Look-up table for "
-                                    "Tag=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
-                                    << mack.tag_and_info[i].tag << std::dec;
+                    LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: ADKD match against MAC Look-up table for Tag=0x"
+                              << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                              << mack.tag_and_info[i].tag << std::dec;
                     verified_tags.push_back(mack.tag_and_info[i]);
                 }
             else
                 {
                     // discard tag
-                    LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: ADKD mismatch against MAC Look-up table for "
-                                    "Tag=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
-                                    << mack.tag_and_info[i].tag << std::dec;
+                    LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: ADKD mismatch against MAC Look-up table for Tag=0x"
+                                 << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                                 << mack.tag_and_info[i].tag << std::dec;
                 }
         }
 
     if (flxTags.empty() /*TODO add check d_flag_check_mackseq_fixed_tags*/)
         {
-            LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: No FLX tags to verify.";
+            LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: No FLX tags to verify.";
             return verified_tags;
         }
     // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
@@ -1719,7 +1808,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     m[3] = static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8);
     m[4] = static_cast<uint8_t>(d_GST_Sf & 0x000000FF);
     // Case tags flexible - Eq. 21 ICD
-    for (uint8_t i = 0; i < flxTags.size(); i++)
+    for (size_t i = 0; i < flxTags.size(); i++)
         {
             m[2 * i + 5] = mack.tag_and_info[flxTags[i]].tag_info.PRN_d;
             m[2 * i + 6] = mack.tag_and_info[flxTags[i]].tag_info.ADKD << 4 |
@@ -1729,11 +1818,11 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     std::vector<uint8_t> mac;
     if (d_osnma_data.d_dsm_kroot_message.mf == 0)  // C: HMAC-SHA-256
         {
-            mac = d_crypto->computeHMAC_SHA_256(applicable_key, m);
+            mac = d_crypto->compute_HMAC_SHA_256(applicable_key, m);
         }
     else if (d_osnma_data.d_dsm_kroot_message.mf == 1)  // C: CMAC-AES
         {
-            mac = d_crypto->computeCMAC_AES(applicable_key, m);
+            mac = d_crypto->compute_CMAC_AES(applicable_key, m);
         }
     // Truncate the twelve MSBits and compare with received MACSEQ
     uint16_t mac_msb = 0;
@@ -1744,10 +1833,10 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     uint16_t computed_macseq = (mac_msb & 0xFFF0) >> 4;
     if (computed_macseq == mack.header.macseq)
         {
-            LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: FLX tags verification OK";
-            for (uint8_t i = 0; i < flxTags.size(); i++)
+            LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: FLX tags verification OK";
+            for (uint8_t flxTag : flxTags)
                 {
-                    verified_tags.push_back(mack.tag_and_info[flxTags[i]]);
+                    verified_tags.push_back(mack.tag_and_info[flxTag]);
                 }
             return verified_tags;
         }
@@ -1757,5 +1846,4 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
             LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: FLX tags verification failed";
             return verified_tags;
         }
-
 }

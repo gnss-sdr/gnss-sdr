@@ -83,7 +83,7 @@ TEST_F(OsnmaMsgReceiverTest, ComputeMerkleRoot)
 
     // Act
     // ----------
-    computed_merkle_root = osnma->compute_merke_root(dsm_pkr_message,base_leaf);
+    computed_merkle_root = osnma->compute_merkle_root(dsm_pkr_message, base_leaf);
 
     // Assert
     // ----------
@@ -102,7 +102,7 @@ TEST_F(OsnmaMsgReceiverTest, ComputeBaseLeaf)
 
     // Act
     // ----------
-    std::vector<uint8_t> computed_base_leaf = osnma->compute_base_leaf(dsm_pkr_message);
+    std::vector<uint8_t> computed_base_leaf = osnma->get_merkle_tree_leaves(dsm_pkr_message);
 
     // Assert
     // ----------
@@ -112,7 +112,7 @@ TEST_F(OsnmaMsgReceiverTest, ComputeBaseLeaf)
 TEST_F(OsnmaMsgReceiverTest, VerifyPublicKey){ // values taken from RG A.7
     // Arrange
     // ----------
-    osnma->d_crypto->setMerkleRoot(helper.convert_from_hex_string("A10C440F3AA62453526DB4AF76DF8D9410D35D8277397D7053C700D192702B0D"));
+    osnma->d_crypto->set_merkle_root(helper.convert_from_hex_string("A10C440F3AA62453526DB4AF76DF8D9410D35D8277397D7053C700D192702B0D"));
     DSM_PKR_message dsm_pkr_message;
     dsm_pkr_message.npkt = 0x01;
     dsm_pkr_message.npktid = 0x2;

@@ -82,7 +82,7 @@ class DSM_PKR_message
 public:
     DSM_PKR_message() = default;
 
-    std::array<uint8_t, 128> itn;  // bitset<1024>
+    std::array<uint8_t, 128> itn{};  // bitset<1024>
     std::vector<uint8_t> npk;
     std::vector<uint8_t> p_dp;
     uint8_t nb_dp{};

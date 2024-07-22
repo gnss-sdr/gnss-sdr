@@ -19,7 +19,19 @@ if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
     endif()
 endif()
 
-find_package(Boost COMPONENTS iostreams serialization QUIET)
+if(CMAKE_VERSION VERSION_LESS 3.30)
+    find_package(Boost COMPONENTS iostreams serialization QUIET)
+else()
+    find_package(Boost COMPONENTS iostreams serialization)
+    if(NOT TARGET Boost::iostreams)
+        message(STATUS "Trying deprecated FindBoost Module ...")
+        if(POLICY CMP0167)
+            cmake_policy(SET CMP0167 OLD)
+            find_package(Boost COMPONENTS iostreams serialization)
+        endif()
+    endif()
+endif()
+
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::iostreams)
         add_library(Boost::iostreams IMPORTED SHARED)
@@ -47,7 +59,7 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
     /usr/sbin
 )
 
-if(Boost_FOUND)
+if(TARGET Boost::iostreams AND TARGET Boost::serialization)
     message(STATUS "The rinex2assist utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(rinex2assist)
@@ -59,7 +71,7 @@ if(Boost_FOUND)
         add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
     endif()
 
-    if("${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
+    if(GNSSTK_VERSION AND "${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
         set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     endif()
 

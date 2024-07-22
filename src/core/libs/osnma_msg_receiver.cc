@@ -1123,7 +1123,7 @@ std::vector<uint8_t> osnma_msg_receiver::get_merkle_tree_leaves(const DSM_PKR_me
 }
 
 
-bool osnma_msg_receiver::verify_tag(const Tag& tag)
+bool osnma_msg_receiver::verify_tag(const Tag& tag) const
 {
     // Debug
     //    LOG(INFO) << "Galileo OSNMA: Tag verification :: Start for tag Id= "
@@ -1137,12 +1137,28 @@ bool osnma_msg_receiver::verify_tag(const Tag& tag)
     std::vector<uint8_t> applicable_key;
     if (tag.ADKD == 0 || tag.ADKD == 4)
         {
-            applicable_key = d_tesla_keys[tag.TOW + 30];
+            const auto it = d_tesla_keys.find(tag.TOW + 30);
+            if(it != d_tesla_keys.cend())
+                {
+                    applicable_key = it->second;
+                }
+            else
+                {
+                    return false;
+                }
             // LOG(INFO) << "|---> Galileo OSNMA :: applicable key: 0x" << d_helper->convert_to_hex_string(applicable_key) << "TOW="<<static_cast<int>(tag.TOW + 30);
         }
     else  // ADKD 12
         {
-            applicable_key = d_tesla_keys[tag.TOW + 330];
+            const auto it = d_tesla_keys.find(tag.TOW + 330);
+            if(it != d_tesla_keys.cend())
+                {
+                    applicable_key = it->second;
+                }
+            else
+                {
+                    return false;
+                }
             // LOG(INFO) << "|---> Galileo OSNMA :: applicable key: 0x" << d_helper->convert_to_hex_string(applicable_key) << "TOW="<<static_cast<int>(tag.TOW + 330);
         }
 
@@ -1222,7 +1238,7 @@ bool osnma_msg_receiver::verify_tag(const Tag& tag)
 }
 
 
-std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
+std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag) const
 {
     std::vector<uint8_t> m;
     if (tag.CTR != 1)
@@ -1245,12 +1261,28 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(const Tag& tag)
     std::vector<uint8_t> applicable_nav_data_bytes;
     if (tag.ADKD == 0 || tag.ADKD == 12)  // note: for ADKD=12 still the same logic applies. Only the Key selection is shifted 10 Subframes into the future.
         {
-            applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].ephemeris_iono_vector_2;
+            const auto it = d_satellite_nav_data.find(tag.PRN_d);
+            if (it != d_satellite_nav_data.cend())
+                {
+                    const auto it2 = it->second.find(tag.TOW - 30);
+                    if (it2 != it->second.cend())
+                        {
+                            applicable_nav_data = it2->second.ephemeris_iono_vector_2;
+                        }
+                }
             // LOG(INFO) << "|---> Galileo OSNMA :: applicable NavData (PRN_d="<< static_cast<int>(tag.PRN_d) << ", TOW=" << tag.TOW - 30 <<"): 0b" << applicable_nav_data;
         }
     else if (tag.ADKD == 4)
         {
-            applicable_nav_data = d_satellite_nav_data[tag.PRN_d][tag.TOW - 30].utc_vector_2;
+            const auto it = d_satellite_nav_data.find(tag.PRN_d);
+            if (it != d_satellite_nav_data.cend())
+                {
+                    const auto it2 = it->second.find(tag.TOW - 30);
+                    if (it2 != it->second.cend())
+                        {
+                            applicable_nav_data = it2->second.utc_vector_2;
+                        }
+                }
             // LOG(INFO) << "|---> Galileo OSNMA :: applicable NavData (PRN_d="<< static_cast<int>(tag.PRN_d)  << ", TOW=" << tag.TOW - 30 <<"): 0b" << applicable_nav_data;
         }
     else
@@ -1327,10 +1359,10 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
     uint32_t GST_SFi = d_receiver_time - 30;  // GST of target key is to be used.
     std::vector<uint8_t> hash;
     const uint8_t lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
-    // std::vector<uint8_t> validated_key;
+    std::vector<uint8_t> validated_key;
     if (d_tesla_key_verified)
         {  // have to go up to last verified key
-            d_validated_key = d_tesla_keys.rbegin()->second;
+            validated_key = d_tesla_keys.rbegin()->second;
             num_of_hashes_needed = (d_receiver_time - d_last_verified_key_GST) / 30;  // Eq. 19 ICD modified
             LOG(INFO) << "Galileo OSNMA: TESLA verification (" << num_of_hashes_needed << " hashes) need to be performed up to closest verified TESLA key";
 
@@ -1338,7 +1370,7 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
         }
     else
         {  // have to go until Kroot
-            d_validated_key = d_osnma_data.d_dsm_kroot_message.kroot;
+            validated_key = d_osnma_data.d_dsm_kroot_message.kroot;
             num_of_hashes_needed = (d_receiver_time - d_GST_0) / 30 + 1;  // Eq. 19 IC
             LOG(INFO) << "Galileo OSNMA: TESLA verification (" << num_of_hashes_needed << " hashes) need to be performed up to Kroot";
 
@@ -1351,7 +1383,7 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
         {
             computed_key.push_back(hash[i]);
         }
-    if (computed_key == d_validated_key && num_of_hashes_needed > 0)
+    if (computed_key == validated_key && num_of_hashes_needed > 0)
         {
             LOG(INFO) << "Galileo OSNMA: TESLA key verification :: SUCCESS!";
             std::cout << "Galileo OSNMA: TESLA key verification :: SUCCESS!" << std::endl;
@@ -1494,7 +1526,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     std::vector<uint8_t> flxTags{};
     std::string tempADKD;
     // MACLT verification
-    for (uint8_t i = 0; i < mack.tag_and_info.size(); i++)
+    for (size_t i = 0; i < mack.tag_and_info.size(); i++)
         {
             tempADKD = applicable_sequence[i + 1];
             if (tempADKD == "FLX")
@@ -1558,14 +1590,14 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
 }
 
 
-bool osnma_msg_receiver::tag_has_nav_data_available(const Tag& t)
+bool osnma_msg_receiver::tag_has_nav_data_available(const Tag& t) const
 {
     auto prn_it = d_satellite_nav_data.find(t.PRN_d);
     if (prn_it != d_satellite_nav_data.end())
         {
             // PRN was found, check if TOW exists in inner map
             //LOG(INFO) << "Galileo OSNMA: hasData = true " << std::endl;
-            std::map<uint32_t, NavData>& tow_map = prn_it->second;
+            std::map<uint32_t, NavData> tow_map = prn_it->second;
             auto tow_it = tow_map.find(t.TOW - 30);
             if (tow_it != tow_map.end())
                 {
@@ -1587,7 +1619,7 @@ bool osnma_msg_receiver::tag_has_nav_data_available(const Tag& t)
 }
 
 
-bool osnma_msg_receiver::tag_has_key_available(const Tag& t)
+bool osnma_msg_receiver::tag_has_key_available(const Tag& t) const
 {
     // check adkd of tag
     // if adkd = 0 or 4 => look for d_tesla_keys[t.TOW+30]
@@ -1617,7 +1649,7 @@ bool osnma_msg_receiver::tag_has_key_available(const Tag& t)
 }
 
 
-std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes)
+std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes) const
 {
     std::vector<uint8_t> K_II = key;
     std::vector<uint8_t> K_I;  // result of the recursive hash operations
@@ -1705,8 +1737,13 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     std::vector<MACK_tag_and_info> verified_tags{};
 
     // MACSEQ verification
-    d_GST_Sf = d_receiver_time - 30;                                    // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received..
-    std::vector<uint8_t> applicable_key = d_tesla_keys[mack.TOW + 30];  // current tesla key ie transmitted in the next subframe
+    d_GST_Sf = d_receiver_time - 30;  // time of the start of SF containing MACSEQ // TODO buffer with times? since out of debug not every 30 s a Sf is necessarily received.
+    std::vector<uint8_t> applicable_key;
+    const auto key_it = d_tesla_keys.find(mack.TOW + 30);  // current tesla key ie transmitted in the next subframe
+    if (key_it != d_tesla_keys.cend())
+        {
+            applicable_key = key_it->second;
+        }
     std::vector<std::string> sq1{};
     std::vector<std::string> sq2{};
     std::vector<std::string> applicable_sequence;
@@ -1734,7 +1771,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     std::vector<uint8_t> flxTags{};
     std::string tempADKD;
     // MACLT verification
-    for (uint8_t i = 0; i < mack.tag_and_info.size(); i++)
+    for (size_t i = 0; i < mack.tag_and_info.size(); i++)
         {
             tempADKD = applicable_sequence[i + 1];
             if (tempADKD == "FLX")
@@ -1771,7 +1808,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     m[3] = static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8);
     m[4] = static_cast<uint8_t>(d_GST_Sf & 0x000000FF);
     // Case tags flexible - Eq. 21 ICD
-    for (uint8_t i = 0; i < flxTags.size(); i++)
+    for (size_t i = 0; i < flxTags.size(); i++)
         {
             m[2 * i + 5] = mack.tag_and_info[flxTags[i]].tag_info.PRN_d;
             m[2 * i + 6] = mack.tag_and_info[flxTags[i]].tag_info.ADKD << 4 |

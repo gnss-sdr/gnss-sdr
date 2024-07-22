@@ -82,19 +82,17 @@ private:
     void control_tags_awaiting_verify_size();
     void display_data();
 
-    bool verify_tag(MACK_tag_and_info tag_and_info, OSNMA_data applicable_OSNMA, uint8_t tag_position, const std::vector<uint8_t>& applicable_key, NavData applicable_NavData);
     bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
-    bool verify_tag(const Tag& tag);
-    bool is_next_subframe();
-    bool tag_has_nav_data_available(const Tag& t);
-    bool tag_has_key_available(const Tag& t);
+    bool verify_tag(const Tag& tag) const;
+    bool tag_has_nav_data_available(const Tag& t) const;
+    bool tag_has_key_available(const Tag& t) const;
     bool verify_macseq(const MACK_message& mack);
     bool verify_dsm_pkr(const DSM_PKR_message& message) const;
 
     std::vector<uint8_t> get_merkle_tree_leaves(const DSM_PKR_message& dsm_pkr_message) const;
     std::vector<uint8_t> compute_merkle_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const;
-    std::vector<uint8_t> build_message(const Tag& tag);
-    std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes);
+    std::vector<uint8_t> build_message(const Tag& tag) const;
+    std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes) const;
     std::vector<MACK_tag_and_info> verify_macseq_new(const MACK_message& mack);
 
     std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data;  // map holding NavData sorted by SVID (first key) and TOW (second key).
@@ -102,7 +100,6 @@ private:
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify;                   // container with tags to verify from arbitrary SVIDs, sorted by TOW
 
     std::vector<uint8_t> d_tags_to_verify{0, 4, 12};
-    std::vector<uint8_t> d_validated_key{};
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
 
     std::array<std::array<uint8_t, 256>, 16> d_dsm_message{};  // structure for recording DSM blocks, when filled it sends them to parse and resets itself.

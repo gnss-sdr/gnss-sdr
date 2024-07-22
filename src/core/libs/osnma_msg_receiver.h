@@ -94,7 +94,7 @@ private:
     std::vector<uint8_t> get_merkle_tree_leaves(const DSM_PKR_message& dsm_pkr_message) const;
     std::vector<uint8_t> compute_merkle_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const;
     std::vector<uint8_t> build_message(const Tag& tag);
-    std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes);
+    std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes);
     std::vector<MACK_tag_and_info> verify_macseq_new(const MACK_message& mack);
 
     std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data;  // map holding NavData sorted by SVID (first key) and TOW (second key).

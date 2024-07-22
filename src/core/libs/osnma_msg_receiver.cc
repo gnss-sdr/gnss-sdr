@@ -137,7 +137,9 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                             d_satellite_nav_data[PRNa][TOW].utc_vector_2 = nav_data;
                         }
                     else
-                        LOG(WARNING) << "Galileo OSNMA: osnma_msg_receiver incorrect navData parsing!";
+                        {
+                            LOG(WARNING) << "Galileo OSNMA: osnma_msg_receiver incorrect navData parsing!";
+                        }
                 }
             else
                 {
@@ -276,7 +278,7 @@ void osnma_msg_receiver::read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_
         }
     else
         {
-            for (uint8_t k = 0; k < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; k++)
+            for (uint16_t k = 0; k < d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id]; k++)
                 {
                     if (d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id][k] == 0)
                         {
@@ -926,10 +928,9 @@ void osnma_msg_receiver::process_mack_message()
                     d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, tag0));
 //                    bool ret = verify_macseq(*mack);
                     std::vector<MACK_tag_and_info> macseq_verified_tags = verify_macseq_new(*mack);
-                    for (std::size_t i = 0; i < macseq_verified_tags.size(); ++i)
+                    for (auto & tag_and_info : macseq_verified_tags)
                         {
                             // add tags of current mack to the verification queue
-                            auto& tag_and_info = macseq_verified_tags[i];
                             Tag t(tag_and_info, mack->TOW, mack->WN, mack->PRNa, tag_and_info.counter);
                             d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, t));
                             LOG(INFO) << "Galileo OSNMA: Add Tag Id= "
@@ -1080,7 +1081,8 @@ bool osnma_msg_receiver::verify_dsm_pkr(const DSM_PKR_message& message) const
 
 std::vector<uint8_t> osnma_msg_receiver::compute_merkle_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const
 {
-    std::vector<uint8_t> x_next, x_current = d_crypto->compute_SHA_256(m_i);
+    std::vector<uint8_t> x_next;
+    std::vector<uint8_t> x_current = d_crypto->compute_SHA_256(m_i);
     for (size_t i = 0; i < 4; i++)
         {
             x_next.clear();
@@ -1345,7 +1347,7 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
     // truncate hash
     std::vector<uint8_t> computed_key;
     computed_key.reserve(key.size());
-    for (uint16_t i = 0; i < key.size(); i++)
+    for (size_t i = 0; i < key.size(); i++)
         {
             computed_key.push_back(hash[i]);
         }
@@ -1520,7 +1522,7 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     m[3] = static_cast<uint8_t>((d_GST_Sf & 0x0000FF00) >> 8);
     m[4] = static_cast<uint8_t>(d_GST_Sf & 0x000000FF);
     // Case tags flexible - Eq. 21 ICD
-    for (uint8_t i = 0; i < flxTags.size(); i++)
+    for (size_t i = 0; i < flxTags.size(); i++)
         {
             m[2 * i + 5] = mack.tag_and_info[flxTags[i]].tag_info.PRN_d;
             m[2 * i + 6] = mack.tag_and_info[flxTags[i]].tag_info.ADKD << 4 |
@@ -1548,7 +1550,6 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
             LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: FLX tags verification OK";
             return true;
         }
-
     else
         {
             LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: FLX tags verification failed";
@@ -1616,7 +1617,7 @@ bool osnma_msg_receiver::tag_has_key_available(const Tag& t)
 }
 
 
-std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, std::vector<uint8_t> key, uint32_t GST_SFi, const uint8_t lk_bytes)
+std::vector<uint8_t> osnma_msg_receiver::hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes)
 {
     std::vector<uint8_t> K_II = key;
     std::vector<uint8_t> K_I;  // result of the recursive hash operations
@@ -1796,9 +1797,9 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     if (computed_macseq == mack.header.macseq)
         {
             LOG(INFO) << "Galileo OSNMA: MACSEQ verification :: SUCCESS :: FLX tags verification OK";
-            for (uint8_t i = 0; i < flxTags.size(); i++)
+            for (uint8_t flxTag : flxTags)
                 {
-                    verified_tags.push_back(mack.tag_and_info[flxTags[i]]);
+                    verified_tags.push_back(mack.tag_and_info[flxTag]);
                 }
             return verified_tags;
         }

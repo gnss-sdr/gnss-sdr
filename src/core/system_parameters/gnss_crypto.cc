@@ -305,7 +305,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& messag
         }
     else
         {
-            unsigned long errCode = ERR_get_error();
+            uint64_t errCode = ERR_get_error();
             char* err = ERR_error_string(errCode, nullptr);
             LOG(WARNING) << "OpenSSL: OSNMA message authentication failed: " << err;
         }
@@ -1273,7 +1273,7 @@ bool Gnss_Crypto::pubkey_copy(EVP_PKEY* src, EVP_PKEY** dest)
 
     // Read the data from the memory buffer
     char* bio_data;
-    long data_len = BIO_get_mem_data(mem_bio, &bio_data);
+    int64_t data_len = BIO_get_mem_data(mem_bio, &bio_data);
 
     // Create a new memory buffer and load the data into it
     BIO* mem_bio2 = BIO_new_mem_buf(bio_data, data_len);

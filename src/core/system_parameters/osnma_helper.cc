@@ -1,17 +1,17 @@
 /*!
-* \file osnma_helper.h
-* \brief Class for auxiliary osnma functions
-* \author Carles Fernandez-Prades, 2024 cfernandez(at)cttc.es
-*
-* -----------------------------------------------------------------------------
-*
-* GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
-* This file is part of GNSS-SDR.
-*
-* Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
-* SPDX-License-Identifier: GPL-3.0-or-later
-*
-* -----------------------------------------------------------------------------
+ * \file osnma_helper.h
+ * \brief Class for auxiliary osnma functions
+ * \author Carles Fernandez-Prades, 2024 cfernandez(at)cttc.es
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
  */
 
 #include "osnma_helper.h"
@@ -26,6 +26,7 @@ uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const
     return GST;
 }
 
+
 std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
 {
     std::vector<uint8_t> res;
@@ -37,6 +38,7 @@ std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
     return res;
 }
 
+
 /**
  * @brief Convert a binary string to a vector of bytes.
  *
@@ -47,7 +49,8 @@ std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
  * @param binaryString The binary string to be converted.
  * @return The vector of bytes converted from the binary string.
  */
-std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) const {
+std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) const
+{
     std::vector<uint8_t> bytes;
 
     // Determine the size of the padding needed.
@@ -55,12 +58,14 @@ std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) const 
 
     std::string padded_binary = binaryString;
 
-    if (padding_size != 0) {
-            padding_size = 8 - padding_size;  // Compute padding size
+    if (padding_size != 0)
+        {
+            padding_size = 8 - padding_size;          // Compute padding size
             padded_binary.append(padding_size, '0');  // Append zeros to the binary string
         }
 
-    for (size_t i = 0; i < padded_binary.size(); i += 8) {
+    for (size_t i = 0; i < padded_binary.size(); i += 8)
+        {
             uint8_t byte = std::bitset<8>(padded_binary.substr(i, 8)).to_ulong();
             bytes.push_back(byte);
         }
@@ -68,37 +73,49 @@ std::vector<uint8_t> Osnma_Helper::bytes(const std::string& binaryString) const 
     return bytes;
 }
 
+
 std::string Osnma_Helper::verification_status_str(const int& status) const
 {
-        switch (status) {
-            case 0: return "SUCCESS";
-            case 1: return "FAIL";
-            case 2: return "UNVERIFIED";
-            default: return "UNKNOWN";
-            }
+    switch (status)
+        {
+        case 0:
+            return "SUCCESS";
+        case 1:
+            return "FAIL";
+        case 2:
+            return "UNVERIFIED";
+        default:
+            return "UNKNOWN";
+        }
 }
+
+
 std::string Osnma_Helper::convert_to_hex_string(const std::vector<uint8_t>& vector) const
 {
     std::stringstream ss;
     ss << std::hex << std::setfill('0');
-    for (auto byte : vector) {
+    for (auto byte : vector)
+        {
             ss << std::setw(2) << static_cast<int>(byte);
         }
     return ss.str();
 }
+
 
 std::vector<uint8_t> Osnma_Helper::convert_from_hex_string(const std::string& hex_string) const
 {
     std::vector<uint8_t> result;
 
     std::string adjusted_hex_string = hex_string;
-    if (hex_string.length() % 2 != 0) {
+    if (hex_string.length() % 2 != 0)
+        {
             adjusted_hex_string = "0" + hex_string;
         }
 
-    for (std::size_t i = 0; i < adjusted_hex_string.length(); i += 2) {
+    for (std::size_t i = 0; i < adjusted_hex_string.length(); i += 2)
+        {
             std::string byte_string = adjusted_hex_string.substr(i, 2);
-            uint8_t byte = static_cast<uint8_t>(std::stoul(byte_string, nullptr, 16));
+            auto byte = static_cast<uint8_t>(std::stoul(byte_string, nullptr, 16));
             result.push_back(byte);
         }
 

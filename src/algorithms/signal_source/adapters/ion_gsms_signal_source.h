@@ -1,8 +1,7 @@
 /*!
- * \file file_timestamp_signal_source.h
- * \brief This class reads samples stored in a file and generate stream tags
- * with its timestamp information stored in separated file
- * \author Javier Arribas, jarribas(at)cttc.es
+ * \file ion_gsms_signal_source.h
+ * \brief GNSS-SDR Signal Source that reads sample streams following ION's GNSS-SDR metadata standard
+ * \author Víctor Castillo Agüero, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
@@ -22,7 +21,7 @@
 #include "configuration_interface.h"
 #include "file_source_base.h"
 #include "gnss_sdr_timestamp.h"
-#include "ion_gnss_sdr_metadata_standard.h"
+#include "ion_gsms.h"
 #include <string>
 
 /** \addtogroup Signal_Source
@@ -34,14 +33,14 @@
  * \brief Class that reads signals samples from a file
  * and adapts it to a SignalSourceInterface
  */
-class IONMetadataStandardSignalSource : public SignalSourceBase
+class IONGSMSSignalSource : public SignalSourceBase
 {
 public:
-    IONMetadataStandardSignalSource(const ConfigurationInterface* configuration, const std::string& role,
+    IONGSMSSignalSource(const ConfigurationInterface* configuration, const std::string& role,
         unsigned int in_streams, unsigned int out_streams,
         Concurrent_Queue<pmt::pmt_t>* queue);
 
-    ~IONMetadataStandardSignalSource() override = default;
+    ~IONGSMSSignalSource() override = default;
 
 protected:
     // std::tuple<size_t, bool> itemTypeToSize() override;
@@ -60,9 +59,9 @@ protected:
 private:
     std::string metadata_file_;
     std::vector<std::string> stream_ids_;
-    std::vector<IONMetadataStdFileSource::sptr> sources_;
+    std::vector<IONGSMSFileSource::sptr> sources_;
     std::vector<gnss_shared_ptr<gr::block>> copy_blocks_;
-    GnssMetadataHandler metadata_;
+    IONGSMSMetadataHandler metadata_;
 
     gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
     std::string timestamp_file_;

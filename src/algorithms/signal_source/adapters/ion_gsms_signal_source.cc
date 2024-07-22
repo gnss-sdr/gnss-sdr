@@ -1,8 +1,7 @@
 /*!
- * \file file_timestamp_signal_source.cc
- * \brief This class reads samples stored in a file and generate stream tags
- * with its timestamp information stored in separated file
- * \author Javier Arribas, jarribas(at)cttc.es
+ * \file ion_gsms_signal_source.h
+ * \brief GNSS-SDR Signal Source that reads sample streams following ION's GNSS-SDR metadata standard
+ * \author Víctor Castillo Agüero, 2024. victorcastilloaguero(at)gmail.com
  *
  * -----------------------------------------------------------------------------
  *
@@ -15,9 +14,9 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "ion_gnss_ms_signal_source.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
+#include "ion_gsms_signal_source.h"
 #include <gnuradio/blocks/copy.h>
 #include <string>
 #include <unordered_set>
@@ -49,7 +48,7 @@ std::vector<std::string> parse_comma_list(const std::string& str)
     return list;
 }
 
-IONMetadataStandardSignalSource::IONMetadataStandardSignalSource(const ConfigurationInterface* configuration,
+IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
@@ -58,7 +57,9 @@ IONMetadataStandardSignalSource::IONMetadataStandardSignalSource(const Configura
       metadata_file_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
       stream_ids_(parse_comma_list(configuration->property(role + ".streams"s, ""s))),
       metadata_(metadata_file_),
-      timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0))
+      timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0)),
+      in_streams_(in_streams),
+      out_streams_(out_streams)
 {
     if (in_streams > 0)
         {
@@ -77,7 +78,7 @@ IONMetadataStandardSignalSource::IONMetadataStandardSignalSource(const Configura
 }
 
 
-void IONMetadataStandardSignalSource::connect(gr::top_block_sptr top_block)
+void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
 {
     std::size_t cumulative_index = 0;
     for (const auto& source : sources_)
@@ -89,7 +90,7 @@ void IONMetadataStandardSignalSource::connect(gr::top_block_sptr top_block)
         }
 }
 
-void IONMetadataStandardSignalSource::disconnect(gr::top_block_sptr top_block)
+void IONGSMSSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     std::size_t cumulative_index = 0;
     for (const auto& source : sources_)
@@ -101,19 +102,19 @@ void IONMetadataStandardSignalSource::disconnect(gr::top_block_sptr top_block)
         }
 }
 
-gr::basic_block_sptr IONMetadataStandardSignalSource::get_left_block()
+gr::basic_block_sptr IONGSMSSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
     // return gr_basic_block_sptr();
-    return IONMetadataStdFileSource::sptr();
+    return IONGSMSFileSource::sptr();
 }
 
-gr::basic_block_sptr IONMetadataStandardSignalSource::get_right_block()
+gr::basic_block_sptr IONGSMSSignalSource::get_right_block()
 {
     return get_right_block(0);
 }
 
-gr::basic_block_sptr IONMetadataStandardSignalSource::get_right_block(int RF_channel)
+gr::basic_block_sptr IONGSMSSignalSource::get_right_block(int RF_channel)
 {
     return copy_blocks_[RF_channel];
 }

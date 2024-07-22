@@ -93,6 +93,7 @@
 #include "ibyte_to_complex.h"
 #include "ibyte_to_cshort.h"
 #include "in_memory_configuration.h"
+#include "ion_gsms_signal_source.h"
 #include "ishort_to_complex.h"
 #include "ishort_to_cshort.h"
 #include "labsat_signal_source.h"
@@ -113,7 +114,6 @@
 #include "tracking_interface.h"
 #include "two_bit_cpx_file_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
-#include "ion_gnss_ms_signal_source.h"
 #include <cstdlib>    // for exit
 #include <exception>  // for exception
 #include <iostream>   // for cerr
@@ -760,9 +760,9 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     block = std::move(block_);
                 }
 #endif
-            else if (implementation == "ION_Metadata_Standard_Signal_Source")
+            else if (implementation == "ION_GSMS_Signal_Source")
                 {
-                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<IONMetadataStandardSignalSource>(configuration, role, in_streams,
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<IONGSMSSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }

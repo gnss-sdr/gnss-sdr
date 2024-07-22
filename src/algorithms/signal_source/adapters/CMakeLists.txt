@@ -119,7 +119,7 @@ set(SIGNAL_SOURCE_ADAPTER_SOURCES
     two_bit_packed_file_signal_source.cc
     four_bit_cpx_file_signal_source.cc
     file_timestamp_signal_source.cc
-    ion_gnss_ms_signal_source.cc
+    ion_gsms_signal_source.cc
     ${OPT_DRIVER_SOURCES}
 )
 
@@ -139,7 +139,7 @@ set(SIGNAL_SOURCE_ADAPTER_HEADERS
     two_bit_packed_file_signal_source.h
     four_bit_cpx_file_signal_source.h
     file_timestamp_signal_source.h
-    ion_gnss_ms_signal_source.h
+    ion_gsms_signal_source.h
     ${OPT_DRIVER_HEADERS}
 )
 

@@ -41,7 +41,7 @@ if(ENABLE_AD9361)
     list(APPEND OPT_DRIVER_HEADERS ad9361_fpga_signal_source.h)
 endif()
 
-if(ENABLE_FPGA_MAX2771_EVKIT)
+if(ENABLE_MAX2771)
     ###############################################
     # MAX2771 EVKIT DIRECT TO FPGA Hardware
     ###############################################
@@ -49,7 +49,7 @@ if(ENABLE_FPGA_MAX2771_EVKIT)
     list(APPEND OPT_DRIVER_HEADERS fpga_max2771_evkit_signal_source.h)
 endif()
 
-if(ENABLE_FPGA)
+if(ENABLE_DMA_PROXY)
     ###############################################
     # FPGA DMA source
     ###############################################

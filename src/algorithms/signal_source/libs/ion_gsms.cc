@@ -32,7 +32,7 @@ IONGSMSFileSource::IONGSMSFileSource(
     const GnssMetadata::Block& block,
     const std::vector<std::string>& stream_ids)
     : gr::sync_block(
-          "ion_metadata_standard_source",
+          "ion_gsms_file_source",
           gr::io_signature::make(0, 0, 0),
           make_output_signature(block, stream_ids)),
       file_metadata_(file),
@@ -107,7 +107,12 @@ gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const GnssMetada
                                 }))
                                 {
                                     ++nstreams;
-                                    const std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
+                                    std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
+                                    if (stream.Packedbits() >= 2 * stream.RateFactor() * stream.Quantization())
+                                        {
+                                            // Samples have 'Complex' format
+                                            sample_bitsize /= 2;
+                                        }
                                     item_sizes.push_back(bits_to_item_size(sample_bitsize));
                                 }
                         }

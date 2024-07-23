@@ -48,7 +48,12 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
                         {
                             streams_.emplace_back(lump, stream, GnssMetadata::encoding_from_string(stream.Encoding()),output_streams + output_stream_offset);
                             ++output_streams;
-                            const std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
+                            std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
+                            if (stream.Packedbits() >= 2 * stream.RateFactor() * stream.Quantization())
+                                {
+                                    // Samples have 'Complex' format
+                                    sample_bitsize /= 2;
+                                }
                             output_stream_item_size_.push_back(bits_to_item_size(sample_bitsize));
                         }
                     else
@@ -95,6 +100,137 @@ std::size_t IONGSMSChunkData::output_stream_item_size(std::size_t stream_index) 
 }
 
 
+template <typename WT>
+void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, const std::function<void(int output, int nitems)>& produce)
+{
+    WT* data = static_cast<WT*>(buffer_);
+    // TODO - Swap endiannes if needed
+
+    IONGSMSChunkUnpackingCtx<WT> ctx{
+        chunk_.Shift(),
+        data,
+        countwords_,
+    };
+
+    // Head padding
+    if (padding_bitsize_ > 0 && chunk_.Padding() == GnssMetadata::Chunk::Head)
+        {
+            ctx.shift_padding(padding_bitsize_);
+        }
+
+    // Samples
+    for (const auto& [lump, stream, encoding, output_index] : streams_)
+        {
+            if (output_index == -1)
+                {
+                    // skip stream
+                    ctx.shift_padding(stream.Packedbits());
+                }
+            else
+                {
+                    produce(output_index, write_stream_samples(ctx, lump, stream, encoding, outputs[output_index]));
+                }
+        }
+}
+
+template <typename WT>
+std::size_t IONGSMSChunkData::write_stream_samples(
+    IONGSMSChunkUnpackingCtx<WT>& ctx,
+    const GnssMetadata::Lump& lump,
+    const GnssMetadata::IonStream& stream,
+    const GnssMetadata::StreamEncoding stream_encoding,
+    void*& out)
+{
+    std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
+    std::size_t sample_count = stream.RateFactor();
+
+    if (stream.Packedbits() >= 2 * stream.RateFactor() * stream.Quantization())
+        {
+            // Samples have 'Complex' format
+            sample_bitsize /= 2;
+            sample_count *= 2;
+        }
+
+    if (sample_bitsize <= 8)
+        {
+            write_n_samples<WT, int8_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+        }
+    else if (sample_bitsize <= 16)
+        {
+            write_n_samples<WT, int16_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+        }
+    else if (sample_bitsize <= 32)
+        {
+            write_n_samples<WT, int32_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+        }
+    else if (sample_bitsize <= 64)
+        {
+            write_n_samples<WT, int64_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+        }
+
+    return sample_count;
+}
+
+template <typename WT, typename OT>
+void IONGSMSChunkData::write_n_samples(
+    IONGSMSChunkUnpackingCtx<WT>& ctx,
+    GnssMetadata::Lump::LumpShift lump_shift,
+    uint8_t sample_bitsize,
+    std::size_t sample_count,
+    GnssMetadata::StreamEncoding stream_encoding,
+    void*& out)
+{
+    if (lump_shift == GnssMetadata::Lump::shiftRight)
+        {
+            auto* sample = static_cast<OT*>(out);
+            sample += sample_count;
+            for (std::size_t i = 0; i < sample_count; ++i)
+                {
+                    ctx.shift_sample(sample_bitsize, sample);
+                    dump_sample(*sample);
+                    decode_sample(sample_bitsize, sample, stream_encoding);
+                    --sample;
+                }
+        }
+    else  // if (lump_shift == GnssMetadata::Lump::shiftLeft || lump_shift == GnssMetadata::Lump::shiftUndefined)
+        {
+            auto* sample = static_cast<OT*>(out);
+            for (std::size_t i = 0; i < sample_count; ++i)
+                {
+                    ctx.shift_sample(sample_bitsize, sample);
+                    dump_sample(*sample);
+                    decode_sample(sample_bitsize, sample, stream_encoding);
+                    ++sample;
+                }
+        }
+}
+
+
+
+// Static utilities
+void IONGSMSChunkData::decode_sample(const uint8_t sample_bitsize, auto* sample, const GnssMetadata::StreamEncoding encoding)
+{
+    using SampleType = std::remove_pointer_t<decltype(sample)>;
+    switch (sample_bitsize)
+        {
+        case 2:
+            *sample = GnssMetadata::two_bit_look_up<SampleType>[encoding][*sample];
+            break;
+        case 3:
+            *sample = GnssMetadata::three_bit_look_up<SampleType>[encoding][*sample];
+            break;
+        case 4:
+            *sample = GnssMetadata::four_bit_look_up<SampleType>[encoding][*sample];
+            break;
+        case 5:
+            *sample = GnssMetadata::five_bit_look_up<SampleType>[encoding][*sample];
+            break;
+        default:
+            // TODO - Is this an error that can happen?
+            // for now we'll just do nothing, if the sample is this wide it may need no decoding
+            break;
+        }
+}
 
 void IONGSMSChunkData::dump_sample(auto value)
 {
@@ -102,7 +238,7 @@ void IONGSMSChunkData::dump_sample(auto value)
     if (count > 0)
         {
             --count;
-            std::cout << "SAMPLE: " << std::bitset<32>(value) << std::endl;
+            // std::cout << "SAMPLE: [0x" << std::hex << value << "] " << std::bitset<32>(value) << std::endl;
         }
 }
 

@@ -182,7 +182,7 @@ public:
           skipped(0)
     {
     }
-    Tag(const MACK_message& mack)  // constructor for Tag0
+    explicit Tag(const MACK_message& mack)  // constructor for Tag0
         : tag_id(id_counter++),
           TOW(mack.TOW),  // TODO missing for build_message WN for GST computation, CTR, NMAS, OSNMA_NavData missing
           WN(mack.WN),

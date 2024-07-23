@@ -39,7 +39,7 @@ std::string OSNMA_NavData::get_utc_data() const
 
 uint32_t OSNMA_NavData::get_tow_sf0() const
 {
-   return d_TOW_sf0;
+    return d_TOW_sf0;
 }
 
 

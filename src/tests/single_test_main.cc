@@ -18,8 +18,8 @@
 
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
-#include "gps_acq_assist.h"
 #include "gnss_sdr_flags.h"
+#include "gps_acq_assist.h"
 #include <gtest/gtest.h>
 #include <fstream>
 #include <iostream>

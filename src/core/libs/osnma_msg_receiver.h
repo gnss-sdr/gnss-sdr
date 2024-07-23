@@ -27,6 +27,7 @@
 #include "gnss_block_interface.h"  // for gnss_shared_ptr
 #include "gnss_sdr_make_unique.h"  // for std::make:unique in C++11
 #include "osnma_data.h"            // for OSNMA_data structures
+#include "osnma_nav_data_manager.h"
 #include <gnuradio/block.h>        // for gr::block
 #include <pmt/pmt.h>               // for pmt::pmt_t
 #include <array>                   // for std::array
@@ -77,13 +78,14 @@ private:
     void read_mack_header();
     void read_mack_body();
     void process_mack_message();
-    void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData& data);
+//    void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData& data);
     void remove_verified_tags();
     void control_tags_awaiting_verify_size();
     void display_data();
+    void send_data_to_pvt(std::vector<NavData>);
 
     bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
-    bool verify_tag(const Tag& tag) const;
+    bool verify_tag(Tag& tag) const;
     bool tag_has_nav_data_available(const Tag& t) const;
     bool tag_has_key_available(const Tag& t) const;
     bool verify_macseq(const MACK_message& mack);
@@ -91,7 +93,7 @@ private:
 
     std::vector<uint8_t> get_merkle_tree_leaves(const DSM_PKR_message& dsm_pkr_message) const;
     std::vector<uint8_t> compute_merkle_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const;
-    std::vector<uint8_t> build_message(const Tag& tag) const;
+    std::vector<uint8_t> build_message(Tag& tag) const;
     std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes) const;
     std::vector<MACK_tag_and_info> verify_macseq_new(const MACK_message& mack);
 
@@ -110,6 +112,7 @@ private:
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;  // osnma parameters parser
     std::unique_ptr<Gnss_Crypto> d_crypto;           // access to cryptographic functions
     std::unique_ptr<Osnma_Helper> d_helper;
+    std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager; // refactor for holding and processing navigation data
 
     OSNMA_data d_osnma_data{};
 

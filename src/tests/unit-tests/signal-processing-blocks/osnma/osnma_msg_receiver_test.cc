@@ -64,6 +64,7 @@ public:
 
 TEST_F(OsnmaMsgReceiverTest, ComputeMerkleRoot)
 {
+    // input data taken from Receiver Guidelines v1.3,  A.7
     // Arrange
     // ----------
     std::vector<uint8_t> computed_merkle_root;
@@ -74,6 +75,7 @@ TEST_F(OsnmaMsgReceiverTest, ComputeMerkleRoot)
     dsm_pkr_message.mid = 0x01;
     std::vector<uint8_t> base_leaf = helper.convert_from_hex_string("120303B2CE64BC207BDD8BC4DF859187FCB686320D63FFA091410FC158FBB77980EA");
 
+    // ITN
     std::vector<uint8_t> vec = helper.convert_from_hex_string("7CBE05D9970CFC9E22D0A43A340EF557624453A2E821AADEAC989C405D78BA06"
         "956380BAB0D2C939EC6208151040CCFFCF1FB7156178FD1255BA0AECAAA253F7"
         "407B6C5DD4DF059FF8789474061301E1C34881DB7A367A913A3674300E21EAB1"
@@ -92,6 +94,7 @@ TEST_F(OsnmaMsgReceiverTest, ComputeMerkleRoot)
 
 TEST_F(OsnmaMsgReceiverTest, ComputeBaseLeaf)
 {
+    // input data taken from Receiver Guidelines v1.3,  A.7
     // Arrange
     // ----------
     std::vector<uint8_t> expected_base_leaf = helper.convert_from_hex_string("120303B2CE64BC207BDD8BC4DF859187FCB686320D63FFA091410FC158FBB77980EA");
@@ -109,7 +112,9 @@ TEST_F(OsnmaMsgReceiverTest, ComputeBaseLeaf)
     ASSERT_EQ(computed_base_leaf,expected_base_leaf);
 }
 
-TEST_F(OsnmaMsgReceiverTest, VerifyPublicKey){ // values taken from RG A.7
+TEST_F(OsnmaMsgReceiverTest, VerifyPublicKey){
+
+    // input data taken from Receiver Guidelines v1.3,  A.7
     // Arrange
     // ----------
     osnma->d_crypto->set_merkle_root(helper.convert_from_hex_string("A10C440F3AA62453526DB4AF76DF8D9410D35D8277397D7053C700D192702B0D"));
@@ -126,7 +131,7 @@ TEST_F(OsnmaMsgReceiverTest, VerifyPublicKey){ // values taken from RG A.7
 
     // Act
     // ----------
-    bool result = osnma->verify_dsm_pkr(dsm_pkr_message);
+    bool result = osnma->verify_dsm_pkr(dsm_pkr_message); // TODO - refactor method so that output is more than a boolean.
 
     // Assert
     // ----------
@@ -136,6 +141,7 @@ TEST_F(OsnmaMsgReceiverTest, VerifyPublicKey){ // values taken from RG A.7
 
 TEST_F(OsnmaMsgReceiverTest, BuildTagMessageM0)
 {
+    // input data taken from Receiver Guidelines v1.3,  A.6.5.1
     // Arrange
     // ----------
     // m0
@@ -181,6 +187,7 @@ TEST_F(OsnmaMsgReceiverTest, BuildTagMessageM0)
 }
 
 TEST_F(OsnmaMsgReceiverTest, TagVerification) {
+    // input data taken from Receiver Guidelines v1.3,  A.6.5.1
     // Arrange
     // ----------
     // Tag0
@@ -204,19 +211,9 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification) {
     MTI.tag_info.cop = 0x0F;
     Tag t0(MTI, TOW_Tag0, WN, PRNa, CTR);
 
-
-
     // Act
     // ----------
     bool result_tag0 = osnma->verify_tag(t0);
-
-
-
-
-
-    // Assert
-    // ----------
-    //ASSERT_TRUE(result_tag0);
 
     // Tag3
     uint32_t TOW_Tag3 = 345660;
@@ -247,6 +244,7 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification) {
 }
 
 TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
+    // input data taken from Receiver Guidelines v1.3,  A.5.2
     // Arrange
     // ----------
     osnma->d_tesla_key_verified = false;
@@ -262,16 +260,9 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification) {
     std::vector<uint8_t> key = {0x2D, 0xC3, 0xA3, 0xCD, 0xB1, 0x17, 0xFA, 0xAD, 0xB8, 0x3B, 0x5F, 0x0B, 0x6F, 0xEA, 0x88, 0xEB}; // K2
     uint32_t TOW = 345630;
 
-
-
-
     // Act
     // ----------
-    bool result = osnma->verify_tesla_key(key, TOW);
-
-
-
-
+    bool result = osnma->verify_tesla_key(key, TOW); // TODO - refactor so that output is not a boolean. Or use last_verified_tesla_key?
 
     // Assert
     // ----------

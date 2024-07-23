@@ -129,23 +129,28 @@ public:
 class NavData
 {
 public:
-    NavData()=default;
-    void init(const std::shared_ptr<OSNMA_msg> &osnma_msg);
-    std::vector<uint8_t> ephemeris_iono_vector{};
-    std::string ephemeris_iono_vector_2{};
-    std::vector<uint8_t> utc_vector{};
-    std::string utc_vector_2{};
-    uint32_t PRNa{};
-    uint32_t WN_sf0{};
-    uint32_t TOW_sf0{};
+    NavData(): nav_data_id(id_counter++){
+
+    }
+    bool have_this_bits(std::string nav_data);
+    bool add_nav_data(std::string nav_data);
+    void update_last_received_timestamp(uint32_t TOW);
+    const uint32_t nav_data_id;
+    uint32_t verified_bits{0};
+    uint32_t TOW_sf0{0};
+    uint32_t last_received_TOW{0};
+    uint32_t IOD_nav{0};
+    std::string get_utc_data() const;
+    std::string get_ephemeris_data() const;
+    bool verified{false};
+    uint32_t PRNd{0};
+    uint32_t ADKD{};
 private:
-    Galileo_Ephemeris EphemerisData;
-    Galileo_Iono IonoData;
-    Galileo_Utc_Model UtcData;
-    void generate_eph_iono_vector(); // TODO pass data directly fro Telemetry Decoder (if bits are in the needed order)
-    void generate_utc_vector(); // TODO
+    std::string ephemeris_iono_vector_2{};
+    std::string utc_vector_2{};
 
 
+    uint32_t static id_counter;
 };
 
 /*!
@@ -202,20 +207,19 @@ public:
     {
     }
     const uint32_t tag_id;
+    uint32_t static id_counter;
     uint32_t TOW;
     uint32_t WN;
     uint32_t PRNa;
     uint8_t CTR;
     e_verification_status status;
     uint64_t received_tag;
-
-    uint32_t static id_counter;
     uint64_t computed_tag;
-
     uint8_t PRN_d;
     uint8_t ADKD;
     uint8_t cop;
     uint32_t skipped;
+    std::string nav_data;
 };
 /** \} */
 /** \} */

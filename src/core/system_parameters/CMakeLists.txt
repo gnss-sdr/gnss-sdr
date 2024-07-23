@@ -32,6 +32,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     osnma_data.cc
     osnma_dsm_reader.cc
     osnma_helper.cc
+    osnma_nav_data_manager.cc
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
@@ -98,6 +99,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     osnma_data.h
     osnma_dsm_reader.h
     osnma_helper.h
+    osnma_nav_data_manager.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)

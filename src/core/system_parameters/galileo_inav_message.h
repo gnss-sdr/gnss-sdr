@@ -49,17 +49,15 @@ public:
     std::array<uint32_t, 15> mack{};
     std::array<uint8_t, 15> hkroot{};
     uint32_t PRN{};
-    uint32_t WN_sf0{}; // TODO - this is present in UtcModelData already
+    uint32_t WN_sf0{};  // TODO - this is present in UtcModelData already
     uint32_t TOW_sf0{};
-    std::vector<uint8_t> EphemerisClockAndStatusData {}; // TODO _2 rename and substitute this
+    std::vector<uint8_t> EphemerisClockAndStatusData{};  // TODO _2 rename and substitute this
     std::string EphemerisClockAndStatusData_2{};
-    std::vector<uint8_t> TimingData {};
+    std::vector<uint8_t> TimingData{};
     std::string TimingData_2{};
-    Galileo_Ephemeris EphemerisData {};
-    Galileo_Iono IonoData {};
-    Galileo_Utc_Model UtcModelData {};
-
-
+    Galileo_Ephemeris EphemerisData{};
+    Galileo_Iono IonoData{};
+    Galileo_Utc_Model UtcModelData{};
 };
 
 /*!

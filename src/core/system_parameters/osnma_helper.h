@@ -30,8 +30,8 @@ public:
     std::vector<uint8_t> gst_to_uint8(uint32_t GST) const;
     std::vector<uint8_t> bytes(const std::string& binaryString) const;
     std::string verification_status_str(int status) const;
-    std::string convert_to_hex_string(const std::vector<uint8_t>& vector) const ;
-    std::vector<uint8_t> convert_from_hex_string(const std::string& hex_string) const; // TODO remove similar function in gnss_crypto
+    std::string convert_to_hex_string(const std::vector<uint8_t>& vector) const;
+    std::vector<uint8_t> convert_from_hex_string(const std::string& hex_string) const;  // TODO remove similar function in gnss_crypto
 };
 
 #endif  // GNSS_SDR_OSNMA_HELPER_H

@@ -18,12 +18,10 @@
 #ifndef GNSS_SDR_OSNMA_DATA_H
 #define GNSS_SDR_OSNMA_DATA_H
 
-#include "galileo_ephemeris.h"
-#include "galileo_inav_message.h"
-#include "galileo_iono.h"
-#include "galileo_utc_model.h"
+#include "galileo_inav_message.h"  // for OSNMA_msg
 #include <array>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -72,9 +70,9 @@ class MACK_tag_and_info
 {
 public:
     MACK_tag_and_info() = default;
-    uint64_t tag; // C: 20-40 bits
+    uint64_t tag;  // C: 20-40 bits
     MACK_tag_info tag_info;
-    uint32_t counter; // CTR
+    uint32_t counter;  // CTR
 };
 
 class DSM_PKR_message
@@ -107,7 +105,7 @@ public:
     uint8_t reserved1{};
     uint8_t hf{};
     uint8_t mf{};
-    uint8_t ks{}; // key size, in bits
+    uint8_t ks{};  // key size, in bits
     uint8_t ts{};
     uint8_t maclt{};
     uint8_t reserved{};
@@ -121,31 +119,26 @@ public:
     MACK_header header;
     std::vector<MACK_tag_and_info> tag_and_info;
     std::vector<uint8_t> key;
-    uint32_t TOW; // TODO duplicated variable, also in NavData
+    uint32_t TOW;  // TODO duplicated variable, also in OSNMA_NavData
     uint32_t WN;
     uint32_t PRNa;
 };
 
-class NavData
+class OSNMA_NavData
 {
 public:
-    NavData()=default;
-    void init(const std::shared_ptr<OSNMA_msg> &osnma_msg);
-    std::vector<uint8_t> ephemeris_iono_vector{};
-    std::string ephemeris_iono_vector_2{};
-    std::vector<uint8_t> utc_vector{};
-    std::string utc_vector_2{};
-    uint32_t PRNa{};
-    uint32_t WN_sf0{};
-    uint32_t TOW_sf0{};
+    OSNMA_NavData() = default;
+    void init(const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    std::string get_ephemeris_iono_data() const;
+    std::string get_utc_data() const;
+    uint32_t get_tow_sf0() const;
+    void set_ephemeris_iono_data(const std::string& iono_data);
+    void set_utc_data(const std::string& utc_data);
+
 private:
-    Galileo_Ephemeris EphemerisData;
-    Galileo_Iono IonoData;
-    Galileo_Utc_Model UtcData;
-    void generate_eph_iono_vector(); // TODO pass data directly fro Telemetry Decoder (if bits are in the needed order)
-    void generate_utc_vector(); // TODO
-
-
+    std::string d_ephemeris_iono;
+    std::string d_utc;
+    uint32_t d_TOW_sf0{};
 };
 
 /*!
@@ -161,19 +154,22 @@ public:
     DSM_PKR_message d_dsm_pkr_message;
     DSM_KROOT_message d_dsm_kroot_message;
     MACK_message d_mack_message;
-    NavData d_nav_data;
+    OSNMA_NavData d_nav_data;
 };
+
 
 class Tag
 {
 public:
-    enum e_verification_status{
+    enum e_verification_status
+    {
         SUCCESS,
         FAIL,
-        UNVERIFIED};
-    Tag(const MACK_tag_and_info& MTI, uint32_t TOW,uint32_t WN, uint32_t PRNa,uint8_t CTR) // standard tag constructor, for tags within Tag&Info field
+        UNVERIFIED
+    };
+    Tag(const MACK_tag_and_info& MTI, uint32_t TOW, uint32_t WN, uint32_t PRNa, uint8_t CTR)  // standard tag constructor, for tags within Tag&Info field
         : tag_id(id_counter++),
-          TOW(TOW), // TODO missing for build_message WN for GST computation, CTR, NMAS, NavData missing
+          TOW(TOW),  // TODO missing for build_message WN for GST computation, CTR, NMAS, OSNMA_NavData missing
           WN(WN),
           PRNa(PRNa),
           CTR(CTR),
@@ -186,16 +182,16 @@ public:
           skipped(0)
     {
     }
-    Tag(const MACK_message& mack) // constructor for Tag0
+    Tag(const MACK_message& mack)  // constructor for Tag0
         : tag_id(id_counter++),
-          TOW(mack.TOW), // TODO missing for build_message WN for GST computation, CTR, NMAS, NavData missing
+          TOW(mack.TOW),  // TODO missing for build_message WN for GST computation, CTR, NMAS, OSNMA_NavData missing
           WN(mack.WN),
           PRNa(mack.PRNa),
           CTR(1),
           status(UNVERIFIED),
           received_tag(mack.header.tag0),
           computed_tag(0),
-          PRN_d(mack.PRNa), // Tag0 are self-authenticating
+          PRN_d(mack.PRNa),  // Tag0 are self-authenticating
           ADKD(0),
           cop(mack.header.cop),
           skipped(0)

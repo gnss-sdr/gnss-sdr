@@ -29,7 +29,7 @@ if(ENABLE_DMA_PROXY)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_dma-proxy.h)
 endif()
 
-if(ENABLE_AD9361 OR ENABLE_MAX2771)
+if((ENABLE_FPGA AND ENABLE_AD9361) OR ENABLE_MAX2771)
     set(OPT_SIGNAL_SOURCE_LIB_SOURCES ${OPT_SIGNAL_SOURCE_LIB_SOURCES} fpga_buffer_monitor.cc)
     set(OPT_SIGNAL_SOURCE_LIB_HEADERS ${OPT_SIGNAL_SOURCE_LIB_HEADERS} fpga_buffer_monitor.h)
 endif()
@@ -123,7 +123,7 @@ if(ENABLE_FMCOMMS2 OR ENABLE_AD9361 OR ENABLE_PLUTOSDR)
     endif()
 endif()
 
-if(ENABLE_FPGA)
+if(ENABLE_FPGA OR ENABLE_AD9361)
     target_link_libraries(signal_source_libs
         PUBLIC
             algorithms_libs

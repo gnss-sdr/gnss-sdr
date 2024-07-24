@@ -28,7 +28,6 @@
 #include <cmath>      // for std::floor
 #include <exception>  // for std::exception
 #include <iostream>   // for std::cout
-#include <vector>     // for std::vector
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else

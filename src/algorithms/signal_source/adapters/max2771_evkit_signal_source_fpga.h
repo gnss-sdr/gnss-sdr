@@ -31,6 +31,7 @@
 #include <mutex>      // for mutex
 #include <string>     // for strings
 #include <thread>     // for threads
+#include <vector>     // for std::vector
 
 
 /** \addtogroup Signal_Source

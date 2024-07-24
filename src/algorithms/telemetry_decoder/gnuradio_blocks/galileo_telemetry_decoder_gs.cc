@@ -452,7 +452,9 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 d_inav_nav.get_osnma_adkd_0_12_nav_bits(),
                 d_inav_nav.get_TOW5() - 25);
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj_osnma));
-            DLOG(INFO) << "|---> Galileo OSNMA :: Sending Telemetry Decoder NavData (PRN_d=" << static_cast<int>(d_satellite.get_PRN()) << ", TOW=" << static_cast<int>(d_inav_nav.get_TOW5() - 25) << ")";  //: 0b" << d_inav_nav.get_osnma_adkd_0_12_nav_bits();
+            DLOG(INFO) << "|---> Galileo OSNMA :: Sending Telemetry Decoder NavData (PRN_d="
+                       << static_cast<int>(d_satellite.get_PRN())
+                       << ", TOW=" << static_cast<int>(d_inav_nav.get_TOW5() - 25) << ")";  //: 0b" << d_inav_nav.get_osnma_adkd_0_12_nav_bits();
             d_inav_nav.reset_osnma_nav_bits_adkd0_12();
         }
 
@@ -465,7 +467,9 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 d_inav_nav.get_osnma_adkd_4_nav_bits(),
                 d_inav_nav.get_TOW6() - 5);
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
-            DLOG(INFO) << "|---> Galileo OSNMA :: Sending Telemetry Decoder NavData (PRN_d=" << static_cast<int>(d_satellite.get_PRN()) << ", TOW=" << static_cast<int>(d_inav_nav.get_TOW6() - 5) << ")";  //: 0b" << d_inav_nav.get_osnma_adkd_4_nav_bits();
+            DLOG(INFO) << "|---> Galileo OSNMA :: Sending Telemetry Decoder NavData (PRN_d="
+                       << static_cast<int>(d_satellite.get_PRN())
+                       << ", TOW=" << static_cast<int>(d_inav_nav.get_TOW6() - 5) << ")";  //: 0b" << d_inav_nav.get_osnma_adkd_4_nav_bits();
             d_inav_nav.reset_osnma_nav_bits_adkd4();
         }
 

@@ -141,15 +141,21 @@ public:
      * @brief Retrieves the OSNMA ADKD 4 NAV bits. Resets the string.
      */
     std::string get_osnma_adkd_4_nav_bits();
+
+    /*
+     * @brief Resets the OSNMA ADKD 4 NAV bits.
+     */
     void reset_osnma_nav_bits_adkd4();
-    bool flag_adkd_4_complete{false};
 
     /*
      * @brief Retrieves the OSNMA ADKD 0/12 NAV bits. Resets the string.
      */
     std::string get_osnma_adkd_0_12_nav_bits();
+
+    /*
+     * @brief Resets the OSNMA ADKD 0/12 NAV bits.
+     */
     void reset_osnma_nav_bits_adkd0_12();
-    bool flag_adkd_0_12_complete{false};
 
     inline bool get_flag_CRC_test() const
     {

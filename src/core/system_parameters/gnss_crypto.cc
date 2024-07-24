@@ -225,7 +225,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& messag
     success = (ret >= 0);
     if (success)
         {
-            LOG(INFO) << "GnuTLS: OSNMA signature authenticated successfully";
+            DLOG(INFO) << "GnuTLS: OSNMA signature authenticated successfully";
         }
     else
         {
@@ -301,7 +301,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& messag
     if (verification == 1)
         {
             success = true;
-            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
+            DLOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
         }
     else
         {
@@ -320,7 +320,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& messag
     if (verification == 1)
         {
             success = true;
-            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
+            DLOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
         }
     else if (verification == 0)
         {
@@ -379,7 +379,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p521(const std::vector<uint8_t>& messag
 
     if (ret >= 0)
         {
-            LOG(INFO) << "GnuTLS: OSNMA signature authenticated successfully";
+            DLOG(INFO) << "GnuTLS: OSNMA signature authenticated successfully";
             success = true;
         }
     else
@@ -428,7 +428,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p521(const std::vector<uint8_t>& messag
 
     if (verification == 1)
         {
-            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
+            DLOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
             success = true;
         }
     else if (verification == 0)
@@ -451,7 +451,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p521(const std::vector<uint8_t>& messag
     ECDSA_SIG_free(ecdsa_sig);
     if (verification == 1)
         {
-            LOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
+            DLOG(INFO) << "OpenSSL: OSNMA signature authenticated successfully";
             success = true;
         }
     else if (verification == 0)
@@ -896,7 +896,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 #endif  // OpenSSL 1.x
     EVP_PKEY_free(pkey);
 #endif
-    LOG(INFO) << "OSNMA Public Key successfully set up.";
+    DLOG(INFO) << "OSNMA Public Key successfully set up.";
 }
 
 

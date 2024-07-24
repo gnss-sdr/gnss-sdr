@@ -380,10 +380,6 @@ bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc d
 // flag_almanac_4 tells if W10 available.
 bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac data set stored in the galileo navigation class
 {
-    //    if(flag_almanac_4)
-    //        {
-    //            flag_adkd_4_complete = true;
-    //        }
     if ((flag_almanac_1 == true) and (flag_almanac_2 == true) and (flag_almanac_3 == true) and (flag_almanac_4 == true))
         {
             // All Almanac data have been received
@@ -1451,7 +1447,6 @@ bool Galileo_Inav_Message::have_new_nma()
 std::string Galileo_Inav_Message::get_osnma_adkd_4_nav_bits()
 {
     nav_bits_adkd_4 = nav_bits_word_6 + nav_bits_word_10;
-
     return nav_bits_adkd_4;
 }
 

@@ -1,5 +1,5 @@
 /*!
- * \file ad9361_fpga_signal_source.h
+ * \file ad9361_signal_source_fpga.h
  * \brief signal source for Analog Devices front-end AD9361 connected directly
  * to FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with
@@ -18,8 +18,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
-#define GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
+#ifndef GNSS_SDR_AD9361_SIGNAL_SOURCE_FPGA_H
+#define GNSS_SDR_AD9361_SIGNAL_SOURCE_FPGA_H
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
@@ -44,14 +44,14 @@
 
 class ConfigurationInterface;
 
-class Ad9361FpgaSignalSource : public SignalSourceBase
+class Ad9361SignalSourceFPGA : public SignalSourceBase
 {
 public:
-    Ad9361FpgaSignalSource(const ConfigurationInterface *configuration,
+    Ad9361SignalSourceFPGA(const ConfigurationInterface *configuration,
         const std::string &role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t> *queue);
 
-    ~Ad9361FpgaSignalSource();
+    ~Ad9361SignalSourceFPGA();
 
     inline size_t item_size() override
     {
@@ -139,4 +139,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_AD9361_FPGA_SIGNAL_SOURCE_H
+#endif  // GNSS_SDR_AD9361_SIGNAL_SOURCE_FPGA_H

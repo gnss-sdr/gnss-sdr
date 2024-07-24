@@ -37,24 +37,24 @@ if(ENABLE_AD9361)
     ###############################################
     # AD9361 DIRECT TO FPGA Hardware
     ###############################################
-    list(APPEND OPT_DRIVER_SOURCES ad9361_fpga_signal_source.cc)
-    list(APPEND OPT_DRIVER_HEADERS ad9361_fpga_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES ad9361_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS ad9361_signal_source_fpga.h)
 endif()
 
 if(ENABLE_MAX2771)
     ###############################################
     # MAX2771 EVKIT DIRECT TO FPGA Hardware
     ###############################################
-    list(APPEND OPT_DRIVER_SOURCES fpga_max2771_evkit_signal_source.cc)
-    list(APPEND OPT_DRIVER_HEADERS fpga_max2771_evkit_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES max2771_evkit_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS max2771_evkit_signal_source_fpga.h)
 endif()
 
 if(ENABLE_DMA_PROXY)
     ###############################################
     # FPGA DMA source
     ###############################################
-    list(APPEND OPT_DRIVER_SOURCES fpga_dma_signal_source.cc)
-    list(APPEND OPT_DRIVER_HEADERS fpga_dma_signal_source.h)
+    list(APPEND OPT_DRIVER_SOURCES dma_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS dma_signal_source_fpga.h)
 endif()
 
 if(ENABLE_FLEXIBAND AND TELEORBIT_FOUND)

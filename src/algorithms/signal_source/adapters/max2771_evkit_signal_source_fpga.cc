@@ -1,5 +1,5 @@
 /*!
- * \file fpga_max2771_evkit_signal_source.cc
+ * \file max2771_evkit_signal_source_fpga.cc
  * \brief Signal source for the MAX2771EVKIT evaluation board connected directly
  * to FPGA accelerators.
  * This source implements only the MAX2771 control. It is NOT compatible with
@@ -16,7 +16,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "fpga_max2771_evkit_signal_source.h"
+#include "max2771_evkit_signal_source_fpga.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L2C.h"
 #include "GPS_L5.h"
@@ -38,10 +38,10 @@
 
 using namespace std::string_literals;
 
-FPGAMAX2771EVKITSignalSource::FPGAMAX2771EVKITSignalSource(const ConfigurationInterface *configuration,
+MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
-    : SignalSourceBase(configuration, role, "FPGA_MAX2771_EVKIT_Signal_Source"s),
+    : SignalSourceBase(configuration, role, "MAX2771_EVKIT_Signal_Source_Fpga"s),
       freq_(configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ))),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_sampling_rate)),
       in_stream_(in_stream),
@@ -141,7 +141,7 @@ FPGAMAX2771EVKITSignalSource::FPGAMAX2771EVKITSignalSource(const ConfigurationIn
         }
 }
 
-std::vector<uint32_t> FPGAMAX2771EVKITSignalSource::setup_regs(void)
+std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
 {
     std::vector<uint32_t> register_values = std::vector<uint32_t>(MAX2771_NUM_REGS);
 
@@ -338,7 +338,7 @@ std::vector<uint32_t> FPGAMAX2771EVKITSignalSource::setup_regs(void)
 }
 
 
-bool FPGAMAX2771EVKITSignalSource::configure(std::vector<uint32_t> register_values)
+bool MAX2771EVKITSignalSourceFPGA::configure(std::vector<uint32_t> register_values)
 {
     // write the registers
     std::cerr << "Configuring MAX2771 registers" << std::endl;
@@ -377,7 +377,7 @@ bool FPGAMAX2771EVKITSignalSource::configure(std::vector<uint32_t> register_valu
     return 0;
 }
 
-FPGAMAX2771EVKITSignalSource::~FPGAMAX2771EVKITSignalSource()
+MAX2771EVKITSignalSourceFPGA::~MAX2771EVKITSignalSourceFPGA()
 {
     /* cleanup and exit */
 
@@ -417,7 +417,7 @@ FPGAMAX2771EVKITSignalSource::~FPGAMAX2771EVKITSignalSource()
 }
 
 
-void FPGAMAX2771EVKITSignalSource::run_buffer_monitor_process()
+void MAX2771EVKITSignalSourceFPGA::run_buffer_monitor_process()
 {
     bool enable_ovf_check_buffer_monitor_active = true;
 
@@ -437,7 +437,7 @@ void FPGAMAX2771EVKITSignalSource::run_buffer_monitor_process()
 }
 
 
-void FPGAMAX2771EVKITSignalSource::connect(gr::top_block_sptr top_block)
+void MAX2771EVKITSignalSourceFPGA::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -446,7 +446,7 @@ void FPGAMAX2771EVKITSignalSource::connect(gr::top_block_sptr top_block)
 }
 
 
-void FPGAMAX2771EVKITSignalSource::disconnect(gr::top_block_sptr top_block)
+void MAX2771EVKITSignalSourceFPGA::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -455,14 +455,14 @@ void FPGAMAX2771EVKITSignalSource::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr FPGAMAX2771EVKITSignalSource::get_left_block()
+gr::basic_block_sptr MAX2771EVKITSignalSourceFPGA::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
     return {};
 }
 
 
-gr::basic_block_sptr FPGAMAX2771EVKITSignalSource::get_right_block()
+gr::basic_block_sptr MAX2771EVKITSignalSourceFPGA::get_right_block()
 {
     return {};
 }

@@ -1,5 +1,5 @@
 /*!
- * \file fpga_max2771_evkit_signal_source.h
+ * \file max2771_evkit_signal_source_fpga.h
  * \brief Signal source for the MAX2771EVKIT evaluation board connected directly
  * to FPGA accelerators.
  * This source implements only the MAX2771 control. It is NOT compatible with
@@ -16,8 +16,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FPGA_MAX2771_EVKIT_SIGNAL_SOURCE_H
-#define GNSS_SDR_FPGA_MAX2771_EVKIT_SIGNAL_SOURCE_H
+#ifndef GNSS_SDR_MAX2771_EVKIT_SIGNAL_SOURCE_FPGA_H
+#define GNSS_SDR_MAX2771_EVKIT_SIGNAL_SOURCE_FPGA_H
 
 #include "command_event.h"
 #include "concurrent_queue.h"
@@ -41,14 +41,14 @@
 
 class ConfigurationInterface;
 
-class FPGAMAX2771EVKITSignalSource : public SignalSourceBase
+class MAX2771EVKITSignalSourceFPGA : public SignalSourceBase
 {
 public:
-    FPGAMAX2771EVKITSignalSource(const ConfigurationInterface *configuration,
+    MAX2771EVKITSignalSourceFPGA(const ConfigurationInterface *configuration,
         const std::string &role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t> *queue);
 
-    ~FPGAMAX2771EVKITSignalSource();
+    ~MAX2771EVKITSignalSourceFPGA();
 
     std::vector<uint32_t> setup_regs(void);
 
@@ -160,4 +160,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_FPGA_MAX2771_EVKIT_SIGNAL_SOURCE_H
+#endif  // GNSS_SDR_MAX2771_EVKIT_SIGNAL_SOURCE_FPGA_H

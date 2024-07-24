@@ -1,5 +1,5 @@
 /*!
- * \file fpga_dma_signal_source.h
+ * \file dma_signal_source_fpga.h
  * \brief signal source for a DMA connected directly to FPGA accelerators.
  * This source implements only the DMA control. It is NOT compatible with
  * conventional SDR acquisition and tracking blocks.
@@ -16,8 +16,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_FPGA_DMA_SIGNAL_SOURCE_H
-#define GNSS_SDR_FPGA_DMA_SIGNAL_SOURCE_H
+#ifndef GNSS_SDR_DMA_SIGNAL_SOURCE_FPGA_H
+#define GNSS_SDR_DMA_SIGNAL_SOURCE_FPGA_H
 
 #include "concurrent_queue.h"
 #include "fpga_dma-proxy.h"
@@ -41,14 +41,14 @@
 
 class ConfigurationInterface;
 
-class FPGADMASignalSource : public SignalSourceBase
+class DMASignalSourceFPGA : public SignalSourceBase
 {
 public:
-    FPGADMASignalSource(const ConfigurationInterface *configuration,
+    DMASignalSourceFPGA(const ConfigurationInterface *configuration,
         const std::string &role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t> *queue);
 
-    ~FPGADMASignalSource();
+    ~DMASignalSourceFPGA();
 
     void start() override;
 
@@ -115,4 +115,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_FPGA_DMA_SIGNAL_SOURCE_H
+#endif  // GNSS_SDR_DMA_SIGNAL_SOURCE_FPGA_H

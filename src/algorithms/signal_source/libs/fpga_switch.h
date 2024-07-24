@@ -42,7 +42,7 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_Switch(void);
+    Fpga_Switch(void);
     /*!
      * \brief Destructor
      */

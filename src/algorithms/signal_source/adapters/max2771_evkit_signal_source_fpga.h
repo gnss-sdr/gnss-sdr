@@ -143,7 +143,7 @@ private:
     uint32_t in_stream_;
     uint32_t out_stream_;
     uint32_t bandwidth_;     // 2500000, 4200000, 8700000, 16400000, 23400000, 36000000
-    uint32_t filter_order_;  //3, 5
+    uint32_t filter_order_;  // 3, 5
     uint32_t gain_in_;       // 0 to 0x3F
 
     size_t item_size_;  // 1

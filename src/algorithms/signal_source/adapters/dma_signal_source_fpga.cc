@@ -21,12 +21,13 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
-#include <chrono>    // for std::chrono
-#include <fcntl.h>   // for open, O_WRONLY
-#include <fstream>   // for std::ifstream
-#include <iomanip>   // for std::setprecision
-#include <iostream>  // for std::cout
-#include <vector>    // fr std::vector
+#include <algorithm>  // for std::min
+#include <chrono>     // for std::chrono
+#include <fcntl.h>    // for open, O_WRONLY
+#include <fstream>    // for std::ifstream
+#include <iomanip>    // for std::setprecision
+#include <iostream>   // for std::cout
+#include <vector>     // fr std::vector
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>

@@ -28,7 +28,7 @@
 #include <cmath>      // for std::floor
 #include <exception>  // for std::exception
 #include <iostream>   // for std::cout
-
+#include <vector>     // for std::vector
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
@@ -212,7 +212,7 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
         DIEID;
 
     register_values[2] =  // configuration 3 register
-        (0x0 << 28) +     //reserved
+        (0x0 << 28) +     // reserved
         (gain_in_ << 22) +
         (0x1 << 21) +  // reserved
         (HILOADEN << 20) +
@@ -266,7 +266,7 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
         (IXTAL << 19) +
         (0x10 << 14) +  // reserved
         (0x0 << 13) +   // reserved
-        (0x0 << 10) +   //reserved
+        (0x0 << 10) +   // reserved
         (ICP << 9) +
         (0x0 << 8) +  // reserved
         (0x0 << 7) +  // reserved
@@ -291,9 +291,9 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
         default:
             freq_sel = 0x604;
         }
-    //uint32_t freq_sel = (freq_ == GPS_L1_FREQ_HZ) ? 0x604 :
+
     register_values[4] =  // PLL integer division register
-        (0x0 << 28) +     //reserved
+        (0x0 << 28) +     // reserved
         (freq_sel << 13) +
         (RDIV << 3) +
         0x0;  // reserved
@@ -318,7 +318,7 @@ std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
         (REFCLK_M_CNT << 4) +
         (FCLKIN << 3) +
         (ADCCLK << 2) +
-        (0x1 << 1) +  //reserved
+        (0x1 << 1) +  // reserved
         MODE;
 
     register_values[8] = TEST_MODE_1_REG_VAL;  // test mode 1 register

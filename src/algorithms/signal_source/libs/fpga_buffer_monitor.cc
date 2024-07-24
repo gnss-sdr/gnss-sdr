@@ -41,15 +41,6 @@
 #endif
 
 
-//Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name,
-//    uint32_t num_freq_bands,
-//    bool dump,
-//    std::string dump_filename)
-//    : d_dump_filename(std::move(dump_filename)),
-//      d_num_freq_bands(num_freq_bands),
-//      d_max_buff_occ_freq_band_0(0),
-//      d_max_buff_occ_freq_band_1(0),
-//      d_dump(dump)
 Fpga_buffer_monitor::Fpga_buffer_monitor(
     uint32_t num_freq_bands,
     bool dump,

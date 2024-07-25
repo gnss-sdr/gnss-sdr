@@ -24,7 +24,7 @@ bool OSNMA_NavData::add_nav_data(std::string nav_data)
     if (nav_data.size() == 549)
         {
             d_ephemeris_iono = nav_data;
-            std::bitset<10> bits(nav_data.substr(0,10));
+            std::bitset<10> bits(nav_data.substr(0, 10));
             IOD_nav = static_cast<uint8_t>(bits.to_ulong());
             return true;
         }

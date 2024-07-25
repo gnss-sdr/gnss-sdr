@@ -63,7 +63,7 @@ protected:
     const uint32_t LEAP_SECONDS = 0;                                 // 13 + 5;
     void set_time(std::tm& input);
     // std::string log_name {"CONFIG1-2023-08-16-PKID1-OSNMA"};
-    std::string log_name{"CONFIG2-2023-07-27-PKID2-MT2-OSNMA"};
+    std::string log_name{"CONFIG2-2023-07-27-PKID2-MT2-OSNMA"};  // TODO -     google::InitGoogleLogging(log_name.c_str()); but cannot be called twice
     void initializeGoogleLog();
 
     void SetUp() override
@@ -174,7 +174,7 @@ TEST_F(OsnmaMsgReceiverTest, BuildTagMessageM0)
     osnma->d_osnma_data.d_dsm_kroot_message.ts = 9;                                                                                        // 40 bit
     osnma->d_tesla_keys[TOW_Key_Tag0] = {0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6, 0x5E, 0xBF, 0x00, 0x6A, 0xD8, 0xDB, 0xBC, 0x73};  // K4
     osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
-    osnma->d_satellite_nav_data[PRNa][TOW_NavData].set_ephemeris_iono_data(
+    osnma->d_nav_data_manager->add_navigation_data(
         "000011101001011001000100000101000111010110100100100101100000000000"
         "011101101011001111101110101010000001010000011011111100000011101011"
         "011100101101011010101011011011001001110111101011110110111111001111"
@@ -183,7 +183,8 @@ TEST_F(OsnmaMsgReceiverTest, BuildTagMessageM0)
         "110100010001000110001110011010110000111010000010000000000001101000"
         "000000000011100101100100010000000000000110110100110001111100000000"
         "000000100110100000000101010010100000001011000010001001100000011111"
-        "110111111111000000000");
+        "110111111111000000000",
+        PRNa, TOW_NavData);
     osnma->d_osnma_data.d_nma_header.nmas = 0b10;
 
     MACK_tag_and_info MTI;
@@ -216,17 +217,16 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification)
     osnma->d_osnma_data.d_dsm_kroot_message.ts = 9;                                                                                        // 40 bit
     osnma->d_tesla_keys[TOW_Key_Tag0] = {0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6, 0x5E, 0xBF, 0x00, 0x6A, 0xD8, 0xDD, 0xBC, 0x73};  // K4
     osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
-    osnma->d_satellite_nav_data[PRNa][TOW_NavData].set_ephemeris_iono_data("");
-    osnma->d_satellite_nav_data[PRNa][TOW_NavData].set_ephemeris_iono_data(
-        "000011101001011001000100000101000111010110100100100101100000000000"
-        "011101101011001111101110101010000001010000011011111100000011101011"
-        "011100101101011010101011011011001001110111101011110110111111001111"
-        "001000011111101110011000111111110111111010000011101011111111110000"
-        "110111000000100000001110110000110110001110000100001110101100010100"
-        "110100010001000110001110011010110000111010000010000000000001101000"
-        "000000000011100101100100010000000000000110110100110001111100000000"
-        "000000100110100000000101010010100000001011000010001001100000011111"
-        "110111111111000000000");
+    osnma->d_nav_data_manager->add_navigation_data(
+                                 "000011101001011001000100000101000111010110100100100101100000000000"
+                                 "011101101011001111101110101010000001010000011011111100000011101011"
+                                 "011100101101011010101011011011001001110111101011110110111111001111"
+                                 "001000011111101110011000111111110111111010000011101011111111110000"
+                                 "110111000000100000001110110000110110001110000100001110101100010100"
+                                 "110100010001000110001110011010110000111010000010000000000001101000"
+                                 "000000000011100101100100010000000000000110110100110001111100000000"
+                                 "000000100110100000000101010010100000001011000010001001100000011111"
+                                 "110111111111000000000", PRNa, TOW_NavData);
     osnma->d_osnma_data.d_nma_header.nmas = 0b10;
 
     MACK_tag_and_info MTI;
@@ -252,9 +252,10 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification)
     osnma->d_osnma_data.d_dsm_kroot_message.ts = 9;                                                                                        // 40 bit
     osnma->d_tesla_keys[TOW_Key_Tag3] = {0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6, 0x5E, 0xBF, 0x00, 0x6A, 0xD8, 0xDD, 0xBC, 0x73};  // K4
     osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
-    osnma->d_satellite_nav_data[PRNa][TOW_NavData].set_utc_data(
+    osnma->d_nav_data_manager->add_navigation_data(
         "111111111111111111111111111111110000000000000000000000010001001001001000"
-        "111000001000100111100010010111111111011110111111111001001100000100000000");
+        "111000001000100111100010010111111111011110111111111001001100000100000"
+        , PRNa, TOW_NavData);
     osnma->d_osnma_data.d_nma_header.nmas = 0b10;
 
     MTI.tag = static_cast<uint64_t>(0x7BB238C883);
@@ -648,10 +649,10 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
 
 void OsnmaMsgReceiverTest::initializeGoogleLog()
 {
-    google::InitGoogleLogging(log_name.c_str());  // TODO - running all tests causes conflict due to being called twice
+    // google::InitGoogleLogging(log_name.c_str());
     FLAGS_minloglevel = 0;                        // INFO
     FLAGS_logtostderr = 0;                        // add this line
-    FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/data/build/src/tests/logs";
+    // FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/data/logs";
     if (FLAGS_log_dir.empty())
         {
             std::cout << "Logging will be written at "

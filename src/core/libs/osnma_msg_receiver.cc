@@ -24,7 +24,7 @@
 #include "gnss_satellite.h"
 #include "osnma_dsm_reader.h"  // for OSNMA_DSM_Reader
 #include "osnma_helper.h"
-#include "osnma_nav_data_manager.h" // TODO - all these repeated includes, is it good practice to include them in the source file?
+#include "osnma_nav_data_manager.h"  // TODO - all these repeated includes, is it good practice to include them in the source file?
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>
 #include <cmath>
@@ -118,16 +118,15 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     std::cout << output_message.str() << std::endl;
 
                     process_osnma_message(nma_msg);
-                } // OSNMA frame received
-            else if (msg_type_hash_code == typeid(std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>).hash_code()) // Navigation data bits for OSNMA received
+                }  // OSNMA frame received
+            else if (msg_type_hash_code == typeid(std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>).hash_code())  // Navigation data bits for OSNMA received
                 {
                     // TODO - PRNa is a typo here, I think for d_satellite_nav_data, is PRN_d the name to use
                     const auto inav_data = wht::any_cast<std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>>(pmt::any_ref(msg));
                     uint32_t PRNa = std::get<0>(*inav_data);
                     std::string nav_data = std::get<1>(*inav_data);
                     uint32_t TOW = std::get<2>(*inav_data);
-
-                    d_nav_data_manager->add_navigation_data(nav_data,PRNa,TOW);
+                    d_nav_data_manager->add_navigation_data(nav_data, PRNa,TOW);
                 }
             else
                 {
@@ -605,7 +604,7 @@ void osnma_msg_receiver::read_and_process_mack_block(const std::shared_ptr<OSNMA
     d_osnma_data.d_nav_data.set_tow_sf0(osnma_msg->TOW_sf0);
 
     if (d_kroot_verified || d_tesla_key_verified || d_osnma_data.d_dsm_kroot_message.ts != 0 /*mack parser needs to know the tag size, otherwise cannot parse mack messages*/)  // C: 4 ts <  ts < 10
-        {// TODO - correct? with this, MACK would not be processed unless a Kroot is available -- no, if TK available MACK sould go on, this has to change in future
+        {  // TODO - correct? with this, MACK would not be processed unless a Kroot is available -- no, if TK available MACK sould go on, this has to change in future
             read_mack_header();
             d_osnma_data.d_mack_message.PRNa = osnma_msg->PRN;  // FIXME this is ugly.
             d_osnma_data.d_mack_message.TOW = osnma_msg->TOW_sf0;
@@ -949,7 +948,7 @@ void osnma_msg_receiver::process_mack_message()
     for (auto& it : d_tags_awaiting_verify)
         {
             bool ret;
-            if (tag_has_key_available(it.second) && d_nav_data_manager->have_nav_data(it.second))//tag_has_nav_data_available(it.second))
+            if (tag_has_key_available(it.second) && d_nav_data_manager->have_nav_data(it.second))  // tag_has_nav_data_available(it.second))
                 {
                     ret = verify_tag(it.second);
                     /* TODO - take into account:
@@ -1206,7 +1205,7 @@ bool osnma_msg_receiver::verify_tag(Tag& tag) const
             computed_mac += static_cast<uint64_t>(mac[4]);
         }
 
-    tag.computed_tag = computed_mac; // update with computed value
+    tag.computed_tag = computed_mac;  // update with computed value
     // Compare computed tag with received one truncated
     if (tag.received_tag == computed_mac)
         {
@@ -1245,7 +1244,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(Tag& tag) const
     // Add applicable NavData bits to message
     std::string applicable_nav_data = d_nav_data_manager->get_navigation_data(tag);
     std::vector<uint8_t> applicable_nav_data_bytes = d_helper->bytes(applicable_nav_data);
-    tag.nav_data = applicable_nav_data; // update tag with applicable data
+    tag.nav_data = applicable_nav_data;  // update tag with applicable data
 
     // Convert and add OSNMA_NavData bytes into the message, taking care of that NMAS has only 2 bits
     for (uint8_t byte : applicable_nav_data_bytes)
@@ -1814,7 +1813,5 @@ void osnma_msg_receiver::send_data_to_pvt(std::vector<OSNMA_NavData> data)
                     const auto tmp_obj = std::make_shared<OSNMA_NavData>(data[i]);
                     this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(tmp_obj));
                 }
-
         }
-
 }

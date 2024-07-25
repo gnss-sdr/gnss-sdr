@@ -111,7 +111,7 @@ private:
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;  // osnma parameters parser
     std::unique_ptr<Gnss_Crypto> d_crypto;           // access to cryptographic functions
     std::unique_ptr<Osnma_Helper> d_helper;
-    std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager; // refactor for holding and processing navigation data
+    std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager;  // refactor for holding and processing navigation data
 
     OSNMA_data d_osnma_data{};
 

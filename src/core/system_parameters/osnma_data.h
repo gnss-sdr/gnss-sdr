@@ -127,9 +127,7 @@ public:
 class OSNMA_NavData
 {
 public:
-    OSNMA_NavData(): nav_data_id(id_counter++){
-
-    }
+    OSNMA_NavData(): nav_data_id(id_counter++){}
     bool have_this_bits(std::string nav_data);
     bool add_nav_data(std::string nav_data);
     void update_last_received_timestamp(uint32_t TOW);
@@ -141,6 +139,8 @@ public:
     uint32_t IOD_nav{0};
     std::string get_utc_data() const;
     std::string get_ephemeris_data() const;
+    void set_ephemeris_data(std::string value) {d_ephemeris_iono = value;}
+    void set_utc_data(std::string value) {d_utc = value;}
     bool verified{false};
     uint32_t PRNd{0};
     uint32_t ADKD{};

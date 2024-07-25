@@ -1,10 +1,23 @@
-//
-// Created by cgm on 23/07/24.
-//
+/*!
+* \file osnma_nav_data_manager.cc
+* \brief Class for Galileo OSNMA navigation data management
+* \author Cesare Ghionoiu-Martinez, 2020-2023 cesare.martinez(at)proton.me
+*
+* -----------------------------------------------------------------------------
+*
+* GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+* This file is part of GNSS-SDR.
+*
+* Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
+* SPDX-License-Identifier: GPL-3.0-or-later
+*
+* -----------------------------------------------------------------------------
+*/
 
 #include "osnma_nav_data_manager.h"
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>  // for DLOG
+#include <vector>
 #else
 #include <absl/log/log.h>
 #endif
@@ -18,7 +31,7 @@
  */
 void OSNMA_nav_data_Manager::add_navigation_data(std::string nav_bits, uint32_t PRNd, uint32_t TOW)
 {
-    if(not have_nav_data(nav_bits, PRNd, TOW))
+    if (not have_nav_data(nav_bits, PRNd, TOW))
         {
             _satellite_nav_data[PRNd][TOW].add_nav_data(nav_bits);
             _satellite_nav_data[PRNd][TOW].PRNd = PRNd;
@@ -36,16 +49,16 @@ void OSNMA_nav_data_Manager::update_nav_data(const std::multimap<uint32_t, Tag>&
             // if tag status is verified, look for corresponding OSNMA_NavData and add increase verified tag bits.
             if (tag.second.status == Tag::e_verification_status::SUCCESS)
                 {
-                    if(have_PRNd_nav_data(tag.second.PRN_d))
+                    if (have_PRNd_nav_data(tag.second.PRN_d))
                         {
                             std::map<uint32_t, OSNMA_NavData> tow_map = _satellite_nav_data.find(tag.second.PRN_d)->second;
-                            for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it) // note: starts with smallest (i.e. oldest) navigation dataset
+                            for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it)  // note: starts with smallest (i.e. oldest) navigation dataset
                                 {
                                     std::string nav_data;
-                                    if(tag.second.ADKD == 0 || tag.second.ADKD == 12){
+                                    if (tag.second.ADKD == 0 || tag.second.ADKD == 12){
                                             nav_data = tow_it->second.get_ephemeris_data();
                                         }
-                                    else if(tag.second.ADKD == 4){
+                                    else if (tag.second.ADKD == 4){
                                             nav_data = tow_it->second.get_utc_data();
                                         }
                                     // find associated OSNMA_NavData
@@ -120,20 +133,20 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
 
     // satellite was found, check if TOW exists in inner map
     std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
-    for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it) // note: starts with smallest (i.e. oldest) navigation dataset
+    for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it)  // note: starts with smallest (i.e. oldest) navigation dataset
         {
             // Check if current key (TOW) fulfills condition
             if ((tag.TOW - 30 * tag.cop) <= tow_it->first &&  tow_it->first <= tag.TOW - 30)
                 {
-                    if(tag.ADKD == 0 || tag.ADKD == 12)
+                    if (tag.ADKD == 0 || tag.ADKD == 12)
                         {
-                            if(tow_it->second.get_ephemeris_data() != ""){
+                            if (tow_it->second.get_ephemeris_data() != ""){
                                     return tow_it->second.get_ephemeris_data();
                                 }
                         }
                     else if(tag.ADKD == 4)
                         {
-                            if(tow_it->second.get_utc_data() != ""){
+                            if (tow_it->second.get_utc_data() != ""){
                                     return tow_it->second.get_utc_data();
                                 }
                         }
@@ -150,17 +163,17 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
  */
 bool OSNMA_nav_data_Manager::have_nav_data(std::string nav_bits, uint32_t PRNd, uint32_t TOW)
 {
-    if(_satellite_nav_data.find(PRNd) != _satellite_nav_data.end()){
+    if (_satellite_nav_data.find(PRNd) != _satellite_nav_data.end()){
             for (auto& data_timestamp : _satellite_nav_data[PRNd])
                 {
-                    if(nav_bits.size() == EPH_SIZE){
-                            if(data_timestamp.second.get_ephemeris_data() == nav_bits){
+                    if (nav_bits.size() == EPH_SIZE){
+                            if (data_timestamp.second.get_ephemeris_data() == nav_bits){
                                     data_timestamp.second.update_last_received_timestamp(TOW);
                                     return true;
                                 }
                         }
-                    else if(nav_bits.size() == UTC_SIZE){
-                            if(data_timestamp.second.get_utc_data() == nav_bits){
+                    else if (nav_bits.size() == UTC_SIZE){
+                            if (data_timestamp.second.get_utc_data() == nav_bits){
                                     data_timestamp.second.update_last_received_timestamp(TOW);
                                     return true;
                                 }
@@ -182,24 +195,23 @@ bool OSNMA_nav_data_Manager::have_nav_data(const Tag& t) const
         }
     // satellite was found, check if TOW exists in inner map
     std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
-    for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it) // note: starts with smallest (i.e. oldest) navigation dataset
+    for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it)  // note: starts with smallest (i.e. oldest) navigation dataset
         {
             // Check if current key (TOW) fulfills condition
             if (t.TOW - 30 * t.cop <= tow_it->first &&  tow_it->first <= t.TOW - 30)
                 {
-                    if(t.ADKD == 0 || t.ADKD == 12)
+                    if (t.ADKD == 0 || t.ADKD == 12)
                         {
-                            if(tow_it->second.get_ephemeris_data() != ""){
+                            if (tow_it->second.get_ephemeris_data() != ""){
                                     return true;
                                 }
                         }
-                    else if(t.ADKD == 4)
+                    else if (t.ADKD == 4)
                         {
-                            if(tow_it->second.get_utc_data() != ""){
+                            if (tow_it->second.get_utc_data() != ""){
                                     return true;
                                 }
                         }
-
                 }
         }
     return false;

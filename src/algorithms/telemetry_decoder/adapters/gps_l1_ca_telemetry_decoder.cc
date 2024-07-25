@@ -20,7 +20,6 @@
 #include "configuration_interface.h"
 #include <glog/logging.h>
 
-
 GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(
     const ConfigurationInterface* configuration,
     const std::string& role,

@@ -18,7 +18,6 @@
 #include <glog/logging.h>
 #include <utility>
 
-
 Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
 {
     Gnss_Satellite::reset();
@@ -178,7 +177,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     if (system == "GPS")
         {
-            if (PRN_ < 1 or PRN_ > 32)
+            if (PRN_ < 1 or (PRN_ > 32 and PRN_<120))
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -268,7 +267,7 @@ void Gnss_Satellite::set_rf_link(int32_t rf_link_)
 uint32_t Gnss_Satellite::get_PRN() const
 {
     // Get satellite's PRN
-    uint32_t PRN_ = PRN;
+    uint32_t PRN_ = PRN;  
     return PRN_;
 }
 
@@ -400,6 +399,24 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                 case 32:
                     block_ = std::string("IIF");  // Plane F
                     break;
+                case 120:
+                    block_ = std::string("EGNOS Test Platform");  // Inmarsat 3-F2 (Atlantic Ocean Region-East)
+                    break;
+                case 123:
+                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. Astra 5B
+                    break;
+                case 131:                          // NOLINT(bugprone-branch-clone)
+                    block_ = std::string("WAAS");  // WAAS Eutelsat 117 West B
+                    break;
+                case 135:
+                    block_ = std::string("WAAS");  // WAAS Galaxy 15
+                    break;
+                case 136:
+                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
+                    break;
+                case 138:
+                    block_ = std::string("WAAS");  // WAAS Anik F1R
+                    break;                   
                 default:
                     block_ = std::string("Unknown");
                 }

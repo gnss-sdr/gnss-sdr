@@ -20,7 +20,6 @@
 #include "configuration_interface.h"
 #include <glog/logging.h>
 
-
 SbasL1TelemetryDecoder::SbasL1TelemetryDecoder(
     const ConfigurationInterface* configuration,
     const std::string& role,

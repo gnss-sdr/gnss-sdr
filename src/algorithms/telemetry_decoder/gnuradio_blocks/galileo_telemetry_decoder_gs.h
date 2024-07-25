@@ -155,9 +155,6 @@ private:
     bool d_there_are_e1_channels;
     bool d_there_are_e6_channels;
     bool d_use_ced;
-    bool d_flag_osnma_adkd_0_12; // flag to indicate if the ephemeris is complete for OSNMA processing
-    bool d_flag_osnma_adkd_4_gst; // flag to indicate if the GST conversion parameters are complete for OSNMA processing
-    bool d_flag_osnma_adkd_4_utc; // flag to indicate if the iono correction and time is complete for OSNMA processing
 };
 
 

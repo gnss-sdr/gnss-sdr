@@ -26,12 +26,12 @@ public:
     std::string get_navigation_data(const Tag& t);
 
     void update_nav_data(const std::multimap<uint32_t, Tag>& tags_verified, const uint8_t tag_size);
-    std::vector<NavData> get_verified_data();
+    std::vector<OSNMA_NavData> get_verified_data();
     void print_status();
 private:
     bool have_PRNd_nav_data(uint32_t PRNd);
 
-    std::map<uint32_t, std::map<uint32_t, NavData>> _satellite_nav_data{}; // NavData sorted by [PRNd][TOW_start]
+    std::map<uint32_t, std::map<uint32_t, OSNMA_NavData>> _satellite_nav_data{}; // NavData sorted by [PRNd][TOW_start]
     const uint32_t L_t_min{40};
     const uint16_t EPH_SIZE{549};
     const uint16_t UTC_SIZE{141};

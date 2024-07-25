@@ -10,7 +10,7 @@
 #endif
 
 /**
- * @brief Adds the navigation data bits to the container holding NavData objects.
+ * @brief Adds the navigation data bits to the container holding OSNMA_NavData objects.
  *
  * @param nav_bits The navigation bits.
  * @param PRNd The satellite ID.
@@ -22,7 +22,7 @@ void OSNMA_nav_data_Manager::add_navigation_data(std::string nav_bits, uint32_t 
         {
             _satellite_nav_data[PRNd][TOW].add_nav_data(nav_bits);
             _satellite_nav_data[PRNd][TOW].PRNd = PRNd;
-            _satellite_nav_data[PRNd][TOW].TOW_sf0 = TOW;
+            _satellite_nav_data[PRNd][TOW].set_tow_sf0(TOW);
         }
 }
 /**
@@ -33,12 +33,12 @@ void OSNMA_nav_data_Manager::update_nav_data(const std::multimap<uint32_t, Tag>&
     // loop through all tags
     for (const auto& tag : tags_verified)
         {
-            // if tag status is verified, look for corresponding navData and add increase verified tag bits.
+            // if tag status is verified, look for corresponding OSNMA_NavData and add increase verified tag bits.
             if (tag.second.status == Tag::e_verification_status::SUCCESS)
                 {
                     if(have_PRNd_nav_data(tag.second.PRN_d))
                         {
-                            std::map<uint32_t, NavData> tow_map = _satellite_nav_data.find(tag.second.PRN_d)->second;
+                            std::map<uint32_t, OSNMA_NavData> tow_map = _satellite_nav_data.find(tag.second.PRN_d)->second;
                             for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it) // note: starts with smallest (i.e. oldest) navigation dataset
                                 {
                                     std::string nav_data;
@@ -48,7 +48,7 @@ void OSNMA_nav_data_Manager::update_nav_data(const std::multimap<uint32_t, Tag>&
                                     else if(tag.second.ADKD == 4){
                                             nav_data = tow_it->second.get_utc_data();
                                         }
-                                    // find associated navData
+                                    // find associated OSNMA_NavData
                                     if (tag.second.nav_data == nav_data){
                                             _satellite_nav_data[tag.second.PRN_d][tow_it->first].verified_bits += tag_size;
                                         }
@@ -62,9 +62,9 @@ bool OSNMA_nav_data_Manager::have_PRNd_nav_data(uint32_t PRNd)
     // check if have data from PRNd in _satellite_nav_data
     return _satellite_nav_data.find(PRNd) != _satellite_nav_data.end();
 }
-std::vector<NavData> OSNMA_nav_data_Manager::get_verified_data()
+std::vector<OSNMA_NavData> OSNMA_nav_data_Manager::get_verified_data()
 {
-    std::vector<NavData> result;
+    std::vector<OSNMA_NavData> result;
     for (const auto& prna : _satellite_nav_data)
         {
             for (const auto& tow_navdata : prna.second)
@@ -107,7 +107,7 @@ bool OSNMA_nav_data_Manager::have_nav_data(uint32_t PRNd, uint32_t TOW, uint8_t 
     return false;
 }
 /**
- * @brief returns NavData object.
+ * @brief returns OSNMA_NavData object.
  * @remarks assumes it exists (called have_nav_data before), otherwise undefined behavior
  * TODO - maybe add const promise and use find() instead? this is kinda sensitive topic.
  */
@@ -119,7 +119,7 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
         }
 
     // satellite was found, check if TOW exists in inner map
-    std::map<uint32_t, NavData> tow_map = prn_it->second;
+    std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
     for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it) // note: starts with smallest (i.e. oldest) navigation dataset
         {
             // Check if current key (TOW) fulfills condition
@@ -142,7 +142,7 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
     return "";
 }
 /**
- * @brief Checks if the navData bits are already present. In case affirmative, it updates the NavData 'last received' timestamp
+ * @brief Checks if the OSNMA_NavData bits are already present. In case affirmative, it updates the OSNMA_NavData 'last received' timestamp
  * @remarks e.g.: a SV may repeat the bits over several subframes. In that case, need to save them only once.
  * @param nav_bits
  * @param PRNd
@@ -170,9 +170,9 @@ bool OSNMA_nav_data_Manager::have_nav_data(std::string nav_bits, uint32_t PRNd, 
     return false;
 }
 /**
- * @brief Checks if there is a NavData element within the COP time interval for a Tag t
+ * @brief Checks if there is a OSNMA_NavData element within the COP time interval for a Tag t
  * @param t Tag object
- * @return True if the needed navigation data for the tag is available (oldest possible NavData available)
+ * @return True if the needed navigation data for the tag is available (oldest possible OSNMA_NavData available)
  */
 bool OSNMA_nav_data_Manager::have_nav_data(const Tag& t) const
 {
@@ -181,7 +181,7 @@ bool OSNMA_nav_data_Manager::have_nav_data(const Tag& t) const
             return false;
         }
     // satellite was found, check if TOW exists in inner map
-    std::map<uint32_t, NavData> tow_map = prn_it->second;
+    std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
     for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it) // note: starts with smallest (i.e. oldest) navigation dataset
         {
             // Check if current key (TOW) fulfills condition
@@ -213,7 +213,7 @@ void OSNMA_nav_data_Manager::print_status()
                 LOG(INFO) << "Galileo OSNMA: IOD_nav=0b"  << std::uppercase
                       << std::bitset<10>(nav_data.second.IOD_nav)
                       << ", TOW_start="
-                      << nav_data.second.TOW_sf0
+                      << nav_data.second.get_tow_sf0()
                       << ", TOW_last="
                       << nav_data.second.last_received_TOW
                       << ", l_t="

@@ -78,11 +78,10 @@ private:
     void read_mack_header();
     void read_mack_body();
     void process_mack_message();
-//    void add_satellite_data(uint32_t SV_ID, uint32_t TOW, const NavData& data);
     void remove_verified_tags();
     void control_tags_awaiting_verify_size();
     void display_data();
-    void send_data_to_pvt(std::vector<NavData>);
+    void send_data_to_pvt(std::vector<OSNMA_NavData>);
 
     bool verify_tesla_key(std::vector<uint8_t>& key, uint32_t TOW);
     bool verify_tag(Tag& tag) const;
@@ -97,9 +96,9 @@ private:
     std::vector<uint8_t> hash_chain(uint32_t num_of_hashes_needed, const std::vector<uint8_t>& key, uint32_t GST_SFi, const uint8_t lk_bytes) const;
     std::vector<MACK_tag_and_info> verify_macseq_new(const MACK_message& mack);
 
-    std::map<uint32_t, std::map<uint32_t, NavData>> d_satellite_nav_data;  // map holding NavData sorted by SVID (first key) and TOW (second key).
-    std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys;                 // tesla keys over time, sorted by TOW
-    std::multimap<uint32_t, Tag> d_tags_awaiting_verify;                   // container with tags to verify from arbitrary SVIDs, sorted by TOW
+    std::map<uint32_t, std::map<uint32_t, OSNMA_NavData>> d_satellite_nav_data;  // map holding OSNMA_NavData sorted by SVID (first key) and TOW (second key).
+    std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys;                       // tesla keys over time, sorted by TOW
+    std::multimap<uint32_t, Tag> d_tags_awaiting_verify;                         // container with tags to verify from arbitrary SVIDs, sorted by TOW
 
     std::vector<uint8_t> d_tags_to_verify{0, 4, 12};
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;

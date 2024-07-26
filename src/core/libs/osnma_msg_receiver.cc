@@ -60,22 +60,26 @@ namespace wht = std;
 #endif
 
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath)
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath)
 {
-    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath));
+    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath, rootKeyFilePath));
 }
 
 
-osnma_msg_receiver::osnma_msg_receiver(
-    const std::string& crtFilePath,
-    const std::string& merkleFilePath) : gr::block("osnma_msg_receiver",
+osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath) : gr::block("osnma_msg_receiver",
                                              gr::io_signature::make(0, 0, 0),
                                              gr::io_signature::make(0, 0, 0))
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
-    d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath);
+    d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath, rootKeyFilePath);
     d_helper = std::make_unique<Osnma_Helper>();
     d_nav_data_manager = std::make_unique<OSNMA_nav_data_Manager>();
+
+    if(d_crypto->have_root_key()){
+            d_kroot = d_crypto->get_root_key();
+            d_kroot_verified = true;
+        }
+
     //  register OSNMA input message port from telemetry blocks
     this->message_port_register_in(pmt::mp("OSNMA_from_TLM"));
     // register OSNMA output message port to PVT block
@@ -126,7 +130,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     uint32_t PRNa = std::get<0>(*inav_data);
                     std::string nav_data = std::get<1>(*inav_data);
                     uint32_t TOW = std::get<2>(*inav_data);
-                    d_nav_data_manager->add_navigation_data(nav_data, PRNa,TOW);
+                    d_nav_data_manager->add_navigation_data(nav_data, PRNa, TOW);
                 }
             else
                 {
@@ -490,6 +494,10 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                     LOG(INFO) << "Galileo OSNMA: NMA Status is " << d_dsm_reader->get_nmas_status(d_osnma_data.d_nma_header.nmas) << ", "
                                               << "Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
                                               << "Chain and Public Key Status is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks);
+                                    // Save Kroot into a permanent storage
+                                    d_crypto->store_root_key(ROOTKEYFILE_DEFAULT);
+                                    d_kroot = d_osnma_data.d_dsm_kroot_message.kroot;
+                                    d_crypto->set_root_key(d_kroot);
                                 }
                             else
                                 {

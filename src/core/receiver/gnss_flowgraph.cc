@@ -126,7 +126,8 @@ void GNSSFlowgraph::init()
             enable_osnma_rx_ = true;
             const auto certFilePath = configuration_->property("GNSS-SDR.osnma_public_key", CRTFILE_DEFAULT);
             const auto merKleTreePath = configuration_->property("GNSS-SDR.osnma_merkletree", MERKLEFILE_DEFAULT);
-            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath);
+            const auto rootKeyPath = configuration_->property("GNSS-SDR.osnma_root_key", ROOTKEYFILE_DEFAULT);
+            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath, rootKeyPath);
         }
     else
         {

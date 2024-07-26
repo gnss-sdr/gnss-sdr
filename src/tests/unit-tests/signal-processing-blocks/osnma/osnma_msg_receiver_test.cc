@@ -24,6 +24,7 @@
 #include <chrono>
 #include <fstream>
 #include <vector>
+#include "Galileo_OSNMA.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>  // for LOG
@@ -76,7 +77,8 @@ protected:
         // std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
         std::string crtFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230720113300_newPKID_2.crt";  // conf. 2
         std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230720113300_newPKID_2.xml";
-        osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath);
+        std::string rootKeyFilePath = ROOTKEYFILE_DEFAULT;
+        osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath, ROOTKEYFILE_DEFAULT);
     }
 };
 

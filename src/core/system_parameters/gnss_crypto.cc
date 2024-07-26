@@ -75,7 +75,7 @@ Gnss_Crypto::Gnss_Crypto()
 }
 
 
-Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath)
+Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath, const std::string& rootKeyFilePath)
 {
 #if USE_GNUTLS_FALLBACK
     gnutls_global_init();
@@ -100,6 +100,7 @@ Gnss_Crypto::Gnss_Crypto(const std::string& certFilePath, const std::string& mer
                 }
         }
     read_merkle_xml(merkleTreePath);
+    read_root_key(rootKeyFilePath);
 }
 
 
@@ -122,7 +123,10 @@ Gnss_Crypto::~Gnss_Crypto()
 #endif
 }
 
-
+bool Gnss_Crypto::have_root_key() const
+{
+    return !d_kroot.empty();
+}
 bool Gnss_Crypto::have_public_key() const
 {
 #if USE_GNUTLS_FALLBACK
@@ -196,6 +200,22 @@ bool Gnss_Crypto::store_public_key(const std::string& pubKeyFilePath) const
     return true;
 }
 
+bool Gnss_Crypto::store_root_key(const std::string& rootKeyFilePath) const
+{
+    if (!have_root_key())
+        {
+            return false;
+        }
+    std::ofstream file(rootKeyFilePath, std::ios::binary | std::ios::out);
+
+    if (!file) {
+            return false;
+        }
+
+    file.write(reinterpret_cast<const char*>(d_kroot.data()), d_kroot.size());
+
+    return file.good();
+}
 
 bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const
 {
@@ -845,6 +865,10 @@ std::vector<uint8_t> Gnss_Crypto::get_merkle_root() const
     return d_x_4_0;
 }
 
+std::vector<uint8_t> Gnss_Crypto::get_root_key() const
+{
+    return d_kroot;
+}
 
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
@@ -899,12 +923,15 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     DLOG(INFO) << "OSNMA Public Key successfully set up.";
 }
 
-
 void Gnss_Crypto::set_merkle_root(const std::vector<uint8_t>& v)
 {
     d_x_4_0 = v;
 }
 
+void Gnss_Crypto::set_root_key(const std::vector<uint8_t>& root_key)
+{
+    d_kroot = root_key;
+}
 
 void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
 {
@@ -1145,6 +1172,40 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     return true;
 }
 
+/**
+ * \brief Reads the TESLA root key from a file and stores it.
+ * \param rootKeyFilePath The file path of the TESLA root key.
+ * \return True if the root key was successfully read and stored, false otherwise.
+ */
+bool Gnss_Crypto::read_root_key(const std::string& rootKeyFilePath)
+{
+    std::ifstream file(rootKeyFilePath, std::ios::binary | std::ios::in);
+
+    if (!file) {
+            LOG(WARNING) << "Unable to open file: " << rootKeyFilePath;
+            return false;
+        }
+
+    // Determine file size
+    file.seekg(0, std::ios::end);
+    std::streamsize size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    if (size == 0) {
+            LOG(WARNING) << "File is empty: " << rootKeyFilePath;
+            return false;
+        }
+
+    // Resize the vector and read file
+    d_kroot.resize(size);
+    if (!file.read(reinterpret_cast<char*>(d_kroot.data()), size)) {
+            LOG(WARNING) << "Failed to read the file: " << rootKeyFilePath;
+            return false;
+        }
+    std::cout << "OSNMA TESLA Root Key successfully read from file " << rootKeyFilePath << std::endl;
+    LOG(INFO) << "OSNMA TESLA Root Key successfully read from file " << rootKeyFilePath;
+    return true;
+}
 
 bool Gnss_Crypto::convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const
 {

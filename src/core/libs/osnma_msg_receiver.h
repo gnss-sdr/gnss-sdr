@@ -50,7 +50,7 @@ class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath);
 
 /*!
  * \brief GNU Radio block that receives asynchronous OSNMA messages
@@ -63,8 +63,8 @@ class osnma_msg_receiver : public gr::block
 public:
     ~osnma_msg_receiver() = default;  //!< Default destructor
 private:
-    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
-    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath);
+    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath);
+    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath);
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
@@ -100,6 +100,7 @@ private:
     std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys;                       // tesla keys over time, sorted by TOW
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify;                         // container with tags to verify from arbitrary SVIDs, sorted by TOW
 
+    std::vector<uint8_t> d_kroot;  // last available stored root key
     std::vector<uint8_t> d_tags_to_verify{0, 4, 12};
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
 
@@ -110,7 +111,7 @@ private:
 
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;  // osnma parameters parser
     std::unique_ptr<Gnss_Crypto> d_crypto;           // access to cryptographic functions
-    std::unique_ptr<Osnma_Helper> d_helper;
+    std::unique_ptr<Osnma_Helper> d_helper;          // helper class with auxiliary functions
     std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager;  // refactor for holding and processing navigation data
 
     OSNMA_data d_osnma_data{};

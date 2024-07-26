@@ -1,5 +1,5 @@
 /*!
- * \file osmna_msg_receiver_testt.cc
+ * \file osmna_msg_receiver_test.cc
  * \brief Tests for the osnma_msg_receiver class.
  * \author Carles Fernandez, 2023-2024. cfernandez(at)cttc.es
  *   Cesare Ghionoiu Martinez, 2023-2024. c.ghionoiu-martinez@tu-braunschweig.de
@@ -28,30 +28,12 @@
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>  // for LOG
-#include <filesystem>
 #else
 #include <absl/log/log.h>
 #endif
 
-struct TestVector
-{
-    int svId;
-    int numNavBits;
-    std::vector<uint8_t> navBits;
-};
-
-
-// TODO - parametrize class for different configurations (config_1, config_2, etc.. potentially 5 or 6 more) an make sure wont affect current TEST_F
-// note: until the test is parametrized for configuration 1 and 2, in order to change between them you have to comment/uncomment the respective calls in this test, identified with comments // conf. 1/2
-// log_name, input_time, crtFilePath, merkleFilePath, testVectors
 class OsnmaMsgReceiverTest : public ::testing::Test
 {
-public:
-    static std::vector<uint8_t> parseNavBits(const std::string& hex);
-    static std::vector<TestVector> readTestVectorsFromFile(const std::string& filename);
-    std::string bytes_to_str(const std::vector<uint8_t>& bytes);
-    std::vector<uint8_t> extract_page_bytes(const TestVector& tv, const int byte_index, const int num_bytes);
-
 protected:
     Osnma_Helper helper;
     osnma_msg_receiver_sptr osnma;
@@ -63,22 +45,13 @@ protected:
     std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0};  // months start with 0 and years since 1900 in std::tm
     const uint32_t LEAP_SECONDS = 0;                                 // 13 + 5;
     void set_time(std::tm& input);
-    // std::string log_name {"CONFIG1-2023-08-16-PKID1-OSNMA"};
-    std::string log_name{"CONFIG2-2023-07-27-PKID2-MT2-OSNMA"};  // TODO -     google::InitGoogleLogging(log_name.c_str()); but cannot be called twice
-    void initializeGoogleLog();
 
     void SetUp() override
     {
-        initializeGoogleLog();
         // std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0}; // conf. 1
         std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0};  // conf. 2
         set_time(input_time);
-        // std::string crtFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230803105952_newPKID_1.crt"; // conf. 1
-        // std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230803105953_newPKID_1.xml";
-        std::string crtFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_PublicKey_20230720113300_newPKID_2.crt";  // conf. 2
-        std::string merkleFilePath = "/home/cgm/CLionProjects/osnma/data/OSNMA_MerkleTree_20230720113300_newPKID_2.xml";
-        std::string rootKeyFilePath = ROOTKEYFILE_DEFAULT;
-        osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath, ROOTKEYFILE_DEFAULT);
+        osnma = osnma_msg_receiver_make("", "");
     }
 };
 
@@ -220,15 +193,16 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification)
     osnma->d_tesla_keys[TOW_Key_Tag0] = {0x69, 0xC0, 0x0A, 0xA7, 0x36, 0x42, 0x37, 0xA6, 0x5E, 0xBF, 0x00, 0x6A, 0xD8, 0xDD, 0xBC, 0x73};  // K4
     osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
     osnma->d_nav_data_manager->add_navigation_data(
-                                 "000011101001011001000100000101000111010110100100100101100000000000"
-                                 "011101101011001111101110101010000001010000011011111100000011101011"
-                                 "011100101101011010101011011011001001110111101011110110111111001111"
-                                 "001000011111101110011000111111110111111010000011101011111111110000"
-                                 "110111000000100000001110110000110110001110000100001110101100010100"
-                                 "110100010001000110001110011010110000111010000010000000000001101000"
-                                 "000000000011100101100100010000000000000110110100110001111100000000"
-                                 "000000100110100000000101010010100000001011000010001001100000011111"
-                                 "110111111111000000000", PRNa, TOW_NavData);
+        "000011101001011001000100000101000111010110100100100101100000000000"
+        "011101101011001111101110101010000001010000011011111100000011101011"
+        "011100101101011010101011011011001001110111101011110110111111001111"
+        "001000011111101110011000111111110111111010000011101011111111110000"
+        "110111000000100000001110110000110110001110000100001110101100010100"
+        "110100010001000110001110011010110000111010000010000000000001101000"
+        "000000000011100101100100010000000000000110110100110001111100000000"
+        "000000100110100000000101010010100000001011000010001001100000011111"
+        "110111111111000000000",
+        PRNa, TOW_NavData);
     osnma->d_osnma_data.d_nma_header.nmas = 0b10;
 
     MACK_tag_and_info MTI;
@@ -256,8 +230,8 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification)
     osnma->d_osnma_data.d_dsm_kroot_message.mf = 0;
     osnma->d_nav_data_manager->add_navigation_data(
         "111111111111111111111111111111110000000000000000000000010001001001001000"
-        "111000001000100111100010010111111111011110111111111001001100000100000"
-        , PRNa, TOW_NavData);
+        "111000001000100111100010010111111111011110111111111001001100000100000",
+        PRNa, TOW_NavData);
     osnma->d_osnma_data.d_nma_header.nmas = 0b10;
 
     MTI.tag = static_cast<uint64_t>(0x7BB238C883);
@@ -297,325 +271,6 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification)
 }
 
 
-TEST_F(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation)
-{
-    // Arrange
-    std::vector<TestVector> testVectors = readTestVectorsFromFile("/home/cgm/CLionProjects/osnma/data/27_JUL_2023_GST_00_00_01.csv");  // conf. 2
-    if (testVectors.empty())
-        {
-            ASSERT_TRUE(false);
-        }
-
-    bool end_of_hex_stream{false};
-    int offset_byte{0};
-    int byte_index{0};                   // index containing the last byte position of the hex stream that was retrieved. Takes advantage that all TVs have same size
-    const int SIZE_PAGE_BYTES{240 / 8};  // total bytes of a page
-    const int SIZE_SUBFRAME_PAGES{15};   // number of pages of a subframe
-    const int DURATION_SUBFRAME{30};     // duration of a subframe, in seconds
-
-    const int DUMMY_PAGE{63};
-    bool flag_dummy_page{false};
-    std::cout << "OsnmaTestVectorsSimulation:"
-              << " d_GST_SIS= " << d_GST_SIS
-              << ", TOW=" << TOW
-              << ", WN=" << WN << std::endl;
-
-    // Act
-    // loop over all bytes of data. Note: all TestVectors have same amount of data.
-    while (end_of_hex_stream == false)
-        {
-            // loop over all SVs, extract a subframe
-            for (const TestVector& tv : testVectors)
-                {  // loop over all SVs, extract a subframe
-                    std::cout << "OsnmaTestVectorsSimulation: SVID (PRN_a) " << tv.svId << std::endl;
-                    auto osnmaMsg_sptr = std::make_shared<OSNMA_msg>();
-                    std::array<uint8_t, 15> hkroot{};
-                    std::array<uint32_t, 15> mack{};
-                    byte_index = offset_byte;                             // reset byte_index to the offset position for the next test vector. Offset is updated at the end of each Subframe (every 30 s or 450 Bytes)
-                    std::map<uint8_t, std::bitset<128>> words_for_OSNMA;  // structure containing <WORD_NUMBER> and <EXTRACTED_BITS>
-
-                    for (int idx = 0; idx < SIZE_SUBFRAME_PAGES; ++idx)  // extract all pages of a subframe
-                        {
-                            // extract bytes of complete page (odd+even) -- extract SIZE_PAGE from tv.navBits, starting from byte_index
-                            std::vector<uint8_t> page_bytes = extract_page_bytes(tv, byte_index, SIZE_PAGE_BYTES);
-                            if (page_bytes.empty())
-                                {
-                                    std::cout << "OsnmaTestVectorsSimulation: end of TestVectors \n"
-                                              << "byte_index=" << byte_index << " expected= " << 432000 / 8 << std::endl;
-                                    end_of_hex_stream = true;
-                                    break;
-                                }
-                            // convert them to bitset representation using bytes_to_string
-                            std::string page_bits = bytes_to_str(page_bytes);
-                            // Extract the 40 OSNMA bits starting from the 18th bit
-                            std::string even_page = page_bits.substr(0, page_bits.size() / 2);
-                            std::string odd_page = page_bits.substr(page_bits.size() / 2);
-                            if (even_page.size() < 120 || odd_page.size() < 120)
-                                {
-                                    std::cout << "OsnmaTestVectorsSimulation: error parsing pages" << std::endl;
-                                }
-                            bool even_odd_OK = even_page[0] == '0' && odd_page[0] == '1';
-                            bool page_type_OK = even_page[1] == '0' && odd_page[1] == '0';
-                            bool tail_bits_OK = even_page.substr(even_page.size() - 6) == "000000" && odd_page.substr(odd_page.size() - 6) == "000000";
-                            if (!even_odd_OK || !page_type_OK || !tail_bits_OK)
-                                std::cerr << "OsnmaTestVectorsSimulation: error parsing pages." << std::endl;
-
-                            std::bitset<112> data_k(even_page.substr(2, 112));
-                            std::bitset<16> data_j(odd_page.substr(2, 16));
-                            std::bitset<112> shifted_data_k = data_k;
-                            uint8_t word_type = static_cast<uint8_t>((shifted_data_k >>= 106).to_ulong());  // word type is the first 6 bits of the word
-                            std::cout << "OsnmaTestVectorsSimulation: received Word " << static_cast<int>(word_type) << std::endl;
-                            if ((word_type >= 1 && word_type <= 5) || word_type == 6 || word_type == 10)
-                                {
-                                    // store raw word
-                                    std::bitset<128> data_combined(data_k.to_string() + data_j.to_string());
-                                    words_for_OSNMA[word_type] = data_combined;
-                                }
-                            if (word_type == DUMMY_PAGE)
-                                flag_dummy_page = true;
-
-                            // place it into osnma object.
-                            std::bitset<40> osnmaBits(odd_page.substr(18, 40));
-
-                            // Extract bits for hkroot and mack
-                            std::bitset<8> hkrootBits(osnmaBits.to_string().substr(0, 8));
-                            std::bitset<32> mackBits(osnmaBits.to_string().substr(8, 32));
-                            hkroot[idx] = static_cast<uint8_t>(hkrootBits.to_ulong());
-                            mack[idx] = static_cast<uint32_t>(mackBits.to_ulong());
-
-                            byte_index += SIZE_PAGE_BYTES;
-                        }
-
-                    std::cout << "----------" << std::endl;
-                    if (end_of_hex_stream)
-                        break;
-                    if (flag_dummy_page)
-                        {
-                            flag_dummy_page = false;
-                            continue;  // skip this SV
-                        }
-
-                    // Fill osnma object
-                    osnmaMsg_sptr->hkroot = hkroot;
-                    osnmaMsg_sptr->mack = mack;
-
-                    osnmaMsg_sptr->TOW_sf0 = d_GST_SIS & 0x000FFFFF;
-                    osnmaMsg_sptr->WN_sf0 = (d_GST_SIS & 0xFFF00000) >> 20;
-                    osnmaMsg_sptr->PRN = tv.svId;  // PRNa
-
-                    // TODO - refactor this logic, currently it is split
-
-                    // check if words_for_OSNMA 1--> 5 words_for_OSNMA are received => fill EphClockStatus data vector
-                    bool ephClockStatusWordsReceived = true;
-                    for (int i = 1; i <= 5; ++i)
-                        {
-                            if (words_for_OSNMA.find(i) == words_for_OSNMA.end())
-                                {
-                                    ephClockStatusWordsReceived = false;
-                                    std::cerr << "OsnmaTestVectorsSimulation: error parsing words_for_OSNMA 1->5. "
-                                                 "Word "
-                                              << i << " should be received for each subframe but was not." << std::endl;
-                                }
-                        }
-                    // extract bits as needed by osnma block
-                    if (ephClockStatusWordsReceived)
-                        {
-                            // Define the starting position and length of bits to extract for each word
-                            std::map<uint8_t, std::pair<uint8_t, uint8_t>> extractionParams = {
-                                {1, {6, 120}},
-                                {2, {6, 120}},
-                                {3, {6, 122}},
-                                {4, {6, 120}},
-                                {5, {6, 67}},
-                            };
-
-                            // Fill NavData bits -- Iterate over the extraction parameters
-                            std::string nav_data_ADKD_0_12 = "";
-                            for (const auto& param : extractionParams)
-                                {
-                                    uint8_t wordKey = param.first;
-                                    uint8_t start = param.second.first;
-                                    uint8_t length = param.second.second;
-
-                                    // Extract the required bits and fill osnma block
-                                    nav_data_ADKD_0_12 += words_for_OSNMA[wordKey].to_string().substr(start, length);
-                                }
-                            // send to osnma block
-                            bool check_size_is_ok = nav_data_ADKD_0_12.size() == 549;
-                            if (check_size_is_ok)
-                                {
-                                    std::cout << "Galileo OSNMA: sending ADKD=0/12 navData, PRN_d (" << tv.svId << ") "
-                                              << "TOW_sf=" << osnmaMsg_sptr->TOW_sf0 << std::endl;
-                                    const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
-                                        tv.svId,
-                                        nav_data_ADKD_0_12,
-                                        osnmaMsg_sptr->TOW_sf0);
-                                    LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_0_12;
-                                    osnma->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
-                                }
-                        }
-
-                    // check w6 && w10 is received => fill TimingData data vector
-                    bool timingWordsReceived = words_for_OSNMA.find(6) != words_for_OSNMA.end() &&
-                                               words_for_OSNMA.find(10) != words_for_OSNMA.end();
-                    // extract bits as needed by osnma block
-                    if (timingWordsReceived)
-                        {
-                            // Define the starting position and length of bits to extract for each word
-                            std::map<uint8_t, std::pair<uint8_t, uint8_t>> extractionParams = {
-                                {6, {6, 99}},
-                                {10, {86, 42}}};
-
-                            std::string nav_data_ADKD_4 = "";
-                            // Fill NavData bits -- Iterate over the extraction parameters
-                            for (const auto& param : extractionParams)
-                                {
-                                    uint8_t wordKey = param.first;
-                                    uint8_t start = param.second.first;
-                                    uint8_t length = param.second.second;
-
-                                    // Extract the required bits and fill osnma block
-                                    nav_data_ADKD_4 += words_for_OSNMA[wordKey].to_string().substr(start, length);
-                                }
-                            // send to osnma block
-                            bool check_size_is_ok = nav_data_ADKD_4.size() == 141;
-                            if (check_size_is_ok)
-                                {
-                                    std::cout << "Galileo OSNMA: sending ADKD=04 navData, PRN_d (" << tv.svId << ") "
-                                              << "TOW_sf=" << osnmaMsg_sptr->TOW_sf0 << std::endl;
-                                    const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
-                                        tv.svId,
-                                        nav_data_ADKD_4,
-                                        osnmaMsg_sptr->TOW_sf0);
-                                    LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_4;
-                                    osnma->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
-                                }
-                        }
-
-                    // Call the handler, as if it came from telemetry decoder block
-                    auto temp_obj = pmt::make_any(osnmaMsg_sptr);
-
-                    osnma->msg_handler_osnma(temp_obj);  // osnma entry point
-                }
-
-            if (!end_of_hex_stream)
-                {
-                    offset_byte = byte_index;  // update offset for the next subframe
-                    d_GST_SIS += DURATION_SUBFRAME;
-                    TOW = d_GST_SIS & 0x000FFFFF;
-                    WN = (d_GST_SIS & 0xFFF00000) >> 20;
-                    std::cout << "OsnmaTestVectorsSimulation:"
-                              << " d_GST_SIS= " << d_GST_SIS
-                              << ", TOW=" << TOW
-                              << ", WN=" << WN << std::endl;
-                }
-        }
-    // Assert
-
-    // TODO - create global vars with failed tags and compare to total tags (Tag Id for example)
-}
-
-
-// Auxiliary functions for the OsnmaTestVectorsSimulation test fixture.
-// Essentially, they perform same work as the telemetry decoder block, but adapted to the osnma-test-vector files.
-std::vector<TestVector> OsnmaMsgReceiverTest::readTestVectorsFromFile(const std::string& filename)
-{
-    std::ifstream file(filename);
-    std::vector<TestVector> testVectors;
-    if (!file.is_open())
-        {
-            std::cerr << "Error reading the file \"" << filename << "\" \n";
-            return testVectors;
-        }
-
-    std::string line;
-    std::getline(file, line);
-    if (line != "SVID,NumNavBits,NavBitsHEX\r")
-        {
-            std::cerr << "Error parsing first line"
-                      << "\n";
-        }
-
-    while (std::getline(file, line))
-        {
-            std::stringstream ss(line);
-            TestVector tv;
-
-            std::string val;
-
-            std::getline(ss, val, ',');
-            tv.svId = std::stoi(val);
-
-            std::getline(ss, val, ',');
-            tv.numNavBits = std::stoi(val);
-
-            std::getline(ss, val, ',');
-            tv.navBits = OsnmaMsgReceiverTest::parseNavBits(val);
-
-            testVectors.push_back(tv);
-        }
-
-    return testVectors;
-}
-
-
-std::vector<uint8_t> OsnmaMsgReceiverTest::parseNavBits(const std::string& hex)
-{
-    std::vector<uint8_t> bytes;
-
-    for (unsigned int i = 0; i < hex.length() - 1; i += 2)
-        {
-            std::string byteString = hex.substr(i, 2);
-            uint8_t byte = (uint8_t)strtol(byteString.c_str(), NULL, 16);
-            bytes.push_back(byte);
-        }
-    return bytes;
-}
-
-
-std::string OsnmaMsgReceiverTest::bytes_to_str(const std::vector<uint8_t>& bytes)
-{
-    std::string bit_string;
-    bit_string.reserve(bytes.size() * 8);
-    for (const auto& byte : bytes)
-        {
-            std::bitset<8> bits(byte);
-            bit_string += bits.to_string();
-        }
-    return bit_string;
-}
-
-
-/**
- * @brief Extracts a range of bytes from a TestVector's navBits vector.
- *
- * This function extracts a extracts the bytes of complete page (odd+even)
- * from the navBits vector of a TestVector object.
- *
- *
- * @param tv The TestVector object from which to extract bytes.
- * @param byte_index The index of the first byte to extract.
- * @param num_bytes The number of bytes to extract.
- * @return A vector containing the extracted bytes, or an empty vector if extraction is not possible.
- */
-std::vector<uint8_t> OsnmaMsgReceiverTest::extract_page_bytes(const TestVector& tv, const int byte_index, const int num_bytes)
-{
-    // Ensure we don't go beyond the end of tv.navBits
-    int num_bytes_to_extract = std::min(num_bytes, static_cast<int>(tv.navBits.size() - byte_index));
-
-    // If byte_index is beyond the end of tv.navBits, return an empty vector
-    if (num_bytes_to_extract <= 0)
-        {
-            return std::vector<uint8_t>();
-        }
-
-    // Use std::next to get an iterator to the range to extract
-    std::vector<uint8_t> extracted_bytes(tv.navBits.begin() + byte_index, tv.navBits.begin() + byte_index + num_bytes_to_extract);
-
-    return extracted_bytes;
-}
-
-
 /**
  * @brief Sets the time based on the given input.
  *
@@ -646,48 +301,4 @@ void OsnmaMsgReceiverTest::set_time(std::tm& input)
     // TODO: d_GST_SIS or d_receiver_time? doubt
     // I am assuming that local realisation of receiver is identical to SIS GST time coming from W5 or W0
     this->d_GST_SIS = (this->WN & 0x00000FFF) << 20 | (this->TOW & 0x000FFFFF);
-}
-
-
-void OsnmaMsgReceiverTest::initializeGoogleLog()
-{
-    // google::InitGoogleLogging(log_name.c_str());
-    FLAGS_minloglevel = 0;                        // INFO
-    FLAGS_logtostderr = 0;                        // add this line
-    // FLAGS_log_dir = "/home/cgm/CLionProjects/osnma/data/logs";
-    if (FLAGS_log_dir.empty())
-        {
-            std::cout << "Logging will be written at "
-                      << std::filesystem::temp_directory_path()
-                      << '\n'
-                      << "Use gnss-sdr --log_dir=/path/to/log to change that.\n";
-        }
-    else
-        {
-            try
-                {
-                    const std::filesystem::path p(FLAGS_log_dir);
-                    if (!std::filesystem::exists(p))
-                        {
-                            std::cout << "The path "
-                                      << FLAGS_log_dir
-                                      << " does not exist, attempting to create it.\n";
-                            std::error_code ec;
-                            if (!std::filesystem::create_directory(p, ec))
-                                {
-                                    std::cout << "Could not create the " << FLAGS_log_dir << " folder.\n";
-                                    gflags::ShutDownCommandLineFlags();
-                                    throw std::runtime_error("Could not create folder for logs");
-                                }
-                        }
-                    std::cout << "Logging will be written at " << FLAGS_log_dir << '\n';
-                }
-            catch (const std::exception& e)
-                {
-                    std::cerr << e.what() << '\n';
-                    std::cerr << "Could not create the " << FLAGS_log_dir << " folder.\n";
-                    gflags::ShutDownCommandLineFlags();
-                    throw;
-                }
-        }
 }

@@ -34,8 +34,9 @@ jobs:
       - name: check
         run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
       - name: default position_test
-        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=ON .. && \
-             ninja && ../install/position_test && ../install/run_tests --gtest_filter=Osnma* --log_dir=./
+        run: |
+          cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=ON .. && \
+          ninja && ../install/position_test && ../install/run_tests --gtest_filter=Osnma*
 
   build-macos:
     runs-on: macos-latest
@@ -67,8 +68,9 @@ jobs:
       - name: check
         run: cd build && ninja check && ../install/volk_gnsssdr_profile && ../install/run_tests
       - name: default position_test
-        run: cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=ON .. && \
-             ninja && ../install/position_test && ../install/run_tests --gtest_filter=Osnma*
+        run: |
+          cd build && cmake -DENABLE_SYSTEM_TESTING_EXTRA=ON -DENABLE_UNIT_TESTING_EXTRA=ON .. && \
+          ninja && ../install/position_test && ../install/run_tests --gtest_filter=Osnma*
 
   build-macos-xcode:
     runs-on: macos-latest

@@ -66,7 +66,7 @@ protected:
         set_time(input_time);
         std::string crtFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/PublicKey/OSNMA_PublicKey_20230720113300_newPKID_2.crt";  // conf. 2
          std::string merkleFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/MerkleTree/OSNMA_MerkleTree_20230720113300_newPKID_2.xml";
-         osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath);
+         osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath, "");
     }
 };
 

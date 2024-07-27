@@ -55,18 +55,18 @@ protected:
     uint32_t d_GST_SIS{};
     uint32_t TOW{};
     uint32_t WN{};
-    std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0};  // months start with 0 and years since 1900 in std::tm
+    std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0, 0, 0, 0, 0};  // months start with 0 and years since 1900 in std::tm
     const uint32_t LEAP_SECONDS = 0;                                 // 13 + 5;
     void set_time(std::tm& input);
    
     void SetUp() override
     {
-        // std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0}; // conf. 1
-        std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0};  // conf. 2
+        // std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0, 0, 0, 0, 0}; // conf. 1
+        std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0, 0, 0, 0, 0};  // conf. 2
         set_time(input_time);
         std::string crtFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/PublicKey/OSNMA_PublicKey_20230720113300_newPKID_2.crt";  // conf. 2
          std::string merkleFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/MerkleTree/OSNMA_MerkleTree_20230720113300_newPKID_2.xml";
-         osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath, "");
+         osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath);
     }
 };
 

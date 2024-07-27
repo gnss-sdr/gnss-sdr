@@ -42,14 +42,14 @@ protected:
     uint32_t d_GST_SIS{};
     uint32_t TOW{};
     uint32_t WN{};
-    std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0};  // months start with 0 and years since 1900 in std::tm
+    std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0, 0, 0, 0, 0};  // months start with 0 and years since 1900 in std::tm
     const uint32_t LEAP_SECONDS = 0;                                 // 13 + 5;
     void set_time(std::tm& input);
 
     void SetUp() override
     {
-        // std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0}; // conf. 1
-        std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0};  // conf. 2
+        // std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0, 0, 0, 0, 0}; // conf. 1
+        std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0, 0, 0, 0, 0};  // conf. 2
         set_time(input_time);
         osnma = osnma_msg_receiver_make(CRTFILE_DEFAULT, MERKLEFILE_DEFAULT);
     }
@@ -218,8 +218,6 @@ TEST_F(OsnmaMsgReceiverTest, TagVerification)
     // Assert
 
     // Tag3
-    uint32_t TOW_Tag3 = 345660;
-    uint32_t TOW_NavData_Tag3 = TOW_Tag3 - 30;
     uint32_t TOW_Key_Tag3 = TOW_Tag0 + 30;
     WN = 1248;
     PRNa = 2;

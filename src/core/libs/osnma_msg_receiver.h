@@ -37,6 +37,7 @@
 #include <memory>                  // for std::shared_ptr
 #include <string>                  // for std::string
 #include <vector>                  // for std::vector
+#include <utility>                 // for std::pair
 
 /** \addtogroup Core
  * \{ */

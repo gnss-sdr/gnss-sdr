@@ -17,6 +17,7 @@
 
 #include "gnss_crypto.h"
 #include <benchmark/benchmark.h>
+#include <memory>
 
 void bm_SHA_256(benchmark::State& state)
 {

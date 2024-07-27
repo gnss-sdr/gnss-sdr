@@ -84,7 +84,7 @@ TEST(GnssCryptoTest, VerifyPublicKeyStorage)
 
     ASSERT_TRUE(result);
 
-    auto d_crypto2 = std::make_unique<Gnss_Crypto>(f1, "");
+    auto d_crypto2 = std::make_unique<Gnss_Crypto>(f1, "", "");
     bool result2 = d_crypto2->store_public_key(f2);
     ASSERT_TRUE(result2);
 

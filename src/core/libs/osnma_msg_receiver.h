@@ -146,12 +146,12 @@ private:
 
     // Provide access to inner functions to Gtest
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
-    FRIEND_TEST(OsnmaMsgReceiverTest, OsnmaTestVectorsSimulation);
     FRIEND_TEST(OsnmaMsgReceiverTest, TagVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, BuildTagMessageM0);
     FRIEND_TEST(OsnmaMsgReceiverTest, VerifyPublicKey);
     FRIEND_TEST(OsnmaMsgReceiverTest, ComputeBaseLeaf);
     FRIEND_TEST(OsnmaMsgReceiverTest, ComputeMerkleRoot);
+    FRIEND_TEST(OsnmaTestVectors, OsnmaTestVectorsSimulation);
 };
 
 

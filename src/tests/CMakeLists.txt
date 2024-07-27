@@ -550,6 +550,18 @@ if(ENABLE_UNIT_TESTING_EXTRA)
             EXPECTED_HASH MD5=066d0d8434a8bc81e161778b7c34cc07
         )
     endif()
+    if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip)
+        message(STATUS "Downloading file: Test_vectors.zip")
+        file(DOWNLOAD https://www.gsc-europa.eu/sites/default/files/sites/all/files/Test_vectors.zip
+                ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip
+            SHOW_PROGRESS
+            EXPECTED_HASH MD5=8158aebee735652c9398e5bb6d944364
+        )
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E tar xzf ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip
+            WORKING_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/
+        )
+    endif()
     message(STATUS "Done.")
     if(ENABLE_INSTALL_TESTS)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
@@ -652,6 +664,7 @@ if(ENABLE_UNIT_TESTING)
         if(GNSSTK_OLDER_THAN_9)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
+        target_compile_definitions(run_tests PRIVATE -DBASE_OSNMA_TEST_VECTORS="${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors/")
     endif()
     xcode_remove_warning_duplicates(run_tests)
     if(ENABLE_STRIP)
@@ -1354,53 +1367,6 @@ else()
             matio_test
         )
     endif()
-endif()
-
-
-######################################################### osnma_msg_receiver_test
-
-if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
-    set(OSNMA_MSG_RECEIVER_TEST_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/single_test_main.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/unit-tests/signal-processing-blocks/osnma/osnma_msg_receiver_test.cc
-    )
-
-    if(USE_CMAKE_TARGET_SOURCES)
-        add_executable(osnma_msg_receiver_test)
-        target_sources(osnma_msg_receiver_test PRIVATE ${OSNMA_MSG_RECEIVER_TEST_SOURCES})
-    else()
-        add_executable(osnma_msg_receiver_test ${OSNMA_MSG_RECEIVER_TEST_SOURCES})
-    endif()
-
-    target_link_libraries(osnma_msg_receiver_test
-        PRIVATE
-            gnss_sdr_flags
-            Boost::thread
-            GTest::GTest
-            GTest::Main
-            core_libs
-            Gnuradio::blocks
-            Gnuradio::runtime
-            Gnuradio::filter  # workaround for old systems
-    )
-    if(ENABLE_GLOG_AND_GFLAGS)
-        target_link_libraries(osnma_msg_receiver_test PRIVATE Gflags::gflags Glog::glog)
-        target_compile_definitions(osnma_msg_receiver_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
-    else()
-        target_link_libraries(osnma_msg_receiver_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
-        target_link_libraries(osnma_msg_receiver_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
-    endif()
-
-    xcode_remove_warning_duplicates(osnma_msg_receiver_test) # TODO - unsure if needed
-
-    add_test(osnma_msg_receiver_test osnma_msg_receiver_test)
-
-    set_property(TEST osnma_msg_receiver_test PROPERTY TIMEOUT 30)
-
-    target_include_directories(osnma_msg_receiver_test
-        PRIVATE
-            ${GNSSSDR_SOURCE_DIR}/src/core/system_parameters
-    )
 endif()
 
 if(ENABLE_BENCHMARKS)

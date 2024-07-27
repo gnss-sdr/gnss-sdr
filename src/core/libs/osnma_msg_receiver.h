@@ -50,7 +50,7 @@ class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath);
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
 
 /*!
  * \brief GNU Radio block that receives asynchronous OSNMA messages
@@ -63,8 +63,8 @@ class osnma_msg_receiver : public gr::block
 public:
     ~osnma_msg_receiver() = default;  //!< Default destructor
 private:
-    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath);
-    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath);
+    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
+    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath);
 
     void msg_handler_osnma(const pmt::pmt_t& msg);
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
@@ -73,7 +73,7 @@ private:
     void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void local_time_verification(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg);
+    void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const uint8_t& nma_header);
     void read_and_process_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_mack_header();
     void read_mack_body();
@@ -89,7 +89,9 @@ private:
     bool tag_has_key_available(const Tag& t) const;
     bool verify_macseq(const MACK_message& mack);
     bool verify_dsm_pkr(const DSM_PKR_message& message) const;
+    bool store_dsm_kroot(const std::vector<uint8_t>& dsm, const uint8_t nma_header) const;
 
+    std::pair<std::vector<uint8_t>, uint8_t> parse_dsm_kroot() const;
     std::vector<uint8_t> get_merkle_tree_leaves(const DSM_PKR_message& dsm_pkr_message) const;
     std::vector<uint8_t> compute_merkle_root(const DSM_PKR_message& dsm_pkr_message, const std::vector<uint8_t>& m_i) const;
     std::vector<uint8_t> build_message(Tag& tag) const;
@@ -100,7 +102,6 @@ private:
     std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys;                       // tesla keys over time, sorted by TOW
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify;                         // container with tags to verify from arbitrary SVIDs, sorted by TOW
 
-    std::vector<uint8_t> d_kroot;  // last available stored root key
     std::vector<uint8_t> d_tags_to_verify{0, 4, 12};
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
 
@@ -143,6 +144,7 @@ private:
     bool d_kroot_verified{false};
     bool d_tesla_key_verified{false};
     bool d_flag_debug{false};
+    bool d_flag_hot_start{false};
 
     // Provide access to inner functions to Gtest
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);

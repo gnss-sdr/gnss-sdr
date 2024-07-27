@@ -48,22 +48,15 @@ public:
      * and a XML file for the Merkle Tree root.
      * Files can be downloaded by registering at https://www.gsc-europa.eu/
      */
-    Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath, const std::string& rootKeyFilePath);
+    Gnss_Crypto(const std::string& certFilePath, const std::string& merkleTreePath);
     ~Gnss_Crypto();  //!< Default destructor
 
-    bool have_root_key() const;  //!< Returns true if the TESLA root key is already loaded
     bool have_public_key() const;  //!< Returns true if the ECDSA Public Key is already loaded
 
     /*!
      * Stores the ECDSA Public Key in a .pem file, which is read in a following run if the .crt file is not found
      */
     bool store_public_key(const std::string& pubKeyFilePath) const;
-    /*!
-     * Stores the TESLA root key in a plaintext file, which is read in a following run for a faster TTFAF.
-     * @param kroot TESLA root key
-     * @return true if successful
-     */
-    bool store_root_key(const std::string& rootKeyFilePath) const;
 
     bool verify_signature_ecdsa_p256(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;  //!< Verify ECDSA-P256 signature (message in plain hex, signature in raw format)
     bool verify_signature_ecdsa_p521(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const;  //!< Verify ECDSA-P521 signature (message in plain hex, signature in raw format)
@@ -75,15 +68,12 @@ public:
 
     std::vector<uint8_t> get_public_key() const;   //!< Gets the ECDSA Public Key in PEM format
     std::vector<uint8_t> get_merkle_root() const;  //!< Gets the Merkle Tree root node (\f$ x_{4,0} \f$)
-    std::vector<uint8_t> get_root_key() const;     //!< Gets the TESLA root key in binary format
 
     void set_public_key(const std::vector<uint8_t>& publickey);  //!< Sets the ECDSA Public Key (publickey in PEM format)
     void set_merkle_root(const std::vector<uint8_t>& v);         //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
-    void set_root_key(const std::vector<uint8_t>& root_key);      //!< Sets the TESLA root key
 private:
     void read_merkle_xml(const std::string& merkleFilePath);
     void readPublicKeyFromPEM(const std::string& pemFilePath);
-    bool read_root_key(const std::string& rootKeyFilePath);
     bool readPublicKeyFromCRT(const std::string& crtFilePath);
     bool convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const;
     std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;
@@ -100,7 +90,6 @@ private:
 #endif
 #endif
     std::vector<uint8_t> d_x_4_0;
-    std::vector<uint8_t> d_kroot;
 };
 
 /** \} */

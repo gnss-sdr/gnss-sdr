@@ -51,7 +51,7 @@ protected:
         // std::tm input_time = {0, 0, 5, 16, 8 - 1, 2023 - 1900, 0}; // conf. 1
         std::tm input_time = {0, 0, 0, 27, 7 - 1, 2023 - 1900, 0};  // conf. 2
         set_time(input_time);
-        osnma = osnma_msg_receiver_make("", "", "");
+        osnma = osnma_msg_receiver_make(CRTFILE_DEFAULT, MERKLEFILE_DEFAULT);
     }
 };
 

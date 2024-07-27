@@ -24,7 +24,7 @@
 #include "gnss_satellite.h"
 #include "osnma_dsm_reader.h"  // for OSNMA_DSM_Reader
 #include "osnma_helper.h"
-#include "osnma_nav_data_manager.h"  // TODO - all these repeated includes, is it good practice to include them in the source file?
+#include "osnma_nav_data_manager.h"
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>
 #include <cmath>
@@ -37,6 +37,7 @@
 #include <tuple>
 #include <typeinfo>  // for typeid
 #include <utility>
+#include <fstream>  // for std::ifstream and std::ofstream
 
 
 #if USE_GLOG_AND_GFLAGS
@@ -60,24 +61,36 @@ namespace wht = std;
 #endif
 
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath)
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath)
 {
-    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath, rootKeyFilePath));
+    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath));
 }
 
 
-osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, const std::string& rootKeyFilePath) : gr::block("osnma_msg_receiver",
+osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath) : gr::block("osnma_msg_receiver",
                                              gr::io_signature::make(0, 0, 0),
                                              gr::io_signature::make(0, 0, 0))
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
-    d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath, rootKeyFilePath);
+    d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath);
     d_helper = std::make_unique<Osnma_Helper>();
     d_nav_data_manager = std::make_unique<OSNMA_nav_data_Manager>();
 
-    if(d_crypto->have_root_key()){
-            d_kroot = d_crypto->get_root_key();
-            d_kroot_verified = true;
+    if(d_crypto->have_public_key()){  // Hot start is enabled
+            auto dsm_nmah = parse_dsm_kroot();
+            if (!dsm_nmah.first.empty()){
+                    LOG(WARNING) << "OSNMA DSM-KROOT and NMA Header successfully read from file " << KROOTFILE_DEFAULT;
+                    std::cout << "OSNMA DSM-KROOT and NMA Header successfully read from file " << KROOTFILE_DEFAULT << std::endl;
+                    d_flag_hot_start = true;
+                    process_dsm_message(dsm_nmah.first, dsm_nmah.second);
+                    LOG(WARNING) << "OSNMA DSM-KROOT available :: HOT START";
+                    std::cout << "OSNMA DSM-KROOT available :: HOT START" << std::endl;
+                }
+            else
+                {
+                    LOG(WARNING) << "OSNMA DSM-KROOT not available :: WARM START";
+                    std::cout << "OSNMA DSM-KROOT not available :: WARM START" << std::endl;
+                }
         }
 
     //  register OSNMA input message port from telemetry blocks
@@ -369,7 +382,7 @@ void osnma_msg_receiver::process_dsm_block(const std::shared_ptr<OSNMA_msg>& osn
                 }
             d_dsm_message[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 256>{};
             d_dsm_id_received[d_osnma_data.d_dsm_header.dsm_id] = std::array<uint8_t, 16>{};
-            process_dsm_message(dsm_msg, osnma_msg);
+            process_dsm_message(dsm_msg, osnma_msg->hkroot[0]);
         }
 }
 
@@ -381,10 +394,10 @@ void osnma_msg_receiver::process_dsm_block(const std::shared_ptr<OSNMA_msg>& osn
  * case DSM-PKR:
  * - calls verify_dsm_pkr to verify the public key
  * */
-void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg, const std::shared_ptr<OSNMA_msg>& osnma_msg)
+void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg, const uint8_t& nma_header)
 {
     // DSM-KROOT message
-    if (d_osnma_data.d_dsm_header.dsm_id < 12)
+    if (d_osnma_data.d_dsm_header.dsm_id < 12 || d_flag_hot_start)
         {
             // Parse Kroot message
             LOG(INFO) << "Galileo OSNMA: DSM-KROOT message received.";
@@ -438,13 +451,13 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     // validation of padding
                     const uint16_t size_m = 13 + l_lk_bytes;
                     std::vector<uint8_t> MSG;
-                    MSG.reserve(size_m + l_ds_bytes + 1);  // C: message will get too many zeroes? ((12+1)+16) + 64 + 1? => in theory not, allocating is not assigning
-                    MSG.push_back(osnma_msg->hkroot[0]);   // C: NMA header
+                    MSG.reserve(size_m + l_ds_bytes + 1);
+                    MSG.push_back(nma_header);   // NMA header
                     for (uint16_t i = 1; i < size_m; i++)
                         {
                             MSG.push_back(dsm_msg[i]);
                         }
-                    std::vector<uint8_t> message = MSG;  // MSG = (M | DS) from ICD. Eq. 7
+                    std::vector<uint8_t> message = MSG;    // MSG = (M | DS) from ICD. Eq. 7
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
                             MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
@@ -478,7 +491,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                       << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
                                       << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
-                            local_time_verification(osnma_msg);
+                            // local_time_verification(osnma_msg);  // FIXME TODO: real time verification needed
                             if (l_ds_bits == 512)
                                 {
                                     d_kroot_verified = d_crypto->verify_signature_ecdsa_p256(message, d_osnma_data.d_dsm_kroot_message.ds);
@@ -494,10 +507,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                     LOG(INFO) << "Galileo OSNMA: NMA Status is " << d_dsm_reader->get_nmas_status(d_osnma_data.d_nma_header.nmas) << ", "
                                               << "Chain in force is " << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid) << ", "
                                               << "Chain and Public Key Status is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks);
-                                    // Save Kroot into a permanent storage
-                                    d_crypto->store_root_key(ROOTKEYFILE_DEFAULT);
-                                    d_kroot = d_osnma_data.d_dsm_kroot_message.kroot;
-                                    d_crypto->set_root_key(d_kroot);
+                                    // Save DSM-Kroot and NMA header into a permanent storage
+                                    if(d_flag_hot_start){
+                                            d_flag_hot_start = false;
+                                            return;
+                                        }
+                                    store_dsm_kroot(dsm_msg, nma_header);
                                 }
                             else
                                 {
@@ -576,7 +591,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                 {
                                     d_public_key_verified = true;
                                     d_crypto->set_public_key(d_osnma_data.d_dsm_pkr_message.npk);
-                                    d_crypto->store_public_key(PEMFILE_STORED);
+                                    d_crypto->store_public_key(PEMFILE_DEFAULT);
                                 }
                         }
                 }
@@ -1812,6 +1827,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
             return verified_tags;
         }
 }
+
 void osnma_msg_receiver::send_data_to_pvt(std::vector<OSNMA_NavData> data)
 {
     if (!data.empty())
@@ -1822,4 +1838,44 @@ void osnma_msg_receiver::send_data_to_pvt(std::vector<OSNMA_NavData> data)
                     this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(tmp_obj));
                 }
         }
+}
+
+bool osnma_msg_receiver::store_dsm_kroot(const std::vector<uint8_t>& dsm, const uint8_t nma_header) const
+{
+    std::ofstream file(KROOTFILE_DEFAULT, std::ios::binary | std::ios::out);
+
+    if (!file.is_open()) {
+            return false;
+        }
+
+    // NMA header
+    file.write(reinterpret_cast<const char*>(&nma_header), 1);
+
+    // Then writing the entire dsm_msg vector to the file
+    file.write(reinterpret_cast<const char*>(dsm.data()), dsm.size());
+
+    return file.good();
+}
+
+std::pair<std::vector<uint8_t>, uint8_t> osnma_msg_receiver::parse_dsm_kroot() const
+{
+    std::ifstream file(KROOTFILE_DEFAULT, std::ios::binary | std::ios::in);
+    if (!file) {
+            return {std::vector<uint8_t>(), 0};
+        }
+
+    // Read the first byte into hkroot[0]
+    uint8_t nma_header;
+    file.read(reinterpret_cast<char*>(&nma_header), 1);
+
+    // Read the remaining file content into dsm_msg
+    std::vector<uint8_t> dsm_msg((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    file.close();
+
+    if (file.bad()) {
+            return {std::vector<uint8_t>(), 0};
+        }
+
+    return {dsm_msg, nma_header};
 }

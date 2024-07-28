@@ -17,11 +17,15 @@
 
 #include "fir_filter.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <gnuradio/filter/pm_remez.h>
 #include <volk/volk.h>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 FirFilter::FirFilter(const ConfigurationInterface* configuration,
     std::string role,

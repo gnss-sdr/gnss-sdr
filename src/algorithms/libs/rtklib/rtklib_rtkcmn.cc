@@ -30,7 +30,6 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtkcmn.h"
-#include <glog/logging.h>
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -42,6 +41,12 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 const double GPST0[] = {1980, 1, 6, 0, 0, 0}; /* gps time reference */
 const double GST0[] = {1999, 8, 22, 0, 0, 0}; /* galileo system time reference */
@@ -1034,7 +1039,7 @@ double *zeros(int n, int m)
         {
             return nullptr;
         }
-    if (!(p = static_cast<double *>(calloc(sizeof(double), n * m))))
+    if (!(p = static_cast<double *>(calloc(n * m, sizeof(double)))))
         {
             fatalerr("matrix memory allocation error: n=%d,m=%d\n", n, m);
         }

@@ -32,11 +32,17 @@ endif()
 target_link_libraries(system_testing_lib
     PUBLIC
         Armadillo::armadillo
-        Gflags::gflags
     PRIVATE
         Boost::headers
         Matio::matio
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(system_testing_lib PUBLIC Gflags::gflags)
+    target_compile_definitions(system_testing_lib PUBLIC -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(system_testing_lib PUBLIC absl::flags)
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

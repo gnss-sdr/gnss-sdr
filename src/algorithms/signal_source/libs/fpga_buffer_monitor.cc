@@ -25,13 +25,19 @@
 #include "fpga_buffer_monitor.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
-#include <glog/logging.h>
 #include <ctime>       // for time, localtime
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
 #include <fstream>     // for string, ofstream
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
+#include <unistd.h>    // for close
 #include <utility>     // for move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name,

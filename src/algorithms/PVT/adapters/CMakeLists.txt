@@ -23,9 +23,15 @@ target_link_libraries(pvt_adapters
         pvt_gr_blocks
     PRIVATE
         gnss_sdr_flags
-        Glog::glog
         pvt_libs
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(pvt_adapters PRIVATE Glog::glog)
+    target_compile_definitions(pvt_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(pvt_adapters PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(pvt_adapters
     PUBLIC

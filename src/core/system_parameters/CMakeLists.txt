@@ -114,10 +114,14 @@ target_link_libraries(core_system_parameters
     PUBLIC
         Boost::date_time
         Boost::serialization
-    PRIVATE
-        Gflags::gflags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(core_system_parameters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(core_system_parameters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(core_system_parameters PRIVATE absl::flags absl::log)
+endif()
 
 # for gnss_sdr_make_unique.h
 target_include_directories(core_system_parameters

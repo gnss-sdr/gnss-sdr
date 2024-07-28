@@ -18,14 +18,26 @@
 #include "dll_pll_conf.h"
 #include "gnss_sdr_flags.h"
 #include "item_type_helpers.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-
+#if USE_GLOG_AND_GFLAGS
 Dll_Pll_Conf::Dll_Pll_Conf() : carrier_lock_th(FLAGS_carrier_lock_th),
                                cn0_samples(FLAGS_cn0_samples),
                                cn0_min(FLAGS_cn0_min),
                                max_code_lock_fail(FLAGS_max_lock_fail),
                                max_carrier_lock_fail(FLAGS_max_carrier_lock_fail)
+#else
+Dll_Pll_Conf::Dll_Pll_Conf() : carrier_lock_th(absl::GetFlag(FLAGS_carrier_lock_th)),
+                               cn0_samples(absl::GetFlag(FLAGS_cn0_samples)),
+                               cn0_min(absl::GetFlag(FLAGS_cn0_min)),
+                               max_code_lock_fail(absl::GetFlag(FLAGS_max_lock_fail)),
+                               max_carrier_lock_fail(absl::GetFlag(FLAGS_max_carrier_lock_fail))
+#endif
 {
     signal[0] = '1';
     signal[1] = 'C';
@@ -50,18 +62,31 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
     dump_filename = configuration->property(role + ".dump_filename", dump_filename);
     dump_mat = configuration->property(role + ".dump_mat", dump_mat);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", pll_bw_hz);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_pll_bw_hz != 0.0)
         {
             pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
         }
+#else
+    if (absl::GetFlag(FLAGS_pll_bw_hz) != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_pll_bw_hz));
+        }
+#endif
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", pll_bw_narrow_hz);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", dll_bw_narrow_hz);
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", dll_bw_hz);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_dll_bw_hz != 0.0)
         {
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
-
+#else
+    if (absl::GetFlag(FLAGS_dll_bw_hz) != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_dll_bw_hz));
+        }
+#endif
     dll_filter_order = configuration->property(role + ".dll_filter_order", dll_filter_order);
     pll_filter_order = configuration->property(role + ".pll_filter_order", pll_filter_order);
     if (dll_filter_order < 1)

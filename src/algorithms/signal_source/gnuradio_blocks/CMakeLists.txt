@@ -75,9 +75,14 @@ target_link_libraries(signal_source_gr_blocks
     PRIVATE
         algorithms_libs
         core_libs
-        Gflags::gflags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_source_gr_blocks PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(signal_source_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_source_gr_blocks PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(signal_source_gr_blocks
     PUBLIC

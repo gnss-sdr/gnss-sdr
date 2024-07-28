@@ -24,7 +24,7 @@ jobs:
         uses: dieghernan/cff-validator@main
       # Upload artifact in case of failure
       - name: Update artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: citation-cff-errors

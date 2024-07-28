@@ -21,7 +21,6 @@
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include "gps_sdr_signal_replica.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk/volk.h>
@@ -29,6 +28,12 @@
 #include <array>
 #include <sstream>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf &conf_)

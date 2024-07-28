@@ -18,19 +18,59 @@
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
 #include "gps_acq_assist.h"
+#include <gtest/gtest.h>
+#include <fstream>
+#include <iostream>
+#include <ostream>
+#include <string>
+
+#if USE_GLOG_AND_GFLAGS
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <gtest/gtest.h>
-#include <iostream>
-
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
 using namespace google;
 }
+DECLARE_string(log_dir);
+#endif
+#else
+#include "gnss_sdr_flags.h"
+#include <absl/flags/flag.h>
+#include <absl/flags/parse.h>
+#include <absl/log/flags.h>
+#include <absl/log/globals.h>
+#include <absl/log/initialize.h>
+#include <absl/log/log.h>
+#include <absl/log/log_sink.h>
+#include <absl/log/log_sink_registry.h>
+
+class TestingLogSink : public absl::LogSink
+{
+public:
+    TestingLogSink()
+    {
+        if (!absl::GetFlag(FLAGS_log_dir).empty())
+            {
+                filename = std::string(absl::GetFlag(FLAGS_log_dir) + "/run_tests.log");
+            }
+        else
+            {
+                filename = std::string(GetTempDir() + "/run_tests.log");
+            }
+        logfile.open(filename);
+    }
+    void Send(const absl::LogEntry &entry) override
+    {
+        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
+    }
+
+private:
+    std::ofstream logfile;
+    std::string filename;
+};
 #endif
 
-DECLARE_string(log_dir);
 
 #if UNIT_TESTING_MINIMAL
 #include "unit-tests/arithmetic/matio_test.cc"
@@ -174,8 +214,15 @@ int main(int argc, char **argv)
     catch (...)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
+#if USE_GLOG_AND_GFLAGS
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
+#else
+    absl::ParseCommandLine(argc, argv);
+    absl::LogSink *testLogSink = new TestingLogSink;
+    absl::AddLogSink(testLogSink);
+    absl::InitializeLog();
+#endif
     try
         {
             res = RUN_ALL_TESTS();
@@ -184,6 +231,10 @@ int main(int argc, char **argv)
         {
             LOG(WARNING) << "Unexpected catch";
         }
+#if USE_GLOG_AND_GFLAGS
     gflags::ShutDownCommandLineFlags();
+#else
+    absl::FlushLogSinks();
+#endif
     return res;
 }

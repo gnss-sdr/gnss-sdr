@@ -21,7 +21,6 @@
 #include "galileo_has_data.h"
 #include "gnss_sdr_filesystem.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
 #include <algorithm>  // for std::find, std::count
 #include <bitset>     // for std::bitset
 #include <cstdint>    // for uint8_t, ...
@@ -31,6 +30,12 @@
 #include <ios>        // for std::fixed
 #include <iostream>   // for std::cout, std::cerr
 #include <sstream>    // for std::stringstream
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 Has_Simple_Printer::Has_Simple_Printer(const std::string& base_path,

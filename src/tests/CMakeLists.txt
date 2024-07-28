@@ -8,6 +8,8 @@
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
 add_subdirectory(system-tests/libs)
 
+include(XcodeRemoveWarningDuplicates)
+
 ################################################################################
 # Google Test - https://github.com/google/googletest
 ################################################################################
@@ -35,7 +37,7 @@ if(NOT GOOGLETEST_FOUND)
         set(GTEST_BUILD_COMMAND ${GTEST_BUILD_COMMAND} "--parallel 1")
     endif()
     if(CMAKE_GENERATOR STREQUAL Xcode)
-        set(GTEST_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel> "-target" "gtest_main")
+        set(GTEST_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug> "-target" "gtest_main")
     endif()
     if(GNSSSDR_GTEST_LOCAL_VERSION VERSION_LESS 1.12.0)
         set(DEBUG_DECORATION "d")
@@ -303,7 +305,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
     else()
         set(GNSS_SIM_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
         if(CMAKE_GENERATOR STREQUAL Xcode)
-            set(GNSS_SIM_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}" "-target" "gnss_sim")
+            set(GNSS_SIM_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug> "-target" "gnss_sim")
         endif()
         if(TOOLCHAIN_ARG)
             set(TOOLCHAIN_ARG_GNSS_SIM "-DCMAKE_NO_SYSTEM_FROM_IMPORTED=ON")
@@ -332,7 +334,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         else()
             set(SW_GENERATOR_BIN ${GNSSSDR_BINARY_DIR}/gnss-sim/gnss_sim)
             if(CMAKE_GENERATOR STREQUAL Xcode)
-                set(SW_GENERATOR_BIN ${GNSSSDR_BINARY_DIR}/gnss-sim/${CMAKE_BUILD_TYPE}/gnss_sim)
+                set(SW_GENERATOR_BIN ${GNSSSDR_BINARY_DIR}/gnss-sim/$<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>/gnss_sim)
             endif()
             add_definitions(-DSW_GENERATOR_BIN="${SW_GENERATOR_BIN}")
             add_definitions(-DDEFAULT_RINEX_NAV="${GNSSSDR_BINARY_DIR}/thirdparty/gnss-sim/brdc3540.14n")
@@ -353,7 +355,7 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         endif()
         set(GNSSTK_BUILD_COMMAND "${CMAKE_MAKE_PROGRAM}")
         if(CMAKE_GENERATOR STREQUAL Xcode)
-            set(GNSSTK_BUILD_COMMAND "xcodebuild" "-configuration" "${CMAKE_BUILD_TYPE}")
+            set(GNSSTK_BUILD_COMMAND "xcodebuild" "-configuration" $<$<CONFIG:None>:None>$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:NoOptWithASM>$<$<CONFIG:Coverage>:Coverage>$<$<CONFIG:O2WithASM>:O2WithASM>$<$<CONFIG:O3WithASM>:O3WithASM>$<$<CONFIG:ASAN>:Debug>)
         endif()
         include(GNUInstallDirs)
         find_program(Patch_EXECUTABLE NAME patch PATHS ENV PATH)
@@ -589,8 +591,6 @@ if(ENABLE_UNIT_TESTING)
         PRIVATE
             Boost::thread
             Armadillo::armadillo
-            Gflags::gflags
-            Glog::glog
             Gnuradio::runtime
             Gnuradio::blocks
             Gnuradio::filter
@@ -619,6 +619,13 @@ if(ENABLE_UNIT_TESTING)
             system_testing_lib
             core_receiver
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(run_tests PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(run_tests PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(run_tests PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(run_tests INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
     target_include_directories(run_tests
         INTERFACE
             ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
@@ -645,6 +652,7 @@ if(ENABLE_UNIT_TESTING)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
     endif()
+    xcode_remove_warning_duplicates(run_tests)
     if(ENABLE_STRIP)
         set_target_properties(run_tests PROPERTIES LINK_FLAGS "-s")
     endif()
@@ -749,8 +757,6 @@ if(ENABLE_FPGA)
         PRIVATE
             Armadillo::armadillo
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             Gnuradio::runtime
             Gnuradio::blocks
             GTest::GTest
@@ -764,9 +770,17 @@ if(ENABLE_FPGA)
             algorithms_libs
             core_receiver
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
     target_include_directories(gps_l1_ca_dll_pll_tracking_test_fpga
         INTERFACE ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
     )
+    xcode_remove_warning_duplicates(gps_l1_ca_dll_pll_tracking_test_fpga)
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
         RUNTIME DESTINATION bin
         COMPONENT "fpga-test"
@@ -802,6 +816,9 @@ function(add_system_test executable)
         INTERFACE ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
     )
     target_link_libraries(${executable} PRIVATE ${OPT_LIBS_} algorithms_libs)
+    if(NOT ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(${executable} INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
     if(GNURADIO_USES_STD_POINTERS)
         target_compile_definitions(${executable}
             PRIVATE -DGNURADIO_USES_STD_POINTERS=1
@@ -823,6 +840,9 @@ function(add_system_test executable)
             ${LOCAL_INSTALL_BASE_DIR}/install/$<TARGET_FILE_NAME:${executable}>
         )
     endif()
+
+    xcode_remove_warning_duplicates(${executable})
+
     if(ENABLE_CLANG_TIDY)
         if(CLANG_TIDY_EXE)
             set_target_properties(${executable}
@@ -848,14 +868,24 @@ if(ENABLE_SYSTEM_TESTING)
 
     #### TTFF
     set(OPT_LIBS_ Boost::thread Boost::date_time
-        Threads::Threads Gflags::gflags Glog::glog
+        Threads::Threads
         Gnuradio::runtime GTest::GTest GTest::Main
         Gnuradio::blocks Gnuradio::filter
         Gnuradio::analog algorithms_libs
         core_receiver
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        set(OPT_LIBS_ ${OPT_LIBS_} Gflags::gflags Glog::glog)
+    else()
+        set(OPT_LIBS_ ${OPT_LIBS_} absl::flags_parse absl::flags absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+    endif()
     if(NOT ENABLE_PACKAGING)
-        add_system_test(ttff)
+        add_system_test(ttff
+            CMAKE_ARGS -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+        )
+        if(ENABLE_GLOG_AND_GFLAGS)
+            target_compile_definitions(ttff PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+        endif()
     endif()
 
     if(ENABLE_SYSTEM_TESTING_EXTRA)
@@ -863,12 +893,22 @@ if(ENABLE_SYSTEM_TESTING)
         set(OPT_LIBS_
             algorithms_libs core_receiver core_system_parameters gnss_sdr_flags
             system_testing_lib signal_processing_testing_lib
-            Boost::thread Threads::Threads Gflags::gflags Glog::glog
+            Boost::thread Threads::Threads
             GTest::GTest GTest::Main Gnuradio::runtime
             Gnuradio::blocks Gnuradio::filter
             Gnuradio::analog Matio::matio Volkgnsssdr::volkgnsssdr
         )
-        add_system_test(position_test)
+        if(ENABLE_GLOG_AND_GFLAGS)
+            set(OPT_LIBS_ ${OPT_LIBS_} Gflags::gflags Glog::glog)
+        else()
+            set(OPT_LIBS_ ${OPT_LIBS_} absl::flags_parse absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+        endif()
+        add_system_test(position_test
+            CMAKE_ARGS -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
+            )
+        if(ENABLE_GLOG_AND_GFLAGS)
+            target_compile_definitions(position_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+        endif()
         if(ENABLE_GPERFTOOLS)
             if(GPERFTOOLS_FOUND)
                 target_link_libraries(position_test
@@ -920,8 +960,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     target_link_libraries(flowgraph_test
         PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             Gnuradio::runtime
             GTest::GTest
             GTest::Main
@@ -932,11 +970,21 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             core_receiver
             algorithms_libs
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(flowgraph_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(flowgraph_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(flowgraph_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(flowgraph_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
 
     target_include_directories(flowgraph_test
         PRIVATE
             ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
     )
+
+    xcode_remove_warning_duplicates(flowgraph_test)
+
     add_test(flowgraph_test flowgraph_test)
 
     set_property(TEST flowgraph_test PROPERTY TIMEOUT 30)
@@ -966,8 +1014,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     target_link_libraries(gnss_block_test
         PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             Gnuradio::runtime
             Gnuradio::blocks
             Gnuradio::filter
@@ -982,6 +1028,13 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             core_receiver
             algorithms_libs
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(gnss_block_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(gnss_block_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(gnss_block_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(gnss_block_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
 
     target_include_directories(gnss_block_test
         PRIVATE ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
@@ -991,6 +1044,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     if(ENABLE_FPGA)
         target_compile_definitions(gnss_block_test PRIVATE -DENABLE_FPGA=1)
     endif()
+
+    xcode_remove_warning_duplicates(gnss_block_test)
 
     add_test(gnss_block_test gnss_block_test)
 
@@ -1014,8 +1069,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     target_link_libraries(gnuradio_block_test
         PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             Gnuradio::runtime
             Gnuradio::blocks
             Gnuradio::filter
@@ -1028,6 +1081,15 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             core_receiver
             algorithms_libs
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(gnuradio_block_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(gnuradio_block_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(gnuradio_block_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(gnuradio_block_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
+
+    xcode_remove_warning_duplicates(gnuradio_block_test)
 
     add_test(gnuradio_block_test gnuradio_block_test)
 
@@ -1050,18 +1112,26 @@ endif()
 target_link_libraries(matio_test
     PRIVATE
         algorithms_libs
-        Gflags::gflags
-        Glog::glog
         GTest::GTest
         GTest::Main
         Matio::matio
         core_receiver
 )
 
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(matio_test PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(matio_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(matio_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+    target_link_libraries(matio_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+endif()
+
 target_include_directories(matio_test
     INTERFACE
         ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
 )
+
+xcode_remove_warning_duplicates(matio_test)
 
 add_test(matio_test matio_test)
 
@@ -1084,8 +1154,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     target_link_libraries(acq_test
         PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             Gnuradio::runtime
             Gnuradio::blocks
             Gnuradio::filter
@@ -1101,6 +1169,13 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_processing_testing_lib
             core_receiver
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(acq_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(acq_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(acq_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(acq_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
     target_include_directories(acq_test
         INTERFACE
             ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
@@ -1111,6 +1186,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
                 -DPMT_USES_BOOST_ANY=1
         )
     endif()
+
+    xcode_remove_warning_duplicates(acq_test)
 
     add_test(acq_test acq_test)
 
@@ -1165,8 +1242,6 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     target_link_libraries(trk_test
         PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             Gnuradio::runtime
             Gnuradio::blocks
             Gnuradio::filter
@@ -1181,6 +1256,13 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
             signal_generator_gr_blocks
             core_receiver
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(trk_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(trk_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(trk_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(trk_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
     if(USE_GENERIC_LAMBDAS)
         set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
         set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)
@@ -1208,6 +1290,8 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
         )
     endif()
 
+    xcode_remove_warning_duplicates(trk_test)
+
     add_test(trk_test trk_test)
 
     set_property(TEST trk_test PROPERTY TIMEOUT 30)
@@ -1230,14 +1314,21 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     target_link_libraries(control_thread_test
         PRIVATE
             Boost::thread
-            Gflags::gflags
-            Glog::glog
             GTest::GTest
             GTest::Main
             signal_source_adapters
             algorithms_libs
             core_receiver
     )
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(control_thread_test PRIVATE Gflags::gflags Glog::glog)
+        target_compile_definitions(control_thread_test PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(control_thread_test PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize)
+        target_link_libraries(control_thread_test INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
+    endif()
+
+    xcode_remove_warning_duplicates(control_thread_test)
 
     add_test(control_thread_test control_thread_test)
 

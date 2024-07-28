@@ -55,6 +55,7 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/gcc/sh4-linux-gnu
         /usr/lib/gcc/i686-redhat-linux  # Fedora
         /usr/lib64/gcc/x86_64-redhat-linux
+        /usr/lib/gcc/x86_64-redhat-linux
         /usr/lib/gcc/armv7hl-redhat-linux-gnueabi
         /usr/lib/gcc/aarch64-redhat-linux
         /usr/lib/gcc/ppc64le-redhat-linux
@@ -89,6 +90,7 @@ find_library(GFORTRAN NAMES gfortran
         /usr/lib/x86_64-linux-gnux32
         /usr/lib/alpha-linux-gnu
         /usr/lib/riscv64-linux-gnu
+        /usr/lib/loongarch64-linux-gnu
         /usr/local/lib
         /usr/local/lib64
         /usr/local/lib/i386

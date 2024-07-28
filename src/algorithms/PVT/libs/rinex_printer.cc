@@ -42,7 +42,6 @@
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/local_time/local_time.hpp>
 #include <boost/date_time/time_zone_base.hpp>
-#include <glog/logging.h>
 #include <algorithm>  // for min and max
 #include <array>
 #include <cmath>  // for floor
@@ -55,6 +54,11 @@
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Rinex_Printer::Rinex_Printer(int32_t conf_version,
     const std::string& base_path,

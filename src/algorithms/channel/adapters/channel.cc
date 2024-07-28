@@ -22,10 +22,14 @@
 #include "gnss_sdr_flags.h"
 #include "telemetry_decoder_interface.h"
 #include "tracking_interface.h"
-#include <glog/logging.h>
 #include <stdexcept>  // for std::invalid_argument
 #include <utility>    // for std::move
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Channel::Channel(const ConfigurationInterface* configuration,
     uint32_t channel,
@@ -77,10 +81,17 @@ Channel::Channel(const ConfigurationInterface* configuration,
         {
             doppler_step = configuration->property("Acquisition_" + signal_str + ".doppler_step", 500);
         }
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_step != 0)
         {
             doppler_step = static_cast<uint32_t>(FLAGS_doppler_step);
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_step) != 0)
+        {
+            doppler_step = static_cast<uint32_t>(absl::GetFlag(FLAGS_doppler_step));
+        }
+#endif
     DLOG(INFO) << "Channel " << channel_ << " Doppler_step = " << doppler_step;
 
     acq_->set_doppler_step(doppler_step);

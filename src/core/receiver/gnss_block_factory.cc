@@ -113,10 +113,15 @@
 #include "tracking_interface.h"
 #include "two_bit_cpx_file_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
-#include <glog/logging.h>
 #include <exception>  // for exception
 #include <iostream>   // for cerr
 #include <utility>    // for move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if RAW_UDP
 #include "custom_udp_signal_source.h"

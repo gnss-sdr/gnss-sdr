@@ -14,9 +14,56 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
-### Improvements in Usability
+### Improvements in Interoperability:
+
+- Improved error handling in UDP connections.
+- Make it possible to receive multiple constellations using a single channel
+  wideband device (HackRF/LimeSDR/USRP). Demonstration:
+  https://www.youtube.com/watch?v=ZQs2sFchJ6w
+  https://www.youtube.com/watch?v=HnZkKj9a-QM
+
+### Improvements in Portability:
+
+- Fix building against google-glog 0.7.x.
+- Find dependencies in the loongarch64 architecture.
+- Soft transition from [GFlags](https://github.com/gflags/gflags) and
+  [Google Logging (glog)](https://github.com/google/glog) to Abseil
+  [Logging](https://abseil.io/docs/cpp/guides/logging) and
+  [Flags](https://abseil.io/docs/cpp/guides/flags) libraries. While gflags and
+  glog have dutifully served GNSS-SDR for over a decade, they are now showing
+  signs of aging. The latest version of gflags dates back six years now, with
+  its last commit in the master branch occurring two years ago. Glog remains
+  well maintained, with its latest version v0.7.0 released in February 2024, but
+  with no active development of new features and stuck at C++14. Abseil, on the
+  other hand, represents a contemporary evolution in software development,
+  supports C++17 and C++20, and has absorbed the functionalities of flags and
+  logging from its predecessors. Furthermore, as Abseil has become a
+  prerequisite for the latest versions of Protocol Buffers, its eventual
+  inclusion in GNSS-SDR's indirect dependencies is inevitable. Leveraging Abseil
+  allows for eliminating the need for gflags and glog, thereby reducing the
+  number of mandatory dependencies for GNSS-SDR in forthcoming GNU/Linux
+  distributions. For seamless integration, GNSS-SDR requires a quite recent
+  minimum version of Abseil, v20240116. If an older version is detected, the
+  library will not be utilized, and GNSS-SDR will fall back to using gflags and
+  glog, which still can be used and are fully supported. A new CMake
+  configuration option `-DENABLE_GLOG_AND_GFLAGS=ON` is available to force the
+  usage of glog and gflags instead of Abseil, even if a valid version of that
+  library is present. If the Abseil version installed in your system is too old
+  but you still want to try it, you can also force the downloading and building
+  of a recent version with the new CMake configuration flag
+  `-DENABLE_OWN_ABSEIL=ON` (requires CMake >= 3.24, otherwise it has no effect).
+  This change has a downside in maintainability, since the source code becomes
+  plagued with preprocessor directives required to maintain compatibility both
+  with gflags and glog, and with Abseil.
+
+### Improvements in Usability:
 
 - Tidy up the `conf/` folder.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
 
 ## [GNSS-SDR v0.0.19.1](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19.1) - 2024-01-26
 
@@ -102,7 +149,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   overkilling nine (the ninth decimal place worths up to 110 microns).
   Similarly, height in meters is now reported with two decimal places instead of
   three, and velocity in m/s also with two decimal places instead of three.
-- Fixed the rate at which KLM, GPX, GeoJSON, and NMEA annotations are made. The
+- Fixed the rate at which KML, GPX, GeoJSON, and NMEA annotations are made. The
   rate is now set by `PVT.output_rate_ms` (`500` ms by default), and can be
   particularized by `PVT.kml_rate_ms`, `PVT.gpx_rate_ms`, `PVT.geojson_rate_ms`,
   and `PVT.nmea_rate_ms`. Those values should be multiples of
@@ -318,7 +365,7 @@ https://gnss-sdr.org/design-forces/
 - Fixed building against GNU Radio v3.10.X.Y, which does not support the C++20
   standard.
 - Fixed building against GNU Radio v3.10.X.Y, which replaced
-  [log4cpp](http://log4cpp.sourceforge.net/) by the
+  [log4cpp](https://log4cpp.sourceforge.net/) by the
   [spdlog](https://github.com/gabime/spdlog) and
   [fmt](https://github.com/fmtlib/fmt) libraries.
 - Updated `cpu_features` library for improved processor detection.
@@ -465,8 +512,7 @@ https://gnss-sdr.org/design-forces/
   inconsistencies in the configuration file.
 - Fix segmentation fault if the RINEX output was disabled.
 - Added a feature that optionally enables the remote monitoring of GPS and
-  Galileo ephemeris using UDP and
-  [Protocol Buffers](https://developers.google.com/protocol-buffers).
+  Galileo ephemeris using UDP and [Protocol Buffers](https://protobuf.dev/).
 - Now building the software passing the `-DENABLE_FPGA=ON` to CMake does not
   make the receiver unusable when running on non-FPGA-enabled platforms. On
   FPGA-enabled platforms, now it is possible to run non-FPGA-enabled

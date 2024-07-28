@@ -24,8 +24,12 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     const ConfigurationInterface* configuration,
@@ -57,10 +61,17 @@ GpsL1CaPcpsAcquisitionFineDoppler::GpsL1CaPcpsAcquisitionFineDoppler(
     acq_parameters.dump = dump_;
     dump_filename_ = configuration->property(role_ + ".dump_filename", std::move(default_dump_filename));
     acq_parameters.dump_filename = dump_filename_;
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
     acq_parameters.doppler_max = doppler_max_;
     acq_parameters.sampled_ms = sampled_ms_;
     acq_parameters.max_dwells = max_dwells_;

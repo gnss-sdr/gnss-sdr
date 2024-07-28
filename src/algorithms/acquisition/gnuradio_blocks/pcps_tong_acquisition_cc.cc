@@ -36,7 +36,6 @@
 
 #include "pcps_tong_acquisition_cc.h"
 #include "MATH_CONSTANTS.h"  // for TWO_PI
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -44,6 +43,12 @@
 #include <array>
 #include <exception>
 #include <sstream>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 pcps_tong_acquisition_cc_sptr pcps_tong_make_acquisition_cc(

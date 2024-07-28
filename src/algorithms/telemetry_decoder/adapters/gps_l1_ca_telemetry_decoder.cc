@@ -18,7 +18,12 @@
 
 #include "gps_l1_ca_telemetry_decoder.h"
 #include "configuration_interface.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 GpsL1CaTelemetryDecoder::GpsL1CaTelemetryDecoder(

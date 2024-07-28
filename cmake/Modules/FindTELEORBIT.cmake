@@ -38,6 +38,7 @@ set(TELEORBIT_ROOT_USER_DEFINED
 find_path(TELEORBIT_INCLUDE_DIRS
     NAMES teleorbit/api.h
     HINTS ${PC_TELEORBIT_INCLUDEDIR}
+    PATH_SUFFIXES gnuradio
     PATHS ${TELEORBIT_ROOT_USER_DEFINED}/include
           /usr/include
           /usr/local/include

@@ -16,7 +16,6 @@
  * -----------------------------------------------------------------------------
  */
 #include "ad9361_manager.h"
-#include <glog/logging.h>
 #include <ad9361.h>
 #include <cmath>
 #include <fstream>  // for ifstream
@@ -24,6 +23,12 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 /* check return value of attr_write function */
 void errchk(int v, const char *what)

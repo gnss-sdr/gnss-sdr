@@ -172,11 +172,17 @@ target_link_libraries(core_receiver
         telemetry_decoder_adapters
         obs_adapters
         pvt_adapters
+        gnss_sdr_flags
         Boost::headers
-        Gflags::gflags
-        Glog::glog
         Armadillo::armadillo
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(core_receiver PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(core_receiver PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(core_receiver PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(core_receiver

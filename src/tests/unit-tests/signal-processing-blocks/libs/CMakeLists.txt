@@ -37,14 +37,19 @@ endif()
 target_link_libraries(signal_processing_testing_lib
     PUBLIC
         Armadillo::armadillo
-        Gflags::gflags
         Gnuradio::runtime
         Gnuradio::pmt
     PRIVATE
         Boost::headers
         Matio::matio
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_processing_testing_lib PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(signal_processing_testing_lib PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_processing_testing_lib PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(signal_processing_testing_lib
     PUBLIC

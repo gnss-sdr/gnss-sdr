@@ -15,7 +15,6 @@
 #include "ad936x_iio_custom.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include <chrono>
 #include <cmath>
 #include <fstream>
@@ -23,6 +22,12 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 ad936x_iio_custom::ad936x_iio_custom(int debug_level_, int log_level_)
 {

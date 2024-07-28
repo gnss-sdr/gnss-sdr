@@ -54,21 +54,23 @@ bool Monitor_Pvt_Udp_Sink::write_monitor_pvt(const Monitor_Pvt* const monitor_pv
             outbound_data = serdes.createProtobuffer(monitor_pvt);
         }
 
-    for (const auto& endpoint : endpoints)
+    try
         {
-            socket.open(endpoint.protocol(), error);
-
-            try
+            for (const auto& endpoint : endpoints)
                 {
-                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)
+                    socket.open(endpoint.protocol(), error);  // NOLINT(bugprone-unused-return-value)
+
+                    if (socket.send_to(boost::asio::buffer(outbound_data), endpoint) == 0)  // this can throw
                         {
                             return false;
                         }
                 }
-            catch (boost::system::system_error const& e)
-                {
-                    return false;
-                }
         }
+    catch (boost::system::system_error const& e)
+        {
+            std::cerr << "Error sending PVT data: " << e.what() << '\n';
+            return false;
+        }
+
     return true;
 }

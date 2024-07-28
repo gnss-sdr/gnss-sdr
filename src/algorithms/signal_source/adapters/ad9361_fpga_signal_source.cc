@@ -31,7 +31,6 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <iio.h>
 #include <algorithm>  // for std::max
 #include <chrono>     // for std::chrono
@@ -44,6 +43,12 @@
 #include <unistd.h>   // for write
 #include <vector>     // fr std::vector
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/check.h>
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -90,7 +95,11 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
       enable_dynamic_bit_selection_(configuration->property(role + ".enable_dynamic_bit_selection", true)),
       enable_ovf_check_buffer_monitor_active_(false),
       dump_(configuration->property(role + ".dump", false)),
+#if USE_GLOG_AND_GFLAGS
       rf_shutdown_(configuration->property(role + ".rf_shutdown", FLAGS_rf_shutdown)),
+#else
+      rf_shutdown_(configuration->property(role + ".rf_shutdown", absl::GetFlag(FLAGS_rf_shutdown))),
+#endif
       repeat_(configuration->property(role + ".repeat", false))
 {
     const double seconds_to_skip = configuration->property(role + ".seconds_to_skip", 0.0);
@@ -117,7 +126,7 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
         {
             filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
         }
-
+#if USE_GLOG_AND_GFLAGS
     // override value with commandline flag, if present
     if (FLAGS_signal_source != "-")
         {
@@ -127,7 +136,16 @@ Ad9361FpgaSignalSource::Ad9361FpgaSignalSource(const ConfigurationInterface *con
         {
             filename0_ = FLAGS_s;
         }
-
+#else
+    if (absl::GetFlag(FLAGS_signal_source) != "-")
+        {
+            filename0_ = absl::GetFlag(FLAGS_signal_source);
+        }
+    if (absl::GetFlag(FLAGS_s) != "-")
+        {
+            filename0_ = absl::GetFlag(FLAGS_s);
+        }
+#endif
     if (filename0_.empty())
         {
             num_input_files_ = 2;

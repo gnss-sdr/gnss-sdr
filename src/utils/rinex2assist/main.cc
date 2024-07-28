@@ -27,7 +27,6 @@
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/serialization/map.hpp>
-#include <gflags/gflags.h>
 #include <cstddef>  // for size_t
 #include <cstdlib>
 #include <iostream>
@@ -44,11 +43,20 @@ namespace gnsstk = gpstk;
 #include <gnsstk/Rinex3NavStream.hpp>
 #endif
 
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
 using namespace google;
 }
+#endif
+#else
+#include <absl/flags/flag.h>
+#include <absl/flags/parse.h>
+#include <absl/flags/usage.h>
+#include <absl/flags/usage_config.h>
+std::string TstVersionString() { return "1.0"; }
 #endif
 
 int main(int argc, char** argv)
@@ -61,17 +69,26 @@ int main(int argc, char** argv)
         "Usage: \n" +
         "   rinex2assist <RINEX Nav file input>");
 
+#if USE_GLOG_AND_GFLAGS
     gflags::SetUsageMessage(intro_help);
     google::SetVersionString("1.0");
     gflags::ParseCommandLineFlags(&argc, &argv, true);
-
+#else
+    absl::FlagsUsageConfig empty_config;
+    empty_config.version_string = &TstVersionString;
+    absl::SetFlagsUsageConfig(empty_config);
+    absl::SetProgramUsageMessage(intro_help);
+    absl::ParseCommandLine(argc, argv);
+#endif
     if ((argc != 2))
         {
             std::cerr << "Usage:\n";
             std::cerr << "   " << argv[0]
                       << " <RINEX Nav file input>"
                       << '\n';
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
     std::string xml_filename;
@@ -327,14 +344,18 @@ int main(int argc, char** argv)
         {
             std::cerr << "Error reading the RINEX file: " << e.what() << '\n';
             std::cerr << "No XML file will be created.\n";
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
 
     if (i == 0 and j == 0)
         {
             std::cerr << "No navigation data found in the RINEX file. No XML file will be created.\n";
+#if USE_GLOG_AND_GFLAGS
             gflags::ShutDownCommandLineFlags();
+#endif
             return 1;
         }
 
@@ -355,7 +376,9 @@ int main(int argc, char** argv)
             catch (std::exception& e)
                 {
                     std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     return 1;
                 }
             std::cout << "Generated file: " << xml_filename << '\n';
@@ -373,7 +396,9 @@ int main(int argc, char** argv)
             catch (std::exception& e)
                 {
                     std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     return 1;
                 }
             std::cout << "Generated file: " << xml_filename << '\n';
@@ -393,7 +418,9 @@ int main(int argc, char** argv)
             catch (std::exception& e)
                 {
                     std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     return 1;
                 }
             std::cout << "Generated file: " << xml_filename << '\n';
@@ -413,7 +440,9 @@ int main(int argc, char** argv)
             catch (std::exception& e)
                 {
                     std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     return 1;
                 }
             std::cout << "Generated file: " << xml_filename << '\n';
@@ -432,7 +461,9 @@ int main(int argc, char** argv)
             catch (std::exception& e)
                 {
                     std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     return 1;
                 }
             std::cout << "Generated file: " << xml_filename << '\n';
@@ -450,11 +481,15 @@ int main(int argc, char** argv)
             catch (std::exception& e)
                 {
                     std::cerr << "Problem creating the XML file " << xml_filename << ": " << e.what() << '\n';
+#if USE_GLOG_AND_GFLAGS
                     gflags::ShutDownCommandLineFlags();
+#endif
                     return 1;
                 }
             std::cout << "Generated file: " << xml_filename << '\n';
         }
+#if USE_GLOG_AND_GFLAGS
     gflags::ShutDownCommandLineFlags();
+#endif
     return 0;
 }

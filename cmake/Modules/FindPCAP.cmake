@@ -6,7 +6,7 @@
 
 # - Find pcap
 # Find the PCAP includes and library
-# http://www.tcpdump.org/
+# https://www.tcpdump.org/
 #
 # The environment variable PCAPDIR allows to specify where to find
 # libpcap in non standard location.
@@ -105,6 +105,7 @@ else()
             /usr/lib/powerpc64-linux-gnu
             /usr/lib/powerpc64le-linux-gnu
             /usr/lib/riscv64-linux-gnu
+            /usr/lib/loongarch64-linux-gnu
             /usr/lib/s390x-linux-gnu
             /usr/lib/sh4-linux-gnu
             /usr/lib/sparc64-linux-gnu

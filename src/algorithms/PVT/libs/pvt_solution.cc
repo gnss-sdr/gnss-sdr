@@ -17,10 +17,14 @@
 
 #include "pvt_solution.h"
 #include "MATH_CONSTANTS.h"
-#include <glog/logging.h>
 #include <cmath>
 #include <cstddef>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 int Pvt_Solution::cart2geo(double X, double Y, double Z, int elipsoid_selection)
 {

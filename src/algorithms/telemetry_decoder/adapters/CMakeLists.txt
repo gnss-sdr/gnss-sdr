@@ -59,10 +59,15 @@ target_link_libraries(telemetry_decoder_adapters
         telemetry_decoder_gr_blocks
         telemetry_decoder_libs
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Gnuradio::runtime
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(telemetry_decoder_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(telemetry_decoder_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(telemetry_decoder_adapters PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(telemetry_decoder_adapters
     PUBLIC

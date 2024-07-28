@@ -30,7 +30,6 @@
 #include "rtcm.h"
 #include "rtklib_solver.h"
 #include <boost/exception/diagnostic_information.hpp>
-#include <glog/logging.h>
 #include <ctime>      // for tm
 #include <exception>  // for exception
 #include <fcntl.h>    // for O_RDWR
@@ -39,6 +38,11 @@
 #include <unistd.h>   // for close, write
 #include <vector>     // for std::vector
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Rtcm_Printer::Rtcm_Printer(const std::string& filename,
     bool flag_rtcm_file_dump,

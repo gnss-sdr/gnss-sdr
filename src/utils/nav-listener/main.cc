@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 
             unsigned short port = boost::lexical_cast<unsigned short>(argv[1]);
             Nav_Msg_Udp_Listener udp_listener(port);
+            std::cout << "Listening on port " << static_cast<int>(port) << ", press Control+C to exit ...\n";
 
             while (true)
                 {
@@ -45,9 +46,15 @@ int main(int argc, char *argv[])
                         }
                 }
         }
+    catch (boost::bad_lexical_cast &)
+        {
+            std::cerr << "Error: the argument " << argv[1] << " is not a valid port number.\n";
+            return 1;
+        }
     catch (std::exception &e)
         {
             std::cerr << e.what() << '\n';
+            return 1;
         }
 
     return 0;

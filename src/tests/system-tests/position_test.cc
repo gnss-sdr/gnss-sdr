@@ -38,7 +38,6 @@
 #include <armadillo>
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception/exception.hpp>
-#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <matio.h>
 #include <algorithm>
@@ -48,16 +47,53 @@
 #include <fstream>
 #include <iomanip>
 #include <numeric>
+#include <ostream>
 #include <thread>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
 #if GFLAGS_OLD_NAMESPACE
 namespace gflags
 {
 using namespace google;
 }
 #endif
+#else
+#include <absl/flags/parse.h>
+#include <absl/log/globals.h>
+#include <absl/log/initialize.h>
+#include <absl/log/log.h>
+#include <absl/log/log_sink.h>
+#include <absl/log/log_sink_registry.h>
+#endif
 
+#if USE_GLOG_AND_GFLAGS
 DEFINE_int32(num_channels, 11, "Number of channels");
+#else
+ABSL_FLAG(int32_t, num_channels, 11, "Number of channels");
+class PositionTestLogSink : public absl::LogSink
+{
+public:
+    PositionTestLogSink()
+    {
+        if (!absl::GetFlag(FLAGS_log_dir).empty())
+            {
+                logfile.open(absl::GetFlag(FLAGS_log_dir) + "/position_test.log");
+            }
+        else
+            {
+                logfile.open(GetTempDir() + "/position_test.log");
+            }
+    }
+    void Send(const absl::LogEntry& entry) override
+    {
+        logfile << entry.text_message_with_prefix_and_newline() << std::flush;
+    }
+
+private:
+    std::ofstream logfile;
+};
+#endif
 
 // For GPS NAVIGATION (L1)
 Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
@@ -84,11 +120,15 @@ private:
     std::string p5;
     std::string p6;
 
+#if USE_GLOG_AND_GFLAGS
     const double baseband_sampling_freq = static_cast<double>(FLAGS_fs_gen_sps);
-
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
-
+#else
+    const double baseband_sampling_freq = static_cast<double>(absl::GetFlag(FLAGS_fs_gen_sps));
+    std::string filename_rinex_obs = absl::GetFlag(FLAGS_filename_rinex_obs);
+    std::string filename_raw_data = absl::GetFlag(FLAGS_filename_raw_data);
+#endif
     void print_results(const arma::mat& R_eb_enu) const;
     std::shared_ptr<InMemoryConfiguration> config;
     std::shared_ptr<FileConfiguration> config_f;
@@ -101,6 +141,7 @@ private:
 
 int PositionSystemTest::configure_generator()
 {
+#if USE_GLOG_AND_GFLAGS
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
 
@@ -128,6 +169,35 @@ int PositionSystemTest::configure_generator()
         {
             p6 = std::string("-CN0_dBHz=") + std::to_string(FLAGS_CN0_dBHz);
         }
+#else
+    // Configure signal generator
+    generator_binary = absl::GetFlag(FLAGS_generator_binary);
+
+    p1 = std::string("-rinex_nav_file=") + absl::GetFlag(FLAGS_rinex_nav_file);
+    if (absl::GetFlag(FLAGS_dynamic_position).empty())
+        {
+            p2 = std::string("-static_position=") + absl::GetFlag(FLAGS_static_position) + std::string(",") + std::to_string(std::min(absl::GetFlag(FLAGS_duration) * 10, 3000));
+            if (absl::GetFlag(FLAGS_duration) > 300)
+                {
+                    std::cout << "WARNING: Duration has been set to its maximum value of 300 s\n";
+                }
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(absl::GetFlag(FLAGS_dynamic_position));
+        }
+    p3 = std::string("-rinex_obs_file=") + absl::GetFlag(FLAGS_filename_rinex_obs);  // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + absl::GetFlag(FLAGS_filename_raw_data);     // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);    // Baseband sampling frequency [MSps]
+    if (absl::GetFlag(FLAGS_CN0_dBHz) > 100.0)
+        {
+            p6 = std::string("-CN0_dBHz=45");
+        }
+    else
+        {
+            p6 = std::string("-CN0_dBHz=") + std::to_string(absl::GetFlag(FLAGS_CN0_dBHz));
+        }
+#endif
     return 0;
 }
 
@@ -162,7 +232,11 @@ int PositionSystemTest::generate_signal()
 
 int PositionSystemTest::configure_receiver()
 {
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_config_file_ptest.empty())
+#else
+    if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
         {
             config = std::make_shared<InMemoryConfiguration>();
             const int sampling_rate_internal = baseband_sampling_freq;
@@ -182,7 +256,11 @@ int PositionSystemTest::configure_receiver()
             const int grid_density = 16;
 
             const float zero = 0.0;
+#if USE_GLOG_AND_GFLAGS
             const int number_of_channels = FLAGS_num_channels;
+#else
+            const int number_of_channels = absl::GetFlag(FLAGS_num_channels);
+#endif
             const int in_acquisition = 1;
 
             const float threshold = 2.5;
@@ -199,14 +277,22 @@ int PositionSystemTest::configure_receiver()
             const float early_late_space_narrow_chips = 0.1;
             const float pll_bw_narrow_hz = 15.0;
             const float dll_bw_narrow_hz = 1.5;
+#if USE_GLOG_AND_GFLAGS
             const int extend_correlation_symbols = FLAGS_extend_correlation_symbols;  // defaults to 1
-
+#else
+            const int extend_correlation_symbols = absl::GetFlag(FLAGS_extend_correlation_symbols);  // defaults to 1
+#endif
             const int display_rate_ms = 500;
             const int output_rate_ms = 100;
 
             config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(sampling_rate_internal));
             // Enable automatic resampler for the acquisition, if required
+
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_use_acquisition_resampler == true)
+#else
+            if (absl::GetFlag(FLAGS_use_acquisition_resampler) == true)
+#endif
                 {
                     config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
                 }
@@ -305,8 +391,13 @@ int PositionSystemTest::configure_receiver()
 
             // Set Observables
             config->set_property("Observables.implementation", "Hybrid_Observables");
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Observables.enable_carrier_smoothing", FLAGS_enable_carrier_smoothing ? "true" : "false");
             config->set_property("Observables.smoothing_factor", std::to_string(FLAGS_carrier_smoothing_factor));
+#else
+            config->set_property("Observables.enable_carrier_smoothing", absl::GetFlag(FLAGS_enable_carrier_smoothing) ? "true" : "false");
+            config->set_property("Observables.smoothing_factor", std::to_string(absl::GetFlag(FLAGS_carrier_smoothing_factor)));
+#endif
             config->set_property("Observables.dump", "false");
             config->set_property("Observables.dump_filename", "./observables.dat");
 
@@ -334,7 +425,11 @@ int PositionSystemTest::configure_receiver()
         }
     else
         {
+#if USE_GLOG_AND_GFLAGS
             config_f = std::make_shared<FileConfiguration>(FLAGS_config_file_ptest);
+#else
+            config_f = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_config_file_ptest));
+#endif
             config = nullptr;
         }
     return 0;
@@ -344,7 +439,11 @@ int PositionSystemTest::configure_receiver()
 int PositionSystemTest::run_receiver()
 {
     std::shared_ptr<ControlThread> control_thread;
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_config_file_ptest.empty())
+#else
+    if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
         {
             control_thread = std::make_shared<ControlThread>(config);
         }
@@ -472,7 +571,11 @@ void PositionSystemTest::check_results()
     arma::mat ref_LLH;     // Geodetic coordinates (latitude, longitude, height) reference in WGS84 datum
     arma::vec ref_time_s;
 
+#if USE_GLOG_AND_GFLAGS
     std::istringstream iss2(FLAGS_static_position);
+#else
+    std::istringstream iss2(absl::GetFlag(FLAGS_static_position));
+#endif
     std::string str_aux;
     std::getline(iss2, str_aux, ',');
     double ref_lat = std::stod(str_aux);
@@ -491,7 +594,11 @@ void PositionSystemTest::check_results()
     cart2utm(true_r_eb_e, utm_zone, ref_r_enu);
 
     Rtklib_Solver_Dump_Reader pvt_reader;
+#if USE_GLOG_AND_GFLAGS
     pvt_reader.open_obs_file(FLAGS_pvt_solver_dump_filename);
+#else
+    pvt_reader.open_obs_file(absl::GetFlag(FLAGS_pvt_solver_dump_filename));
+#endif
     int64_t n_epochs_pvt = pvt_reader.num_epochs();
     R_eb_e = arma::zeros(3, n_epochs_pvt);
     V_eb_e = arma::zeros(3, n_epochs_pvt);
@@ -525,7 +632,11 @@ void PositionSystemTest::check_results()
     ASSERT_FALSE(current_epoch == 0) << "PVT dump is empty";
 
     // compute results
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_static_scenario)
+#else
+    if (absl::GetFlag(FLAGS_static_scenario))
+#endif
         {
             double sigma_E_2_precision = arma::var(R_eb_enu.row(0));
             double sigma_N_2_precision = arma::var(R_eb_enu.row(1));
@@ -566,11 +677,17 @@ void PositionSystemTest::check_results()
 
             std::stringstream stm;
             std::ofstream position_test_file;
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_config_file_ptest.empty())
                 {
                     stm << "Configuration file: " << FLAGS_config_file_ptest << '\n';
                 }
-
+#else
+            if (!absl::GetFlag(FLAGS_config_file_ptest).empty())
+                {
+                    stm << "Configuration file: " << absl::GetFlag(FLAGS_config_file_ptest) << '\n';
+                }
+#endif
             stm << "---- STATIC ACCURACY ----\n";
             stm << "2DRMS = " << 2 * sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]\n";
             stm << "DRMS = " << sqrt(sigma_E_2_accuracy + sigma_N_2_accuracy) << " [m]\n";
@@ -607,7 +724,7 @@ void PositionSystemTest::check_results()
             // Sanity Check
             double accuracy_CEP = 0.62 * sqrt(sigma_N_2_accuracy) + 0.56 * sqrt(sigma_E_2_accuracy);
             double precision_SEP = 0.51 * (sigma_E_2_precision + sigma_N_2_precision + sigma_U_2_precision);
-
+#if USE_GLOG_AND_GFLAGS
             EXPECT_LT(static_2D_error_m, FLAGS_static_2D_error_m);
             EXPECT_LT(static_3D_error_m, FLAGS_static_3D_error_m);
             ASSERT_LT(accuracy_CEP, FLAGS_accuracy_CEP);
@@ -617,12 +734,27 @@ void PositionSystemTest::check_results()
                 {
                     print_results(R_eb_enu);
                 }
+#else
+            EXPECT_LT(static_2D_error_m, absl::GetFlag(FLAGS_static_2D_error_m));
+            EXPECT_LT(static_3D_error_m, absl::GetFlag(FLAGS_static_3D_error_m));
+            ASSERT_LT(accuracy_CEP, absl::GetFlag(FLAGS_accuracy_CEP));
+            ASSERT_LT(precision_SEP, absl::GetFlag(FLAGS_precision_SEP));
+
+            if (absl::GetFlag(FLAGS_plot_position_test) == true)
+                {
+                    print_results(R_eb_enu);
+                }
+#endif
         }
     else
         {
             // dynamic position
             Spirent_Motion_Csv_Dump_Reader ref_reader;
+#if USE_GLOG_AND_GFLAGS
             ref_reader.open_obs_file(FLAGS_ref_motion_filename);
+#else
+            ref_reader.open_obs_file(absl::GetFlag(FLAGS_ref_motion_filename));
+#endif
             int64_t n_epochs_ref = ref_reader.num_epochs();
             ref_R_eb_e = arma::zeros(3, n_epochs_ref);
             ref_V_eb_e = arma::zeros(3, n_epochs_ref);
@@ -692,10 +824,17 @@ void PositionSystemTest::check_results()
 
             // report
             std::cout << "----- Position and Velocity 3D ECEF error statistics -----\n";
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_config_file_ptest.empty())
                 {
                     std::cout << "---- Configuration file: " << FLAGS_config_file_ptest << '\n';
                 }
+#else
+            if (!absl::GetFlag(FLAGS_config_file_ptest).empty())
+                {
+                    std::cout << "---- Configuration file: " << absl::GetFlag(FLAGS_config_file_ptest) << '\n';
+                }
+#endif
             std::streamsize ss = std::cout.precision();
             std::cout << std::setprecision(10) << "---- 3D ECEF Position RMSE = "
                       << rmse_R_eb_e << ", mean = " << error_mean_R_eb_e
@@ -711,14 +850,24 @@ void PositionSystemTest::check_results()
                       << " [m/s]\n";
             std::cout.precision(ss);
 
-            // plots
+// plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_plot_position_test == true)
                 {
                     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+            if (absl::GetFlag(FLAGS_plot_position_test) == true)
+                {
+                    const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
                     if (!gnuplot_executable.empty())
                         {
                             Gnuplot g1("points");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g1.showonscreen();  // window output
                                 }
@@ -740,7 +889,11 @@ void PositionSystemTest::check_results()
                             g1.cmd("set key box opaque");
                             g1.plot_xyz(X, Y, Z, "ECEF 3D error");
                             g1.set_legend();
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_config_file_ptest.empty())
+#else
+                            if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
                                 {
                                     g1.savetops("ECEF_3d_error");
                                 }
@@ -750,7 +903,11 @@ void PositionSystemTest::check_results()
                                 }
                             arma::vec time_vector_from_start_s = receiver_time_s - receiver_time_s(0);
                             Gnuplot g3("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g3.showonscreen();  // window output
                                 }
@@ -771,7 +928,11 @@ void PositionSystemTest::check_results()
                             g3.set_style("lines");
                             g3.plot_xy(time_vector_from_start_s, error_mean, "Mean");
                             g3.set_legend();
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_config_file_ptest.empty())
+#else
+                            if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
                                 {
                                     g3.savetops("Position_3d_error");
                                 }
@@ -781,7 +942,11 @@ void PositionSystemTest::check_results()
                                 }
 
                             Gnuplot g4("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g4.showonscreen();  // window output
                                 }
@@ -802,7 +967,11 @@ void PositionSystemTest::check_results()
                             g4.set_style("lines");
                             g4.plot_xy(time_vector_from_start_s, error_mean_v, "Mean");
                             g4.set_legend();
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_config_file_ptest.empty())
+#else
+                            if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
                                 {
                                     g4.savetops("Velocity_3d_error");
                                 }
@@ -813,17 +982,27 @@ void PositionSystemTest::check_results()
                         }
                 }
 
-            // ERROR CHECK
-            // todo: reduce the error tolerance or enable the option to pass the error tolerance by parameter
+                // ERROR CHECK
+                // todo: reduce the error tolerance or enable the option to pass the error tolerance by parameter
+
+#if USE_GLOG_AND_GFLAGS
             EXPECT_LT(rmse_R_eb_e, FLAGS_dynamic_3D_position_RMSE);  // 3D RMS positioning error less than 10 meters
             EXPECT_LT(rmse_V_eb_e, FLAGS_dynamic_3D_velocity_RMSE);  // 3D RMS speed error less than 5 meters/s (18 km/h)
+#else
+            EXPECT_LT(rmse_R_eb_e, absl::GetFlag(FLAGS_dynamic_3D_position_RMSE));  // 3D RMS positioning error less than 10 meters
+            EXPECT_LT(rmse_V_eb_e, absl::GetFlag(FLAGS_dynamic_3D_velocity_RMSE));  // 3D RMS speed error less than 5 meters/s (18 km/h)
+#endif
         }
 }
 
 
 void PositionSystemTest::print_results(const arma::mat& R_eb_enu) const
 {
+#if USE_GLOG_AND_GFLAGS
     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+    const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
     if (gnuplot_executable.empty())
         {
             std::cout << "WARNING: Although the flag plot_position_test has been set to TRUE,\n";
@@ -874,7 +1053,11 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu) const
                     Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                     Gnuplot g1("points");
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_show_plots)
+#else
+                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                         {
                             g1.showonscreen();  // window output
                         }
@@ -895,7 +1078,11 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu) const
 
                     g1.cmd("set grid front");
                     g1.cmd("replot");
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_config_file_ptest.empty())
+#else
+                    if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
                         {
                             g1.savetops("Position_test_2D");
                             g1.savetopdf("Position_test_2D", 18);
@@ -907,7 +1094,11 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu) const
                         }
 
                     Gnuplot g2("points");
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_show_plots)
+#else
+                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                         {
                             g2.showonscreen();  // window output
                         }
@@ -930,7 +1121,11 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu) const
                            std::to_string(ninty_sas) +
                            "\n fx(v,u) = r*cos(v)*cos(u)\n fy(v,u) = r*cos(v)*sin(u)\n fz(v) = r*sin(v) \n splot fx(v,u),fy(v,u),fz(v) title \"90%-SAS\" lt rgb \"gray\"\n");
                     g2.plot_xyz(east, north, up, "3D Position Fixes");
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_config_file_ptest.empty())
+#else
+                    if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
                         {
                             g2.savetops("Position_test_3D");
                             g2.savetopdf("Position_test_3D");
@@ -951,20 +1146,33 @@ void PositionSystemTest::print_results(const arma::mat& R_eb_enu) const
 
 TEST_F(PositionSystemTest /*unused*/, Position_system_test /*unused*/)
 {
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_config_file_ptest.empty())
+#else
+    if (absl::GetFlag(FLAGS_config_file_ptest).empty())
+#endif
         {
             // Configure the signal generator
             configure_generator();
 
             // Generate signal raw signal samples and observations RINEX file
+
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_disable_generator)
+#else
+            if (!absl::GetFlag(FLAGS_disable_generator))
+#endif
                 {
                     generate_signal();
                 }
         }
     else
         {
+#if USE_GLOG_AND_GFLAGS
             config_filename_no_extension = FLAGS_config_file_ptest.substr(FLAGS_config_file_ptest.find_last_of("/\\") + 1);
+#else
+            config_filename_no_extension = absl::GetFlag(FLAGS_config_file_ptest).substr(absl::GetFlag(FLAGS_config_file_ptest).find_last_of("/\\") + 1);
+#endif
             config_filename_no_extension = config_filename_no_extension.erase(config_filename_no_extension.length() - 5);
         }
 
@@ -991,8 +1199,15 @@ int main(int argc, char** argv)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
 
+#if USE_GLOG_AND_GFLAGS
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     google::InitGoogleLogging(argv[0]);
+#else
+    absl::ParseCommandLine(argc, argv);
+    absl::LogSink* logSink = new PositionTestLogSink;
+    absl::AddLogSink(logSink);
+    absl::InitializeLog();
+#endif
 
     // Run the Tests
     try
@@ -1003,6 +1218,10 @@ int main(int argc, char** argv)
         {
             LOG(WARNING) << "Unexpected catch";
         }
+#if USE_GLOG_AND_GFLAGS
     gflags::ShutDownCommandLineFlags();
+#else
+    absl::FlushLogSinks();
+#endif
     return res;
 }

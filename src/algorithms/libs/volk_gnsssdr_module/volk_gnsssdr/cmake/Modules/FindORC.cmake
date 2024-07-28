@@ -71,6 +71,8 @@ find_path(ORC_LIBRARY_DIR
           /usr/lib/powerpc64le-linux-gnu
           /usr/lib/hppa-linux-gnu
           /usr/lib/s390x-linux-gnu
+          /usr/lib/riscv64-linux-gnu
+          /usr/lib/loongarch64-linux-gnu
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
@@ -97,6 +99,8 @@ find_library(ORC_LIB orc-0.4
           /usr/lib/powerpc64le-linux-gnu
           /usr/lib/hppa-linux-gnu
           /usr/lib/s390x-linux-gnu
+          /usr/lib/riscv64-linux-gnu
+          /usr/lib/loongarch64-linux-gnu
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib
@@ -125,6 +129,8 @@ find_library(ORC_LIBRARY_STATIC ${CMAKE_STATIC_LIBRARY_PREFIX}orc-0.4${CMAKE_STA
           /usr/lib/powerpc64le-linux-gnu
           /usr/lib/hppa-linux-gnu
           /usr/lib/s390x-linux-gnu
+          /usr/lib/riscv64-linux-gnu
+          /usr/lib/loongarch64-linux-gnu
           /usr/local/lib
           /usr/local/lib64
           /opt/local/lib

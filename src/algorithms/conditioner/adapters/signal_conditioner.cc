@@ -16,10 +16,14 @@
  */
 
 #include "signal_conditioner.h"
-#include <glog/logging.h>
 #include <stdexcept>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 // Constructor
 SignalConditioner::SignalConditioner(std::shared_ptr<GNSSBlockInterface> data_type_adapt,

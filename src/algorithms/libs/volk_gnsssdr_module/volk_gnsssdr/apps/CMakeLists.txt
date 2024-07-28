@@ -77,6 +77,9 @@ if(UNIX)
     )
 endif()
 
+include(XcodeRemoveWarningDuplicates)
+xcode_remove_warning_duplicates(volk_gnsssdr_profile)
+
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)
         set_target_properties(volk_gnsssdr_profile
@@ -105,6 +108,8 @@ if(UNIX)
         PUBLIC $<$<CONFIG:Release>:_FORTIFY_SOURCE=2>$<$<CONFIG:RelWithDebInfo>:_FORTIFY_SOURCE=2>
     )
 endif()
+
+xcode_remove_warning_duplicates(volk_gnsssdr-config-info)
 
 if(ENABLE_STRIP)
     if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") AND NOT WIN32)

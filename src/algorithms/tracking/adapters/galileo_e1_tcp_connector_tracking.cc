@@ -25,9 +25,13 @@
 #include "Galileo_E1.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
-#include <glog/logging.h>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     const ConfigurationInterface* configuration,
@@ -47,15 +51,30 @@ GalileoE1TcpConnectorTracking::GalileoE1TcpConnectorTracking(
     int fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     bool dump = configuration->property(role_ + ".dump", false);
     float pll_bw_hz = configuration->property(role_ + ".pll_bw_hz", static_cast<float>(50.0));
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_pll_bw_hz != 0.0)
         {
             pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
         }
+#else
+    if (absl::GetFlag(FLAGS_pll_bw_hz) != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_pll_bw_hz));
+        }
+#endif
     float dll_bw_hz = configuration->property(role_ + ".dll_bw_hz", static_cast<float>(2.0));
+
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_dll_bw_hz != 0.0)
         {
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
+#else
+    if (absl::GetFlag(FLAGS_dll_bw_hz) != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_dll_bw_hz));
+        }
+#endif
     float early_late_space_chips = configuration->property(role_ + ".early_late_space_chips", static_cast<float>(0.15));
     float very_early_late_space_chips = configuration->property(role_ + ".very_early_late_space_chips", static_cast<float>(0.5));
     size_t port_ch0 = configuration->property(role_ + ".port_ch0", 2060);

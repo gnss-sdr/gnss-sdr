@@ -95,10 +95,15 @@ target_link_libraries(core_libs
     PRIVATE
         algorithms_libs
         Boost::serialization
-        Gflags::gflags
-        Glog::glog
         Pugixml::pugixml
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(core_libs PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(core_libs PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(core_libs PRIVATE absl::flags absl::log)
+endif()
 
 if(USE_GENERIC_LAMBDAS AND NOT GNURADIO_USES_STD_POINTERS)
     target_link_libraries(core_libs PUBLIC Boost::headers)

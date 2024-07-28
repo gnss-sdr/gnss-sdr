@@ -323,10 +323,10 @@ void TcpCmdInterface::run_cmd_server(int tcp_port)
                             std::cout << "TcpCmdInterface: Telecommand TCP interface listening on port " << tcp_port << '\n';
 
                             boost::asio::ip::tcp::socket socket(context);
-                            acceptor.accept(socket, not_throw);
+                            acceptor.accept(socket, not_throw);  // NOLINT(bugprone-unused-return-value)
                             if (not_throw)
                                 {
-                                    std::cerr << "TcpCmdInterface: Error when binding the port in the socket\n";
+                                    std::cerr << "TcpCmdInterface: Error when binding the port to the socket: " << not_throw.message() << '\n';
                                     continue;
                                 }
 

@@ -224,12 +224,17 @@ public:
     std::string p3;
     std::string p4;
     std::string p5;
+#if USE_GLOG_AND_GFLAGS
     std::string implementation = FLAGS_trk_test_implementation;
-
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
-
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
+#else
+    std::string implementation = absl::GetFlag(FLAGS_trk_test_implementation);
+    const int baseband_sampling_freq = absl::GetFlag(FLAGS_fs_gen_sps);
+    std::string filename_rinex_obs = absl::GetFlag(FLAGS_filename_rinex_obs);
+    std::string filename_raw_data = absl::GetFlag(FLAGS_filename_raw_data);
+#endif
 
     int configure_generator();
     int generate_signal();
@@ -310,6 +315,7 @@ public:
 
 int HybridObservablesTestFpga::configure_generator()
 {
+#if USE_GLOG_AND_GFLAGS
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
 
@@ -325,6 +331,24 @@ int HybridObservablesTestFpga::configure_generator()
     p3 = std::string("-rinex_obs_file=") + FLAGS_filename_rinex_obs;               // RINEX 2.10 observation file output
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data;                  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);  // Baseband sampling frequency [MSps]
+#else
+    // Configure signal generator
+    generator_binary = absl::GetFlag(FLAGS_generator_binary);
+
+    p1 = std::string("-rinex_nav_file=") + absl::GetFlag(FLAGS_rinex_nav_file);
+    if (absl::GetFlag(FLAGS_dynamic_position).empty())
+        {
+            p2 = std::string("-static_position=") + absl::GetFlag(FLAGS_static_position) + std::string(",") + std::to_string(absl::GetFlag(FLAGS_duration) * 10);
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(absl::GetFlag(FLAGS_dynamic_position));
+        }
+    p3 = std::string("-rinex_obs_file=") + absl::GetFlag(FLAGS_filename_rinex_obs);  // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + absl::GetFlag(FLAGS_filename_raw_data);     // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);    // Baseband sampling frequency [MSps]
+#endif
+
     return 0;
 }
 
@@ -422,12 +446,15 @@ void* handler_DMA_obs_test(void* arguments)
             return nullptr;
         }
 
-    // *************************************************************************
-    // Open input file
-    // *************************************************************************
+        // *************************************************************************
+        // Open input file
+        // *************************************************************************
 
+#if USE_GLOG_AND_GFLAGS
     uint32_t skip_samples = static_cast<uint32_t>(FLAGS_skip_samples);
-
+#else
+    uint32_t skip_samples = static_cast<uint32_t>(absl::GetFlag(FLAGS_skip_samples));
+#endif
     if (skip_samples + skip_used_samples > 0)
         {
             try
@@ -601,8 +628,11 @@ bool HybridObservablesTestFpga::acquire_signal()
     std::string signal;
     struct DMA_handler_args_obs_test args;
     struct acquisition_handler_args_obs_test args_acq;
-
+#if USE_GLOG_AND_GFLAGS
     std::string file = FLAGS_signal_file;
+#else
+    std::string file = absl::GetFlag(FLAGS_signal_file);
+#endif
     args.file = file;  // DMA file configuration
 
     // instantiate the FPGA switch and set the
@@ -669,11 +699,17 @@ bool HybridObservablesTestFpga::acquire_signal()
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel_fsm(channel_fsm_);
     acquisition->set_channel(0);
+#if USE_GLOG_AND_GFLAGS
     acquisition->set_doppler_max(config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz));
     acquisition->set_doppler_step(config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz));
     acquisition->set_doppler_center(0);
     acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
-
+#else
+    acquisition->set_doppler_max(config->property("Acquisition.doppler_max", absl::GetFlag(FLAGS_external_signal_acquisition_doppler_max_hz)));
+    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", absl::GetFlag(FLAGS_external_signal_acquisition_doppler_step_hz)));
+    acquisition->set_doppler_center(0);
+    acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
+#endif
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds;
     start = std::chrono::system_clock::now();
@@ -760,7 +796,11 @@ bool HybridObservablesTestFpga::acquire_signal()
 
             if (start_msg == true)
                 {
+#if USE_GLOG_AND_GFLAGS
                     std::cout << "Reading external signal file: " << FLAGS_signal_file << '\n';
+#else
+                    std::cout << "Reading external signal file: " << absl::GetFlag(FLAGS_signal_file) << '\n';
+#endif
                     std::cout << "Searching for " << System_and_Signal << " Satellites...\n";
                     std::cout << "[";
                     start_msg = false;
@@ -850,9 +890,15 @@ void HybridObservablesTestFpga::configure_receiver(
     config->set_property("Tracking.extend_correlation_symbols", std::to_string(extend_correlation_symbols));
     config->set_property("Tracking.pll_bw_narrow_hz", std::to_string(PLL_narrow_bw_hz));
     config->set_property("Tracking.dll_bw_narrow_hz", std::to_string(DLL_narrow_bw_hz));
+#if USE_GLOG_AND_GFLAGS
     config->set_property("Tracking.fll_bw_hz", std::to_string(FLAGS_fll_bw_hz));
     config->set_property("Tracking.enable_fll_pull_in", FLAGS_enable_fll_pull_in ? "true" : "false");
     config->set_property("Tracking.enable_fll_steady_state", FLAGS_enable_fll_steady_state ? "true" : "false");
+#else
+    config->set_property("Tracking.fll_bw_hz", std::to_string(absl::GetFlag(FLAGS_fll_bw_hz)));
+    config->set_property("Tracking.enable_fll_pull_in", absl::GetFlag(FLAGS_enable_fll_pull_in) ? "true" : "false");
+    config->set_property("Tracking.enable_fll_steady_state", absl::GetFlag(FLAGS_enable_fll_steady_state) ? "true" : "false");
+#endif
     config->set_property("Tracking.smoother_length", std::to_string(smoother_length));
     config->set_property("Tracking.dump", "true");
     config->set_property("Tracking.dump_filename", "./tracking_ch_");
@@ -995,7 +1041,11 @@ void HybridObservablesTestFpga::check_results_carrier_phase(
     std::cout.precision(ss);
 
     // plots
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_show_plots)
+#else
+    if (absl::GetFlag(FLAGS_show_plots))
+#endif
         {
             Gnuplot g3("linespoints");
             g3.set_title(data_title + "Accumulated Carrier phase error [cycles]");
@@ -1084,7 +1134,11 @@ void HybridObservablesTestFpga::check_results_carrier_phase_double_diff(
     std::cout.precision(ss);
 
     // plots
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_show_plots)
+#else
+    if (absl::GetFlag(FLAGS_show_plots))
+#endif
         {
             Gnuplot g3("linespoints");
             g3.set_title(data_title + "Double diff Carrier Phase error [Cycles]");
@@ -1171,8 +1225,12 @@ void HybridObservablesTestFpga::check_results_carrier_doppler_double_diff(
               << " [Hz]\n";
     std::cout.precision(ss);
 
-    // plots
+// plots
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_show_plots)
+#else
+    if (absl::GetFlag(FLAGS_show_plots))
+#endif
         {
             Gnuplot g3("linespoints");
             g3.set_title(data_title + "Double diff Carrier Doppler error [Hz]");
@@ -1250,7 +1308,11 @@ void HybridObservablesTestFpga::check_results_carrier_doppler(
     std::cout.precision(ss);
 
     // plots
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_show_plots)
+#else
+    if (absl::GetFlag(FLAGS_show_plots))
+#endif
         {
             Gnuplot g3("linespoints");
             g3.set_title(data_title + "Carrier Doppler error [Hz]");
@@ -1384,7 +1446,11 @@ void HybridObservablesTestFpga::check_results_duplicated_satellite(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Carrier Doppler error [Hz]");
@@ -1444,7 +1510,11 @@ void HybridObservablesTestFpga::check_results_duplicated_satellite(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Carrier Phase error [Cycles]");
@@ -1503,7 +1573,11 @@ void HybridObservablesTestFpga::check_results_duplicated_satellite(
             std::cout.precision(ss);
 
             // plots
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     Gnuplot g3("linespoints");
                     g3.set_title(data_title + "Pseudorange error [m]");
@@ -1627,8 +1701,12 @@ void HybridObservablesTestFpga::check_results_code_pseudorange(
               << " [meters]\n";
     std::cout.precision(ss);
 
-    // plots
+// plots
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_show_plots)
+#else
+    if (absl::GetFlag(FLAGS_show_plots))
+#endif
         {
             Gnuplot g3("linespoints");
             g3.set_title(data_title + "Double diff Pseudorange error [m]");
@@ -1661,7 +1739,11 @@ bool HybridObservablesTestFpga::ReadRinexObs(std::vector<arma::mat>* obs_vec, Gn
     // Open and read reference RINEX observables file
     try
         {
+#if USE_GLOG_AND_GFLAGS
             gnsstk::Rinex3ObsStream r_ref(FLAGS_filename_rinex_obs);
+#else
+            gnsstk::Rinex3ObsStream r_ref(absl::GetFlag(FLAGS_filename_rinex_obs));
+#endif
             r_ref.exceptions(std::ios::failbit);
             gnsstk::Rinex3ObsData r_ref_data;
             gnsstk::Rinex3ObsHeader r_ref_header;
@@ -1828,7 +1910,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     configure_generator();
 
     // Generate signal raw signal samples and observations RINEX file
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_disable_generator == false)
+#else
+    if (absl::GetFlag(FLAGS_disable_generator) == false)
+#endif
         {
             generate_signal();
         }
@@ -1836,8 +1922,12 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
 
-    // use generator or use an external capture file
+// use generator or use an external capture file
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_enable_external_signal_file)
+#else
+    if (absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
         {
             // create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
             ASSERT_EQ(acquire_signal(), true);
@@ -1849,7 +1939,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             std::string signal = "1C";
             signal.copy(tmp_gnss_synchro.Signal, 2, 0);
 
+#if USE_GLOG_AND_GFLAGS
             std::istringstream ss(FLAGS_test_satellite_PRN_list);
+#else
+            std::istringstream ss(absl::GetFlag(FLAGS_test_satellite_PRN_list));
+#endif
             std::string token;
 
             while (std::getline(ss, token, ','))
@@ -1858,7 +1952,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                     gnss_synchro_vec.push_back(tmp_gnss_synchro);
                 }
         }
-
+#if USE_GLOG_AND_GFLAGS
     configure_receiver(FLAGS_PLL_bw_hz_start,
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
@@ -1866,11 +1960,24 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         FLAGS_extend_correlation_symbols,
         FLAGS_smoother_length,
         FLAGS_high_dyn);
+#else
+    configure_receiver(absl::GetFlag(FLAGS_PLL_bw_hz_start),
+        absl::GetFlag(FLAGS_DLL_bw_hz_start),
+        absl::GetFlag(FLAGS_PLL_narrow_bw_hz),
+        absl::GetFlag(FLAGS_DLL_narrow_bw_hz),
+        absl::GetFlag(FLAGS_extend_correlation_symbols),
+        absl::GetFlag(FLAGS_smoother_length),
+        absl::GetFlag(FLAGS_high_dyn));
+#endif
 
     for (auto& n : gnss_synchro_vec)
         {
             // setup the signal synchronization, simulating an acquisition
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_enable_external_signal_file)
+#else
+            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
                 {
                     // based on true observables metadata (for custom sdr generator)
                     // open true observables log file written by the simulator or based on provided RINEX obs
@@ -2011,6 +2118,7 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     std::string file;
 
     ASSERT_NO_THROW({
+#if USE_GLOG_AND_GFLAGS
         if (!FLAGS_enable_external_signal_file)
             {
                 file = "./" + filename_raw_data;
@@ -2019,6 +2127,16 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
             {
                 file = FLAGS_signal_file;
             }
+#else
+        if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+            {
+                file = "./" + filename_raw_data;
+            }
+        else
+            {
+                file = absl::GetFlag(FLAGS_signal_file);
+            }
+#endif
         int observable_interval_ms = 20;
 
         double fs = static_cast<double>(config->property("GNSS-SDR.internal_fs_sps", 0));
@@ -2051,7 +2169,12 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     usleep(1000000);
 
     args.file = file;
+#if USE_GLOG_AND_GFLAGS
     args.nsamples_tx = baseband_sampling_freq * FLAGS_duration;
+#else
+    args.nsamples_tx = baseband_sampling_freq * absl::GetFlag(FLAGS_duration);
+#endif
+
     args.skip_used_samples = 0;
 
     if (pthread_create(&thread_DMA, nullptr, handler_DMA_obs_test, reinterpret_cast<void*>(&args)) < 0)
@@ -2087,8 +2210,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
     // check results
     // Matrices for storing columnwise true GPS time, Range, Doppler and Carrier phase
     std::vector<arma::mat> true_obs_vec;
-
+#if USE_GLOG_AND_GFLAGS
     if (!FLAGS_enable_external_signal_file)
+#else
+    if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
         {
             // load the true values
             True_Observables_Reader true_observables;
@@ -2132,7 +2258,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
         }
     else
         {
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_duplicated_satellites_test)
+#else
+            if (!absl::GetFlag(FLAGS_duplicated_satellites_test))
+#endif
                 {
                     ASSERT_EQ(ReadRinexObs(&true_obs_vec, gnss_synchro_master), true)
                         << "Failure reading RINEX file";
@@ -2188,8 +2318,12 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 }
         }
 
-    // Cut measurement initial transitory of the measurements
+// Cut measurement initial transitory of the measurements
+#if USE_GLOG_AND_GFLAGS
     double initial_transitory_s = FLAGS_skip_obs_transitory_s;
+#else
+    double initial_transitory_s = absl::GetFlag(FLAGS_skip_obs_transitory_s);
+#endif
     for (unsigned int n = 0; n < measured_obs_vec.size(); n++)
         {
             index = arma::find(measured_obs_vec.at(n).col(0) >= (measured_obs_vec.at(n)(0, 0) + initial_transitory_s), 1, "first");
@@ -2197,8 +2331,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                 {
                     measured_obs_vec.at(n).shed_rows(0, index(0));
                 }
-
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_duplicated_satellites_test)
+#else
+            if (!absl::GetFlag(FLAGS_duplicated_satellites_test))
+#endif
                 {
                     index = arma::find(measured_obs_vec.at(n).col(0) >= true_obs_vec.at(n)(0, 0), 1, "first");
                     if ((!index.empty()) and (index(0) > 0))
@@ -2207,12 +2344,19 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                         }
                 }
         }
-
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_duplicated_satellites_test)
+#else
+    if (absl::GetFlag(FLAGS_duplicated_satellites_test))
+#endif
         {
             // special test mode for duplicated satellites
             std::vector<unsigned int> prn_pairs;
+#if USE_GLOG_AND_GFLAGS
             std::stringstream ss(FLAGS_duplicated_satellites_prns);
+#else
+            std::stringstream ss(absl::GetFlag(FLAGS_duplicated_satellites_prns));
+#endif
             unsigned int i;
             while (ss >> i)
                 {
@@ -2363,7 +2507,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                                         "[CH " + std::to_string(n) + "] PRN " + std::to_string(gnss_synchro_vec.at(n).PRN) + " ");
                                     // Do not compare E5a with E5 RINEX due to the Doppler frequency discrepancy caused by the different center frequencies
                                     // E5a_fc=1176.45e6, E5b_fc=1207.14e6, E5_fc=1191.795e6;
+#if USE_GLOG_AND_GFLAGS
                                     if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or FLAGS_compare_with_5X)
+#else
+                                    if (strcmp("5X\0", gnss_synchro_vec.at(n).Signal) != 0 or absl::GetFlag(FLAGS_compare_with_5X))
+#endif
                                         {
                                             check_results_carrier_phase_double_diff(true_obs_vec.at(n),
                                                 true_obs_vec.at(min_pr_ch_id),
@@ -2386,7 +2534,11 @@ TEST_F(HybridObservablesTestFpga, ValidationOfResults)
                                 {
                                     std::cout << "[CH " << std::to_string(n) << "] PRN " << std::to_string(gnss_synchro_vec.at(n).PRN) << " is the reference satellite\n";
                                 }
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_compute_single_diffs)
+#else
+                            if (absl::GetFlag(FLAGS_compute_single_diffs))
+#endif
                                 {
                                     check_results_carrier_phase(true_obs_vec.at(n),
                                         true_TOW_ch_s,

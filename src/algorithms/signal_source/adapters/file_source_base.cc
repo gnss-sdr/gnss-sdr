@@ -60,7 +60,15 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
       is_complex_(false),
       repeat_(configuration->property(role_ + ".repeat"s, false)),
       enable_throttle_control_(configuration->property(role_ + ".enable_throttle_control"s, false)),
-      dump_(configuration->property(role_ + ".dump"s, false))
+      dump_(configuration->property(role_ + ".dump"s, false)),
+      // Configuration for attaching extra data to the sample stream
+      attach_extra_data_(configuration->property(role_ + ".extra_data.enabled"s, false)),
+      ed_path_(configuration->property(role_ + ".extra_data.filename"s, "../data/extra_data.dat"s)),
+      ed_offset_in_file_(configuration->property(role_ + ".extra_data.file_offset"s, 0UL)),
+      ed_item_size_(configuration->property(role_ + ".extra_data.item_size"s, 1UL)),
+      ed_repeat_(configuration->property(role_ + ".extra_data.repeat"s, false)),
+      ed_offset_in_samples_(configuration->property(role_ + ".extra_data.sample_offset"s, 0UL)),
+      ed_sample_period_(configuration->property(role_ + ".extra_data.sample_period"s, 1UL))
 {
     minimum_tail_s_ = std::max(configuration->property("Acquisition_1C.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_2S.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
@@ -157,6 +165,7 @@ void FileSourceBase::init()
     create_throttle();
     create_valve();
     create_sink();
+    create_extra_data_source();
 }
 
 
@@ -205,6 +214,14 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
             DLOG(INFO) << "connected output to file sink";
         }
 
+    // EXTRA DATA
+    if (extra_data_source())
+        {
+            top_block->connect(std::move(output), 0, extra_data_source(), 0);
+            DLOG(INFO) << "connected output to extra data source, which now becomes the new output";
+            output = extra_data_source();
+        }
+
     post_connect_hook(std::move(top_block));
 }
 
@@ -251,6 +268,15 @@ void FileSourceBase::disconnect(gr::top_block_sptr top_block)
         {
             top_block->disconnect(std::move(output), 0, sink(), 0);
             DLOG(INFO) << "disconnected output to file sink";
+        }
+
+    // EXTRA DATA
+    if (extra_data_source())
+        {
+            // TODO - FIXME: This is NOT okay, `output` is the extra data source, not the valve/source/throttle/whatever is left of this
+            top_block->disconnect(std::move(output), 0, extra_data_source(), 0);
+            DLOG(INFO) << "disconnected output to extra data source";
+            output = extra_data_source();
         }
 
     post_disconnect_hook(std::move(top_block));
@@ -478,6 +504,7 @@ gnss_shared_ptr<gr::block> FileSourceBase::file_source() const { return file_sou
 gnss_shared_ptr<gr::block> FileSourceBase::valve() const { return valve_; }
 gnss_shared_ptr<gr::block> FileSourceBase::throttle() const { return throttle_; }
 gnss_shared_ptr<gr::block> FileSourceBase::sink() const { return sink_; }
+ExtraDataSource::sptr FileSourceBase::extra_data_source() const { return extra_data_source_; }
 
 
 gr::blocks::file_source::sptr FileSourceBase::create_file_source()
@@ -573,6 +600,23 @@ gr::blocks::file_sink::sptr FileSourceBase::create_sink()
         }
     return sink_;
 }
+
+ExtraDataSource::sptr FileSourceBase::create_extra_data_source()
+{
+    if (attach_extra_data_)
+        {
+            extra_data_source_ = std::make_shared<ExtraDataSource>(
+                ed_path_,
+                ed_offset_in_file_,
+                ed_item_size_,
+                ed_repeat_,
+                ed_offset_in_samples_,
+                ed_sample_period_,
+                gr::io_signature::make(1, 1, item_size_));
+        }
+    return extra_data_source_;
+}
+
 
 
 // Subclass hooks to augment created objects, as required

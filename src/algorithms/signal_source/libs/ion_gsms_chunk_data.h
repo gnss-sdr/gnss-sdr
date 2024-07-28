@@ -87,7 +87,7 @@ public:
     IONGSMSChunkData(IONGSMSChunkData&& rhl) = delete;
     IONGSMSChunkData& operator=(IONGSMSChunkData&& rhl) = delete;
 
-    void read_from_file(FILE* fd);
+    std::size_t read_from_buffer(uint8_t* buffer, std::size_t offset);
 
     void write_to_output(gr_vector_void_star& outputs, const std::function<void(int output, int nitems)>& produce);
 

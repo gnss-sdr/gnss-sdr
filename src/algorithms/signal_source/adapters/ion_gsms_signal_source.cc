@@ -66,7 +66,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
             LOG(ERROR) << "A signal source does not have an input stream";
         }
 
-    sources_ = metadata_.make_stream_sources(stream_ids_);
+    sources_ = metadata_.make_stream_sources(configuration, role, stream_ids_);
 
     for (const auto& source : sources_)
         {

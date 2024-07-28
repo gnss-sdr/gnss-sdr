@@ -19,10 +19,12 @@
 
 #include "gnss_block_interface.h"
 #include "ion_gsms_chunk_data.h"
+#include "configuration_interface.h"
 #include <gnuradio/block.h>
 #include <gnuradio/sync_block.h>
 #include <filesystem>
 #include <string>
+#include <iostream>
 
 
 class IONGSMSFileSource : public gr::sync_block
@@ -31,6 +33,8 @@ public:
     using sptr = gnss_shared_ptr<IONGSMSFileSource>;
 
     IONGSMSFileSource(
+        const ConfigurationInterface* configuration,
+        const std::string& role,
         const std::filesystem::path& metadata_filepath,
         const GnssMetadata::File& file,
         const GnssMetadata::Block& block,
@@ -53,9 +57,12 @@ private:
     const GnssMetadata::File& file_metadata_;
     const GnssMetadata::Block& block_metadata_;
     FILE* fd_;
+    std::vector<uint8_t> io_buffer_;
+    std::size_t io_buffer_offset_;
     std::size_t output_stream_count_;
     std::vector<std::size_t> output_stream_item_sizes_;
     std::vector<std::shared_ptr<IONGSMSChunkData>> chunk_data_;
+    std::size_t chunk_cycle_length_;
 };
 
 #include "ion_gsms_metadata_handler.h"

@@ -76,9 +76,11 @@ IONGSMSChunkData::~IONGSMSChunkData()
     });
 }
 
-void IONGSMSChunkData::read_from_file(FILE* fd)
+std::size_t IONGSMSChunkData::read_from_buffer(uint8_t* buffer, std::size_t offset)
 {
-    std::fread(buffer_, sizeword_, countwords_, fd);
+    memset(buffer_, 0, sizeword_ * countwords_);
+    memcpy(buffer_, &buffer[offset], sizeword_ * countwords_);
+    return sizeword_ * countwords_;
 }
 
 void IONGSMSChunkData::write_to_output(gr_vector_void_star& outputs, const std::function<void(int output, int nitems)>& produce)
@@ -88,6 +90,7 @@ void IONGSMSChunkData::write_to_output(gr_vector_void_star& outputs, const std::
         unpack_words<WordType>(outputs, produce);
     });
 }
+
 
 std::size_t IONGSMSChunkData::output_stream_count() const
 {
@@ -203,6 +206,8 @@ void IONGSMSChunkData::write_n_samples(
                     ++sample;
                 }
         }
+
+    out += sample_count * sizeof(OT);
 }
 
 

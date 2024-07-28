@@ -25,8 +25,11 @@
 #include <utility>
 #endif
 
+using namespace std::string_literals;
 
 IONGSMSFileSource::IONGSMSFileSource(
+    const ConfigurationInterface* configuration,
+    const std::string& role,
     const std::filesystem::path& metadata_filepath,
     const GnssMetadata::File& file,
     const GnssMetadata::Block& block,
@@ -36,7 +39,9 @@ IONGSMSFileSource::IONGSMSFileSource(
           gr::io_signature::make(0, 0, 0),
           make_output_signature(block, stream_ids)),
       file_metadata_(file),
-      block_metadata_(block)
+      block_metadata_(block),
+      io_buffer_offset_(0),
+      chunk_cycle_length_(0)
 {
     std::filesystem::path data_filepath = metadata_filepath.parent_path() / file.Url().Value();
     fd_ = std::fopen(data_filepath.c_str(), "rb");
@@ -47,6 +52,7 @@ IONGSMSFileSource::IONGSMSFileSource(
     for (const auto& chunk : block.Chunks())
         {
             chunk_data_.emplace_back(std::make_shared<IONGSMSChunkData>(chunk, stream_ids, output_stream_offset));
+            chunk_cycle_length_ += chunk.CountWords() * chunk.SizeWord();
             const std::size_t out_count = chunk_data_.back()->output_stream_count();
             output_stream_offset += out_count;
             for (std::size_t i = 0; i < out_count; ++i)
@@ -55,6 +61,8 @@ IONGSMSFileSource::IONGSMSFileSource(
                 }
         }
     output_stream_count_ = output_stream_offset;
+
+    io_buffer_.resize(1024 * chunk_cycle_length_);
 }
 
 IONGSMSFileSource::~IONGSMSFileSource()
@@ -67,16 +75,39 @@ int IONGSMSFileSource::work(
     gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items)
 {
-    // for (int i = 0; i < noutput_items; ++i)
-        // {
+    io_buffer_offset_ = 0;
+    std::fread(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type), io_buffer_.size(), fd_);
+    std::vector<int> items_produced{};
+
+    items_produced.resize(output_items.size());
+    for (int i = 0; i < items_produced.size(); ++i)
+        {
+            items_produced[i] = 0;
+        }
+
+
+    while (io_buffer_offset_ < io_buffer_.size())
+        {
             for (auto& c : chunk_data_)
                 {
-                    c->read_from_file(fd_);
+                    io_buffer_offset_ += c->read_from_buffer(io_buffer_.data(), io_buffer_offset_);
                     c->write_to_output(output_items, [&](int output, int nitems) {
-                        produce(output, nitems);
+                        items_produced[output] += nitems;
+
+                        // if (nitems_written(output) % 100 == 0)
+                            // {
+                                // add_item_tag(output, nitems_written(output), pmt::mp("tag_test"), pmt::from_uint64(nitems_written(output)));
+                            // }
                     });
                 }
-        // }
+        }
+
+    std::cout << "produced: " << std::to_string(items_produced[0]) << std::endl;
+    for (int i = 0; i < items_produced.size(); ++i)
+        {
+            produce(i, items_produced[i]);
+        }
+
     return WORK_CALLED_PRODUCE;
 }
 

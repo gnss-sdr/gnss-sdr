@@ -18,6 +18,7 @@
 #define ION_GSMS_METADATA_HANDLER_H
 
 #include "GnssMetadata.h"
+#include "configuration_interface.h"
 #include <gnuradio/block.h>
 
 #if USE_GLOG_AND_GFLAGS
@@ -31,7 +32,7 @@ class IONGSMSMetadataHandler
 public:
     explicit IONGSMSMetadataHandler(const std::string& metadata_filepath);
 
-    std::vector<IONGSMSFileSource::sptr> make_stream_sources(const std::vector<std::string>& stream_ids) const;
+    std::vector<IONGSMSFileSource::sptr> make_stream_sources(const ConfigurationInterface* configuration, const std::string& role, const std::vector<std::string>& stream_ids) const;
 
 public:  // Getters
     const std::string& metadata_filepath() const;

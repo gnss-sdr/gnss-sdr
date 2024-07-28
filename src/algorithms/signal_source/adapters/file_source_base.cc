@@ -613,6 +613,7 @@ ExtraDataSource::sptr FileSourceBase::create_extra_data_source()
                 ed_offset_in_samples_,
                 ed_sample_period_,
                 gr::io_signature::make(1, 1, item_size_));
+            DLOG(INFO) << "extra_data_source(" << extra_data_source_->unique_id() << ")";
         }
     return extra_data_source_;
 }

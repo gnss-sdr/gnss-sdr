@@ -38,7 +38,7 @@ uint8_t OSNMA_DSM_Reader::get_cpks(uint8_t nma_header) const
 
 bool OSNMA_DSM_Reader::get_nma_header_reserved(uint8_t nma_header) const
 {
-    return ((nma_header & mask_nma_header_reserved) ? true : false);
+    return (nma_header & mask_nma_header_reserved) != 0;
 }
 
 

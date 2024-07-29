@@ -16,15 +16,15 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnss_crypto.h"
-#include "osnma_helper.h"
-#include "osnma_msg_receiver.h"
 #include <gtest/gtest.h>
 #include <bitset>
 #include <chrono>
 #include <fstream>
 #include <vector>
 #include "Galileo_OSNMA.h"
+#include "gnss_crypto.h"
+#include "osnma_helper.h"
+#include "osnma_msg_receiver.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>  // for LOG
@@ -43,7 +43,7 @@ protected:
     uint32_t TOW{};
     uint32_t WN{};
     std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0, 0, 0, 0, 0};  // months start with 0 and years since 1900 in std::tm
-    const uint32_t LEAP_SECONDS = 0;                                 // 13 + 5;
+    const uint32_t LEAP_SECONDS = 0;  // tried with 13 + 5, which is the official count, but won't parse correctly
     void set_time(std::tm& input);
 
     void SetUp() override

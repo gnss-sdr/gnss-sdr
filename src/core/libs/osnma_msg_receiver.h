@@ -133,6 +133,7 @@ private:
     uint32_t d_last_verified_key_GST{0};
     uint32_t d_GST_0{};
     uint32_t d_GST_SIS{};
+    uint32_t d_GST_PKR_start{};
 
     uint8_t d_Lt_min{};             // minimum equivalent tag length
     uint8_t d_Lt_verified_eph{0};   // verified tag bits - ephemeris
@@ -146,6 +147,11 @@ private:
     bool d_tesla_key_verified{false};
     bool d_flag_debug{false};
     bool d_flag_hot_start{false};
+    bool d_flag_PK_renewal{false};
+    bool d_flag_PK_revocation{false};
+    uint8_t d_new_public_key_id{};
+    std::vector<uint8_t> d_new_public_key;
+    bool d_flag_NPK_set{false};
 
     // Provide access to inner functions to Gtest
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
@@ -155,6 +161,7 @@ private:
     FRIEND_TEST(OsnmaMsgReceiverTest, ComputeBaseLeaf);
     FRIEND_TEST(OsnmaMsgReceiverTest, ComputeMerkleRoot);
     FRIEND_TEST(OsnmaTestVectors, OsnmaTestVectorsSimulation);
+    FRIEND_TEST(OsnmaTestVectors, PublicKeyRenewal);
 };
 
 

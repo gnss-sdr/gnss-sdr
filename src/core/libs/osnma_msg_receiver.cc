@@ -156,7 +156,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
         }
 
     //  Send the resulting decoded NMA data (if available) to PVT
-    if (d_new_data == true)  // TODO where is it set to true?
+    if (d_new_data)  // TODO where is it set to true?
         {
             auto osnma_data_ptr = std::make_shared<OSNMA_data>(d_osnma_data);
             this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(osnma_data_ptr));
@@ -170,10 +170,21 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
     read_nma_header(osnma_msg->hkroot[0]);
-    if (d_osnma_data.d_nma_header.nmas == 0 || d_osnma_data.d_nma_header.nmas == 3 /*&& d_kroot_verified*/)
+    if (d_osnma_data.d_nma_header.nmas == 0 || d_osnma_data.d_nma_header.nmas == 3)
         {
             LOG(WARNING) << "Galileo OSNMA: NMAS invalid, skipping osnma message";
             return;
+        }
+    if (d_osnma_data.d_nma_header.nmas == 2 /*OP*/ && d_osnma_data.d_nma_header.cpks == 4 /*NPK*/ && d_GST_PKR_start == 0){
+            d_flag_PK_renewal = true;
+            d_GST_PKR_start = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
+            LOG(INFO) << "Galileo OSNMA: Public Key Renewal :: Start at GST=" << d_GST_PKR_start;
+            std::cout << "Galileo OSNMA: Public Key Renewal :: Start at GST=" << d_GST_PKR_start << std::endl;
+        }
+    if (d_flag_PK_renewal && d_osnma_data.d_nma_header.nmas == 2 /*OP*/ && d_osnma_data.d_nma_header.cpks == 1 /*Nominal*/ ){
+            d_flag_PK_renewal = false;
+            LOG(INFO) << "Galileo OSNMA: Public Key Renewal :: Finished at GST=" << d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
+            std::cout << "Galileo OSNMA: Public Key Renewal :: Finished at GST=" << d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0) << std::endl;
         }
     read_dsm_header(osnma_msg->hkroot[1]);
     read_dsm_block(osnma_msg);
@@ -337,7 +348,7 @@ void osnma_msg_receiver::local_time_verification(const std::shared_ptr<OSNMA_msg
 
             // TODO set flag to false to avoid processing dsm and MACK messages
         }
-    else if (delta_T > d_T_L && delta_T <= 10 * delta_T)
+    else if (delta_T > d_T_L && delta_T <= 10 * d_T_L)
         {
             d_tags_allowed = tags_to_verify::slow_eph;
             d_tags_to_verify = {12};
@@ -492,6 +503,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                       << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
                                       << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
                             // local_time_verification(osnma_msg);  // FIXME TODO: real time verification needed
+                            if(d_flag_PK_renewal && d_osnma_data.d_dsm_kroot_message.pkid == d_new_public_key_id && d_flag_NPK_set == false){
+                                    // set new public key to be used.
+                                    d_crypto->set_public_key(d_new_public_key);
+                                    d_crypto->store_public_key(PEMFILE_DEFAULT);
+                                    d_flag_NPK_set = true;
+                                }
                             if (l_ds_bits == 512)
                                 {
                                     d_kroot_verified = d_crypto->verify_signature_ecdsa_p256(message, d_osnma_data.d_dsm_kroot_message.ds);
@@ -538,7 +555,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     d_osnma_data.d_dsm_pkr_message.itn[k] = dsm_msg[k + 1];
                 }
             d_osnma_data.d_dsm_pkr_message.npkt = d_dsm_reader->get_npkt(dsm_msg);
-            d_osnma_data.d_dsm_pkr_message.npktid = d_dsm_reader->get_npktid(dsm_msg);
+            uint8_t npktid = d_dsm_reader->get_npktid(dsm_msg);
+            if (d_flag_PK_renewal && npktid > d_osnma_data.d_dsm_pkr_message.npktid){
+                    d_new_public_key_id = npktid;
+                }
+            d_osnma_data.d_dsm_pkr_message.npktid = npktid;
 
             uint32_t l_npk_bytes = 0;
             const auto it = OSNMA_TABLE_5.find(d_osnma_data.d_dsm_pkr_message.npkt);
@@ -584,12 +605,15 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                               << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600*/
                               << " received";
                     // C: NPK verification against Merkle tree root.
-                    if (!d_public_key_verified)
+                    bool verification = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message);
+                    if (verification)
                         {
-                            bool verification = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message);
-                            if (verification)
-                                {
-                                    d_public_key_verified = true;
+                            LOG(INFO) << "Galileo OSNMA: DSM-PKR verified successfully";
+                            d_public_key_verified = true;
+                            if (d_flag_PK_renewal){
+                                    d_new_public_key = d_osnma_data.d_dsm_pkr_message.npk;
+                                }
+                            else {
                                     d_crypto->set_public_key(d_osnma_data.d_dsm_pkr_message.npk);
                                     d_crypto->store_public_key(PEMFILE_DEFAULT);
                                 }
@@ -903,7 +927,7 @@ void osnma_msg_receiver::read_mack_body()
  */
 void osnma_msg_receiver::process_mack_message()
 {
-    if (d_kroot_verified == false && d_tesla_key_verified == false)
+    if (!d_kroot_verified && !d_tesla_key_verified)
         {
             LOG(WARNING) << "Galileo OSNMA: MACK cannot be processed, "
                          << "no Kroot nor TESLA key available.";

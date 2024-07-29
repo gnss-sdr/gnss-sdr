@@ -65,7 +65,7 @@ public:
 private:
     static constexpr std::uint8_t mask_nmas{0xC0};
     static constexpr std::uint8_t mask_cid{0x30};
-    static constexpr std::uint8_t mask_cpks{0x07};
+    static constexpr std::uint8_t mask_cpks{0x0E};
     static constexpr std::uint8_t mask_nma_header_reserved{0x01};
     static constexpr std::uint8_t mask_dsm_id{0xF0};
     static constexpr std::uint8_t mask_dsm_block_id{0x0F};

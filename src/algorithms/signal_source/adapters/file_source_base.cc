@@ -295,6 +295,7 @@ gr::basic_block_sptr FileSourceBase::get_right_block()
     // clang-tidy wants braces around the if-conditions. clang-format wants to break the braces into
     // multiple line blocks. It's much more readable this way
     // clang-format off
+    if (extra_data_source_) { return extra_data_source_; }
     if (valve_) { return valve_; }
     if (throttle_) { return throttle_; }
     return source();

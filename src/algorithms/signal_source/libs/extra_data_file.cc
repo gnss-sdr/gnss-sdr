@@ -65,7 +65,7 @@ std::vector<uint8_t> ExtraDataFile::read_item()
 
 void ExtraDataFile::read_into_io_buffer()
 {
-    file_.get(reinterpret_cast<char*>(io_buffer_.data()), io_buffer_size_);
+    file_.read(reinterpret_cast<char*>(&io_buffer_[0]), io_buffer_size_);
     const std::size_t bytes_read = file_.gcount();
 
     if (bytes_read < io_buffer_size_)
@@ -73,7 +73,7 @@ void ExtraDataFile::read_into_io_buffer()
             if (repeat_)
                 {
                     reset();
-                    file_.get(reinterpret_cast<char*>(&io_buffer_[bytes_read]), io_buffer_size_ - bytes_read);
+                    file_.read(reinterpret_cast<char*>(&io_buffer_[bytes_read]), io_buffer_size_ - bytes_read);
                 }
             else
                 {

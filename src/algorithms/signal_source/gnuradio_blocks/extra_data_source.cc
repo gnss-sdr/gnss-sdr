@@ -61,7 +61,7 @@ std::size_t ExtraDataSource::get_sample_period() const
 
 int ExtraDataSource::work(int noutput_items,
     gr_vector_const_void_star& input_items,
-    gr_vector_void_star& output_items) override
+    gr_vector_void_star& output_items)
 {
     const std::size_t ch = 0;
     const int item_size = input_signature()->sizeof_stream_item(ch);

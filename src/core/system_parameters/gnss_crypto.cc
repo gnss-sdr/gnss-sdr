@@ -39,6 +39,7 @@
 #include <openssl/bio.h>
 #include <openssl/bn.h>
 #include <openssl/core_names.h>
+#include <openssl/decoder.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/param_build.h>
@@ -130,7 +131,6 @@ bool Gnss_Crypto::have_public_key() const
     return (d_PublicKey != nullptr);
 #endif
 }
-
 
 bool Gnss_Crypto::store_public_key(const std::string& pubKeyFilePath) const
 {
@@ -780,7 +780,7 @@ std::vector<uint8_t> Gnss_Crypto::compute_CMAC_AES(const std::vector<uint8_t>& k
     return output;
 }
 
-
+// TODO - deprecate: change return type to respective key type, PEM is not needed.
 std::vector<uint8_t> Gnss_Crypto::get_public_key() const
 {
     if (!have_public_key())
@@ -846,10 +846,25 @@ std::vector<uint8_t> Gnss_Crypto::get_merkle_root() const
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
 #if USE_GNUTLS_FALLBACK
+    // TODO - changed to import a compressed ECC key, either P256 or P521, but have not tested it yet
     gnutls_pubkey_t pubkey{};
-    gnutls_datum_t pemDatum = {const_cast<unsigned char*>(publicKey.data()), static_cast<unsigned int>(publicKey.size())};
+    gnutls_datum_t x_coord = {(unsigned char*)&publicKey[1], 32};
+    gnutls_datum_t y_coord = {NULL, 0};
+    gnutls_ecc_curve_t curve;
+
     gnutls_pubkey_init(&pubkey);
-    int ret = gnutls_pubkey_import(pubkey, &pemDatum, GNUTLS_X509_FMT_PEM);
+
+    if (publicKey.size() == 33)
+        {
+            curve = GNUTLS_ECC_CURVE_SECP256R1;
+        }
+    else
+        {
+            curve = GNUTLS_ECC_CURVE_SECP521R1;
+        }
+
+
+    int ret = gnutls_pubkey_import_ecc_raw(pubkey, curve, &x_coord, &y_coord);
     if (ret != GNUTLS_E_SUCCESS)
         {
             gnutls_pubkey_deinit(pubkey);
@@ -861,37 +876,88 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     pubkey_copy(pubkey, &d_PublicKey);
     gnutls_pubkey_deinit(pubkey);
 #else  // OpenSSL
-    BIO* bio = nullptr;
-    EVP_PKEY* pkey = nullptr;
-    bio = BIO_new_mem_buf(const_cast<uint8_t*>(publicKey.data()), publicKey.size());
-    if (!bio)
-        {
-            LOG(WARNING) << "OpenSSL: Failed to create BIO for key.";
-            return;
-        }
 
-    pkey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
-    BIO_free(bio);
-
-    if (!pkey)
-        {
-            LOG(WARNING) << "OpenSSL: error setting the OSNMA public key.";
-            return;
-        }
 #if USE_OPENSSL_3
-    if (!pubkey_copy(pkey, &d_PublicKey))
+// Uses the new EVP_PKEY envelope as well as the parameter builder functions
+// generate the uncompressed key, then add it into the EVP_PKEY* struct
+EVP_PKEY* pkey = NULL;
+EVP_PKEY_CTX* ctx = NULL;
+OSSL_PARAM_BLD *param_bld;
+OSSL_PARAM *params = NULL;
+
+param_bld = OSSL_PARAM_BLD_new();
+if (param_bld != NULL
+    && OSSL_PARAM_BLD_push_utf8_string(param_bld, "group",
+           (publicKey.size() == 33) ? "prime256v1" : "secp521r1", 0)
+    && OSSL_PARAM_BLD_push_octet_string(param_bld, "pub",
+           publicKey.data(), publicKey.size()))
+    params = OSSL_PARAM_BLD_to_param(param_bld);
+
+ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);
+if (ctx == NULL
+    || params == NULL
+    || EVP_PKEY_fromdata_init(ctx) <= 0
+    || EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
+        return;
+    } else {
+        if (!pubkey_copy(pkey, &d_PublicKey))
+            {
+                return;
+            }
+    }
+EVP_PKEY_free(pkey);
+EVP_PKEY_CTX_free(ctx);
+OSSL_PARAM_free(params);
+OSSL_PARAM_BLD_free(param_bld);
+#else
+    EVP_PKEY* pkey = NULL;   // Generic public key type
+    EC_KEY* ec_key = NULL;   // ECC Key pair
+    EC_POINT* point = NULL;  // Represents the point in the EC the public key belongs to
+    EC_GROUP* group = NULL;  // Defines the curve the public key belongs
+    if (publicKey.size() == 33)  // ECDSA-P-256
         {
+            group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+        }
+    else                         // ECDSA-P-521
+        {
+            group = EC_GROUP_new_by_curve_name(NID_secp521r1);
+        }
+    if(!group){
             return;
         }
-#else
-    EC_KEY* ec_pkey = EVP_PKEY_get1_EC_KEY(pkey);
+
+    point = EC_POINT_new(group);
+    if(!point){
+            return;
+        }
+
+    if(!EC_POINT_oct2point(group, point, publicKey.data(), publicKey.size(), NULL)){
+            return;
+        }
+
+    if (publicKey.size() == 33)  // ECDSA-P-256
+        {
+            ec_key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+        }
+    else                         // ECDSA-P-521
+        {
+            ec_key = EC_KEY_new_by_curve_name(NID_secp521r1);
+        }
+    if(!ec_key){
+            return;
+        }
+
+    if(!EC_KEY_set_public_key(ec_key, point)){
+            return;
+        }
     if (!pubkey_copy(ec_pkey, &d_PublicKey))
         {
             return;
         }
     EC_KEY_free(ec_pkey);
+    EC_POINT_free(point);
+    EC_GROUP_free(group);
 #endif  // OpenSSL 1.x
-    EVP_PKEY_free(pkey);
 #endif
     DLOG(INFO) << "OSNMA Public Key successfully set up.";
 }
@@ -1207,7 +1273,6 @@ std::vector<uint8_t> Gnss_Crypto::convert_from_hex_str(const std::string& input)
 
     return result;
 }
-
 
 #if USE_GNUTLS_FALLBACK  // GnuTLS-specific functions
 bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)

@@ -285,7 +285,6 @@ void FileSourceBase::disconnect(gr::top_block_sptr top_block)
 
 gr::basic_block_sptr FileSourceBase::get_left_block()
 {
-    // TODO: is this right? Shouldn't the left block be a nullptr?
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::blocks::file_source::sptr();
 }

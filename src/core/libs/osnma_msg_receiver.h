@@ -63,11 +63,12 @@ class osnma_msg_receiver : public gr::block
 {
 public:
     ~osnma_msg_receiver() = default;  //!< Default destructor
+    std::unique_ptr<Gnss_Crypto> d_crypto;  // access to cryptographic functions
+    void msg_handler_osnma(const pmt::pmt_t& msg);  // GnssCrypto and the message handler are needed by public method within TestVectors fixture
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
     osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath);
 
-    void msg_handler_osnma(const pmt::pmt_t& msg);
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_nma_header(uint8_t nma_header);
     void read_dsm_header(uint8_t dsm_header);
@@ -112,7 +113,6 @@ private:
     std::array<uint8_t, 60> d_mack_message{};  // C: 480 b
 
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;  // osnma parameters parser
-    std::unique_ptr<Gnss_Crypto> d_crypto;           // access to cryptographic functions
     std::unique_ptr<Osnma_Helper> d_helper;          // helper class with auxiliary functions
     std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager;  // refactor for holding and processing navigation data
 
@@ -154,13 +154,19 @@ private:
     bool d_flag_NPK_set{false};
 
     // Provide access to inner functions to Gtest
+    uint32_t d_count_successful_tags{0};
+    uint32_t d_count_failed_tags{0};
+    uint32_t d_count_failed_Kroot{0};
+    uint32_t d_count_failed_pubKey{0};  // failed public key verifications against Merkle root
+    uint32_t d_count_failed_macseq{0};
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, TagVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, BuildTagMessageM0);
     FRIEND_TEST(OsnmaMsgReceiverTest, VerifyPublicKey);
     FRIEND_TEST(OsnmaMsgReceiverTest, ComputeBaseLeaf);
     FRIEND_TEST(OsnmaMsgReceiverTest, ComputeMerkleRoot);
-    FRIEND_TEST(OsnmaTestVectors, OsnmaTestVectorsSimulation);
+    FRIEND_TEST(OsnmaTestVectors, NominalTestConf1);
+    FRIEND_TEST(OsnmaTestVectors, NominalTestConf2);
     FRIEND_TEST(OsnmaTestVectors, PublicKeyRenewal);
 };
 

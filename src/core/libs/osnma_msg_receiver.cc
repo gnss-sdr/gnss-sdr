@@ -535,12 +535,14 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                 {
                                     LOG(WARNING) << "Galileo OSNMA: KROOT authentication failed.";
                                     std::cerr << "Galileo OSNMA: KROOT authentication failed." << std::endl;
+                                    d_count_failed_Kroot ++;
                                 }
                         }
                     else
                         {
                             LOG(WARNING) << "Galileo OSNMA: Error computing padding bits.";
                             // TODO - here will have to decide if perform the verification or not. Since this step is not mandatory, one could as well have skipped it.
+                            d_count_failed_Kroot++;
                         }
                 }
         }
@@ -608,7 +610,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     bool verification = verify_dsm_pkr(d_osnma_data.d_dsm_pkr_message);
                     if (verification)
                         {
-                            LOG(INFO) << "Galileo OSNMA: DSM-PKR verified successfully";
+                            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: SUCCESS";
                             d_public_key_verified = true;
                             if (d_flag_PK_renewal){
                                     d_new_public_key = d_osnma_data.d_dsm_pkr_message.npk;
@@ -617,6 +619,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                     d_crypto->set_public_key(d_osnma_data.d_dsm_pkr_message.npk);
                                     d_crypto->store_public_key(PEMFILE_DEFAULT);
                                 }
+                        }
+                    else
+                        {
+                            LOG(ERROR) << "Galileo OSNMA: DSM-PKR verification :: FAILURE";
+                            d_public_key_verified = false;
+                            d_count_failed_pubKey ++;
                         }
                 }
         }
@@ -1005,6 +1013,7 @@ void osnma_msg_receiver::process_mack_message()
                      * */
                     if (ret)
                         {
+                            d_count_successful_tags++;
                             it.second.status = Tag::SUCCESS;
                             LOG(INFO) << "Galileo OSNMA: Tag verification :: SUCCESS for tag Id="
                                       << it.second.tag_id
@@ -1031,6 +1040,7 @@ void osnma_msg_receiver::process_mack_message()
                      * communicate to PVT*/
                     else
                         {
+                            d_count_failed_tags++;
                             it.second.status = Tag::FAIL;
                             LOG(WARNING) << "Galileo OSNMA: Tag verification :: FAILURE for tag Id="
                                          << it.second.tag_id
@@ -1770,6 +1780,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     if (mack.tag_and_info.size() != applicable_sequence.size() - 1)
         {
             LOG(WARNING) << "Galileo OSNMA: Number of retrieved tags does not match MACLT sequence size!";
+            d_count_failed_macseq += mack.tag_and_info.size();
             return verified_tags;
         }
     std::vector<uint8_t> flxTags{};
@@ -1796,6 +1807,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
                     LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: ADKD mismatch against MAC Look-up table for Tag=0x"
                                  << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                                  << mack.tag_and_info[i].tag << std::dec;
+                    d_count_failed_macseq ++;
                 }
         }
 
@@ -1844,10 +1856,10 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
                 }
             return verified_tags;
         }
-
     else
         {
             LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: FLX tags verification failed";
+            d_count_failed_macseq += flxTags.size();
             return verified_tags;
         }
 }

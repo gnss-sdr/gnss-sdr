@@ -360,11 +360,15 @@ set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.14.0")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.4")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.5")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abseil.io/about/releases)
 
 # Downgrade versions if requirements are not met
+if(CMAKE_VERSION VERSION_LESS "3.5")
+    set(GNSSSDR_ARMADILLO_LOCAL_VERSION "12.8.x")
+endif()
+
 if(CMAKE_VERSION VERSION_LESS "3.22")
     set(GNSSSDR_GLOG_LOCAL_VERSION "0.6.0")
 endif()
@@ -2113,7 +2117,7 @@ if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
             CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                 -DCMAKE_BUILD_TYPE=$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Release>:Release>$<$<CONFIG:RelWithDebInfo>:RelWithDebInfo>$<$<CONFIG:MinSizeRel>:MinSizeRel>$<$<CONFIG:NoOptWithASM>:Debug>$<$<CONFIG:Coverage>:Debug>$<$<CONFIG:O2WithASM>:RelWithDebInfo>$<$<CONFIG:O3WithASM>:RelWithDebInfo>$<$<CONFIG:ASAN>:Debug>
                 -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/armadillo-${armadillo_RELEASE}
-                -DSTATIC_LIB=ON
+                -DBUILD_SHARED_LIBS=OFF
                 -DBUILD_SMOKE_TEST=OFF
                 -DALLOW_BLAS_LAPACK_MACOS=ON
                 ${ARMADILLO_CXX_VERSION}

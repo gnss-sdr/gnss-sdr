@@ -72,12 +72,15 @@ public:
     void set_public_key(const std::vector<uint8_t>& publickey);  //!< Sets the ECDSA Public Key (publickey compressed format)
     void set_merkle_root(const std::vector<uint8_t>& v);         //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
     void read_merkle_xml(const std::string& merkleFilePath);
+
 private:
     void readPublicKeyFromPEM(const std::string& pemFilePath);
     bool readPublicKeyFromCRT(const std::string& crtFilePath);
     bool convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const;
     std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;
 #if USE_GNUTLS_FALLBACK
+    void decompress_public_key_secp256r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const;
+    void decompress_public_key_secp521r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const;
     bool pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest);
     gnutls_pubkey_t d_PublicKey{};
 #else  // OpenSSL

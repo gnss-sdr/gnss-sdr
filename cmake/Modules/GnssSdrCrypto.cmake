@@ -13,6 +13,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 unset(OPENSSL_FOUND CACHE)
 unset(GnuTLS_FOUND CACHE)
+unset(GMP_FOUND CACHE)
 if(NOT ENABLE_GNUTLS)
     find_package(OpenSSL)
 endif()
@@ -133,6 +134,17 @@ else()
     if("${gnutls_abstract_file_contents}" MATCHES "gnutls_pubkey_export2")
         set(GNUTLS_PUBKEY_EXPORT2 TRUE)
     endif()
+
+    find_package(GMP)
+    set_package_properties(GMP PROPERTIES
+        URL "https://gmplib.org/"
+        PURPOSE "Required to decompress cryptographic keys."
+        DESCRIPTION "The GNU Multiple Precision Arithmetic Library"
+        TYPE REQUIRED
+    )
+    if(NOT GMP_FOUND)
+        message(FATAL_ERROR "GMP is required by gnss-sdr if linking against GnuTLS")
+    endif()
 endif()
 
 ################################################################################
@@ -175,6 +187,8 @@ function(link_to_crypto_dependencies target)
             PUBLIC
                 ${GNUTLS_LIBRARIES}
                 ${GNUTLS_OPENSSL_LIBRARY}
+            PRIVATE
+                Gmp::gmp
         )
         target_include_directories(${target}
             PUBLIC

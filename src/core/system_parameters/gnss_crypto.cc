@@ -27,6 +27,7 @@
 
 #if USE_GNUTLS_FALLBACK
 #include <cstring>
+#include <gmpxx.h>
 #include <gnutls/crypto.h>
 #include <gnutls/x509.h>
 #else  // OpenSSL
@@ -158,7 +159,7 @@ bool Gnss_Crypto::store_public_key(const std::string& pubKeyFilePath) const
             return false;
         }
 
-    pubKeyFile.write((const char*)pem_data.data, pem_data.size);
+    pubKeyFile.write(reinterpret_cast<const char*>(pem_data.data), pem_data.size);
     pubKeyFile.close();
     gnutls_free(pem_data.data);
 #else  // OpenSSL
@@ -195,14 +196,15 @@ bool Gnss_Crypto::store_public_key(const std::string& pubKeyFilePath) const
     return true;
 }
 
+
 bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& message, const std::vector<uint8_t>& signature) const
 {
-    std::vector<uint8_t> digest = this->compute_SHA_256(message);
     if (!have_public_key())
         {
             LOG(WARNING) << "Galileo OSNMA KROOT verification error: Public key is not available";
             return false;
         }
+    std::vector<uint8_t> digest = this->compute_SHA_256(message);
     bool success = false;
 #if USE_GNUTLS_FALLBACK
 #if HAVE_GNUTLS_SIGN_ECDSA_SHA256
@@ -843,33 +845,40 @@ std::vector<uint8_t> Gnss_Crypto::get_merkle_root() const
     return d_x_4_0;
 }
 
+
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
 #if USE_GNUTLS_FALLBACK
-    // TODO - changed to import a compressed ECC key, either P256 or P521, but have not tested it yet
     gnutls_pubkey_t pubkey{};
-    gnutls_datum_t x_coord = {(unsigned char*)&publicKey[1], 32};
-    gnutls_datum_t y_coord = {NULL, 0};
     gnutls_ecc_curve_t curve;
+    std::vector<uint8_t> x;
+    std::vector<uint8_t> y;
 
     gnutls_pubkey_init(&pubkey);
-
-    if (publicKey.size() == 33)
+    const size_t size_pk = publicKey.size();
+    if (size_pk == 33)
         {
             curve = GNUTLS_ECC_CURVE_SECP256R1;
+            decompress_public_key_secp256r1(publicKey, x, y);
+        }
+    else if (size_pk == 67)
+        {
+            curve = GNUTLS_ECC_CURVE_SECP521R1;
+            decompress_public_key_secp521r1(publicKey, x, y);
         }
     else
         {
-            curve = GNUTLS_ECC_CURVE_SECP521R1;
+            LOG(WARNING) << "GnuTLS: Invalid public key size";
+            return;
         }
 
+    gnutls_datum_t x_coord = {x.data(), static_cast<unsigned int>(x.size())};
+    gnutls_datum_t y_coord = {y.data(), static_cast<unsigned int>(y.size())};
 
     int ret = gnutls_pubkey_import_ecc_raw(pubkey, curve, &x_coord, &y_coord);
     if (ret != GNUTLS_E_SUCCESS)
         {
             gnutls_pubkey_deinit(pubkey);
-            std::cerr << "GnuTLS: error setting the public key" << std::endl;
-            std::cerr << "GnuTLS error: " << gnutls_strerror(ret) << std::endl;
             LOG(WARNING) << "GnuTLS: error setting the OSNMA public key: " << gnutls_strerror(ret);
             return;
         }
@@ -878,60 +887,59 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 #else  // OpenSSL
 
 #if USE_OPENSSL_3
-// Uses the new EVP_PKEY envelope as well as the parameter builder functions
-// generate the uncompressed key, then add it into the EVP_PKEY* struct
-EVP_PKEY* pkey = NULL;
-EVP_PKEY_CTX* ctx = NULL;
-OSSL_PARAM_BLD *param_bld;
-OSSL_PARAM *params = NULL;
+    // Uses the new EVP_PKEY envelope as well as the parameter builder functions
+    // generate the uncompressed key, then add it into the EVP_PKEY* struct
+    EVP_PKEY* pkey = nullptr;
+    EVP_PKEY_CTX* ctx = nullptr;
+    OSSL_PARAM_BLD* param_bld;
+    OSSL_PARAM* params = nullptr;
 
-param_bld = OSSL_PARAM_BLD_new();
-if (param_bld != NULL
-    && OSSL_PARAM_BLD_push_utf8_string(param_bld, "group",
-           (publicKey.size() == 33) ? "prime256v1" : "secp521r1", 0)
-    && OSSL_PARAM_BLD_push_octet_string(param_bld, "pub",
-           publicKey.data(), publicKey.size()))
-    params = OSSL_PARAM_BLD_to_param(param_bld);
+    param_bld = OSSL_PARAM_BLD_new();
+    if (param_bld != nullptr &&
+        OSSL_PARAM_BLD_push_utf8_string(param_bld, "group", (publicKey.size() == 33) ? "prime256v1" : "secp521r1", 0) &&
+        OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", publicKey.data(), publicKey.size()))
+        params = OSSL_PARAM_BLD_to_param(param_bld);
 
-ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);
-if (ctx == NULL
-    || params == NULL
-    || EVP_PKEY_fromdata_init(ctx) <= 0
-    || EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0) {
-        return;
-    } else {
-        if (!pubkey_copy(pkey, &d_PublicKey))
-            {
-                return;
-            }
-    }
-EVP_PKEY_free(pkey);
-EVP_PKEY_CTX_free(ctx);
-OSSL_PARAM_free(params);
-OSSL_PARAM_BLD_free(param_bld);
-#else
-    EVP_PKEY* pkey = NULL;   // Generic public key type
-    EC_KEY* ec_key = NULL;   // ECC Key pair
-    EC_POINT* point = NULL;  // Represents the point in the EC the public key belongs to
-    EC_GROUP* group = NULL;  // Defines the curve the public key belongs
+    ctx = EVP_PKEY_CTX_new_from_name(nullptr, "EC", nullptr);
+    if (ctx == nullptr || params == nullptr || EVP_PKEY_fromdata_init(ctx) <= 0 || EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
+        {
+            return;
+        }
+
+    if (!pubkey_copy(pkey, &d_PublicKey))
+        {
+            return;
+        }
+
+    EVP_PKEY_free(pkey);
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    OSSL_PARAM_BLD_free(param_bld);
+#else   // OpenSSL 1.x
+    EC_KEY* ec_key = nullptr;    // ECC Key pair
+    EC_POINT* point = nullptr;   // Represents the point in the EC the public key belongs to
+    EC_GROUP* group = nullptr;   // Defines the curve the public key belongs
     if (publicKey.size() == 33)  // ECDSA-P-256
         {
             group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
         }
-    else                         // ECDSA-P-521
+    else  // ECDSA-P-521
         {
             group = EC_GROUP_new_by_curve_name(NID_secp521r1);
         }
-    if(!group){
+    if (!group)
+        {
             return;
         }
 
     point = EC_POINT_new(group);
-    if(!point){
+    if (!point)
+        {
             return;
         }
 
-    if(!EC_POINT_oct2point(group, point, publicKey.data(), publicKey.size(), NULL)){
+    if (!EC_POINT_oct2point(group, point, publicKey.data(), publicKey.size(), nullptr))
+        {
             return;
         }
 
@@ -939,22 +947,24 @@ OSSL_PARAM_BLD_free(param_bld);
         {
             ec_key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
         }
-    else                         // ECDSA-P-521
+    else  // ECDSA-P-521
         {
             ec_key = EC_KEY_new_by_curve_name(NID_secp521r1);
         }
-    if(!ec_key){
-            return;
-        }
-
-    if(!EC_KEY_set_public_key(ec_key, point)){
-            return;
-        }
-    if (!pubkey_copy(ec_pkey, &d_PublicKey))
+    if (!ec_key)
         {
             return;
         }
-    EC_KEY_free(ec_pkey);
+
+    if (!EC_KEY_set_public_key(ec_key, point))
+        {
+            return;
+        }
+    if (!pubkey_copy(ec_key, &d_PublicKey))
+        {
+            return;
+        }
+    EC_KEY_free(ec_key);
     EC_POINT_free(point);
     EC_GROUP_free(group);
 #endif  // OpenSSL 1.x
@@ -962,10 +972,12 @@ OSSL_PARAM_BLD_free(param_bld);
     DLOG(INFO) << "OSNMA Public Key successfully set up.";
 }
 
+
 void Gnss_Crypto::set_merkle_root(const std::vector<uint8_t>& v)
 {
     d_x_4_0 = v;
 }
+
 
 void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
 {
@@ -1206,6 +1218,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     return true;
 }
 
+
 bool Gnss_Crypto::convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const
 {
     if (raw_signature.size() % 2 != 0)
@@ -1311,6 +1324,188 @@ bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)
         }
 
     return true;
+}
+
+
+bool tonelli_shanks(mpz_t& res, const mpz_t& n, const mpz_t& p)
+{
+    if (mpz_legendre(n, p) != 1)
+        {
+            return false;
+        }
+    mpz_t q;
+    mpz_t s;
+    mpz_t z;
+    mpz_t m;
+    mpz_t c;
+    mpz_t t;
+    mpz_t r;
+    mpz_t b;
+    mpz_t two;
+    mpz_t p_minus_one;
+    mpz_inits(q, s, z, m, c, t, r, b, two, p_minus_one, nullptr);
+
+    mpz_set_ui(two, 2);
+
+    mpz_sub_ui(q, p, 1);
+    mpz_set_ui(s, 0);
+    while (mpz_even_p(q))
+        {
+            mpz_add_ui(s, s, 1);
+            mpz_divexact_ui(q, q, 2);
+        }
+
+    mpz_set_ui(z, 2);
+    while (mpz_legendre(z, p) != -1)
+        {
+            mpz_add_ui(z, z, 1);
+        }
+
+    mpz_powm(c, z, q, p);
+
+    mpz_add_ui(p_minus_one, p, 1);
+    mpz_divexact_ui(p_minus_one, p_minus_one, 4);
+    mpz_powm(r, n, p_minus_one, p);
+    mpz_powm(t, n, q, p);
+    mpz_set(m, s);
+
+    while (mpz_cmp_ui(t, 1) != 0)
+        {
+            mpz_set(b, t);
+            unsigned int i;
+            for (i = 0; mpz_cmp_ui(b, 1) != 0; i++)
+                {
+                    mpz_powm_ui(b, b, 2, p);
+                }
+            if (i == mpz_get_ui(m))
+                {
+                    mpz_clears(q, s, z, m, c, t, r, b, two, p_minus_one, nullptr);
+                    return false;
+                }
+
+            mpz_powm_ui(b, two, mpz_get_ui(m) - i - 1, p);
+            mpz_powm(c, c, b, p);
+            mpz_mul(r, r, c);
+            mpz_mod(r, r, p);
+            mpz_powm_ui(c, c, 2, p);
+            mpz_mul(t, t, c);
+            mpz_mod(t, t, p);
+            mpz_set_ui(m, mpz_get_ui(m) - i - 1);
+        }
+
+    mpz_set(res, r);
+    mpz_clears(q, s, z, m, c, t, r, b, two, p_minus_one, nullptr);
+    return true;
+}
+
+
+void Gnss_Crypto::decompress_public_key_secp256r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const
+{
+    // Define curve parameters for secp256r1
+    const char* p_str = "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF";
+    const char* a_str = "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC";
+    const char* b_str = "5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B";
+
+    mpz_t p;
+    mpz_t a;
+    mpz_t b;
+    mpz_t x_coord;
+    mpz_t y_coord;
+    mpz_t y_squared;
+    mpz_t tmp;
+    mpz_inits(p, a, b, x_coord, y_coord, y_squared, tmp, nullptr);
+
+    // Initialize curve parameters
+    mpz_set_str(p, p_str, 16);
+    mpz_set_str(a, a_str, 16);
+    mpz_set_str(b, b_str, 16);
+
+    // Set x coordinate
+    mpz_import(x_coord, 32, 1, 1, 1, 0, &compressed_key[1]);
+
+    // Calculate y^2 = x^3 + ax + b (mod p)
+    mpz_powm_ui(y_squared, x_coord, 3, p);  // y_squared = x^3
+    mpz_mul(tmp, a, x_coord);               // tmp = ax
+    mpz_add(y_squared, y_squared, tmp);     // y_squared = x^3 + ax
+    mpz_add(y_squared, y_squared, b);       // y_squared = x^3 + ax + b
+    mpz_mod(y_squared, y_squared, p);       // y_squared = (x^3 + ax + b) % p
+
+    // Calculate the square root of y_squared to get y
+    if (!tonelli_shanks(y_coord, y_squared, p))
+        {
+            mpz_clears(p, a, b, x_coord, y_coord, y_squared, tmp, nullptr);
+            LOG(WARNING) << "GnuTLS: Failed to decompress public key: No valid y coordinate";
+            return;
+        }
+
+    // Select the correct y coordinate based on the parity bit
+    if ((compressed_key[0] & 1) != (mpz_tstbit(y_coord, 0) & 1))
+        {
+            mpz_sub(y_coord, p, y_coord);  // y = p - y
+        }
+
+    // Export the x and y coordinates to vectors
+    x.resize(32);
+    y.resize(32);
+    mpz_export(x.data(), nullptr, 1, 1, 1, 0, x_coord);
+    mpz_export(y.data(), nullptr, 1, 1, 1, 0, y_coord);
+
+    mpz_clears(p, a, b, x_coord, y_coord, y_squared, tmp, nullptr);
+}
+
+
+void Gnss_Crypto::decompress_public_key_secp521r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const
+{
+    // Define curve parameters for secp521r1
+    const char* p_str = "01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+    const char* a_str = "01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC";
+    const char* b_str = "0051953EB9618E1C9A1F929A21A0B68540EEA2DA725B99B315F3B8B489918EF109E156193951EC7E937B1652C0BD3BB1BF073573DF883D2C34F1EF451FD46B503F00";
+
+    mpz_t p;
+    mpz_t a;
+    mpz_t b;
+    mpz_t x_coord;
+    mpz_t y_coord;
+    mpz_t y_squared;
+    mpz_t tmp;
+    mpz_inits(p, a, b, x_coord, y_coord, y_squared, tmp, nullptr);
+
+    // Initialize curve parameters
+    mpz_set_str(p, p_str, 16);
+    mpz_set_str(a, a_str, 16);
+    mpz_set_str(b, b_str, 16);
+
+    // Set x coordinate
+    mpz_import(x_coord, 66, 1, 1, 1, 0, &compressed_key[1]);
+
+    // Calculate y^2 = x^3 + ax + b (mod p)
+    mpz_powm_ui(y_squared, x_coord, 3, p);  // y_squared = x^3
+    mpz_mul(tmp, a, x_coord);               // tmp = ax
+    mpz_add(y_squared, y_squared, tmp);     // y_squared = x^3 + ax
+    mpz_add(y_squared, y_squared, b);       // y_squared = x^3 + ax + b
+    mpz_mod(y_squared, y_squared, p);       // y_squared = (x^3 + ax + b) % p
+
+    // Calculate the square root of y_squared to get y
+    if (!tonelli_shanks(y_coord, y_squared, p))
+        {
+            mpz_clears(p, a, b, x_coord, y_coord, y_squared, tmp, nullptr);
+            LOG(WARNING) << "GnuTLS: Failed to decompress public key: No valid y coordinate";
+            return;
+        }
+
+    // Select the correct y coordinate based on the parity bit
+    if ((compressed_key[0] & 1) != (mpz_tstbit(y_coord, 0) & 1))
+        {
+            mpz_sub(y_coord, p, y_coord);  // y = p - y
+        }
+
+    // Export the x and y coordinates to vectors
+    x.resize(66, 0);  // Ensure 66 bytes with leading zeros if necessary
+    y.resize(66, 0);
+    mpz_export(x.data() + 1, nullptr, 1, 1, 1, 0, x_coord);
+    mpz_export(y.data(), nullptr, 1, 1, 1, 0, y_coord);
+
+    mpz_clears(p, a, b, x_coord, y_coord, y_squared, tmp, nullptr);
 }
 #else  // OpenSSL
 #if USE_OPENSSL_3

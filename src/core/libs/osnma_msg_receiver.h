@@ -133,7 +133,7 @@ private:
     uint32_t d_last_verified_key_GST{0};
     uint32_t d_GST_0{};
     uint32_t d_GST_SIS{};
-    uint32_t d_GST_PKR_start{};
+    uint32_t d_GST_PKR_PKREV_start{};
 
     uint8_t d_Lt_min{};             // minimum equivalent tag length
     uint8_t d_Lt_verified_eph{0};   // verified tag bits - ephemeris
@@ -168,6 +168,7 @@ private:
     FRIEND_TEST(OsnmaTestVectors, NominalTestConf1);
     FRIEND_TEST(OsnmaTestVectors, NominalTestConf2);
     FRIEND_TEST(OsnmaTestVectors, PublicKeyRenewal);
+    FRIEND_TEST(OsnmaTestVectors, PublicKeyRevocation);
 };
 
 

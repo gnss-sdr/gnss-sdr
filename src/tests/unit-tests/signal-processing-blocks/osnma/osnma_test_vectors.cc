@@ -60,7 +60,7 @@ protected:
     const int SIZE_SUBFRAME_PAGES{15};   // number of pages of a subframe
     const int DURATION_SUBFRAME{30};     // duration of a subframe, in seconds// 13 + 5;
 
-    bool d_flag_NPK{false}; // flag for NPK, new MT will be set when the new Kroot is received.
+    bool d_flag_NPK{false};  // flag for NPK, new MT will be set when the new Kroot is received.
 };
 
 TEST_F(OsnmaTestVectors, NominalTestConf1)
@@ -141,6 +141,37 @@ TEST_F(OsnmaTestVectors, PublicKeyRenewal)
     std::vector<std::vector<TestVector>> testVectors = {testVectors_step1, testVectors_step2, testVectors_step3};
 
     d_flag_NPK = true;
+    bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
+    ASSERT_TRUE(result);
+
+    // Assert
+    ASSERT_EQ(osnma->d_count_failed_tags, 0);
+    ASSERT_EQ(osnma->d_count_failed_Kroot, 0);
+    ASSERT_EQ(osnma->d_count_failed_pubKey, 0);
+    ASSERT_EQ(osnma->d_count_failed_macseq, 0);
+}
+
+TEST_F(OsnmaTestVectors, PublicKeyRevocation)
+{
+    // Arrange
+    std::string crtFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/PublicKey/OSNMA_PublicKey_20231007081500_PKID_8.crt";
+    std::string merkleFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/MerkleTree/OSNMA_MerkleTree_20231007081500_PKID_8.xml";
+    osnma_msg_receiver_sptr osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath);
+
+    std::tm input_time_step1 = {0, 45, 7, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::tm input_time_step2 = {0, 30, 9, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::tm input_time_step3 = {0, 30, 10, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::vector<std::tm> input_times = { input_time_step1, input_time_step2, input_time_step3 };
+
+    std::vector<TestVector> testVectors_step1 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/pkrev_step1/07_OCT_2023_GST_07_45_01.csv");
+    std::vector<TestVector> testVectors_step2 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/pkrev_step2/07_OCT_2023_GST_09_30_01.csv");
+    std::vector<TestVector> testVectors_step3 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/pkrev_step3/07_OCT_2023_GST_10_30_01.csv");
+    if (testVectors_step1.empty() || testVectors_step2.empty() || testVectors_step3.empty())
+        {
+            ASSERT_TRUE(false);
+        }
+    std::vector<std::vector<TestVector>> testVectors = { testVectors_step1, testVectors_step2, testVectors_step3};
+
     bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
     ASSERT_TRUE(result);
 
@@ -367,7 +398,7 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
                         }
                 }
             if (end_of_hex_stream)
-                break;
+                continue;
         }
 return true;
 }

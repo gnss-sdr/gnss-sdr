@@ -166,8 +166,9 @@
 #include "fmcomms2_signal_source.h"
 #endif
 
-#if AD9361_DRIVER
-#include "ad9361_signal_source_fpga.h"
+#if ENABLE_FPGA and AD9361_DRIVER
+#include "adrv9361_z7035_signal_source_fpga.h"
+#include "fmcomms5_signal_source_fpga.h"
 #endif
 
 #if MAX2771_DRIVER
@@ -820,16 +821,22 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and AD9361_DRIVER
-            else if (implementation == "Ad9361_Signal_Source_Fpga")
+            else if (implementation == "Adrv9361_Z7035_Signal_Source_Fpga")
                 {
-                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Ad9361SignalSourceFPGA>(configuration, role, in_streams,
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Adrv9361z7035SignalSourceFPGA>(configuration, role, in_streams,
+                        out_streams, queue);
+                    block = std::move(block_);
+                }
+            else if (implementation == "Fmcomms5_Signal_Source_Fpga")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Fmcomms5SignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }
 #endif
 
 #if ENABLE_FPGA and MAX2771_DRIVER
-            else if (implementation == "MAX2771_EVKIT_Signal_Source_Fpga")
+            else if (implementation == "Max2771_Evkit_Signal_Source_Fpga")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<MAX2771EVKITSignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
@@ -838,7 +845,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and DMA_PROXY_DRIVER
-            else if (implementation == "DMA_Signal_Source_Fpga")
+            else if (implementation == "Dma_Signal_Source_Fpga")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<DMASignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);

@@ -40,7 +40,7 @@ using namespace std::string_literals;
 MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
-    : SignalSourceBase(configuration, role, "MAX2771_EVKIT_Signal_Source_Fpga"s),
+    : SignalSourceBase(configuration, role, "MAX2771_EVKIT_Signal_Source_FPGA"s),
       freq_(configuration->property(role + ".freq", static_cast<uint64_t>(GPS_L1_FREQ_HZ))),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_sampling_rate)),
       in_stream_(in_stream),

@@ -1,7 +1,7 @@
 /*!
- * \file ad9361_signal_source_fpga.h
- * \brief signal source for Analog Devices front-end AD9361 connected directly
- * to FPGA accelerators.
+ * \file fmcomms5_signal_source_fpga.h
+ * \brief signal source for the Analog Devices FMCOMMS5 directly connected
+ * to the FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with
  * conventional SDR acquisition and tracking blocks.
  * Please use the fmcomms2 source if conventional SDR acquisition and tracking
@@ -12,14 +12,14 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_AD9361_SIGNAL_SOURCE_FPGA_H
-#define GNSS_SDR_AD9361_SIGNAL_SOURCE_FPGA_H
+#ifndef GNSS_SDR_FMCOMMS5_SIGNAL_SOURCE_FPGA_H
+#define GNSS_SDR_FMCOMMS5_SIGNAL_SOURCE_FPGA_H
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
@@ -44,14 +44,14 @@
 
 class ConfigurationInterface;
 
-class Ad9361SignalSourceFPGA : public SignalSourceBase
+class Fmcomms5SignalSourceFPGA : public SignalSourceBase
 {
 public:
-    Ad9361SignalSourceFPGA(const ConfigurationInterface *configuration,
+    Fmcomms5SignalSourceFPGA(const ConfigurationInterface *configuration,
         const std::string &role, unsigned int in_stream,
         unsigned int out_stream, Concurrent_Queue<pmt::pmt_t> *queue);
 
-    ~Ad9361SignalSourceFPGA();
+    ~Fmcomms5SignalSourceFPGA();
 
     inline size_t item_size() override
     {
@@ -104,17 +104,11 @@ private:
 
     double rf_gain_rx1_;
     double rf_gain_rx2_;
-    double scale_dds_dbfs_;
-    double phase_dds_deg_;
-    double tx_attenuation_db_;
 
-    uint64_t freq0_;  // frequency of local oscillator for ADRV9361-A 0
-    uint64_t freq1_;  // frequency of local oscillator for ADRV9361-B (if present)
+    uint64_t freq0_;  // frequency of local oscillator for ADRV9361-A
+    uint64_t freq1_;  // frequency of local oscillator for ADRV9361-B
     uint64_t sample_rate_;
     uint64_t bandwidth_;
-    uint64_t freq_dds_tx_hz_;
-    uint64_t freq_rf_tx_hz_;
-    uint64_t tx_bandwidth_;
 
     float Fpass_;
     float Fstop_;
@@ -123,7 +117,6 @@ private:
 
     size_t item_size_;
 
-    bool enable_dds_lo_;
     bool filter_auto_;
     bool quadrature_;
     bool rf_dc_;
@@ -139,4 +132,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_AD9361_SIGNAL_SOURCE_FPGA_H
+#endif  // GNSS_SDR_FMCOMMS5_SIGNAL_SOURCE_FPGA_H

@@ -1,7 +1,7 @@
 /*!
- * \file ad9361_signal_source_fpga.cc
- * \brief signal source for Analog Devices front-end AD9361 connected directly
- * to FPGA accelerators.
+ * \file adrv9361_z7035_signal_source_fpga.cc
+ * \brief signal source for the Analog Devices ADRV9361-Z7035 evaluation board
+ * directly connected to the FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with
  * conventional SDR acquisition and tracking blocks.
  * Please use the fmcomms2 source if conventional SDR acquisition and tracking
@@ -16,13 +16,13 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
-#include "ad9361_signal_source_fpga.h"
+#include "adrv9361_z7035_signal_source_fpga.h"
 #include "GPS_L1_CA.h"
 #include "GPS_L5.h"
 #include "ad9361_manager.h"
@@ -44,10 +44,10 @@
 
 using namespace std::string_literals;
 
-Ad9361SignalSourceFPGA::Ad9361SignalSourceFPGA(const ConfigurationInterface *configuration,
+Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
-    : SignalSourceBase(configuration, role, "Ad9361_Signal_Source_Fpga"s),
+    : SignalSourceBase(configuration, role, "ADRV9361_Z7035_Signal_Source_FPGA"s),
       gain_mode_rx1_(configuration->property(role + ".gain_mode_rx1", default_gain_mode)),
       gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", default_gain_mode)),
       rf_port_select_(configuration->property(role + ".rf_port_select", default_rf_port_select)),
@@ -276,7 +276,7 @@ Ad9361SignalSourceFPGA::Ad9361SignalSourceFPGA(const ConfigurationInterface *con
 }
 
 
-Ad9361SignalSourceFPGA::~Ad9361SignalSourceFPGA()
+Adrv9361z7035SignalSourceFPGA::~Adrv9361z7035SignalSourceFPGA()
 {
     /* cleanup and exit */
 
@@ -328,7 +328,7 @@ Ad9361SignalSourceFPGA::~Ad9361SignalSourceFPGA()
 }
 
 
-void Ad9361SignalSourceFPGA::run_dynamic_bit_selection_process()
+void Adrv9361z7035SignalSourceFPGA::run_dynamic_bit_selection_process()
 {
     bool dynamic_bit_selection_active = true;
 
@@ -347,7 +347,7 @@ void Ad9361SignalSourceFPGA::run_dynamic_bit_selection_process()
 }
 
 
-void Ad9361SignalSourceFPGA::run_buffer_monitor_process()
+void Adrv9361z7035SignalSourceFPGA::run_buffer_monitor_process()
 {
     bool enable_ovf_check_buffer_monitor_active = true;
 
@@ -367,7 +367,7 @@ void Ad9361SignalSourceFPGA::run_buffer_monitor_process()
 }
 
 
-void Ad9361SignalSourceFPGA::connect(gr::top_block_sptr top_block)
+void Adrv9361z7035SignalSourceFPGA::connect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -376,7 +376,7 @@ void Ad9361SignalSourceFPGA::connect(gr::top_block_sptr top_block)
 }
 
 
-void Ad9361SignalSourceFPGA::disconnect(gr::top_block_sptr top_block)
+void Adrv9361z7035SignalSourceFPGA::disconnect(gr::top_block_sptr top_block)
 {
     if (top_block)
         { /* top_block is not null */
@@ -385,14 +385,14 @@ void Ad9361SignalSourceFPGA::disconnect(gr::top_block_sptr top_block)
 }
 
 
-gr::basic_block_sptr Ad9361SignalSourceFPGA::get_left_block()
+gr::basic_block_sptr Adrv9361z7035SignalSourceFPGA::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
     return {};
 }
 
 
-gr::basic_block_sptr Ad9361SignalSourceFPGA::get_right_block()
+gr::basic_block_sptr Adrv9361z7035SignalSourceFPGA::get_right_block()
 {
     return {};
 }

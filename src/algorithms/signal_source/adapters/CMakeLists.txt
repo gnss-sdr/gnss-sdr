@@ -37,8 +37,10 @@ if(ENABLE_AD9361)
     ###############################################
     # AD9361 DIRECT TO FPGA Hardware
     ###############################################
-    list(APPEND OPT_DRIVER_SOURCES ad9361_signal_source_fpga.cc)
-    list(APPEND OPT_DRIVER_HEADERS ad9361_signal_source_fpga.h)
+    list(APPEND OPT_DRIVER_SOURCES adrv9361_z7035_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS adrv9361_z7035_signal_source_fpga.h)
+    list(APPEND OPT_DRIVER_SOURCES fmcomms5_signal_source_fpga.cc)
+    list(APPEND OPT_DRIVER_HEADERS fmcomms5_signal_source_fpga.h)
 endif()
 
 if(ENABLE_MAX2771)

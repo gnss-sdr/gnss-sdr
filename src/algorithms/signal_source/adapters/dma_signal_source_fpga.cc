@@ -41,7 +41,7 @@ using namespace std::string_literals;
 DMASignalSourceFPGA::DMASignalSourceFPGA(const ConfigurationInterface *configuration,
     const std::string &role, unsigned int in_stream, unsigned int out_stream,
     Concurrent_Queue<pmt::pmt_t> *queue __attribute__((unused)))
-    : SignalSourceBase(configuration, role, "DMA_Signal_Source_Fpga"s),
+    : SignalSourceBase(configuration, role, "DMA_Signal_Source_FPGA"s),
       queue_(queue),
       filename0_(configuration->property(role + ".filename", empty_string)),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),

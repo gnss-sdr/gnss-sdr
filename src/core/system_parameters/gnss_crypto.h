@@ -72,6 +72,7 @@ public:
     void set_public_key(const std::vector<uint8_t>& publickey);  //!< Sets the ECDSA Public Key (publickey compressed format)
     void set_merkle_root(const std::vector<uint8_t>& v);         //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
     void read_merkle_xml(const std::string& merkleFilePath);
+    std::string d_PublicKeyType;
 
 private:
     void readPublicKeyFromPEM(const std::string& pemFilePath);

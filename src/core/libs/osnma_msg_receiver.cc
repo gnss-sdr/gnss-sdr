@@ -459,9 +459,8 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             const uint16_t l_lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
             d_osnma_data.d_dsm_kroot_message.kroot = d_dsm_reader->get_kroot(dsm_msg, l_lk_bytes);
             // DS field
-            std::string hash_function = d_dsm_reader->get_hash_function(d_osnma_data.d_dsm_kroot_message.hf);
             uint16_t l_ds_bits = 0;
-            const auto it = OSNMA_TABLE_15.find(hash_function);
+            const auto it = OSNMA_TABLE_15.find(d_crypto->d_PublicKeyType);
             if (it != OSNMA_TABLE_15.cend())
                 {
                     l_ds_bits = it->second;
@@ -596,9 +595,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             d_osnma_data.d_dsm_pkr_message.npktid = npktid;
 
             uint32_t l_npk_bytes = 0;
+            std::string PKT;
             const auto it = OSNMA_TABLE_5.find(d_osnma_data.d_dsm_pkr_message.npkt);
             if (it != OSNMA_TABLE_5.cend())
                 {
+                    PKT = it->second;
                     const auto it2 = OSNMA_TABLE_6.find(it->second);
                     if (it2 != OSNMA_TABLE_6.cend())
                         {
@@ -648,6 +649,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                     d_new_public_key = d_osnma_data.d_dsm_pkr_message.npk;
                                 }
                             else {
+                                    d_crypto->d_PublicKeyType = PKT;
                                     d_crypto->set_public_key(d_osnma_data.d_dsm_pkr_message.npk);
                                     d_crypto->store_public_key(PEMFILE_DEFAULT);
                                 }
@@ -1159,8 +1161,8 @@ bool osnma_msg_receiver::verify_dsm_pkr(const DSM_PKR_message& message) const
 
     if (computed_merkle_root == d_crypto->get_merkle_root())
         {
-            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: SUCCESS.";
-            std::cout << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: SUCCESS." << std::endl;
+            LOG(INFO) << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: SUCCESS. PKID=" << static_cast<unsigned>(message.npktid);
+            std::cout << "Galileo OSNMA: DSM-PKR verification for Message ID " << msg_id << " :: SUCCESS. PKID=" << static_cast<unsigned>(message.npktid) << std::endl;
             return true;
         }
     else

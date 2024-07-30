@@ -92,7 +92,7 @@ const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_6 = {
     {std::string("ECDSA P-256"), 264},
     {std::string("ECDSA P-521"), 536}};
 
-// OSNMA User ICD for the Test Phase, Issue 1.0, Table 7
+// OSNMA User ICD, Issue 1.1, Table 7
 const std::unordered_map<uint8_t, std::pair<uint16_t, uint16_t>> OSNMA_TABLE_7 = {
     {0, {0, 0}},
     {1, {7, 728}},
@@ -156,9 +156,7 @@ const std::unordered_map<uint8_t, uint8_t> OSNMA_TABLE_11 = {
 
 const std::unordered_map<std::string, uint16_t> OSNMA_TABLE_15 = {
     {std::string("ECDSA P-256"), 512},
-    {std::string("ECDSA P-521"), 1056},
-    {std::string("SHA-256"), 512},
-    {std::string("SHA-512"), 1056}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
+    {std::string("ECDSA P-521"), 1056}};  // key: ECDSA Curve and hash function, value: {l_ds_bits}
 
 const std::string PEMFILE_DEFAULT("./data/OSNMA_PublicKey.pem");
 const std::string CRTFILE_DEFAULT("./data/OSNMA_PublicKey_20240115100000_newPKID_1.crt");

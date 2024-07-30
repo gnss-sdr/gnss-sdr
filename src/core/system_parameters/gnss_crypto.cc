@@ -1189,6 +1189,17 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 
     // Read the public key from the certificate
     EVP_PKEY* pubkey = X509_get_pubkey(cert);
+
+    // store the key type - needed for the Kroot in case no DSM-PKR available
+    // TODO - only way I have found to find the curve type
+    auto ec_key = EVP_PKEY_get0_EC_KEY(pubkey);
+    const EC_GROUP *group = EC_KEY_get0_group(ec_key);
+    int nid = EC_GROUP_get_curve_name(group);
+    if (nid == NID_X9_62_prime256v1) {
+            d_PublicKeyType = "ECDSA P-256";
+        } else if (nid == NID_secp521r1) {
+            d_PublicKeyType = "ECDSA P-521";
+        }
 #if USE_OPENSSL_3
     if (!pubkey)
         {

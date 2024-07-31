@@ -181,6 +181,42 @@ TEST_F(OsnmaTestVectors, PublicKeyRevocation)
     ASSERT_EQ(osnma->d_count_failed_pubKey, 0);
     ASSERT_EQ(osnma->d_count_failed_macseq, 0);
 }
+
+TEST_F(OsnmaTestVectors, AlertMessage){
+    // Arrange
+    std::string crtFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_3/PublicKey/OSNMA_PublicKey_20231007201500_PKID_1.crt";
+    std::string merkleFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_3/MerkleTree/OSNMA_MerkleTree_20231007201500_PKID_1.xml";
+    osnma_msg_receiver_sptr osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath);
+
+    std::tm input_time_step1 = {0, 45, 18, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::tm input_time_step2 = {0, 45, 19, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::vector<std::tm> input_times = { input_time_step1, input_time_step2 };
+
+    std::vector<TestVector> testVectors_step1 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/oam_step1/07_OCT_2023_GST_18_45_01.csv");
+    std::vector<TestVector> testVectors_step2 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/oam_step2/07_OCT_2023_GST_19_45_01.csv");
+    if (testVectors_step1.empty() || testVectors_step2.empty())
+        {
+            ASSERT_TRUE(false);
+        }
+    std::vector<std::vector<TestVector>> testVectors = { testVectors_step1, testVectors_step2};
+
+    // Act
+    bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
+    ASSERT_TRUE(result);
+
+    // Assert
+    LOG(INFO) << "Successful tags count= " << osnma->d_count_successful_tags;
+    LOG(INFO) << "Failed tags count= " << osnma->d_count_failed_tags;
+    LOG(INFO) << "Unverified tags count= " << osnma->d_tags_awaiting_verify.size();
+    LOG(INFO) << "Failed Kroot count= " << osnma->d_count_failed_Kroot;
+    LOG(INFO) << "Failed PK count= " << osnma->d_count_failed_pubKey;
+    LOG(INFO) << "Failed MACSEQ count= " << osnma->d_count_failed_macseq;
+    ASSERT_EQ(osnma->d_count_failed_tags, 0);
+    ASSERT_EQ(osnma->d_count_failed_Kroot, 0);
+    ASSERT_EQ(osnma->d_count_failed_pubKey, 0);
+    ASSERT_EQ(osnma->d_count_failed_macseq, 0);
+}
+
 // Auxiliary functions for the OsnmaTestVectorsSimulation test fixture.
 // Essentially, they perform same work as the telemetry decoder block, but adapted to the osnma-test-vector files.
 bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_object, std::vector<std::vector<TestVector>> testVectors, std::vector<std::tm> startTimesFiles){
@@ -338,7 +374,7 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
                                                 tv.svId,
                                                 nav_data_ADKD_0_12,
                                                 osnmaMsg_sptr->TOW_sf0);
-                                            LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_0_12;
+                                            // LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_0_12;
                                             osnma_object->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
                                         }
                                 }
@@ -375,7 +411,7 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
                                                 tv.svId,
                                                 nav_data_ADKD_4,
                                                 osnmaMsg_sptr->TOW_sf0);
-                                            LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_4;
+                                            // LOG(INFO) << "|---> Galileo OSNMA :: Telemetry Decoder NavData (PRN_d=" << static_cast<int>(tv.svId) << ", TOW=" << static_cast<int>(osnmaMsg_sptr->TOW_sf0) << "): 0b" << nav_data_ADKD_4;
                                             osnma_object->msg_handler_osnma(pmt::make_any(tmp_obj_osnma));
                                         }
                                 }

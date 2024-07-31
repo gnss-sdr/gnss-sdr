@@ -62,8 +62,8 @@ osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, 
 class osnma_msg_receiver : public gr::block
 {
 public:
-    ~osnma_msg_receiver() = default;  //!< Default destructor
-    std::unique_ptr<Gnss_Crypto> d_crypto;  // access to cryptographic functions
+    ~osnma_msg_receiver() = default;                //!< Default destructor
+    std::unique_ptr<Gnss_Crypto> d_crypto;          // access to cryptographic functions
     void msg_handler_osnma(const pmt::pmt_t& msg);  // GnssCrypto and the message handler are needed by public method within TestVectors fixture
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
@@ -134,6 +134,7 @@ private:
     uint32_t d_GST_0{};
     uint32_t d_GST_SIS{};
     uint32_t d_GST_PKR_PKREV_start{};
+    uint32_t d_GST_PKR_AM_start{};
 
     uint8_t d_Lt_min{};             // minimum equivalent tag length
     uint8_t d_Lt_verified_eph{0};   // verified tag bits - ephemeris
@@ -152,6 +153,7 @@ private:
     uint8_t d_new_public_key_id{};
     std::vector<uint8_t> d_new_public_key;
     bool d_flag_NPK_set{false};
+    bool d_flag_alert_message{false};
 
     // Provide access to inner functions to Gtest
     uint32_t d_count_successful_tags{0};
@@ -169,6 +171,7 @@ private:
     FRIEND_TEST(OsnmaTestVectors, NominalTestConf2);
     FRIEND_TEST(OsnmaTestVectors, PublicKeyRenewal);
     FRIEND_TEST(OsnmaTestVectors, PublicKeyRevocation);
+    FRIEND_TEST(OsnmaTestVectors, AlertMessage);
 };
 
 

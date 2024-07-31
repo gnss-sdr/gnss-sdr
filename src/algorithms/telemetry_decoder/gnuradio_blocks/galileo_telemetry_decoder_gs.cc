@@ -370,9 +370,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     // 1. De-interleave
     std::vector<float> page_part_symbols_soft_value(frame_length);
     deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_soft_value.data());
-    bool flag_osnma_adkd_4_gst = false;
-    bool flag_osnma_adkd_4_utc = false;
-
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
     for (int32_t i = 0; i < frame_length; i++)
@@ -443,8 +440,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 
     // 4. Push the new navigation data to the queues
     // extract OSNMA bits, reset container.
-    bool check_size_is_ok = d_inav_nav.get_osnma_adkd_0_12_nav_bits().size() == 549;
-    if (check_size_is_ok)
+    if (d_inav_nav.get_osnma_adkd_0_12_nav_bits().size() == 549)
         {
             DLOG(INFO) << "Galileo OSNMA: new ADKD=0/12 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW5() - 25;
             const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
@@ -452,14 +448,9 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 d_inav_nav.get_osnma_adkd_0_12_nav_bits(),
                 d_inav_nav.get_TOW5() - 25);
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj_osnma));
-            DLOG(INFO) << "|---> Galileo OSNMA :: Sending Telemetry Decoder NavData (PRN_d="
-                       << static_cast<int>(d_satellite.get_PRN())
-                       << ", TOW=" << static_cast<int>(d_inav_nav.get_TOW5() - 25) << ")";  //: 0b" << d_inav_nav.get_osnma_adkd_0_12_nav_bits();
             d_inav_nav.reset_osnma_nav_bits_adkd0_12();
         }
-
-    check_size_is_ok = d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141;
-    if (check_size_is_ok)
+    if (d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141)
         {
             DLOG(INFO) << "Galileo OSNMA: new ADKD=4 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW6() - 5;
             const auto tmp_obj = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf> // TODO conversion from W6 to W_Start_of_subframe
@@ -467,9 +458,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 d_inav_nav.get_osnma_adkd_4_nav_bits(),
                 d_inav_nav.get_TOW6() - 5);
             this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
-            DLOG(INFO) << "|---> Galileo OSNMA :: Sending Telemetry Decoder NavData (PRN_d="
-                       << static_cast<int>(d_satellite.get_PRN())
-                       << ", TOW=" << static_cast<int>(d_inav_nav.get_TOW6() - 5) << ")";  //: 0b" << d_inav_nav.get_osnma_adkd_4_nav_bits();
             d_inav_nav.reset_osnma_nav_bits_adkd4();
         }
 
@@ -588,8 +576,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
 
             d_delta_t = tmp_obj->A_0G + tmp_obj->A_1G * (static_cast<double>(d_TOW_at_current_symbol_ms) / 1000.0 - tmp_obj->t_0G + 604800 * (std::fmod(static_cast<float>(d_inav_nav.get_Galileo_week() - tmp_obj->WN_0G), 64.0)));
             DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
-
-            flag_osnma_adkd_4_utc = true;
         }
 
     if (d_inav_nav.have_new_almanac() == true)  // flag_almanac_4 tells if W10 available.
@@ -623,16 +609,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
             DLOG(INFO) << "d_nav.WN_0=" << d_inav_nav.get_Galileo_week();
-
-            flag_osnma_adkd_4_gst = true;
-        }
-
-    // get osnma message if the needed nav data is available
-    bool adkd_4_nav_data_available = flag_osnma_adkd_4_utc && flag_osnma_adkd_4_gst;  // supposition: data did not change bt. flags reset and now.
-
-    //    bool adkd_4_nav_data_available = d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141; // newApproach: let decoder decide when block starts and let it fill the data, and just check for length
-    if (adkd_4_nav_data_available /*&& d_inav_nav.is_TOW5_set() not needed cause W6 has TOW also.*/)
-        {
         }
     auto newOSNMA = d_inav_nav.have_new_nma();
     if (d_band == '1' && newOSNMA)

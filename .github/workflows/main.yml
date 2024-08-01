@@ -151,7 +151,7 @@ jobs:
           ln -s $(brew --prefix llvm)/bin/clang-apply-replacements /usr/local/bin
           ln -s $(brew --prefix llvm)/bin/run-clang-tidy.py /usr/local/bin
       - name: Prepare run
-        run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.14.0 core_monitor core_libs pvt_libs
+        run: cd build && cmake .. && make volk_gnsssdr_module gtest-1.15.2 core_monitor core_libs pvt_libs
       - name: run clang-tidy
         run: cd build && /opt/homebrew/opt/llvm/bin/run-clang-tidy -fix
       - name: check

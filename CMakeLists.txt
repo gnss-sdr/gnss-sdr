@@ -28,6 +28,7 @@ list(APPEND CMAKE_MODULE_PATH ${GNSSSDR_SOURCE_DIR}/cmake/Modules)
 # Enable them at the command line by doing 'cmake -DENABLE_XXX=ON ..'
 ################################################################################
 include(FeatureSummary)
+include(GnsssdrLibPaths)
 
 # Support of optional RF front-ends
 option(ENABLE_UHD "Enable the use of UHD (driver for all USRP devices)" ON)
@@ -353,9 +354,9 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.0.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.1")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.27")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "27.2")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "27.3")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
-set(GNSSSDR_GTEST_LOCAL_VERSION "1.14.0")
+set(GNSSSDR_GTEST_LOCAL_VERSION "1.15.2")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
 set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.5")

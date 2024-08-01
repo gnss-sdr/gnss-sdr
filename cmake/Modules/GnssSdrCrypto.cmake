@@ -4,6 +4,13 @@
 # SPDX-FileCopyrightText: 2024 C. Fernandez-Prades cfernandez(at)cttc.es
 # SPDX-License-Identifier: BSD-3-Clause
 
+if(NOT COMMAND feature_summary)
+    include(FeatureSummary)
+endif()
+
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrLibPaths)
+endif()
 
 ################################################################################
 # OpenSSL https://www.openssl.org/
@@ -53,38 +60,7 @@ else()
     endif()
     find_library(GNUTLS_OPENSSL_LIBRARY
         NAMES gnutls-openssl libgnutls-openssl.so.27
-        PATHS
-            /usr/lib
-            /usr/lib64
-            /usr/lib/x86_64-linux-gnu
-            /usr/lib/aarch64-linux-gnu
-            /usr/lib/arm-linux-gnueabihf
-            /usr/lib/arm-linux-gnueabi
-            /usr/lib/i386-linux-gnu
-            /usr/lib/alpha-linux-gnu
-            /usr/lib/hppa-linux-gnu
-            /usr/lib/i386-gnu
-            /usr/lib/i686-gnu
-            /usr/lib/i686-linux-gnu
-            /usr/lib/x86_64-kfreebsd-gnu
-            /usr/lib/i686-kfreebsd-gnu
-            /usr/lib/m68k-linux-gnu
-            /usr/lib/mips-linux-gnu
-            /usr/lib/mips64el-linux-gnuabi64
-            /usr/lib/mipsel-linux-gnu
-            /usr/lib/powerpc-linux-gnu
-            /usr/lib/powerpc-linux-gnuspe
-            /usr/lib/powerpc64-linux-gnu
-            /usr/lib/powerpc64le-linux-gnu
-            /usr/lib/s390x-linux-gnu
-            /usr/lib/riscv64-linux-gnu
-            /usr/lib/sparc64-linux-gnu
-            /usr/lib/x86_64-linux-gnux32
-            /usr/lib/sh4-linux-gnu
-            /usr/lib/loongarch64-linux-gnu
-            /usr/local/lib
-            /usr/local/lib64
-            /opt/local/lib
+        PATHS ${GNSSSDR_LIB_PATHS}
     )
 
     find_path(GNUTLS_INCLUDE_DIR NAMES gnutls/gnutls.h
@@ -137,9 +113,7 @@ else()
 
     find_package(GMP)
     set_package_properties(GMP PROPERTIES
-        URL "https://gmplib.org/"
         PURPOSE "Required to decompress cryptographic keys."
-        DESCRIPTION "The GNU Multiple Precision Arithmetic Library"
         TYPE REQUIRED
     )
     if(NOT GMP_FOUND)

@@ -1013,7 +1013,6 @@ void osnma_msg_receiver::process_mack_message()
             LOG(WARNING) << "Galileo OSNMA: MACK cannot be processed, "
                          << "no Kroot nor TESLA key available.";
             return;  // early return, cannot proceed further without one of the two verified. this equals to having Kroot but no TESLa key yet.
-
         }
     // verify tesla key and add it to the container of verified keys if successful
     if (d_tesla_keys.find(d_osnma_data.d_nav_data.get_tow_sf0()) == d_tesla_keys.end())  // check if already available => no need to verify
@@ -1921,13 +1920,13 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
         }
 }
 
-void osnma_msg_receiver::send_data_to_pvt(std::vector<OSNMA_NavData> data)
+void osnma_msg_receiver::send_data_to_pvt(const std::vector<OSNMA_NavData>& data)
 {
     if (!data.empty())
         {
-            for (size_t i = 0; i < data.size(); i++)
+            for (auto & i : data)
                 {
-                    const auto tmp_obj = std::make_shared<OSNMA_NavData>(data[i]);
+                    const auto tmp_obj = std::make_shared<OSNMA_NavData>(i);
                     this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(tmp_obj));
                 }
         }

@@ -32,10 +32,10 @@
 class OSNMA_nav_data_Manager{
 public:
     OSNMA_nav_data_Manager() = default;
-    bool have_nav_data(std::string nav_bits, uint32_t PRNd, uint32_t TOW);
+    bool have_nav_data(const std::string& nav_bits, uint32_t PRNd, uint32_t TOW);
     bool have_nav_data(uint32_t PRNd,  uint32_t TOW, uint8_t ADKD);
     bool have_nav_data(const Tag& t) const;
-    void add_navigation_data(std::string nav_bits, uint32_t PRNd, uint32_t TOW);  // gets the bits and adds them to the list
+    void add_navigation_data(const std::string& nav_bits, uint32_t PRNd, uint32_t TOW);  // gets the bits and adds them to the list
     std::string get_navigation_data(const Tag& t);
 
     void update_nav_data(const std::multimap<uint32_t, Tag>& tags_verified, const uint8_t tag_size);

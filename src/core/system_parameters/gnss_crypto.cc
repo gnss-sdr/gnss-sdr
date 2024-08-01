@@ -897,8 +897,9 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     param_bld = OSSL_PARAM_BLD_new();
     if (param_bld != nullptr &&
         OSSL_PARAM_BLD_push_utf8_string(param_bld, "group", (publicKey.size() == 33) ? "prime256v1" : "secp521r1", 0) &&
-        OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", publicKey.data(), publicKey.size()))
+        OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", publicKey.data(), publicKey.size())) {
         params = OSSL_PARAM_BLD_to_param(param_bld);
+        }
 
     ctx = EVP_PKEY_CTX_new_from_name(nullptr, "EC", nullptr);
     if (ctx == nullptr || params == nullptr || EVP_PKEY_fromdata_init(ctx) <= 0 || EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
@@ -1192,7 +1193,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 
     // store the key type - needed for the Kroot in case no DSM-PKR available
     // TODO - only way I have found to find the curve type
-    auto ec_key = EVP_PKEY_get0_EC_KEY(pubkey);
+    const auto *const ec_key = EVP_PKEY_get0_EC_KEY(pubkey);
     const EC_GROUP *group = EC_KEY_get0_group(ec_key);
     int nid = EC_GROUP_get_curve_name(group);
     if (nid == NID_X9_62_prime256v1) {

@@ -129,7 +129,7 @@ class OSNMA_NavData
 public:
     OSNMA_NavData(): nav_data_id(id_counter++){}
     bool have_this_bits(std::string nav_data);
-    bool add_nav_data(std::string nav_data);
+    bool add_nav_data(const std::string& nav_data);
     void update_last_received_timestamp(uint32_t TOW);
     const uint32_t nav_data_id;
     uint32_t verified_bits{0};

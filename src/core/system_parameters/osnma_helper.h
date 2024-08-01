@@ -39,7 +39,6 @@ public:
     std::vector<uint8_t> convert_from_hex_string(const std::string& hex_string) const;  // TODO remove similar function in gnss_crypto
 
     std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0, 0, 0, 0, 0};
-
 };
 
 #endif  // GNSS_SDR_OSNMA_HELPER_H

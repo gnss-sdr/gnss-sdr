@@ -29,7 +29,7 @@
  * @param PRNd The satellite ID.
  * @param TOW The TOW of the received data.
  */
-void OSNMA_nav_data_Manager::add_navigation_data(std::string nav_bits, uint32_t PRNd, uint32_t TOW)
+void OSNMA_nav_data_Manager::add_navigation_data(const std::string& nav_bits, uint32_t PRNd, uint32_t TOW)
 {
     if (not have_nav_data(nav_bits, PRNd, TOW))
         {
@@ -52,18 +52,18 @@ void OSNMA_nav_data_Manager::update_nav_data(const std::multimap<uint32_t, Tag>&
                     if (have_PRNd_nav_data(tag.second.PRN_d))
                         {
                             std::map<uint32_t, OSNMA_NavData> tow_map = _satellite_nav_data.find(tag.second.PRN_d)->second;
-                            for (auto tow_it = tow_map.begin(); tow_it != tow_map.end(); ++tow_it)  // note: starts with smallest (i.e. oldest) navigation dataset
+                            for (auto & tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
                                 {
                                     std::string nav_data;
                                     if (tag.second.ADKD == 0 || tag.second.ADKD == 12){
-                                            nav_data = tow_it->second.get_ephemeris_data();
+                                            nav_data = tow_it.second.get_ephemeris_data();
                                         }
                                     else if (tag.second.ADKD == 4){
-                                            nav_data = tow_it->second.get_utc_data();
+                                            nav_data = tow_it.second.get_utc_data();
                                         }
                                     // find associated OSNMA_NavData
                                     if (tag.second.nav_data == nav_data){
-                                            _satellite_nav_data[tag.second.PRN_d][tow_it->first].verified_bits += tag_size;
+                                            _satellite_nav_data[tag.second.PRN_d][tow_it.first].verified_bits += tag_size;
                                         }
                                 }
                         }
@@ -99,7 +99,7 @@ bool OSNMA_nav_data_Manager::have_nav_data(uint32_t PRNd, uint32_t TOW, uint8_t 
             if (it != _satellite_nav_data.cend())
                 {
                     const auto it2 = it->second.find(TOW);
-                    if (it2 != it->second.cend() && it->second[TOW].get_ephemeris_data() != "")
+                    if (it2 != it->second.cend() && !it->second[TOW].get_ephemeris_data().empty())
                         {
                             return true;
                         }
@@ -111,7 +111,7 @@ bool OSNMA_nav_data_Manager::have_nav_data(uint32_t PRNd, uint32_t TOW, uint8_t 
             if (it != _satellite_nav_data.cend())
                 {
                     const auto it2 = it->second.find(TOW);
-                    if (it2 != it->second.cend() && it->second[TOW].get_utc_data() != "")
+                    if (it2 != it->second.cend() && !it->second[TOW].get_utc_data().empty())
                         {
                             return true;
                         }
@@ -140,13 +140,13 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
                 {
                     if (tag.ADKD == 0 || tag.ADKD == 12)
                         {
-                            if (tow_it->second.get_ephemeris_data() != ""){
+                            if (!tow_it->second.get_ephemeris_data().empty()){
                                     return tow_it->second.get_ephemeris_data();
                                 }
                         }
                     else if(tag.ADKD == 4)
                         {
-                            if (tow_it->second.get_utc_data() != ""){
+                            if (!tow_it->second.get_utc_data().empty()){
                                     return tow_it->second.get_utc_data();
                                 }
                         }
@@ -161,7 +161,7 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
  * @param PRNd
  * @return
  */
-bool OSNMA_nav_data_Manager::have_nav_data(std::string nav_bits, uint32_t PRNd, uint32_t TOW)
+bool OSNMA_nav_data_Manager::have_nav_data(const std::string& nav_bits, uint32_t PRNd, uint32_t TOW)
 {
     if (_satellite_nav_data.find(PRNd) != _satellite_nav_data.end()){
             for (auto& data_timestamp : _satellite_nav_data[PRNd])
@@ -202,13 +202,13 @@ bool OSNMA_nav_data_Manager::have_nav_data(const Tag& t) const
                 {
                     if (t.ADKD == 0 || t.ADKD == 12)
                         {
-                            if (tow_it->second.get_ephemeris_data() != ""){
+                            if (!tow_it->second.get_ephemeris_data().empty()){
                                     return true;
                                 }
                         }
                     else if (t.ADKD == 4)
                         {
-                            if (tow_it->second.get_utc_data() != ""){
+                            if (!tow_it->second.get_utc_data().empty()){
                                     return true;
                                 }
                         }
@@ -220,19 +220,20 @@ void OSNMA_nav_data_Manager::print_status()
 {
     for (const auto& satellite : _satellite_nav_data){
             LOG(INFO) << "Galileo OSNMA: NavData status :: SVID=" << satellite.first;
-            auto& tow_data = satellite.second;
-            for (const auto& nav_data : tow_data)
-                LOG(INFO) << "Galileo OSNMA: IOD_nav=0b"  << std::uppercase
-                      << std::bitset<10>(nav_data.second.IOD_nav)
-                      << ", TOW_start="
-                      << nav_data.second.get_tow_sf0()
-                      << ", TOW_last="
-                      << nav_data.second.last_received_TOW
-                      << ", l_t="
-                      << nav_data.second.verified_bits
-                      << ", PRNd="
-                      << nav_data.second.PRNd
-                      << ", verified="
-                      << nav_data.second.verified;
+            const auto& tow_data = satellite.second;
+            for (const auto& nav_data : tow_data) {
+                    LOG(INFO) << "Galileo OSNMA: IOD_nav=0b" << std::uppercase
+                              << std::bitset<10>(nav_data.second.IOD_nav)
+                              << ", TOW_start="
+                              << nav_data.second.get_tow_sf0()
+                              << ", TOW_last="
+                              << nav_data.second.last_received_TOW
+                              << ", l_t="
+                              << nav_data.second.verified_bits
+                              << ", PRNd="
+                              << nav_data.second.PRNd
+                              << ", verified="
+                              << nav_data.second.verified;
+                }
         }
 }

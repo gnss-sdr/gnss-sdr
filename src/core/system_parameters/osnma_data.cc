@@ -19,7 +19,7 @@
 uint32_t Tag::id_counter = 0;
 uint32_t OSNMA_NavData::id_counter = 0;
 
-bool OSNMA_NavData::add_nav_data(std::string nav_data)
+bool OSNMA_NavData::add_nav_data(const std::string& nav_data)
 {
     if (nav_data.size() == 549)
         {

@@ -19,13 +19,37 @@
 #include <iomanip>
 #include <ios>
 #include <sstream>
+#include <ctime>  // timezone
 
-uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const
-{
-    uint32_t GST = (WN & 0x00000FFF) << 20 | (TOW & 0x000FFFFF);
-    return GST;
+uint32_t Osnma_Helper::compute_gst(uint32_t WN, uint32_t TOW) const{
+    return (WN & 0x00000FFF) << 20 | (TOW & 0x000FFFFF);
 }
 
+uint32_t Osnma_Helper::compute_gst(tm& input)
+{
+    auto epoch_time_point = std::chrono::system_clock::from_time_t(mktime(&GST_START_EPOCH));
+    auto input_time_point = std::chrono::system_clock::from_time_t(mktime(&input));
+
+    // Get the duration from epoch in seconds
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(input_time_point - epoch_time_point);
+
+    // Calculate the week number (WN) and time of week (TOW)
+    uint32_t sec_in_week = 7 * 24 * 60 * 60;
+    uint32_t week_number = duration_sec.count() / sec_in_week;
+    uint32_t time_of_week = duration_sec.count() % sec_in_week;
+    return compute_gst(week_number, time_of_week);
+}
+
+uint32_t Osnma_Helper::compute_gst_now()
+{
+    std::chrono::time_point epoch_time_point = std::chrono::system_clock::from_time_t(mktime(&GST_START_EPOCH) - timezone);
+//    auto time_utc = std::chrono::time_point_cast<std::chrono::seconds>(time).time_since_epoch();
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - epoch_time_point);
+    uint32_t sec_in_week = 7 * 24 * 60 * 60;
+    uint32_t week_number = duration_sec.count() / sec_in_week;
+    uint32_t time_of_week = duration_sec.count() % sec_in_week;
+    return compute_gst(week_number, time_of_week);
+}
 
 std::vector<uint8_t> Osnma_Helper::gst_to_uint8(uint32_t GST) const
 {
@@ -121,3 +145,12 @@ std::vector<uint8_t> Osnma_Helper::convert_from_hex_string(const std::string& he
 
     return result;
 }
+uint32_t Osnma_Helper::get_WN(uint32_t GST)
+{
+    return (GST & 0xFFF00000) >> 20;
+}
+uint32_t Osnma_Helper::get_TOW(uint32_t GST)
+{
+    return GST & 0x000FFFFF;
+}
+

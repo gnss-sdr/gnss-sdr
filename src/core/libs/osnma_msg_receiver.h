@@ -73,7 +73,6 @@ private:
     void read_nma_header(uint8_t nma_header);
     void read_dsm_header(uint8_t dsm_header);
     void read_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
-    void local_time_verification(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void process_dsm_message(const std::vector<uint8_t>& dsm_msg, const uint8_t& nma_header);
     void read_and_process_mack_block(const std::shared_ptr<OSNMA_msg>& osnma_msg);
@@ -118,35 +117,24 @@ private:
 
     OSNMA_data d_osnma_data{};
 
-    enum tags_to_verify
-    {
-        all,
-        utc,
-        slow_eph,
-        eph,
-        none
-    };
-    tags_to_verify d_tags_allowed{tags_to_verify::all};
-    std::time_t d_receiver_time{0};
-
-    uint32_t d_GST_Sf{};  // C: used for MACSEQ and Tesla Key verification TODO need really to be global var?
-    uint32_t d_last_verified_key_GST{0};
-    uint32_t d_GST_0{};
-    uint32_t d_GST_SIS{};
+    uint32_t d_last_received_GST{0};      // latest GST received
+    uint32_t d_GST_Sf{};                  // Scaled GST time for cryptographic computations
+    uint32_t d_GST_Rx{0};                 // local GST receiver time
+    uint32_t d_last_verified_key_GST{0};  // GST for the latest verified TESLA key
+    uint32_t d_GST_0{};                   // Time of applicability GST (KROOT + 30 s)
+    uint32_t d_GST_SIS{};                 // GST coming from W6 and W5 of SIS
     uint32_t d_GST_PKR_PKREV_start{};
     uint32_t d_GST_PKR_AM_start{};
+    uint32_t d_WN{};
+    uint32_t d_TOW{};
 
-    uint8_t d_Lt_min{};             // minimum equivalent tag length
-    uint8_t d_Lt_verified_eph{0};   // verified tag bits - ephemeris
-    uint8_t d_Lt_verified_utc{0};   // verified tag bits - timing
     uint8_t const d_T_L{30};        // s RG Section 2.1
-    uint8_t const d_delta_COP{30};  // s SIS ICD Table 14
 
     bool d_new_data{false};
     bool d_public_key_verified{false};
     bool d_kroot_verified{false};
     bool d_tesla_key_verified{false};
-    bool d_flag_debug{false};
+    bool d_flag_debug{true};
     bool d_flag_hot_start{false};
     bool d_flag_PK_renewal{false};
     bool d_flag_PK_revocation{false};

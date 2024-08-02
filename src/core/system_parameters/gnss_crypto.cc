@@ -124,6 +124,7 @@ Gnss_Crypto::~Gnss_Crypto()
 #endif
 }
 
+
 bool Gnss_Crypto::have_public_key() const
 {
 #if USE_GNUTLS_FALLBACK
@@ -132,6 +133,7 @@ bool Gnss_Crypto::have_public_key() const
     return (d_PublicKey != nullptr);
 #endif
 }
+
 
 bool Gnss_Crypto::store_public_key(const std::string& pubKeyFilePath) const
 {
@@ -782,63 +784,6 @@ std::vector<uint8_t> Gnss_Crypto::compute_CMAC_AES(const std::vector<uint8_t>& k
     return output;
 }
 
-// TODO - deprecate: change return type to respective key type, PEM is not needed.
-std::vector<uint8_t> Gnss_Crypto::get_public_key() const
-{
-    if (!have_public_key())
-        {
-            return {};
-        }
-#if USE_GNUTLS_FALLBACK
-    gnutls_datum_t pem_data = {nullptr, 0};
-#if HAVE_GNUTLS_PUBKEY_EXPORT2
-    int ret = gnutls_pubkey_export2(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data);
-#else
-    size_t output_stata_size;
-    int ret = gnutls_pubkey_export(d_PublicKey, GNUTLS_X509_FMT_PEM, &pem_data, &output_stata_size);
-#endif
-    if (ret != GNUTLS_E_SUCCESS)
-        {
-            LOG(WARNING) << "GnuTLS: Failed to export public key to PEM format.";
-            return {};
-        }
-    std::vector<uint8_t> output(pem_data.data, pem_data.data + pem_data.size);
-
-    // Free the allocated memory by gnutls_pubkey_export2
-    gnutls_free(pem_data.data);
-#else  // OpenSSL
-    // Create a BIO for the memory buffer
-    BIO* mem = BIO_new(BIO_s_mem());
-    if (!mem)
-        {
-            LOG(WARNING) << "OpenSSL: Failed to create BIO.";
-            return {};
-        }
-#if USE_OPENSSL_3
-    if (!PEM_write_bio_PUBKEY(mem, d_PublicKey))
-#else  // OpenSSL 1.x
-    if (!PEM_write_bio_EC_PUBKEY(mem, d_PublicKey))
-#endif
-        {
-            BIO_free(mem);
-            LOG(WARNING) << "OpenSSL: Failed to write public key to PEM format.";
-            return {};
-        }
-
-    // Get the length of the data in the BIO
-    BUF_MEM* mem_ptr;
-    BIO_get_mem_ptr(mem, &mem_ptr);
-
-    // Copy the data from the BIO to a std::vector<uint8_t>
-    std::vector<uint8_t> output(mem_ptr->length);
-    memcpy(output.data(), mem_ptr->data, mem_ptr->length);
-
-    // Clean up the BIO
-    BIO_free(mem);
-#endif
-    return output;
-}
-
 
 std::vector<uint8_t> Gnss_Crypto::get_merkle_root() const
 {
@@ -846,8 +791,15 @@ std::vector<uint8_t> Gnss_Crypto::get_merkle_root() const
 }
 
 
+std::string Gnss_Crypto::get_public_key_type() const
+{
+    return d_PublicKeyType;
+}
+
+
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
+    d_PublicKeyType = "Unknown";
 #if USE_GNUTLS_FALLBACK
     gnutls_pubkey_t pubkey{};
     gnutls_ecc_curve_t curve;
@@ -859,16 +811,19 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     if (size_pk == 33)
         {
             curve = GNUTLS_ECC_CURVE_SECP256R1;
+            d_PublicKeyType = "ECDSA P-256";
             decompress_public_key_secp256r1(publicKey, x, y);
         }
     else if (size_pk == 67)
         {
             curve = GNUTLS_ECC_CURVE_SECP521R1;
+            d_PublicKeyType = "ECDSA P-521";
             decompress_public_key_secp521r1(publicKey, x, y);
         }
     else
         {
             LOG(WARNING) << "GnuTLS: Invalid public key size";
+            gnutls_pubkey_deinit(pubkey);
             return;
         }
 
@@ -893,22 +848,41 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     EVP_PKEY_CTX* ctx = nullptr;
     OSSL_PARAM_BLD* param_bld;
     OSSL_PARAM* params = nullptr;
+    const size_t public_key_size = publicKey.size();
 
     param_bld = OSSL_PARAM_BLD_new();
     if (param_bld != nullptr &&
-        OSSL_PARAM_BLD_push_utf8_string(param_bld, "group", (publicKey.size() == 33) ? "prime256v1" : "secp521r1", 0) &&
-        OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", publicKey.data(), publicKey.size())) {
-        params = OSSL_PARAM_BLD_to_param(param_bld);
+        OSSL_PARAM_BLD_push_utf8_string(param_bld, "group", (public_key_size == 33) ? "prime256v1" : "secp521r1", 0) &&
+        OSSL_PARAM_BLD_push_octet_string(param_bld, "pub", publicKey.data(), public_key_size))
+        {
+            params = OSSL_PARAM_BLD_to_param(param_bld);
+        }
+
+    if (public_key_size == 33)
+        {
+            d_PublicKeyType = "ECDSA P-256";
+        }
+    else if (public_key_size == 67)
+        {
+            d_PublicKeyType = "ECDSA P-521";
         }
 
     ctx = EVP_PKEY_CTX_new_from_name(nullptr, "EC", nullptr);
     if (ctx == nullptr || params == nullptr || EVP_PKEY_fromdata_init(ctx) <= 0 || EVP_PKEY_fromdata(ctx, &pkey, EVP_PKEY_PUBLIC_KEY, params) <= 0)
         {
+            EVP_PKEY_free(pkey);
+            EVP_PKEY_CTX_free(ctx);
+            OSSL_PARAM_free(params);
+            OSSL_PARAM_BLD_free(param_bld);
             return;
         }
 
     if (!pubkey_copy(pkey, &d_PublicKey))
         {
+            EVP_PKEY_free(pkey);
+            EVP_PKEY_CTX_free(ctx);
+            OSSL_PARAM_free(params);
+            OSSL_PARAM_BLD_free(param_bld);
             return;
         }
 
@@ -923,10 +897,12 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     if (publicKey.size() == 33)  // ECDSA-P-256
         {
             group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+            d_PublicKeyType = "ECDSA P-256";
         }
     else  // ECDSA-P-521
         {
             group = EC_GROUP_new_by_curve_name(NID_secp521r1);
+            d_PublicKeyType = "ECDSA P-256";
         }
     if (!group)
         {
@@ -971,6 +947,15 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 #endif  // OpenSSL 1.x
 #endif
     DLOG(INFO) << "OSNMA Public Key successfully set up.";
+}
+
+
+void Gnss_Crypto::set_public_key_type(const std::string& public_key_type)
+{
+    if (public_key_type == "ECDSA P-256" || public_key_type == "ECDSA P-521")
+        {
+            d_PublicKeyType = public_key_type;
+        }
 }
 
 
@@ -1038,6 +1023,14 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
                     LOG(INFO) << "OSNMA Merkletree - Length in Bits: " << lengthInBits;
                     LOG(INFO) << "OSNMA Merkletree - Point: " << point;
                     LOG(INFO) << "OSNMA Merkletree - PK Type: " << pkType;
+                    if (pkType == "ECDSA P-256/SHA-256")
+                        {
+                            d_PublicKeyType = "ECDSA P-256";
+                        }
+                    else if (pkType == "ECDSA P-521/SHA-512")
+                        {
+                            d_PublicKeyType = "ECDSA P-521";
+                        }
                 }
             for (pugi::xml_node treeNode : merkleTree.children("TreeNode"))
                 {
@@ -1122,6 +1115,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
 
 bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 {
+    d_PublicKeyType = "Unknown";
 #if USE_GNUTLS_FALLBACK
     // Open the .crt file
     std::ifstream crtFile(crtFilePath, std::ios::binary);
@@ -1160,6 +1154,72 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
             gnutls_x509_crt_deinit(cert);
             return false;
         }
+
+    // store the key type - needed for the Kroot in case no DSM-PKR available
+    gnutls_pk_algorithm_t pk_algorithm;
+    unsigned int bits;
+
+    ret = gnutls_pubkey_get_pk_algorithm(pubkey, &bits);
+    if (ret < 0)
+        {
+            LOG(WARNING) << "GnuTLS: Failed to get public key algorithm: " << gnutls_strerror(ret);
+            gnutls_pubkey_deinit(pubkey);
+            gnutls_x509_crt_deinit(cert);
+            return false;
+        }
+
+    pk_algorithm = static_cast<gnutls_pk_algorithm_t>(ret);
+
+    if (pk_algorithm == GNUTLS_PK_ECDSA)
+        {
+            gnutls_datum_t params;
+            ret = gnutls_pubkey_export_ecc_raw(pubkey, nullptr, &params, nullptr);
+            if (ret < 0)
+                {
+                    LOG(WARNING) << "GnuTLS: Failed to export EC parameters: " << gnutls_strerror(ret);
+                    gnutls_pubkey_deinit(pubkey);
+                    gnutls_x509_crt_deinit(cert);
+                    return false;
+                }
+
+            gnutls_ecc_curve_t curve;
+            ret = gnutls_ecc_curve_get_id(reinterpret_cast<const char*>(params.data));
+            gnutls_free(params.data);
+
+            if (ret < 0)
+                {
+                    LOG(WARNING) << "GnuTLS: Failed to get EC curve: " << gnutls_strerror(ret);
+                    gnutls_pubkey_deinit(pubkey);
+                    gnutls_x509_crt_deinit(cert);
+                    return false;
+                }
+
+            curve = static_cast<gnutls_ecc_curve_t>(ret);
+
+            if (curve == GNUTLS_ECC_CURVE_SECP256R1)
+                {
+                    d_PublicKeyType = "ECDSA P-256";
+                }
+            else if (curve == GNUTLS_ECC_CURVE_SECP521R1)
+                {
+                    d_PublicKeyType = "ECDSA P-521";
+                }
+            else
+                {
+                    LOG(WARNING) << "GnuTLS: Trying to read unknown EC curve";
+                    gnutls_x509_crt_deinit(cert);
+                    gnutls_pubkey_deinit(pubkey);
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "GnuTLS: Trying to read unknown key type";
+            gnutls_x509_crt_deinit(cert);
+            gnutls_pubkey_deinit(pubkey);
+            return false;
+        }
+
     pubkey_copy(pubkey, &d_PublicKey);
     gnutls_x509_crt_deinit(cert);
     gnutls_pubkey_deinit(pubkey);
@@ -1190,27 +1250,69 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 
     // Read the public key from the certificate
     EVP_PKEY* pubkey = X509_get_pubkey(cert);
-
-    // store the key type - needed for the Kroot in case no DSM-PKR available
-    // TODO - only way I have found to find the curve type
-    const auto ec_key = EVP_PKEY_get0_EC_KEY(pubkey);
-    const EC_GROUP *group = EC_KEY_get0_group(ec_key);
-    int nid = EC_GROUP_get_curve_name(group);
-    if (nid == NID_X9_62_prime256v1) {
-            d_PublicKeyType = "ECDSA P-256";
-        } else if (nid == NID_secp521r1) {
-            d_PublicKeyType = "ECDSA P-521";
-        }
-#if USE_OPENSSL_3
     if (!pubkey)
         {
             LOG(WARNING) << "OpenSSL: Failed to extract the public key";
             X509_free(cert);
             return false;
         }
+#if USE_OPENSSL_3
+    // store the key type - needed for the Kroot in case no DSM-PKR available
+    // Get the key type
+    int key_type = EVP_PKEY_base_id(pubkey);
+    if (key_type == EVP_PKEY_EC)
+        {
+            // It's an EC key, now we need to determine the curve
+            char curve_name[256];
+            size_t curve_name_len = sizeof(curve_name);
+
+            if (EVP_PKEY_get_utf8_string_param(pubkey, OSSL_PKEY_PARAM_GROUP_NAME, curve_name, curve_name_len, &curve_name_len) == 1)
+                {
+                    if (strcmp(curve_name, "prime256v1") == 0 || strcmp(curve_name, "P-256") == 0)
+                        {
+                            d_PublicKeyType = "ECDSA P-256";
+                        }
+                    else if (strcmp(curve_name, "secp521r1") == 0 || strcmp(curve_name, "P-521") == 0)
+                        {
+                            d_PublicKeyType = "ECDSA P-521";
+                        }
+                    else
+                        {
+                            LOG(WARNING) << "OpenSSL: Trying to read an unknown EC curve";
+                            X509_free(cert);
+                            return false;
+                        }
+                }
+            else
+                {
+                    d_PublicKeyType = "Unknown EC curve";
+                    LOG(WARNING) << "OpenSSL: Trying to read an unknown EC curve";
+                    X509_free(cert);
+                    return false;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "OpenSSL: Trying to read an unknown key type";
+            X509_free(cert);
+            return false;
+        }
     pubkey_copy(pubkey, &d_PublicKey);
     EVP_PKEY_free(pubkey);
 #else  // OpenSSL 1.x
+    // store the key type - needed for the Kroot in case no DSM-PKR available
+    const auto ec_key = EVP_PKEY_get0_EC_KEY(pubkey);
+    const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+    const int nid = EC_GROUP_get_curve_name(group);
+    if (nid == NID_X9_62_prime256v1)
+        {
+            d_PublicKeyType = "ECDSA P-256";
+        }
+    else if (nid == NID_secp521r1)
+        {
+            d_PublicKeyType = "ECDSA P-521";
+        }
+
     EC_KEY* ec_pubkey = EVP_PKEY_get1_EC_KEY(pubkey);
     EVP_PKEY_free(pubkey);
     if (!ec_pubkey)
@@ -1298,6 +1400,7 @@ std::vector<uint8_t> Gnss_Crypto::convert_from_hex_str(const std::string& input)
 
     return result;
 }
+
 
 #if USE_GNUTLS_FALLBACK  // GnuTLS-specific functions
 bool Gnss_Crypto::pubkey_copy(gnutls_pubkey_t src, gnutls_pubkey_t* dest)

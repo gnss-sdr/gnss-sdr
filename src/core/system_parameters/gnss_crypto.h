@@ -66,13 +66,13 @@ public:
     std::vector<uint8_t> compute_HMAC_SHA_256(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;  //!< Computes HMAC-SHA-256 message authentication code
     std::vector<uint8_t> compute_CMAC_AES(const std::vector<uint8_t>& key, const std::vector<uint8_t>& input) const;      //!< Computes CMAC-AES message authentication code
 
-    std::vector<uint8_t> get_public_key() const;   //!< Gets the ECDSA Public Key in PEM format
     std::vector<uint8_t> get_merkle_root() const;  //!< Gets the Merkle Tree root node (\f$ x_{4,0} \f$)
+    std::string get_public_key_type() const;       //!< Gets the ECDSA Public Key type (ECDSA P-256 / ECDSA P-521 / Unknown)
 
-    void set_public_key(const std::vector<uint8_t>& publickey);  //!< Sets the ECDSA Public Key (publickey compressed format)
-    void set_merkle_root(const std::vector<uint8_t>& v);         //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
-    void read_merkle_xml(const std::string& merkleFilePath);
-    std::string d_PublicKeyType;
+    void set_public_key(const std::vector<uint8_t>& publickey);    //!< Sets the ECDSA Public Key (publickey compressed format)
+    void set_public_key_type(const std::string& public_key_type);  //!< Sets the ECDSA Public Key type (ECDSA P-256 / ECDSA P-521)
+    void set_merkle_root(const std::vector<uint8_t>& v);           //!< Sets the Merkle Tree root node x(\f$ x_{4,0} \f$)
+    void read_merkle_xml(const std::string& merkleFilePath);       //!> Reads the XML file provided from the GSC OSNMA server
 
 private:
     void readPublicKeyFromPEM(const std::string& pemFilePath);
@@ -94,6 +94,7 @@ private:
 #endif
 #endif
     std::vector<uint8_t> d_x_4_0;
+    std::string d_PublicKeyType;
 };
 
 /** \} */

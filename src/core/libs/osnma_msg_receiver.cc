@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <fstream>  // for std::ifstream and std::ofstream
 #include <iomanip>  // for std::setfill
 #include <ios>      // for std::hex, std::uppercase
 #include <iostream>
@@ -37,7 +38,6 @@
 #include <tuple>
 #include <typeinfo>  // for typeid
 #include <utility>
-#include <fstream>  // for std::ifstream and std::ofstream
 
 
 #if USE_GLOG_AND_GFLAGS
@@ -68,21 +68,23 @@ osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, 
 
 
 osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath) : gr::block("osnma_msg_receiver",
-                                             gr::io_signature::make(0, 0, 0),
-                                             gr::io_signature::make(0, 0, 0))
+                                                                                                                gr::io_signature::make(0, 0, 0),
+                                                                                                                gr::io_signature::make(0, 0, 0))
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
     d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath);
     d_helper = std::make_unique<Osnma_Helper>();
     d_nav_data_manager = std::make_unique<OSNMA_nav_data_Manager>();
 
-    if(d_crypto->have_public_key()){  // Hot start is enabled
+    if (d_crypto->have_public_key())
+        {  // Hot start is enabled
             LOG(WARNING) << "OSNMA Public Key available, trying to find DSM-KROOT saved";
             std::cout << "OSNMA Public Key available, trying to find DSM-KROOT saved" << std::endl;
             d_public_key_verified = true;
 
             auto dsm_nmah = parse_dsm_kroot();
-            if (!dsm_nmah.first.empty()){
+            if (!dsm_nmah.first.empty())
+                {
                     LOG(WARNING) << "OSNMA DSM-KROOT and NMA Header successfully read from file " << KROOTFILE_DEFAULT;
                     std::cout << "OSNMA DSM-KROOT and NMA Header successfully read from file " << KROOTFILE_DEFAULT << std::endl;
                     d_flag_hot_start = true;
@@ -113,20 +115,22 @@ osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath, const std
 #endif
 #endif
     std::chrono::time_point<std::chrono::system_clock> now;
-    if (d_flag_debug){
+    if (d_flag_debug)
+        {
             // d_GST_Rx = d_helper->compute_gst(d_initial_debug_time);
             LOG(WARNING) << "Galileo OSNMA: Debug mode, time artificially set up.";
             std::cout << "Galileo OSNMA: Debug mode, time artificially set up." << std::endl;
             // TODO - need to synchronize time lapse with Gnss_Synchro?
         }
-    else{
+    else
+        {
             d_GST_Rx = d_helper->compute_gst_now();
         }
 
     d_WN = d_helper->get_WN(d_GST_Rx);
     d_TOW = d_helper->get_TOW(d_GST_Rx);
-    LOG(WARNING) << "Galileo OSNMA: initial receiver time GST=["<< d_WN << " " << d_TOW <<"]";
-    std::cout << "Galileo OSNMA: initial receiver time GST=["<< d_WN << " " << d_TOW <<"]" << std::endl;
+    LOG(WARNING) << "Galileo OSNMA: initial receiver time GST=[" << d_WN << " " << d_TOW << "]";
+    std::cout << "Galileo OSNMA: initial receiver time GST=[" << d_WN << " " << d_TOW << "]" << std::endl;
 }
 
 
@@ -155,16 +159,20 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 
                     // Receiver time update
                     d_GST_SIS = d_helper->compute_gst(nma_msg->WN_sf0, nma_msg->TOW_sf0);
-                    if (d_last_verified_key_GST == 0){
+                    if (d_last_verified_key_GST == 0)
+                        {
                             d_last_received_GST = d_GST_SIS;
                         }
-                    else if (d_GST_SIS > d_last_received_GST){
+                    else if (d_GST_SIS > d_last_received_GST)
+                        {
                             d_last_received_GST = d_GST_SIS;
                         }
-                    if (d_flag_debug){
+                    if (d_flag_debug)
+                        {
                             d_GST_Rx = d_last_received_GST;
                         }
-                    else{
+                    else
+                        {
                             d_GST_Rx = d_helper->compute_gst_now();
                         }
                     LOG(INFO) << "Galileo OSNMA: Receiver Time GST=[" << d_helper->get_WN(d_GST_Rx) << " " << d_helper->get_TOW(d_GST_Rx) << "]";
@@ -198,7 +206,7 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                         }
 
                     process_osnma_message(nma_msg);
-                }  // OSNMA frame received
+                }                                                                                                             // OSNMA frame received
             else if (msg_type_hash_code == typeid(std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>).hash_code())  // Navigation data bits for OSNMA received
                 {
                     const auto inav_data = wht::any_cast<std::shared_ptr<std::tuple<uint32_t, std::string, uint32_t>>>(pmt::any_ref(msg));
@@ -231,26 +239,30 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
 
 void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg)
 {
-    if (d_flag_alert_message && (d_public_key_verified || d_kroot_verified)){
+    if (d_flag_alert_message && (d_public_key_verified || d_kroot_verified))
+        {
             return;
         }
     read_nma_header(osnma_msg->hkroot[0]);
 
     // Check for corner cases: renewal, revocation, alert message
-    if (d_osnma_data.d_nma_header.nmas == 0 /* RES */){
+    if (d_osnma_data.d_nma_header.nmas == 0 /* RES */)
+        {
             LOG(WARNING) << "Galileo OSNMA: NMAS invalid (RES), skipping osnma message";
             return;
         }
     // TODO - trusting the NMAS and CPKS shall be done upon PKR verification or Tag verification.
     //  It's ok to activate the flags, but the final decision should happen after verifying it.
     // For OAM is solved, but NPK and PKREV I think not yet
-    if (d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 4 /* NPK */ && d_GST_PKR_PKREV_start == 0){
+    if (d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 4 /* NPK */ && d_GST_PKR_PKREV_start == 0)
+        {
             d_flag_PK_renewal = true;
             d_GST_PKR_PKREV_start = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
             LOG(INFO) << "Galileo OSNMA: Public Key Renewal :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]";
             std::cout << "Galileo OSNMA: Public Key Renewal :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]" << std::endl;
         }
-    if (d_flag_PK_renewal && d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 1 /* Nominal */ ){
+    if (d_flag_PK_renewal && d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 1 /* Nominal */)
+        {
             d_flag_PK_renewal = false;
             uint32_t final_GST = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
             double duration_hours = (final_GST - d_GST_PKR_PKREV_start) / 3600;
@@ -258,7 +270,8 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
             std::cout << "Galileo OSNMA: Public Key Renewal :: Finished at GST=" << duration_hours << ", Duration=" << duration_hours << " h" << std::endl;
         }
 
-    if (d_osnma_data.d_nma_header.nmas == 3 /* DU */ && d_osnma_data.d_nma_header.cpks == 5 /* PKREV */ && d_GST_PKR_PKREV_start == 0){
+    if (d_osnma_data.d_nma_header.nmas == 3 /* DU */ && d_osnma_data.d_nma_header.cpks == 5 /* PKREV */ && d_GST_PKR_PKREV_start == 0)
+        {
             d_flag_PK_revocation = true;
             d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;
             d_public_key_verified = false;
@@ -268,16 +281,20 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
             LOG(INFO) << "Galileo OSNMA: Public Key Revocation :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]";
             std::cout << "Galileo OSNMA: Public Key Revocation :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]" << std::endl;
         }
-    if (d_flag_PK_revocation && d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 1 /* Nominal */ ){
+    if (d_flag_PK_revocation && d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 1 /* Nominal */)
+        {
             // step 2 , start using new chain
             d_flag_PK_revocation = false;
             uint32_t final_GST = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
             double duration_hours = (final_GST - d_GST_PKR_PKREV_start) / 3600;
-            LOG(INFO) << "Galileo OSNMA: Public Key Revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]" << ", Duration=" << duration_hours << "h";
-            std::cout << "Galileo OSNMA: Public Key Revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]" << ", Duration=" << duration_hours << "h" << std::endl;
+            LOG(INFO) << "Galileo OSNMA: Public Key Revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
+                      << ", Duration=" << duration_hours << "h";
+            std::cout << "Galileo OSNMA: Public Key Revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
+                      << ", Duration=" << duration_hours << "h" << std::endl;
         }
 
-    if (d_osnma_data.d_nma_header.nmas == 3 /* DU */ && d_osnma_data.d_nma_header.cpks == 7 /* AM */ && d_GST_PKR_AM_start == 0){
+    if (d_osnma_data.d_nma_header.nmas == 3 /* DU */ && d_osnma_data.d_nma_header.cpks == 7 /* AM */ && d_GST_PKR_AM_start == 0)
+        {
             d_flag_alert_message = true;
             d_GST_PKR_AM_start = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
             d_public_key_verified = false;
@@ -289,7 +306,8 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
     read_dsm_header(osnma_msg->hkroot[1]);
     read_dsm_block(osnma_msg);
     process_dsm_block(osnma_msg);  // will process dsm block if received a complete one, then will call mack processing upon re-setting the dsm block to 0
-    if (d_osnma_data.d_dsm_kroot_message.towh_k != 0){
+    if (d_osnma_data.d_dsm_kroot_message.towh_k != 0)
+        {
             d_GST_0 = d_helper->compute_gst(d_osnma_data.d_dsm_kroot_message.wn_k, d_osnma_data.d_dsm_kroot_message.towh_k * 3600);
             d_GST_Sf = d_GST_0 + 30 * std::floor((d_GST_SIS - d_GST_0) / 30);  // Eq. 3 R.G.
         }
@@ -474,7 +492,7 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
             d_osnma_data.d_dsm_kroot_message.kroot = d_dsm_reader->get_kroot(dsm_msg, l_lk_bytes);
             // DS field
             uint16_t l_ds_bits = 0;
-            const auto it = OSNMA_TABLE_15.find(d_crypto->d_PublicKeyType);
+            const auto it = OSNMA_TABLE_15.find(d_crypto->get_public_key_type());
             if (it != OSNMA_TABLE_15.cend())
                 {
                     l_ds_bits = it->second;
@@ -507,12 +525,12 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     const uint16_t size_m = 13 + l_lk_bytes;
                     std::vector<uint8_t> MSG;
                     MSG.reserve(size_m + l_ds_bytes + 1);
-                    MSG.push_back(nma_header);   // NMA header
+                    MSG.push_back(nma_header);  // NMA header
                     for (uint16_t i = 1; i < size_m; i++)
                         {
                             MSG.push_back(dsm_msg[i]);
                         }
-                    std::vector<uint8_t> message = MSG;    // MSG = (M | DS) from ICD. Eq. 7
+                    std::vector<uint8_t> message = MSG;  // MSG = (M | DS) from ICD. Eq. 7
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
                             MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
@@ -549,7 +567,8 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                             // local_time_verification(osnma_msg);  // FIXME TODO: real time verification needed
 
                             // If new PK verified and the new KROOT arrived, set the new PK before attempting verification
-                            if(d_flag_PK_renewal && d_osnma_data.d_dsm_kroot_message.pkid == d_new_public_key_id && d_flag_NPK_set == false){
+                            if (d_flag_PK_renewal && d_osnma_data.d_dsm_kroot_message.pkid == d_new_public_key_id && d_flag_NPK_set == false)
+                                {
                                     d_crypto->set_public_key(d_new_public_key);
                                     d_crypto->store_public_key(PEMFILE_DEFAULT);
                                     d_flag_NPK_set = true;
@@ -566,7 +585,8 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                 {
                                     std::cout << "Galileo OSNMA: DSM-KROOT authentication successful!" << std::endl;
                                     LOG(INFO) << "Galileo OSNMA: DSM-KROOT authentication successful!";
-                                    if (d_flag_alert_message){
+                                    if (d_flag_alert_message)
+                                        {
                                             LOG(WARNING) << "Galileo OSNMA: DSM-KROOT :: Alert message verification :: SUCCESS. ";
                                         }
                                     else
@@ -576,7 +596,8 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                                       << "Chain and Public Key Status is " << d_dsm_reader->get_cpks_status(d_osnma_data.d_nma_header.cpks);
                                         }
                                     // Save DSM-Kroot and NMA header into a permanent storage
-                                    if (d_flag_hot_start){
+                                    if (d_flag_hot_start)
+                                        {
                                             d_flag_hot_start = false;
                                             return;
                                         }
@@ -586,10 +607,11 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                 {
                                     LOG(WARNING) << "Galileo OSNMA: DSM-KROOT authentication failed.";
                                     std::cerr << "Galileo OSNMA: DSM-KROOT authentication failed." << std::endl;
-                                    if (d_flag_alert_message){
+                                    if (d_flag_alert_message)
+                                        {
                                             d_flag_alert_message = false;
                                         }
-                                    d_count_failed_Kroot ++;
+                                    d_count_failed_Kroot++;
                                 }
                         }
                     else
@@ -613,7 +635,8 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                 }
             d_osnma_data.d_dsm_pkr_message.npkt = d_dsm_reader->get_npkt(dsm_msg);
             uint8_t npktid = d_dsm_reader->get_npktid(dsm_msg);
-            if (d_flag_PK_renewal && npktid > d_osnma_data.d_dsm_pkr_message.npktid){
+            if (d_flag_PK_renewal && npktid > d_osnma_data.d_dsm_pkr_message.npktid)
+                {
                     d_new_public_key_id = npktid;
                 }
             d_osnma_data.d_dsm_pkr_message.npktid = npktid;
@@ -668,15 +691,18 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         {
                             LOG(INFO) << "Galileo OSNMA: DSM-PKR verification :: SUCCESS";
                             d_public_key_verified = true;
-                            if (d_flag_PK_renewal){
+                            if (d_flag_PK_renewal)
+                                {
                                     d_new_public_key = d_osnma_data.d_dsm_pkr_message.npk;
                                 }
-                            else if (d_flag_alert_message){
+                            else if (d_flag_alert_message)
+                                {
                                     LOG(WARNING) << "Galileo OSNMA: DSM-PKR verification :: Alert message verification :: SUCCESS. OSNMA disabled. Contact Galileo Service Centre";
                                     std::cout << "Galileo OSNMA: DSM-PKR verification :: Alert message verification :: SUCCESS. OSNMA disabled. Contact Galileo Service Centre" << std::endl;
                                 }
-                            else{
-                                    d_crypto->d_PublicKeyType = PKT;
+                            else
+                                {
+                                    d_crypto->set_public_key_type(PKT);
                                     d_crypto->set_public_key(d_osnma_data.d_dsm_pkr_message.npk);
                                     d_crypto->store_public_key(PEMFILE_DEFAULT);
                                 }
@@ -685,8 +711,9 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                         {
                             LOG(ERROR) << "Galileo OSNMA: DSM-PKR verification :: FAILURE";
                             d_public_key_verified = false;
-                            d_count_failed_pubKey ++;
-                            if (d_flag_alert_message){
+                            d_count_failed_pubKey++;
+                            if (d_flag_alert_message)
+                                {
                                     d_flag_alert_message = false;  // disregard message as its authenticity could not be verified.
                                 }
                         }
@@ -724,9 +751,10 @@ void osnma_msg_receiver::read_and_process_mack_block(const std::shared_ptr<OSNMA
     d_osnma_data.d_nav_data.set_tow_sf0(osnma_msg->TOW_sf0);
     bool can_process_mack_block = (d_osnma_data.d_nma_header.nmas != 3 && d_kroot_verified) ||  // NMAS different than DU
                                   (d_osnma_data.d_nma_header.nmas == 3 && !d_kroot_verified);   // NMAS is DU, but must be disregarded
-    bool can_verify_tesla_key = d_kroot_verified || d_tesla_key_verified;  // Either of those suffices for verifying the incoming TESLA key
-    bool can_parse_tag_fields = d_osnma_data.d_dsm_kroot_message.ts != 0;  // calculating the number of tags is based on the TS of the DSM-KROOT.
-    if (can_verify_tesla_key && can_parse_tag_fields && can_process_mack_block){
+    bool can_verify_tesla_key = d_kroot_verified || d_tesla_key_verified;                       // Either of those suffices for verifying the incoming TESLA key
+    bool can_parse_tag_fields = d_osnma_data.d_dsm_kroot_message.ts != 0;                       // calculating the number of tags is based on the TS of the DSM-KROOT.
+    if (can_verify_tesla_key && can_parse_tag_fields && can_process_mack_block)
+        {
             read_mack_header();
             d_osnma_data.d_mack_message.PRNa = osnma_msg->PRN;  // FIXME this is ugly.
             d_osnma_data.d_mack_message.TOW = osnma_msg->TOW_sf0;
@@ -1617,8 +1645,8 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
             return true;
         }
     // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
-    std::vector<uint8_t> m(5 + 2 * flxTags.size());           // each flx tag brings two bytes
-    m[0] = static_cast<uint8_t>(mack.PRNa);                      // PRN_A - SVID of the satellite transmiting the tag
+    std::vector<uint8_t> m(5 + 2 * flxTags.size());  // each flx tag brings two bytes
+    m[0] = static_cast<uint8_t>(mack.PRNa);          // PRN_A - SVID of the satellite transmiting the tag
     m[1] = static_cast<uint8_t>((GST_SFi & 0xFF000000) >> 24);
     m[2] = static_cast<uint8_t>((GST_SFi & 0x00FF0000) >> 16);
     m[3] = static_cast<uint8_t>((GST_SFi & 0x0000FF00) >> 8);
@@ -1863,7 +1891,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
                     LOG(WARNING) << "Galileo OSNMA: MACSEQ verification :: FAILURE :: ADKD mismatch against MAC Look-up table for Tag=0x"
                                  << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
                                  << mack.tag_and_info[i].tag << std::dec;
-                    d_count_failed_macseq ++;
+                    d_count_failed_macseq++;
                 }
         }
 
@@ -1873,8 +1901,8 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
             return verified_tags;
         }
     // Fixed as well as  FLX Tags share first part - Eq. 22 ICD
-    std::vector<uint8_t> m(5 + 2 * flxTags.size());           // each flx tag brings two bytes
-    m[0] = static_cast<uint8_t>(mack.PRNa);                      // PRN_A - SVID of the satellite transmiting the tag
+    std::vector<uint8_t> m(5 + 2 * flxTags.size());  // each flx tag brings two bytes
+    m[0] = static_cast<uint8_t>(mack.PRNa);          // PRN_A - SVID of the satellite transmiting the tag
     m[1] = static_cast<uint8_t>((GST_Sfi & 0xFF000000) >> 24);
     m[2] = static_cast<uint8_t>((GST_Sfi & 0x00FF0000) >> 16);
     m[3] = static_cast<uint8_t>((GST_Sfi & 0x0000FF00) >> 8);
@@ -1924,7 +1952,7 @@ void osnma_msg_receiver::send_data_to_pvt(const std::vector<OSNMA_NavData>& data
 {
     if (!data.empty())
         {
-            for (auto & i : data)
+            for (auto& i : data)
                 {
                     const auto tmp_obj = std::make_shared<OSNMA_NavData>(i);
                     this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(tmp_obj));
@@ -1936,7 +1964,8 @@ bool osnma_msg_receiver::store_dsm_kroot(const std::vector<uint8_t>& dsm, const 
 {
     std::ofstream file(KROOTFILE_DEFAULT, std::ios::binary | std::ios::out);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+        {
             return false;
         }
 
@@ -1952,7 +1981,8 @@ bool osnma_msg_receiver::store_dsm_kroot(const std::vector<uint8_t>& dsm, const 
 std::pair<std::vector<uint8_t>, uint8_t> osnma_msg_receiver::parse_dsm_kroot() const
 {
     std::ifstream file(KROOTFILE_DEFAULT, std::ios::binary | std::ios::in);
-    if (!file) {
+    if (!file)
+        {
             return {std::vector<uint8_t>(), 0};
         }
 
@@ -1965,7 +1995,8 @@ std::pair<std::vector<uint8_t>, uint8_t> osnma_msg_receiver::parse_dsm_kroot() c
 
     file.close();
 
-    if (file.bad()) {
+    if (file.bad())
+        {
             return {std::vector<uint8_t>(), 0};
         }
 

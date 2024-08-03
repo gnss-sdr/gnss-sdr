@@ -28,16 +28,16 @@
 #include "gnss_sdr_make_unique.h"  // for std::make:unique in C++11
 #include "osnma_data.h"            // for OSNMA_data structures
 #include "osnma_nav_data_manager.h"
-#include <gnuradio/block.h>        // for gr::block
-#include <pmt/pmt.h>               // for pmt::pmt_t
-#include <array>                   // for std::array
-#include <cstdint>                 // for uint8_t
-#include <ctime>                   // for std::time_t
-#include <map>                     // for std::map, std::multimap
-#include <memory>                  // for std::shared_ptr
-#include <string>                  // for std::string
-#include <vector>                  // for std::vector
-#include <utility>                 // for std::pair
+#include <gnuradio/block.h>  // for gr::block
+#include <pmt/pmt.h>         // for pmt::pmt_t
+#include <array>             // for std::array
+#include <cstdint>           // for uint8_t
+#include <ctime>             // for std::time_t
+#include <map>               // for std::map, std::multimap
+#include <memory>            // for std::shared_ptr
+#include <string>            // for std::string
+#include <utility>           // for std::pair
+#include <vector>            // for std::vector
 
 /** \addtogroup Core
  * \{ */
@@ -51,7 +51,7 @@ class osnma_msg_receiver;
 
 using osnma_msg_receiver_sptr = gnss_shared_ptr<osnma_msg_receiver>;
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode = false);
 
 /*!
  * \brief GNU Radio block that receives asynchronous OSNMA messages
@@ -66,8 +66,8 @@ public:
     std::unique_ptr<Gnss_Crypto> d_crypto;          // access to cryptographic functions
     void msg_handler_osnma(const pmt::pmt_t& msg);  // GnssCrypto and the message handler are needed by public method within TestVectors fixture
 private:
-    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath);
-    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath);
+    friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode);
+    osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, bool strict_mode);
 
     void process_osnma_message(const std::shared_ptr<OSNMA_msg>& osnma_msg);
     void read_nma_header(uint8_t nma_header);
@@ -103,6 +103,7 @@ private:
     std::map<uint32_t, std::vector<uint8_t>> d_tesla_keys;                       // tesla keys over time, sorted by TOW
     std::multimap<uint32_t, Tag> d_tags_awaiting_verify;                         // container with tags to verify from arbitrary SVIDs, sorted by TOW
 
+    std::vector<uint8_t> d_new_public_key;
     std::vector<uint8_t> d_tags_to_verify{0, 4, 12};
     std::vector<MACK_message> d_macks_awaiting_MACSEQ_verification;
 
@@ -111,8 +112,8 @@ private:
     std::array<uint16_t, 16> d_number_of_blocks{};
     std::array<uint8_t, 60> d_mack_message{};  // C: 480 b
 
-    std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;  // osnma parameters parser
-    std::unique_ptr<Osnma_Helper> d_helper;          // helper class with auxiliary functions
+    std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;              // osnma parameters parser
+    std::unique_ptr<Osnma_Helper> d_helper;                      // helper class with auxiliary functions
     std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager;  // refactor for holding and processing navigation data
 
     OSNMA_data d_osnma_data{};
@@ -125,30 +126,28 @@ private:
     uint32_t d_GST_SIS{};                 // GST coming from W6 and W5 of SIS
     uint32_t d_GST_PKR_PKREV_start{};
     uint32_t d_GST_PKR_AM_start{};
-    uint32_t d_WN{};
-    uint32_t d_TOW{};
 
-    uint8_t const d_T_L{30};        // s RG Section 2.1
-
-    bool d_new_data{false};
-    bool d_public_key_verified{false};
-    bool d_kroot_verified{false};
-    bool d_tesla_key_verified{false};
-    bool d_flag_debug{true};
-    bool d_flag_hot_start{false};
-    bool d_flag_PK_renewal{false};
-    bool d_flag_PK_revocation{false};
-    uint8_t d_new_public_key_id{};
-    std::vector<uint8_t> d_new_public_key;
-    bool d_flag_NPK_set{false};
-    bool d_flag_alert_message{false};
-
-    // Provide access to inner functions to Gtest
     uint32_t d_count_successful_tags{0};
     uint32_t d_count_failed_tags{0};
     uint32_t d_count_failed_Kroot{0};
     uint32_t d_count_failed_pubKey{0};  // failed public key verifications against Merkle root
     uint32_t d_count_failed_macseq{0};
+
+    uint8_t const d_T_L{30};  // s RG Section 2.1
+    uint8_t d_new_public_key_id{};
+
+    bool d_new_data{false};
+    bool d_public_key_verified{false};
+    bool d_kroot_verified{false};
+    bool d_tesla_key_verified{false};
+    bool d_strict_mode{false};
+    bool d_flag_hot_start{false};
+    bool d_flag_PK_renewal{false};
+    bool d_flag_PK_revocation{false};
+    bool d_flag_NPK_set{false};
+    bool d_flag_alert_message{false};
+
+    // Provide access to inner functions to Gtest
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, TagVerification);
     FRIEND_TEST(OsnmaMsgReceiverTest, BuildTagMessageM0);

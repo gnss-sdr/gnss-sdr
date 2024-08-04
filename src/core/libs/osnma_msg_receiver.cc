@@ -61,15 +61,18 @@ namespace wht = std;
 #endif
 
 
-osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath)
+osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode)
 {
-    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath));
+    return osnma_msg_receiver_sptr(new osnma_msg_receiver(pemFilePath, merkleFilePath, strict_mode));
 }
 
 
-osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath) : gr::block("osnma_msg_receiver",
-                                                                                                                gr::io_signature::make(0, 0, 0),
-                                                                                                                gr::io_signature::make(0, 0, 0))
+osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath,
+    const std::string& merkleFilePath,
+    bool strict_mode) : gr::block("osnma_msg_receiver",
+                            gr::io_signature::make(0, 0, 0),
+                            gr::io_signature::make(0, 0, 0)),
+                        d_strict_mode(strict_mode)
 {
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
     d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath);
@@ -114,23 +117,20 @@ osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath, const std
         boost::bind(&osnma_msg_receiver::msg_handler_osnma, this, _1));
 #endif
 #endif
-    std::chrono::time_point<std::chrono::system_clock> now;
-    if (d_flag_debug)
+
+    if (d_strict_mode)
         {
-            // d_GST_Rx = d_helper->compute_gst(d_initial_debug_time);
-            LOG(WARNING) << "Galileo OSNMA: Debug mode, time artificially set up.";
-            std::cout << "Galileo OSNMA: Debug mode, time artificially set up." << std::endl;
-            // TODO - need to synchronize time lapse with Gnss_Synchro?
+            d_GST_Rx = d_helper->compute_gst_now();
+            const auto WN = d_helper->get_WN(d_GST_Rx);
+            const auto TOW = d_helper->get_TOW(d_GST_Rx);
+            LOG(INFO) << "Galileo OSNMA: initial receiver time GST=[" << WN << " " << TOW << "]";
+            std::cout << "Galileo OSNMA: initial receiver time GST=[" << WN << " " << TOW << "]" << std::endl;
         }
     else
         {
-            d_GST_Rx = d_helper->compute_gst_now();
+            LOG(WARNING) << "Galileo OSNMA: in non-strict mode, local system time is not checked.";
+            std::cout << "Galileo OSNMA: in non-strict mode, local system time is not checked." << std::endl;
         }
-
-    d_WN = d_helper->get_WN(d_GST_Rx);
-    d_TOW = d_helper->get_TOW(d_GST_Rx);
-    LOG(WARNING) << "Galileo OSNMA: initial receiver time GST=[" << d_WN << " " << d_TOW << "]";
-    std::cout << "Galileo OSNMA: initial receiver time GST=[" << d_WN << " " << d_TOW << "]" << std::endl;
 }
 
 
@@ -167,13 +167,13 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                         {
                             d_last_received_GST = d_GST_SIS;
                         }
-                    if (d_flag_debug)
+                    if (d_strict_mode)
                         {
-                            d_GST_Rx = d_last_received_GST;
+                            d_GST_Rx = d_helper->compute_gst_now();
                         }
                     else
                         {
-                            d_GST_Rx = d_helper->compute_gst_now();
+                            d_GST_Rx = d_last_received_GST;
                         }
                     LOG(INFO) << "Galileo OSNMA: Receiver Time GST=[" << d_helper->get_WN(d_GST_Rx) << " " << d_helper->get_TOW(d_GST_Rx) << "]";
                     std::cout << "Galileo OSNMA: Receiver Time GST=[" << d_helper->get_WN(d_GST_Rx) << " " << d_helper->get_TOW(d_GST_Rx) << "]" << std::endl;
@@ -1425,6 +1425,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(Tag& tag) const
     return m;
 }
 
+
 void osnma_msg_receiver::display_data()
 {
     //    if(d_satellite_nav_data.empty())
@@ -1488,6 +1489,7 @@ bool osnma_msg_receiver::verify_tesla_key(std::vector<uint8_t>& key, uint32_t TO
         }
     return d_tesla_key_verified;
 }
+
 
 /**
  * @brief Removes the tags that have been verified from the multimap d_tags_awaiting_verify.
@@ -1559,6 +1561,7 @@ void osnma_msg_receiver::remove_verified_tags()
                       << d_helper->verification_status_str(it.second.status);
         }
 }
+
 
 /**
  * @brief Control the size of the tags awaiting verification multimap.
@@ -1948,6 +1951,7 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
         }
 }
 
+
 void osnma_msg_receiver::send_data_to_pvt(const std::vector<OSNMA_NavData>& data)
 {
     if (!data.empty())
@@ -1959,6 +1963,7 @@ void osnma_msg_receiver::send_data_to_pvt(const std::vector<OSNMA_NavData>& data
                 }
         }
 }
+
 
 bool osnma_msg_receiver::store_dsm_kroot(const std::vector<uint8_t>& dsm, const uint8_t nma_header) const
 {
@@ -1977,6 +1982,7 @@ bool osnma_msg_receiver::store_dsm_kroot(const std::vector<uint8_t>& dsm, const 
 
     return file.good();
 }
+
 
 std::pair<std::vector<uint8_t>, uint8_t> osnma_msg_receiver::parse_dsm_kroot() const
 {

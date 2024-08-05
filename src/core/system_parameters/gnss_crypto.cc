@@ -1210,15 +1210,38 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
         }
     const EC_GROUP* group = EC_KEY_get0_group(pubkey);
     int nid = EC_GROUP_get_curve_name(group);
-    const char* curve_name = OBJ_nid2sn(nid);
-    const std::string curve_str(curve_name);
-    if (curve_str == "prime256v1")
+
+    if (nid == 0)
         {
-            d_PublicKeyType = "ECDSA P-256";
+            BIGNUM* p = BN_new();
+            if (EC_GROUP_get_curve_GFp(group, p, nullptr, nullptr, nullptr) == 1)
+                {
+                    char* p_str = BN_bn2hex(p);
+                    const std::string pcstr(p_str);
+                    if (pcstr.size() == 64)
+                        {
+                            d_PublicKeyType = "ECDSA P-256";
+                        }
+                    else if (pcstr.size() == 132)
+                        {
+                            d_PublicKeyType = "ECDSA P-521";
+                        }
+                    OPENSSL_free(p_str);
+                }
+            BN_free(p);
         }
-    else if (curve_str == "secp521r1")
+    else
         {
-            d_PublicKeyType = "ECDSA P-521";
+            const char* curve_name = OBJ_nid2sn(nid);
+            const std::string curve_str(curve_name);
+            if (curve_str == "prime256v1")
+                {
+                    d_PublicKeyType = "ECDSA P-256";
+                }
+            else if (curve_str == "secp521r1")
+                {
+                    d_PublicKeyType = "ECDSA P-521";
+                }
         }
 
     pubkey_copy(pubkey, &d_PublicKey);
@@ -1410,9 +1433,16 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     pubkey_copy(pubkey, &d_PublicKey);
     EVP_PKEY_free(pubkey);
 #else  // OpenSSL 1.x
+#if USE_OPENSSL_111
     // store the key type - needed for the Kroot in case no DSM-PKR available
     const auto ec_key = EVP_PKEY_get0_EC_KEY(pubkey);
     const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+    if (!group)
+        {
+            X509_free(cert);
+            EC_KEY_free(ec_key);
+            return false;
+        }
     const int nid = EC_GROUP_get_curve_name(group);
     if (nid == NID_X9_62_prime256v1)
         {
@@ -1422,7 +1452,56 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         {
             d_PublicKeyType = "ECDSA P-521";
         }
+#else
+    EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pubkey);
+    if (!ec_key)
+        {
+            X509_free(cert);
+            return false;
+        }
 
+    // Get the EC_GROUP from the EC_KEY
+    const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+    if (!group)
+        {
+            X509_free(cert);
+            EC_KEY_free(ec_key);
+            return false;
+        }
+    const int nid = EC_GROUP_get_curve_name(group);
+    if (nid == 0)
+        {
+            BIGNUM* p = BN_new();
+            if (EC_GROUP_get_curve_GFp(group, p, nullptr, nullptr, nullptr) == 1)
+                {
+                    char* p_str = BN_bn2hex(p);
+                    const std::string pcstr(p_str);
+                    if (pcstr.size() == 64)
+                        {
+                            d_PublicKeyType = "ECDSA P-256";
+                        }
+                    else if (pcstr.size() == 132)
+                        {
+                            d_PublicKeyType = "ECDSA P-521";
+                        }
+                    OPENSSL_free(p_str);
+                }
+            BN_free(p);
+        }
+    else
+        {
+            const char* curve_name = OBJ_nid2sn(nid);
+            const std::string curve_str(curve_name);
+            if (curve_str == "prime256v1")
+                {
+                    d_PublicKeyType = "ECDSA P-256";
+                }
+            else if (curve_str == "secp521r1")
+                {
+                    d_PublicKeyType = "ECDSA P-521";
+                }
+        }
+#endif
     EC_KEY* ec_pubkey = EVP_PKEY_get1_EC_KEY(pubkey);
     EVP_PKEY_free(pubkey);
     if (!ec_pubkey)

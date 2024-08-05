@@ -36,7 +36,7 @@ ExtraDataSource::ExtraDataSource(
           repeat),
       offset_in_samples_(offset_in_samples),
       sample_period_(sample_period),
-      last_tagged_sample_(offset_in_samples_)
+      next_tagged_sample_(offset_in_samples_)
 {
     if (io_signature->min_streams() != 1 and io_signature->max_streams() != 1)
         {
@@ -67,14 +67,14 @@ int ExtraDataSource::work(int noutput_items,
     const int item_size = input_signature()->sizeof_stream_item(ch);
     std::memcpy(output_items[ch], input_items[ch], noutput_items * item_size);
 
-    const uint64_t total_items_written = nitems_written(ch);
-    if (total_items_written >= sample_period_ + last_tagged_sample_)
+    const uint64_t total_items_written = nitems_written(ch) + noutput_items;
+    if (total_items_written >= next_tagged_sample_)
         {
-            for (uint64_t sample = last_tagged_sample_ + sample_period_; sample < total_items_written; sample += sample_period_)
+            for (uint64_t sample = next_tagged_sample_; sample < total_items_written; sample += sample_period_)
                 {
                     auto extra_data_item = get_next_item();
                     add_item_tag(ch, sample, pmt::mp("extra_data"), pmt::init_u8vector(extra_data_item.size(), extra_data_item));
-                    last_tagged_sample_ = sample;
+                    next_tagged_sample_ += sample_period_;
                 }
         }
 

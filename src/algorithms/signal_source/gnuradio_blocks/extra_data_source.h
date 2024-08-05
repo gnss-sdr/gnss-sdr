@@ -63,7 +63,7 @@ private:
     std::size_t offset_in_samples_;
     std::size_t sample_period_;
 
-    std::size_t last_tagged_sample_;
+    std::size_t next_tagged_sample_;
 };
 
 

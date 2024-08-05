@@ -2092,6 +2092,16 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     d_timetag_waiting = false;
                 }
 
+            std::vector<gr::tag_t> tags{};
+            // get_tags_in_window(tags, 0, 0, ninput_items[0], pmt::mp("extra_data"));
+            get_tags_in_range(tags, 0, nitems_read(0) - d_current_prn_length_samples, nitems_read(0), pmt::mp("extra_data"));
+
+            for (const auto &tag : tags)
+                {
+                    add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
+                    // std::cout << "[ED TAG (TRK)] [" << std::to_string(tag.offset) << "] ";
+                    // std::cout << std::endl;
+                }
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

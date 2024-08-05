@@ -22,9 +22,9 @@
 #include "Galileo_OSNMA.h"
 #include "gnss_crypto.h"
 #include "gnss_satellite.h"
-#include "osnma_dsm_reader.h"  // for OSNMA_DSM_Reader
-#include "osnma_helper.h"
-#include "osnma_nav_data_manager.h"
+#include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
+#include "osnma_dsm_reader.h"       // for OSNMA_DSM_Reader
+#include "osnma_helper.h"           // for Osnma_Helper
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>
 #include <cmath>
@@ -234,6 +234,12 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
             // d_osnma_data = OSNMA_data();
             DLOG(INFO) << "Galileo OSNMA: NMA info sent to the PVT block through the OSNMA_to_PVT async message port";
         }
+}
+
+
+void osnma_msg_receiver::read_merkle_xml(const std::string& merklepath)
+{
+    d_crypto->read_merkle_xml(merklepath);
 }
 
 

@@ -243,7 +243,7 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
 
             if (test_step == 1 && d_flag_NPK == true ){
                     // step 2: this simulates the osnma connecting to the GSC server and downloading the Merkle tree of the next public key
-                    osnma_object->d_crypto->read_merkle_xml(
+                    osnma_object->read_merkle_xml(
                         std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/MerkleTree/OSNMA_MerkleTree_20231007081500_PKID_8.xml");
                 }
 

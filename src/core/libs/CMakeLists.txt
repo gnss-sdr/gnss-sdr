@@ -93,7 +93,6 @@ target_link_libraries(core_libs
         core_libs_supl
         core_system_parameters
         pvt_libs
-        algorithms_libs
     PRIVATE
         algorithms_libs
         Boost::serialization

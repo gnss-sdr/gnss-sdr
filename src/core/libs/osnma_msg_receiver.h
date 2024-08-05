@@ -23,21 +23,20 @@
 #define FRIEND_TEST(test_case_name, test_name) \
     friend class test_case_name##_##test_name##_Test
 
-#include "galileo_inav_message.h"  // for OSNMA_msg
-#include "gnss_block_interface.h"  // for gnss_shared_ptr
-#include "gnss_sdr_make_unique.h"  // for std::make:unique in C++11
-#include "osnma_data.h"            // for OSNMA_data structures
-#include "osnma_nav_data_manager.h"
-#include <gnuradio/block.h>  // for gr::block
-#include <pmt/pmt.h>         // for pmt::pmt_t
-#include <array>             // for std::array
-#include <cstdint>           // for uint8_t
-#include <ctime>             // for std::time_t
-#include <map>               // for std::map, std::multimap
-#include <memory>            // for std::shared_ptr
-#include <string>            // for std::string
-#include <utility>           // for std::pair
-#include <vector>            // for std::vector
+#include "galileo_inav_message.h"    // for OSNMA_msg
+#include "gnss_block_interface.h"    // for gnss_shared_ptr
+#include "osnma_data.h"              // for OSNMA_data structures
+#include "osnma_nav_data_manager.h"  // for OSNMA_nav_data_Manager
+#include <gnuradio/block.h>          // for gr::block
+#include <pmt/pmt.h>                 // for pmt::pmt_t
+#include <array>                     // for std::array
+#include <cstdint>                   // for uint8_t
+#include <ctime>                     // for std::time_t
+#include <map>                       // for std::map, std::multimap
+#include <memory>                    // for std::shared_ptr
+#include <string>                    // for std::string
+#include <utility>                   // for std::pair
+#include <vector>                    // for std::vector
 
 /** \addtogroup Core
  * \{ */
@@ -62,9 +61,10 @@ osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, 
 class osnma_msg_receiver : public gr::block
 {
 public:
-    ~osnma_msg_receiver() = default;                //!< Default destructor
-    std::unique_ptr<Gnss_Crypto> d_crypto;          // access to cryptographic functions
-    void msg_handler_osnma(const pmt::pmt_t& msg);  // GnssCrypto and the message handler are needed by public method within TestVectors fixture
+    ~osnma_msg_receiver() = default;                      //!< Default destructor
+    void msg_handler_osnma(const pmt::pmt_t& msg);        //!< For testing purposes
+    void read_merkle_xml(const std::string& merklepath);  //!< Public for testing purposes
+
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode);
     osnma_msg_receiver(const std::string& crtFilePath, const std::string& merkleFilePath, bool strict_mode);
@@ -112,6 +112,7 @@ private:
     std::array<uint16_t, 16> d_number_of_blocks{};
     std::array<uint8_t, 60> d_mack_message{};  // C: 480 b
 
+    std::unique_ptr<Gnss_Crypto> d_crypto;                       // class for cryptographic functions
     std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;              // osnma parameters parser
     std::unique_ptr<Osnma_Helper> d_helper;                      // helper class with auxiliary functions
     std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager;  // refactor for holding and processing navigation data

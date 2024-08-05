@@ -70,6 +70,7 @@ TEST(GnssCryptoTest, VerifyPublicKeyStorage)
     auto d_crypto2 = std::make_unique<Gnss_Crypto>(f1, "");
     bool result2 = d_crypto2->store_public_key(f2);
     ASSERT_TRUE(result2);
+    ASSERT_TRUE(d_crypto2->get_public_key_type() == "ECDSA P-256");
 
     std::ifstream t(f1);
     std::string content_file((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());

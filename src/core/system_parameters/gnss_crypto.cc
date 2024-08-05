@@ -20,6 +20,7 @@
 #include "Galileo_OSNMA.h"
 #include <pugixml.hpp>
 #include <cstddef>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -912,11 +913,14 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     point = EC_POINT_new(group);
     if (!point)
         {
+            EC_GROUP_free(group);
             return;
         }
 
     if (!EC_POINT_oct2point(group, point, publicKey.data(), publicKey.size(), nullptr))
         {
+            EC_GROUP_free(group);
+            EC_POINT_free(point);
             return;
         }
 
@@ -930,11 +934,16 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
         }
     if (!ec_key)
         {
+            EC_GROUP_free(group);
+            EC_POINT_free(point);
             return;
         }
 
     if (!EC_KEY_set_public_key(ec_key, point))
         {
+            EC_KEY_free(ec_key);
+            EC_POINT_free(point);
+            EC_GROUP_free(group);
             return;
         }
     if (!pubkey_copy(ec_key, &d_PublicKey))
@@ -1066,6 +1075,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
         {
             return;
         }
+    d_PublicKeyType = "Unknown";
     std::string pemContent((std::istreambuf_iterator<char>(pemFile)), std::istreambuf_iterator<char>());
 #if USE_GNUTLS_FALLBACK
     // Import the PEM data
@@ -1085,6 +1095,52 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
             return;
         }
 
+    // store the key type - needed for the Kroot in case no DSM-PKR available
+    gnutls_pk_algorithm_t pk_algorithm;
+    unsigned int bits;
+
+    ret = gnutls_pubkey_get_pk_algorithm(pubkey, &bits);
+    if (ret < 0)
+        {
+            LOG(WARNING) << "GnuTLS: Failed to get public key algorithm from .pem file: " << gnutls_strerror(ret);
+            gnutls_pubkey_deinit(pubkey);
+            return;
+        }
+
+    pk_algorithm = static_cast<gnutls_pk_algorithm_t>(ret);
+
+    if (pk_algorithm == GNUTLS_PK_ECDSA)
+        {
+            gnutls_ecc_curve_t curve;
+            ret = gnutls_pubkey_export_ecc_raw(pubkey, &curve, nullptr, nullptr);
+            if (ret < 0)
+                {
+                    LOG(WARNING) << "GnuTLS: Failed to get EC curve from .pem file: " << gnutls_strerror(ret);
+                    gnutls_pubkey_deinit(pubkey);
+                    return;
+                }
+
+            if (curve == GNUTLS_ECC_CURVE_SECP256R1)
+                {
+                    d_PublicKeyType = "ECDSA P-256";
+                }
+            else if (curve == GNUTLS_ECC_CURVE_SECP521R1)
+                {
+                    d_PublicKeyType = "ECDSA P-521";
+                }
+            else
+                {
+                    LOG(WARNING) << "GnuTLS: Trying to read unknown EC curve from .pem file";
+                    gnutls_pubkey_deinit(pubkey);
+                    return;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "GnuTLS: Trying to read unknown key type from .pem file";
+            gnutls_pubkey_deinit(pubkey);
+            return;
+        }
     pubkey_copy(pubkey, &d_PublicKey);
     gnutls_pubkey_deinit(pubkey);
 #else  // OpenSSL
@@ -1096,9 +1152,77 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
             return;
         }
 #if USE_OPENSSL_3
-    d_PublicKey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
+    EVP_PKEY* pubkey = nullptr;
+    pubkey = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
+
+    // store the key type - needed for the Kroot in case no DSM-PKR available
+    // Get the key type
+    int key_type = EVP_PKEY_base_id(pubkey);
+    if (key_type == EVP_PKEY_EC)
+        {
+            // It's an EC key, now we need to determine the curve
+            char curve_name[256];
+            size_t curve_name_len = sizeof(curve_name);
+
+            if (EVP_PKEY_get_utf8_string_param(pubkey, OSSL_PKEY_PARAM_GROUP_NAME, curve_name, curve_name_len, &curve_name_len) == 1)
+                {
+                    if (strcmp(curve_name, "prime256v1") == 0 || strcmp(curve_name, "P-256") == 0)
+                        {
+                            d_PublicKeyType = "ECDSA P-256";
+                        }
+                    else if (strcmp(curve_name, "secp521r1") == 0 || strcmp(curve_name, "P-521") == 0)
+                        {
+                            d_PublicKeyType = "ECDSA P-521";
+                        }
+                    else
+                        {
+                            LOG(WARNING) << "OpenSSL: Trying to read an unknown EC curve from .pem file";
+                            BIO_free(bio);
+                            EVP_PKEY_free(pubkey);
+                            return;
+                        }
+                }
+            else
+                {
+                    LOG(WARNING) << "OpenSSL: Trying to read an unknown EC curve from .pem file";
+                    BIO_free(bio);
+                    EVP_PKEY_free(pubkey);
+                    return;
+                }
+        }
+    else
+        {
+            LOG(WARNING) << "OpenSSL: Trying to read an unknown key type from .pem file";
+            BIO_free(bio);
+            EVP_PKEY_free(pubkey);
+            return;
+        }
+    pubkey_copy(pubkey, &d_PublicKey);
+    EVP_PKEY_free(pubkey);
 #else  // OpenSSL 1.x
-    d_PublicKey = PEM_read_bio_EC_PUBKEY(bio, nullptr, nullptr, nullptr);
+    EC_KEY* pubkey = nullptr;
+    pubkey = PEM_read_bio_EC_PUBKEY(bio, nullptr, nullptr, nullptr);
+    if (!pubkey)
+        {
+            LOG(WARNING) << "OpenSSL: Failed to extract the public key from .pem file";
+            BIO_free(bio);
+            return;
+        }
+    const EC_GROUP* group = EC_KEY_get0_group(pubkey);
+    int nid = EC_GROUP_get_curve_name(group);
+    const char* curve_name = OBJ_nid2sn(nid);
+    const std::string curve_str(curve_name);
+    if (curve_str == "prime256v1")
+        {
+            d_PublicKeyType = "ECDSA P-256";
+        }
+    else if (curve_str == "secp521r1")
+        {
+            d_PublicKeyType = "ECDSA P-521";
+        }
+
+    pubkey_copy(pubkey, &d_PublicKey);
+    EC_KEY_free(pubkey);
 #endif
     BIO_free(bio);
     if (d_PublicKey == nullptr)
@@ -1172,20 +1296,8 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 
     if (pk_algorithm == GNUTLS_PK_ECDSA)
         {
-            gnutls_datum_t params;
-            ret = gnutls_pubkey_export_ecc_raw(pubkey, nullptr, &params, nullptr);
-            if (ret < 0)
-                {
-                    LOG(WARNING) << "GnuTLS: Failed to export EC parameters: " << gnutls_strerror(ret);
-                    gnutls_pubkey_deinit(pubkey);
-                    gnutls_x509_crt_deinit(cert);
-                    return false;
-                }
-
             gnutls_ecc_curve_t curve;
-            ret = gnutls_ecc_curve_get_id(reinterpret_cast<const char*>(params.data));
-            gnutls_free(params.data);
-
+            ret = gnutls_pubkey_export_ecc_raw(pubkey, &curve, nullptr, nullptr);
             if (ret < 0)
                 {
                     LOG(WARNING) << "GnuTLS: Failed to get EC curve: " << gnutls_strerror(ret);
@@ -1193,8 +1305,6 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
                     gnutls_x509_crt_deinit(cert);
                     return false;
                 }
-
-            curve = static_cast<gnutls_ecc_curve_t>(ret);
 
             if (curve == GNUTLS_ECC_CURVE_SECP256R1)
                 {

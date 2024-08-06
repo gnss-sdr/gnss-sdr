@@ -49,10 +49,9 @@ TEST(GnssCryptoTest, VerifyPubKeyImport)
 
 TEST(GnssCryptoTest, VerifyPublicKeyStorage)
 {
-    auto d_crypto = std::make_unique<Gnss_Crypto>();
-
     const std::string f1("./osnma_test_file1.pem");
     const std::string f2("./osnma_test_file2.pem");
+    const std::string f3("./osnma_test_file3.pem");
 
     // Input taken from RG 1.3 A7.1
     // compressed ECDSA P-256 format
@@ -62,15 +61,17 @@ TEST(GnssCryptoTest, VerifyPublicKeyStorage)
         0x63, 0xFF, 0xA0, 0x91, 0x41, 0x0F, 0xC1, 0x58, 0xFB, 0xB7,
         0x79, 0x80, 0xEA};
 
+    auto d_crypto = std::make_unique<Gnss_Crypto>();
+    ASSERT_FALSE(d_crypto->have_public_key());
+    ASSERT_TRUE(d_crypto->get_public_key_type() == "Unknown");
     d_crypto->set_public_key(publicKey);
-    bool result = d_crypto->store_public_key(f1);
-
-    ASSERT_TRUE(result);
+    ASSERT_TRUE(d_crypto->have_public_key());
+    ASSERT_TRUE(d_crypto->store_public_key(f1));
 
     auto d_crypto2 = std::make_unique<Gnss_Crypto>(f1, "");
-    bool result2 = d_crypto2->store_public_key(f2);
-    ASSERT_TRUE(result2);
+    ASSERT_TRUE(d_crypto2->have_public_key());
     ASSERT_TRUE(d_crypto2->get_public_key_type() == "ECDSA P-256");
+    ASSERT_TRUE(d_crypto2->store_public_key(f2));
 
     std::ifstream t(f1);
     std::string content_file((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
@@ -80,9 +81,39 @@ TEST(GnssCryptoTest, VerifyPublicKeyStorage)
 
     ASSERT_EQ(content_file, content_file2);
 
+    // P-521 Public key in compressed X format
+    std::vector<uint8_t> publicKey_P521 = {
+        0x03, 0x00, 0x28, 0x35, 0xBB, 0xE9, 0x24, 0x59, 0x4E, 0xF0,
+        0xE3, 0xA2, 0xDB, 0xC0, 0x49, 0x30, 0x60, 0x7C, 0x61, 0x90,
+        0xE4, 0x03, 0xE0, 0xC7, 0xB8, 0xC2, 0x62, 0x37, 0xF7, 0x58,
+        0x56, 0xBE, 0x63, 0x5C, 0x97, 0xF7, 0x53, 0x64, 0x7E, 0xE1,
+        0x0C, 0x07, 0xD3, 0x97, 0x8D, 0x58, 0x46, 0xFD, 0x6E, 0x06,
+        0x44, 0x01, 0xA7, 0xAA, 0xC4, 0x95, 0x13, 0x5D, 0xC9, 0x77,
+        0x26, 0xE9, 0xF8, 0x72, 0x0C, 0xD3, 0x88};
+
+    d_crypto->set_public_key(publicKey_P521);
+    ASSERT_TRUE(d_crypto->have_public_key());
+    ASSERT_TRUE(d_crypto->get_public_key_type() == "ECDSA P-521");
+    ASSERT_TRUE(d_crypto->store_public_key(f3));
+
+    auto d_crypto3 = std::make_unique<Gnss_Crypto>(f3, "");
+    ASSERT_TRUE(d_crypto3->have_public_key());
+    ASSERT_TRUE(d_crypto3->get_public_key_type() == "ECDSA P-521");
+
+    std::vector<uint8_t> wrong_publicKey = {
+        0x03, 0x03, 0xB2, 0xCE, 0x64, 0xBC, 0x20, 0x7B, 0xDD, 0x8B,
+        0xC4, 0xDF, 0x85, 0x91, 0x87, 0xFC, 0xB6, 0x86, 0x32, 0x0D,
+        0x63, 0xFF, 0xA0};
+
+    auto d_crypto4 = std::make_unique<Gnss_Crypto>();
+    d_crypto4->set_public_key(wrong_publicKey);
+    ASSERT_FALSE(d_crypto4->have_public_key());
+    ASSERT_TRUE(d_crypto4->get_public_key_type() == "Unknown");
+
     errorlib::error_code ec;
     ASSERT_TRUE(fs::remove(fs::path(f1), ec));
     ASSERT_TRUE(fs::remove(fs::path(f2), ec));
+    ASSERT_TRUE(fs::remove(fs::path(f3), ec));
 }
 
 
@@ -263,13 +294,11 @@ TEST(GnssCryptoTest, VerifySignatureP256)
         0x79, 0x80, 0xEA};
 
     d_crypto->set_public_key(publicKey);
-    bool result = d_crypto->verify_signature_ecdsa_p256(message, signature);
-    ASSERT_TRUE(result);
+    ASSERT_TRUE(d_crypto->verify_signature_ecdsa_p256(message, signature));
 
     std::vector<uint8_t> wrong_signature = signature;
     wrong_signature[1] = 1;
-    bool result2 = d_crypto->verify_signature_ecdsa_p256(message, wrong_signature);
-    ASSERT_TRUE(!result2);
+    ASSERT_FALSE(d_crypto->verify_signature_ecdsa_p256(message, wrong_signature));
 }
 
 
@@ -309,11 +338,9 @@ TEST(GnssCryptoTest, VerifySignatureP521)
         0x28, 0xEF};
 
     d_crypto->set_public_key(publicKey);
-    bool result = d_crypto->verify_signature_ecdsa_p521(message, signature);
-    ASSERT_TRUE(result);
+    ASSERT_TRUE(d_crypto->verify_signature_ecdsa_p521(message, signature));
 
     std::vector<uint8_t> wrong_signature = signature;
     wrong_signature[1] = 1;
-    bool result2 = d_crypto->verify_signature_ecdsa_p521(message, wrong_signature);
-    ASSERT_TRUE(!result2);
+    ASSERT_FALSE(d_crypto->verify_signature_ecdsa_p521(message, wrong_signature));
 }

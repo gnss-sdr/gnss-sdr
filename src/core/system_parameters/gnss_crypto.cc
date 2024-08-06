@@ -794,13 +794,17 @@ std::vector<uint8_t> Gnss_Crypto::get_merkle_root() const
 
 std::string Gnss_Crypto::get_public_key_type() const
 {
+    if (d_PublicKeyType.empty())
+        {
+            return std::string("Unknown");
+        }
     return d_PublicKeyType;
 }
 
 
 void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 {
-    d_PublicKeyType = "Unknown";
+    d_PublicKeyType = std::string("Unknown");
 #if USE_GNUTLS_FALLBACK
     gnutls_pubkey_t pubkey{};
     gnutls_ecc_curve_t curve;
@@ -812,13 +816,13 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     if (size_pk == 33)
         {
             curve = GNUTLS_ECC_CURVE_SECP256R1;
-            d_PublicKeyType = "ECDSA P-256";
+            d_PublicKeyType = std::string("ECDSA P-256");
             decompress_public_key_secp256r1(publicKey, x, y);
         }
     else if (size_pk == 67)
         {
             curve = GNUTLS_ECC_CURVE_SECP521R1;
-            d_PublicKeyType = "ECDSA P-521";
+            d_PublicKeyType = std::string("ECDSA P-521");
             decompress_public_key_secp521r1(publicKey, x, y);
         }
     else
@@ -836,6 +840,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
         {
             gnutls_pubkey_deinit(pubkey);
             LOG(WARNING) << "GnuTLS: error setting the OSNMA public key: " << gnutls_strerror(ret);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
     pubkey_copy(pubkey, &d_PublicKey);
@@ -861,11 +866,11 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
 
     if (public_key_size == 33)
         {
-            d_PublicKeyType = "ECDSA P-256";
+            d_PublicKeyType = std::string("ECDSA P-256");
         }
     else if (public_key_size == 67)
         {
-            d_PublicKeyType = "ECDSA P-521";
+            d_PublicKeyType = std::string("ECDSA P-521");
         }
 
     ctx = EVP_PKEY_CTX_new_from_name(nullptr, "EC", nullptr);
@@ -875,6 +880,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
             EVP_PKEY_CTX_free(ctx);
             OSSL_PARAM_free(params);
             OSSL_PARAM_BLD_free(param_bld);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
 
@@ -884,6 +890,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
             EVP_PKEY_CTX_free(ctx);
             OSSL_PARAM_free(params);
             OSSL_PARAM_BLD_free(param_bld);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
 
@@ -898,15 +905,16 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     if (publicKey.size() == 33)  // ECDSA-P-256
         {
             group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
-            d_PublicKeyType = "ECDSA P-256";
+            d_PublicKeyType = std::string("ECDSA P-256");
         }
     else  // ECDSA-P-521
         {
             group = EC_GROUP_new_by_curve_name(NID_secp521r1);
-            d_PublicKeyType = "ECDSA P-256";
+            d_PublicKeyType = std::string("ECDSA P-521");
         }
     if (!group)
         {
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
 
@@ -914,6 +922,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
     if (!point)
         {
             EC_GROUP_free(group);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
 
@@ -921,6 +930,7 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
         {
             EC_GROUP_free(group);
             EC_POINT_free(point);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
 
@@ -936,18 +946,23 @@ void Gnss_Crypto::set_public_key(const std::vector<uint8_t>& publicKey)
         {
             EC_GROUP_free(group);
             EC_POINT_free(point);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
-
     if (!EC_KEY_set_public_key(ec_key, point))
         {
             EC_KEY_free(ec_key);
             EC_POINT_free(point);
             EC_GROUP_free(group);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
     if (!pubkey_copy(ec_key, &d_PublicKey))
         {
+            EC_KEY_free(ec_key);
+            EC_POINT_free(point);
+            EC_GROUP_free(group);
+            d_PublicKeyType = std::string("Unknown");
             return;
         }
     EC_KEY_free(ec_key);
@@ -1034,11 +1049,11 @@ void Gnss_Crypto::read_merkle_xml(const std::string& merkleFilePath)
                     LOG(INFO) << "OSNMA Merkletree - PK Type: " << pkType;
                     if (pkType == "ECDSA P-256/SHA-256")
                         {
-                            d_PublicKeyType = "ECDSA P-256";
+                            d_PublicKeyType = std::string("ECDSA P-256");
                         }
                     else if (pkType == "ECDSA P-521/SHA-512")
                         {
-                            d_PublicKeyType = "ECDSA P-521";
+                            d_PublicKeyType = std::string("ECDSA P-521");
                         }
                 }
             for (pugi::xml_node treeNode : merkleTree.children("TreeNode"))
@@ -1075,7 +1090,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
         {
             return;
         }
-    d_PublicKeyType = "Unknown";
+    d_PublicKeyType = std::string("Unknown");
     std::string pemContent((std::istreambuf_iterator<char>(pemFile)), std::istreambuf_iterator<char>());
 #if USE_GNUTLS_FALLBACK
     // Import the PEM data
@@ -1108,8 +1123,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
         }
 
     pk_algorithm = static_cast<gnutls_pk_algorithm_t>(ret);
-
-    if (pk_algorithm == GNUTLS_PK_ECDSA)
+    if (pk_algorithm == GNUTLS_PK_ECC)
         {
             gnutls_ecc_curve_t curve;
             ret = gnutls_pubkey_export_ecc_raw(pubkey, &curve, nullptr, nullptr);
@@ -1122,11 +1136,11 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
 
             if (curve == GNUTLS_ECC_CURVE_SECP256R1)
                 {
-                    d_PublicKeyType = "ECDSA P-256";
+                    d_PublicKeyType = std::string("ECDSA P-256");
                 }
             else if (curve == GNUTLS_ECC_CURVE_SECP521R1)
                 {
-                    d_PublicKeyType = "ECDSA P-521";
+                    d_PublicKeyType = std::string("ECDSA P-521");
                 }
             else
                 {
@@ -1168,11 +1182,11 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
                 {
                     if (strcmp(curve_name, "prime256v1") == 0 || strcmp(curve_name, "P-256") == 0)
                         {
-                            d_PublicKeyType = "ECDSA P-256";
+                            d_PublicKeyType = std::string("ECDSA P-256");
                         }
                     else if (strcmp(curve_name, "secp521r1") == 0 || strcmp(curve_name, "P-521") == 0)
                         {
-                            d_PublicKeyType = "ECDSA P-521";
+                            d_PublicKeyType = std::string("ECDSA P-521");
                         }
                     else
                         {
@@ -1210,7 +1224,6 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
         }
     const EC_GROUP* group = EC_KEY_get0_group(pubkey);
     int nid = EC_GROUP_get_curve_name(group);
-
     if (nid == 0)
         {
             BIGNUM* p = BN_new();
@@ -1220,11 +1233,11 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
                     const std::string pcstr(p_str);
                     if (pcstr.size() == 64)
                         {
-                            d_PublicKeyType = "ECDSA P-256";
+                            d_PublicKeyType = std::string("ECDSA P-256");
                         }
                     else if (pcstr.size() == 132)
                         {
-                            d_PublicKeyType = "ECDSA P-521";
+                            d_PublicKeyType = std::string("ECDSA P-521");
                         }
                     OPENSSL_free(p_str);
                 }
@@ -1236,11 +1249,11 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
             const std::string curve_str(curve_name);
             if (curve_str == "prime256v1")
                 {
-                    d_PublicKeyType = "ECDSA P-256";
+                    d_PublicKeyType = std::string("ECDSA P-256");
                 }
             else if (curve_str == "secp521r1")
                 {
-                    d_PublicKeyType = "ECDSA P-521";
+                    d_PublicKeyType = std::string("ECDSA P-521");
                 }
         }
 
@@ -1262,8 +1275,7 @@ void Gnss_Crypto::readPublicKeyFromPEM(const std::string& pemFilePath)
 
 bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 {
-    d_PublicKeyType = "Unknown";
-#if USE_GNUTLS_FALLBACK
+    d_PublicKeyType = std::string("Unknown");
     // Open the .crt file
     std::ifstream crtFile(crtFilePath, std::ios::binary);
     if (!crtFile.is_open())
@@ -1278,8 +1290,8 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         }
 
     const std::vector<unsigned char> buffer((std::istreambuf_iterator<char>(crtFile)), std::istreambuf_iterator<char>());
+#if USE_GNUTLS_FALLBACK
     const gnutls_datum_t buffer_datum = {const_cast<unsigned char*>(buffer.data()), static_cast<unsigned int>(buffer.size())};
-
     gnutls_x509_crt_t cert;
     gnutls_x509_crt_init(&cert);
     int ret = gnutls_x509_crt_import(cert, &buffer_datum, GNUTLS_X509_FMT_PEM);
@@ -1316,8 +1328,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         }
 
     pk_algorithm = static_cast<gnutls_pk_algorithm_t>(ret);
-
-    if (pk_algorithm == GNUTLS_PK_ECDSA)
+    if (pk_algorithm == GNUTLS_PK_ECC)
         {
             gnutls_ecc_curve_t curve;
             ret = gnutls_pubkey_export_ecc_raw(pubkey, &curve, nullptr, nullptr);
@@ -1331,11 +1342,11 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
 
             if (curve == GNUTLS_ECC_CURVE_SECP256R1)
                 {
-                    d_PublicKeyType = "ECDSA P-256";
+                    d_PublicKeyType = std::string("ECDSA P-256");
                 }
             else if (curve == GNUTLS_ECC_CURVE_SECP521R1)
                 {
-                    d_PublicKeyType = "ECDSA P-521";
+                    d_PublicKeyType = std::string("ECDSA P-521");
                 }
             else
                 {
@@ -1357,16 +1368,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     gnutls_x509_crt_deinit(cert);
     gnutls_pubkey_deinit(pubkey);
 #else  // OpenSSL
-    // Open the .crt file
-    std::ifstream crtFile(crtFilePath, std::ios::binary);
-    if (!crtFile.is_open())
-        {
-            LOG(WARNING) << "OpenSSL: Unable to open file: " << crtFilePath;
-            return false;
-        }
-
     // Read certificate
-    std::vector<char> buffer((std::istreambuf_iterator<char>(crtFile)), std::istreambuf_iterator<char>());
     BIO* bio = BIO_new_mem_buf(buffer.data(), buffer.size());
     if (!bio)
         {
@@ -1387,6 +1389,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         {
             LOG(WARNING) << "OpenSSL: Failed to extract the public key";
             X509_free(cert);
+            BIO_free(bio);
             return false;
         }
 #if USE_OPENSSL_3
@@ -1403,24 +1406,25 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
                 {
                     if (strcmp(curve_name, "prime256v1") == 0 || strcmp(curve_name, "P-256") == 0)
                         {
-                            d_PublicKeyType = "ECDSA P-256";
+                            d_PublicKeyType = std::string("ECDSA P-256");
                         }
                     else if (strcmp(curve_name, "secp521r1") == 0 || strcmp(curve_name, "P-521") == 0)
                         {
-                            d_PublicKeyType = "ECDSA P-521";
+                            d_PublicKeyType = std::string("ECDSA P-521");
                         }
                     else
                         {
                             LOG(WARNING) << "OpenSSL: Trying to read an unknown EC curve";
                             X509_free(cert);
+                            BIO_free(bio);
                             return false;
                         }
                 }
             else
                 {
-                    d_PublicKeyType = "Unknown EC curve";
                     LOG(WARNING) << "OpenSSL: Trying to read an unknown EC curve";
                     X509_free(cert);
+                    BIO_free(bio);
                     return false;
                 }
         }
@@ -1428,6 +1432,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         {
             LOG(WARNING) << "OpenSSL: Trying to read an unknown key type";
             X509_free(cert);
+            BIO_free(bio);
             return false;
         }
     pubkey_copy(pubkey, &d_PublicKey);
@@ -1441,22 +1446,25 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         {
             X509_free(cert);
             EC_KEY_free(ec_key);
+            BIO_free(bio);
             return false;
         }
     const int nid = EC_GROUP_get_curve_name(group);
     if (nid == NID_X9_62_prime256v1)
         {
-            d_PublicKeyType = "ECDSA P-256";
+            d_PublicKeyType = std::string("ECDSA P-256");
         }
     else if (nid == NID_secp521r1)
         {
-            d_PublicKeyType = "ECDSA P-521";
+            d_PublicKeyType = std::string("ECDSA P-521");
         }
+    EC_KEY_free(ec_key);
 #else
     EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pubkey);
     if (!ec_key)
         {
             X509_free(cert);
+            BIO_free(bio);
             return false;
         }
 
@@ -1466,6 +1474,7 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
         {
             X509_free(cert);
             EC_KEY_free(ec_key);
+            BIO_free(bio);
             return false;
         }
     const int nid = EC_GROUP_get_curve_name(group);
@@ -1478,11 +1487,11 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
                     const std::string pcstr(p_str);
                     if (pcstr.size() == 64)
                         {
-                            d_PublicKeyType = "ECDSA P-256";
+                            d_PublicKeyType = std::string("ECDSA P-256");
                         }
                     else if (pcstr.size() == 132)
                         {
-                            d_PublicKeyType = "ECDSA P-521";
+                            d_PublicKeyType = std::string("ECDSA P-521");
                         }
                     OPENSSL_free(p_str);
                 }
@@ -1494,13 +1503,14 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
             const std::string curve_str(curve_name);
             if (curve_str == "prime256v1")
                 {
-                    d_PublicKeyType = "ECDSA P-256";
+                    d_PublicKeyType = std::string("ECDSA P-256");
                 }
             else if (curve_str == "secp521r1")
                 {
-                    d_PublicKeyType = "ECDSA P-521";
+                    d_PublicKeyType = std::string("ECDSA P-521");
                 }
         }
+    EC_KEY_free(ec_key);
 #endif
     EC_KEY* ec_pubkey = EVP_PKEY_get1_EC_KEY(pubkey);
     EVP_PKEY_free(pubkey);

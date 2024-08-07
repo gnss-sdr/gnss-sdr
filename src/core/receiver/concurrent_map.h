@@ -36,52 +36,48 @@ template <typename Data>
  */
 class Concurrent_Map
 {
-    typedef typename std::map<int, Data>::iterator Data_iterator;  // iterator is scope dependent
 public:
     void write(int key, Data const& data)
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
-        Data_iterator data_iter;
-        data_iter = the_map.find(key);
+        std::lock_guard<std::mutex> lock(the_mutex);
+        auto data_iter = the_map.find(key);
         if (data_iter != the_map.end())
             {
                 data_iter->second = data;  // update
             }
         else
             {
-                the_map.insert(std::pair<int, Data>(key, data));  // insert SILENTLY fails if the item already exists in the map!
+                the_map.insert(std::pair<int, Data>(key, data));  // insert does not overwrite if the item already exists in the map!
             }
-        lock.unlock();
     }
 
-    std::map<int, Data> get_map_copy()
+    std::map<int, Data> get_map_copy() const&
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
-        std::map<int, Data> map_aux = the_map;
-        lock.unlock();
-        return map_aux;
+        std::lock_guard<std::mutex> lock(the_mutex);
+        return the_map;  // This implicitly creates a copy
     }
 
-    size_t size()
+    std::map<int, Data> get_map_copy() &&
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
-        size_t size_ = the_map.size();
-        lock.unlock();
-        return size_;
+        std::lock_guard<std::mutex> lock(the_mutex);
+        return std::move(the_map);
     }
 
-    bool read(int key, Data& p_data)
+    size_t size() const
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
-        Data_iterator data_iter;
-        data_iter = the_map.find(key);
+        std::lock_guard<std::mutex> lock(the_mutex);
+        return the_map.size();
+    }
+
+    bool read(int key, Data& p_data) const
+    {
+        std::lock_guard<std::mutex> lock(the_mutex);
+        auto data_iter = the_map.find(key);
         if (data_iter != the_map.end())
             {
                 p_data = data_iter->second;
-                lock.unlock();
                 return true;
             }
-        lock.unlock();
         return false;
     }
 

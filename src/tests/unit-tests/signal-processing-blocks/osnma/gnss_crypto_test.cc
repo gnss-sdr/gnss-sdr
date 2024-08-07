@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 #include <fstream>
 #include <iterator>
+#include <utility>
 
 class GnssCryptoTest : public ::testing::Test
 {
@@ -296,7 +297,7 @@ TEST(GnssCryptoTest, VerifySignatureP256)
     d_crypto->set_public_key(publicKey);
     ASSERT_TRUE(d_crypto->verify_signature_ecdsa_p256(message, signature));
 
-    std::vector<uint8_t> wrong_signature = signature;
+    std::vector<uint8_t> wrong_signature = std::move(signature);
     wrong_signature[1] = 1;
     ASSERT_FALSE(d_crypto->verify_signature_ecdsa_p256(message, wrong_signature));
 }
@@ -340,7 +341,7 @@ TEST(GnssCryptoTest, VerifySignatureP521)
     d_crypto->set_public_key(publicKey);
     ASSERT_TRUE(d_crypto->verify_signature_ecdsa_p521(message, signature));
 
-    std::vector<uint8_t> wrong_signature = signature;
+    std::vector<uint8_t> wrong_signature = std::move(signature);
     wrong_signature[1] = 1;
     ASSERT_FALSE(d_crypto->verify_signature_ecdsa_p521(message, wrong_signature));
 }

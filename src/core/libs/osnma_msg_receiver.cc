@@ -271,7 +271,7 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
         {
             d_flag_PK_renewal = false;
             uint32_t final_GST = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
-            double duration_hours = (final_GST - d_GST_PKR_PKREV_start) / 3600;
+            double duration_hours = (final_GST - d_GST_PKR_PKREV_start) / 3600.0;
             LOG(INFO) << "Galileo OSNMA: Public Key Renewal :: Finished at GST=" << duration_hours << ", Duration=" << duration_hours << " h";
             std::cout << "Galileo OSNMA: Public Key Renewal :: Finished at GST=" << duration_hours << ", Duration=" << duration_hours << " h" << std::endl;
         }
@@ -1400,7 +1400,7 @@ std::vector<uint8_t> osnma_msg_receiver::build_message(Tag& tag) const
     // Add applicable NavData bits to message
     std::string applicable_nav_data = d_nav_data_manager->get_navigation_data(tag);
     std::vector<uint8_t> applicable_nav_data_bytes = d_helper->bytes(applicable_nav_data);
-    tag.nav_data = applicable_nav_data;  // update tag with applicable data
+    tag.nav_data = std::move(applicable_nav_data);  // update tag with applicable data
 
     // Convert and add OSNMA_NavData bytes into the message, taking care of that NMAS has only 2 bits
     for (uint8_t byte : applicable_nav_data_bytes)
@@ -1619,11 +1619,11 @@ bool osnma_msg_receiver::verify_macseq(const MACK_message& mack)
     // Assign relevant sequence based on subframe time
     if (mack.TOW % 60 < 30)  // tried GST_Sf and it does not support the data present.
         {
-            applicable_sequence = sq1;
+            applicable_sequence = std::move(sq1);
         }
     else if (mack.TOW % 60 >= 30)
         {
-            applicable_sequence = sq2;
+            applicable_sequence = std::move(sq2);
         }
     if (mack.tag_and_info.size() != applicable_sequence.size() - 1)
         {
@@ -1864,11 +1864,11 @@ std::vector<MACK_tag_and_info> osnma_msg_receiver::verify_macseq_new(const MACK_
     // Assign relevant sequence based on subframe time
     if (mack.TOW % 60 < 30)  // tried GST_Sf and it does not support the data present.
         {
-            applicable_sequence = sq1;
+            applicable_sequence = std::move(sq1);
         }
     else if (mack.TOW % 60 >= 30)
         {
-            applicable_sequence = sq2;
+            applicable_sequence = std::move(sq2);
         }
     if (mack.tag_and_info.size() != applicable_sequence.size() - 1)
         {

@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <utility>
 
 #if USE_GNUTLS_FALLBACK
 #include <cstring>
@@ -625,7 +626,7 @@ std::vector<uint8_t> Gnss_Crypto::compute_HMAC_SHA_256(const std::vector<uint8_t
     EVP_MAC_CTX_free(ctx);
     EVP_MAC_free(mac);
     hmac.resize(output_length);
-    output = hmac;
+    output = std::move(hmac);
 #else  // OpenSSL 1.x
     unsigned int outputLength = EVP_MAX_MD_SIZE;
     unsigned char* result = HMAC(EVP_sha256(), key.data(), key.size(), input.data(), input.size(), output.data(), &outputLength);
@@ -739,7 +740,7 @@ std::vector<uint8_t> Gnss_Crypto::compute_CMAC_AES(const std::vector<uint8_t>& k
     EVP_MAC_free(mac);
 
     aux.resize(output_length);
-    output = aux;
+    output = std::move(aux);
 #else  // OpenSSL 1.x
     size_t mac_length = 0;  // to hold the length of the MAC output
 

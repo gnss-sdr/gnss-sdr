@@ -22,6 +22,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "display.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -849,10 +850,11 @@ void ad936x_iio_custom::monitor_thread_fn()
             // } else {
             if (val & 4)
                 {
-                    std::cout << "WARNING: IIO status register reported overflow!\n";
-                    LOG(INFO) << "WARNING: IIO status register reported overflow!";
+                    std::cout 
+                        << TEXT_BOLD_RED
+                        << "WARNING: IIO status register reported overflow!\n";
+                    LOG(WARNING) << "WARNING: IIO status register reported overflow!";
                 }
-
 
             /* Clear bits */
             if (val)

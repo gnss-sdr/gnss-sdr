@@ -46,11 +46,11 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     : gr::block("gnss_synchro_monitor",
           gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
           gr::io_signature::make(0, 0, 0)),
+      count(0),
       d_nchannels(n_channels),
       d_decimation_factor(decimation_factor)
 {
     udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_port, enable_protobuf);
-    count = 0;
 }
 
 

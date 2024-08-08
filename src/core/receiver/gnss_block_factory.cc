@@ -821,13 +821,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and AD9361_DRIVER
-            else if (implementation == "Adrv9361_Z7035_Signal_Source_Fpga")
+            else if (implementation == "Adrv9361_Z7035_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Adrv9361z7035SignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }
-            else if (implementation == "Fmcomms5_Signal_Source_Fpga")
+            else if (implementation == "Fmcomms5_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Fmcomms5SignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
@@ -836,7 +836,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and MAX2771_DRIVER
-            else if (implementation == "Max2771_Evkit_Signal_Source_Fpga")
+            else if (implementation == "Max2771_Evkit_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<MAX2771EVKITSignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
@@ -845,7 +845,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and DMA_PROXY_DRIVER
-            else if (implementation == "Dma_Signal_Source_Fpga")
+            else if (implementation == "Dma_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<DMASignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
@@ -1084,31 +1084,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
 #endif
 #if ENABLE_FPGA
-            else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fpga")
+            else if (implementation == "GPS_L1_CA_PCPS_Acquisition_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaPcpsAcquisitionFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga")
+            else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GalileoE1PcpsAmbiguousAcquisitionFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if (implementation == "GPS_L2_M_PCPS_Acquisition_Fpga")
+            else if (implementation == "GPS_L2_M_PCPS_Acquisition_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL2MPcpsAcquisitionFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if (implementation == "GPS_L5i_PCPS_Acquisition_Fpga")
+            else if (implementation == "GPS_L5i_PCPS_Acquisition_FPGA")
                 {
                     std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GpsL5iPcpsAcquisitionFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if (implementation == "Galileo_E5a_Pcps_Acquisition_Fpga")
+            else if (implementation == "Galileo_E5a_Pcps_Acquisition_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GalileoE5aPcpsAcquisitionFpga>(configuration, role, in_streams,
                         out_streams);
@@ -1234,31 +1234,31 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                 }
 #endif
 #if ENABLE_FPGA
-            else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")
+            else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA")
                 {
                     std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaDllPllTrackingFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga")
+            else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA")
                 {
                     std::unique_ptr<TrackingInterface> block_ = std::make_unique<GalileoE1DllPllVemlTrackingFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if (implementation == "GPS_L2_M_DLL_PLL_Tracking_Fpga")
+            else if (implementation == "GPS_L2_M_DLL_PLL_Tracking_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL2MDllPllTrackingFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if ((implementation == "GPS_L5i_DLL_PLL_Tracking_Fpga") or (implementation == "GPS_L5_DLL_PLL_Tracking_Fpga"))
+            else if ((implementation == "GPS_L5i_DLL_PLL_Tracking_FPGA") or (implementation == "GPS_L5_DLL_PLL_Tracking_FPGA"))
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL5DllPllTrackingFpga>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }
-            else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_Fpga")
+            else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GalileoE5aDllPllTrackingFpga>(configuration, role, in_streams,
                         out_streams);
@@ -1522,31 +1522,31 @@ std::unique_ptr<AcquisitionInterface> GNSSBlockFactory::GetAcqBlock(
         }
 #endif
 #if ENABLE_FPGA
-    else if (implementation == "GPS_L1_CA_PCPS_Acquisition_Fpga")
+    else if (implementation == "GPS_L1_CA_PCPS_Acquisition_FPGA")
         {
             std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GpsL1CaPcpsAcquisitionFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga")
+    else if (implementation == "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA")
         {
             std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GalileoE1PcpsAmbiguousAcquisitionFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if (implementation == "GPS_L2_M_PCPS_Acquisition_Fpga")
+    else if (implementation == "GPS_L2_M_PCPS_Acquisition_FPGA")
         {
             std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GpsL2MPcpsAcquisitionFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if (implementation == "GPS_L5i_PCPS_Acquisition_Fpga")
+    else if (implementation == "GPS_L5i_PCPS_Acquisition_FPGA")
         {
             std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GpsL5iPcpsAcquisitionFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if (implementation == "Galileo_E5a_Pcps_Acquisition_Fpga")
+    else if (implementation == "Galileo_E5a_Pcps_Acquisition_FPGA")
         {
             std::unique_ptr<AcquisitionInterface> block_ = std::make_unique<GalileoE5aPcpsAcquisitionFpga>(configuration, role, in_streams,
                 out_streams);
@@ -1690,31 +1690,31 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
         }
 #endif
 #if ENABLE_FPGA
-    else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_Fpga")
+    else if (implementation == "GPS_L1_CA_DLL_PLL_Tracking_FPGA")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaDllPllTrackingFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_Fpga")
+    else if (implementation == "Galileo_E1_DLL_PLL_VEML_Tracking_FPGA")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GalileoE1DllPllVemlTrackingFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if (implementation == "GPS_L2_M_DLL_PLL_Tracking_Fpga")
+    else if (implementation == "GPS_L2_M_DLL_PLL_Tracking_FPGA")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL2MDllPllTrackingFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if ((implementation == "GPS_L5i_DLL_PLL_Tracking_Fpga") or (implementation == "GPS_L5_DLL_PLL_Tracking_Fpga"))
+    else if ((implementation == "GPS_L5i_DLL_PLL_Tracking_FPGA") or (implementation == "GPS_L5_DLL_PLL_Tracking_FPGA"))
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL5DllPllTrackingFpga>(configuration, role, in_streams,
                 out_streams);
             block = std::move(block_);
         }
-    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_Fpga")
+    else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_FPGA")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GalileoE5aDllPllTrackingFpga>(configuration, role, in_streams,
                 out_streams);

@@ -60,11 +60,11 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L2_M_PCPS_Acquisition_Fpga"
+     * \brief Returns "GPS_L2_M_PCPS_Acquisition_FPGA"
      */
     inline std::string implementation() override
     {
-        return "GPS_L2_M_PCPS_Acquisition_Fpga";
+        return "GPS_L2_M_PCPS_Acquisition_FPGA";
     }
 
     inline size_t item_size() override

@@ -821,13 +821,13 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and AD9361_DRIVER
-            else if (implementation == "Adrv9361_Z7035_Signal_Source_FPGA")
+            else if (implementation == "ADRV9361_Z7035_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Adrv9361z7035SignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }
-            else if (implementation == "Fmcomms5_Signal_Source_FPGA")
+            else if (implementation == "FMCOMMS5_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Fmcomms5SignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
@@ -836,7 +836,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and MAX2771_DRIVER
-            else if (implementation == "Max2771_Evkit_Signal_Source_FPGA")
+            else if (implementation == "MAX2771_EVKIT_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<MAX2771EVKITSignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);
@@ -845,7 +845,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 #endif
 
 #if ENABLE_FPGA and DMA_PROXY_DRIVER
-            else if (implementation == "Dma_Signal_Source_FPGA")
+            else if (implementation == "DMA_Signal_Source_FPGA")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<DMASignalSourceFPGA>(configuration, role, in_streams,
                         out_streams, queue);

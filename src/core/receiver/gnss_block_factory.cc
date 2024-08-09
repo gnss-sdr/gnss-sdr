@@ -113,6 +113,7 @@
 #include "tracking_interface.h"
 #include "two_bit_cpx_file_signal_source.h"
 #include "two_bit_packed_file_signal_source.h"
+#include <cstdlib>    // for exit
 #include <exception>  // for exception
 #include <iostream>   // for cerr
 #include <utility>    // for move

@@ -48,6 +48,7 @@
 #include <algorithm>                 // for transform, sort, unique
 #include <cmath>                     // for floor
 #include <cstddef>                   // for size_t
+#include <cstdlib>                   // for exit
 #include <exception>                 // for exception
 #include <iostream>                  // for operator<<
 #include <iterator>                  // for insert_iterator, inserter
@@ -124,9 +125,15 @@ void GNSSFlowgraph::init()
     sources_count_ = configuration_->property("GNSS-SDR.num_sources", sources_count_deprecated);
 
     // Avoid segmentation fault caused by wrong configuration
-    if (sources_count_ == 2 && block_factory->GetSignalSource(configuration_.get(), queue_.get(), 0)->implementation() == "Multichannel_File_Signal_Source")
+    auto check_not_nullptr = block_factory->GetSignalSource(configuration_.get(), queue_.get(), 0);
+    if (!check_not_nullptr)
         {
-            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuraiion file\n";
+            std::cout << "GNSS-SDR program ended.\n";
+            exit(1);
+        }
+    if (sources_count_ == 2 && check_not_nullptr->implementation() == "Multichannel_File_Signal_Source")
+        {
+            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuration file\n";
             std::cout << "   if you are using the Multichannel_File_Signal_Source implementation.\n";
             sources_count_ = 1;
         }

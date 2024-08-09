@@ -46,6 +46,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     : gr::block("gnss_synchro_monitor",
           gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
           gr::io_signature::make(0, 0, 0)),
+      count(0),
       d_nchannels(n_channels),
       d_decimation_factor(decimation_factor)
 {
@@ -73,7 +74,6 @@ int gnss_synchro_monitor::general_work(int noutput_items __attribute__((unused))
     for (int channel_index = 0; channel_index < d_nchannels; channel_index++)
         {
             // Loop through each item in each input stream channel
-            int count = 0;
             for (int item_index = 0; item_index < ninput_items[channel_index]; item_index++)
                 {
                     // Use the count variable to limit how many items are sent per channel

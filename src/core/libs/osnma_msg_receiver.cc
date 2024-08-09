@@ -292,7 +292,7 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
             // step 2 , start using new chain
             d_flag_PK_revocation = false;
             uint32_t final_GST = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
-            double duration_hours = (final_GST - d_GST_PKR_PKREV_start) / 3600;
+            double duration_hours = (final_GST - d_GST_PKR_PKREV_start) / 3600.0;
             LOG(INFO) << "Galileo OSNMA: Public Key Revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
                       << ", Duration=" << duration_hours << "h";
             std::cout << "Galileo OSNMA: Public Key Revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
@@ -797,9 +797,9 @@ void osnma_msg_receiver::read_mack_header()
         {
             lt_bits = it->second;
         }
-    if (lt_bits == 0)
+    if (lt_bits < 16)
         {
-            return;  // C: TODO if Tag length is 0, what is the action? no verification possible of NavData for sure.
+            return;  // The 16 is to avoid negative shifts if shorter tags were defined
         }
     uint16_t macseq = 0;
     uint8_t cop = 0;
@@ -1330,7 +1330,7 @@ bool osnma_msg_receiver::verify_tag(Tag& tag) const
         {
             lt_bits = it2->second;
         }
-    if (lt_bits == 0)
+    if (lt_bits < 16)
         {
             return false;
         }

@@ -1370,7 +1370,11 @@ bool Gnss_Crypto::readPublicKeyFromCRT(const std::string& crtFilePath)
     gnutls_pubkey_deinit(pubkey);
 #else  // OpenSSL
     // Read certificate
+#if !(USE_OPENSSL_3 || USE_OPENSSL_111)
+    BIO* bio = BIO_new_mem_buf(const_cast<unsigned char*>(buffer.data()), buffer.size());
+#else
     BIO* bio = BIO_new_mem_buf(buffer.data(), buffer.size());
+#endif
     if (!bio)
         {
             LOG(WARNING) << "OpenSSL: Unable to create BIO for file: " << crtFilePath;

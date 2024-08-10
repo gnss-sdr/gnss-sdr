@@ -13,6 +13,7 @@
  * -----------------------------------------------------------------------------
  */
 #include "ad936x_iio_custom.h"
+#include "display.h"
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <chrono>
@@ -44,6 +45,7 @@ ad936x_iio_custom::ad936x_iio_custom(int debug_level_, int log_level_)
     n_channels = 0;
 }
 
+
 ad936x_iio_custom::~ad936x_iio_custom()
 {
     // disable TX
@@ -59,10 +61,12 @@ void ad936x_iio_custom::set_gnsstime_queue(std::shared_ptr<Concurrent_Queue<Gnss
     GnssTime_queue = std::move(queue);
 }
 
+
 void ad936x_iio_custom::set_pps_samplestamp_queue(std::shared_ptr<Concurrent_Queue<PpsSamplestamp>> queue)
 {
     Pps_queue = std::move(queue);
 }
+
 
 bool ad936x_iio_custom::initialize_device(std::string pluto_device_uri, std::string board_type)
 {
@@ -124,7 +128,6 @@ bool ad936x_iio_custom::initialize_device(std::string pluto_device_uri, std::str
             std::cout << "Unable to create context from uri: " << pluto_device_uri << std::endl;
             return false;
         }
-
 
     phy = iio_context_find_device(ctx, "ad9361-phy");
 
@@ -328,7 +331,6 @@ bool ad936x_iio_custom::config_ad9361_dds(uint64_t freq_rf_tx_hz_,
             configure_params(dds_dev, params_dds);
         }
 
-
     return true;
 }
 
@@ -344,6 +346,7 @@ bool ad936x_iio_custom::check_device()
             return false;
         }
 }
+
 
 bool ad936x_iio_custom::get_iio_param(iio_device *dev, const std::string &param, std::string &value)
 {
@@ -386,6 +389,7 @@ bool ad936x_iio_custom::get_iio_param(iio_device *dev, const std::string &param,
         }
 }
 
+
 bool ad936x_iio_custom::read_die_temp(double &temp_c)
 {
     std::string temp_mC_str;
@@ -410,6 +414,8 @@ bool ad936x_iio_custom::read_die_temp(double &temp_c)
             return false;
         }
 }
+
+
 bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     long long sample_rate_,
     long long freq_,
@@ -425,7 +431,6 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     double lo_attenuation_db_,
     bool high_side_lo_,
     int tx_lo_channel_)
-
 {
     if (check_device() == false) return false;
 
@@ -610,14 +615,12 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                             std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
                             no_errors = false;
                         }
-
                     //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
                     //            if (ret < 0)
                     //                {
                     //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
                     //                    no_errors = false;
                     //                }
-
                     long long set_rf_bw;
                     ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
                     if (ret < 0)
@@ -629,7 +632,6 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                         {
                             std::cerr << "Info: rf_bandwidth read returned: " << set_rf_bw << " Hz \n";
                         }
-
 
                     if (setRXGain(0, gain_mode_rx0_, rf_gain_rx0_) == false)
                         {
@@ -662,14 +664,12 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
                             std::cerr << "Warning: rf_port_select write returned: " << ret << "\n";
                             no_errors = false;
                         }
-
                     //            ret = iio_channel_attr_write_longlong(phy_ch, "rf_bandwidth", bandwidth_);
                     //            if (ret < 0)
                     //                {
                     //                    std::cerr << "Warning: rf_bandwidth write returned: " << ret << "\n";
                     //                    no_errors = false;
                     //                }
-
                     long long set_rf_bw;
                     ret = iio_channel_attr_read_longlong(phy_ch, "rf_bandwidth", &set_rf_bw);
                     if (ret < 0)
@@ -701,6 +701,7 @@ bool ad936x_iio_custom::init_config_ad9361_rx(long long bandwidth_,
     std::cout << "End of AD9361 RX configuration.\n";
     return no_errors;
 }
+
 
 bool ad936x_iio_custom::set_rx_frequency(long long freq_hz)
 {
@@ -747,6 +748,7 @@ bool ad936x_iio_custom::get_rx_frequency(long long &freq_hz)
     return true;
 }
 
+
 bool ad936x_iio_custom::setRXGain(int ch_num, std::string gain_mode, double gain_dB)
 {
     if (check_device() == false) return false;
@@ -778,6 +780,7 @@ bool ad936x_iio_custom::setRXGain(int ch_num, std::string gain_mode, double gain
             return false;
         }
 }
+
 
 double ad936x_iio_custom::get_rx_gain(int ch_num)
 {
@@ -817,6 +820,7 @@ bool ad936x_iio_custom::calibrate([[maybe_unused]] int ch, [[maybe_unused]] doub
     return true;
 }
 
+
 void ad936x_iio_custom::monitor_thread_fn()
 {
     uint32_t val;
@@ -849,10 +853,11 @@ void ad936x_iio_custom::monitor_thread_fn()
             // } else {
             if (val & 4)
                 {
-                    std::cout << "WARNING: IIO status register reported overflow!\n";
-                    LOG(INFO) << "WARNING: IIO status register reported overflow!";
+                    std::cout
+                        << TEXT_BOLD_RED
+                        << "WARNING: IIO status register reported overflow!\n";
+                    LOG(WARNING) << "WARNING: IIO status register reported overflow!";
                 }
-
 
             /* Clear bits */
             if (val)
@@ -866,6 +871,7 @@ void ad936x_iio_custom::monitor_thread_fn()
         }
     return;
 }
+
 
 void ad936x_iio_custom::stop_record()
 {
@@ -915,6 +921,7 @@ void ad936x_iio_custom::PlutoTxEnable(bool txon)
         }
 }
 
+
 void ad936x_iio_custom::setPlutoGpo(int p)
 {
     char pins[11];
@@ -952,7 +959,6 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
     //    0   Disable
     //    1   Enable
     //    X   Enable Mask if Identifier=0xF
-
 
     if (check_device() == false) return false;
     // int plutoGpo = 0;
@@ -1006,6 +1012,8 @@ bool ad936x_iio_custom::select_rf_filter(std::string rf_filter)
 
     return true;
 }
+
+
 void ad936x_iio_custom::get_PPS_timestamp()
 {
     GnssTime tow;
@@ -1042,7 +1050,6 @@ void ad936x_iio_custom::get_PPS_timestamp()
             // record pps rise samplestamp associated to the absolute sample counter
             // PPS rising edge must be associated with the corresponding uBlox time message (tx once a second)
 
-
             if (GnssTime_queue->timed_wait_and_pop(tow, 2000) == false)
                 {
                     if (receive_samples == true)
@@ -1073,6 +1080,8 @@ void ad936x_iio_custom::get_PPS_timestamp()
                 }
         }
 }
+
+
 bool ad936x_iio_custom::start_sample_rx(bool ppsmode)
 {
     // using queues of smart pointers to preallocated buffers
@@ -1118,9 +1127,7 @@ bool ad936x_iio_custom::start_sample_rx(bool ppsmode)
     // start sample overflow detector
     overflow_monitor_thread = std::thread(&ad936x_iio_custom::monitor_thread_fn, this);
 
-
     // start PPS and GNSS Time capture thread
-
     if (ppsmode == true)
         {
             capture_time_thread = std::thread(&ad936x_iio_custom::get_PPS_timestamp, this);
@@ -1128,15 +1135,18 @@ bool ad936x_iio_custom::start_sample_rx(bool ppsmode)
     return true;
 }
 
+
 void ad936x_iio_custom::pop_sample_buffer(std::shared_ptr<ad936x_iio_samples> &current_buffer)
 {
     used_buffers.wait_and_pop(current_buffer);
 }
 
+
 void ad936x_iio_custom::push_sample_buffer(std::shared_ptr<ad936x_iio_samples> &current_buffer)
 {
     free_buffers.push(current_buffer);
 }
+
 
 void ad936x_iio_custom::capture(const std::vector<std::string> &channels)
 {

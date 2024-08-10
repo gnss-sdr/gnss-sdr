@@ -1,23 +1,22 @@
 /*!
-* \file osnma_nav_data_manager.cc
-* \brief Class for Galileo OSNMA navigation data management
-* \author Cesare Ghionoiu-Martinez, 2020-2023 cesare.martinez(at)proton.me
-*
-* -----------------------------------------------------------------------------
-*
-* GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
-* This file is part of GNSS-SDR.
-*
-* Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
-* SPDX-License-Identifier: GPL-3.0-or-later
-*
-* -----------------------------------------------------------------------------
-*/
+ * \file osnma_nav_data_manager.cc
+ * \brief Class for Galileo OSNMA navigation data management
+ * \author Cesare Ghionoiu-Martinez, 2020-2023 cesare.martinez(at)proton.me
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2010-2023  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
 
 #include "osnma_nav_data_manager.h"
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>  // for DLOG
-#include <vector>
 #else
 #include <absl/log/log.h>
 #endif
@@ -54,18 +53,20 @@ void OSNMA_nav_data_Manager::update_nav_data(const std::multimap<uint32_t, Tag>&
                     if (have_PRNd_nav_data(tag.second.PRN_d))
                         {
                             std::map<uint32_t, OSNMA_NavData> tow_map = _satellite_nav_data.find(tag.second.PRN_d)->second;
-                            for (auto & tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
+                            for (auto& tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
                                 {
                                     std::string nav_data;
                                     if (tag.second.ADKD == 0 || tag.second.ADKD == 12)
                                         {
                                             nav_data = tow_it.second.get_ephemeris_data();
                                         }
-                                    else if (tag.second.ADKD == 4){
+                                    else if (tag.second.ADKD == 4)
+                                        {
                                             nav_data = tow_it.second.get_utc_data();
                                         }
                                     // find associated OSNMA_NavData
-                                    if (tag.second.nav_data == nav_data){
+                                    if (tag.second.nav_data == nav_data)
+                                        {
                                             _satellite_nav_data[tag.second.PRN_d][tow_it.first].verified_bits += tag_size;
                                         }
                                 }
@@ -138,16 +139,17 @@ bool OSNMA_nav_data_Manager::have_nav_data(uint32_t PRNd, uint32_t TOW, uint8_t 
 std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
 {
     auto prn_it = _satellite_nav_data.find(tag.PRN_d);
-    if (prn_it == _satellite_nav_data.end()){
+    if (prn_it == _satellite_nav_data.end())
+        {
             return "";
         }
 
     // satellite was found, check if TOW exists in inner map
     std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
-    for (auto & tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
+    for (auto& tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
         {
             // Check if current key (TOW) fulfills condition
-            if ((tag.TOW - 30 * tag.cop) <= tow_it.first &&  tow_it.first <= tag.TOW - 30)
+            if ((tag.TOW - 30 * tag.cop) <= tow_it.first && tow_it.first <= tag.TOW - 30)
                 {
                     if (tag.ADKD == 0 || tag.ADKD == 12)
                         {
@@ -156,9 +158,8 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
                                     return tow_it.second.get_ephemeris_data();
                                 }
                         }
-                    else if(tag.ADKD == 4)
+                    else if (tag.ADKD == 4)
                         {
-
                             if (!tow_it.second.get_utc_data().empty())
                                 {
                                     return tow_it.second.get_utc_data();
@@ -179,17 +180,22 @@ std::string OSNMA_nav_data_Manager::get_navigation_data(const Tag& tag)
  */
 bool OSNMA_nav_data_Manager::have_nav_data(const std::string& nav_bits, uint32_t PRNd, uint32_t TOW)
 {
-    if (_satellite_nav_data.find(PRNd) != _satellite_nav_data.end()){
+    if (_satellite_nav_data.find(PRNd) != _satellite_nav_data.end())
+        {
             for (auto& data_timestamp : _satellite_nav_data[PRNd])
                 {
-                    if (nav_bits.size() == EPH_SIZE){
-                            if (data_timestamp.second.get_ephemeris_data() == nav_bits){
+                    if (nav_bits.size() == EPH_SIZE)
+                        {
+                            if (data_timestamp.second.get_ephemeris_data() == nav_bits)
+                                {
                                     data_timestamp.second.update_last_received_timestamp(TOW);
                                     return true;
                                 }
                         }
-                    else if (nav_bits.size() == UTC_SIZE){
-                            if (data_timestamp.second.get_utc_data() == nav_bits){
+                    else if (nav_bits.size() == UTC_SIZE)
+                        {
+                            if (data_timestamp.second.get_utc_data() == nav_bits)
+                                {
                                     data_timestamp.second.update_last_received_timestamp(TOW);
                                     return true;
                                 }
@@ -208,15 +214,16 @@ bool OSNMA_nav_data_Manager::have_nav_data(const std::string& nav_bits, uint32_t
 bool OSNMA_nav_data_Manager::have_nav_data(const Tag& t) const
 {
     auto prn_it = _satellite_nav_data.find(t.PRN_d);
-    if (prn_it == _satellite_nav_data.end()){
+    if (prn_it == _satellite_nav_data.end())
+        {
             return false;
         }
     // satellite was found, check if TOW exists in inner map
     std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
-    for (auto & tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
+    for (auto& tow_it : tow_map)  // note: starts with smallest (i.e. oldest) navigation dataset
         {
             // Check if current key (TOW) fulfills condition
-            if (t.TOW - 30 * t.cop <= tow_it.first &&  tow_it.first <= t.TOW - 30)
+            if (t.TOW - 30 * t.cop <= tow_it.first && tow_it.first <= t.TOW - 30)
                 {
                     if (t.ADKD == 0 || t.ADKD == 12)
                         {
@@ -240,10 +247,12 @@ bool OSNMA_nav_data_Manager::have_nav_data(const Tag& t) const
 
 void OSNMA_nav_data_Manager::print_status()
 {
-    for (const auto& satellite : _satellite_nav_data){
+    for (const auto& satellite : _satellite_nav_data)
+        {
             LOG(INFO) << "Galileo OSNMA: NavData status :: SVID=" << satellite.first;
             const auto& tow_data = satellite.second;
-            for (const auto& nav_data : tow_data) {
+            for (const auto& nav_data : tow_data)
+                {
                     LOG(INFO) << "Galileo OSNMA: IOD_nav=0b" << std::uppercase
                               << std::bitset<10>(nav_data.second.IOD_nav)
                               << ", TOW_start="

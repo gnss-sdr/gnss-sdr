@@ -7,7 +7,6 @@
 
 set(SYSTEM_PARAMETERS_SOURCES
     gnss_almanac.cc
-    gnss_crypto.cc
     gnss_ephemeris.cc
     gnss_satellite.cc
     gnss_signal.cc
@@ -31,13 +30,10 @@ set(SYSTEM_PARAMETERS_SOURCES
     reed_solomon.cc
     osnma_data.cc
     osnma_dsm_reader.cc
-    osnma_helper.cc
-    osnma_nav_data_manager.cc
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
     gnss_almanac.h
-    gnss_crypto.h
     gnss_ephemeris.h
     gnss_satellite.h
     gnss_signal.h
@@ -98,8 +94,6 @@ set(SYSTEM_PARAMETERS_HEADERS
     Galileo_OSNMA.h
     osnma_data.h
     osnma_dsm_reader.h
-    osnma_helper.h
-    osnma_nav_data_manager.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)
@@ -141,10 +135,6 @@ target_include_directories(core_system_parameters
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
 )
-
-# links to the appropriate library and defines
-# USE_GNUTLS_FALLBACK, USE_OPENSSL_3, or USE_OPENSSL_111 accordingly.
-link_to_crypto_dependencies(core_system_parameters)
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

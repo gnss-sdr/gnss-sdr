@@ -2215,7 +2215,7 @@ endif()
 ################################################################################
 # OpenSSL https://www.openssl.org/ or GnuTLS - https://www.gnutls.org/
 ################################################################################
-include(GnssSdrCrypto)
+include(GnsssdrCrypto)
 
 
 

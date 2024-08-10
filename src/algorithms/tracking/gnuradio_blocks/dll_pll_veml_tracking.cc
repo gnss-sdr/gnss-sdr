@@ -144,7 +144,11 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
       d_acc_carrier_phase_initialized(false),
       d_Flag_PLL_180_deg_phase_locked(false),
-      d_use_histogram_bit_sync(false)
+      d_use_histogram_bit_sync(false),
+      d_dll_bw_hz(0.0),
+      d_pll_bw_hz(0.0),
+      d_dll_tgt_bw_hz(0.0),
+      d_pll_tgt_bw_hz(0.0)
 {
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
@@ -1184,8 +1188,10 @@ void dll_pll_veml_tracking::start_tracking()
     d_current_correlation_time_s = d_code_period;
 
     // Initialize tracking  ==========================================
-    d_carrier_loop_filter.set_params(d_trk_parameters.fll_bw_hz, d_trk_parameters.pll_bw_hz, d_trk_parameters.pll_filter_order);
-    d_code_loop_filter.set_noise_bandwidth(d_trk_parameters.dll_bw_hz);
+    d_pll_bw_hz = d_pll_tgt_bw_hz = d_trk_parameters.pll_bw_hz;
+    d_dll_bw_hz = d_dll_tgt_bw_hz = d_trk_parameters.dll_bw_hz;
+    d_carrier_loop_filter.set_params(d_trk_parameters.fll_bw_hz, d_pll_bw_hz, d_trk_parameters.pll_filter_order);
+    d_code_loop_filter.set_noise_bandwidth(d_dll_bw_hz);
     d_code_loop_filter.set_update_interval(static_cast<float>(d_code_period));
     // DLL/PLL filter initialization
     d_carrier_loop_filter.initialize(static_cast<float>(d_acq_carrier_doppler_hz));  // initialize the carrier filter
@@ -2327,51 +2333,10 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 d_Prompt_circular_buffer.clear();
                                 d_current_symbol = 0;
                                 d_current_data_symbol = 0;
+                                d_dll_tgt_bw_hz = d_trk_parameters.dll_bw_narrow_hz;
+                                d_pll_tgt_bw_hz = d_trk_parameters.pll_bw_narrow_hz;
 
-                                if (d_enable_extended_integration)
-                                    {
-                                        // UPDATE INTEGRATION TIME
-                                        d_extend_correlation_symbols_count = 0;
-                                        d_current_correlation_time_s = static_cast<float>(d_extend_correlation_symbols) * static_cast<float>(d_code_period);
-                                        // the CN0 estimation buffer must not mix prompts from different integration times
-                                        d_cn0_estimation_counter = 0;
-                                        // keep the smoother initialization at the same data-time budget under the new update period
-                                        d_cn0_smoother.set_samples_for_initialization(d_trk_parameters.cn0_smoother_samples / std::max(1, static_cast<int>(d_current_correlation_time_s * 1000.0)));
-                                        d_state = 3;  // next state is the extended correlator integrator
-                                        LOG(INFO) << "Enabled " << d_extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
-                                                  << d_channel
-                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
-                                        std::cout << "Enabled " << d_extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
-                                                  << d_channel
-                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
-                                        // Set narrow taps delay values [chips]
-                                        d_code_loop_filter.set_update_interval(static_cast<float>(d_current_correlation_time_s));
-                                        d_code_loop_filter.set_noise_bandwidth(d_trk_parameters.dll_bw_narrow_hz);
-                                        d_carrier_loop_filter.set_params(d_trk_parameters.fll_bw_hz, d_trk_parameters.pll_bw_narrow_hz, d_trk_parameters.pll_filter_order);
-                                        if (d_veml)
-                                            {
-                                                d_local_code_shift_chips[0] = -d_trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[1] = -d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[3] = d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[4] = d_trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_trk_parameters.spc = d_trk_parameters.early_late_space_narrow_chips;
-                                                // if (std::string(d_trk_parameters.signal) == "E1")
-                                                //    {
-                                                //        d_trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc);
-                                                //        d_trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc);
-                                                //    }
-                                            }
-                                        else
-                                            {
-                                                d_local_code_shift_chips[0] = -d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_local_code_shift_chips[2] = d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
-                                                d_trk_parameters.spc = d_trk_parameters.early_late_space_narrow_chips;
-                                            }
-                                    }
-                                else
-                                    {
-                                        d_state = 4;
-                                    }
+                                d_state = 4;
                             }
                     }
                 break;
@@ -2421,6 +2386,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     }
                 else
                     {
+                        bool enable_extended{};
                         run_dll_pll();
                         update_tracking_vars();
                         check_carrier_phase_coherent_initialization();
@@ -2439,6 +2405,41 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                 current_synchro_data.correlation_length_ms = d_correlation_length_ms;
                                 current_synchro_data.Flag_valid_symbol_output = true;
                                 d_P_data_accu = gr_complex(0.0, 0.0);
+                                if (d_dll_bw_hz > d_dll_tgt_bw_hz)
+                                    {
+                                        if (d_trk_parameters.dll_bw_step == 0.F)
+                                            {
+                                                d_dll_bw_hz = d_dll_tgt_bw_hz;
+                                            }
+                                        else
+                                            {
+                                                d_dll_bw_hz *= (1.F - d_trk_parameters.dll_bw_step);
+                                            }
+                                        if (d_dll_bw_hz <= d_dll_tgt_bw_hz)
+                                            {
+                                                d_dll_bw_hz = d_dll_tgt_bw_hz;
+                                                LOG(INFO) << "Reached narrow dll bw in channel " << d_channel << "\n";
+                                            }
+                                        d_code_loop_filter.set_noise_bandwidth(d_dll_bw_hz);
+                                    }
+                                if (d_pll_bw_hz > d_pll_tgt_bw_hz)
+                                    {
+                                        if (d_trk_parameters.pll_bw_step == 0.F)
+                                            {
+                                                d_pll_bw_hz = d_pll_tgt_bw_hz;
+                                            }
+                                        else
+                                            {
+                                                d_pll_bw_hz *= (1.F - d_trk_parameters.pll_bw_step);
+                                            }
+                                        if (d_pll_bw_hz <= d_pll_tgt_bw_hz)
+                                            {
+                                                d_pll_bw_hz = d_pll_tgt_bw_hz;
+                                                LOG(INFO) << "Reached narrow pll bw in channel " << d_channel << "\n";
+                                                enable_extended = true;
+                                            }
+                                        d_carrier_loop_filter.set_params(d_trk_parameters.fll_bw_hz, d_pll_bw_hz, d_trk_parameters.pll_filter_order);
+                                    }
                             }
 
                         // reset extended correlator
@@ -2447,8 +2448,44 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                         d_P_accu = gr_complex(0.0, 0.0);
                         d_L_accu = gr_complex(0.0, 0.0);
                         d_VL_accu = gr_complex(0.0, 0.0);
-                        if (d_enable_extended_integration)
+                        if (d_enable_extended_integration && (d_pll_bw_hz <= d_pll_tgt_bw_hz))
                             {
+                                if (enable_extended)
+                                    {
+                                        // UPDATE INTEGRATION TIME
+                                        d_extend_correlation_symbols_count = 0;
+                                        d_current_correlation_time_s = static_cast<float>(d_extend_correlation_symbols) * static_cast<float>(d_code_period);
+                                        // the CN0 estimation buffer must not mix prompts from different integration times
+                                        d_cn0_estimation_counter = 0;
+                                        // keep the smoother initialization at the same data-time budget under the new update period
+                                        d_cn0_smoother.set_samples_for_initialization(d_trk_parameters.cn0_smoother_samples / std::max(1, static_cast<int>(d_current_correlation_time_s * 1000.0)));
+                                        LOG(INFO) << "Enabled " << d_extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                                  << d_channel << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
+                                        std::cout << "Enabled " << d_extend_correlation_symbols * static_cast<int32_t>(d_code_period * 1000.0) << " ms extended correlator in channel "
+                                                  << d_channel << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                        // Set narrow taps delay values [chips]
+                                        d_code_loop_filter.set_update_interval(static_cast<float>(d_current_correlation_time_s));
+                                        d_carrier_loop_filter.set_params(d_trk_parameters.fll_bw_hz, d_pll_bw_hz, d_trk_parameters.pll_filter_order);
+                                        if (d_veml)
+                                            {
+                                                d_local_code_shift_chips[0] = -d_trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[1] = -d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[3] = d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[4] = d_trk_parameters.very_early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_trk_parameters.spc = d_trk_parameters.early_late_space_narrow_chips;
+                                                // if (std::string(d_trk_parameters.signal) == "E1")
+                                                //    {
+                                                //        d_trk_parameters.slope = -CalculateSlopeAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc);
+                                                //        d_trk_parameters.y_intercept = GetYInterceptAbs(&SinBocCorrelationFunction<1, 1>, d_trk_parameters.spc);
+                                                //    }
+                                            }
+                                        else
+                                            {
+                                                d_local_code_shift_chips[0] = -d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_local_code_shift_chips[2] = d_trk_parameters.early_late_space_narrow_chips * static_cast<float>(d_code_samples_per_chip);
+                                                d_trk_parameters.spc = d_trk_parameters.early_late_space_narrow_chips;
+                                            }
+                                    }
                                 d_state = 3;  // new coherent integration (correlation time extension) cycle
                             }
                     }

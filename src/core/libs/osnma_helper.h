@@ -25,7 +25,7 @@
 
 /** \addtogroup Core
  * \{ */
-/** \addtogroup System_Parameters
+/** \addtogroup Core_Receiver_Library
  * \{ */
 
 class Osnma_Helper

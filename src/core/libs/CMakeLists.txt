@@ -9,36 +9,42 @@ protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${GNSSSDR_SOURCE_DIR}/docs/protobuf/
 add_subdirectory(supl)
 
 set(CORE_LIBS_SOURCES
-    ini.cc
-    INIReader.cc
-    string_converter.cc
-    gnss_sdr_supl_client.cc
-    gnss_sdr_sample_counter.cc
-    channel_status_msg_receiver.cc
     channel_event.cc
+    channel_status_msg_receiver.cc
     command_event.cc
     galileo_e6_has_msg_receiver.cc
+    galileo_tow_map.cc
+    gnss_crypto.cc
+    gnss_sdr_sample_counter.cc
+    gnss_sdr_supl_client.cc
+    ini.cc
+    INIReader.cc
     nav_message_monitor.cc
     nav_message_udp_sink.cc
-    galileo_tow_map.cc
+    osnma_helper.cc
     osnma_msg_receiver.cc
+    osnma_nav_data_manager.cc
+    string_converter.cc
 )
 
 set(CORE_LIBS_HEADERS
+    channel_event.h
+    channel_status_msg_receiver.h
+    command_event.h
+    galileo_tow_map.h
+    gnss_crypto.h
+    gnss_sdr_sample_counter.h
+    gnss_sdr_supl_client.h
     ini.h
     INIReader.h
-    string_converter.h
-    gnss_sdr_supl_client.h
-    gnss_sdr_sample_counter.h
-    channel_status_msg_receiver.h
-    channel_event.h
-    command_event.h
+    nav_message_monitor.h
     nav_message_packet.h
     nav_message_udp_sink.h
-    serdes_nav_message.h
-    nav_message_monitor.h
-    galileo_tow_map.h
+    osnma_helper.h
     osnma_msg_receiver.h
+    osnma_nav_data_manager.h
+    serdes_nav_message.h
+    string_converter.h
 )
 
 if(ENABLE_FPGA)
@@ -96,6 +102,7 @@ target_link_libraries(core_libs
     PRIVATE
         algorithms_libs
         Boost::serialization
+        Boost::system
         Pugixml::pugixml
 )
 
@@ -122,6 +129,10 @@ target_include_directories(core_libs
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
+
+# links to the appropriate library and defines
+# USE_GNUTLS_FALLBACK, USE_OPENSSL_3, or USE_OPENSSL_111 accordingly.
+link_to_crypto_dependencies(core_libs)
 
 if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)

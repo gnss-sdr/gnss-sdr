@@ -205,7 +205,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p256(const std::vector<uint8_t>& messag
 {
     if (!have_public_key())
         {
-            LOG(WARNING) << "Galileo OSNMA KROOT verification error: Public key is not available";
+            LOG(WARNING) << "Signature verification error: Public key is not available";
             return false;
         }
     std::vector<uint8_t> digest = this->compute_SHA_256(message);
@@ -344,7 +344,7 @@ bool Gnss_Crypto::verify_signature_ecdsa_p521(const std::vector<uint8_t>& messag
 {
     if (!have_public_key())
         {
-            LOG(WARNING) << "Galileo OSNMA KROOT verification error: Public key is not available";
+            LOG(WARNING) << "Signature verification error: Public key is not available";
             return false;
         }
 
@@ -797,7 +797,7 @@ std::string Gnss_Crypto::get_public_key_type() const
 {
     if (d_PublicKeyType.empty())
         {
-            return std::string("Unknown");
+            return {"Unknown"};
         }
     return d_PublicKeyType;
 }

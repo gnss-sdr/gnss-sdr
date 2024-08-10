@@ -40,6 +40,7 @@ public:
     bool reserved{};
 };
 
+
 class DSM_dsm_header
 {
 public:
@@ -47,6 +48,7 @@ public:
     uint8_t dsm_id{};
     uint8_t dsm_block_id{};
 };
+
 
 class MACK_header
 {
@@ -57,6 +59,7 @@ public:
     uint8_t cop{};
 };
 
+
 class MACK_tag_info
 {
 public:
@@ -66,6 +69,7 @@ public:
     uint8_t cop{};
 };
 
+
 class MACK_tag_and_info
 {
 public:
@@ -74,6 +78,7 @@ public:
     MACK_tag_info tag_info;
     uint32_t counter;  // CTR
 };
+
 
 class DSM_PKR_message
 {
@@ -88,6 +93,7 @@ public:
     uint8_t npkt{};
     uint8_t npktid{};
 };
+
 
 class DSM_KROOT_message
 {
@@ -112,6 +118,7 @@ public:
     uint8_t towh_k{};
 };
 
+
 class MACK_message
 {
 public:
@@ -124,33 +131,38 @@ public:
     uint32_t PRNa;
 };
 
+
 class OSNMA_NavData
 {
 public:
-    OSNMA_NavData(): nav_data_id(id_counter++){}
-    bool have_this_bits(std::string nav_data);
-    bool add_nav_data(const std::string& nav_data);
-    void update_last_received_timestamp(uint32_t TOW);
-    const uint32_t nav_data_id;
-    uint32_t verified_bits{0};
-    uint32_t get_tow_sf0() const {return TOW_sf0;}
-    void set_tow_sf0(int value) {TOW_sf0 = value;}
-    uint32_t last_received_TOW{0};
-    uint32_t IOD_nav{0};
+    OSNMA_NavData() : nav_data_id(id_counter++) {}
+
     std::string get_utc_data() const;
     std::string get_ephemeris_data() const;
-    void set_ephemeris_data(std::string value) {d_ephemeris_iono = value;}
-    void set_utc_data(std::string value) {d_utc = value;}
+    uint32_t get_tow_sf0() const { return TOW_sf0; }
+
+    const uint32_t nav_data_id;
+
+    bool have_this_bits(std::string nav_data);
+    bool add_nav_data(const std::string& nav_data);
     bool verified{false};
+
+    void update_last_received_timestamp(uint32_t TOW);
+    void set_tow_sf0(int value) { TOW_sf0 = value; }
+    void set_ephemeris_data(std::string value) { d_ephemeris_iono = value; }
+    void set_utc_data(std::string value) { d_utc = value; }
+
+    uint32_t verified_bits{0};
+    uint32_t last_received_TOW{0};
+    uint32_t IOD_nav{0};
     uint32_t PRNd{0};
     uint32_t ADKD{};
+
 private:
     std::string d_ephemeris_iono{""};
     std::string d_utc{""};
     uint32_t TOW_sf0{0};
-
-
-    uint32_t static id_counter;
+    static uint32_t id_counter;
 };
 
 /*!
@@ -224,6 +236,8 @@ public:
     uint32_t skipped;
     std::string nav_data;
 };
+
 /** \} */
 /** \} */
+
 #endif  // GNSS_SDR_OSNMA_DATA_H

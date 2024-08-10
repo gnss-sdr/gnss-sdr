@@ -2228,7 +2228,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
 
                                             // ### select the rx_time and interpolate observables at that time
-                                            if (!d_gnss_observables_map_t0.empty())
+                                            if (!d_gnss_observables_map_t0.empty() && !d_gnss_observables_map_t1.empty())
                                                 {
                                                     const auto t0_int_ms = static_cast<uint32_t>(d_gnss_observables_map_t0.cbegin()->second.RX_time * 1000.0);
                                                     const uint32_t adjust_next_obs_interval_ms = d_observable_interval_ms - t0_int_ms % d_observable_interval_ms;

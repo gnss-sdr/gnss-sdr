@@ -355,7 +355,7 @@ void GpsL1CADllPllTrackingTestFpga::configure_receiver()
         std::to_string(baseband_sampling_freq));
     // Set Tracking
     config->set_property("Tracking_1C.implementation",
-        "GPS_L1_CA_DLL_PLL_Tracking_Fpga");
+        "GPS_L1_CA_DLL_PLL_Tracking_FPGA");
     config->set_property("Tracking_1C.item_type", "cshort");
     config->set_property("Tracking_1C.dump", "true");
     config->set_property("Tracking_1C.dump_filename", "./tracking_ch_");

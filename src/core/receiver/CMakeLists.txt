@@ -98,6 +98,14 @@ if(ENABLE_AD9361)
     target_compile_definitions(core_receiver PRIVATE -DAD9361_DRIVER=1)
 endif()
 
+if(ENABLE_MAX2771)
+    target_compile_definitions(core_receiver PRIVATE -DMAX2771_DRIVER=1)
+endif()
+
+if(ENABLE_DMA_PROXY)
+    target_compile_definitions(core_receiver PRIVATE -DDMA_PROXY_DRIVER=1)
+endif()
+
 if(ENABLE_OSMOSDR)
     if(GROSMOSDR_FOUND)
         target_compile_definitions(core_receiver PRIVATE -DOSMOSDR_DRIVER=1)

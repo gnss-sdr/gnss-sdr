@@ -77,7 +77,7 @@ osnma_msg_receiver::osnma_msg_receiver(const std::string& crtFilePath,
     d_dsm_reader = std::make_unique<OSNMA_DSM_Reader>();
     d_crypto = std::make_unique<Gnss_Crypto>(crtFilePath, merkleFilePath);
     d_helper = std::make_unique<Osnma_Helper>();
-    d_nav_data_manager = std::make_unique<OSNMA_nav_data_Manager>();
+    d_nav_data_manager = std::make_unique<OSNMA_NavDataManager>();
 
     if (d_crypto->have_public_key())
         {  // Hot start is enabled
@@ -1192,7 +1192,7 @@ void osnma_msg_receiver::process_mack_message()
         }
     d_nav_data_manager->update_nav_data(d_tags_awaiting_verify, tag_size);
     auto data_to_send = d_nav_data_manager->get_verified_data();
-    d_nav_data_manager->print_status();
+    d_nav_data_manager->log_status();
     send_data_to_pvt(data_to_send);
 
     remove_verified_tags();

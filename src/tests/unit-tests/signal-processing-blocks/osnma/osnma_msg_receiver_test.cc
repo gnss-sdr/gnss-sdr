@@ -16,15 +16,15 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "Galileo_OSNMA.h"
+#include "gnss_crypto.h"
+#include "osnma_helper.h"
+#include "osnma_msg_receiver.h"
 #include <gtest/gtest.h>
 #include <bitset>
 #include <chrono>
 #include <fstream>
 #include <vector>
-#include "Galileo_OSNMA.h"
-#include "gnss_crypto.h"
-#include "osnma_helper.h"
-#include "osnma_msg_receiver.h"
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>  // for LOG
@@ -43,7 +43,7 @@ protected:
     uint32_t TOW{};
     uint32_t WN{};
     std::tm GST_START_EPOCH = {0, 0, 0, 22, 8 - 1, 1999 - 1900, 0, 0, 0, 0, 0};  // months start with 0 and years since 1900 in std::tm
-    const uint32_t LEAP_SECONDS = 0;  // tried with 13 + 5, which is the official count, but won't parse correctly
+    const uint32_t LEAP_SECONDS = 0;                                             // tried with 13 + 5, which is the official count, but won't parse correctly
     void set_time(std::tm& input);
 
     void SetUp() override
@@ -253,7 +253,7 @@ TEST_F(OsnmaMsgReceiverTest, TeslaKeyVerification)
     osnma->d_osnma_data.d_dsm_kroot_message.ks = 4;                                                                                                    // TABLE 10 --> 128 bits
     osnma->d_osnma_data.d_dsm_kroot_message.alpha = 0x610BDF26D77B;
     osnma->d_GST_SIS = (1248 & 0x00000FFF) << 20 | (345630 & 0x000FFFFF);
-    osnma->d_GST_0 = ((1248 & 0x00000FFF) << 20 | (345600 & 0x000FFFFF));                             // applicable time (GST_Kroot + 30)
+    osnma->d_GST_0 = ((1248 & 0x00000FFF) << 20 | (345600 & 0x000FFFFF));                          // applicable time (GST_Kroot + 30)
     osnma->d_GST_Sf = osnma->d_GST_0 + 30 * std::floor((osnma->d_GST_SIS - osnma->d_GST_0) / 30);  // Eq. 3 R.G.
 
     osnma->d_tesla_keys.insert((std::pair<uint32_t, std::vector<uint8_t>>(345600, {0xEF, 0xF9, 0x99, 0x04, 0x0E, 0x19, 0xB5, 0x70, 0x83, 0x50, 0x60, 0xBE, 0xBD, 0x23, 0xED, 0x92})));  // K1, not needed, just for reference.

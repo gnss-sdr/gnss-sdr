@@ -48,16 +48,9 @@ public:
     OSNMA_msg() = default;
     std::array<uint32_t, 15> mack{};
     std::array<uint8_t, 15> hkroot{};
-    uint32_t PRN{};
-    uint32_t WN_sf0{};
-    uint32_t TOW_sf0{};
-    std::vector<uint8_t> EphemerisClockAndStatusData{};  // TODO _2 rename and substitute this
-    std::string EphemerisClockAndStatusData_2{};
-    std::vector<uint8_t> TimingData{};
-    std::string TimingData_2{};
-    Galileo_Ephemeris EphemerisData{};
-    Galileo_Iono IonoData{};
-    Galileo_Utc_Model UtcModelData{};
+    uint32_t PRN{};      // PRN_a authentication data PRN
+    uint32_t WN_sf0{};   // Week number at the start of OSNMA subframe
+    uint32_t TOW_sf0{};  // TOW at the start of OSNMA subframe
 };
 
 /*!

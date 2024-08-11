@@ -136,34 +136,33 @@ class OSNMA_NavData
 {
 public:
     OSNMA_NavData() : nav_data_id(id_counter++) {}
+    const uint32_t nav_data_id;
 
     std::string get_utc_data() const;
     std::string get_ephemeris_data() const;
-    uint32_t get_tow_sf0() const { return TOW_sf0; }
+    uint32_t get_last_received_TOW() const { return d_last_received_TOW; }
+    uint32_t get_tow_sf0() const { return d_TOW_sf0; }
 
-    const uint32_t nav_data_id;
-
-    bool have_this_bits(std::string nav_data);
     bool add_nav_data(const std::string& nav_data);
-    bool verified{false};
-
-    void update_last_received_timestamp(uint32_t TOW);
-    void set_tow_sf0(int value) { TOW_sf0 = value; }
+    void set_tow_sf0(int value) { d_TOW_sf0 = value; }
     void set_ephemeris_data(std::string value) { d_ephemeris_iono = value; }
     void set_utc_data(std::string value) { d_utc = value; }
+    void update_last_received_timestamp(uint32_t TOW);
 
     uint32_t verified_bits{0};
-    uint32_t last_received_TOW{0};
     uint32_t IOD_nav{0};
     uint32_t PRNd{0};
     uint32_t ADKD{};
+    bool verified{false};
 
 private:
     std::string d_ephemeris_iono{""};
     std::string d_utc{""};
-    uint32_t TOW_sf0{0};
+    uint32_t d_TOW_sf0{0};
+    uint32_t d_last_received_TOW{0};
     static uint32_t id_counter;
 };
+
 
 /*!
  * \brief This class handles ONSMA data

@@ -161,7 +161,7 @@ TEST_F(OsnmaTestVectors, PublicKeyRevocation)
     std::tm input_time_step1 = {0, 45, 7, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
     std::tm input_time_step2 = {0, 30, 9, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
     std::tm input_time_step3 = {0, 30, 10, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
-    std::vector<std::tm> input_times = { input_time_step1, input_time_step2, input_time_step3 };
+    std::vector<std::tm> input_times = {input_time_step1, input_time_step2, input_time_step3};
 
     std::vector<TestVector> testVectors_step1 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/pkrev_step1/07_OCT_2023_GST_07_45_01.csv");
     std::vector<TestVector> testVectors_step2 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/pkrev_step2/07_OCT_2023_GST_09_30_01.csv");
@@ -170,7 +170,7 @@ TEST_F(OsnmaTestVectors, PublicKeyRevocation)
         {
             ASSERT_TRUE(false);
         }
-    std::vector<std::vector<TestVector>> testVectors = { testVectors_step1, testVectors_step2, testVectors_step3};
+    std::vector<std::vector<TestVector>> testVectors = {testVectors_step1, testVectors_step2, testVectors_step3};
 
     bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
     ASSERT_TRUE(result);
@@ -182,7 +182,8 @@ TEST_F(OsnmaTestVectors, PublicKeyRevocation)
     ASSERT_EQ(osnma->d_count_failed_macseq, 0);
 }
 
-TEST_F(OsnmaTestVectors, AlertMessage){
+TEST_F(OsnmaTestVectors, AlertMessage)
+{
     // Arrange
     std::string crtFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_3/PublicKey/OSNMA_PublicKey_20231007201500_PKID_1.crt";
     std::string merkleFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_3/MerkleTree/OSNMA_MerkleTree_20231007201500_PKID_1.xml";
@@ -190,7 +191,7 @@ TEST_F(OsnmaTestVectors, AlertMessage){
 
     std::tm input_time_step1 = {0, 45, 18, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
     std::tm input_time_step2 = {0, 45, 19, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
-    std::vector<std::tm> input_times = { input_time_step1, input_time_step2 };
+    std::vector<std::tm> input_times = {input_time_step1, input_time_step2};
 
     std::vector<TestVector> testVectors_step1 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/oam_step1/07_OCT_2023_GST_18_45_01.csv");
     std::vector<TestVector> testVectors_step2 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/oam_step2/07_OCT_2023_GST_19_45_01.csv");
@@ -198,7 +199,7 @@ TEST_F(OsnmaTestVectors, AlertMessage){
         {
             ASSERT_TRUE(false);
         }
-    std::vector<std::vector<TestVector>> testVectors = { testVectors_step1, testVectors_step2};
+    std::vector<std::vector<TestVector>> testVectors = {testVectors_step1, testVectors_step2};
 
     // Act
     bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
@@ -219,17 +220,18 @@ TEST_F(OsnmaTestVectors, AlertMessage){
 
 // Auxiliary functions for the OsnmaTestVectorsSimulation test fixture.
 // Essentially, they perform same work as the telemetry decoder block, but adapted to the osnma-test-vector files.
-bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_object, std::vector<std::vector<TestVector>> testVectors, std::vector<std::tm> startTimesFiles){
+bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_object, std::vector<std::vector<TestVector>> testVectors, std::vector<std::tm> startTimesFiles)
+{
     bool end_of_hex_stream;
     int offset_byte{0};
-    int byte_index{0};                   // index containing the last byte position of the hex stream that was retrieved. Takes advantage that all TVs have same size
+    int byte_index{0};  // index containing the last byte position of the hex stream that was retrieved. Takes advantage that all TVs have same size
 
     const int DUMMY_PAGE{63};
     bool flag_dummy_page{false};
     // Act
     // loop over all bytes of data. Note: all TestVectors have same amount of data.
     // if needed, add global flags so that particular logic may be done at certain points in between files
-    for (size_t test_step = 0; test_step < testVectors.size() ; test_step++)
+    for (size_t test_step = 0; test_step < testVectors.size(); test_step++)
         {
             // set variables for each file
             end_of_hex_stream = false;
@@ -241,7 +243,8 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
                       << ", TOW=" << TOW
                       << ", WN=" << WN << std::endl;
 
-            if (test_step == 1 && d_flag_NPK == true ){
+            if (test_step == 1 && d_flag_NPK == true)
+                {
                     // step 2: this simulates the osnma connecting to the GSC server and downloading the Merkle tree of the next public key
                     osnma_object->read_merkle_xml(
                         std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/MerkleTree/OSNMA_MerkleTree_20231007081500_PKID_8.xml");
@@ -436,7 +439,7 @@ bool OsnmaTestVectors::feedOsnmaWithTestVectors(osnma_msg_receiver_sptr osnma_ob
             if (end_of_hex_stream)
                 continue;
         }
-return true;
+    return true;
 }
 
 std::vector<TestVector> OsnmaTestVectors::readTestVectorsFromFile(const std::string& filename)

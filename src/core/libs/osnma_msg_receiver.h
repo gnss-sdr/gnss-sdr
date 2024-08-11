@@ -26,7 +26,7 @@
 #include "galileo_inav_message.h"    // for OSNMA_msg
 #include "gnss_block_interface.h"    // for gnss_shared_ptr
 #include "osnma_data.h"              // for OSNMA_data structures
-#include "osnma_nav_data_manager.h"  // for OSNMA_nav_data_Manager
+#include "osnma_nav_data_manager.h"  // for OSNMA_NavDataManager
 #include <gnuradio/block.h>          // for gr::block
 #include <pmt/pmt.h>                 // for pmt::pmt_t
 #include <array>                     // for std::array
@@ -112,10 +112,10 @@ private:
     std::array<uint16_t, 16> d_number_of_blocks{};
     std::array<uint8_t, 60> d_mack_message{};  // C: 480 b
 
-    std::unique_ptr<Gnss_Crypto> d_crypto;                       // class for cryptographic functions
-    std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;              // osnma parameters parser
-    std::unique_ptr<Osnma_Helper> d_helper;                      // helper class with auxiliary functions
-    std::unique_ptr<OSNMA_nav_data_Manager> d_nav_data_manager;  // refactor for holding and processing navigation data
+    std::unique_ptr<Gnss_Crypto> d_crypto;                     // class for cryptographic functions
+    std::unique_ptr<OSNMA_DSM_Reader> d_dsm_reader;            // osnma parameters parser
+    std::unique_ptr<Osnma_Helper> d_helper;                    // helper class with auxiliary functions
+    std::unique_ptr<OSNMA_NavDataManager> d_nav_data_manager;  // refactor for holding and processing navigation data
 
     OSNMA_data d_osnma_data{};
 

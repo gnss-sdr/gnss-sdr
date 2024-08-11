@@ -35,19 +35,25 @@ bool OSNMA_NavData::add_nav_data(const std::string& nav_data)
         }
     return false;
 }
+
+
 std::string OSNMA_NavData::get_utc_data() const
 {
     return d_utc;
 }
+
+
 std::string OSNMA_NavData::get_ephemeris_data() const
 {
     return d_ephemeris_iono;
 }
+
+
 /**
  * Updates the last TOW the NavData bits were received.
  * @param TOW
  */
 void OSNMA_NavData::update_last_received_timestamp(uint32_t TOW)
 {
-    last_received_TOW = TOW;
+    d_last_received_TOW = TOW;
 }

@@ -2026,3 +2026,8 @@ std::pair<std::vector<uint8_t>, uint8_t> osnma_msg_receiver::parse_dsm_kroot() c
 
     return {dsm_msg, nma_header};
 }
+
+void osnma_msg_receiver::set_merkle_root(const std::vector<uint8_t>& v)
+{
+    d_crypto->set_merkle_root(v);
+}

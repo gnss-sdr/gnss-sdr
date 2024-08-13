@@ -638,15 +638,14 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
 
             // TODO - Merge these two loops
             std::vector<gr::tag_t> tags_vec;
-            get_tags_in_range(tags_vec, 0, this->nitems_read(0)-1, this->nitems_read(0), pmt::mp("extra_data"));
-            for (const auto & tag : tags_vec)
-                {
-                    add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
-                    // std::cout << "[ED TAG (TRK)] [" << std::to_string(tag.offset) << "] ";
-                    // std::cout << std::endl;
-                }
+            // get_tags_in_range(tags_vec, 0, this->nitems_read(0)-1, this->nitems_read(0), pmt::mp("extra_data"));
+            // for (const auto & tag : tags_vec)
+            //     {
+            //         add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
+            //     }
+            // tags_vec.clear();
+
             // time tags
-            tags_vec.clear();
             this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + 1, pmt::mp("timetag"));
             for (const auto &it : tags_vec)
                 {

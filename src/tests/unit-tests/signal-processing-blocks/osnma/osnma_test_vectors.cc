@@ -152,6 +152,7 @@ TEST_F(OsnmaTestVectors, PublicKeyRenewal)
         }
     std::vector<std::vector<TestVector>> testVectors = {testVectors_step1, testVectors_step2, testVectors_step3};
 
+    // Act
     d_flag_NPK = true;
     bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
     ASSERT_TRUE(result);
@@ -190,6 +191,43 @@ TEST_F(OsnmaTestVectors, PublicKeyRevocation)
         }
     std::vector<std::vector<TestVector>> testVectors = {testVectors_step1, testVectors_step2, testVectors_step3};
 
+    // Act
+    bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
+    ASSERT_TRUE(result);
+
+    // Assert
+    LOG(INFO) << "Successful tags count= " << osnma->d_count_successful_tags;
+    LOG(INFO) << "Failed tags count= " << osnma->d_count_failed_tags;
+    LOG(INFO) << "Unverified tags count= " << osnma->d_tags_awaiting_verify.size();
+    LOG(INFO) << "Failed Kroot count= " << osnma->d_count_failed_Kroot;
+    LOG(INFO) << "Failed PK count= " << osnma->d_count_failed_pubKey;
+    LOG(INFO) << "Failed MACSEQ count= " << osnma->d_count_failed_macseq;
+    ASSERT_EQ(osnma->d_count_failed_tags, 0);
+    ASSERT_EQ(osnma->d_count_failed_Kroot, 0);
+    ASSERT_EQ(osnma->d_count_failed_pubKey, 0);
+    ASSERT_EQ(osnma->d_count_failed_macseq, 0);
+}
+
+TEST_F(OsnmaTestVectors, ChainRenewal)
+{
+    // Arrange
+    std::string crtFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/PublicKey/OSNMA_PublicKey_20231007041500_PKID_7.crt";
+    std::string merkleFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/MerkleTree/OSNMA_MerkleTree_20231007041500_PKID_7.xml";
+    osnma_msg_receiver_sptr osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath);
+
+    std::tm input_time_step1 = {0, 45, 16, 6, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::tm input_time_step2 = {0, 30, 18, 6, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::vector<std::tm> input_times = {input_time_step1, input_time_step2};
+
+    std::vector<TestVector> testVectors_step1 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/eoc_step1/06_OCT_2023_GST_16_45_01.csv");
+    std::vector<TestVector> testVectors_step2 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/eoc_step2/06_OCT_2023_GST_18_30_01.csv");
+    if (testVectors_step1.empty() || testVectors_step2.empty())
+        {
+            ASSERT_TRUE(false);
+        }
+    std::vector<std::vector<TestVector>> testVectors = {testVectors_step1, testVectors_step2};
+
+    // Act
     bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
     ASSERT_TRUE(result);
 

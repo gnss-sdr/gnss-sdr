@@ -258,7 +258,7 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
             return;
         }
     // TODO - trusting the NMAS and CPKS shall be done upon PKR verification or Tag verification.
-    //  It's ok to activate the flags, but the final decision should happen after verifying it.
+    // It's ok to activate the flags, but the final decision should happen after verifying it.
     // For OAM is solved, but NPK and PKREV I think not yet
     if (d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 4 /* NPK */ && d_GST_PKR_PKREV_start == 0)
         {
@@ -307,6 +307,27 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
             d_kroot_verified = false;
             LOG(INFO) << "Galileo OSNMA: Alert message :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]";
             std::cout << "Galileo OSNMA: Alert message :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]" << std::endl;
+        }
+
+    if (d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 2 /* EOC */ && d_GST_chain_renewal_start == 0)
+        {
+            d_flag_chain_renewal = true;
+            d_GST_chain_renewal_start = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
+            LOG(INFO) << "Galileo OSNMA: Chain renewal :: Start at at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]";
+            std::cout << "Galileo OSNMA: Chain renewal :: Start at at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]" << std::endl;
+        }
+    if (d_flag_chain_renewal && d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 1 /* Nominal */)
+        {
+            // Step 2, start using the new kroot
+            d_flag_chain_renewal = false;
+            uint32_t final_GST = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
+            double duration_hours = (final_GST - d_GST_chain_renewal_start) / 3600.0;
+            LOG(INFO) << "Galileo OSNMA: Chain renewal :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
+                      << ", Duration=" << duration_hours << "h";
+            std::cout << "Galileo OSNMA: Chain renewal :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
+                      << ", Duration=" << duration_hours << "h" << std::endl;
+            d_osnma_data.d_dsm_kroot_message = d_osnma_data.d_dsm_kroot_new_message;  // set new kroot as the one to use from now on
+            d_tesla_key_verified = false;                                             // force the verification up to the Kroot due to chain change
         }
 
     read_dsm_header(osnma_msg->hkroot[1]);
@@ -478,24 +499,27 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
     // DSM-KROOT message
     if ((d_osnma_data.d_dsm_header.dsm_id < 12 || d_flag_hot_start) && d_public_key_verified)
         {
+            bool new_chain = (d_dsm_reader->get_cidkr(dsm_msg) != d_osnma_data.d_nma_header.cid) && d_flag_chain_renewal;
+            DSM_KROOT_message& applicable_kroot_msg = new_chain ? d_osnma_data.d_dsm_kroot_new_message : d_osnma_data.d_dsm_kroot_message;
+
             // Parse Kroot message
             LOG(INFO) << "Galileo OSNMA: DSM-KROOT message received.";
-            d_osnma_data.d_dsm_kroot_message.nb_dk = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
-            d_osnma_data.d_dsm_kroot_message.pkid = d_dsm_reader->get_pkid(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.cidkr = d_dsm_reader->get_cidkr(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.reserved1 = d_dsm_reader->get_dsm_reserved1(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.hf = d_dsm_reader->get_hf(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.mf = d_dsm_reader->get_mf(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.ks = d_dsm_reader->get_ks(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.ts = d_dsm_reader->get_ts(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.maclt = d_dsm_reader->get_maclt(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.reserved = d_dsm_reader->get_dsm_reserved(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.wn_k = d_dsm_reader->get_wn_k(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.towh_k = d_dsm_reader->get_towh_k(dsm_msg);
-            d_osnma_data.d_dsm_kroot_message.alpha = d_dsm_reader->get_alpha(dsm_msg);
+            applicable_kroot_msg.nb_dk = d_dsm_reader->get_number_blocks_index(dsm_msg[0]);
+            applicable_kroot_msg.pkid = d_dsm_reader->get_pkid(dsm_msg);
+            applicable_kroot_msg.cidkr = d_dsm_reader->get_cidkr(dsm_msg);
+            applicable_kroot_msg.reserved1 = d_dsm_reader->get_dsm_reserved1(dsm_msg);
+            applicable_kroot_msg.hf = d_dsm_reader->get_hf(dsm_msg);
+            applicable_kroot_msg.mf = d_dsm_reader->get_mf(dsm_msg);
+            applicable_kroot_msg.ks = d_dsm_reader->get_ks(dsm_msg);
+            applicable_kroot_msg.ts = d_dsm_reader->get_ts(dsm_msg);
+            applicable_kroot_msg.maclt = d_dsm_reader->get_maclt(dsm_msg);
+            applicable_kroot_msg.reserved = d_dsm_reader->get_dsm_reserved(dsm_msg);
+            applicable_kroot_msg.wn_k = d_dsm_reader->get_wn_k(dsm_msg);
+            applicable_kroot_msg.towh_k = d_dsm_reader->get_towh_k(dsm_msg);
+            applicable_kroot_msg.alpha = d_dsm_reader->get_alpha(dsm_msg);
             // Kroot field
-            const uint16_t l_lk_bytes = d_dsm_reader->get_lk_bits(d_osnma_data.d_dsm_kroot_message.ks) / 8;
-            d_osnma_data.d_dsm_kroot_message.kroot = d_dsm_reader->get_kroot(dsm_msg, l_lk_bytes);
+            const uint16_t l_lk_bytes = d_dsm_reader->get_lk_bits(applicable_kroot_msg.ks) / 8;
+            applicable_kroot_msg.kroot = d_dsm_reader->get_kroot(dsm_msg, l_lk_bytes);
             // DS field
             uint16_t l_ds_bits = 0;
             const auto it = OSNMA_TABLE_15.find(d_crypto->get_public_key_type());
@@ -504,19 +528,19 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     l_ds_bits = it->second;
                 }
             const uint16_t l_ds_bytes = l_ds_bits / 8;
-            d_osnma_data.d_dsm_kroot_message.ds = std::vector<uint8_t>(l_ds_bytes, 0);  // C: this accounts for padding in case needed.
+            applicable_kroot_msg.ds = std::vector<uint8_t>(l_ds_bytes, 0);  // C: this accounts for padding in case needed.
             for (uint16_t k = 0; k < l_ds_bytes; k++)
                 {
-                    d_osnma_data.d_dsm_kroot_message.ds[k] = dsm_msg[13 + l_lk_bytes + k];
+                    applicable_kroot_msg.ds[k] = dsm_msg[13 + l_lk_bytes + k];
                 }
             // Padding
-            const uint16_t l_dk_bits = d_dsm_reader->get_l_dk_bits(d_osnma_data.d_dsm_kroot_message.nb_dk);
+            const uint16_t l_dk_bits = d_dsm_reader->get_l_dk_bits(applicable_kroot_msg.nb_dk);
             const uint16_t l_dk_bytes = l_dk_bits / 8;
             const uint16_t l_pdk_bytes = (l_dk_bytes - 13 - l_lk_bytes - l_ds_bytes);
-            d_osnma_data.d_dsm_kroot_message.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
+            applicable_kroot_msg.p_dk = std::vector<uint8_t>(l_pdk_bytes, 0);
             for (uint16_t k = 0; k < l_pdk_bytes; k++)
                 {
-                    d_osnma_data.d_dsm_kroot_message.p_dk[k] = dsm_msg[13 + l_lk_bytes + l_ds_bytes + k];
+                    applicable_kroot_msg.p_dk[k] = dsm_msg[13 + l_lk_bytes + l_ds_bytes + k];
                 }
 
             const uint16_t check_l_dk = 104 * std::ceil(1.0 + static_cast<float>((l_lk_bytes * 8.0) + l_ds_bits) / 104.0);
@@ -539,15 +563,15 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                     std::vector<uint8_t> message = MSG;  // MSG = (M | DS) from ICD. Eq. 7
                     for (uint16_t k = 0; k < l_ds_bytes; k++)
                         {
-                            MSG.push_back(d_osnma_data.d_dsm_kroot_message.ds[k]);
+                            MSG.push_back(applicable_kroot_msg.ds[k]);
                         }
 
                     std::vector<uint8_t> hash;
-                    if (d_osnma_data.d_dsm_kroot_message.hf == 0)  // Table 8.
+                    if (applicable_kroot_msg.hf == 0)  // Table 8.
                         {
                             hash = d_crypto->compute_SHA_256(MSG);
                         }
-                    else if (d_osnma_data.d_dsm_kroot_message.hf == 2)
+                    else if (applicable_kroot_msg.hf == 2)
                         {
                             hash = d_crypto->compute_SHA3_256(MSG);
                         }
@@ -563,17 +587,16 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                             p_dk_truncated.push_back(hash[i]);
                         }
                     // Check that the padding bits received match the computed values
-                    if (d_osnma_data.d_dsm_kroot_message.p_dk == p_dk_truncated)
+                    if (applicable_kroot_msg.p_dk == p_dk_truncated)
                         {
                             LOG(INFO) << "Galileo OSNMA: DSM-KROOT message received ok.";
                             LOG(INFO) << "Galileo OSNMA: DSM-KROOT with CID=" << static_cast<uint32_t>(d_osnma_data.d_nma_header.cid)
-                                      << ", PKID=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.pkid)
-                                      << ", WN=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.wn_k)
-                                      << ", TOW=" << static_cast<uint32_t>(d_osnma_data.d_dsm_kroot_message.towh_k) * 3600;
-                            // local_time_verification(osnma_msg);  // FIXME TODO: real time verification needed
+                                      << ", PKID=" << static_cast<uint32_t>(applicable_kroot_msg.pkid)
+                                      << ", WN=" << static_cast<uint32_t>(applicable_kroot_msg.wn_k)
+                                      << ", TOW=" << static_cast<uint32_t>(applicable_kroot_msg.towh_k) * 3600;
 
                             // If new PK verified and the new KROOT arrived, set the new PK before attempting verification
-                            if (d_flag_PK_renewal && d_osnma_data.d_dsm_kroot_message.pkid == d_new_public_key_id && d_flag_NPK_set == false)
+                            if (d_flag_PK_renewal && applicable_kroot_msg.pkid == d_new_public_key_id && d_flag_NPK_set == false)
                                 {
                                     d_crypto->set_public_key(d_new_public_key);
                                     d_crypto->store_public_key(PEMFILE_DEFAULT);
@@ -581,14 +604,15 @@ void osnma_msg_receiver::process_dsm_message(const std::vector<uint8_t>& dsm_msg
                                 }
                             if (l_ds_bits == 512)
                                 {
-                                    d_kroot_verified = d_crypto->verify_signature_ecdsa_p256(message, d_osnma_data.d_dsm_kroot_message.ds);
+                                    d_kroot_verified = d_crypto->verify_signature_ecdsa_p256(message, applicable_kroot_msg.ds);
                                 }
                             else if (l_ds_bits == 1056)
                                 {
-                                    d_kroot_verified = d_crypto->verify_signature_ecdsa_p521(message, d_osnma_data.d_dsm_kroot_message.ds);
+                                    d_kroot_verified = d_crypto->verify_signature_ecdsa_p521(message, applicable_kroot_msg.ds);
                                 }
                             if (d_kroot_verified)
                                 {
+                                    applicable_kroot_msg.verified = true;
                                     std::cout << "Galileo OSNMA: DSM-KROOT authentication successful!" << std::endl;
                                     LOG(INFO) << "Galileo OSNMA: DSM-KROOT authentication successful!";
                                     if (d_flag_alert_message)
@@ -1271,6 +1295,12 @@ std::vector<uint8_t> osnma_msg_receiver::compute_merkle_root(const DSM_PKR_messa
 }
 
 
+/**
+ * @brief Get the Merkle tree base leave from a DSM_PKR_message.
+ *
+ * @param dsm_pkr_message The DSM_PKR_message object from which to retrieve the Merkle tree leave.
+ * @return std::vector<uint8_t> The Merkle tree base leave from the DSM_PKR_message object.
+ */
 std::vector<uint8_t> osnma_msg_receiver::get_merkle_tree_leaves(const DSM_PKR_message& dsm_pkr_message) const
 {
     // build base leaf m_i according to OSNMA SIS ICD v1.1, section 6.2 DSM-PKR Verification

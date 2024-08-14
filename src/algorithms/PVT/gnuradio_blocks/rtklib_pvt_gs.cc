@@ -1942,7 +1942,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
         {
             std::vector<gr::tag_t> tags_vec;
             // time tag from obs to pvt is always propagated in channel 0
-            this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items);
+            this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, pmt::mp("timetag"));
             for (const auto& it : tags_vec)
                 {
                     try

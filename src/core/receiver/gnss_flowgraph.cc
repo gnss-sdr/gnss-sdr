@@ -48,6 +48,7 @@
 #include <algorithm>                 // for transform, sort, unique
 #include <cmath>                     // for floor
 #include <cstddef>                   // for size_t
+#include <cstdlib>                   // for exit
 #include <exception>                 // for exception
 #include <iostream>                  // for operator<<
 #include <iterator>                  // for insert_iterator, inserter
@@ -124,9 +125,9 @@ void GNSSFlowgraph::init()
     sources_count_ = configuration_->property("GNSS-SDR.num_sources", sources_count_deprecated);
 
     // Avoid segmentation fault caused by wrong configuration
-    if (sources_count_ == 2 && block_factory->GetSignalSource(configuration_.get(), queue_.get(), 0)->implementation() == "Multichannel_File_Signal_Source")
+    if (sources_count_ == 2 && configuration_->property("SignalSource.implementation", std::string("")) == "Multichannel_File_Signal_Source")
         {
-            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuraiion file\n";
+            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuration file\n";
             std::cout << "   if you are using the Multichannel_File_Signal_Source implementation.\n";
             sources_count_ = 1;
         }
@@ -136,7 +137,13 @@ void GNSSFlowgraph::init()
     for (int i = 0; i < sources_count_; i++)
         {
             DLOG(INFO) << "Creating source " << i;
-            sig_source_.push_back(block_factory->GetSignalSource(configuration_.get(), queue_.get(), i));
+            auto check_not_nullptr = block_factory->GetSignalSource(configuration_.get(), queue_.get(), i);
+            if (!check_not_nullptr)
+                {
+                    std::cout << "GNSS-SDR program ended.\n";
+                    exit(1);
+                }
+            sig_source_.push_back(std::move(check_not_nullptr));
             if (enable_fpga_offloading_ == false)
                 {
                     auto& src = sig_source_.back();
@@ -547,7 +554,7 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
             if (src == nullptr)
                 {
                     help_hint_ += " * Check implementation name for SignalSource block.\n";
-                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Fpga_Signal_Source\n";
+                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Signal_Source_Fpga or Fpga_DMA_2Signal_Source\n";
                     return 1;
                 }
             if (src->item_size() == 0)

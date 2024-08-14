@@ -21,6 +21,7 @@
  */
 
 #include "fpga_switch.h"
+#include "uio_fpga.h"
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
 #include <iostream>    // for cout
 #include <sys/mman.h>  // for mmap
@@ -32,11 +33,19 @@
 #include <absl/log/log.h>
 #endif
 
-Fpga_Switch::Fpga_Switch(const std::string &device_name)
+Fpga_Switch::Fpga_Switch(void)
 {
-    if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
+    std::string device_io_name;  // Switch UIO device file
+    // find the uio device file corresponding to the switch.
+    if (find_uio_dev_file_name(device_io_name, SWITCH_DEVICE_NAME, 0) < 0)
         {
-            LOG(WARNING) << "Cannot open deviceio" << device_name;
+            std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << SWITCH_DEVICE_NAME << '\n';
+            return;
+        }
+
+    if ((d_device_descriptor = open(device_io_name.c_str(), O_RDWR | O_SYNC)) == -1)
+        {
+            LOG(WARNING) << "Cannot open deviceio" << device_io_name;
         }
     d_map_base = reinterpret_cast<volatile unsigned *>(mmap(nullptr, FPGA_PAGE_SIZE,
         PROT_READ | PROT_WRITE, MAP_SHARED, d_device_descriptor, 0));

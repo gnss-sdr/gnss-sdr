@@ -17,6 +17,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrLibPaths)
+endif()
+
 find_path(LIBUNWIND_INCLUDE_DIR
     NAMES
         libunwind.h
@@ -41,6 +45,7 @@ find_library(LIBUNWIND_GENERIC_LIBRARY
     PATHS
         "${LIBUNWIND_ROOT}/lib"
         "${LIBUNWIND_ROOT}/lib64"
+        ${GNSSSDR_LIB_PATHS}
 )
 
 if(LIBUNWIND_INCLUDE_DIR)

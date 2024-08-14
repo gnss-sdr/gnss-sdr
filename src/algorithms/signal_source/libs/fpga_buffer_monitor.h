@@ -45,10 +45,13 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_buffer_monitor(const std::string& device_name,
-        uint32_t num_freq_bands,
+    explicit Fpga_buffer_monitor(uint32_t num_freq_bands,
         bool dump,
         std::string dump_filename);
+    //    explicit Fpga_buffer_monitor(const std::string& device_name,
+    //        uint32_t num_freq_bands,
+    //        bool dump,
+    //        std::string dump_filename);
 
     /*!
      * \brief Destructor
@@ -61,6 +64,7 @@ public:
     void check_buffer_overflow_and_monitor_buffer_status();
 
 private:
+    const std::string BUFFER_MONITOR_DEVICE_NAME = std::string("buffer_monitor");  // buffer monitor device name
     static const size_t FPGA_PAGE_SIZE = 0x1000;
     static const uint32_t test_register_writeval = 0x55AA;
     static const uint32_t num_sapmples_per_buffer_element = 2;

@@ -61,9 +61,11 @@ osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, 
 class osnma_msg_receiver : public gr::block
 {
 public:
-    ~osnma_msg_receiver() = default;                      //!< Default destructor
-    void msg_handler_osnma(const pmt::pmt_t& msg);        //!< For testing purposes
-    void read_merkle_xml(const std::string& merklepath);  //!< Public for testing purposes
+    ~osnma_msg_receiver() = default;                           //!< Default destructor
+    void msg_handler_osnma(const pmt::pmt_t& msg);             //!< For testing purposes
+    void read_merkle_xml(const std::string& merklepath);       //!< Public for testing purposes
+    bool verify_dsm_pkr(const DSM_PKR_message& message) const; //!< Public for benchmarking purposes
+    void set_merkle_root(const std::vector<uint8_t>& v);       //!< Public for benchmarking purposes
 
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode);
@@ -89,7 +91,7 @@ private:
     bool tag_has_nav_data_available(const Tag& t) const;
     bool tag_has_key_available(const Tag& t) const;
     bool verify_macseq(const MACK_message& mack);
-    bool verify_dsm_pkr(const DSM_PKR_message& message) const;
+
     bool store_dsm_kroot(const std::vector<uint8_t>& dsm, const uint8_t nma_header) const;
 
     std::pair<std::vector<uint8_t>, uint8_t> parse_dsm_kroot() const;

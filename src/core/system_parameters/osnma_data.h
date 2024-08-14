@@ -137,30 +137,36 @@ class OSNMA_NavData
 public:
     OSNMA_NavData() : nav_data_id(id_counter++) {}
     const uint32_t nav_data_id;
-
     std::string get_utc_data() const;
     std::string get_ephemeris_data() const;
+    uint32_t get_verified_bits() const { return verified_bits; }
+    uint32_t get_prn_d() const { return PRNd; }
+    uint32_t get_IOD_nav() const { return IOD_nav; }
     uint32_t get_last_received_TOW() const { return d_last_received_TOW; }
     uint32_t get_tow_sf0() const { return d_TOW_sf0; }
-
+    bool have_this_bits(std::string nav_data);
+    bool get_verified_status() const { return verified; }
     bool add_nav_data(const std::string& nav_data);
     void set_tow_sf0(int value) { d_TOW_sf0 = value; }
     void set_ephemeris_data(std::string value) { d_ephemeris_iono = value; }
     void set_utc_data(std::string value) { d_utc = value; }
     void update_last_received_timestamp(uint32_t TOW);
-
-    uint32_t verified_bits{0};
-    uint32_t IOD_nav{0};
-    uint32_t PRNd{0};
-    uint32_t ADKD{};
-    bool verified{false};
+    void set_prn_d(uint32_t value) { PRNd = value; }
+    void set_last_received_TOW(uint32_t TOW) { d_last_received_TOW = TOW; };
+    void set_update_verified_bits(uint32_t morebits) { verified_bits += morebits; }
+    void set_verified_status(bool value) { verified = value; }
+    void set_IOD_nav(uint32_t value) { IOD_nav = value; }
 
 private:
+    static uint32_t id_counter;
     std::string d_ephemeris_iono{""};
     std::string d_utc{""};
     uint32_t d_TOW_sf0{0};
     uint32_t d_last_received_TOW{0};
-    static uint32_t id_counter;
+    uint32_t PRNd{0};
+    uint32_t verified_bits{0};
+    uint32_t IOD_nav{0};
+    bool verified{false};
 };
 
 

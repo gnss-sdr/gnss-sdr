@@ -1413,20 +1413,15 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
  */
 OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
 {
-    // TODO - why PRN of word 4 is done separately?
     nma_position_filled = std::array<int8_t, 15>{};
     // Fill TOW and WN
     nma_msg.WN_sf0 = WN_0;
-    int32_t TOW_sf0 = TOW_5 - 25;  //- 24; // according to OS SIS ICD, TOW of word 5 is 25 seconds after Sf start TODO review
+    int32_t TOW_sf0 = TOW_5 - 25;
     if (TOW_sf0 < 0)
         {
             TOW_sf0 += 604800;
         }
     nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
-    // get ephemeris, clock and iono correction datn and GST-UTC and GST-GPS converstion parameters (may be incomplete)
-    nma_msg.EphemerisData = get_ephemeris();
-    nma_msg.IonoData = get_iono();
-    nma_msg.UtcModelData = get_utc_model();
     return nma_msg;
 }
 

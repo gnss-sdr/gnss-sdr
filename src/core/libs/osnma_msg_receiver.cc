@@ -183,8 +183,8 @@ void osnma_msg_receiver::msg_handler_osnma(const pmt::pmt_t& msg)
                     if (delta_T <= d_T_L)
                         {
                             d_tags_to_verify = {0, 4, 12};
-                            LOG(INFO) << "Galileo OSNMA: time constraint OK ( delta_T=" << delta_T << " s)";
-                            std::cout << "Galileo OSNMA: time constraint OK ( delta_T=" << delta_T << " s)" << std::endl;
+                            LOG(INFO) << "Galileo OSNMA: time constraint OK (delta_T=" << delta_T << " s)";
+                            std::cout << "Galileo OSNMA: time constraint OK (delta_T=" << delta_T << " s)" << std::endl;
                         }
                     else if (delta_T > d_T_L && delta_T <= 10 * d_T_L)
                         {
@@ -1067,7 +1067,18 @@ void osnma_msg_receiver::process_mack_message()
                     // add tag0 first
                     Tag tag0(*mack);
                     d_tags_awaiting_verify.insert(std::pair<uint32_t, Tag>(mack->TOW, tag0));
-                    //                    bool ret = verify_macseq(*mack);
+                    LOG(INFO) << "Galileo OSNMA: Add Tag0 Id= "
+                              << tag0.tag_id
+                              << ", value=0x" << std::setfill('0') << std::setw(10) << std::hex << std::uppercase
+                              << tag0.received_tag << std::dec
+                              << ", TOW="
+                              << tag0.TOW
+                              << ", ADKD="
+                              << static_cast<unsigned>(tag0.ADKD)
+                              << ", PRNa="
+                              << static_cast<unsigned>(tag0.PRNa)
+                              << ", PRNd="
+                              << static_cast<unsigned>(tag0.PRN_d);
                     std::vector<MACK_tag_and_info> macseq_verified_tags = verify_macseq_new(*mack);
                     for (auto& tag_and_info : macseq_verified_tags)
                         {
@@ -1521,11 +1532,11 @@ void osnma_msg_receiver::remove_verified_tags()
                               << static_cast<unsigned>(it->second.PRNa)
                               << ", PRNd="
                               << static_cast<unsigned>(it->second.PRN_d)
-                              << ", status= "
+                              << ", status="
                               << d_helper->verification_status_str(it->second.status);
                     it = d_tags_awaiting_verify.erase(it);
                 }
-            else if (it->second.skipped >= 20)
+            else if ((it->second.ADKD != 12 && !d_nav_data_manager->have_nav_data(it->second)) || (it->second.ADKD == 12 && (it->second.TOW + 30 * 11 < d_helper->get_TOW(d_last_verified_key_GST))))
                 {
                     LOG(INFO) << "Galileo OSNMA: Tag verification :: DELETE tag Id="
                               << it->second.tag_id
@@ -1539,8 +1550,9 @@ void osnma_msg_receiver::remove_verified_tags()
                               << static_cast<unsigned>(it->second.PRNa)
                               << ", PRNd="
                               << static_cast<unsigned>(it->second.PRN_d)
-                              << ", status= "
-                              << d_helper->verification_status_str(it->second.status);
+                              << ", status="
+                              << d_helper->verification_status_str(it->second.status)
+                              << ". SV out of sight / NavData unavailable.";
                     it = d_tags_awaiting_verify.erase(it);
                 }
             else
@@ -1563,7 +1575,7 @@ void osnma_msg_receiver::remove_verified_tags()
                       << static_cast<unsigned>(it.second.PRNa)
                       << ", PRNd="
                       << static_cast<unsigned>(it.second.PRN_d)
-                      << ", status= "
+                      << ", status="
                       << d_helper->verification_status_str(it.second.status);
         }
 }
@@ -2013,4 +2025,9 @@ std::pair<std::vector<uint8_t>, uint8_t> osnma_msg_receiver::parse_dsm_kroot() c
         }
 
     return {dsm_msg, nma_header};
+}
+
+void osnma_msg_receiver::set_merkle_root(const std::vector<uint8_t>& v)
+{
+    d_crypto->set_merkle_root(v);
 }

@@ -78,7 +78,7 @@ private:
     void readPublicKeyFromPEM(const std::string& pemFilePath);
     bool readPublicKeyFromCRT(const std::string& crtFilePath);
     bool convert_raw_to_der_ecdsa(const std::vector<uint8_t>& raw_signature, std::vector<uint8_t>& der_signature) const;
-    std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;
+    std::vector<uint8_t> convert_from_hex_str(const std::string& input) const;  // TODO - deprecate if OSNMA helper is to do this operation
 #if USE_GNUTLS_FALLBACK
     void decompress_public_key_secp256r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const;
     void decompress_public_key_secp521r1(const std::vector<uint8_t>& compressed_key, std::vector<uint8_t>& x, std::vector<uint8_t>& y) const;

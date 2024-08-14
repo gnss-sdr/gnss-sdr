@@ -116,6 +116,7 @@ public:
     uint8_t maclt{};
     uint8_t reserved{};
     uint8_t towh_k{};
+    bool verified{false};
 };
 
 
@@ -182,6 +183,7 @@ public:
     DSM_dsm_header d_dsm_header;
     DSM_PKR_message d_dsm_pkr_message;
     DSM_KROOT_message d_dsm_kroot_message;
+    DSM_KROOT_message d_dsm_kroot_new_message;
     MACK_message d_mack_message;
     OSNMA_NavData d_nav_data;
 };

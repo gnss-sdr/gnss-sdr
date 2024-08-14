@@ -129,6 +129,7 @@ private:
     uint32_t d_GST_SIS{};                 // GST coming from W6 and W5 of SIS
     uint32_t d_GST_PKR_PKREV_start{};
     uint32_t d_GST_PKR_AM_start{};
+    uint32_t d_GST_chain_renewal_start{};
 
     uint32_t d_count_successful_tags{0};
     uint32_t d_count_failed_tags{0};
@@ -149,6 +150,7 @@ private:
     bool d_flag_PK_revocation{false};
     bool d_flag_NPK_set{false};
     bool d_flag_alert_message{false};
+    bool d_flag_chain_renewal{false};
 
     // Provide access to inner functions to Gtest
     FRIEND_TEST(OsnmaMsgReceiverTest, TeslaKeyVerification);
@@ -161,6 +163,7 @@ private:
     FRIEND_TEST(OsnmaTestVectors, NominalTestConf2);
     FRIEND_TEST(OsnmaTestVectors, PublicKeyRenewal);
     FRIEND_TEST(OsnmaTestVectors, PublicKeyRevocation);
+    FRIEND_TEST(OsnmaTestVectors, ChainRenewal);
     FRIEND_TEST(OsnmaTestVectors, AlertMessage);
 };
 

@@ -693,6 +693,10 @@ int hybrid_observables_gs::general_work(int noutput_items __attribute__((unused)
             // extra data tags
             get_tags_in_range(tags_vec, d_nchannels_in - 1, this->nitems_read(d_nchannels_in - 1), this->nitems_read(d_nchannels_in - 1) + 1, pmt::mp("extra_data"));
             // std::cout << "OBS (" << std::to_string(tags_vec.size()) << ")" << std::endl;
+            while (!d_extra_data_tags.empty())
+                {
+                    d_extra_data_tags.pop();
+                }
             for (const auto &tag : tags_vec)
                 {
                     d_extra_data_tags.emplace(tag);

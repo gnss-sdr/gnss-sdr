@@ -1658,13 +1658,10 @@ void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
             // so with ADKD0 and ADKD12 validated), their corresponding TOW at the beginning
             // of the authenticated subframe, and maybe the COP.
             const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
-            if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_data>).hash_code())
+            if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_NavData>).hash_code())
                 {
-                    // Act according to NMA data
-                    if (d_osnma_strict)
-                        {
-                            // TODO
-                        }
+                    const auto osnma_data = wht::any_cast<std::shared_ptr<OSNMA_NavData>>(pmt::any_ref(msg));
+                    d_auth_nav_data_map[osnma_data->get_prn_d()].insert(osnma_data->get_IOD_nav());
                 }
         }
     catch (const wht::bad_any_cast& e)
@@ -2051,7 +2048,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             if (d_osnma_strict && ((std::string(in[i][epoch].Signal, 2) == std::string("1B")) || ((std::string(in[i][epoch].Signal, 2) == std::string("7X")))))
                                                 {
                                                     // Pick up only authenticated satellites
-                                                    // TODO
+                                                    auto IOD_nav_list = d_auth_nav_data_map.find(tmp_eph_iter_gal->second.PRN);
+                                                    if (IOD_nav_list != d_auth_nav_data_map.cend())
+                                                        {
+                                                            if (IOD_nav_list->second.find(tmp_eph_iter_gal->second.IOD_nav) != IOD_nav_list->second.cend())
+                                                                {
+                                                                    store_valid_observable = true;
+                                                                }
+                                                        }
                                                 }
                                             else
                                                 {

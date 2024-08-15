@@ -20,6 +20,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "gnss_time.h"
+#include "osnma_data.h"
 #include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -203,6 +204,7 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
+    std::map<uint32_t,  std::set<uint32_t>> d_auth_nav_data_map;
 
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 

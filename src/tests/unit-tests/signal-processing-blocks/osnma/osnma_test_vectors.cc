@@ -244,6 +244,45 @@ TEST_F(OsnmaTestVectors, ChainRenewal)
     ASSERT_EQ(osnma->d_count_failed_macseq, 0);
 }
 
+TEST_F(OsnmaTestVectors, ChainRevocation)
+{
+    // Arrange
+    std::string crtFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/PublicKey/OSNMA_PublicKey_20231007041500_PKID_7.crt";
+    std::string merkleFilePath = std::string(BASE_OSNMA_TEST_VECTORS) + "cryptographic_material/Merkle_tree_2/MerkleTree/OSNMA_MerkleTree_20231007041500_PKID_7.xml";
+    osnma_msg_receiver_sptr osnma = osnma_msg_receiver_make(crtFilePath, merkleFilePath);
+
+    std::tm input_time_step1 = {0, 45, 21, 6, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::tm input_time_step2 = {0, 30, 23, 6, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+    std::tm input_time_step3 = {0, 30, 00, 7, 10 - 1, 2023 - 1900, 0, 0, 0, 0, 0};
+
+    std::vector<std::tm> input_times = {input_time_step1, input_time_step2, input_time_step3};
+
+    std::vector<TestVector> testVectors_step1 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/crev_step1/06_OCT_2023_GST_21_45_01.csv");
+    std::vector<TestVector> testVectors_step2 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/crev_step2/06_OCT_2023_GST_23_30_01.csv");
+    std::vector<TestVector> testVectors_step3 = readTestVectorsFromFile(std::string(BASE_OSNMA_TEST_VECTORS) + "osnma_test_vectors/crev_step3/07_OCT_2023_GST_00_30_01.csv");
+    if (testVectors_step1.empty() || testVectors_step2.empty() || testVectors_step3.empty())
+        {
+            ASSERT_TRUE(false);
+        }
+    std::vector<std::vector<TestVector>> testVectors = {testVectors_step1, testVectors_step2, testVectors_step3};
+
+    // Act
+    bool result = feedOsnmaWithTestVectors(osnma, testVectors, input_times);
+    ASSERT_TRUE(result);
+
+    // Assert
+    LOG(INFO) << "Successful tags count= " << osnma->d_count_successful_tags;
+    LOG(INFO) << "Failed tags count= " << osnma->d_count_failed_tags;
+    LOG(INFO) << "Unverified tags count= " << osnma->d_tags_awaiting_verify.size();
+    LOG(INFO) << "Failed Kroot count= " << osnma->d_count_failed_Kroot;
+    LOG(INFO) << "Failed PK count= " << osnma->d_count_failed_pubKey;
+    LOG(INFO) << "Failed MACSEQ count= " << osnma->d_count_failed_macseq;
+    ASSERT_EQ(osnma->d_count_failed_tags, 0);
+    ASSERT_EQ(osnma->d_count_failed_Kroot, 0);
+    ASSERT_EQ(osnma->d_count_failed_pubKey, 0);
+    ASSERT_EQ(osnma->d_count_failed_macseq, 0);
+}
+
 TEST_F(OsnmaTestVectors, AlertMessage)
 {
     // Arrange

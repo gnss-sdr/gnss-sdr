@@ -330,6 +330,28 @@ void osnma_msg_receiver::process_osnma_message(const std::shared_ptr<OSNMA_msg>&
             d_tesla_key_verified = false;                                             // force the verification up to the Kroot due to chain change
         }
 
+    if (d_osnma_data.d_nma_header.nmas == 3 /* DU */ && d_osnma_data.d_nma_header.cpks == 3 /* CREV */ && d_GST_chain_revocation_start == 0)
+        {
+            d_flag_chain_revocation = true;
+            d_number_of_blocks[d_osnma_data.d_dsm_header.dsm_id] = 0;  // delete blocks received up to now, new chain must be received.
+            // d_public_key_verified = false;
+            d_kroot_verified = false;
+            d_tesla_key_verified = false;
+            d_GST_chain_revocation_start = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
+            LOG(INFO) << "Galileo OSNMA: Chain revocation :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]";
+            std::cout << "Galileo OSNMA: Chain revocation :: Start at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]" << std::endl;
+        }
+    if (d_flag_chain_revocation && d_osnma_data.d_nma_header.nmas == 2 /* OP */ && d_osnma_data.d_nma_header.cpks == 1 /* Nominal */)
+        {
+            d_flag_chain_revocation = false;
+            uint32_t final_GST = d_helper->compute_gst(osnma_msg->WN_sf0, osnma_msg->TOW_sf0);
+            double duration_hours = (final_GST - d_GST_chain_revocation_start) / 3600.0;
+            LOG(INFO) << "Galileo OSNMA: Chain revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
+                      << ", Duration=" << duration_hours << "h";
+            std::cout << "Galileo OSNMA: Chain revocation :: Finished at GST=[" << osnma_msg->WN_sf0 << " " << osnma_msg->TOW_sf0 << "]"
+                      << ", Duration=" << duration_hours << "h" << std::endl;
+        }
+
     read_dsm_header(osnma_msg->hkroot[1]);
     read_dsm_block(osnma_msg);
     process_dsm_block(osnma_msg);  // will process dsm block if received a complete one, then will call mack processing upon re-setting the dsm block to 0

@@ -44,6 +44,7 @@ void Dll_Pll_Conf::SetFromConfiguration(const ConfigurationInterface *configurat
         }
 
     double fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
+    reflectometry = configuration->property(role + ".reflectometry", false);
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     high_dyn = configuration->property(role + ".high_dyn", high_dyn);
     dump = configuration->property(role + ".dump", dump);

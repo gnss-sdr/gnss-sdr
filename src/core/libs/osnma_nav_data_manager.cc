@@ -135,11 +135,11 @@ std::string OSNMA_NavDataManager::get_navigation_data(const Tag& tag) const
         {
             if (tag.ADKD == 0 || tag.ADKD == 12)
                 {
-                    return std::string(549, '0');
+                    return {std::string(549, '0')};
                 }
             else if (tag.ADKD == 4)
                 {
-                    return std::string(141, '0');
+                    return {std::string(141, '0')};
                 }
         }
     auto prn_it = d_satellite_nav_data.find(tag.PRN_d);
@@ -168,8 +168,9 @@ std::string OSNMA_NavDataManager::get_navigation_data(const Tag& tag) const
         }
     else
         {
-            for (auto rev_it = prn_it->second.rbegin(); rev_it != prn_it->second.rend(); ++rev_it)  // note: starts with largest (i.e. newest) navigation dataset
+            for (auto rev_it = prn_it->second.rbegin(); rev_it != prn_it->second.rend(); ++rev_it)  // NOLINT(modernize-loop-convert)
                 {
+                    // note: starts with largest (i.e. newest) navigation dataset
                     // Check if current key (TOW) fulfills condition
                     if ((tag.TOW - 30 * tag.cop <= rev_it->first || tag.TOW - 30 * tag.cop <= rev_it->second.get_last_received_TOW()) && rev_it->first < tag.TOW)
                         {
@@ -269,8 +270,9 @@ bool OSNMA_NavDataManager::have_nav_data(const Tag& t) const
         {
             // iterate in reverse order to find matching TOW with Tag's COP value
             std::map<uint32_t, OSNMA_NavData> tow_map = prn_it->second;
-            for (auto rev_it = tow_map.rbegin(); rev_it != tow_map.rend(); ++rev_it)  // note: starts with largest (i.e. newest) navigation dataset
+            for (auto rev_it = tow_map.rbegin(); rev_it != tow_map.rend(); ++rev_it)  // NOLINT(modernize-loop-convert)
                 {
+                    // note: starts with largest (i.e. newest) navigation dataset
                     // Check if current key (TOW) fulfills cut-off point  and is not received after the tag
                     if ((t.TOW - 30 * t.cop <= rev_it->first || t.TOW - 30 * t.cop <= rev_it->second.get_last_received_TOW()) && rev_it->first < t.TOW)
                         {

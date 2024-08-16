@@ -45,6 +45,10 @@ option(ENABLE_AD936X_SDR "Enable the use of AD936X front-ends using libiio, requ
 
 option(ENABLE_AD9361 "Enable the use of AD9361 direct to FPGA hardware, requires libiio" OFF)
 
+option(ENABLE_MAX2771 "Enable the use of MAX2771 direct to FPGA hardware, requires the spidev driver" OFF)
+
+option(ENABLE_DMA_PROXY "Enable the use of the DMA direct to FPGA hardware, requires the DMA Proxy driver" OFF)
+
 option(ENABLE_RAW_UDP "Enable the use of high-optimized custom UDP packet sample source, requires libpcap" OFF)
 
 option(ENABLE_FLEXIBAND "Enable the use of the signal source adater for the Teleorbit Flexiband GNU Radio driver" OFF)
@@ -3267,6 +3271,107 @@ endif()
 
 
 
+#####################################################################
+# Check signal sources related to FPGA only.
+#####################################################################
+if(ENABLE_MAX2771 AND NOT ENABLE_FPGA)
+    message(STATUS "The SPIdev driver is enabled, but the FPGA is not enabled. The FPGA is required when using the SPIdev driver.")
+    if(ENABLE_PACKAGING)
+        set(ENABLE_MAX2771 OFF)
+    else()
+        message(FATAL_ERROR "ENABLE_MAX2771 can only be set when ENABLE_FPGA is also set.")
+    endif()
+endif()
+if(ENABLE_DMA_PROXY AND NOT ENABLE_FPGA)
+    message(STATUS "The DMA Proxy driver is enabled, but the FPGA is not enabled. The FPGA is required when using the DMA Proxy driver.")
+    if(ENABLE_PACKAGING)
+        set(ENABLE_DMA_PROXY OFF)
+    else()
+        message(FATAL_ERROR "ENABLE_DMA_PROXY can only be set when ENABLE_FPGA is also set.")
+    endif()
+endif()
+
+
+
+#####################################################################
+# spidev driver - OPTIONAL
+# Linux kernel driver that provides user-space access to Serial
+# Peripheral Interface)
+#####################################################################
+if(ENABLE_MAX2771)
+    if(DEFINED ENV{SDKTARGETSYSROOT})
+        set(TARGET_ROOTFS_PATH $ENV{SDKTARGETSYSROOT})
+    else()
+        set(TARGET_ROOTFS_PATH "")
+    endif()
+    find_program(STRINGS_EXECUTABLE strings)
+    if(NOT STRINGS_EXECUTABLE)
+        message(STATUS "The 'strings' command could not be found. See https://www.gnu.org/software/binutils/")
+        message(STATUS " You can try to install it by typing:")
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                message(STATUS " sudo yum install binutils")
+            elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                message(STATUS " sudo zypper install binutils")
+            else()
+                message(STATUS " sudo apt-get install binutils")
+            endif()
+        endif()
+        message(FATAL_ERROR "Binutils are required to build GNSS-SDR for SoC FPGA devices using the MAX2771 option.")
+    endif()
+    set(DTB_FILE "${TARGET_ROOTFS_PATH}/boot/devicetree/system-top.dtb")
+    if(EXISTS "${DTB_FILE}")
+        message(STATUS "Found DTB file: ${DTB_FILE}")
+        # Run the strings command and grep for "spidev"
+        execute_process(
+            COMMAND ${STRINGS_EXECUTABLE} ${DTB_FILE}
+            COMMAND grep "spidev"
+            OUTPUT_VARIABLE GREP_OUTPUT
+            RESULT_VARIABLE GREP_RESULT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if(GREP_RESULT EQUAL 0)
+            message(STATUS "Found spidev-compatible peripheral in ${DTB_FILE}.")
+        else()
+            message(STATUS "SPIdev driver not found, its installation is required.")
+            if(ENABLE_PACKAGING)
+                set(ENABLE_MAX2771 OFF)
+            else()
+                message(FATAL_ERROR "SPIdev driver is required for building gnss-sdr with -DENABLE_MAX2271=ON.")
+            endif()
+        endif()
+    else()
+        message(FATAL_ERROR "The device tree (DTB) file ${DTB_FILE} cannot be found.")
+    endif()
+endif()
+
+
+
+#####################################################################
+# DMA Proxy driver - OPTIONAL
+# Simplified and efficient interface for user-space applications
+# to leverage DMA capabilities  for Xilinx FPGA and SoC systems
+#####################################################################
+if(ENABLE_DMA_PROXY)
+    if(DEFINED ENV{SDKTARGETSYSROOT})
+        set(TARGET_ROOTFS_PATH $ENV{SDKTARGETSYSROOT})
+    else()
+        set(TARGET_ROOTFS_PATH "")
+    endif()
+    set(DMA_PROXY_FILE "${TARGET_ROOTFS_PATH}/lib/modules/5.10.0-xilinx-v2021.2/extra/dma-proxy.ko")
+    if(EXISTS "${DMA_PROXY_FILE}")
+        message(STATUS "Found dma-proxy.ko file: ${DMA_PROXY_FILE}")
+    else()
+        if(ENABLE_PACKAGING)
+            set(ENABLE_DMA_PROXY OFF)
+        else()
+            message(FATAL_ERROR "DMA Proxy driver is required for building gnss-sdr with -DENABLE_DMA_PROXY=ON.")
+        endif()
+    endif()
+endif()
+
+
+
 ##############################################
 # TELEORBIT FLEXIBAND FRONTEND - OPTIONAL
 ##############################################
@@ -3471,6 +3576,8 @@ add_feature_info(ENABLE_LIMESDR ENABLE_LIMESDR "Enables Limesdr_Signal_Source. R
 add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio and libad9361-dev.")
 add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
 add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio and libad9361-dev.")
+add_feature_info(ENABLE_MAX2771 ENABLE_MAX2771 "Enables FPGA_MAX2771_EVKIT_Signal_Source for devices with the MAX2771 chipset. Requires the spidev driver")
+add_feature_info(ENABLE_DMA_PROXY ENABLE_DMA_PROXY "Enables DMA Signal_Source. Requires the DMA Proxy driver")
 add_feature_info(ENABLE_AD936X_SDR ENABLE_AD936X_SDR "Enables Ad936x_Iio_Signal_Source to access AD936X front-ends using libiio. Requires libiio and libad9361-dev.")
 add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")

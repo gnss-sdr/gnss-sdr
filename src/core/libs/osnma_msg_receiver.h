@@ -61,11 +61,11 @@ osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, 
 class osnma_msg_receiver : public gr::block
 {
 public:
-    ~osnma_msg_receiver() = default;                           //!< Default destructor
-    void msg_handler_osnma(const pmt::pmt_t& msg);             //!< For testing purposes
-    void read_merkle_xml(const std::string& merklepath);       //!< Public for testing purposes
-    bool verify_dsm_pkr(const DSM_PKR_message& message) const; //!< Public for benchmarking purposes
-    void set_merkle_root(const std::vector<uint8_t>& v);       //!< Public for benchmarking purposes
+    ~osnma_msg_receiver() = default;                            //!< Default destructor
+    bool verify_dsm_pkr(const DSM_PKR_message& message) const;  //!< Public for benchmarking purposes
+    void msg_handler_osnma(const pmt::pmt_t& msg);              //!< For testing purposes
+    void read_merkle_xml(const std::string& merklepath);        //!< Public for testing purposes
+    void set_merkle_root(const std::vector<uint8_t>& v);        //!< Public for benchmarking purposes
 
 private:
     friend osnma_msg_receiver_sptr osnma_msg_receiver_make(const std::string& pemFilePath, const std::string& merkleFilePath, bool strict_mode);

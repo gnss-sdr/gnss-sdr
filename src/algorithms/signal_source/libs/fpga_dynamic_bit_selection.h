@@ -56,7 +56,6 @@ public:
     void bit_selection(void);
 
 private:
-    const std::string switch_device_name = std::string("AXIS_Switch_v1_0_0");          // Switch UIO device name
     const std::string dyn_bit_sel_device_name = std::string("dynamic_bits_selector");  // Switch dhnamic bit selector device name
     static const size_t FPGA_PAGE_SIZE = 0x1000;
     static const uint32_t Num_bits_ADC = 12;                                      // Number of bits in the ADC

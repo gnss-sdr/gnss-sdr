@@ -21,6 +21,25 @@ All notable changes to GNSS-SDR will be documented in this file.
   wideband device (HackRF/LimeSDR/USRP). Demonstration:
   https://www.youtube.com/watch?v=ZQs2sFchJ6w
   https://www.youtube.com/watch?v=HnZkKj9a-QM
+- Add the following signal sources for use when GNSS-SDR is operating on SoC
+  FPGA boards (`-DENABLE_FPGA=ON`):
+
+  - `ADRV9361_Z7035_Signal_Source_FPGA`: Analog Devices ADRV9361-Z7035 board.
+  - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
+  - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
+  - `DMA_Signal_Source_FPGA`: FPGA DMA working in post-processing mode.
+
+  When building GNSS-SDR for the SoC FPGA, the following options can be passed
+  to CMake with possible values of `ON` or `OFF`, and their default value is
+  `OFF`:
+
+  - `-DENABLE_AD9361`: Checks if the IIO driver is installed and builds the
+    `ADRV9361_Z7035_Signal_Source_FPGA` and the `FMCOMMS5_Signal_Source_FPGA`
+    sources.
+  - `-DENABLE_MAX2771`: Checks if the SPIdev driver is installed and builds the
+    `MAX2771_EVKIT_Signal_Source_FPGA` source.
+  - `-DENABLE_DMA_PROXY`: Checks if the DMA proxy driver is installed for
+    controlling the DMA in the FPGA and enables its usage.
 
 ### Improvements in Portability:
 

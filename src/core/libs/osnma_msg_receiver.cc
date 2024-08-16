@@ -2026,7 +2026,7 @@ void osnma_msg_receiver::send_data_to_pvt(const std::vector<OSNMA_NavData>& data
 {
     if (!data.empty())
         {
-            for (auto& i : data)
+            for (const auto& i : data)
                 {
                     const auto tmp_obj = std::make_shared<OSNMA_NavData>(i);
                     this->message_port_pub(pmt::mp("OSNMA_to_PVT"), pmt::make_any(tmp_obj));

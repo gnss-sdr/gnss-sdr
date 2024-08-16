@@ -35,6 +35,7 @@
 #include <map>                    // for map
 #include <memory>                 // for shared_ptr, unique_ptr
 #include <queue>                  // for std::queue
+#include <set>                    // for std::set
 #include <string>                 // for string
 #include <sys/types.h>            // for key_t
 #include <vector>                 // for vector
@@ -204,7 +205,7 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
-    std::map<uint32_t,  std::set<uint32_t>> d_auth_nav_data_map;
+    std::map<uint32_t, std::set<uint32_t>> d_auth_nav_data_map;
 
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 

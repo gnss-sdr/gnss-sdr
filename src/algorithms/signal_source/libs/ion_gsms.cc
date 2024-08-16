@@ -62,7 +62,7 @@ IONGSMSFileSource::IONGSMSFileSource(
         }
     output_stream_count_ = output_stream_offset;
 
-    io_buffer_.resize(1024 * chunk_cycle_length_);
+    io_buffer_.resize((16*1024 - 1) * chunk_cycle_length_);
 }
 
 IONGSMSFileSource::~IONGSMSFileSource()
@@ -102,7 +102,7 @@ int IONGSMSFileSource::work(
                 }
         }
 
-    std::cout << "produced: " << std::to_string(items_produced[0]) << std::endl;
+    // std::cout << "produced: " << std::to_string(items_produced[0]) << " out of " << std::to_string(noutput_items) << std::endl;
     for (int i = 0; i < items_produced.size(); ++i)
         {
             produce(i, items_produced[i]);

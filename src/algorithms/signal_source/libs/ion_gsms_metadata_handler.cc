@@ -45,7 +45,7 @@ void IONGSMSMetadataHandler::load_metadata()
         }
     catch (GnssMetadata::ApiException& e)
         {
-            LOG(ERROR) << "API Exception while loadind XML metadata file: " << e.what();
+            LOG(ERROR) << "API Exception while loading XML metadata file: " << std::to_string(e.Error());
         }
     catch (std::exception& e)
         {

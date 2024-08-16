@@ -189,6 +189,7 @@ void IONGSMSChunkData::write_n_samples(
             sample += sample_count;
             for (std::size_t i = 0; i < sample_count; ++i)
                 {
+                    *sample = 0;
                     ctx.shift_sample(sample_bitsize, sample);
                     dump_sample(*sample);
                     decode_sample(sample_bitsize, sample, stream_encoding);
@@ -200,6 +201,7 @@ void IONGSMSChunkData::write_n_samples(
             auto* sample = static_cast<OT*>(out);
             for (std::size_t i = 0; i < sample_count; ++i)
                 {
+                    *sample = 0;
                     ctx.shift_sample(sample_bitsize, sample);
                     dump_sample(*sample);
                     decode_sample(sample_bitsize, sample, stream_encoding);

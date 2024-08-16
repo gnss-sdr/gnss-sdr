@@ -73,6 +73,7 @@
 #include "gnss_sdr_make_unique.h"
 #include "gnss_sdr_string_literals.h"
 #include "gps_l1_ca_dll_pll_tracking.h"
+#include "gps_l1_ca_dll_fll_tracking.h"
 #include "gps_l1_ca_gaussian_tracking.h"
 #include "gps_l1_ca_kf_tracking.h"
 #include "gps_l1_ca_pcps_acquisition.h"
@@ -1093,6 +1094,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams);
                     block = std::move(block_);
                 }
+            else if (implementation == "GPS_L1_CA_DLL_FLL_Tracking")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaDllFllTracking>(configuration, role, in_streams,
+                        out_streams);
+                    block = std::move(block_);
+                }                
             else if (implementation == "GPS_L1_CA_Gaussian_Tracking")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<GpsL1CaGaussianTracking>(configuration, role, in_streams,
@@ -1549,6 +1556,12 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams);
             block = std::move(block_);
         }
+    if (implementation == "GPS_L1_CA_DLL_FLL_Tracking")
+        {
+            std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaDllFllTracking>(configuration, role, in_streams,
+                out_streams);
+            block = std::move(block_);
+        }        
     else if (implementation == "GPS_L1_CA_Gaussian_Tracking")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaGaussianTracking>(configuration, role, in_streams,

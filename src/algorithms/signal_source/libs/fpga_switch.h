@@ -42,8 +42,7 @@ public:
     /*!
      * \brief Constructor
      */
-    explicit Fpga_Switch(const std::string& device_name);
-
+    Fpga_Switch(void);
     /*!
      * \brief Destructor
      */
@@ -55,6 +54,7 @@ public:
     void set_switch_position(int32_t switch_position);
 
 private:
+    const std::string SWITCH_DEVICE_NAME = std::string("AXIS_Switch_v1_0_0");  // Switch UIO device name
     static const size_t FPGA_PAGE_SIZE = 0x1000;
     static const uint32_t TEST_REGISTER_TRACK_WRITEVAL = 0x55AA;
     static const uint32_t MAX_LENGTH_DEVICEIO_NAME = 50;

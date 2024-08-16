@@ -25,6 +25,7 @@
 #include "fpga_buffer_monitor.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
+#include "uio_fpga.h"
 #include <ctime>       // for time, localtime
 #include <fcntl.h>     // for open, O_RDWR, O_SYNC
 #include <fstream>     // for string, ofstream
@@ -40,7 +41,7 @@
 #endif
 
 
-Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name,
+Fpga_buffer_monitor::Fpga_buffer_monitor(
     uint32_t num_freq_bands,
     bool dump,
     std::string dump_filename)
@@ -50,10 +51,19 @@ Fpga_buffer_monitor::Fpga_buffer_monitor(const std::string &device_name,
       d_max_buff_occ_freq_band_1(0),
       d_dump(dump)
 {
-    // open device descriptor
-    if ((d_device_descriptor = open(device_name.c_str(), O_RDWR | O_SYNC)) == -1)
+    std::string device_io_name;
+
+    // find the uio device file corresponding to the buffer monitor
+    if (find_uio_dev_file_name(device_io_name, BUFFER_MONITOR_DEVICE_NAME, 0) < 0)
         {
-            LOG(WARNING) << "Cannot open deviceio" << device_name;
+            std::cerr << "Cannot find the FPGA uio device file corresponding to device name " << BUFFER_MONITOR_DEVICE_NAME << '\n';
+            return;
+        }
+
+    // open device descriptor
+    if ((d_device_descriptor = open(device_io_name.c_str(), O_RDWR | O_SYNC)) == -1)
+        {
+            LOG(WARNING) << "Cannot open deviceio" << device_io_name;
         }
 
     // device memory map

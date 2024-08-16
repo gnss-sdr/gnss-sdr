@@ -1,23 +1,24 @@
 /*!
-* \file benchmark_osnma.cc
-* \brief Benchmarks for osnma functions
-* \author Carles Fernandez-Prades, 2024. cfernandez(at)cttc.es
-*
-*
-* -----------------------------------------------------------------------------
-*
-* GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
-* This file is part of GNSS-SDR.
-*
-* Copyright (C) 2024  (see AUTHORS file for a list of contributors)
-* SPDX-License-Identifier: GPL-3.0-or-later
-*
-* -----------------------------------------------------------------------------
-*/
-#include "osnma_msg_receiver.h"
+ * \file benchmark_osnma.cc
+ * \brief Benchmarks for osnma functions
+ * \author Carles Fernandez-Prades, 2024. cfernandez(at)cttc.es
+ *
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
+ * This file is part of GNSS-SDR.
+ *
+ * Copyright (C) 2024  (see AUTHORS file for a list of contributors)
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ * -----------------------------------------------------------------------------
+ */
+
 #include "Galileo_OSNMA.h"
 #include "gnss_crypto.h"
 #include "osnma_helper.h"
+#include "osnma_msg_receiver.h"
 #include <benchmark/benchmark.h>
 #include <memory>
 

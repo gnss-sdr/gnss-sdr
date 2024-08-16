@@ -230,6 +230,9 @@ private:
     bool d_dump;
     bool d_dump_mat;
     bool d_acc_carrier_phase_initialized;
+    // VTL cmd control
+    bool d_vtl_cmd_applied_now;
+    uint64_t d_vtl_cmd_samplestamp;
     bool d_enable_extended_integration;
 };
 

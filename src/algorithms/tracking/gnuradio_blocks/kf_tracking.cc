@@ -48,11 +48,13 @@
 #include <matio.h>                   // for Mat_VarCreate
 #include <pmt/pmt_sugar.h>           // for mp
 #include <volk_gnsssdr/volk_gnsssdr.h>
+#include "iostream"
 #include <algorithm>  // for fill_n
 #include <array>
 #include <cmath>      // for fmod, round, floor
 #include <exception>  // for exception
-#include <iostream>   // for cout, cerr
+#include <fstream>
+#include <iostream>  // for cout, cerr
 #include <map>
 #include <numeric>
 #include <vector>
@@ -134,7 +136,9 @@ kf_tracking::kf_tracking(const Kf_Conf &conf_)
       d_cloop(true),
       d_dump(d_trk_parameters.dump),
       d_dump_mat(d_trk_parameters.dump_mat && d_dump),
-      d_acc_carrier_phase_initialized(false)
+      d_acc_carrier_phase_initialized(false),
+      d_vtl_cmd_applied_now(false),
+      d_vtl_cmd_samplestamp(0LL)
 {
 #if GNURADIO_GREATER_THAN_38
     this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
@@ -635,8 +639,55 @@ void kf_tracking::msg_handler_pvt_to_trk(const pmt::pmt_t &msg)
             if (pmt::any_ref(msg).type().hash_code() == typeid(const std::shared_ptr<TrackingCmd>).hash_code())
                 {
                     const auto cmd = wht::any_cast<const std::shared_ptr<TrackingCmd>>(pmt::any_ref(msg));
-                    // std::cout << "RX pvt-to-trk cmd with delay: "
-                    //           << static_cast<double>(nitems_read(0) - cmd->sample_counter) / d_trk_parameters.fs_in << " [s]\n";
+                    // std::cout<< "test cast CH "<<cmd->sample_counter <<"\n";
+                    if (cmd->channel_id == this->d_channel)
+                        {
+                            arma::vec x_tmp;
+                            arma::mat F_tmp;
+
+                            gr::thread::scoped_lock lock(d_setlock);
+                            // To.Do: apply VTL corrections to the KF states
+                            double delta_t_s = static_cast<double>(d_sample_counter - cmd->sample_counter) / d_trk_parameters.fs_in;
+                            // states: code_phase_chips, carrier_phase_rads, carrier_freq_hz, carrier_freq_rate_hz_s
+                            x_tmp = {cmd->code_phase_chips, cmd->carrier_phase_rads, cmd->carrier_freq_hz, cmd->carrier_freq_rate_hz_s};
+                            // ToDO: check state propagation, at least Doppler propagation does NOT work, see debug traces
+                            F_tmp = {{1.0, 0.0, d_beta * delta_t_s, d_beta * (delta_t_s * delta_t_s) / 2.0},
+                                {0.0, 1.0, 2.0 * GNSS_PI * delta_t_s, GNSS_PI * (delta_t_s * delta_t_s)},
+                                {0.0, 0.0, 1.0, delta_t_s},
+                                {0.0, 0.0, 0.0, 1.0}};
+                            // TODO: Replace only the desired states and leave the others as stored in d_x_old_old vector (e.g replace only the carrier_freq_hz)
+                            arma::vec tmp_x = F_tmp * x_tmp;
+                            double old_doppler = d_x_old_old(2);
+                            double old_doppler_rate = d_x_old_old(3);
+                            double old_code_phase_chips = d_x_old_old(0);
+
+                            if (cmd->enable_carrier_nco_cmd)
+                                {
+                                    d_x_old_old(2) = tmp_x(2);  // replace DOPPLER
+                                }
+                            else
+                                {
+                                    // std::cout << "correction not applied" << std::endl;
+                                }
+
+                            // set vtl corrections flag to inform VTL from gnss_synchro object
+                            d_vtl_cmd_applied_now = true;
+                            d_vtl_cmd_samplestamp = cmd->sample_counter;
+
+                            std::fstream dump_tracking_file;
+                            dump_tracking_file.open("dump_trk_file.csv", std::ios::out | std::ios::app);
+                            dump_tracking_file.precision(15);
+                            if (!dump_tracking_file)
+                                {
+                                    std::cout << "dump_tracking_file not created!";
+                                }
+                            else
+                                {
+                                    dump_tracking_file << "doppler_corr"
+                                                       << "," << this->d_channel << "," << tmp_x(2) << "," << old_doppler << "," << tmp_x(3) << "," << old_doppler_rate << "\n";
+                                    dump_tracking_file.close();
+                                }
+                        }
                 }
             else
                 {
@@ -1162,6 +1213,7 @@ void kf_tracking::run_Kf()
     //  Kalman loop
 
     // Prediction
+    // d_x_old_old(0)=0; // reset error estimation because the NCO corrects the code phase
     d_x_new_old = d_F * d_x_old_old;
 
     d_P_new_old = d_F * d_P_old_old * d_F.t() + d_Q;
@@ -1177,7 +1229,6 @@ void kf_tracking::run_Kf()
     // new code phase estimation
     d_code_error_kf_chips = d_x_new_new(0);
     d_x_new_new(0) = 0;  // reset error estimation because the NCO corrects the code phase
-
     // new carrier phase estimation
     d_carrier_phase_kf_rad = d_x_new_new(1);
 
@@ -2080,6 +2131,11 @@ int kf_tracking::general_work(int noutput_items __attribute__((unused)), gr_vect
         {
             current_synchro_data.fs = static_cast<int64_t>(d_trk_parameters.fs_in);
             current_synchro_data.Tracking_sample_counter = d_sample_counter;
+            if (d_vtl_cmd_applied_now == true)
+                {
+                    d_vtl_cmd_applied_now = false;
+                }
+            current_synchro_data.last_vtl_cmd_sample_counter = d_vtl_cmd_samplestamp;
             *out[0] = std::move(current_synchro_data);
             return 1;
         }

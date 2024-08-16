@@ -40,7 +40,7 @@
 #include <armadillo>
 #include <cmath>
 #include <cstring>
-#include <vector>
+
 
 /* pseudorange measurement error variance ------------------------------------*/
 double varerr(const prcopt_t *opt, double el, int sys)
@@ -409,7 +409,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const double *x, const prcopt_t *opt,
     double *v, double *H, double *var, double *azel, int *vsat,
-    double *resp, int *ns)
+    double *resp, int *ns, double *tropo_m, double *iono_m, double *pr_corrected_code_bias)
 {
     double r;
     double dion;
@@ -505,6 +505,11 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
                 }
             /* pseudorange residual */
             v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
+
+            /* MOD ARRIBAS */
+            pr_corrected_code_bias[i] = P;
+            tropo_m[i] = dtrp;
+            iono_m[i] = dion;
 
             /* design matrix */
             for (j = 0; j < NX; j++)
@@ -684,7 +689,12 @@ arma::vec rough_bancroft(const arma::mat &B_pass)
 int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
-    double *resp, char *msg)
+    double *resp, char *msg,
+    std::vector<double> &tropo_vec,
+    std::vector<double> &iono_vec,
+    std::vector<double> &pr_corrected_code_bias_vec,
+    std::vector<double> &pr_residual_vec,
+    std::vector<double> &doppler_residual_vec)
 {
     double x[NX] = {0};
     double dx[NX];
@@ -701,6 +711,12 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     int nv;
     int ns;
     char msg_aux[128];
+
+    double *tropo_m, *iono_m, *pr_corrected_code_bias;
+    tropo_m = mat(n + 4, 1);
+    iono_m = mat(n + 4, 1);
+    resp = mat(n + 4, 1);
+    pr_corrected_code_bias = mat(n + 4, 1);
 
     trace(3, "estpos  : n=%d\n", n);
 
@@ -744,7 +760,8 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     for (i = 0; i < MAXITR; i++)
         {
             /* pseudorange residuals */
-            nv = rescode(i, obs, n, rs, dts, vare, svh, nav, x, opt, v, H, var, azel, vsat, resp, &ns);
+            nv = rescode(i, obs, n, rs, dts, vare, svh, nav, x, opt, v, H, var, azel, vsat, resp,
+                &ns, tropo_m, iono_m, pr_corrected_code_bias);
 
             if (nv < NX)
                 {
@@ -798,6 +815,14 @@ int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
                     if ((stat = valsol(azel, vsat, n, opt, v, nv, NX, msg)))
                         {
                             sol->stat = opt->sateph == EPHOPT_SBAS ? SOLQ_SBAS : SOLQ_SINGLE;
+                        }
+
+                    for (k = 0; k < n; k++)
+                        {
+                            tropo_vec.push_back(tropo_m[k]);
+                            iono_vec.push_back(iono_m[k]);
+                            pr_corrected_code_bias_vec.push_back(pr_corrected_code_bias[k]);
+                            pr_residual_vec.push_back(resp[k]);
                         }
                     free(v);
                     free(H);
@@ -875,9 +900,14 @@ int raim_fde(const obsd_t *obs, int n, const double *rs,
                     vare_e[k] = vare[j];
                     svh_e[k++] = svh[j];
                 }
+            std::vector<double> tropo_vec;
+            std::vector<double> iono_vec;
+            std::vector<double> pr_corrected_code_bias_vec;
+            std::vector<double> pr_residual_vec;
+            std::vector<double> doppler_residual_vec;
             /* estimate receiver position without a satellite */
             if (!estpos(obs_e, n - 1, rs_e, dts_e, vare_e, svh_e, nav, opt, &sol_e, azel_e,
-                    vsat_e, resp_e, msg_e))
+                    vsat_e, resp_e, msg_e, iono_vec, tropo_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec))
                 {
                     trace(3, "raim_fde: exsat=%2d (%s)\n", obs[i].sat, msg);
                     continue;
@@ -1087,7 +1117,11 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
  *-----------------------------------------------------------------------------*/
 int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
-    char *msg)
+    char *msg, std::vector<double> &tropo_vec,
+    std::vector<double> &iono_vec,
+    std::vector<double> &pr_corrected_code_bias_vec,
+    std::vector<double> &pr_residual_vec,
+    std::vector<double> &doppler_residual_vec)
 {
     prcopt_t opt_ = *opt;
     double *rs;
@@ -1131,8 +1165,8 @@ int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     satposs(sol->time, obs, n, nav, opt_.sateph, rs, dts, var, svh.data());
 
     /* estimate receiver position with pseudorange */
-    stat = estpos(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg);
-
+    stat = estpos(obs, n, rs, dts, var, svh.data(), nav, &opt_, sol, azel_, vsat.data(), resp, msg,
+        iono_vec, tropo_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec);
     /* raim fde */
     if (!stat && n >= 6 && opt->posopt[4])
         {

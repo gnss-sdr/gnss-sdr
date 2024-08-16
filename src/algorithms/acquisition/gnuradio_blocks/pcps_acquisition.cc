@@ -261,6 +261,7 @@ void pcps_acquisition::init()
     d_gnss_synchro->Acq_delay_samples = 0.0;
     d_gnss_synchro->Acq_doppler_hz = 0.0;
     d_gnss_synchro->Acq_samplestamp_samples = 0ULL;
+    d_gnss_synchro->last_vtl_cmd_sample_counter = 0ULL;
     d_mag = 0.0;
     d_input_power = 0.0;
 

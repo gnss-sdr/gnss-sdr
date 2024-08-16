@@ -22,6 +22,9 @@ set(PVT_LIB_SOURCES
     monitor_pvt_udp_sink.cc
     monitor_ephemeris_udp_sink.cc
     has_simple_printer.cc
+    vtl_conf.cc
+    vtl_data.cc
+    vtl_engine.cc
     geohash.cc
     pvt_kf.cc
 )
@@ -45,6 +48,9 @@ set(PVT_LIB_HEADERS
     serdes_gps_eph.h
     monitor_ephemeris_udp_sink.h
     has_simple_printer.h
+    vtl_conf.h
+    vtl_data.h
+    vtl_engine.h
     geohash.h
     pvt_kf.h
 )

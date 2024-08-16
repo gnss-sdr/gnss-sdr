@@ -61,6 +61,8 @@
 #include "pvt_solution.h"
 #include "rtklib.h"
 #include "rtklib_conversions.h"
+#include "vtl_data.h"
+#include "vtl_engine.h"
 #include <array>
 #include <cstdint>
 #include <fstream>
@@ -90,7 +92,9 @@ public:
 
     ~Rtklib_Solver();
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop);
+
+    Vtl_Data vtl_data;
 
     double get_hdop() const override;
     double get_vdop() const override;
@@ -127,8 +131,11 @@ public:
     Beidou_Dnav_Iono beidou_dnav_iono;
     std::map<int, Beidou_Dnav_Almanac> beidou_dnav_almanac_map;
 
+    Vtl_Engine vtl_engine;
+
 private:
     bool save_matfile() const;
+    bool save_vtl_matfile() const;
 
     void check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro>& obs_map);
     void get_has_biases(const std::map<int, Gnss_Synchro>& obs_map);
@@ -148,7 +155,9 @@ private:
     std::map<std::string, std::map<int, HAS_obs_corrections>> d_has_obs_corr_map;  // first key is signal, second key is PRN
 
     std::string d_dump_filename;
+    std::string d_vtl_dump_filename;
     std::ofstream d_dump_file;
+    std::ofstream d_vtl_dump_file;
     rtk_t d_rtk{};
     nav_t d_nav_data{};
     Monitor_Pvt d_monitor_pvt{};

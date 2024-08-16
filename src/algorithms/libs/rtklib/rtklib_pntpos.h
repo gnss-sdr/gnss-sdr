@@ -35,6 +35,7 @@
 
 #include "rtklib.h"
 #include "rtklib_rtkcmn.h"
+#include <vector>
 
 /* constants -----------------------------------------------------------------*/
 const int NX = 4 + 3;         //!< # of estimated parameters
@@ -92,7 +93,7 @@ int rescode(int iter, const obsd_t *obs, int n, const double *rs,
     const double *dts, const double *vare, const int *svh,
     const nav_t *nav, const double *x, const prcopt_t *opt,
     double *v, double *H, double *var, double *azel, int *vsat,
-    double *resp, int *ns);
+    double *resp, int *ns, double *tropo_m, double *iono_m, double *pr_corrected_code_bias);
 
 /* validate solution ---------------------------------------------------------*/
 int valsol(const double *azel, const int *vsat, int n,
@@ -103,7 +104,8 @@ int valsol(const double *azel, const int *vsat, int n,
 int estpos(const obsd_t *obs, int n, const double *rs, const double *dts,
     const double *vare, const int *svh, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, int *vsat,
-    double *resp, char *msg);
+    double *resp, char *msg, std::vector<double> &tropo_vec,
+    std::vector<double> &iono_vec, std::vector<double> &pr_corrected_code_bias_vec);
 
 /* raim fde (failure detection and exclution) -------------------------------*/
 int raim_fde(const obsd_t *obs, int n, const double *rs,
@@ -140,6 +142,10 @@ void estvel(const obsd_t *obs, int n, const double *rs, const double *dts,
  */
 int pntpos(const obsd_t *obs, int n, const nav_t *nav,
     const prcopt_t *opt, sol_t *sol, double *azel, ssat_t *ssat,
-    char *msg);
+    char *msg, std::vector<double> &tropo_vec,
+    std::vector<double> &iono_vec,
+    std::vector<double> &pr_corrected_code_bias_vec,
+    std::vector<double> &pr_residual,
+    std::vector<double> &doppler_residual);
 
 #endif  // GNSS_SDR_RTKLIB_PNTPOS_H

@@ -33,15 +33,19 @@
 #include "rtklib_solver.h"
 #include "Beidou_DNAV.h"
 #include "gnss_sdr_filesystem.h"
+#include "rtklib_conversions.h"
+#include "rtklib_ephemeris.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
 #include <matio.h>
+#include "iostream"
 #include <algorithm>
 #include <cmath>
 #include <exception>
 #include <utility>
 #include <vector>
 
+using namespace std;
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
@@ -60,6 +64,13 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                              d_flag_dump_enabled(flag_dump_to_file),
                              d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
+    // TODO: temporal VTL config parameters are hardcoded here. Move it to PVT adapter config (javi)
+    Vtl_Conf new_vtl_conf;
+    // TODO: new_vtl_conf.parameter1=blablabla
+
+    vtl_engine.configure(new_vtl_conf);
+    vtl_engine.reset();
+
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
     d_rtklib_freq_index[0] = 0;
@@ -156,6 +167,23 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                             LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
                         }
                 }
+            // TODO: if(vtl_enable) then
+            if (d_vtl_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_vtl_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                            uint end_filename = d_dump_filename.length() - 4;
+                            d_vtl_dump_filename = d_dump_filename;
+                            d_vtl_dump_filename = d_vtl_dump_filename.insert(end_filename, "_vtl");
+                            d_vtl_dump_file.open(d_vtl_dump_filename, std::ios::out | std::ios::binary);
+                            LOG(INFO) << "PVT VTL dump enabled Log file: " << d_vtl_dump_filename;
+                        }
+                    catch (const std::ofstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception opening VTL dump file " << e.what();
+                        }
+                }
         }
 }
 
@@ -195,6 +223,277 @@ Rtklib_Solver::~Rtklib_Solver()
                     LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
                 }
         }
+    if (d_flag_dump_mat_enabled)
+        {
+            try
+                {
+                    save_vtl_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor saving the PVT VTL .mat dump file " << ex.what();
+                }
+        }
+}
+
+
+bool Rtklib_Solver::save_vtl_matfile() const
+{
+    // READ DUMP FILE
+    const std::string dump_filename = d_vtl_dump_filename;
+    const int32_t number_of_double_vars = 29;
+    const int32_t number_of_uint32_vars = 2;
+    const int32_t number_of_uint8_vars = 1;
+    const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
+                                     sizeof(uint32_t) * number_of_uint32_vars +
+                                     sizeof(uint8_t) * number_of_uint8_vars;
+    std::ifstream dump_file;
+    dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+        {
+            dump_file.open(dump_filename, std::ios::binary | std::ios::ate);
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem opening VTL dump file:" << e.what() << '\n';
+            return false;
+        }
+    // count number of epochs and rewind
+    int64_t num_epoch = 0LL;
+    if (dump_file.is_open())
+        {
+            std::cout << "Generating .mat file for VTL " << dump_filename << '\n';
+            const std::ifstream::pos_type size = dump_file.tellg();
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
+            dump_file.seekg(0, std::ios::beg);
+        }
+    else
+        {
+            return false;
+        }
+
+    auto TOW_at_current_symbol_ms = std::vector<uint32_t>(num_epoch);
+    auto week = std::vector<uint32_t>(num_epoch);
+    auto RX_time = std::vector<double>(num_epoch);
+    auto user_clk_offset = std::vector<double>(num_epoch);
+    auto user_clk_offset_drift = std::vector<double>(num_epoch);
+    auto rtklib_user_clk_offset_drift = std::vector<double>(num_epoch);
+    auto pos_x = std::vector<double>(num_epoch);
+    auto pos_y = std::vector<double>(num_epoch);
+    auto pos_z = std::vector<double>(num_epoch);
+    auto vel_x = std::vector<double>(num_epoch);
+    auto vel_y = std::vector<double>(num_epoch);
+    auto vel_z = std::vector<double>(num_epoch);
+    auto acc_x = std::vector<double>(num_epoch);
+    auto acc_y = std::vector<double>(num_epoch);
+    auto acc_z = std::vector<double>(num_epoch);
+    auto cov_xx = std::vector<double>(num_epoch);
+    auto cov_yy = std::vector<double>(num_epoch);
+    auto cov_zz = std::vector<double>(num_epoch);
+    auto cov_vx = std::vector<double>(num_epoch);
+    auto cov_vy = std::vector<double>(num_epoch);
+    auto cov_vz = std::vector<double>(num_epoch);
+    auto cov_ax = std::vector<double>(num_epoch);
+    auto cov_ay = std::vector<double>(num_epoch);
+    auto cov_az = std::vector<double>(num_epoch);
+    auto latitude = std::vector<double>(num_epoch);
+    auto longitude = std::vector<double>(num_epoch);
+    auto height = std::vector<double>(num_epoch);
+    auto valid_sats = std::vector<uint8_t>(num_epoch);
+    auto gdop = std::vector<double>(num_epoch);
+    auto pdop = std::vector<double>(num_epoch);
+    auto hdop = std::vector<double>(num_epoch);
+    auto vdop = std::vector<double>(num_epoch);
+
+    try
+        {
+            if (dump_file.is_open())
+                {
+                    for (int64_t i = 0; i < num_epoch; i++)
+                        {
+                            dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_ms[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&week[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&RX_time[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&user_clk_offset[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&user_clk_offset_drift[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&rtklib_user_clk_offset_drift[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_xx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_yy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_zz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_ax[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_ay[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_az[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&latitude[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&longitude[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&height[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&valid_sats[i]), sizeof(uint8_t));
+                            dump_file.read(reinterpret_cast<char *>(&gdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&hdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vdop[i]), sizeof(double));
+                        }
+                }
+            dump_file.close();
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem reading VTL dump file:" << e.what() << '\n';
+            return false;
+        }
+
+    // WRITE MAT FILE
+    mat_t *matfp;
+    matvar_t *matvar;
+    std::string filename = dump_filename;
+    filename.erase(filename.length() - 4, 4);
+    filename.append(".mat");
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
+        {
+            std::array<size_t, 2> dims{1, static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), TOW_at_current_symbol_ms.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), week.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), RX_time.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), user_clk_offset.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("user_clk_offset_drift", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), user_clk_offset_drift.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("rtklib_user_clk_offset_drift", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), rtklib_user_clk_offset_drift.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_x.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_y.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_z.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_x.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_y.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_z.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("acc_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), acc_x.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("acc_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), acc_y.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("acc_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), acc_z.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_xx.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_yy.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zz.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vx.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vy.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vz.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_ax", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_az.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_ay", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_ay.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_az", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_az.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), latitude.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), longitude.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), height.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), valid_sats.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), gdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), hdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+        }
+
+    Mat_Close(matfp);
+    return true;
 }
 
 
@@ -464,7 +763,6 @@ Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
 {
     return d_monitor_pvt;
 }
-
 
 void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
 {
@@ -905,8 +1203,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
         }
 }
 
-
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -1502,8 +1799,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             d_nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &d_nav_data);
                         }
                 }
-
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
+            std::vector<double> tropo_vec;
+            std::vector<double> iono_vec;
+            std::vector<double> pr_corrected_code_bias_vec;
+            std::vector<double> pr_residual_vec;
+            std::vector<double> doppler_residual_vec;
+            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, tropo_vec,
+                iono_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec);
 
             if (result == 0)
                 {
@@ -1548,6 +1850,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             dops(index_aux, azel.data(), 0.0, d_dop.data());
                         }
                     this->set_valid_position(true);
+                    // this->set_averaging_flag(true);
+                    // this->set_averaging_depth(100);
+                    // this->perform_pos_averaging();
                     std::array<double, 4> rx_position_and_time{};
 
                     if (d_conf.enable_pvt_kf == true)
@@ -1599,6 +1904,97 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
 
+                    if (enable_vtl == true)
+                        {
+                            // VTL input data extraction from rtklib structures
+                            /* satellite positions, velocities and clocks */
+                            prcopt_t *opt = &d_rtk.opt;
+                            /* count rover/base station observations */
+                            int n_sats = valid_obs + glo_valid_obs;
+                            int nu;
+                            int nr;
+                            for (nu = 0; nu < n_sats && d_obs_data.data()[nu].rcv == 1; nu++)
+                                {
+                                }
+                            for (nr = 0; nu + nr < n_sats && d_obs_data.data()[nu + nr].rcv == 2; nr++)
+                                {
+                                }
+
+                            double *rs;
+                            double *dts;
+                            double *var;
+
+                            std::vector<int> svh(MAXOBS * 2);
+                            rs = mat(6, n_sats);
+                            dts = mat(2, n_sats);
+                            var = mat(1, n_sats);
+                            /* satellite positions, velocities and clocks */
+                            satposs(d_rtk.sol.time, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, opt->sateph, rs, dts, var, svh.data());
+
+                            // Vtl_Data vtl_data;
+                            vtl_data.init_storage(n_sats);
+                            vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
+                            vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
+                            vtl_data.sat_number = n_sats;
+                            for (int n = 0; n < n_sats; n++)
+                                {
+                                    vtl_data.sat_p(n, 0) = rs[0 + 6 * n];
+                                    vtl_data.sat_p(n, 1) = rs[1 + 6 * n];
+                                    vtl_data.sat_p(n, 2) = rs[2 + 6 * n];
+                                    vtl_data.sat_v(n, 0) = rs[3 + 6 * n];
+                                    vtl_data.sat_v(n, 1) = rs[4 + 6 * n];
+                                    vtl_data.sat_v(n, 2) = rs[5 + 6 * n];
+
+                                    vtl_data.sat_dts(n, 0) = dts[0 + 2 * n];
+                                    vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
+                                    vtl_data.sat_var(n) = var[n];
+                                    vtl_data.sat_health_flag(n) = svh.at(n);
+                                    vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0] * 0.25;  //(0.25 dBHz)
+                                    // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
+                                    // To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
+                                    // corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)
+                                    vtl_data.pr_m(n) = pr_corrected_code_bias_vec[n] - tropo_vec[n] - iono_vec[n] + SPEED_OF_LIGHT_M_S * dts[n * 2];
+                                    vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0] - SPEED_OF_LIGHT_M_S * dts[1 + 2 * n] / Lambda_GPS_L1;
+                                    vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
+                                    vtl_data.pr_res(n) = pr_residual_vec[n];
+                                }
+                            // VTL input data extraction from rtklib structures
+                            /* Receiver position, velocity and clock */
+                            /* position/velocity (m|m/s):{x,y,z,vx,vy,vz} or {e,n,u,ve,vn,vu} */
+                            vtl_data.rx_p(0) = pvt_sol.rr[0];
+                            vtl_data.rx_p(1) = pvt_sol.rr[1];
+                            vtl_data.rx_p(2) = pvt_sol.rr[2];
+                            vtl_data.rx_v(0) = pvt_sol.rr[3];
+                            vtl_data.rx_v(1) = pvt_sol.rr[4];
+                            vtl_data.rx_v(2) = pvt_sol.rr[5];
+                            /* Receiver position, velocity and clock variances*/
+                            vtl_data.rx_pvt_var[0] = pvt_sol.qr[0];
+                            vtl_data.rx_pvt_var[1] = pvt_sol.qr[1];
+                            vtl_data.rx_pvt_var[2] = pvt_sol.qr[2];
+                            // TODO: get direct estimations for V T variances, instead:
+                            vtl_data.rx_pvt_var[3] = pvt_sol.qr[0];  // in general minor than position.
+                            vtl_data.rx_pvt_var[4] = pvt_sol.qr[1];
+                            vtl_data.rx_pvt_var[5] = pvt_sol.qr[2];
+                            vtl_data.rx_pvt_var[6] = pvt_sol.qr[0];  // time
+                            vtl_data.rx_pvt_var[7] = pvt_sol.qr[0];  // doppler
+                            // receiver clock offset and receiver clock drift
+                            vtl_data.rx_dts(0) = rx_position_and_time[3];
+                            vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
+
+                            vtl_engine.vtl_loop(vtl_data);
+                        }
+                    else
+                        {
+                            // MAGL: the code should not enter here once the vtl has started
+                            //  .. but it does!
+                            // and not only that but pvt_sol.rr seems to have NOT reasonable values
+                            //  pvt_sol.rr[0]=rx_position_and_time[0];  // [m]
+                            //  pvt_sol.rr[1]=rx_position_and_time[1];  // [m]
+                            //  pvt_sol.rr[2]=rx_position_and_time[2];  // [m]
+                            //  pvt_sol.rr[3]=4.2e6;
+                            //  pvt_sol.rr[4]=4.2e6;
+                            //  pvt_sol.rr[5]=4.2e6;
+                        }
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
                     std::array<double, 3> pos{};
@@ -1802,6 +2198,109 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             catch (const std::ofstream::failure &e)
                                 {
                                     LOG(WARNING) << "Exception writing RTKLIB dump file " << e.what();
+                                }
+
+                            // VTL (optional) MULTIPLEXED FILE RECORDING - Record results to file
+                            // if (enable_vtl == true)
+                            try
+                                {
+                                    double tmp_double;
+                                    uint32_t tmp_uint32;
+                                    // TOW
+                                    tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
+                                    // WEEK
+                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
+                                    // PVT GPS time
+                                    tmp_double = gnss_observables_map.cbegin()->second.RX_time;
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // VTL filtered User clock offset [s]
+                                    tmp_double = vtl_engine.get_user_clock_offset_s();
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // VTL filtered User clock offset drift[s/s]
+                                    tmp_double = vtl_engine.get_user_clock_offset_drift_s_s();
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // rtklib User clock offset drift[s/s]
+                                    tmp_double = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] + ECEF ACC X,Y,X [m/s] (9 x double)
+                                    std::vector<double> p_vec_m = vtl_engine.get_position_ecef_m();
+                                    tmp_double = p_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    std::vector<double> v_vec_m = vtl_engine.get_velocity_ecef_m_s();
+                                    tmp_double = v_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    std::vector<double> a_vec_m = vtl_engine.get_accel_ecef_m_s2();
+                                    tmp_double = a_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // position/velocity/acceleration variance/ (units^2)  (9 x double)
+
+                                    std::vector<double> p_var_vec_m = vtl_engine.get_position_var_ecef_m();
+                                    tmp_double = p_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+
+                                    std::vector<double> v_var_vec_m = vtl_engine.get_velocity_var_ecef_m_s();
+                                    tmp_double = v_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    vector<double> a_var_vec_m = vtl_engine.get_accel_var_ecef_m_s2();
+                                    tmp_double = a_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // GEO user position Latitude [rad]
+                                    vector<double> geo_vec_m = vtl_engine.get_geodetic_rad_m();
+                                    tmp_double = geo_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // GEO user position Longitude [rad]
+                                    tmp_double = geo_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // GEO user position Height [m]
+                                    tmp_double = geo_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // NUMBER OF VALID SATS
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&pvt_sol.ns), sizeof(uint8_t));
+
+                                    // GDOP / PDOP / HDOP / VDOP
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[0]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[1]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[3]), sizeof(double));
+                                }
+                            catch (const std::ofstream::failure &e)
+                                {
+                                    LOG(WARNING) << "Exception writing VTL dump file " << e.what();
                                 }
                         }
                 }

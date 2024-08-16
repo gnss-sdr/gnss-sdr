@@ -28,14 +28,14 @@
 class TrackingCmd
 {
 public:
-    TrackingCmd();
-
     bool enable_carrier_nco_cmd = false;
     bool enable_code_nco_cmd = false;
-    double code_freq_chips = 0.0;
+    double code_phase_chips = 0.0;
+    double carrier_phase_rads = 0.0;
     double carrier_freq_hz = 0.0;
     double carrier_freq_rate_hz_s = 0.0;
     uint64_t sample_counter = 0UL;
+    uint32_t channel_id = 0;
 };
 
 /** \} */

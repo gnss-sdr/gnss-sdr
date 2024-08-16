@@ -16,6 +16,7 @@ set(TRACKING_LIB_SOURCES
     tracking_discriminators.cc
     tracking_FLL_PLL_filter.cc
     tracking_loop_filter.cc
+    tracking_pure_FLL_filter.cc
     dll_pll_conf.cc
     kf_conf.cc
     bayesian_estimation.cc
@@ -33,6 +34,7 @@ set(TRACKING_LIB_HEADERS
     tracking_2nd_PLL_filter.h
     tracking_discriminators.h
     tracking_FLL_PLL_filter.h
+    tracking_pure_FLL_filter.h
     tracking_loop_filter.h
     dll_pll_conf.h
     kf_conf.h

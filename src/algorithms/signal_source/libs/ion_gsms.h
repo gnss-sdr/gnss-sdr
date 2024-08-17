@@ -59,6 +59,7 @@ private:
     FILE* fd_;
     std::vector<uint8_t> io_buffer_;
     std::size_t io_buffer_offset_;
+    std::vector<int> items_produced_;
     std::size_t output_stream_count_;
     std::vector<std::size_t> output_stream_item_sizes_;
     std::vector<std::shared_ptr<IONGSMSChunkData>> chunk_data_;

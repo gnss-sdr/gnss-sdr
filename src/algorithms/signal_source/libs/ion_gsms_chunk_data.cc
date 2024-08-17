@@ -83,12 +83,26 @@ std::size_t IONGSMSChunkData::read_from_buffer(uint8_t* buffer, std::size_t offs
     return sizeword_ * countwords_;
 }
 
-void IONGSMSChunkData::write_to_output(gr_vector_void_star& outputs, const std::function<void(int output, int nitems)>& produce)
+void IONGSMSChunkData::write_to_output(gr_vector_void_star& outputs, std::vector<int>& output_items)
 {
-    with_word_type(sizeword_, [&]<typename WordType>
-    {
-        unpack_words<WordType>(outputs, produce);
-    });
+    switch (sizeword_)
+        {
+        case 1:
+            unpack_words<int8_t>(outputs, output_items);
+            break;
+        case 2:
+            unpack_words<int16_t>(outputs, output_items);
+            break;
+        case 4:
+            unpack_words<int32_t>(outputs, output_items);
+            break;
+        case 8:
+            unpack_words<int64_t>(outputs, output_items);
+            break;
+        default:
+            LOG(ERROR) << "Unknown word size (" << std::to_string(sizeword_) << "), unpacking nothing.";
+            break;
+        }
 }
 
 
@@ -104,7 +118,7 @@ std::size_t IONGSMSChunkData::output_stream_item_size(std::size_t stream_index) 
 
 
 template <typename WT>
-void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, const std::function<void(int output, int nitems)>& produce)
+void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<int>& output_items)
 {
     WT* data = static_cast<WT*>(buffer_);
     // TODO - Swap endiannes if needed
@@ -131,7 +145,7 @@ void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, const std::fun
                 }
             else
                 {
-                    produce(output_index, write_stream_samples(ctx, lump, stream, encoding, outputs[output_index]));
+                    output_items[output_index] += write_stream_samples(ctx, lump, stream, encoding, outputs[output_index]);
                 }
         }
 }

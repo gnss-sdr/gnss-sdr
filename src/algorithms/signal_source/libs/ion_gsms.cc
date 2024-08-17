@@ -77,35 +77,26 @@ int IONGSMSFileSource::work(
 {
     io_buffer_offset_ = 0;
     std::fread(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type), io_buffer_.size(), fd_);
-    std::vector<int> items_produced{};
 
-    items_produced.resize(output_items.size());
-    for (int i = 0; i < items_produced.size(); ++i)
+    items_produced_.resize(output_items.size());
+    for (int i = 0; i < items_produced_.size(); ++i)
         {
-            items_produced[i] = 0;
+            items_produced_[i] = 0;
         }
-
 
     while (io_buffer_offset_ < io_buffer_.size())
         {
             for (auto& c : chunk_data_)
                 {
-                    io_buffer_offset_ += c->read_from_buffer(io_buffer_.data(), io_buffer_offset_);
-                    c->write_to_output(output_items, [&](int output, int nitems) {
-                        items_produced[output] += nitems;
-
-                        // if (nitems_written(output) % 100 == 0)
-                            // {
-                                // add_item_tag(output, nitems_written(output), pmt::mp("tag_test"), pmt::from_uint64(nitems_written(output)));
-                            // }
-                    });
+                    auto* chunk = c.get();
+                    io_buffer_offset_ += chunk->read_from_buffer(io_buffer_.data(), io_buffer_offset_);
+                    chunk->write_to_output(output_items, items_produced_);
                 }
         }
 
-    // std::cout << "produced: " << std::to_string(items_produced[0]) << " out of " << std::to_string(noutput_items) << std::endl;
-    for (int i = 0; i < items_produced.size(); ++i)
+    for (int i = 0; i < items_produced_.size(); ++i)
         {
-            produce(i, items_produced[i]);
+            produce(i, items_produced_[i]);
         }
 
     return WORK_CALLED_PRODUCE;

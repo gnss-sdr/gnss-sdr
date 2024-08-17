@@ -89,14 +89,14 @@ public:
 
     std::size_t read_from_buffer(uint8_t* buffer, std::size_t offset);
 
-    void write_to_output(gr_vector_void_star& outputs, const std::function<void(int output, int nitems)>& produce);
+    void write_to_output(gr_vector_void_star& outputs, std::vector<int>& output_items);
 
     std::size_t output_stream_count() const;
     std::size_t output_stream_item_size(std::size_t stream_index) const;
 
 private:
     template <typename WT>
-    void unpack_words(gr_vector_void_star& outputs, const std::function<void(int output, int nitems)>& produce);
+    void unpack_words(gr_vector_void_star& outputs, std::vector<int>& output_items);
 
     template <typename WT>
     std::size_t write_stream_samples(

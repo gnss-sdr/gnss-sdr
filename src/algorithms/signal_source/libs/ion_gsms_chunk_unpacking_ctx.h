@@ -34,7 +34,7 @@ struct IONGSMSChunkUnpackingCtx
     static constexpr uint8_t word_bitsize_ = sizeof(WT) * 8;
 
     const GnssMetadata::Chunk::WordShift word_shift_direction_;
-    WT* iterator_;  // Not owned by this class, must not destroy
+    WT* iterator_;  // Not owned by this class, MUST NOT destroy
     WT current_word_;
     uint8_t bitshift_ = 0;
 
@@ -71,6 +71,15 @@ struct IONGSMSChunkUnpackingCtx
 
     void shift_current_word(uint8_t n)
     {
+        if ((n % word_bitsize_) == 0)
+            {
+                for (uint8_t i = 0; i < (n / word_bitsize_); ++i)
+                    {
+                        advance_word();
+                    }
+                return;
+            }
+
         if (word_shift_direction_ == GnssMetadata::Chunk::Left)
             {
                 current_word_ <<= n;
@@ -111,7 +120,24 @@ struct IONGSMSChunkUnpackingCtx
     template <typename OT>
     void shift_sample(const uint8_t sample_bitsize, OT* output, uint8_t output_bit_offset = 0)
     {
-        if ((sample_bitsize + (bitshift_ % word_bitsize_)) > word_bitsize_)
+        if (sample_bitsize % word_bitsize_ == 0)
+            {
+                const uint8_t words_per_sample = sample_bitsize / word_bitsize_;
+                for (uint8_t i = 0; i < words_per_sample; ++i)
+                    {
+                        if (word_shift_direction_ == GnssMetadata::Chunk::Left)
+                            {
+                                *output |= (current_word_ << ((words_per_sample - 1 - i) * word_bitsize_));
+                            }
+                        else if (word_shift_direction_ == GnssMetadata::Chunk::Right)
+                            {
+                                *output |= (current_word_ << (i * word_bitsize_));
+                                // TODO - reverse bit order of sample? maybe?
+                            }
+                        advance_word();
+                    }
+            }
+        else if ((sample_bitsize + (bitshift_ % word_bitsize_)) > word_bitsize_)
             {
                 const uint8_t bits_shifted = word_bitsize_ - (bitshift_ % word_bitsize_);
 

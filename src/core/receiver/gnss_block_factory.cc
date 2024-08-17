@@ -1330,7 +1330,7 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
 
             else
                 {
-                    std::cerr << "Configuration error in " << role << " block: implementation " + implementation + " is not available.\n"s;
+                    std::cerr << "Configuration error in " << role << " block: implementation *" + implementation + "* is not available.\n"s;
                     block = nullptr;
                 }
         }
@@ -1548,7 +1548,6 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 {
     std::unique_ptr<TrackingInterface> block;
     const std::string implementation = configuration->property(role + impl_prop, "Wrong"s);
-
     // TRACKING BLOCKS ---------------------------------------------------------
     if (implementation == "GPS_L1_CA_DLL_PLL_Tracking")
         {
@@ -1556,7 +1555,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
                 out_streams);
             block = std::move(block_);
         }
-    if (implementation == "GPS_L1_CA_DLL_FLL_Tracking")
+    else if (implementation == "GPS_L1_CA_DLL_FLL_Tracking")
         {
             std::unique_ptr<TrackingInterface> block_ = std::make_unique<GpsL1CaDllFllTracking>(configuration, role, in_streams,
                 out_streams);
@@ -1700,7 +1699,7 @@ std::unique_ptr<TrackingInterface> GNSSBlockFactory::GetTrkBlock(
 #endif
     else
         {
-            std::cerr << "Configuration error in " << role << " block: implementation " << (implementation == "Wrong"s ? "not defined."s : implementation + " not available."s) << '\n';
+            std::cerr << "Configuration error in " << role << " block: implementation +" << (implementation == "Wrong"s ? "not defined."s : implementation + "+ not available."s) << '\n';
             block = nullptr;
         }
     return block;

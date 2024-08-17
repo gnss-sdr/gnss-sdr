@@ -1,5 +1,5 @@
 /*!
- * \file tracking_FLL_PLL_filter.cc
+ * \file tracking_pure_FLL_filter.cc
  * \brief Implementation a pure FLL filter for tracking carrier loop
  * \author Ricardo Amorim, 2024. amorim(at)ita.br 
  * \author Felix Antreich, 2024. antreich(at)ieee.org 
@@ -18,10 +18,10 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "tracking_FLL_PLL_filter.h"
+#include "tracking_pure_FLL_filter.h"
 #include <iostream>
 
-void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int order)
+void Tracking_Pure_FLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int order)
 {
     /*
      * Filter design (Kaplan 2nd ed., Pag. 181 Fig. 181)
@@ -54,7 +54,7 @@ void Tracking_FLL_PLL_filter::set_params(float fll_bw_hz, float pll_bw_hz, int o
 }
 
 
-void Tracking_FLL_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
+void Tracking_Pure_FLL_filter::initialize(float d_acq_carrier_doppler_hz)
 {
     if (d_order == 3)
         {
@@ -76,7 +76,7 @@ void Tracking_FLL_PLL_filter::initialize(float d_acq_carrier_doppler_hz)
 }
 
 
-float Tracking_FLL_PLL_filter::get_carrier_error(float discriminator, int type, float correlation_time_s)
+float Tracking_Pure_FLL_filter::get_carrier_error(float discriminator, int type, float correlation_time_s)
 {
     float carrier_error_hz;
     if (d_order == 3)

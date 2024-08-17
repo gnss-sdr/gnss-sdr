@@ -20,6 +20,8 @@
 #include "GnssMetadata.h"
 #include "configuration_interface.h"
 #include <gnuradio/block.h>
+#include <string>
+#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -37,12 +39,12 @@ public:
 public:  // Getters
     const std::string& metadata_filepath() const;
 
-private: // Private methods
+private:  // Private methods
     void load_metadata();
 
-private: // State
+private:  // State
     std::string metadata_filepath_;
     GnssMetadata::Metadata metadata_;
 };
 
-#endif //ION_GSMS_METADATA_HANDLER_H
+#endif  // ION_GSMS_METADATA_HANDLER_H

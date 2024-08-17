@@ -16,6 +16,8 @@
 
 #include "ion_gsms_chunk_data.h"
 #include <bitset>
+#include <string>
+#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -46,7 +48,7 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
                             return stream.Id() == it;
                         }))
                         {
-                            streams_.emplace_back(lump, stream, GnssMetadata::encoding_from_string(stream.Encoding()),output_streams + output_stream_offset);
+                            streams_.emplace_back(lump, stream, GnssMetadata::encoding_from_string(stream.Encoding()), output_streams + output_stream_offset);
                             ++output_streams;
                             std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
                             std::size_t sample_rate = stream.RateFactor();

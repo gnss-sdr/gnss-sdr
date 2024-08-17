@@ -176,4 +176,4 @@ struct IONGSMSChunkUnpackingCtx
     }
 };
 
-#endif //ION_GSM_CHUNK_UNPACKING_CTX_H
+#endif  // ION_GSM_CHUNK_UNPACKING_CTX_H

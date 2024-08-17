@@ -21,6 +21,8 @@
 #include "ion_gsms_stream_encodings.h"
 #include "ion_gsms_chunk_unpacking_ctx.h"
 #include <gnuradio/block.h>
+#include <string>
+#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -141,4 +143,4 @@ private:
     void* buffer_;
 };
 
-#endif //ION_GSM_CHUNK_DATA_H
+#endif  // ION_GSM_CHUNK_DATA_H

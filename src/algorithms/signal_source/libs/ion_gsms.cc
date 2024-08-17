@@ -16,6 +16,9 @@
 
 #include "gnuradio/block.h"
 #include "ion_gsms.h"
+#include <memory>
+#include <algorithm>
+#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>

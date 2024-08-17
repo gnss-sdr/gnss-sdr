@@ -23,6 +23,7 @@
 #include "gnss_sdr_timestamp.h"
 #include "ion_gsms.h"
 #include <string>
+#include <vector>
 
 /** \addtogroup Signal_Source
  * \{ */

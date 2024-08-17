@@ -19,6 +19,7 @@
 #include "ion_gsms_signal_source.h"
 #include <gnuradio/blocks/copy.h>
 #include <string>
+#include <vector>
 #include <unordered_set>
 
 #if USE_GLOG_AND_GFLAGS

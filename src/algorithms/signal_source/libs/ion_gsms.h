@@ -24,7 +24,8 @@
 #include <gnuradio/sync_block.h>
 #include <filesystem>
 #include <string>
-#include <iostream>
+#include <memory>
+#include <vector>
 
 
 class IONGSMSFileSource : public gr::sync_block

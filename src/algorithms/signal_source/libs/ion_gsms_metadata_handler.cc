@@ -70,9 +70,16 @@ std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources
                                                 {
                                                     for (const auto& stream : lump.Streams())
                                                         {
-                                                            if (std::ranges::any_of(stream_ids.begin(), stream_ids.end(), [&](const std::string& it) {
-                                                                    return stream.Id() == it;
-                                                                }))
+                                                            bool found = false;
+                                                            for (const auto & stream_id : stream_ids)
+                                                                {
+                                                                    if (stream_id == stream.Id())
+                                                                        {
+                                                                            found = true;
+                                                                            break;
+                                                                        }
+                                                                }
+                                                            if (found)
                                                                 {
                                                                     auto source = gnss_make_shared<IONGSMSFileSource>(
                                                                         configuration,

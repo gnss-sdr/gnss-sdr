@@ -107,7 +107,7 @@ private:
         const GnssMetadata::Lump& lump,
         const GnssMetadata::IonStream& stream,
         GnssMetadata::StreamEncoding stream_encoding,
-        void*& out);
+        void** out);
 
     template <typename WT, typename OT>
     void write_n_samples(
@@ -116,7 +116,7 @@ private:
         uint8_t sample_bitsize,
         std::size_t sample_count,
         GnssMetadata::StreamEncoding stream_encoding,
-        void*& out);
+        OT** out);
 
     static void decode_sample(uint8_t sample_bitsize, auto* sample, GnssMetadata::StreamEncoding encoding);
 

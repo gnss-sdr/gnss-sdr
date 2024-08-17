@@ -84,7 +84,7 @@ int IONGSMSFileSource::work(
     std::fread(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type), io_buffer_.size(), fd_);
 
     items_produced_.resize(output_items.size());
-    for (int i = 0; i < items_produced_.size(); ++i)
+    for (std::size_t i = 0; i < items_produced_.size(); ++i)
         {
             items_produced_[i] = 0;
         }
@@ -99,7 +99,7 @@ int IONGSMSFileSource::work(
                 }
         }
 
-    for (int i = 0; i < items_produced_.size(); ++i)
+    for (std::size_t i = 0; i < items_produced_.size(); ++i)
         {
             produce(i, items_produced_[i]);
         }

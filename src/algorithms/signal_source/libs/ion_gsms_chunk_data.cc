@@ -155,7 +155,7 @@ void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<in
                 }
             else
                 {
-                    output_items[output_index] += write_stream_samples(ctx, lump, stream, encoding, outputs[output_index]);
+                    output_items[output_index] += write_stream_samples(ctx, lump, stream, encoding, &outputs[output_index]);
                 }
         }
 }
@@ -166,7 +166,7 @@ std::size_t IONGSMSChunkData::write_stream_samples(
     const GnssMetadata::Lump& lump,
     const GnssMetadata::IonStream& stream,
     const GnssMetadata::StreamEncoding stream_encoding,
-    void*& out)
+    void** out)
 {
     std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
     std::size_t sample_count = stream.RateFactor();
@@ -180,19 +180,19 @@ std::size_t IONGSMSChunkData::write_stream_samples(
 
     if (sample_bitsize <= 8)
         {
-            write_n_samples<WT, int8_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+            write_n_samples<WT, int8_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int8_t**)(out));
         }
     else if (sample_bitsize <= 16)
         {
-            write_n_samples<WT, int16_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+            write_n_samples<WT, int16_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int16_t**)(out));
         }
     else if (sample_bitsize <= 32)
         {
-            write_n_samples<WT, int32_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+            write_n_samples<WT, int32_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int32_t**)(out));
         }
     else if (sample_bitsize <= 64)
         {
-            write_n_samples<WT, int64_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, out);
+            write_n_samples<WT, int64_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int64_t**)(out));
         }
 
     return sample_count;
@@ -205,11 +205,11 @@ void IONGSMSChunkData::write_n_samples(
     uint8_t sample_bitsize,
     std::size_t sample_count,
     GnssMetadata::StreamEncoding stream_encoding,
-    void*& out)
+    OT** out)
 {
     if (lump_shift == GnssMetadata::Lump::shiftRight)
         {
-            auto* sample = static_cast<OT*>(out);
+            auto* sample = static_cast<OT*>(*out);
             sample += sample_count;
             for (std::size_t i = 0; i < sample_count; ++i)
                 {
@@ -222,7 +222,7 @@ void IONGSMSChunkData::write_n_samples(
         }
     else  // if (lump_shift == GnssMetadata::Lump::shiftLeft || lump_shift == GnssMetadata::Lump::shiftUndefined)
         {
-            auto* sample = static_cast<OT*>(out);
+            auto* sample = static_cast<OT*>(*out);
             for (std::size_t i = 0; i < sample_count; ++i)
                 {
                     *sample = 0;
@@ -233,7 +233,7 @@ void IONGSMSChunkData::write_n_samples(
                 }
         }
 
-    out += sample_count * sizeof(OT);
+    (*out) += sample_count;
 }
 
 

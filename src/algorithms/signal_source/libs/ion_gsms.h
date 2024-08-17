@@ -17,14 +17,14 @@
 #ifndef GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H
 #define GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H
 
+#include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "ion_gsms_chunk_data.h"
-#include "configuration_interface.h"
 #include <gnuradio/block.h>
 #include <gnuradio/sync_block.h>
 #include <filesystem>
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 

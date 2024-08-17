@@ -64,6 +64,7 @@ std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources
                         {
                             for (const auto& block : lane.Blocks())
                                 {
+                                    bool block_done = false;
                                     for (const auto& chunk : block.Chunks())
                                         {
                                             for (const auto& lump : chunk.Lumps())
@@ -71,7 +72,7 @@ std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources
                                                     for (const auto& stream : lump.Streams())
                                                         {
                                                             bool found = false;
-                                                            for (const auto & stream_id : stream_ids)
+                                                            for (const auto& stream_id : stream_ids)
                                                                 {
                                                                     if (stream_id == stream.Id())
                                                                         {
@@ -93,12 +94,21 @@ std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources
 
                                                                     // This file source will take care of any other matching streams in this block
                                                                     // We can skip the rest of this block
-                                                                    goto next_block;
+                                                                    block_done = true;
+                                                                    break;
                                                                 }
                                                         }
+
+                                                    if (block_done)
+                                                        {
+                                                            break;
+                                                        }
+                                                }
+                                            if (block_done)
+                                                {
+                                                    break;
                                                 }
                                         }
-                                next_block:
                                 }
                             break;
                         }
@@ -107,4 +117,3 @@ std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources
 
     return sources;
 }
-

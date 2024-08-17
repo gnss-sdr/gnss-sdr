@@ -14,13 +14,13 @@
  * -----------------------------------------------------------------------------
  */
 
+#include "ion_gsms_signal_source.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
-#include "ion_gsms_signal_source.h"
 #include <gnuradio/blocks/copy.h>
 #include <string>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -53,7 +53,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue)
+    Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "ION_GSMS_Signal_Source"s),
       metadata_file_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
       stream_ids_(parse_comma_list(configuration->property(role + ".streams"s, ""s))),
@@ -71,7 +71,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
 
     for (const auto& source : sources_)
         {
-            for (int i = 0; i < source->output_stream_count(); ++i)
+            for (std::size_t i = 0; i < source->output_stream_count(); ++i)
                 {
                     copy_blocks_.push_back(gr::blocks::copy::make(source->output_stream_item_size(i)));
                 }
@@ -84,7 +84,7 @@ void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
     std::size_t cumulative_index = 0;
     for (const auto& source : sources_)
         {
-            for (int i = 0; i < source->output_stream_count(); ++i, ++cumulative_index)
+            for (std::size_t i = 0; i < source->output_stream_count(); ++i, ++cumulative_index)
                 {
                     top_block->connect(source, i, copy_blocks_[cumulative_index], 0);
                 }
@@ -96,7 +96,7 @@ void IONGSMSSignalSource::disconnect(gr::top_block_sptr top_block)
     std::size_t cumulative_index = 0;
     for (const auto& source : sources_)
         {
-            for (int i = 0; i < source->output_stream_count(); ++i, ++cumulative_index)
+            for (std::size_t i = 0; i < source->output_stream_count(); ++i, ++cumulative_index)
                 {
                     top_block->disconnect(source, i, copy_blocks_[cumulative_index], 0);
                 }

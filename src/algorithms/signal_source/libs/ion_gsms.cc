@@ -14,25 +14,24 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "gnuradio/block.h"
 #include "ion_gsms.h"
-#include <memory>
+#include "gnuradio/block.h"
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
 #include <absl/log/log.h>
-
 #include <utility>
 #endif
 
 using namespace std::string_literals;
 
 IONGSMSFileSource::IONGSMSFileSource(
-    const ConfigurationInterface* configuration,
-    const std::string& role,
+    const ConfigurationInterface* configuration __attribute__((unused)),
+    const std::string& role __attribute__((unused)),
     const std::filesystem::path& metadata_filepath,
     const GnssMetadata::File& file,
     const GnssMetadata::Block& block,
@@ -75,18 +74,18 @@ IONGSMSFileSource::~IONGSMSFileSource()
 
 int IONGSMSFileSource::work(
     int noutput_items,
-    gr_vector_const_void_star& input_items,
+    gr_vector_const_void_star& input_items __attribute__((unused)),
     gr_vector_void_star& output_items)
 {
-    const std::size_t max_sample_output = std::floor((noutput_items-1.0) / maximum_item_rate_);
+    const std::size_t max_sample_output = std::floor((noutput_items - 1.0) / maximum_item_rate_);
     io_buffer_.resize(max_sample_output * chunk_cycle_length_);
     io_buffer_offset_ = 0;
     std::fread(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type), io_buffer_.size(), fd_);
 
     items_produced_.resize(output_items.size());
-    for (std::size_t i = 0; i < items_produced_.size(); ++i)
+    for (int& i : items_produced_)
         {
-            items_produced_[i] = 0;
+            i = 0;
         }
 
     while (io_buffer_offset_ < io_buffer_.size())
@@ -121,7 +120,7 @@ std::size_t IONGSMSFileSource::output_stream_item_size(std::size_t stream_index)
 gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids)
 {
     int nstreams = 0;
-    std::vector<size_t> item_sizes{};
+    std::vector<int> item_sizes{};
 
     for (const auto& chunk : block.Chunks())
         {
@@ -129,9 +128,16 @@ gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const GnssMetada
                 {
                     for (const auto& stream : lump.Streams())
                         {
-                            if (std::ranges::any_of(stream_ids.begin(), stream_ids.end(), [&](const std::string& it) {
-                                    return stream.Id() == it;
-                                }))
+                            bool found = false;
+                            for (const auto& stream_id : stream_ids)
+                                {
+                                    if (stream_id == stream.Id())
+                                        {
+                                            found = true;
+                                            break;
+                                        }
+                                }
+                            if (found)
                                 {
                                     ++nstreams;
                                     std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
@@ -146,10 +152,8 @@ gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const GnssMetada
                 }
         }
 
-    return gr::io_signature::make(
+    return gr::io_signature::makev(
         nstreams,
         nstreams,
         item_sizes);
 }
-
-

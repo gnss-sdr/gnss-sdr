@@ -197,6 +197,7 @@
 #endif
 
 #if ENABLE_ION_SOURCE
+#undef Owner
 #include "ion_gsms_signal_source.h"
 #endif
 

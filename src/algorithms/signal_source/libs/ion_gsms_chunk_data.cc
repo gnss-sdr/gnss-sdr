@@ -30,9 +30,8 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
       sizeword_(chunk_.SizeWord()),
       countwords_(chunk_.CountWords())
 {
-    with_word_type(sizeword_, [&]<typename WordType>
-    {
-            buffer_ = new WordType[countwords_];
+    with_word_type(sizeword_, [&]<typename WordType> {
+        buffer_ = new WordType[countwords_];
     });
 
     const std::size_t total_bitsize = sizeword_ * countwords_ * 8;
@@ -44,9 +43,16 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
                 {
                     used_bitsize += stream.Packedbits();
 
-                    if (std::ranges::any_of(stream_ids.begin(), stream_ids.end(), [&](const std::string& it) {
-                            return stream.Id() == it;
-                        }))
+                    bool found = false;
+                    for (const auto& stream_id : stream_ids)
+                        {
+                            if (stream_id == stream.Id())
+                                {
+                                    found = true;
+                                    break;
+                                }
+                        }
+                    if (found)
                         {
                             streams_.emplace_back(lump, stream, GnssMetadata::encoding_from_string(stream.Encoding()), output_streams + output_stream_offset);
                             ++output_streams;
@@ -75,9 +81,8 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
 
 IONGSMSChunkData::~IONGSMSChunkData()
 {
-    with_word_type(sizeword_, [&]<typename WordType>
-    {
-            delete[] static_cast<WordType*>(buffer_);
+    with_word_type(sizeword_, [&]<typename WordType> {
+        delete[] static_cast<WordType*>(buffer_);
     });
 }
 
@@ -215,7 +220,6 @@ void IONGSMSChunkData::write_n_samples(
                 {
                     *sample = 0;
                     ctx.shift_sample(sample_bitsize, sample);
-                    dump_sample(*sample);
                     decode_sample(sample_bitsize, sample, stream_encoding);
                     --sample;
                 }
@@ -227,7 +231,6 @@ void IONGSMSChunkData::write_n_samples(
                 {
                     *sample = 0;
                     ctx.shift_sample(sample_bitsize, sample);
-                    dump_sample(*sample);
                     decode_sample(sample_bitsize, sample, stream_encoding);
                     ++sample;
                 }
@@ -235,7 +238,6 @@ void IONGSMSChunkData::write_n_samples(
 
     (*out) += sample_count;
 }
-
 
 
 // Static utilities
@@ -262,14 +264,3 @@ void IONGSMSChunkData::decode_sample(const uint8_t sample_bitsize, auto* sample,
             break;
         }
 }
-
-void IONGSMSChunkData::dump_sample(auto value)
-{
-    static int count = 100;
-    if (count > 0)
-        {
-            --count;
-            // std::cout << "SAMPLE: [0x" << std::hex << value << "] " << std::bitset<32>(value) << std::endl;
-        }
-}
-

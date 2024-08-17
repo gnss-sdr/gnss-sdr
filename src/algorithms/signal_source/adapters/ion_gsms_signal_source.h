@@ -57,6 +57,7 @@ protected:
     {
         return (*sources_.begin())->output_stream_item_size(0);
     }
+
 private:
     std::string metadata_file_;
     std::vector<std::string> stream_ids_;

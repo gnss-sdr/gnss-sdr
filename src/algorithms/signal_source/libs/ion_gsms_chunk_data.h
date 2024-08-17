@@ -18,8 +18,8 @@
 #define ION_GSM_CHUNK_DATA_H
 
 #include "GnssMetadata.h"
-#include "ion_gsms_stream_encodings.h"
 #include "ion_gsms_chunk_unpacking_ctx.h"
+#include "ion_gsms_stream_encodings.h"
 #include <gnuradio/block.h>
 #include <string>
 #include <vector>
@@ -120,8 +120,6 @@ private:
 
     static void decode_sample(uint8_t sample_bitsize, auto* sample, GnssMetadata::StreamEncoding encoding);
 
-    static void dump_sample(auto value);
-
 private:
     const GnssMetadata::Chunk& chunk_;
     uint8_t sizeword_;
@@ -137,6 +135,17 @@ private:
         const GnssMetadata::IonStream& stream;
         GnssMetadata::StreamEncoding stream_encoding;
         int output_index = -1;
+
+        stream_metadata_t(
+            const GnssMetadata::Lump& lump_,
+            const GnssMetadata::IonStream& stream_,
+            GnssMetadata::StreamEncoding stream_encoding_,
+            int output_index_ = -1) : lump(lump_),
+                                      stream(stream_),
+                                      stream_encoding(stream_encoding_),
+                                      output_index(output_index_)
+        {
+        }
     };
     std::vector<stream_metadata_t> streams_;
 

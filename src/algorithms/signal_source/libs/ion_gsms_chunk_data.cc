@@ -49,12 +49,15 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
                             streams_.emplace_back(lump, stream, GnssMetadata::encoding_from_string(stream.Encoding()),output_streams + output_stream_offset);
                             ++output_streams;
                             std::size_t sample_bitsize = stream.Packedbits() / stream.RateFactor();
+                            std::size_t sample_rate = stream.RateFactor();
                             if (stream.Packedbits() >= 2 * stream.RateFactor() * stream.Quantization())
                                 {
                                     // Samples have 'Complex' format
                                     sample_bitsize /= 2;
+                                    sample_rate *= 2;
                                 }
                             output_stream_item_size_.push_back(bits_to_item_size(sample_bitsize));
+                            output_stream_item_rate_.push_back(sample_rate);
                         }
                     else
                         {
@@ -114,6 +117,11 @@ std::size_t IONGSMSChunkData::output_stream_count() const
 std::size_t IONGSMSChunkData::output_stream_item_size(std::size_t stream_index) const
 {
     return output_stream_item_size_[stream_index];
+}
+
+std::size_t IONGSMSChunkData::output_stream_item_rate(std::size_t stream_index) const
+{
+    return output_stream_item_rate_[stream_index];
 }
 
 

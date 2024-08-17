@@ -41,6 +41,7 @@ IONGSMSFileSource::IONGSMSFileSource(
       file_metadata_(file),
       block_metadata_(block),
       io_buffer_offset_(0),
+      maximum_item_rate_(0),
       chunk_cycle_length_(0)
 {
     std::filesystem::path data_filepath = metadata_filepath.parent_path() / file.Url().Value();
@@ -58,11 +59,10 @@ IONGSMSFileSource::IONGSMSFileSource(
             for (std::size_t i = 0; i < out_count; ++i)
                 {
                     output_stream_item_sizes_.push_back(chunk_data_.back()->output_stream_item_size(i));
+                    maximum_item_rate_ = std::max(chunk_data_.back()->output_stream_item_rate(i), maximum_item_rate_);
                 }
         }
     output_stream_count_ = output_stream_offset;
-
-    io_buffer_.resize((16*1024 - 1) * chunk_cycle_length_);
 }
 
 IONGSMSFileSource::~IONGSMSFileSource()
@@ -75,6 +75,8 @@ int IONGSMSFileSource::work(
     gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items)
 {
+    const std::size_t max_sample_output = std::floor((noutput_items-1.0) / maximum_item_rate_);
+    io_buffer_.resize(max_sample_output * chunk_cycle_length_);
     io_buffer_offset_ = 0;
     std::fread(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type), io_buffer_.size(), fd_);
 

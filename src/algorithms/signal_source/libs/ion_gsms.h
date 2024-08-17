@@ -62,6 +62,7 @@ private:
     std::vector<int> items_produced_;
     std::size_t output_stream_count_;
     std::vector<std::size_t> output_stream_item_sizes_;
+    std::size_t maximum_item_rate_;
     std::vector<std::shared_ptr<IONGSMSChunkData>> chunk_data_;
     std::size_t chunk_cycle_length_;
 };

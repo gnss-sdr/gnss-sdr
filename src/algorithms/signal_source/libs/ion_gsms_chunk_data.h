@@ -93,6 +93,7 @@ public:
 
     std::size_t output_stream_count() const;
     std::size_t output_stream_item_size(std::size_t stream_index) const;
+    std::size_t output_stream_item_rate(std::size_t stream_index) const;
 
 private:
     template <typename WT>
@@ -126,6 +127,7 @@ private:
     uint8_t padding_bitsize_;
     std::size_t output_stream_count_;
     std::vector<std::size_t> output_stream_item_size_;
+    std::vector<std::size_t> output_stream_item_rate_;
 
     struct stream_metadata_t
     {

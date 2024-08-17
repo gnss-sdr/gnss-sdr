@@ -3,6 +3,8 @@
  * \brief Implements look up tables for all encodings in the standard
  * \author Víctor Castillo Agüero, 2024. victorcastilloaguero(at)gmail.com
  *
+ * These tables are taken from the stardard's official document.
+ *
  * -----------------------------------------------------------------------------
  *
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.

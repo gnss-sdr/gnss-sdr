@@ -93,7 +93,6 @@
 #include "ibyte_to_complex.h"
 #include "ibyte_to_cshort.h"
 #include "in_memory_configuration.h"
-#include "ion_gsms_signal_source.h"
 #include "ishort_to_complex.h"
 #include "ishort_to_cshort.h"
 #include "labsat_signal_source.h"
@@ -195,6 +194,10 @@
 
 #if CUDA_GPU_ACCEL
 #include "gps_l1_ca_dll_pll_tracking_gpu.h"
+#endif
+
+#if ENABLE_ION_SOURCE
+#include "ion_gsms_signal_source.h"
 #endif
 
 using namespace std::string_literals;
@@ -760,13 +763,14 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                     block = std::move(block_);
                 }
 #endif
+#if ENABLE_ION_SOURCE
             else if (implementation == "ION_GSMS_Signal_Source")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<IONGSMSSignalSource>(configuration, role, in_streams,
                         out_streams, queue);
                     block = std::move(block_);
                 }
-
+#endif
 #if RAW_ARRAY_DRIVER
             else if (implementation == "Raw_Array_Signal_Source")
                 {

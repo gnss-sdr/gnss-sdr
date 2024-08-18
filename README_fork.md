@@ -16,7 +16,7 @@ SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc
 
 **Welcome to GNSS-SDR!**
 
-This program is a software-defined receiver which is able to process (that is,
+This program is a software-defined r2eceiver which is able to process (that is,
 to perform detection, synchronization, demodulation and decoding of the
 navigation message, computation of observables, and, finally, computation of
 position fixes) the following Global Navigation Satellite System's signals:

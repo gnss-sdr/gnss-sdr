@@ -1088,7 +1088,7 @@ void dll_fll_veml_tracking::run_dll_fll()
     // FLL only discriminator - implemented by Ricardo Amorim
     d_carr_freq_error_hz = fll_four_quadrant_atan(d_P_accu_old, d_P_accu, 0, d_current_correlation_time_s) / TWO_PI;
     d_P_accu_old = d_P_accu;    
-    d_phase_error_filt = d_carrier_loop_filter.get_carrier_error(static_cast<float>(d_carr_phase_error_hz), 1,
+    d_carr_error_filt_hz = d_carrier_loop_filter.get_carrier_error(static_cast<float>(d_carr_phase_error_hz), 1,
                          static_cast<float>(d_current_correlation_time_s));
     d_carrier_doppler_hz = d_carrier_loop_filter.get_carrier_error(static_cast<float>(d_carr_freq_error_hz), 0, 
                            static_cast<float>(d_current_correlation_time_s));
@@ -1116,7 +1116,7 @@ void dll_fll_veml_tracking::run_dll_fll()
     d_code_freq_chips = d_code_chip_rate - d_code_error_filt_chips;
     if (d_trk_parameters.carrier_aiding)
         {
-            d_code_freq_chips += (d_carrier_doppler_hz + d_phase_error_filt) * d_code_chip_rate / d_signal_carrier_freq;
+            d_code_freq_chips += (d_carrier_doppler_hz + d_carr_error_filt_hz) * d_code_chip_rate / d_signal_carrier_freq;
         }
 
     // Experimental: detect Carrier Doppler vs. Code Doppler incoherence and correct the Carrier Doppler
@@ -1195,7 +1195,7 @@ void dll_fll_veml_tracking::update_tracking_vars()
     // ################### PLL COMMANDS #################################################
     // carrier phase step (NCO phase increment per sample) [rads/sample]
     d_carrier_phase_step_rad = TWO_PI * d_carrier_doppler_hz / d_trk_parameters.fs_in;
-    d_phase_estimate_step = TWO_PI * d_phase_error_filt;
+    d_phase_estimate_step = TWO_PI * d_carr_error_filt_hz;
 
     // carrier phase rate step (NCO phase increment rate per sample) [rads/sample^2]
     if (d_trk_parameters.high_dyn)

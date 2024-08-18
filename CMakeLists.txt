@@ -57,6 +57,8 @@ option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal 
 
 option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging, requires gr-zeromq" ON)
 
+option(ENABLE_ION "Enable ION GNSS-SDR Metadata Standard signal source" ON)
+
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 
@@ -1422,6 +1424,19 @@ else()
 endif()
 
 
+################################################################################
+# ION GNSS-SDR Metadata Standard
+################################################################################
+include(FetchContent)
+FetchContent_Declare(
+        gnss_metadata_standard
+        GIT_REPOSITORY https://github.com/IonMetadataWorkingGroup/GNSS-Metadata-Standard
+        GIT_TAG master
+        SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard
+        CMAKE_ARGS -DABSL_PROPAGATE_CXX_STD=ON -ABSL_BUILD_TESTING=OFF -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnss-metadata-standard ${ABSEIL_TOOLCHAIN_FILE}
+        BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
+)
+FetchContent_MakeAvailable(gnss_metadata_standard)
 
 ################################################################################
 # Abseil C++ - https://abseil.io/docs/cpp/

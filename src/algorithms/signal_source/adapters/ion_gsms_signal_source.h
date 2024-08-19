@@ -21,7 +21,7 @@
 #include "configuration_interface.h"
 #include "file_source_base.h"
 #include "gnss_sdr_timestamp.h"
-#include "ion_gsms.h"
+#include "ion_gsms_metadata_handler.h"
 #include <cstdint>
 #include <string>
 #include <vector>

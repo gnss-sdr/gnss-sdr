@@ -67,8 +67,6 @@ private:
     std::size_t chunk_cycle_length_;
 };
 
-#include "ion_gsms_metadata_handler.h"
-
 /** \} */
 /** \} */
 #endif  // GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H

@@ -14,7 +14,7 @@
  * -----------------------------------------------------------------------------
  */
 
-#include "ion_gsms.h"
+#include "ion_gsms_metadata_handler.h"
 #include <cstdlib>
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>

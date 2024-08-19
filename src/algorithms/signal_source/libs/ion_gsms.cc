@@ -66,11 +66,8 @@ int IONGSMSFileSource::work(
     io_buffer_offset_ = 0;
     file_stream_.read(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type) * io_buffer_.size());
 
+    items_produced_.clear();
     items_produced_.resize(output_items.size());
-    for (int& i : items_produced_)
-        {
-            i = 0;
-        }
 
     while (io_buffer_offset_ < io_buffer_.size())
         {

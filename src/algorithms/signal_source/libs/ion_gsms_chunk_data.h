@@ -17,10 +17,10 @@
 #ifndef ION_GSM_CHUNK_DATA_H
 #define ION_GSM_CHUNK_DATA_H
 
-#include "GnssMetadata.h"
 #include "ion_gsms_chunk_unpacking_ctx.h"
 #include "ion_gsms_stream_encodings.h"
 #include <gnuradio/block.h>
+#include <GnssMetadata.h>
 #include <cstddef>
 #include <cstdint>
 #include <iostream>

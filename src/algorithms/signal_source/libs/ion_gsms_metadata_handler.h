@@ -17,9 +17,9 @@
 #ifndef ION_GSMS_METADATA_HANDLER_H
 #define ION_GSMS_METADATA_HANDLER_H
 
-#include "GnssMetadata.h"
 #include "configuration_interface.h"
 #include <gnuradio/block.h>
+#include <GnssMetadata.h>
 #include <string>
 #include <vector>
 

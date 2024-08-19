@@ -19,8 +19,8 @@
 #ifndef ION_GSM_CHUNK_UNPACKING_CTX_H
 #define ION_GSM_CHUNK_UNPACKING_CTX_H
 
-#include "GnssMetadata.h"
 #include <gnuradio/block.h>
+#include <GnssMetadata.h>
 #include <cstdint>
 
 /** \addtogroup Signal_Source

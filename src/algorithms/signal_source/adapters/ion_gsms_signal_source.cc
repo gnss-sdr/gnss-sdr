@@ -98,13 +98,9 @@ void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
 
 void IONGSMSSignalSource::disconnect(gr::top_block_sptr top_block)
 {
-    std::size_t cumulative_index = 0;
     for (const auto& source : sources_)
         {
-            for (std::size_t i = 0; i < source->output_stream_count(); ++i, ++cumulative_index)
-                {
-                    top_block->disconnect(source, i, copy_blocks_[cumulative_index], 0);
-                }
+            top_block->disconnect(source);
         }
 }
 

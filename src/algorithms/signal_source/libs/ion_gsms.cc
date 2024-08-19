@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -17,22 +17,14 @@
 #include "ion_gsms.h"
 #include "gnuradio/block.h"
 #include <algorithm>
-#include <memory>
-#include <vector>
-
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#include <utility>
-#endif
+#include <cmath>
 
 using namespace std::string_literals;
 
 IONGSMSFileSource::IONGSMSFileSource(
     const ConfigurationInterface* configuration __attribute__((unused)),
     const std::string& role __attribute__((unused)),
-    const std::filesystem::path& metadata_filepath,
+    const fs::path& metadata_filepath,
     const GnssMetadata::File& file,
     const GnssMetadata::Block& block,
     const std::vector<std::string>& stream_ids)
@@ -40,13 +32,11 @@ IONGSMSFileSource::IONGSMSFileSource(
           "ion_gsms_file_source",
           gr::io_signature::make(0, 0, 0),
           make_output_signature(block, stream_ids)),
-      file_metadata_(file),
-      block_metadata_(block),
       io_buffer_offset_(0),
       maximum_item_rate_(0),
       chunk_cycle_length_(0)
 {
-    std::filesystem::path data_filepath = metadata_filepath.parent_path() / file.Url().Value();
+    fs::path data_filepath = metadata_filepath.parent_path() / file.Url().Value();
     fd_ = std::fopen(data_filepath.c_str(), "rb");
     std::size_t block_offset = file.Offset();
     std::fseek(fd_, file.Offset() + block_offset + block.SizeHeader(), SEEK_SET);
@@ -67,10 +57,12 @@ IONGSMSFileSource::IONGSMSFileSource(
     output_stream_count_ = output_stream_offset;
 }
 
+
 IONGSMSFileSource::~IONGSMSFileSource()
 {
     std::fclose(fd_);
 }
+
 
 int IONGSMSFileSource::work(
     int noutput_items,
@@ -106,10 +98,12 @@ int IONGSMSFileSource::work(
     return WORK_CALLED_PRODUCE;
 }
 
+
 std::size_t IONGSMSFileSource::output_stream_count() const
 {
     return output_stream_count_;
 }
+
 
 std::size_t IONGSMSFileSource::output_stream_item_size(std::size_t stream_index) const
 {

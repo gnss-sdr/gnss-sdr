@@ -10,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -21,11 +21,10 @@
 
 #include <string>
 
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#endif
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
 
 namespace GnssMetadata
 {
@@ -165,4 +164,7 @@ inline T five_bit_look_up[11][32]{
 
 }  // namespace GnssMetadata
 
+
+/** \} */
+/** \} */
 #endif  // ION_GSM_STREAM_ENCODINGS_H

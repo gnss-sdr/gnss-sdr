@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -19,14 +19,20 @@
 
 #include "configuration_interface.h"
 #include "gnss_block_interface.h"
+#include "gnss_sdr_filesystem.h"
 #include "ion_gsms_chunk_data.h"
 #include <gnuradio/block.h>
 #include <gnuradio/sync_block.h>
-#include <filesystem>
+#include <cstddef>
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <vector>
 
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
 
 class IONGSMSFileSource : public gr::sync_block
 {
@@ -36,7 +42,7 @@ public:
     IONGSMSFileSource(
         const ConfigurationInterface* configuration,
         const std::string& role,
-        const std::filesystem::path& metadata_filepath,
+        const fs::path& metadata_filepath,
         const GnssMetadata::File& file,
         const GnssMetadata::Block& block,
         const std::vector<std::string>& stream_ids);
@@ -54,9 +60,6 @@ public:
 private:
     static gr::io_signature::sptr make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids);
 
-private:
-    const GnssMetadata::File& file_metadata_;
-    const GnssMetadata::Block& block_metadata_;
     FILE* fd_;
     std::vector<uint8_t> io_buffer_;
     std::size_t io_buffer_offset_;
@@ -70,5 +73,6 @@ private:
 
 #include "ion_gsms_metadata_handler.h"
 
-
+/** \} */
+/** \} */
 #endif  // GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H

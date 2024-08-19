@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -49,6 +49,7 @@ std::vector<std::string> parse_comma_list(const std::string& str)
     return list;
 }
 
+
 IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
@@ -62,9 +63,13 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
       in_streams_(in_streams),
       out_streams_(out_streams)
 {
-    if (in_streams > 0)
+    if (in_streams_ > 0)
         {
             LOG(ERROR) << "A signal source does not have an input stream";
+        }
+    if (out_streams_ <= 0)
+        {
+            LOG(ERROR) << "A signal source does not have an output stream";
         }
 
     sources_ = metadata_.make_stream_sources(configuration, role, stream_ids_);
@@ -91,6 +96,7 @@ void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
         }
 }
 
+
 void IONGSMSSignalSource::disconnect(gr::top_block_sptr top_block)
 {
     std::size_t cumulative_index = 0;
@@ -103,6 +109,7 @@ void IONGSMSSignalSource::disconnect(gr::top_block_sptr top_block)
         }
 }
 
+
 gr::basic_block_sptr IONGSMSSignalSource::get_left_block()
 {
     LOG(WARNING) << "Trying to get signal source left block.";
@@ -110,10 +117,12 @@ gr::basic_block_sptr IONGSMSSignalSource::get_left_block()
     return IONGSMSFileSource::sptr();
 }
 
+
 gr::basic_block_sptr IONGSMSSignalSource::get_right_block()
 {
     return get_right_block(0);
 }
+
 
 gr::basic_block_sptr IONGSMSSignalSource::get_right_block(int RF_channel)
 {

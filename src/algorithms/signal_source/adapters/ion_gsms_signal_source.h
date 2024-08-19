@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -22,6 +22,7 @@
 #include "file_source_base.h"
 #include "gnss_sdr_timestamp.h"
 #include "ion_gsms.h"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -44,8 +45,6 @@ public:
     ~IONGSMSSignalSource() override = default;
 
 protected:
-    // std::tuple<size_t, bool> itemTypeToSize() override;
-    // double packetsPerSample() const override;
     void connect(gr::top_block_sptr top_block) override;
     void disconnect(gr::top_block_sptr top_block) override;
 

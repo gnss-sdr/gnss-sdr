@@ -22,8 +22,6 @@
 using namespace std::string_literals;
 
 IONGSMSFileSource::IONGSMSFileSource(
-    const ConfigurationInterface* configuration __attribute__((unused)),
-    const std::string& role __attribute__((unused)),
     const fs::path& metadata_filepath,
     const GnssMetadata::File& file,
     const GnssMetadata::Block& block,

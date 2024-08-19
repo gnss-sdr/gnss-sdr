@@ -34,7 +34,7 @@ class IONGSMSMetadataHandler
 public:
     explicit IONGSMSMetadataHandler(const std::string& metadata_filepath);
 
-    std::vector<IONGSMSFileSource::sptr> make_stream_sources(const ConfigurationInterface* configuration, const std::string& role, const std::vector<std::string>& stream_ids) const;
+    std::vector<IONGSMSFileSource::sptr> make_stream_sources(const std::vector<std::string>& stream_ids) const;
     const std::string& metadata_filepath() const;
 
 private:

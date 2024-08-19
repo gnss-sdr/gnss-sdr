@@ -56,9 +56,8 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
     unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "ION_GSMS_Signal_Source"s),
-      metadata_file_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
       stream_ids_(parse_comma_list(configuration->property(role + ".streams"s, ""s))),
-      metadata_(metadata_file_),
+      metadata_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
       timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0)),
       in_streams_(in_streams),
       out_streams_(out_streams)
@@ -72,7 +71,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
             LOG(ERROR) << "A signal source does not have an output stream";
         }
 
-    sources_ = metadata_.make_stream_sources(configuration, role, stream_ids_);
+    sources_ = metadata_.make_stream_sources(stream_ids_);
 
     for (const auto& source : sources_)
         {

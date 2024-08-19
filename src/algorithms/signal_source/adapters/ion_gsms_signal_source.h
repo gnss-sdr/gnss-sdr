@@ -58,7 +58,6 @@ protected:
     }
 
 private:
-    std::string metadata_file_;
     std::vector<std::string> stream_ids_;
     std::vector<IONGSMSFileSource::sptr> sources_;
     std::vector<gnss_shared_ptr<gr::block>> copy_blocks_;

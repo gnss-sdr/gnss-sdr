@@ -62,7 +62,7 @@ void IONGSMSMetadataHandler::load_metadata()
         }
 }
 
-std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources(const ConfigurationInterface* configuration, const std::string& role, const std::vector<std::string>& stream_ids) const
+std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources(const std::vector<std::string>& stream_ids) const
 {
     std::vector<IONGSMSFileSource::sptr> sources{};
     for (const auto& file : metadata_.Files())
@@ -92,8 +92,6 @@ std::vector<IONGSMSFileSource::sptr> IONGSMSMetadataHandler::make_stream_sources
                                                             if (found)
                                                                 {
                                                                     auto source = gnss_make_shared<IONGSMSFileSource>(
-                                                                        configuration,
-                                                                        role,
                                                                         metadata_filepath_,
                                                                         file,
                                                                         block,

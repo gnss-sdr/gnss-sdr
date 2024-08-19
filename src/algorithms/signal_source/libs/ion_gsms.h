@@ -17,7 +17,6 @@
 #ifndef GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H
 #define GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H
 
-#include "configuration_interface.h"
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
 #include "ion_gsms_chunk_data.h"
@@ -40,8 +39,6 @@ public:
     using sptr = gnss_shared_ptr<IONGSMSFileSource>;
 
     IONGSMSFileSource(
-        const ConfigurationInterface* configuration,
-        const std::string& role,
         const fs::path& metadata_filepath,
         const GnssMetadata::File& file,
         const GnssMetadata::Block& block,

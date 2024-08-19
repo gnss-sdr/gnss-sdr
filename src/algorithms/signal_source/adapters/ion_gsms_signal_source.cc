@@ -121,5 +121,10 @@ gr::basic_block_sptr IONGSMSSignalSource::get_right_block()
 
 gr::basic_block_sptr IONGSMSSignalSource::get_right_block(int RF_channel)
 {
+    if (RF_channel < 0 || RF_channel >= static_cast<int>(copy_blocks_.size()))
+        {
+            LOG(WARNING) << "'RF_channel' out of bounds while trying to get signal source right block.";
+            return copy_blocks_[0];
+        }
     return copy_blocks_[RF_channel];
 }

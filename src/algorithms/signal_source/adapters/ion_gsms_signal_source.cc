@@ -57,7 +57,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
     Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused)))
     : SignalSourceBase(configuration, role, "ION_GSMS_Signal_Source"s),
       stream_ids_(parse_comma_list(configuration->property(role + ".streams"s, ""s))),
-      metadata_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
+      metadata_filepath_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
       timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0)),
       in_streams_(in_streams),
       out_streams_(out_streams)
@@ -71,7 +71,11 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
             LOG(ERROR) << "A signal source does not have an output stream";
         }
 
-    sources_ = metadata_.make_stream_sources(stream_ids_);
+    // Parse XML metadata file
+    load_metadata();
+
+    // Make source vector
+    sources_ = make_stream_sources(stream_ids_);
 
     for (const auto& source : sources_)
         {
@@ -82,6 +86,97 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
         }
 }
 
+void IONGSMSSignalSource::load_metadata()
+{
+    try
+        {
+            GnssMetadata::XmlProcessor xml_proc;
+            if (!xml_proc.Load(metadata_filepath_.c_str(), false, metadata_))
+                {
+                    LOG(WARNING) << "Could not load XML metadata file " << metadata_filepath_;
+                    std::cerr << "Could not load XML metadata file " << metadata_filepath_ << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
+                    exit(1);
+                }
+        }
+    catch (GnssMetadata::ApiException& e)
+        {
+            LOG(WARNING) << "API Exception while loading XML metadata file: " << std::to_string(e.Error());
+            std::cerr << "Could not load XML metadata file " << metadata_filepath_ << " : " << std::to_string(e.Error()) << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
+            exit(1);
+        }
+    catch (std::exception& e)
+        {
+            LOG(WARNING) << "Exception while loading XML metadata file: " << e.what();
+            std::cerr << "Could not load XML metadata file " << metadata_filepath_ << " : " << e.what() << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
+            exit(1);
+        }
+}
+
+std::vector<IONGSMSFileSource::sptr> IONGSMSSignalSource::make_stream_sources(const std::vector<std::string>& stream_ids) const
+{
+    std::vector<IONGSMSFileSource::sptr> sources{};
+    for (const auto& file : metadata_.Files())
+        {
+            for (const auto& lane : metadata_.Lanes())
+                {
+                    if (lane.Id() == file.Lane().Id())
+                        {
+                            for (const auto& block : lane.Blocks())
+                                {
+                                    bool block_done = false;
+                                    for (const auto& chunk : block.Chunks())
+                                        {
+                                            for (const auto& lump : chunk.Lumps())
+                                                {
+                                                    for (const auto& stream : lump.Streams())
+                                                        {
+                                                            bool found = false;
+                                                            for (const auto& stream_id : stream_ids)
+                                                                {
+                                                                    if (stream_id == stream.Id())
+                                                                        {
+                                                                            found = true;
+                                                                            break;
+                                                                        }
+                                                                }
+                                                            if (found)
+                                                                {
+                                                                    auto source = gnss_make_shared<IONGSMSFileSource>(
+                                                                        metadata_filepath_,
+                                                                        file,
+                                                                        block,
+                                                                        stream_ids);
+
+                                                                    sources.push_back(source);
+
+                                                                    // This file source will take care of any other matching streams in this block
+                                                                    // We can skip the rest of this block
+                                                                    block_done = true;
+                                                                    break;
+                                                                }
+                                                        }
+
+                                                    if (block_done)
+                                                        {
+                                                            break;
+                                                        }
+                                                }
+                                            if (block_done)
+                                                {
+                                                    break;
+                                                }
+                                        }
+                                }
+                            break;
+                        }
+                }
+        }
+
+    return sources;
+}
 
 void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
 {

@@ -21,7 +21,8 @@
 #include "configuration_interface.h"
 #include "file_source_base.h"
 #include "gnss_sdr_timestamp.h"
-#include "ion_gsms_metadata_handler.h"
+#include "ion_gsms.h"
+#include <GnssMetadata.h>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -58,10 +59,17 @@ protected:
     }
 
 private:
+    std::vector<IONGSMSFileSource::sptr> make_stream_sources(const std::vector<std::string>& stream_ids) const;
+
+    void load_metadata();
+
     std::vector<std::string> stream_ids_;
     std::vector<IONGSMSFileSource::sptr> sources_;
     std::vector<gnss_shared_ptr<gr::block>> copy_blocks_;
-    IONGSMSMetadataHandler metadata_;
+    std::vector<gnss_shared_ptr<gr::block>> valves_;
+
+    std::string metadata_filepath_;
+    GnssMetadata::Metadata metadata_;
 
     gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
     std::string timestamp_file_;

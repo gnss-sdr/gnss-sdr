@@ -87,7 +87,7 @@ ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
 
 void ad936x_iio_source::ad9361_channel_demux_and_record(ad936x_iio_samples *samples_in, int nchannels, std::vector<std::fstream> *files_out)
 {
-    int32_t current_byte = 0;
+    uint32_t current_byte = 0;
     int16_t ch = 0;
     // std::cout << "nbytes: " << samples_in->n_bytes << " nsamples: " << samples_in->n_samples << " nch: " << nchannels << "\n";
     while (current_byte < samples_in->n_bytes)

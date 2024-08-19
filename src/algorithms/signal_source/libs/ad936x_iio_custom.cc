@@ -1,6 +1,7 @@
 /*!
  * \file ad936x_iio_custom.cc
- * \brief A direct IIO custom front-end driver for the AD936x AD front-end family with special FPGA custom functionalities.
+ * \brief A direct IIO custom front-end driver for the AD936x AD front-end
+ * family with special FPGA custom functionalities.
  * \author Javier Arribas, jarribas(at)cttc.es
  * -----------------------------------------------------------------------------
  *

@@ -239,7 +239,7 @@ if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
     )
 endif()
 
-if(ENABLE_AD9361 AND LIBIIO_FOUND)
+if(LIBIIO_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
             Iio::iio

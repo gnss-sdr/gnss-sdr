@@ -3338,7 +3338,7 @@ set_package_properties(LIBIIO PROPERTIES
     PURPOSE "Used for communication with the AD9361 chipset."
     TYPE OPTIONAL
 )
-if(ENABLE_AD9361 OR ENABLE_FMCOMMS2)
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
     if(NOT LIBIIO_FOUND)
         message(STATUS "libiio not found, its installation is required.")
         message(STATUS "Please build and install the following projects:")

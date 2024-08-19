@@ -30,14 +30,14 @@ IONGSMSFileSource::IONGSMSFileSource(
           "ion_gsms_file_source",
           gr::io_signature::make(0, 0, 0),
           make_output_signature(block, stream_ids)),
+      file_stream_(metadata_filepath.parent_path() / file.Url().Value()),
       io_buffer_offset_(0),
       maximum_item_rate_(0),
       chunk_cycle_length_(0)
 {
     fs::path data_filepath = metadata_filepath.parent_path() / file.Url().Value();
-    fd_ = std::fopen(data_filepath.c_str(), "rb");
     std::size_t block_offset = file.Offset();
-    std::fseek(fd_, file.Offset() + block_offset + block.SizeHeader(), SEEK_SET);
+    file_stream_.seekg(file.Offset() + block_offset + block.SizeHeader());
 
     std::size_t output_stream_offset = 0;
     for (const auto& chunk : block.Chunks())
@@ -56,12 +56,6 @@ IONGSMSFileSource::IONGSMSFileSource(
 }
 
 
-IONGSMSFileSource::~IONGSMSFileSource()
-{
-    std::fclose(fd_);
-}
-
-
 int IONGSMSFileSource::work(
     int noutput_items,
     gr_vector_const_void_star& input_items __attribute__((unused)),
@@ -70,7 +64,7 @@ int IONGSMSFileSource::work(
     const std::size_t max_sample_output = std::floor((noutput_items - 1.0) / maximum_item_rate_);
     io_buffer_.resize(max_sample_output * chunk_cycle_length_);
     io_buffer_offset_ = 0;
-    std::fread(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type), io_buffer_.size(), fd_);
+    file_stream_.read(io_buffer_.data(), sizeof(decltype(io_buffer_)::value_type) * io_buffer_.size());
 
     items_produced_.resize(output_items.size());
     for (int& i : items_produced_)
@@ -83,7 +77,7 @@ int IONGSMSFileSource::work(
             for (auto& c : chunk_data_)
                 {
                     auto* chunk = c.get();
-                    io_buffer_offset_ += chunk->read_from_buffer(io_buffer_.data(), io_buffer_offset_);
+                    io_buffer_offset_ += chunk->read_from_buffer(reinterpret_cast<uint8_t*>(io_buffer_.data()), io_buffer_offset_);
                     chunk->write_to_output(output_items, items_produced_);
                 }
         }

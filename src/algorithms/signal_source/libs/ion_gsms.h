@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <fstream>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -44,8 +45,6 @@ public:
         const GnssMetadata::Block& block,
         const std::vector<std::string>& stream_ids);
 
-    ~IONGSMSFileSource() override;
-
     int work(
         int noutput_items,
         gr_vector_const_void_star& input_items,
@@ -57,8 +56,8 @@ public:
 private:
     static gr::io_signature::sptr make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids);
 
-    FILE* fd_;
-    std::vector<uint8_t> io_buffer_;
+    std::ifstream file_stream_;
+    std::vector<char> io_buffer_;
     std::size_t io_buffer_offset_;
     std::vector<int> items_produced_;
     std::size_t output_stream_count_;

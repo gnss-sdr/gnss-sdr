@@ -16,8 +16,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef ION_GSM_CHUNK_UNPACKING_CTX_H
-#define ION_GSM_CHUNK_UNPACKING_CTX_H
+#ifndef GNSS_SDR_ION_GSMS_CHUNK_UNPACKING_CTX_H
+#define GNSS_SDR_ION_GSMS_CHUNK_UNPACKING_CTX_H
 
 #include <gnuradio/block.h>
 #include <GnssMetadata.h>
@@ -178,4 +178,4 @@ struct IONGSMSChunkUnpackingCtx
 
 /** \} */
 /** \} */
-#endif  // ION_GSM_CHUNK_UNPACKING_CTX_H
+#endif  // GNSS_SDR_ION_GSMS_CHUNK_UNPACKING_CTX_H

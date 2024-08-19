@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef ION_GSMS_METADATA_HANDLER_H
-#define ION_GSMS_METADATA_HANDLER_H
+#ifndef GNSS_SDR_ION_GSMSS_METADATA_HANDLER_H
+#define GNSS_SDR_ION_GSMSS_METADATA_HANDLER_H
 
 #include "ion_gsms.h"
 #include <gnuradio/block.h>
@@ -48,4 +48,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // ION_GSMS_METADATA_HANDLER_H
+#endif  // GNSS_SDR_ION_GSMSS_METADATA_HANDLER_H

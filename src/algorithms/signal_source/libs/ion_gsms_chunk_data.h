@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef ION_GSM_CHUNK_DATA_H
-#define ION_GSM_CHUNK_DATA_H
+#ifndef GNSS_SDR_ION_GSMS_CHUNK_DATA_H
+#define GNSS_SDR_ION_GSMS_CHUNK_DATA_H
 
 #include "ion_gsms_chunk_unpacking_ctx.h"
 #include "ion_gsms_stream_encodings.h"
@@ -185,4 +185,4 @@ private:
     void* buffer_;
 };
 
-#endif  // ION_GSM_CHUNK_DATA_H
+#endif  // GNSS_SDR_ION_GSMS_CHUNK_DATA_H

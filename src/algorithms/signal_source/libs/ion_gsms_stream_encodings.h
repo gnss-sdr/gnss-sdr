@@ -16,8 +16,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef ION_GSM_STREAM_ENCODINGS_H
-#define ION_GSM_STREAM_ENCODINGS_H
+#ifndef GNSS_SDR_ION_GSMS_STREAM_ENCODINGS_H
+#define GNSS_SDR_ION_GSMS_STREAM_ENCODINGS_H
 
 #include <string>
 
@@ -167,4 +167,4 @@ inline T five_bit_look_up[11][32]{
 
 /** \} */
 /** \} */
-#endif  // ION_GSM_STREAM_ENCODINGS_H
+#endif  // GNSS_SDR_ION_GSMS_STREAM_ENCODINGS_H

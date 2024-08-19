@@ -3366,7 +3366,7 @@ if(ENABLE_ION)
     FetchContent_Declare(
         gnss_metadata_standard
         GIT_REPOSITORY https://github.com/IonMetadataWorkingGroup/GNSS-Metadata-Standard
-        GIT_TAG origin/master
+        GIT_TAG 220d116e10db5e403e21b77a1fa25aa35feda198
         SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
         BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnss-metadata-standard

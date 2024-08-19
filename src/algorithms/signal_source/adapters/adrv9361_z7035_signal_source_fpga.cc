@@ -281,10 +281,19 @@ Adrv9361z7035SignalSourceFPGA::~Adrv9361z7035SignalSourceFPGA()
     if (rf_shutdown_)
         {
             std::cout << "* AD9361 Disabling RX streaming channels\n";
-            if (!disable_ad9361_rx_local())
+            try
                 {
-                    LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
+                    if (!disable_ad9361_rx_local())
+                        {
+                            LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
+                        }
                 }
+            catch (const std::exception &e)
+                {
+                    LOG(WARNING) << "Problem shutting down the AD9361 RX channels: " << e.what();
+                    std::cerr << "Problem shutting down the AD9361 RX channels: " << e.what() << '\n';
+                }
+
             if (enable_dds_lo_)
                 {
                     try

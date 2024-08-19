@@ -241,9 +241,16 @@ Fmcomms5SignalSourceFPGA::~Fmcomms5SignalSourceFPGA()
     if (rf_shutdown_)
         {
             std::cout << "* Disabling RX streaming channels\n";
-            if (!disable_ad9361_rx_local())
+            try
                 {
-                    LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
+                    if (!disable_ad9361_rx_local())
+                        {
+                            LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
+                        }
+                }
+            catch (const std::exception &e)
+                {
+                    std::cerr << "Problem shutting down the AD9361 RX channels: " << e.what() << '\n';
                 }
         }
 

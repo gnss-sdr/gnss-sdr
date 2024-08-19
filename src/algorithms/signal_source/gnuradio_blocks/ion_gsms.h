@@ -24,10 +24,10 @@
 #include <gnuradio/sync_block.h>
 #include <cstddef>
 #include <cstdio>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
-#include <fstream>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -52,6 +52,7 @@ public:
 
     std::size_t output_stream_count() const;
     std::size_t output_stream_item_size(std::size_t stream_index) const;
+    std::size_t output_stream_total_sample_count(std::size_t stream_index) const;
 
 private:
     static gr::io_signature::sptr make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids);
@@ -62,6 +63,8 @@ private:
     std::vector<int> items_produced_;
     std::size_t output_stream_count_;
     std::vector<std::size_t> output_stream_item_sizes_;
+    std::vector<std::size_t> output_stream_item_rates_;
+    std::vector<std::size_t> output_stream_total_sample_counts_;
     std::size_t maximum_item_rate_;
     std::vector<std::shared_ptr<IONGSMSChunkData>> chunk_data_;
     std::size_t chunk_cycle_length_;

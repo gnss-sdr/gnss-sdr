@@ -17,6 +17,7 @@
 #include "ion_gsms_signal_source.h"
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
+#include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/copy.h>
 #include <string>
 #include <unordered_set>
@@ -54,7 +55,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
     const std::string& role,
     unsigned int in_streams,
     unsigned int out_streams,
-    Concurrent_Queue<pmt::pmt_t>* queue __attribute__((unused)))
+    Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, "ION_GSMS_Signal_Source"s),
       stream_ids_(parse_comma_list(configuration->property(role + ".streams"s, ""s))),
       metadata_filepath_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
@@ -82,6 +83,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
             for (std::size_t i = 0; i < source->output_stream_count(); ++i)
                 {
                     copy_blocks_.push_back(gr::blocks::copy::make(source->output_stream_item_size(i)));
+                    valves_.push_back(gnss_sdr_make_valve(source->output_stream_item_size(i), source->output_stream_total_sample_count(i), queue));
                 }
         }
 }
@@ -186,6 +188,7 @@ void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
             for (std::size_t i = 0; i < source->output_stream_count(); ++i, ++cumulative_index)
                 {
                     top_block->connect(source, i, copy_blocks_[cumulative_index], 0);
+                    top_block->connect(copy_blocks_[cumulative_index], 0, valves_[cumulative_index], 0);
                 }
         }
 }
@@ -193,9 +196,14 @@ void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
 
 void IONGSMSSignalSource::disconnect(gr::top_block_sptr top_block)
 {
+    std::size_t cumulative_index = 0;
     for (const auto& source : sources_)
         {
-            top_block->disconnect(source);
+            for (std::size_t i = 0; i < source->output_stream_count(); ++i, ++cumulative_index)
+                {
+                    top_block->disconnect(source, i, copy_blocks_[cumulative_index], 0);
+                    top_block->disconnect(copy_blocks_[cumulative_index], 0, valves_[cumulative_index], 0);
+                }
         }
 }
 
@@ -219,7 +227,7 @@ gr::basic_block_sptr IONGSMSSignalSource::get_right_block(int RF_channel)
     if (RF_channel < 0 || RF_channel >= static_cast<int>(copy_blocks_.size()))
         {
             LOG(WARNING) << "'RF_channel' out of bounds while trying to get signal source right block.";
-            return copy_blocks_[0];
+            return valves_[0];
         }
-    return copy_blocks_[RF_channel];
+    return valves_[RF_channel];
 }

@@ -8,31 +8,30 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
 #include "ion_gsms_chunk_data.h"
-#include <bitset>
-#include <string>
-#include <vector>
-
+#include <cstring>
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
 #include <absl/log/log.h>
 #endif
 
+
 IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::vector<std::string>& stream_ids, std::size_t output_stream_offset)
     : chunk_(chunk),
       sizeword_(chunk_.SizeWord()),
       countwords_(chunk_.CountWords())
 {
-    with_word_type(sizeword_, [&]<typename WordType> {
-        buffer_ = new WordType[countwords_];
-    });
+    // Instantiate the Allocator functor
+    Allocator allocator(countwords_, buffer_);
+    // Call with_word_type with the Allocator functor
+    with_word_type(sizeword_, allocator);
 
     const std::size_t total_bitsize = sizeword_ * countwords_ * 8;
     std::size_t used_bitsize = 0;
@@ -81,10 +80,10 @@ IONGSMSChunkData::IONGSMSChunkData(const GnssMetadata::Chunk& chunk, const std::
 
 IONGSMSChunkData::~IONGSMSChunkData()
 {
-    with_word_type(sizeword_, [&]<typename WordType> {
-        delete[] static_cast<WordType*>(buffer_);
-    });
+    Deleter deleter(static_cast<void*>(buffer_));
+    with_word_type(sizeword_, deleter);
 }
+
 
 std::size_t IONGSMSChunkData::read_from_buffer(uint8_t* buffer, std::size_t offset)
 {
@@ -92,6 +91,7 @@ std::size_t IONGSMSChunkData::read_from_buffer(uint8_t* buffer, std::size_t offs
     memcpy(buffer_, &buffer[offset], sizeword_ * countwords_);
     return sizeword_ * countwords_;
 }
+
 
 void IONGSMSChunkData::write_to_output(gr_vector_void_star& outputs, std::vector<int>& output_items)
 {
@@ -121,10 +121,12 @@ std::size_t IONGSMSChunkData::output_stream_count() const
     return output_stream_count_;
 }
 
+
 std::size_t IONGSMSChunkData::output_stream_item_size(std::size_t stream_index) const
 {
     return output_stream_item_size_[stream_index];
 }
+
 
 std::size_t IONGSMSChunkData::output_stream_item_rate(std::size_t stream_index) const
 {
@@ -165,6 +167,7 @@ void IONGSMSChunkData::unpack_words(gr_vector_void_star& outputs, std::vector<in
         }
 }
 
+
 template <typename WT>
 std::size_t IONGSMSChunkData::write_stream_samples(
     IONGSMSChunkUnpackingCtx<WT>& ctx,
@@ -185,23 +188,24 @@ std::size_t IONGSMSChunkData::write_stream_samples(
 
     if (sample_bitsize <= 8)
         {
-            write_n_samples<WT, int8_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int8_t**)(out));
+            write_n_samples<WT, int8_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, reinterpret_cast<int8_t**>(out));
         }
     else if (sample_bitsize <= 16)
         {
-            write_n_samples<WT, int16_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int16_t**)(out));
+            write_n_samples<WT, int16_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, reinterpret_cast<int16_t**>(out));
         }
     else if (sample_bitsize <= 32)
         {
-            write_n_samples<WT, int32_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int32_t**)(out));
+            write_n_samples<WT, int32_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, reinterpret_cast<int32_t**>(out));
         }
     else if (sample_bitsize <= 64)
         {
-            write_n_samples<WT, int64_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, (int64_t**)(out));
+            write_n_samples<WT, int64_t>(ctx, lump.Shift(), sample_bitsize, sample_count, stream_encoding, reinterpret_cast<int64_t**>(out));
         }
 
     return sample_count;
 }
+
 
 template <typename WT, typename OT>
 void IONGSMSChunkData::write_n_samples(
@@ -241,22 +245,23 @@ void IONGSMSChunkData::write_n_samples(
 
 
 // Static utilities
-void IONGSMSChunkData::decode_sample(const uint8_t sample_bitsize, auto* sample, const GnssMetadata::StreamEncoding encoding)
+template <typename Sample>
+void IONGSMSChunkData::decode_sample(const uint8_t sample_bitsize, Sample* sample, const GnssMetadata::StreamEncoding encoding)
 {
-    using SampleType = std::remove_pointer_t<decltype(sample)>;
+    // using SampleType = std::remove_pointer_t<decltype(sample)>;
     switch (sample_bitsize)
         {
         case 2:
-            *sample = GnssMetadata::two_bit_look_up<SampleType>[encoding][*sample];
+            *sample = GnssMetadata::two_bit_look_up<Sample>[encoding][*sample];
             break;
         case 3:
-            *sample = GnssMetadata::three_bit_look_up<SampleType>[encoding][*sample];
+            *sample = GnssMetadata::three_bit_look_up<Sample>[encoding][*sample];
             break;
         case 4:
-            *sample = GnssMetadata::four_bit_look_up<SampleType>[encoding][*sample];
+            *sample = GnssMetadata::four_bit_look_up<Sample>[encoding][*sample];
             break;
         case 5:
-            *sample = GnssMetadata::five_bit_look_up<SampleType>[encoding][*sample];
+            *sample = GnssMetadata::five_bit_look_up<Sample>[encoding][*sample];
             break;
         default:
             // TODO - Is this an error that can happen?

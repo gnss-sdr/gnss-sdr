@@ -8,7 +8,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -17,20 +17,18 @@
 #ifndef ION_GSM_CHUNK_DATA_H
 #define ION_GSM_CHUNK_DATA_H
 
-#include "GnssMetadata.h"
 #include "ion_gsms_chunk_unpacking_ctx.h"
 #include "ion_gsms_stream_encodings.h"
 #include <gnuradio/block.h>
+#include <GnssMetadata.h>
+#include <cstddef>
+#include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#endif
 
-inline std::size_t bits_to_item_size(const std::size_t bit_count)
+inline std::size_t bits_to_item_size(std::size_t bit_count)
 {
     if (bit_count <= 8)
         {
@@ -50,11 +48,46 @@ inline std::size_t bits_to_item_size(const std::size_t bit_count)
         }
 
     // You are asking too much of this humble processor
-    LOG(ERROR) << "Item size too large (" << std::to_string(bit_count) << "), returning nonsense.";
+    std::cerr << "Item size too large (" << std::to_string(bit_count) << "), returning nonsense.\n";
     return 1;
 }
 
-void with_word_type(const uint8_t word_size, auto&& callback)
+
+// Define a functor that has a templated operator()
+struct Allocator
+{
+    size_t countwords_;
+    void*& buffer_;  // Using void* to hold any type of pointer
+
+    Allocator(size_t countwords, void*& buffer)
+        : countwords_(countwords), buffer_(buffer) {}
+
+    template <typename WordType>
+    void operator()() const
+    {
+        buffer_ = new WordType[countwords_];
+    }
+};
+
+
+// Define a functor to delete the allocated memory
+struct Deleter
+{
+    void* buffer_;
+
+    explicit Deleter(void* buffer)
+        : buffer_(buffer) {}
+
+    template <typename WordType>
+    void operator()() const
+    {
+        delete[] static_cast<WordType*>(buffer_);
+    }
+};
+
+
+template <typename Callback>
+void with_word_type(uint8_t word_size, Callback callback)
 {
     switch (word_size)
         {
@@ -71,7 +104,7 @@ void with_word_type(const uint8_t word_size, auto&& callback)
             callback.template operator()<int64_t>();
             break;
         default:
-            LOG(ERROR) << "Unknown word size (" << std::to_string(word_size) << "), returning nonsense.";
+            std::cerr << "Unknown word size (" << std::to_string(word_size) << "), returning nonsense.\n";
             break;
         }
 }
@@ -118,9 +151,9 @@ private:
         GnssMetadata::StreamEncoding stream_encoding,
         OT** out);
 
-    static void decode_sample(uint8_t sample_bitsize, auto* sample, GnssMetadata::StreamEncoding encoding);
+    template <typename Sample>
+    static void decode_sample(uint8_t sample_bitsize, Sample* sample, GnssMetadata::StreamEncoding encoding);
 
-private:
     const GnssMetadata::Chunk& chunk_;
     uint8_t sizeword_;
     uint8_t countwords_;

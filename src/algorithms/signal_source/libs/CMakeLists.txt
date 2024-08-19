@@ -142,6 +142,10 @@ if(ENABLE_FPGA OR ENABLE_AD9361)
         )
 endif()
 
+if(ENABLE_ION)
+    target_link_libraries(signal_source_libs PUBLIC ION::ion algorithms_libs)
+endif()
+
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
         set_target_properties(signal_source_libs
@@ -149,11 +153,6 @@ if(ENABLE_CLANG_TIDY)
                 CXX_CLANG_TIDY "${DO_CLANG_TIDY}"
         )
     endif()
-endif()
-
-if(ENABLE_ION)
-    target_include_directories(signal_source_libs PUBLIC ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/source/api/inc)
-    target_link_libraries(signal_source_libs PUBLIC api xml)
 endif()
 
 set_property(TARGET signal_source_libs APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES

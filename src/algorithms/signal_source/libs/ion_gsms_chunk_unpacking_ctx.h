@@ -10,7 +10,7 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
@@ -19,14 +19,14 @@
 #ifndef ION_GSM_CHUNK_UNPACKING_CTX_H
 #define ION_GSM_CHUNK_UNPACKING_CTX_H
 
-#include "GnssMetadata.h"
 #include <gnuradio/block.h>
+#include <GnssMetadata.h>
+#include <cstdint>
 
-#if USE_GLOG_AND_GFLAGS
-#include <glog/logging.h>
-#else
-#include <absl/log/log.h>
-#endif
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
 
 template <typename WT>
 struct IONGSMSChunkUnpackingCtx
@@ -118,7 +118,7 @@ struct IONGSMSChunkUnpackingCtx
     }
 
     template <typename OT>
-    void shift_sample(const uint8_t sample_bitsize, OT* output, uint8_t output_bit_offset = 0)
+    void shift_sample(uint8_t sample_bitsize, OT* output, uint8_t output_bit_offset = 0)
     {
         if (sample_bitsize % word_bitsize_ == 0)
             {
@@ -176,4 +176,6 @@ struct IONGSMSChunkUnpackingCtx
     }
 };
 
+/** \} */
+/** \} */
 #endif  // ION_GSM_CHUNK_UNPACKING_CTX_H

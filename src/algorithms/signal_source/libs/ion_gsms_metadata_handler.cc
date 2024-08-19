@@ -8,14 +8,14 @@
  * GNSS-SDR is a Global Navigation Satellite System software-defined receiver.
  * This file is part of GNSS-SDR.
  *
- * Copyright (C) 2010-2020  (see AUTHORS file for a list of contributors)
+ * Copyright (C) 2010-2024  (see AUTHORS file for a list of contributors)
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
  * -----------------------------------------------------------------------------
  */
 
 #include "ion_gsms.h"
-
+#include <cstdlib>
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
@@ -40,16 +40,25 @@ void IONGSMSMetadataHandler::load_metadata()
             GnssMetadata::XmlProcessor xml_proc;
             if (!xml_proc.Load(metadata_filepath_.c_str(), false, metadata_))
                 {
-                    LOG(ERROR) << "Could not load XML metadata file:";
+                    LOG(WARNING) << "Could not load XML metadata file " << metadata_filepath_;
+                    std::cerr << "Could not load XML metadata file " << metadata_filepath_ << std::endl;
+                    std::cout << "GNSS-SDR program ended.\n";
+                    exit(1);
                 }
         }
     catch (GnssMetadata::ApiException& e)
         {
-            LOG(ERROR) << "API Exception while loading XML metadata file: " << std::to_string(e.Error());
+            LOG(WARNING) << "API Exception while loading XML metadata file: " << std::to_string(e.Error());
+            std::cerr << "Could not load XML metadata file " << metadata_filepath_ << " : " << std::to_string(e.Error()) << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
+            exit(1);
         }
     catch (std::exception& e)
         {
-            LOG(ERROR) << "Exception while loading XML metadata file: " << e.what();
+            LOG(WARNING) << "Exception while loading XML metadata file: " << e.what();
+            std::cerr << "Could not load XML metadata file " << metadata_filepath_ << " : " << e.what() << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
+            exit(1);
         }
 }
 

@@ -19,9 +19,8 @@
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/copy.h>
-#include <string>
+#include <cstdlib>
 #include <unordered_set>
-#include <vector>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -59,7 +58,6 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
     : SignalSourceBase(configuration, role, "ION_GSMS_Signal_Source"s),
       stream_ids_(parse_comma_list(configuration->property(role + ".streams"s, ""s))),
       metadata_filepath_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
-      timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0)),
       in_streams_(in_streams),
       out_streams_(out_streams)
 {
@@ -87,6 +85,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
                 }
         }
 }
+
 
 void IONGSMSSignalSource::load_metadata()
 {
@@ -116,6 +115,7 @@ void IONGSMSSignalSource::load_metadata()
             exit(1);
         }
 }
+
 
 std::vector<IONGSMSFileSource::sptr> IONGSMSSignalSource::make_stream_sources(const std::vector<std::string>& stream_ids) const
 {
@@ -179,6 +179,7 @@ std::vector<IONGSMSFileSource::sptr> IONGSMSSignalSource::make_stream_sources(co
 
     return sources;
 }
+
 
 void IONGSMSSignalSource::connect(gr::top_block_sptr top_block)
 {

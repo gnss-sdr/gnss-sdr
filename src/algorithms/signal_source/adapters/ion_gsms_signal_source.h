@@ -15,8 +15,8 @@
  */
 
 
-#ifndef GNSS_SDR_ION_METADATA_STANDARD_SIGNAL_SOURCE_H
-#define GNSS_SDR_ION_METADATA_STANDARD_SIGNAL_SOURCE_H
+#ifndef GNSS_SDR_ION_GSMS_SIGNAL_SOURCE_H
+#define GNSS_SDR_ION_GSMS_SIGNAL_SOURCE_H
 
 #include "configuration_interface.h"
 #include "file_source_base.h"
@@ -73,7 +73,6 @@ private:
 
     gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
     std::string timestamp_file_;
-    double timestamp_clock_offset_ms_;
 
     uint32_t in_streams_;
     uint32_t out_streams_;
@@ -82,4 +81,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_ION_METADATA_STANDARD_SIGNAL_SOURCE_H
+#endif  // GNSS_SDR_ION_GSMS_SIGNAL_SOURCE_H

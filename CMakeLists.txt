@@ -1424,6 +1424,7 @@ else()
 endif()
 
 
+
 ################################################################################
 # Abseil C++ - https://abseil.io/docs/cpp/
 ################################################################################
@@ -3360,6 +3361,9 @@ endif()
 ################################################################################
 # ION GNSS-SDR Metadata Standard https://sdr.ion.org/ (OPTIONAL)
 ################################################################################
+if(CMAKE_VERSION VERSION_LESS 3.14)
+    set(ENABLE_ION OFF)  # FetchContent_MakeAvailable is available from CMake 3.14
+endif()
 if(ENABLE_ION)
     include(FetchContent)
     set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)

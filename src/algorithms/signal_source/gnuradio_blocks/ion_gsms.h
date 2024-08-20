@@ -23,7 +23,6 @@
 #include <gnuradio/block.h>
 #include <gnuradio/sync_block.h>
 #include <cstddef>
-#include <cstdio>
 #include <fstream>
 #include <memory>
 #include <string>

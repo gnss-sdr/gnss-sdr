@@ -18,14 +18,14 @@
 #include "gnuradio/block.h"
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
+#include <iostream>
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
 #else
 #include <absl/log/log.h>
 #endif
-
-using namespace std::string_literals;
 
 IONGSMSFileSource::IONGSMSFileSource(
     const fs::path& metadata_filepath,
@@ -46,7 +46,10 @@ IONGSMSFileSource::IONGSMSFileSource(
 
     if (!file_stream_.is_open())
         {
-            LOG(ERROR) << "ion_gsms_file_source: Unable to open the samples file: " << (data_filepath).c_str();
+            LOG(WARNING) << "ION_GSMS_Signal_Source - Unable to open the samples file: " << (data_filepath).c_str();
+            std::cerr << "ION_GSMS_Signal_Source - Unable to open the samples file: " << (data_filepath).c_str() << std::endl;
+            std::cout << "GNSS-SDR program ended.\n";
+            exit(1);
         }
 
     // Skip offset and block header
@@ -96,10 +99,12 @@ std::size_t IONGSMSFileSource::output_stream_item_size(std::size_t stream_index)
     return output_stream_item_sizes_[stream_index];
 }
 
+
 std::size_t IONGSMSFileSource::output_stream_total_sample_count(std::size_t stream_index) const
 {
     return output_stream_total_sample_counts_[stream_index];
 }
+
 
 gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const GnssMetadata::Block& block, const std::vector<std::string>& stream_ids)
 {
@@ -141,6 +146,7 @@ gr::io_signature::sptr IONGSMSFileSource::make_output_signature(const GnssMetada
         nstreams,
         item_sizes);
 }
+
 
 int IONGSMSFileSource::work(
     int noutput_items,

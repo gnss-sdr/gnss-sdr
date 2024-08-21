@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/volk_gnsssdr_module"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/volk_gnsssdr_module.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/volk_gnsssdr_module-complete.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-build.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-configure.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-download.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-install.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-mkdir.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-patch.rule"
+		},
+		{
+			"file" : "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"volk_gnsssdr_module"
+		],
+		"name" : "volk_gnsssdr_module"
+	}
+}

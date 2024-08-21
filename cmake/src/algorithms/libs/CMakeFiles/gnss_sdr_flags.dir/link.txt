@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgnss_sdr_flags.a CMakeFiles/gnss_sdr_flags.dir/gnss_sdr_flags.cc.o
+/usr/bin/ranlib libgnss_sdr_flags.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libchannel_adapters.a CMakeFiles/channel_adapters.dir/channel.cc.o
+/usr/bin/ranlib libchannel_adapters.a

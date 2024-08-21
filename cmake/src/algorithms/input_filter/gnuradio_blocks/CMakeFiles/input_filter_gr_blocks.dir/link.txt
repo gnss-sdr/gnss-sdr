@@ -1,0 +1,2 @@
+/usr/bin/ar qc libinput_filter_gr_blocks.a CMakeFiles/input_filter_gr_blocks.dir/beamformer.cc.o CMakeFiles/input_filter_gr_blocks.dir/notch_cc.cc.o CMakeFiles/input_filter_gr_blocks.dir/notch_lite_cc.cc.o CMakeFiles/input_filter_gr_blocks.dir/pulse_blanking_cc.cc.o
+/usr/bin/ranlib libinput_filter_gr_blocks.a

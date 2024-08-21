@@ -1,0 +1,2 @@
+/usr/bin/ar qc libobs_adapters.a CMakeFiles/obs_adapters.dir/hybrid_observables.cc.o
+/usr/bin/ranlib libobs_adapters.a

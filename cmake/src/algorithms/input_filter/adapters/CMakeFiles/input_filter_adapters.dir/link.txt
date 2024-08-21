@@ -1,0 +1,2 @@
+/usr/bin/ar qc libinput_filter_adapters.a CMakeFiles/input_filter_adapters.dir/beamformer_filter.cc.o CMakeFiles/input_filter_adapters.dir/fir_filter.cc.o CMakeFiles/input_filter_adapters.dir/freq_xlating_fir_filter.cc.o CMakeFiles/input_filter_adapters.dir/notch_filter.cc.o CMakeFiles/input_filter_adapters.dir/notch_filter_lite.cc.o CMakeFiles/input_filter_adapters.dir/pulse_blanking_filter.cc.o
+/usr/bin/ranlib libinput_filter_adapters.a

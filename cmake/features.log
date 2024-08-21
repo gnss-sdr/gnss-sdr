@@ -1,0 +1,149 @@
+**********************************
+* BUILDING CONFIGURATION SUMMARY *
+**********************************
+
+GNSS-SDR version: 0.0.19.git-GSOC-SBAS-04c74f8f5
+Building on GNU/Linux Ubuntu 22.04 (x86_64)
+CMake version: 3.22.1
+The CXX compiler identification is GNU 11.4.0. Standard: C++17.
+The C compiler identification is GNU 11.4.0. Standard: C11.
+
+The following REQUIRED packages have been found:
+
+ * Git, A free and open source distributed version control system (found: v2.34.1), <https://git-scm.com>
+   Manage version control, get MINOR_VERSION name for version number.
+ * GOOGLETEST, Source code of Google's Testing Framework (found: v1.11.0), <https://github.com/google/googletest>
+   Used for Unit and System Tests.
+ * VOLK, Vector-Optimized Library of Kernels (found: v2.5), <https://www.libvolk.org>
+   Provides an abstraction of optimized math routines targeting several SIMD processors.
+ * spdlog, Very fast, header-only/compiled, C++ logging library (found: v1.9.2), <https://github.com/gabime/spdlog>
+   Required by GNU Radio.
+ * GNURADIO, The free and open software radio ecosystem (found: v3.10.1), <https://www.gnuradio.org/>
+   Implements flowgraph scheduler, provides some processing blocks and classes to create new ones.
+ * boost_chrono (required version == 1.74.0), Useful time utilities, <https://www.boost.org/doc/libs/release/doc/html/chrono.html>
+   Required by Boost Thread.
+ * boost_date_time (required version == 1.74.0), A set of date-time libraries, <https://www.boost.org/doc/libs/release/doc/html/date_time.html>
+   Required by Boost Thread.
+ * boost_serialization (required version == 1.74.0), Reversible deconstruction of C++ data structures to sequences of bytes, <https://www.boost.org/doc/libs/release/libs/serialization/doc/index.html>
+   Used for serializing data.
+ * boost_system (required version == 1.74.0), Extensible error reporting library, <https://www.boost.org/doc/libs/release/libs/system/doc/html/system.html>
+   Used for error reporting.
+ * boost_atomic (required version == 1.74.0), Provides atomic data types and operations on those types, <https://www.boost.org/doc/libs/release/doc/html/atomic.html>
+   Required by Boost Thread.
+ * boost_headers (required version == 1.74.0), Header files of Boost libraries, <https://www.boost.org/>
+   Used widely across the source code.
+ * boost_thread (required version == 1.74.0), Portable C++ multi-threading, <https://www.boost.org/doc/libs/release/doc/html/thread.html>
+   Used by GNU Radio multi-threading system.
+ * Boost (required version >= 1.53), Portable C++ source libraries (found: v1.74.0), <https://www.boost.org>
+   Used widely across the source code.
+ * Python3, An interpreted, high-level, general-purpose programming language (found: v3.10.12), <https://www.python.org/>
+   Required to build volk_gnsssdr.
+ * GLOG, C++ implementation of the Google logging module (found: v0.4.0), <https://github.com/google/glog>
+   Used for runtime internal logging.
+ * GFLAGS, C++ library that implements commandline flags processing (found: v2.2.2), <https://github.com/gflags/gflags>
+   Used for commandline flags management.
+ * BLAS, Basic Linear Algebra Subprograms, <https://www.netlib.org/blas/>
+   Used for matrix algebra computations.
+ * LAPACK, Linear Algebra PACKage, <https://www.netlib.org/lapack/>
+   Used for matrix algebra computations.
+ * Armadillo, C++ library for linear algebra and scientific computing (found: v10.8.2), <https://arma.sourceforge.net/>
+   Used for matrix computations.
+ * GnuTLS, Transport Layer Security Library (found: v3.7.3), <https://www.gnutls.org/>
+   Used for the SUPL protocol implementation.
+ * MATIO, MATLAB MAT File I/O Library (found: v1.5.21), <https://github.com/tbeu/matio>
+   Used to store processing block's results in MAT files readable from MATLAB/Octave.
+ * PUGIXML, Light-weight, simple and fast XML parser for C++ (found: v1.12), <https://pugixml.org/>
+   Used to handle Galileo almanac XML files published by the European GNSS Service Centre.
+ * Threads, Implements the POSIX Threads execution model, <https://computing.llnl.gov/tutorials/pthreads/>
+   Used to implement parallelism.
+ * Protobuf, Structured data serialization mechanism (found: v3.12.4), <https://protobuf.dev/>
+   Used to serialize output data in a way that can be read by other applications.
+
+-- The following REQUIRED packages have not been found:
+
+ * VOLKGNSSSDR, Vector-Optimized Library of Kernels for GNSS-SDR.
+   Accelerates math routines targeting several SIMD processors.
+   volk_gnsssdr will be built when doing 'make'.
+ * CPUFEATURES, A cross platform C99 library to get CPU features at runtime, <https://github.com/google/cpu_features>
+   Used by the volk_gnsssdr library.
+
+-- The following OPTIONAL packages have been found:
+
+ * UHD, USRP Hardware Driver (found: v4.1.0.5-3), <https://www.ettus.com/sdr-software/uhd-usrp-hardware-driver/>
+   Used for communication with front-ends of the USRP family.
+ * ZEROMQ, An open-source universal messaging library, <https://zeromq.org/>
+   Used by the ZMQ_Signal_Source.
+ * FILESYSTEM, Provides facilities for performing operations on file systems and their components, <https://en.cppreference.com/w/cpp/filesystem>
+   Work with paths, regular files, and directories.
+ * MATHJAX2, Beautiful and accessible math in all browsers, <https://www.mathjax.org>
+   Used to generate equations in HTML docs when doing 'make doc'.
+ * PCAP, A portable C/C++ library for network traffic capture (found: v1.10.1), <https://www.tcpdump.org>
+   Used for the custom UDP IP packet source.
+ * GROSMOSDR, osmocom GNU Radio blocks (found: v0.2.0.0), <https://osmocom.org/projects/gr-osmosdr/wiki>
+   Used for communication with OsmoSDR and other front-ends (HackRF, bladeRF, Realtek's RTL2832U-based dongles, etc.).
+
+-- The following OPTIONAL packages have not been found:
+
+ * GNSSTK, The GNSSTk C++ Library, <https://github.com/SGL-UT/gnsstk/>
+   Used in some Extra Tests.
+ * Doxygen, Generates documentation from annotated C++ sources, <https://www.doxygen.nl>
+   Used to generate code documentation by doing 'make doc'
+ * LATEX, High-quality typesetting system, <https://www.latex-project.org>
+   Used to generate a PDF manual by doing 'make pdfmanual'.
+ * GRLIMESDR, LimeSDR GNU Radio blocks, <https://github.com/myriadrf/gr-limesdr>
+   Used for communication with LimeSDR.
+ * LIBAD9361, A library for interfacing with AD936X RF transceivers, <https://github.com/analogdevicesinc/libad9361-iio>
+   Used for configuring devices with the AD9361 chipset.
+ * LIBIIO, A library for interfacing with Linux IIO devices, <https://github.com/analogdevicesinc/libiio>
+   Used for communication with the AD9361 chipset.
+ * TELEORBIT, The Teleorbit's Flexiband GNU Radio block.
+   Used for communication with the Flexiband front-end.
+ * GPERFTOOLS, Collection of performance analysis tools, <https://github.com/gperftools/gperftools>
+   Used for performance analysis.
+ * GNUPLOT, A portable command-line driven graphing utility, <http://www.gnuplot.info>
+   Used to generate plots in some tests.
+
+-- The following features have been enabled:
+
+ * ENABLE_UHD, Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.
+ * ENABLE_RAW_UDP, Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.
+ * ENABLE_ZMQ, Enables ZMQ_Signal_Source for GNU Radio ZeroMQ messages. Requires gr-zeromq.
+ * ENABLE_GLOG_AND_GFLAGS, Forces the usage of Google glog and Gflags instead of Abseil.
+ * ENABLE_LOG, Enables runtime internal logging.
+ * ENABLE_UNIT_TESTING, Enables building of Unit Tests.
+
+-- The following features have been disabled:
+
+ * ENABLE_OSMOSDR, Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.
+ * ENABLE_LIMESDR, Enables Limesdr_Signal_Source. Requires gr-limesdr.
+ * ENABLE_FMCOMMS2, Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio and libad9361-dev.
+ * ENABLE_PLUTOSDR, Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.
+ * ENABLE_AD9361, Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio and libad9361-dev.
+ * ENABLE_AD936X_SDR, Enables Ad936x_Iio_Signal_Source to access AD936X front-ends using libiio. Requires libiio and libad9361-dev.
+ * ENABLE_FLEXIBAND, Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.
+ * ENABLE_ARRAY, Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.
+ * ENABLE_GPERFTOOLS, Enables performance analysis. Requires Gperftools.
+ * ENABLE_GPROF, Enables performance analysis with 'gprof'.
+ * ENABLE_CLANG_TIDY, Runs clang-tidy along with the compiler. Requires Clang.
+ * ENABLE_PROFILING, Runs volk_gnsssdr_profile at the end of the building.
+ * ENABLE_OPENCL, Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.
+ * ENABLE_CUDA, Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.
+ * ENABLE_FPGA, Enables building of processing blocks for FPGA offloading.
+ * ENABLE_ARMA_NO_DEBUG, Enables passing the ARMA_NO_DEBUG macro to Armadillo, hence disabling bound checking.
+ * ENABLE_PACKAGING, Enables software packaging.
+ * ENABLE_OWN_GLOG, Forces the downloading and building of Google glog.
+ * ENABLE_OWN_ABSEIL, Forces downloading and building Abseil. Supersedes ENABLE_OWN_GLOG.
+ * ENABLE_OWN_ARMADILLO, Forces the downloading and building of Armadillo.
+ * ENABLE_ORC, Use the Optimized Inner Loop Runtime Compiler (ORC) for building volk_gnsssdr.
+ * ENABLE_STRIP, Enables the generation of stripped binaries (without debugging symbols).
+ * ENABLE_UNIT_TESTING_MINIMAL, Enables building a minimal set of Unit Tests.
+ * ENABLE_UNIT_TESTING_EXTRA, Enables building of Extra Unit Tests and downloading of external data files.
+ * ENABLE_SYSTEM_TESTING, Enables building of System Tests.
+ * ENABLE_SYSTEM_TESTING_EXTRA, Enables building of Extra System Tests and downloading of external tools.
+ * ENABLE_OWN_GNSSTK, Forces the downloading and building of gnsstk for system tests.
+ * ENABLE_GNSS_SIM_INSTALL, Enables downloading and building of gnss-sim.
+ * ENABLE_INSTALL_TESTS, Install test binaries when doing 'make install'.
+ * ENABLE_BENCHMARKS, Enables building of code snippet benchmarks.
+ * ENABLE_EXTERNAL_MATHJAX, Use MathJax from an external CDN in HTML docs when doing 'make doc'.
+ * ENABLE_CPUFEATURES, Make use of the cpu_features library.
+ * Boost_USE_STATIC_LIBS, Use Boost static libraries.

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtelemetry_decoder_libs.a CMakeFiles/telemetry_decoder_libs.dir/tlm_conf.cc.o CMakeFiles/telemetry_decoder_libs.dir/tlm_crc_stats.cc.o CMakeFiles/telemetry_decoder_libs.dir/tlm_utils.cc.o CMakeFiles/telemetry_decoder_libs.dir/viterbi_decoder.cc.o CMakeFiles/telemetry_decoder_libs.dir/viterbi_decoder_sbas.cc.o
+/usr/bin/ranlib libtelemetry_decoder_libs.a

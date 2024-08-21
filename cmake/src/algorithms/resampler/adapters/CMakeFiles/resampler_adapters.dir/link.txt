@@ -1,0 +1,2 @@
+/usr/bin/ar qc libresampler_adapters.a CMakeFiles/resampler_adapters.dir/direct_resampler_conditioner.cc.o CMakeFiles/resampler_adapters.dir/mmse_resampler_conditioner.cc.o
+/usr/bin/ranlib libresampler_adapters.a

@@ -17,6 +17,7 @@
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "gnss_synchro.h"
 #include "viterbi_decoder_sbas.h"
+#include "tlm_utils.h"
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
 #include <algorithm>        // for copy
@@ -72,8 +73,10 @@ sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
 
 sbas_l1_telemetry_decoder_gs::~sbas_l1_telemetry_decoder_gs()
 {
+    size_t pos = 0;
     if (d_dump_file.is_open() == true)
         {
+            pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -81,6 +84,25 @@ sbas_l1_telemetry_decoder_gs::~sbas_l1_telemetry_decoder_gs()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    if (!tlm_remove_file(d_dump_filename))
+                        {
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
+                }
+        }
+    if (d_dump && (pos != 0) && d_dump_mat)
+        {
+            save_tlm_matfile(d_dump_filename);
+            if (d_remove_dat)
+                {
+                    if (!tlm_remove_file(d_dump_filename))
+                        {
+                            std::cout << "ERROR" << std::endl;
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
                 }
         }
 }
@@ -472,6 +494,25 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             // clear all processed samples in the input buffer
             d_sample_buf.clear();
         }
+
+    if (d_dump == true)
+        {
+            // MULTIPLEXED FILE RECORDING - Record results to file
+            try
+                {
+                    double tmp_double;
+                    uint64_t tmp_ulong_int;
+                    int32_t tmp_int;
+                    tmp_int = (current_symbol.Prompt_I > 0.0 ? 1 : -1);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                }
+            catch (const std::ofstream::failure &e)
+                {
+                    std::cout << "error" << std::endl;
+                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                }
+        }
+    std::cout << d_dump_filename << std::endl;
 
     // UPDATE GNSS SYNCHRO DATA
     // actually the SBAS telemetry decoder doesn't support ranging

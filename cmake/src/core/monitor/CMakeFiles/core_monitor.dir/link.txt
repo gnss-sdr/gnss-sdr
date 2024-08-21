@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcore_monitor.a CMakeFiles/core_monitor.dir/gnss_synchro.pb.cc.o CMakeFiles/core_monitor.dir/gnss_synchro_monitor.cc.o CMakeFiles/core_monitor.dir/gnss_synchro_udp_sink.cc.o
+/usr/bin/ranlib libcore_monitor.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsystem_testing_lib.a CMakeFiles/system_testing_lib.dir/spirent_motion_csv_dump_reader.cc.o CMakeFiles/system_testing_lib.dir/rtklib_solver_dump_reader.cc.o
+/usr/bin/ranlib libsystem_testing_lib.a

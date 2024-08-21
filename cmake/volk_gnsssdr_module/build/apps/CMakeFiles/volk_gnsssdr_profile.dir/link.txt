@@ -1,0 +1,1 @@
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall -O3 -DNDEBUG CMakeFiles/volk_gnsssdr_profile.dir/volk_gnsssdr_profile.cc.o CMakeFiles/volk_gnsssdr_profile.dir/__/lib/qa_utils.cc.o CMakeFiles/volk_gnsssdr_profile.dir/volk_gnsssdr_option_helpers.cc.o -o volk_gnsssdr_profile  ../lib/libvolk_gnsssdr.a -ldl -lpthread -lm 

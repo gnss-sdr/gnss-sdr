@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsignal_generator_adapters.a CMakeFiles/signal_generator_adapters.dir/signal_generator.cc.o
+/usr/bin/ranlib libsignal_generator_adapters.a

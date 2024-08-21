@@ -1,0 +1,916 @@
+The system is: Linux - 5.15.153.1-microsoft-standard-WSL2 - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/bin/cc 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/3.22.1/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /usr/bin/c++ 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/3.22.1/CompilerIdCXX/a.out"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_de8ac/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_de8ac.dir/build.make CMakeFiles/cmTC_de8ac.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o
+/usr/bin/cc   -v -o CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+Using built-in specs.
+COLLECT_GCC=/usr/bin/cc
+OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr,amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2
+Thread model: posix
+Supported LTO compression algorithms: zlib zstd
+gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_de8ac.dir/'
+ /usr/lib/gcc/x86_64-linux-gnu/11/cc1 -quiet -v -imultiarch x86_64-linux-gnu /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_de8ac.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cc2xTbd3.s
+GNU C17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 11.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/include-fixed"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/../../../../x86_64-linux-gnu/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/lib/gcc/x86_64-linux-gnu/11/include
+ /usr/local/include
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 11.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: 50eaa2331df977b8016186198deb2d18
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_de8ac.dir/'
+ as -v --64 -o CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o /tmp/cc2xTbd3.s
+GNU assembler version 2.38 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.38
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.'
+Linking C executable cmTC_de8ac
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_de8ac.dir/link.txt --verbose=1
+/usr/bin/cc  -v CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o -o cmTC_de8ac 
+Using built-in specs.
+COLLECT_GCC=/usr/bin/cc
+COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper
+OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr,amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2
+Thread model: posix
+Supported LTO compression algorithms: zlib zstd
+gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_de8ac' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_de8ac.'
+ /usr/lib/gcc/x86_64-linux-gnu/11/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/cc7vRNut.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_de8ac /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_de8ac' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_de8ac.'
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/usr/lib/gcc/x86_64-linux-gnu/11/include]
+    add: [/usr/local/include]
+    add: [/usr/include/x86_64-linux-gnu]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/usr/lib/gcc/x86_64-linux-gnu/11/include] ==> [/usr/lib/gcc/x86_64-linux-gnu/11/include]
+  collapse include dir [/usr/local/include] ==> [/usr/local/include]
+  collapse include dir [/usr/include/x86_64-linux-gnu] ==> [/usr/include/x86_64-linux-gnu]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/usr/lib/gcc/x86_64-linux-gnu/11/include;/usr/local/include;/usr/include/x86_64-linux-gnu;/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_de8ac/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_de8ac.dir/build.make CMakeFiles/cmTC_de8ac.dir/build]
+  ignore line: [gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/cc   -v -o CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/cc]
+  ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa]
+  ignore line: [OFFLOAD_TARGET_DEFAULT=1]
+  ignore line: [Target: x86_64-linux-gnu]
+  ignore line: [Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c ada c++ go brig d fortran objc obj-c++ m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32 m64 mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2]
+  ignore line: [Thread model: posix]
+  ignore line: [Supported LTO compression algorithms: zlib zstd]
+  ignore line: [gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_de8ac.dir/']
+  ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/11/cc1 -quiet -v -imultiarch x86_64-linux-gnu /usr/share/cmake-3.22/Modules/CMakeCCompilerABI.c -quiet -dumpdir CMakeFiles/cmTC_de8ac.dir/ -dumpbase CMakeCCompilerABI.c.c -dumpbase-ext .c -mtune=generic -march=x86-64 -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cc2xTbd3.s]
+  ignore line: [GNU C17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)]
+  ignore line: [	compiled by GNU C version 11.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"]
+  ignore line: [ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/include-fixed"]
+  ignore line: [ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/../../../../x86_64-linux-gnu/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/11/include]
+  ignore line: [ /usr/local/include]
+  ignore line: [ /usr/include/x86_64-linux-gnu]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)]
+  ignore line: [	compiled by GNU C version 11.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: 50eaa2331df977b8016186198deb2d18]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_de8ac.dir/']
+  ignore line: [ as -v --64 -o CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o /tmp/cc2xTbd3.s]
+  ignore line: [GNU assembler version 2.38 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.38]
+  ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o' '-c' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.']
+  ignore line: [Linking C executable cmTC_de8ac]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_de8ac.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/cc  -v CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o -o cmTC_de8ac ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/cc]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper]
+  ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa]
+  ignore line: [OFFLOAD_TARGET_DEFAULT=1]
+  ignore line: [Target: x86_64-linux-gnu]
+  ignore line: [Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c ada c++ go brig d fortran objc obj-c++ m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32 m64 mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2]
+  ignore line: [Thread model: posix]
+  ignore line: [Supported LTO compression algorithms: zlib zstd]
+  ignore line: [gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) ]
+  ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_de8ac' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_de8ac.']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/11/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/cc7vRNut.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_de8ac /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/cc7vRNut.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_de8ac] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib]
+    arg [-L/lib/x86_64-linux-gnu] ==> dir [/lib/x86_64-linux-gnu]
+    arg [-L/lib/../lib] ==> dir [/lib/../lib]
+    arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
+    arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../..]
+    arg [CMakeFiles/cmTC_de8ac.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--push-state] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--pop-state] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--push-state] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--pop-state] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
+  collapse obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o] ==> [/usr/lib/x86_64-linux-gnu/Scrt1.o]
+  collapse obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o] ==> [/usr/lib/x86_64-linux-gnu/crti.o]
+  collapse obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o] ==> [/usr/lib/x86_64-linux-gnu/crtn.o]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11] ==> [/usr/lib/gcc/x86_64-linux-gnu/11]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib] ==> [/usr/lib]
+  collapse library dir [/lib/x86_64-linux-gnu] ==> [/lib/x86_64-linux-gnu]
+  collapse library dir [/lib/../lib] ==> [/lib]
+  collapse library dir [/usr/lib/x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+  collapse library dir [/usr/lib/../lib] ==> [/usr/lib]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../..] ==> [/usr/lib]
+  implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+  implicit objs: [/usr/lib/x86_64-linux-gnu/Scrt1.o;/usr/lib/x86_64-linux-gnu/crti.o;/usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o;/usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o;/usr/lib/x86_64-linux-gnu/crtn.o]
+  implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/11;/usr/lib/x86_64-linux-gnu;/usr/lib;/lib/x86_64-linux-gnu;/lib]
+  implicit fwks: []
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b4cac/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_b4cac.dir/build.make CMakeFiles/cmTC_b4cac.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/c++   -v -o CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
+Using built-in specs.
+COLLECT_GCC=/usr/bin/c++
+OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr,amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2
+Thread model: posix
+Supported LTO compression algorithms: zlib zstd
+gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_b4cac.dir/'
+ /usr/lib/gcc/x86_64-linux-gnu/11/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -D_GNU_SOURCE /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_b4cac.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cct4ollt.s
+GNU C++17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 11.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/11"
+ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/include-fixed"
+ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/../../../../x86_64-linux-gnu/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/include/c++/11
+ /usr/include/x86_64-linux-gnu/c++/11
+ /usr/include/c++/11/backward
+ /usr/lib/gcc/x86_64-linux-gnu/11/include
+ /usr/local/include
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+GNU C++17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)
+	compiled by GNU C version 11.4.0, GMP version 6.2.1, MPFR version 4.1.0, MPC version 1.2.1, isl version isl-0.24-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: d591828bb4d392ae8b7b160e5bb0b95f
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_b4cac.dir/'
+ as -v --64 -o CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o /tmp/cct4ollt.s
+GNU assembler version 2.38 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.38
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.'
+Linking CXX executable cmTC_b4cac
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b4cac.dir/link.txt --verbose=1
+/usr/bin/c++  -v CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_b4cac 
+Using built-in specs.
+COLLECT_GCC=/usr/bin/c++
+COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper
+OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa
+OFFLOAD_TARGET_DEFAULT=1
+Target: x86_64-linux-gnu
+Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c,ada,c++,go,brig,d,fortran,objc,obj-c++,m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32,m64,mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr,amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2
+Thread model: posix
+Supported LTO compression algorithms: zlib zstd
+gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) 
+COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/
+LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_b4cac' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_b4cac.'
+ /usr/lib/gcc/x86_64-linux-gnu/11/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/ccA2LUyd.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_b4cac /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_b4cac' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_b4cac.'
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/usr/include/c++/11]
+    add: [/usr/include/x86_64-linux-gnu/c++/11]
+    add: [/usr/include/c++/11/backward]
+    add: [/usr/lib/gcc/x86_64-linux-gnu/11/include]
+    add: [/usr/local/include]
+    add: [/usr/include/x86_64-linux-gnu]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/usr/include/c++/11] ==> [/usr/include/c++/11]
+  collapse include dir [/usr/include/x86_64-linux-gnu/c++/11] ==> [/usr/include/x86_64-linux-gnu/c++/11]
+  collapse include dir [/usr/include/c++/11/backward] ==> [/usr/include/c++/11/backward]
+  collapse include dir [/usr/lib/gcc/x86_64-linux-gnu/11/include] ==> [/usr/lib/gcc/x86_64-linux-gnu/11/include]
+  collapse include dir [/usr/local/include] ==> [/usr/local/include]
+  collapse include dir [/usr/include/x86_64-linux-gnu] ==> [/usr/include/x86_64-linux-gnu]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/usr/include/c++/11;/usr/include/x86_64-linux-gnu/c++/11;/usr/include/c++/11/backward;/usr/lib/gcc/x86_64-linux-gnu/11/include;/usr/local/include;/usr/include/x86_64-linux-gnu;/usr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b4cac/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/gmake  -f CMakeFiles/cmTC_b4cac.dir/build.make CMakeFiles/cmTC_b4cac.dir/build]
+  ignore line: [gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/c++   -v -o CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/c++]
+  ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa]
+  ignore line: [OFFLOAD_TARGET_DEFAULT=1]
+  ignore line: [Target: x86_64-linux-gnu]
+  ignore line: [Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c ada c++ go brig d fortran objc obj-c++ m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32 m64 mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2]
+  ignore line: [Thread model: posix]
+  ignore line: [Supported LTO compression algorithms: zlib zstd]
+  ignore line: [gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_b4cac.dir/']
+  ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/11/cc1plus -quiet -v -imultiarch x86_64-linux-gnu -D_GNU_SOURCE /usr/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpdir CMakeFiles/cmTC_b4cac.dir/ -dumpbase CMakeCXXCompilerABI.cpp.cpp -dumpbase-ext .cpp -mtune=generic -march=x86-64 -version -fasynchronous-unwind-tables -fstack-protector-strong -Wformat -Wformat-security -fstack-clash-protection -fcf-protection -o /tmp/cct4ollt.s]
+  ignore line: [GNU C++17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)]
+  ignore line: [	compiled by GNU C version 11.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring duplicate directory "/usr/include/x86_64-linux-gnu/c++/11"]
+  ignore line: [ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"]
+  ignore line: [ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/include-fixed"]
+  ignore line: [ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/11/../../../../x86_64-linux-gnu/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /usr/include/c++/11]
+  ignore line: [ /usr/include/x86_64-linux-gnu/c++/11]
+  ignore line: [ /usr/include/c++/11/backward]
+  ignore line: [ /usr/lib/gcc/x86_64-linux-gnu/11/include]
+  ignore line: [ /usr/local/include]
+  ignore line: [ /usr/include/x86_64-linux-gnu]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C++17 (Ubuntu 11.4.0-1ubuntu1~22.04) version 11.4.0 (x86_64-linux-gnu)]
+  ignore line: [	compiled by GNU C version 11.4.0  GMP version 6.2.1  MPFR version 4.1.0  MPC version 1.2.1  isl version isl-0.24-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: d591828bb4d392ae8b7b160e5bb0b95f]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_b4cac.dir/']
+  ignore line: [ as -v --64 -o CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o /tmp/cct4ollt.s]
+  ignore line: [GNU assembler version 2.38 (x86_64-linux-gnu) using BFD version (GNU Binutils for Ubuntu) 2.38]
+  ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.']
+  ignore line: [Linking CXX executable cmTC_b4cac]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b4cac.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/c++  -v CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_b4cac ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_GCC=/usr/bin/c++]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper]
+  ignore line: [OFFLOAD_TARGET_NAMES=nvptx-none:amdgcn-amdhsa]
+  ignore line: [OFFLOAD_TARGET_DEFAULT=1]
+  ignore line: [Target: x86_64-linux-gnu]
+  ignore line: [Configured with: ../src/configure -v --with-pkgversion='Ubuntu 11.4.0-1ubuntu1~22.04' --with-bugurl=file:///usr/share/doc/gcc-11/README.Bugs --enable-languages=c ada c++ go brig d fortran objc obj-c++ m2 --prefix=/usr --with-gcc-major-version-only --program-suffix=-11 --program-prefix=x86_64-linux-gnu- --enable-shared --enable-linker-build-id --libexecdir=/usr/lib --without-included-gettext --enable-threads=posix --libdir=/usr/lib --enable-nls --enable-bootstrap --enable-clocale=gnu --enable-libstdcxx-debug --enable-libstdcxx-time=yes --with-default-libstdcxx-abi=new --enable-gnu-unique-object --disable-vtable-verify --enable-plugin --enable-default-pie --with-system-zlib --enable-libphobos-checking=release --with-target-system-zlib=auto --enable-objc-gc=auto --enable-multiarch --disable-werror --enable-cet --with-arch-32=i686 --with-abi=m64 --with-multilib-list=m32 m64 mx32 --enable-multilib --with-tune=generic --enable-offload-targets=nvptx-none=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-nvptx/usr amdgcn-amdhsa=/build/gcc-11-XeT9lY/gcc-11-11.4.0/debian/tmp-gcn/usr --without-cuda-driver --enable-checking=release --build=x86_64-linux-gnu --host=x86_64-linux-gnu --target=x86_64-linux-gnu --with-build-config=bootstrap-lto-lean --enable-link-serialization=2]
+  ignore line: [Thread model: posix]
+  ignore line: [Supported LTO compression algorithms: zlib zstd]
+  ignore line: [gcc version 11.4.0 (Ubuntu 11.4.0-1ubuntu1~22.04) ]
+  ignore line: [COMPILER_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/]
+  ignore line: [LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/11/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/11/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_b4cac' '-shared-libgcc' '-mtune=generic' '-march=x86-64' '-dumpdir' 'cmTC_b4cac.']
+  link line: [ /usr/lib/gcc/x86_64-linux-gnu/11/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/11/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper -plugin-opt=-fresolution=/tmp/ccA2LUyd.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -z relro -o cmTC_b4cac /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/11 -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/11/../../.. CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/11/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccA2LUyd.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_b4cac] ==> ignore
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib]
+    arg [-L/lib/x86_64-linux-gnu] ==> dir [/lib/x86_64-linux-gnu]
+    arg [-L/lib/../lib] ==> dir [/lib/../lib]
+    arg [-L/usr/lib/x86_64-linux-gnu] ==> dir [/usr/lib/x86_64-linux-gnu]
+    arg [-L/usr/lib/../lib] ==> dir [/usr/lib/../lib]
+    arg [-L/usr/lib/gcc/x86_64-linux-gnu/11/../../..] ==> dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../..]
+    arg [CMakeFiles/cmTC_b4cac.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o]
+    arg [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o] ==> obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o]
+  collapse obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/Scrt1.o] ==> [/usr/lib/x86_64-linux-gnu/Scrt1.o]
+  collapse obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crti.o] ==> [/usr/lib/x86_64-linux-gnu/crti.o]
+  collapse obj [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu/crtn.o] ==> [/usr/lib/x86_64-linux-gnu/crtn.o]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11] ==> [/usr/lib/gcc/x86_64-linux-gnu/11]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../../../lib] ==> [/usr/lib]
+  collapse library dir [/lib/x86_64-linux-gnu] ==> [/lib/x86_64-linux-gnu]
+  collapse library dir [/lib/../lib] ==> [/lib]
+  collapse library dir [/usr/lib/x86_64-linux-gnu] ==> [/usr/lib/x86_64-linux-gnu]
+  collapse library dir [/usr/lib/../lib] ==> [/usr/lib]
+  collapse library dir [/usr/lib/gcc/x86_64-linux-gnu/11/../../..] ==> [/usr/lib]
+  implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
+  implicit objs: [/usr/lib/x86_64-linux-gnu/Scrt1.o;/usr/lib/x86_64-linux-gnu/crti.o;/usr/lib/gcc/x86_64-linux-gnu/11/crtbeginS.o;/usr/lib/gcc/x86_64-linux-gnu/11/crtendS.o;/usr/lib/x86_64-linux-gnu/crtn.o]
+  implicit dirs: [/usr/lib/gcc/x86_64-linux-gnu/11;/usr/lib/x86_64-linux-gnu;/usr/lib;/lib/x86_64-linux-gnu;/lib]
+  implicit fwks: []
+
+
+Determining if the include file filesystem exists passed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_3a21c/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_3a21c.dir/build.make CMakeFiles/cmTC_3a21c.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_3a21c.dir/CheckIncludeFile.cxx.o
+/usr/bin/c++   -std=c++17 -std=c++17 -o CMakeFiles/cmTC_3a21c.dir/CheckIncludeFile.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/CheckIncludeFile.cxx
+Linking CXX executable cmTC_3a21c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3a21c.dir/link.txt --verbose=1
+/usr/bin/c++  -std=c++17 CMakeFiles/cmTC_3a21c.dir/CheckIncludeFile.cxx.o -o cmTC_3a21c 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+
+Performing C++ SOURCE FILE Test CXX_FILESYSTEM_NO_LINK_NEEDED succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_946a3/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_946a3.dir/build.make CMakeFiles/cmTC_946a3.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_946a3.dir/src.cxx.o
+/usr/bin/c++ -DCXX_FILESYSTEM_NO_LINK_NEEDED  -std=c++17 -std=c++17 -o CMakeFiles/cmTC_946a3.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_946a3
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_946a3.dir/link.txt --verbose=1
+/usr/bin/c++  -std=c++17 CMakeFiles/cmTC_946a3.dir/src.cxx.o -o cmTC_946a3 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+        #include <filesystem>
+
+        int main() {
+            auto cwd = std::filesystem::current_path();
+            return static_cast<int>(cwd.string().size());
+        }
+    
+Performing C++ SOURCE FILE Test HAVE_CX_LIMITED_RANGE succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_03251/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_03251.dir/build.make CMakeFiles/cmTC_03251.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_03251.dir/src.cxx.o
+/usr/bin/c++ -DHAVE_CX_LIMITED_RANGE  -fcx-limited-range -std=c++20 -o CMakeFiles/cmTC_03251.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_03251
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_03251.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_03251.dir/src.cxx.o -o cmTC_03251 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C SOURCE FILE Test HAVE_C_LIMITED_RANGE succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d478d/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_d478d.dir/build.make CMakeFiles/cmTC_d478d.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d478d.dir/src.c.o
+/usr/bin/cc -DHAVE_C_LIMITED_RANGE  -fcx-limited-range -o CMakeFiles/cmTC_d478d.dir/src.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_d478d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d478d.dir/link.txt --verbose=1
+/usr/bin/cc CMakeFiles/cmTC_d478d.dir/src.c.o -o cmTC_d478d 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main(void) { return 0; }
+Determining if the aligned_alloc exist passed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_15a88/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_15a88.dir/build.make CMakeFiles/cmTC_15a88.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_15a88.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -fcx-limited-range -Wall    -o CMakeFiles/cmTC_15a88.dir/CheckSymbolExists.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_15a88
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_15a88.dir/link.txt --verbose=1
+/usr/bin/cc  -fcx-limited-range -Wall    CMakeFiles/cmTC_15a88.dir/CheckSymbolExists.c.o -o cmTC_15a88 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+File /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <stdlib.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef aligned_alloc
+  return ((int*)(&aligned_alloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the include file cpuid.h exists passed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d7b07/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_d7b07.dir/build.make CMakeFiles/cmTC_d7b07.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d7b07.dir/CheckIncludeFile.c.o
+/usr/bin/cc   -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  -o CMakeFiles/cmTC_d7b07.dir/CheckIncludeFile.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_d7b07
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d7b07.dir/link.txt --verbose=1
+/usr/bin/cc  -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  CMakeFiles/cmTC_d7b07.dir/CheckIncludeFile.c.o -o cmTC_d7b07 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file fenv.h exists passed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d3ac9/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_d3ac9.dir/build.make CMakeFiles/cmTC_d3ac9.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d3ac9.dir/CheckIncludeFile.c.o
+/usr/bin/cc   -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  -o CMakeFiles/cmTC_d3ac9.dir/CheckIncludeFile.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_d3ac9
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d3ac9.dir/link.txt --verbose=1
+/usr/bin/cc  -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  CMakeFiles/cmTC_d3ac9.dir/CheckIncludeFile.c.o -o cmTC_d3ac9 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+
+Determining if the include file dlfcn.h exists passed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d4b8d/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_d4b8d.dir/build.make CMakeFiles/cmTC_d4b8d.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d4b8d.dir/CheckIncludeFile.c.o
+/usr/bin/cc   -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  -o CMakeFiles/cmTC_d4b8d.dir/CheckIncludeFile.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/CheckIncludeFile.c
+Linking C executable cmTC_d4b8d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d4b8d.dir/link.txt --verbose=1
+/usr/bin/cc  -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  CMakeFiles/cmTC_d4b8d.dir/CheckIncludeFile.c.o -o cmTC_d4b8d 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+
+Performing C++ SOURCE FILE Test have_funsafe_math_optimizations succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_10ceb/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_10ceb.dir/build.make CMakeFiles/cmTC_10ceb.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_10ceb.dir/src.cxx.o
+/usr/bin/c++ -Dhave_funsafe_math_optimizations  -fcx-limited-range  -Wall -Wextra -Wall    -funsafe-math-optimizations -std=c++20 -o CMakeFiles/cmTC_10ceb.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_10ceb
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_10ceb.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_10ceb.dir/src.cxx.o -o cmTC_10ceb 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_m64 succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_80155/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_80155.dir/build.make CMakeFiles/cmTC_80155.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_80155.dir/src.cxx.o
+/usr/bin/c++ -Dhave_m64  -fcx-limited-range  -Wall -Wextra -Wall    -m64 -std=c++20 -o CMakeFiles/cmTC_80155.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_80155
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_80155.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_80155.dir/src.cxx.o -o cmTC_80155 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_m3dnow succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ebc9d/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_ebc9d.dir/build.make CMakeFiles/cmTC_ebc9d.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_ebc9d.dir/src.cxx.o
+/usr/bin/c++ -Dhave_m3dnow  -fcx-limited-range  -Wall -Wextra -Wall    -m3dnow -std=c++20 -o CMakeFiles/cmTC_ebc9d.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_ebc9d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ebc9d.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_ebc9d.dir/src.cxx.o -o cmTC_ebc9d 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_msse4_2 succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_86253/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_86253.dir/build.make CMakeFiles/cmTC_86253.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_86253.dir/src.cxx.o
+/usr/bin/c++ -Dhave_msse4_2  -fcx-limited-range  -Wall -Wextra -Wall    -msse4.2 -std=c++20 -o CMakeFiles/cmTC_86253.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_86253
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_86253.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_86253.dir/src.cxx.o -o cmTC_86253 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mpopcnt succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_25623/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_25623.dir/build.make CMakeFiles/cmTC_25623.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_25623.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mpopcnt  -fcx-limited-range  -Wall -Wextra -Wall    -mpopcnt -std=c++20 -o CMakeFiles/cmTC_25623.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_25623
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_25623.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_25623.dir/src.cxx.o -o cmTC_25623 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mmmx succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_acfd4/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_acfd4.dir/build.make CMakeFiles/cmTC_acfd4.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_acfd4.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mmmx  -fcx-limited-range  -Wall -Wextra -Wall    -mmmx -std=c++20 -o CMakeFiles/cmTC_acfd4.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_acfd4
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_acfd4.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_acfd4.dir/src.cxx.o -o cmTC_acfd4 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mfma succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_0eca3/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_0eca3.dir/build.make CMakeFiles/cmTC_0eca3.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_0eca3.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mfma  -fcx-limited-range  -Wall -Wextra -Wall    -mfma -std=c++20 -o CMakeFiles/cmTC_0eca3.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_0eca3
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0eca3.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_0eca3.dir/src.cxx.o -o cmTC_0eca3 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_msse succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_142e2/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_142e2.dir/build.make CMakeFiles/cmTC_142e2.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_142e2.dir/src.cxx.o
+/usr/bin/c++ -Dhave_msse  -fcx-limited-range  -Wall -Wextra -Wall    -msse -std=c++20 -o CMakeFiles/cmTC_142e2.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_142e2
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_142e2.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_142e2.dir/src.cxx.o -o cmTC_142e2 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_msse2 succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_541ce/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_541ce.dir/build.make CMakeFiles/cmTC_541ce.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_541ce.dir/src.cxx.o
+/usr/bin/c++ -Dhave_msse2  -fcx-limited-range  -Wall -Wextra -Wall    -msse2 -std=c++20 -o CMakeFiles/cmTC_541ce.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_541ce
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_541ce.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_541ce.dir/src.cxx.o -o cmTC_541ce 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_msse3 succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a10ea/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_a10ea.dir/build.make CMakeFiles/cmTC_a10ea.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a10ea.dir/src.cxx.o
+/usr/bin/c++ -Dhave_msse3  -fcx-limited-range  -Wall -Wextra -Wall    -msse3 -std=c++20 -o CMakeFiles/cmTC_a10ea.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_a10ea
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a10ea.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_a10ea.dir/src.cxx.o -o cmTC_a10ea 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mssse3 succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_7576e/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_7576e.dir/build.make CMakeFiles/cmTC_7576e.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_7576e.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mssse3  -fcx-limited-range  -Wall -Wextra -Wall    -mssse3 -std=c++20 -o CMakeFiles/cmTC_7576e.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_7576e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7576e.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_7576e.dir/src.cxx.o -o cmTC_7576e 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_msse4a succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_7f3e9/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_7f3e9.dir/build.make CMakeFiles/cmTC_7f3e9.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_7f3e9.dir/src.cxx.o
+/usr/bin/c++ -Dhave_msse4a  -fcx-limited-range  -Wall -Wextra -Wall    -msse4a -std=c++20 -o CMakeFiles/cmTC_7f3e9.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_7f3e9
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7f3e9.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_7f3e9.dir/src.cxx.o -o cmTC_7f3e9 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_msse4_1 succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_62501/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_62501.dir/build.make CMakeFiles/cmTC_62501.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_62501.dir/src.cxx.o
+/usr/bin/c++ -Dhave_msse4_1  -fcx-limited-range  -Wall -Wextra -Wall    -msse4.1 -std=c++20 -o CMakeFiles/cmTC_62501.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_62501
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_62501.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_62501.dir/src.cxx.o -o cmTC_62501 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mavx succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_9f38f/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_9f38f.dir/build.make CMakeFiles/cmTC_9f38f.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_9f38f.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mavx  -fcx-limited-range  -Wall -Wextra -Wall    -mavx -std=c++20 -o CMakeFiles/cmTC_9f38f.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_9f38f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9f38f.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_9f38f.dir/src.cxx.o -o cmTC_9f38f 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mavx2 succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_f5243/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_f5243.dir/build.make CMakeFiles/cmTC_f5243.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_f5243.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mavx2  -fcx-limited-range  -Wall -Wextra -Wall    -mavx2 -std=c++20 -o CMakeFiles/cmTC_f5243.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_f5243
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f5243.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_f5243.dir/src.cxx.o -o cmTC_f5243 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mavx512f succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ca5a9/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_ca5a9.dir/build.make CMakeFiles/cmTC_ca5a9.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_ca5a9.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mavx512f  -fcx-limited-range  -Wall -Wextra -Wall    -mavx512f -std=c++20 -o CMakeFiles/cmTC_ca5a9.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_ca5a9
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ca5a9.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_ca5a9.dir/src.cxx.o -o cmTC_ca5a9 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test have_mavx512cd succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_c2a4e/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_c2a4e.dir/build.make CMakeFiles/cmTC_c2a4e.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_c2a4e.dir/src.cxx.o
+/usr/bin/c++ -Dhave_mavx512cd  -fcx-limited-range  -Wall -Wextra -Wall    -mavx512cd -std=c++20 -o CMakeFiles/cmTC_c2a4e.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_c2a4e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c2a4e.dir/link.txt --verbose=1
+/usr/bin/c++  -fcx-limited-range  -Wall -Wextra -Wall  CMakeFiles/cmTC_c2a4e.dir/src.cxx.o -o cmTC_c2a4e 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+int main() { return 0; }
+Determining size of void*[8] passed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_baba4/fast && gmake[3]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_baba4.dir/build.make CMakeFiles/cmTC_baba4.dir/build
+gmake[4]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_baba4.dir/SIZEOF_CPU.c.o
+/usr/bin/cc   -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  -o CMakeFiles/cmTC_baba4.dir/SIZEOF_CPU.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CheckTypeSize/SIZEOF_CPU.c
+Linking C executable cmTC_baba4
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_baba4.dir/link.txt --verbose=1
+/usr/bin/cc  -fcx-limited-range -Wall -Werror=incompatible-pointer-types -Werror=pointer-sign  CMakeFiles/cmTC_baba4.dir/SIZEOF_CPU.c.o -o cmTC_baba4 
+gmake[4]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+gmake[3]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/build/CMakeFiles/CMakeTmp'
+
+
+
+Checking whether the ASM compiler is GNU using "--version" matched "(GNU assembler)|(GCC)|(Free Software Foundation)":
+cc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0
+Copyright (C) 2021 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+

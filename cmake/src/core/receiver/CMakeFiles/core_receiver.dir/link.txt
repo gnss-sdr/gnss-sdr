@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcore_receiver.a CMakeFiles/core_receiver.dir/control_thread.cc.o CMakeFiles/core_receiver.dir/file_configuration.cc.o CMakeFiles/core_receiver.dir/gnss_block_factory.cc.o CMakeFiles/core_receiver.dir/gnss_flowgraph.cc.o CMakeFiles/core_receiver.dir/in_memory_configuration.cc.o CMakeFiles/core_receiver.dir/tcp_cmd_interface.cc.o
+/usr/bin/ranlib libcore_receiver.a

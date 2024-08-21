@@ -1,0 +1,2 @@
+/usr/bin/ar qc libacquisition_libs.a CMakeFiles/acquisition_libs.dir/acq_conf.cc.o
+/usr/bin/ranlib libacquisition_libs.a

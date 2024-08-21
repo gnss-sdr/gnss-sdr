@@ -1,0 +1,2 @@
+/usr/bin/ar qc libtelemetry_decoder_libswiftcnav.a CMakeFiles/telemetry_decoder_libswiftcnav.dir/bits.c.o CMakeFiles/telemetry_decoder_libswiftcnav.dir/cnav_msg.c.o CMakeFiles/telemetry_decoder_libswiftcnav.dir/edc.c.o CMakeFiles/telemetry_decoder_libswiftcnav.dir/viterbi27.c.o
+/usr/bin/ranlib libtelemetry_decoder_libswiftcnav.a

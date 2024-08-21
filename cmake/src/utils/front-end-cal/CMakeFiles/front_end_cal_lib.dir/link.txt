@@ -1,0 +1,2 @@
+/usr/bin/ar qc libfront_end_cal_lib.a CMakeFiles/front_end_cal_lib.dir/front_end_cal.cc.o
+/usr/bin/ranlib libfront_end_cal_lib.a

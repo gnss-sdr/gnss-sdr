@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdata_type_gr_blocks.a CMakeFiles/data_type_gr_blocks.dir/interleaved_byte_to_complex_byte.cc.o CMakeFiles/data_type_gr_blocks.dir/interleaved_byte_to_complex_short.cc.o CMakeFiles/data_type_gr_blocks.dir/interleaved_short_to_complex_short.cc.o
+/usr/bin/ranlib libdata_type_gr_blocks.a

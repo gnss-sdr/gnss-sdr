@@ -1,0 +1,13 @@
+# Target labels
+ volk_gnsssdr_module
+# Source files and their labels
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/volk_gnsssdr_module
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/volk_gnsssdr_module.rule
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/volk_gnsssdr_module-complete.rule
+/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-build.rule
+/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-configure.rule
+/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-download.rule
+/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-install.rule
+/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-mkdir.rule
+/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-patch.rule
+/home/juancho/GitHub/gnss-sdr/cmake/volk_gnsssdr_module/src/volk_gnsssdr_module-stamp/volk_gnsssdr_module-update.rule

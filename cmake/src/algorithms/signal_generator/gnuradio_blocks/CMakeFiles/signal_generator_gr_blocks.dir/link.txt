@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsignal_generator_gr_blocks.a CMakeFiles/signal_generator_gr_blocks.dir/signal_generator_c.cc.o
+/usr/bin/ranlib libsignal_generator_gr_blocks.a

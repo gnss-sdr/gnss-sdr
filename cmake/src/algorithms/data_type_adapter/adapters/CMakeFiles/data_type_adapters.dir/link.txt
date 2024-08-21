@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdata_type_adapters.a CMakeFiles/data_type_adapters.dir/byte_to_short.cc.o CMakeFiles/data_type_adapters.dir/ibyte_to_cbyte.cc.o CMakeFiles/data_type_adapters.dir/ibyte_to_complex.cc.o CMakeFiles/data_type_adapters.dir/ibyte_to_cshort.cc.o CMakeFiles/data_type_adapters.dir/ishort_to_complex.cc.o CMakeFiles/data_type_adapters.dir/ishort_to_cshort.cc.o
+/usr/bin/ranlib libdata_type_adapters.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsignal_source_libs.a CMakeFiles/signal_source_libs.dir/gnss_sdr_timestamp.cc.o CMakeFiles/signal_source_libs.dir/gnss_sdr_valve.cc.o CMakeFiles/signal_source_libs.dir/rtl_tcp_commands.cc.o CMakeFiles/signal_source_libs.dir/rtl_tcp_dongle_info.cc.o
+/usr/bin/ranlib libsignal_source_libs.a

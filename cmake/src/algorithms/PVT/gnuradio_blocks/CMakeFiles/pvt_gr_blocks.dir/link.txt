@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpvt_gr_blocks.a CMakeFiles/pvt_gr_blocks.dir/rtklib_pvt_gs.cc.o
+/usr/bin/ranlib libpvt_gr_blocks.a

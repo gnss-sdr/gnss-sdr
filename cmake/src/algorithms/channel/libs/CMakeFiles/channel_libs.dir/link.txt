@@ -1,0 +1,2 @@
+/usr/bin/ar qc libchannel_libs.a CMakeFiles/channel_libs.dir/channel_fsm.cc.o CMakeFiles/channel_libs.dir/channel_msg_receiver_cc.cc.o
+/usr/bin/ranlib libchannel_libs.a

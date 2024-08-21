@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpvt_adapters.a CMakeFiles/pvt_adapters.dir/rtklib_pvt.cc.o
+/usr/bin/ranlib libpvt_adapters.a

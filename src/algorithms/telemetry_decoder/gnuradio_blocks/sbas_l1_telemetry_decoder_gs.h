@@ -80,6 +80,15 @@ private:
     static const int32_t D_BLOCK_SIZE_IN_BITS = 30;
 
     bool d_dump;
+    bool d_flag_frame_sync;
+    bool d_flag_preamble;
+    bool d_sent_tlm_failed_msg;
+    bool d_flag_PLL_180_deg_phase_locked;
+    bool d_flag_TOW_set;
+    bool d_dump_mat;
+    bool d_remove_dat;
+    bool d_enable_navdata_monitor;
+    bool d_dump_crc_stats;
     Gnss_Satellite d_satellite;
     int32_t d_channel;
 

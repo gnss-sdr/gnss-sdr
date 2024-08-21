@@ -1,0 +1,426 @@
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_e5a96/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_e5a96.dir/build.make CMakeFiles/cmTC_e5a96.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_e5a96.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_e5a96.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_e5a96.dir/build.make:78: CMakeFiles/cmTC_e5a96.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_e5a96/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Determining if the CL_VERSION_2_2 exist failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ad33f/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_ad33f.dir/build.make CMakeFiles/cmTC_ad33f.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ad33f.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=gnu11 -o CMakeFiles/cmTC_ad33f.dir/CheckSymbolExists.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h: No such file or directory
+    2 | #include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_ad33f.dir/build.make:78: CMakeFiles/cmTC_ad33f.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_ad33f/fast] Error 2
+
+
+File /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_2_2
+  return ((int*)(&CL_VERSION_2_2))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_2_1 exist failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_1703c/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_1703c.dir/build.make CMakeFiles/cmTC_1703c.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_1703c.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=gnu11 -o CMakeFiles/cmTC_1703c.dir/CheckSymbolExists.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h: No such file or directory
+    2 | #include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_1703c.dir/build.make:78: CMakeFiles/cmTC_1703c.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_1703c/fast] Error 2
+
+
+File /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_2_1
+  return ((int*)(&CL_VERSION_2_1))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_2_0 exist failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_7b8d0/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_7b8d0.dir/build.make CMakeFiles/cmTC_7b8d0.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7b8d0.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=gnu11 -o CMakeFiles/cmTC_7b8d0.dir/CheckSymbolExists.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h: No such file or directory
+    2 | #include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_7b8d0.dir/build.make:78: CMakeFiles/cmTC_7b8d0.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_7b8d0/fast] Error 2
+
+
+File /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_2_0
+  return ((int*)(&CL_VERSION_2_0))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_1_2 exist failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_35c71/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_35c71.dir/build.make CMakeFiles/cmTC_35c71.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_35c71.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=gnu11 -o CMakeFiles/cmTC_35c71.dir/CheckSymbolExists.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h: No such file or directory
+    2 | #include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_35c71.dir/build.make:78: CMakeFiles/cmTC_35c71.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_35c71/fast] Error 2
+
+
+File /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_1_2
+  return ((int*)(&CL_VERSION_1_2))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_1_1 exist failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_7dbcd/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_7dbcd.dir/build.make CMakeFiles/cmTC_7dbcd.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7dbcd.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=gnu11 -o CMakeFiles/cmTC_7dbcd.dir/CheckSymbolExists.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h: No such file or directory
+    2 | #include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_7dbcd.dir/build.make:78: CMakeFiles/cmTC_7dbcd.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_7dbcd/fast] Error 2
+
+
+File /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_1_1
+  return ((int*)(&CL_VERSION_1_1))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the CL_VERSION_1_0 exist failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_ce06a/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_ce06a.dir/build.make CMakeFiles/cmTC_ce06a.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ce06a.dir/CheckSymbolExists.c.o
+/usr/bin/cc   -std=gnu11 -o CMakeFiles/cmTC_ce06a.dir/CheckSymbolExists.c.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:2:10: fatal error: OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h: No such file or directory
+    2 | #include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_ce06a.dir/build.make:78: CMakeFiles/cmTC_ce06a.dir/CheckSymbolExists.c.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_ce06a/fast] Error 2
+
+
+File /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <OPENCL_INCLUDE_DIR-NOTFOUND/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_1_0
+  return ((int*)(&CL_VERSION_1_0))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b97ff/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_b97ff.dir/build.make CMakeFiles/cmTC_b97ff.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_b97ff.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_b97ff.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_b97ff.dir/build.make:78: CMakeFiles/cmTC_b97ff.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_b97ff/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_53940/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_53940.dir/build.make CMakeFiles/cmTC_53940.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_53940.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_53940.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_53940.dir/build.make:78: CMakeFiles/cmTC_53940.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_53940/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_13153/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_13153.dir/build.make CMakeFiles/cmTC_13153.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_13153.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_13153.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_13153.dir/build.make:78: CMakeFiles/cmTC_13153.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_13153/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d6972/fast && gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_d6972.dir/build.make CMakeFiles/cmTC_d6972.dir/build
+gmake[2]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_d6972.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_d6972.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[2]: *** [CMakeFiles/cmTC_d6972.dir/build.make:78: CMakeFiles/cmTC_d6972.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake[1]: *** [Makefile:127: cmTC_d6972/fast] Error 2
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_160cb/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_160cb.dir/build.make CMakeFiles/cmTC_160cb.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_160cb.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_160cb.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_160cb.dir/build.make:78: CMakeFiles/cmTC_160cb.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_160cb/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d695e/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_d695e.dir/build.make CMakeFiles/cmTC_d695e.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_d695e.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_d695e.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_d695e.dir/build.make:78: CMakeFiles/cmTC_d695e.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_d695e/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_1462a/fast && gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_1462a.dir/build.make CMakeFiles/cmTC_1462a.dir/build
+gmake[2]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_1462a.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_1462a.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[2]: *** [CMakeFiles/cmTC_1462a.dir/build.make:78: CMakeFiles/cmTC_1462a.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake[1]: *** [Makefile:127: cmTC_1462a/fast] Error 2
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_82f0b/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_82f0b.dir/build.make CMakeFiles/cmTC_82f0b.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_82f0b.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_82f0b.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_82f0b.dir/build.make:78: CMakeFiles/cmTC_82f0b.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_82f0b/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a3515/fast && gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_a3515.dir/build.make CMakeFiles/cmTC_a3515.dir/build
+gmake[2]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a3515.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_a3515.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[2]: *** [CMakeFiles/cmTC_a3515.dir/build.make:78: CMakeFiles/cmTC_a3515.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake[1]: *** [Makefile:127: cmTC_a3515/fast] Error 2
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }

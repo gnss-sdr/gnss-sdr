@@ -1,0 +1,2 @@
+/usr/bin/ar qc libobs_gr_blocks.a CMakeFiles/obs_gr_blocks.dir/hybrid_observables_gs.cc.o
+/usr/bin/ranlib libobs_gr_blocks.a

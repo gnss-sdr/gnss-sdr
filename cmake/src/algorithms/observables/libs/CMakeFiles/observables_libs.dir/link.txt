@@ -1,0 +1,2 @@
+/usr/bin/ar qc libobservables_libs.a CMakeFiles/observables_libs.dir/obs_conf.cc.o
+/usr/bin/ranlib libobservables_libs.a

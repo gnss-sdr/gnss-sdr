@@ -107,7 +107,6 @@ private:
     double tx_attenuation_db_;
 
     uint64_t freq0_;  // frequency of local oscillator for ADRV9361-A 0
-    uint64_t freq1_;  // frequency of local oscillator for ADRV9361-B (if present)
     uint64_t sample_rate_;
     uint64_t bandwidth_;
     uint64_t freq_dds_tx_hz_;
@@ -122,7 +121,6 @@ private:
     size_t item_size_;
 
     bool enable_dds_lo_;
-    bool filter_auto_;
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;

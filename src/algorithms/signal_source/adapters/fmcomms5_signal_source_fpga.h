@@ -1,6 +1,6 @@
 /*!
  * \file fmcomms5_signal_source_fpga.h
- * \brief signal source for the Analog Devices FMCOMMS5 directly connected
+ * \brief Signal source for the Analog Devices FMCOMMS5 directly connected
  * to the FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with
  * conventional SDR acquisition and tracking blocks.
@@ -67,7 +67,6 @@ private:
     const std::string default_dump_filename = std::string("FPGA_buffer_monitor_dump.dat");
     const std::string default_rf_port_select = std::string("A_BALANCED");
     const std::string default_gain_mode = std::string("slow_attack");
-    const double default_tx_attenuation_db = -10.0;
     const double default_manual_gain_rx1 = 64.0;
     const double default_manual_gain_rx2 = 64.0;
     const uint64_t default_bandwidth = 12500000;
@@ -78,12 +77,13 @@ private:
     const uint32_t buffer_monitor_period_ms = 1000;
     // buffer overflow and buffer monitoring initial delay
     const uint32_t buffer_monitoring_initial_delay_ms = 2000;
-    // sample block size when running in post-processing mode
-    const int sample_block_size = 16384;
     const int32_t switch_to_real_time_mode = 2;
 
     void run_dynamic_bit_selection_process();
     void run_buffer_monitor_process();
+
+    mutable std::mutex dynamic_bit_selection_mutex;
+    mutable std::mutex buffer_monitor_mutex;
 
     std::thread thread_dynamic_bit_selection;
     std::thread thread_buffer_monitor;
@@ -91,9 +91,6 @@ private:
     std::shared_ptr<Fpga_Switch> switch_fpga;
     std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
     std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
-
-    std::mutex dynamic_bit_selection_mutex;
-    std::mutex buffer_monitor_mutex;
 
     std::string gain_mode_rx1_;
     std::string gain_mode_rx2_;

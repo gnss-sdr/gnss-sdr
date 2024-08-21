@@ -14,8 +14,8 @@
  * -----------------------------------------------------------------------------
  */
 
-#ifndef GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H
-#define GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H
+#ifndef GNSS_SDR_ION_GSMS_H
+#define GNSS_SDR_ION_GSMS_H
 
 #include "gnss_block_interface.h"
 #include "gnss_sdr_filesystem.h"
@@ -23,7 +23,6 @@
 #include <gnuradio/block.h>
 #include <gnuradio/sync_block.h>
 #include <cstddef>
-#include <cstdio>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -31,7 +30,7 @@
 
 /** \addtogroup Signal_Source
  * \{ */
-/** \addtogroup Signal_Source_libs
+/** \addtogroup Signal_Source_gnuradio_blocks
  * \{ */
 
 class IONGSMSFileSource : public gr::sync_block
@@ -72,4 +71,4 @@ private:
 
 /** \} */
 /** \} */
-#endif  // GNSS_SDR_ION_GNSS_SDR_METADATA_STANDARD_H
+#endif  // GNSS_SDR_ION_GSMS_H

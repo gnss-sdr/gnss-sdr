@@ -1,6 +1,7 @@
 /*!
  * \file ad936x_iio_custom.h
- * \brief A direct IIO custom front-end driver for the AD936x AD front-end family with special FPGA custom functionalities.
+ * \brief A direct IIO custom front-end driver for the AD936x AD front-end
+ * family with special FPGA custom functionalities.
  * \author Javier Arribas, jarribas(at)cttc.es
  * -----------------------------------------------------------------------------
  *
@@ -14,26 +15,26 @@
  */
 
 
-#ifndef SRC_LIBS_ad936x_iio_custom_H_
-#define SRC_LIBS_ad936x_iio_custom_H_
+#ifndef GNSS_SDR_AD936X_IIO_CUSTOM_H
+#define GNSS_SDR_AD936X_IIO_CUSTOM_H
 
+#include "ad936x_iio_samples.h"
 #include "concurrent_queue.h"
 #include "gnss_time.h"
 #include "pps_samplestamp.h"
 #include <boost/atomic.hpp>
+#include <iio.h>
+#include <ad9361.h>  // multichip sync and high level functions
 #include <memory>
 #include <string>
-
-#ifdef __APPLE__
-#include <iio/iio.h>
-#else
-#include <iio.h>
-#endif
-
-#include "ad936x_iio_samples.h"
-#include <ad9361.h>  // multichip sync and high level functions
 #include <thread>
 #include <vector>
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
+
 
 class ad936x_iio_custom
 {
@@ -121,10 +122,7 @@ private:
     struct iio_device *dds_dev;
 
     // stream
-
     uint64_t sample_rate_sps;
-
-
     int debug_level;
     int log_level;
     bool PPS_mode;
@@ -144,4 +142,6 @@ private:
     std::thread capture_time_thread;
 };
 
-#endif /* SRC_LIBS_ad936x_iio_custom_H_ */
+/** \} */
+/** \} */
+#endif  // GNSS_SDR_AD936X_IIO_CUSTOM_H

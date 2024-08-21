@@ -34,8 +34,8 @@ struct IONGSMSChunkUnpackingCtx
     static constexpr uint8_t word_bitsize_ = sizeof(WT) * 8;
 
     const GnssMetadata::Chunk::WordShift word_shift_direction_;
-    WT* iterator_;  // Not owned by this class, MUST NOT destroy
-    WT current_word_;
+    WT* iterator_ = nullptr;  // Not owned by this class, MUST NOT destroy
+    WT current_word_{};
     uint8_t bitshift_ = 0;
 
     IONGSMSChunkUnpackingCtx(
@@ -51,7 +51,10 @@ struct IONGSMSChunkUnpackingCtx
             {
                 iterator_ = &data_buffer[data_buffer_word_count];
             }
-        advance_word();  // Initializes current_word_
+        if (iterator_)
+            {
+                advance_word();  // Initializes current_word_
+            }
     }
 
     void advance_word()

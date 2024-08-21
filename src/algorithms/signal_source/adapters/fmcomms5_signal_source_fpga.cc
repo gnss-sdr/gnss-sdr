@@ -51,6 +51,7 @@ Fmcomms5SignalSourceFPGA::Fmcomms5SignalSourceFPGA(const ConfigurationInterface 
       gain_mode_rx1_(configuration->property(role + ".gain_mode_rx1", default_gain_mode)),
       gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", default_gain_mode)),
       rf_port_select_(configuration->property(role + ".rf_port_select", default_rf_port_select)),
+      filter_source_(configuration->property(role + ".filter_source", std::string("Off"))),
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
       rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
       rf_gain_rx2_(configuration->property(role + ".gain_rx2", default_manual_gain_rx2)),
@@ -63,7 +64,6 @@ Fmcomms5SignalSourceFPGA::Fmcomms5SignalSourceFPGA(const ConfigurationInterface 
       in_stream_(in_stream),
       out_stream_(out_stream),
       item_size_(sizeof(int8_t)),
-      filter_auto_(configuration->property(role + ".filter_auto", false)),
       quadrature_(configuration->property(role + ".quadrature", true)),
       rf_dc_(configuration->property(role + ".rf_dc", true)),
       bb_dc_(configuration->property(role + ".bb_dc", true)),
@@ -85,15 +85,6 @@ Fmcomms5SignalSourceFPGA::Fmcomms5SignalSourceFPGA(const ConfigurationInterface 
                                (configuration->property("Channels_5X.count", 0) > 0));
 
     const uint32_t num_freq_bands = ((enable_rx1_band == true) and (enable_rx2_band == true)) ? 2 : 1;
-
-    if (filter_auto_)
-        {
-            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
-        }
-    else
-        {
-            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
-        }
 
     switch_fpga = std::make_shared<Fpga_Switch>();
     switch_fpga->set_switch_position(switch_to_real_time_mode);

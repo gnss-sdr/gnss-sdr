@@ -51,6 +51,7 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
       gain_mode_rx1_(configuration->property(role + ".gain_mode_rx1", default_gain_mode)),
       gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", default_gain_mode)),
       rf_port_select_(configuration->property(role + ".rf_port_select", default_rf_port_select)),
+      filter_source_(configuration->property(role + ".filter_source", std::string("Off"))),
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
       rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
       rf_gain_rx2_(configuration->property(role + ".gain_rx2", default_manual_gain_rx2)),
@@ -58,7 +59,6 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
       phase_dds_deg_(configuration->property(role + ".phase_dds_deg", 0.0)),
       tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db)),
       freq0_(configuration->property(role + ".freq", 0)),
-      freq1_(configuration->property(role + ".freq1", static_cast<uint64_t>(GPS_L5_FREQ_HZ))),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
       bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),
       freq_dds_tx_hz_(configuration->property(role + ".freq_dds_tx_hz", uint64_t(10000))),
@@ -70,7 +70,6 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
       out_stream_(out_stream),
       item_size_(sizeof(int8_t)),
       enable_dds_lo_(configuration->property(role + ".enable_dds_lo", false)),
-      filter_auto_(configuration->property(role + ".filter_auto", false)),
       quadrature_(configuration->property(role + ".quadrature", true)),
       rf_dc_(configuration->property(role + ".rf_dc", true)),
       bb_dc_(configuration->property(role + ".bb_dc", true)),
@@ -96,15 +95,6 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
         {
             // use ".freq0"
             freq0_ = configuration->property(role + ".freq0", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
-        }
-
-    if (filter_auto_)
-        {
-            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
-        }
-    else
-        {
-            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
         }
 
     switch_fpga = std::make_shared<Fpga_Switch>();
@@ -190,12 +180,15 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
         }
 
     std::cout << "LO frequency : " << freq0_ << " Hz\n";
+
+    uint64_t freq1 = 0;  // The local oscillator frequency of the ADRV9361-B is not used when using the ADRV9361-Z7035 board.
+
     try
         {
             config_ad9361_rx_local(bandwidth_,
                 sample_rate_,
                 freq0_,
-                freq1_,
+                freq1,
                 rf_port_select_,
                 rx1_enable_,
                 rx2_enable_,

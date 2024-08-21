@@ -114,7 +114,6 @@ private:
 
     size_t item_size_;
 
-    bool filter_auto_;
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;

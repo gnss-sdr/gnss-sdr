@@ -179,10 +179,8 @@ int IONGSMSFileSource::work(
     while (io_buffer_offset_ < bytes_to_read)
         {
             // Iterate chunks within a chunk cycle
-            for (auto& c : chunk_data_)
+            for (auto& chunk : chunk_data_)
                 {
-                    auto* chunk = c.get();
-
                     // Copy chunk into a separate buffer where the samples will be shifted from.
                     const std::size_t bytes_copied = chunk->read_from_buffer(reinterpret_cast<uint8_t*>(io_buffer_.data()), io_buffer_offset_);
 

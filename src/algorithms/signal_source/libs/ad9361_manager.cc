@@ -349,7 +349,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
 #ifndef LIBAD9361_VERSION_GREATER_THAN_01
     if (filter_source_ == "Design")
         {
-            std::cout << "Option filter_source=Design is not available in this version. Set to filter_source=Off\n";
+            std::cout << "Option filter_source=Design is not available in this version of libad9361. Set to filter_source=Off\n";
             filter_source_ = std::string("Off");
         }
     if (Fpass_ != 0.0 or Fstop_ != 0.0)

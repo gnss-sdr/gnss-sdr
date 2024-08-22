@@ -20,6 +20,7 @@
 #include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/copy.h>
 #include <cstdlib>
+#include <iostream>
 #include <unordered_set>
 
 #if USE_GLOG_AND_GFLAGS
@@ -30,6 +31,8 @@
 
 using namespace std::string_literals;
 
+namespace
+{
 std::vector<std::string> parse_comma_list(const std::string& str)
 {
     std::vector<std::string> list{};
@@ -48,6 +51,7 @@ std::vector<std::string> parse_comma_list(const std::string& str)
 
     return list;
 }
+}  // anonymous namespace
 
 
 IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configuration,
@@ -80,8 +84,8 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
         {
             for (std::size_t i = 0; i < source->output_stream_count(); ++i)
                 {
-                    copy_blocks_.push_back(gr::blocks::copy::make(source->output_stream_item_size(i)));
-                    valves_.push_back(gnss_sdr_make_valve(source->output_stream_item_size(i), source->output_stream_total_sample_count(i), queue));
+                    copy_blocks_.emplace_back(gr::blocks::copy::make(source->output_stream_item_size(i)));
+                    valves_.emplace_back(gnss_sdr_make_valve(source->output_stream_item_size(i), source->output_stream_total_sample_count(i), queue));
                 }
         }
 }
@@ -89,10 +93,11 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
 
 void IONGSMSSignalSource::load_metadata()
 {
+    metadata_ = std::make_shared<GnssMetadata::Metadata>();
     try
         {
             GnssMetadata::XmlProcessor xml_proc;
-            if (!xml_proc.Load(metadata_filepath_.c_str(), false, metadata_))
+            if (!xml_proc.Load(metadata_filepath_.c_str(), false, *metadata_))
                 {
                     LOG(WARNING) << "Could not load XML metadata file " << metadata_filepath_;
                     std::cerr << "Could not load XML metadata file " << metadata_filepath_ << std::endl;
@@ -120,9 +125,9 @@ void IONGSMSSignalSource::load_metadata()
 std::vector<IONGSMSFileSource::sptr> IONGSMSSignalSource::make_stream_sources(const std::vector<std::string>& stream_ids) const
 {
     std::vector<IONGSMSFileSource::sptr> sources{};
-    for (const auto& file : metadata_.Files())
+    for (const auto& file : metadata_->Files())
         {
-            for (const auto& lane : metadata_.Lanes())
+            for (const auto& lane : metadata_->Lanes())
                 {
                     if (lane.Id() == file.Lane().Id())
                         {

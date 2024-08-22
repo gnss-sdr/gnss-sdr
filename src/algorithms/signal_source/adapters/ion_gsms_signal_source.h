@@ -24,6 +24,7 @@
 #include "ion_gsms.h"
 #include <GnssMetadata.h>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -69,7 +70,7 @@ private:
     std::vector<gnss_shared_ptr<gr::block>> valves_;
 
     std::string metadata_filepath_;
-    GnssMetadata::Metadata metadata_;
+    std::shared_ptr<GnssMetadata::Metadata> metadata_;
 
     gnss_shared_ptr<Gnss_Sdr_Timestamp> timestamp_block_;
     std::string timestamp_file_;

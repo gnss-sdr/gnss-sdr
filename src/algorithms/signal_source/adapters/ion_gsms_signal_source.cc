@@ -30,6 +30,8 @@
 
 using namespace std::string_literals;
 
+namespace
+{
 std::vector<std::string> parse_comma_list(const std::string& str)
 {
     std::vector<std::string> list{};
@@ -48,6 +50,7 @@ std::vector<std::string> parse_comma_list(const std::string& str)
 
     return list;
 }
+}  // anonymous namespace
 
 
 IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configuration,
@@ -80,8 +83,8 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
         {
             for (std::size_t i = 0; i < source->output_stream_count(); ++i)
                 {
-                    copy_blocks_.push_back(gr::blocks::copy::make(source->output_stream_item_size(i)));
-                    valves_.push_back(gnss_sdr_make_valve(source->output_stream_item_size(i), source->output_stream_total_sample_count(i), queue));
+                    copy_blocks_.emplace_back(gr::blocks::copy::make(source->output_stream_item_size(i)));
+                    valves_.emplace_back(gnss_sdr_make_valve(source->output_stream_item_size(i), source->output_stream_total_sample_count(i), queue));
                 }
         }
 }

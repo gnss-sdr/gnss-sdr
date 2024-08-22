@@ -20,6 +20,7 @@
 #include "gnss_sdr_valve.h"
 #include <gnuradio/blocks/copy.h>
 #include <cstdlib>
+#include <iostream>
 #include <unordered_set>
 
 #if USE_GLOG_AND_GFLAGS
@@ -92,10 +93,11 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
 
 void IONGSMSSignalSource::load_metadata()
 {
+    metadata_ = std::make_shared<GnssMetadata::Metadata>();
     try
         {
             GnssMetadata::XmlProcessor xml_proc;
-            if (!xml_proc.Load(metadata_filepath_.c_str(), false, metadata_))
+            if (!xml_proc.Load(metadata_filepath_.c_str(), false, *metadata_))
                 {
                     LOG(WARNING) << "Could not load XML metadata file " << metadata_filepath_;
                     std::cerr << "Could not load XML metadata file " << metadata_filepath_ << std::endl;
@@ -123,9 +125,9 @@ void IONGSMSSignalSource::load_metadata()
 std::vector<IONGSMSFileSource::sptr> IONGSMSSignalSource::make_stream_sources(const std::vector<std::string>& stream_ids) const
 {
     std::vector<IONGSMSFileSource::sptr> sources{};
-    for (const auto& file : metadata_.Files())
+    for (const auto& file : metadata_->Files())
         {
-            for (const auto& lane : metadata_.Lanes())
+            for (const auto& lane : metadata_->Lanes())
                 {
                     if (lane.Id() == file.Lane().Id())
                         {

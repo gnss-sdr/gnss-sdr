@@ -21,6 +21,11 @@ if(ENABLE_PLUTOSDR)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_iio_source.h)
 endif()
 
+if(ENABLE_ION)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ion_gsms.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ion_gsms.h)
+endif()
+
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     fifo_reader.cc
     unpack_byte_2bit_samples.cc

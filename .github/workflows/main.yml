@@ -28,7 +28,7 @@ jobs:
           libgnutls-openssl-dev libmatio-dev googletest protobuf-compiler libprotobuf-dev \
           python3-mako liborc-0.4-dev
       - name: configure
-        run: cd build && cmake -GNinja ..
+        run: cd build && cmake -GNinja -DENABLE_ION=ON ..
       - name: build
         run: cd build && ninja
       - name: check
@@ -60,7 +60,7 @@ jobs:
           brew install ninja hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf
           pip3 install mako
       - name: configure
-        run: cd build && cmake -GNinja ..
+        run: cd build && cmake -GNinja  -DENABLE_ION=ON ..
       - name: build
         run: cd build && ninja
       - name: check
@@ -92,7 +92,7 @@ jobs:
           brew install ninja pkg-config hdf5 automake armadillo lapack libmatio gnuradio openssl pugixml protobuf
           pip3 install mako          
       - name: configure
-        run: cd build && cmake -GXcode ..
+        run: cd build && cmake -GXcode -DENABLE_ION=ON ..
       - name: build
         run: cd build && xcodebuild -configuration Release
       - name: check

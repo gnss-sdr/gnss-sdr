@@ -57,6 +57,8 @@ option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal 
 
 option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging, requires gr-zeromq" ON)
 
+option(ENABLE_ION "Enable ION GNSS-SDR Metadata Standard signal source" OFF)
+
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 
@@ -3356,6 +3358,60 @@ if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
 endif()
 
 
+################################################################################
+# ION GNSS-SDR Metadata Standard https://sdr.ion.org/ (OPTIONAL)
+################################################################################
+if(CMAKE_VERSION VERSION_LESS 3.14)
+    set(ENABLE_ION OFF)  # FetchContent_MakeAvailable is available from CMake 3.14
+endif()
+if(ENABLE_ION)
+    include(FetchContent)
+    set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+    FetchContent_Declare(
+        gnss_metadata_standard
+        GIT_REPOSITORY https://github.com/IonMetadataWorkingGroup/GNSS-Metadata-Standard
+        GIT_TAG 220d116e10db5e403e21b77a1fa25aa35feda198
+        SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
+        BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
+    )
+    FetchContent_MakeAvailable(gnss_metadata_standard)
+
+    if(NOT TARGET ION::ion)
+        add_library(ION::ion STATIC IMPORTED)
+        add_dependencies(ION::ion gnss_metadata_standard)
+        if(CMAKE_GENERATOR STREQUAL "Xcode")
+            set_target_properties(ION::ion PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION_DEBUG "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                IMPORTED_LOCATION_RELEASE "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Release/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                IMPORTED_LOCATION_RELWITHDEBINFO "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                IMPORTED_LOCATION_MINSIZEREL "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/source/api/inc"
+            )
+            set_property(TARGET ION::ion APPEND PROPERTY
+                INTERFACE_LINK_LIBRARIES
+                    "$<$<CONFIG:Debug>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:Release>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Release/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Release/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:RelWithDebInfo>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:MinSizeRel>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:NoOptWithASM>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:Coverage>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:O2WithASM>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:O3WithASM>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:ASAN>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+            )
+        else()
+            set_target_properties(ION::ion PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/source/api/inc"
+                INTERFACE_LINK_LIBRARIES "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            )
+        endif()
+    endif()
+endif()
+
 
 #####################################################################
 # Check signal sources related to FPGA only.
@@ -3669,6 +3725,7 @@ add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source
 add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
 add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
 add_feature_info(ENABLE_ZMQ ENABLE_ZMQ "Enables ZMQ_Signal_Source for GNU Radio ZeroMQ messages. Requires gr-zeromq.")
+add_feature_info(ENABLE_ION ENABLE_ION "Enables ION_GSMS_Signal_Source for the ION Metadata Standard.")
 add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
 add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
 add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")

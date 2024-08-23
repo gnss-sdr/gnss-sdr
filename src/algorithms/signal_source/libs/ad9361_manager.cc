@@ -636,7 +636,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
         {
             return false;
         }
-    if (setup_filter(std::move(filter_source_), bandwidth_, sample_rate_, freq_, rf_port_select_, ad9361_phy, rx_chan0, chn, 0, std::move(filter_filename_), Fpass_, Fstop_) == -1)
+    if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq_, rf_port_select_, ad9361_phy, rx_chan0, chn, 0, std::move(filter_filename_), Fpass_, Fstop_) == -1)
         {
             return false;
         }

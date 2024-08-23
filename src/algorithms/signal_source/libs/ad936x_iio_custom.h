@@ -41,15 +41,15 @@ class ad936x_iio_custom
 public:
     ad936x_iio_custom(int debug_level_, int log_level_);
     virtual ~ad936x_iio_custom();
-    bool initialize_device(std::string pluto_device_uri, std::string board_type);
+    bool initialize_device(const std::string &pluto_device_uri, const std::string &board_type);
 
     bool init_config_ad9361_rx(long long bandwidth_,
         long long sample_rate_,
         long long freq_,
-        std::string rf_port_select_,
-        std::string rf_filter,
-        std::string gain_mode_rx0_,
-        std::string gain_mode_rx1_,
+        const std::string &rf_port_select_,
+        const std::string &rf_filter,
+        const std::string &gain_mode_rx0_,
+        const std::string &gain_mode_rx1_,
         double rf_gain_rx0_,
         double rf_gain_rx1_,
         bool enable_ch0,
@@ -62,7 +62,7 @@ public:
     bool calibrate(int ch, double bw_hz);
 
     double get_rx_gain(int ch_num);
-    bool setRXGain(int ch_num, std::string gain_mode, double gain_dB);
+    bool setRXGain(int ch_num, const std::string &gain_mode, double gain_dB);
 
     bool set_antenna_port(int ch, int antenna_idx);
     double get_frequency(int ch);
@@ -94,9 +94,9 @@ private:
         unsigned long long frequency,
         unsigned long samplerate, unsigned long bandwidth,
         bool quadrature, bool rfdc, bool bbdc,
-        std::string gain1, double gain1_value,
-        std::string gain2, double gain2_value,
-        std::string port_select);
+        const std::string &gain1, double gain1_value,
+        const std::string &gain2, double gain2_value,
+        const std::string &port_select);
 
     bool config_ad9361_dds(uint64_t freq_rf_tx_hz_,
         double tx_attenuation_db_,
@@ -108,7 +108,7 @@ private:
     void get_PPS_timestamp();
     void capture(const std::vector<std::string> &channels);
 
-    bool select_rf_filter(std::string rf_filter);
+    bool select_rf_filter(const std::string &rf_filter);
 
     void monitor_thread_fn();
 
@@ -120,12 +120,6 @@ private:
     struct iio_device *phy;
     struct iio_device *stream_dev;
     struct iio_device *dds_dev;
-
-    // stream
-    uint64_t sample_rate_sps;
-    int debug_level;
-    int log_level;
-    bool PPS_mode;
 
     std::mutex mtx;
     std::condition_variable cv;
@@ -140,6 +134,12 @@ private:
     std::thread capture_samples_thread;
     std::thread overflow_monitor_thread;
     std::thread capture_time_thread;
+
+    // stream
+    uint64_t sample_rate_sps;
+    int debug_level;
+    int log_level;
+    bool PPS_mode;
 };
 
 /** \} */

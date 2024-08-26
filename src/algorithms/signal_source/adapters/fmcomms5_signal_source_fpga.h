@@ -23,7 +23,6 @@
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
-#include "fpga_dma-proxy.h"
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"

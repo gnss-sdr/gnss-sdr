@@ -58,7 +58,7 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
       scale_dds_dbfs_(configuration->property(role + ".scale_dds_dbfs", -3.0)),
       phase_dds_deg_(configuration->property(role + ".phase_dds_deg", 0.0)),
       tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db)),
-      freq0_(configuration->property(role + ".freq", 0)),
+      freq0_(configuration->property(role + ".freq", GPS_L5_FREQ_HZ)),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
       bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),
       freq_dds_tx_hz_(configuration->property(role + ".freq_dds_tx_hz", uint64_t(10000))),

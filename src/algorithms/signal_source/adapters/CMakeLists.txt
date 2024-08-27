@@ -25,6 +25,14 @@ if(ENABLE_PLUTOSDR)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
 endif()
 
+if(ENABLE_AD936X_SDR AND NOT ENABLE_PLUTOSDR)
+    ##############################################
+    # CUSTOM AD936X IIO SOURCE
+    ##############################################
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_custom_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
+endif()
+
 if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware

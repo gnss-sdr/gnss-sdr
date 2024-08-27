@@ -10,13 +10,7 @@ if(ENABLE_RAW_UDP AND PCAP_FOUND)
     list(APPEND OPT_DRIVER_HEADERS gr_complex_ip_packet_source.h)
 endif()
 
-if(ENABLE_AD936X_SDR)
-    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} gr_complex_ip_packet_source.cc)
-    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} gr_complex_ip_packet_source.h)
-endif()
-
-
-if(ENABLE_PLUTOSDR)
+if(ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
     set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_iio_source.cc)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_iio_source.h)
 endif()

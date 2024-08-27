@@ -1,6 +1,7 @@
 /*!
  * \file ad936x_iio_source.cc
- * \brief A direct IIO custom front-end gnss-sdr signal gnuradio block for the AD936x AD front-end family with special FPGA custom functionalities.
+ * \brief A direct IIO custom front-end gnss-sdr signal gnuradio block for the
+ * AD936x AD front-end family with special FPGA custom functionalities.
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------
@@ -35,9 +36,9 @@
 ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
     const std::string& pluto_uri_,
     const std::string& board_type_,
-    long long bandwidth_,
-    long long sample_rate_,
-    long long freq_,
+    int64_t bandwidth_,
+    int64_t sample_rate_,
+    int64_t freq_,
     const std::string& rf_port_select_,
     const std::string& rf_filter,
     const std::string& gain_mode_rx0_,
@@ -46,7 +47,7 @@ ad936x_iio_source_sptr ad936x_iio_make_source_sptr(
     double rf_gain_rx1_,
     bool enable_ch0,
     bool enable_ch1,
-    long long freq_2ch,
+    int64_t freq_2ch,
     bool ppsmode_,
     bool customsamplesize_,
     const std::string& fe_ip_,
@@ -106,9 +107,9 @@ void ad936x_iio_source::ad9361_channel_demux_and_record(ad936x_iio_samples* samp
 ad936x_iio_source::ad936x_iio_source(
     const std::string& pluto_uri_,
     const std::string& board_type_,
-    long long bandwidth_,
-    long long sample_rate_,
-    long long freq_,
+    int64_t bandwidth_,
+    int64_t sample_rate_,
+    int64_t freq_,
     const std::string& rf_port_select_,
     const std::string& rf_filter,
     const std::string& gain_mode_rx0_,
@@ -117,7 +118,7 @@ ad936x_iio_source::ad936x_iio_source(
     double rf_gain_rx1_,
     bool enable_ch0,
     bool enable_ch1,
-    long long freq_2ch,
+    int64_t freq_2ch,
     bool ppsmode_,
     bool customsamplesize_,
     const std::string& fe_ip_,

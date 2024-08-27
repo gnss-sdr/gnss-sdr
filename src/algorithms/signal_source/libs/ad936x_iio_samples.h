@@ -21,8 +21,8 @@
 #define IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES 32768 * 4
 #define IIO_INPUTRAMFIFOSIZE 256
 
+#include <cstdint>
 #include <memory>
-#include <stdint.h>
 #include <vector>
 
 /** \addtogroup Signal_Source

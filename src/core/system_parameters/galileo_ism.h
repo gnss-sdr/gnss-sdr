@@ -57,16 +57,17 @@ public:
     void set_ism_Tvalidity(uint8_t tvalidity);
     void set_ism_crc(uint32_t crc);
 
-    bool check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits) const;
+    bool check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits) const;  //!< Requires ism_crc to be already set
+    bool ism_apply_to_sat(uint32_t prn) const;                                //!< Returns true if ISM parameters apply to the prn satellite, false otherwise
 
-    double get_pconst_value() const;
-    double get_psat_value() const;
-    float get_ura_m() const;
-    float get_ure_m() const;
-    float get_bnom_m() const;
-    uint16_t get_WN_ISM() const;
-    uint16_t get_t0_ISM() const;
-    uint16_t get_Tvalidity_hours() const;
+    double get_pconst_value() const;       //!< A priori constellation fault probability
+    double get_psat_value() const;         //!< A priori satellite fault probability
+    float get_ura_m() const;               //!< User Range Accuracy, in m, used for integrity
+    float get_ure_m() const;               //!< User Range Error, in m, used for accuracy
+    float get_bnom_m() const;              //!< Maximum nominal bias for a satellite, in m
+    uint16_t get_WN_ISM() const;           //!< ISM Week Number, in weeks
+    uint16_t get_t0_ISM() const;           //!< ISM Time of Week, in seconds
+    uint16_t get_Tvalidity_hours() const;  //!< Validity duration of ISM content, in hours
 
 private:
     // ICD 2.1 Table 97

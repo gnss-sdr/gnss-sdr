@@ -94,6 +94,10 @@ if(ENABLE_PLUTOSDR)
     target_compile_definitions(core_receiver PRIVATE -DPLUTOSDR_DRIVER=1)
 endif()
 
+if(ENABLE_AD936X_SDR)
+    target_compile_definitions(core_receiver PRIVATE -DAD936X_SDR_DRIVER=1)
+endif()
+
 if(ENABLE_FMCOMMS2)
     target_compile_definitions(core_receiver PRIVATE -DFMCOMMS2_DRIVER=1)
 endif()

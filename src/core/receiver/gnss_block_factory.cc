@@ -163,6 +163,10 @@
 #include "plutosdr_signal_source.h"
 #endif
 
+#if AD936X_SDR_DRIVER
+#include "ad936x_custom_signal_source.h"
+#endif
+
 #if FMCOMMS2_DRIVER
 #include "fmcomms2_signal_source.h"
 #endif
@@ -807,6 +811,8 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
                         out_streams, queue);
                     block = std::move(block_);
                 }
+#endif
+#if PLUTOSDR_DRIVER || AD936X_SDR_DRIVER
             else if (implementation == "Ad936x_Custom_Signal_Source")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<Ad936xCustomSignalSource>(configuration, role, in_streams,

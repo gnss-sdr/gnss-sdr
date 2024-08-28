@@ -113,7 +113,7 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
-if(ENABLE_FMCOMMS2 OR ENABLE_AD9361 OR ENABLE_PLUTOSDR)
+if(ENABLE_FMCOMMS2 OR ENABLE_AD9361 OR ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
     target_link_libraries(signal_source_libs
         PUBLIC
             Iio::iio

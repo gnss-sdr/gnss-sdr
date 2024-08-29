@@ -467,7 +467,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
-            d_udp_sink_ptr = std::make_unique<Monitor_Pvt_Udp_Sink>(udp_addr_vec, conf_.udp_port, conf_.protobuf_enabled);
+            std::string port_string = conf_.udp_ports;
+            std::vector<std::string> udp_port_vec = split_string(port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
+            d_udp_sink_ptr = std::make_unique<Monitor_Pvt_Udp_Sink>(udp_addr_vec, udp_port_vec, conf_.protobuf_enabled);
         }
     else
         {

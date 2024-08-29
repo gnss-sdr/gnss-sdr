@@ -49,7 +49,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
         d_nchannels(n_channels),
         d_decimation_factor(decimation_factor)
 {
-    udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_port, enable_protobuf);
+    udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_ports, enable_protobuf);
 }
 
 

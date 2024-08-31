@@ -28,15 +28,15 @@ class pps_tcp_rx
 {
 private:
     std::shared_ptr<Concurrent_Queue<PpsSamplestamp>> Pps_queue;
-    int clientSd;
+    int clientSd{-1};
 
 public:
-    volatile bool is_connected;
-    pps_tcp_rx();
-    virtual ~pps_tcp_rx();
+    volatile bool is_connected{false};
+    pps_tcp_rx() = default;
+    virtual ~pps_tcp_rx() = default;
 
-    void receive_pps(std::string ip_address, int port);
-    bool send_cmd(std::string cmd);
+    void receive_pps(const std::string& ip_address, int port);
+    bool send_cmd(std::string cmd) const;
 
     void set_pps_samplestamp_queue(std::shared_ptr<Concurrent_Queue<PpsSamplestamp>> queue);
 };

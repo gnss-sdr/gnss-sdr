@@ -76,8 +76,11 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
             item_size_ = sizeof(gr_complex);
             // 1. Make the driver instance
             bool customsamplesize = false;
-            if (ssize_ != 12 or spattern_ == true) customsamplesize = true;  // custom FPGA DMA firmware
-            if (ssize_ == 12)                                                // default original FPGA DMA firmware
+            if (ssize_ != 12 || spattern_ == true)
+                {
+                    customsamplesize = true;  // custom FPGA DMA firmware
+                }
+            if (ssize_ == 12)  // default original FPGA DMA firmware
                 {
                     ssize_ = 16;  // set to 16 bits and do not try to change sample size
                 }
@@ -153,8 +156,14 @@ Ad936xCustomSignalSource::Ad936xCustomSignalSource(const ConfigurationInterface*
 
             for (int n = 0; n < n_channels; n++)
                 {
-                    if (n == 0) inverted_spectrum_vec.push_back(inverted_spectrum_ch0_);
-                    if (n == 1) inverted_spectrum_vec.push_back(inverted_spectrum_ch1_);
+                    if (n == 0)
+                        {
+                            inverted_spectrum_vec.push_back(inverted_spectrum_ch0_);
+                        }
+                    if (n == 1)
+                        {
+                            inverted_spectrum_vec.push_back(inverted_spectrum_ch1_);
+                        }
                 }
 
             for (int n = 0; n < n_channels; n++)

@@ -70,6 +70,10 @@ if(ENABLE_FPGA)
     target_compile_definitions(core_receiver PUBLIC -DENABLE_FPGA=1)
 endif()
 
+if(ENABLE_ION)
+    target_compile_definitions(core_receiver PRIVATE -DENABLE_ION_SOURCE=1)
+endif()
+
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(core_receiver PUBLIC -DGNURADIO_USES_STD_POINTERS=1)
 endif()
@@ -88,6 +92,10 @@ endif()
 
 if(ENABLE_PLUTOSDR)
     target_compile_definitions(core_receiver PRIVATE -DPLUTOSDR_DRIVER=1)
+endif()
+
+if(ENABLE_AD936X_SDR)
+    target_compile_definitions(core_receiver PRIVATE -DAD936X_SDR_DRIVER=1)
 endif()
 
 if(ENABLE_FMCOMMS2)

@@ -20,19 +20,6 @@
 #include <utility>
 #include <vector>
 
-pps_tcp_rx::pps_tcp_rx()
-{
-    // TODO Auto-generated constructor stub
-    is_connected = false;
-    clientSd = -1;
-}
-
-
-pps_tcp_rx::~pps_tcp_rx()
-{
-    // TODO Auto-generated destructor stub
-}
-
 
 void pps_tcp_rx::set_pps_samplestamp_queue(std::shared_ptr<Concurrent_Queue<PpsSamplestamp>> queue)
 {
@@ -40,7 +27,7 @@ void pps_tcp_rx::set_pps_samplestamp_queue(std::shared_ptr<Concurrent_Queue<PpsS
 }
 
 
-bool pps_tcp_rx::send_cmd(std::string cmd)
+bool pps_tcp_rx::send_cmd(std::string cmd) const
 {
     if (is_connected == true)
         {
@@ -64,7 +51,7 @@ bool pps_tcp_rx::send_cmd(std::string cmd)
 }
 
 
-void pps_tcp_rx::receive_pps(std::string ip_address, int port)
+void pps_tcp_rx::receive_pps(const std::string &ip_address, int port)
 {
     // create a message buffer
     char buf[1500];
@@ -117,7 +104,7 @@ void pps_tcp_rx::receive_pps(std::string ip_address, int port)
                                                         {
                                                             try
                                                                 {
-                                                                    new_pps.samplestamp = std::strtoul(data.at(0).substr(found + 3).c_str(), NULL, 0);
+                                                                    new_pps.samplestamp = std::strtoul(data.at(0).substr(found + 3).c_str(), nullptr, 0);
                                                                 }
                                                             catch (const std::exception &ex)
                                                                 {
@@ -133,7 +120,7 @@ void pps_tcp_rx::receive_pps(std::string ip_address, int port)
                                                         {
                                                             try
                                                                 {
-                                                                    new_pps.overflow_reg = std::stoi(data.at(1).substr(found + 2).c_str(), NULL, 0);
+                                                                    new_pps.overflow_reg = std::stoi(data.at(1).substr(found + 2).c_str(), nullptr, 0);
                                                                 }
                                                             catch (const std::exception &ex)
                                                                 {
@@ -155,7 +142,9 @@ void pps_tcp_rx::receive_pps(std::string ip_address, int port)
                                         }
                                 }
                             else
-                                new_pps_line += c;
+                                {
+                                    new_pps_line += c;
+                                }
                         }
                 }
             else

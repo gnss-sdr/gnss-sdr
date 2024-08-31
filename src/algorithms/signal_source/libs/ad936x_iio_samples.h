@@ -15,26 +15,32 @@
  */
 
 
-#ifndef SRC_LIBS_ad936x_iio_samples_H_
-#define SRC_LIBS_ad936x_iio_samples_H_
+#ifndef GNSS_SDR_AD936X_IIO_SAMPLES_H
+#define GNSS_SDR_AD936X_IIO_SAMPLES_H
 
 #define IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES 32768 * 4
-
 #define IIO_INPUTRAMFIFOSIZE 256
 
+#include <cstdint>
 #include <memory>
-#include <stdint.h>
 #include <vector>
+
+/** \addtogroup Signal_Source
+ * \{ */
+/** \addtogroup Signal_Source_libs
+ * \{ */
 
 class ad936x_iio_samples
 {
 public:
-    ad936x_iio_samples();
-    uint32_t n_bytes;
-    uint32_t n_interleaved_iq_samples;
-    uint16_t n_channels;
-    uint16_t step_bytes;
+    ad936x_iio_samples() = default;
+    uint32_t n_bytes{0};
+    uint32_t n_interleaved_iq_samples{0};
+    uint16_t n_channels{0};
+    uint16_t step_bytes{0};
     char buffer[IIO_DEFAULTAD936XAPIFIFOSIZE_SAMPLES * 4 * 4];  // max 16 bits samples per buffer (4 channels, 2-bytes per I + 2-bytes per Q)
 };
 
+/** \} */
+/** \} */
 #endif

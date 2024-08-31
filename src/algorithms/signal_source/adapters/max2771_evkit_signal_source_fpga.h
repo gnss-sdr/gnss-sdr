@@ -53,7 +53,6 @@ public:
 
     std::vector<uint32_t> setup_regs(void);
 
-
     inline size_t item_size() override
     {
         return item_size_;
@@ -130,13 +129,12 @@ private:
     bool configure(std::vector<uint32_t> register_values);
     void run_buffer_monitor_process();
 
+    mutable std::mutex buffer_monitor_mutex;
 
     std::thread thread_buffer_monitor;
 
     std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
     std::shared_ptr<Fpga_spidev> spidev_fpga;
-
-    std::mutex buffer_monitor_mutex;
 
     uint64_t freq_;  // frequency of local oscillator
     uint64_t sample_rate_;

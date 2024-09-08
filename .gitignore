@@ -28,4 +28,3 @@ HAS_*
 gnss_sdr_pvt.nmea
 build-debug/
 build-release/
-

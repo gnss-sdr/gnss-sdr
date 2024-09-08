@@ -57,6 +57,8 @@ option(ENABLE_ARRAY "Enable the use of CTTC's antenna array front-end as signal 
 
 option(ENABLE_ZMQ "Enable GNU Radio ZeroMQ Messaging, requires gr-zeromq" ON)
 
+option(ENABLE_ION "Enable ION GNSS-SDR Metadata Standard signal source" OFF)
+
 # Performance analysis tools
 option(ENABLE_GPERFTOOLS "Enable linking to Gperftools libraries (tcmalloc and profiler)" OFF)
 
@@ -358,12 +360,12 @@ set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.0.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.1")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.27")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "27.3")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "28.0")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.15.2")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")
 set(GNSSSDR_GNSSTK_LOCAL_VERSION "14.3.0")
-set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.8.5")
+set(GNSSSDR_BENCHMARK_LOCAL_VERSION "1.9.0")
 set(GNSSSDR_MATHJAX_EXTERNAL_VERSION "2.7.7")
 set(GNSSSDR_ABSL_LOCAL_VERSION "origin/master") # live at head (see https://abseil.io/about/releases)
 
@@ -3252,7 +3254,7 @@ set_package_properties(LIBIIO PROPERTIES
     PURPOSE "Used for communication with the AD9361 chipset."
     TYPE OPTIONAL
 )
-if(ENABLE_AD9361 OR ENABLE_FMCOMMS2)
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
     if(NOT LIBIIO_FOUND)
         message(STATUS "libiio not found, its installation is required.")
         message(STATUS "Please build and install the following projects:")
@@ -3265,6 +3267,161 @@ if(ENABLE_AD9361 OR ENABLE_FMCOMMS2)
             set(ENABLE_FMCOMMS2 OFF)
         else()
             message(FATAL_ERROR "libiio is required for building gnss-sdr with -DENABLE_AD9361=ON.")
+        endif()
+    endif()
+endif()
+
+
+################################################################################
+# ION GNSS-SDR Metadata Standard https://sdr.ion.org/ (OPTIONAL)
+################################################################################
+if(CMAKE_VERSION VERSION_LESS 3.14)
+    set(ENABLE_ION OFF)  # FetchContent_MakeAvailable is available from CMake 3.14
+endif()
+if(ENABLE_ION)
+    include(FetchContent)
+    set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+    FetchContent_Declare(
+        gnss_metadata_standard
+        GIT_REPOSITORY https://github.com/IonMetadataWorkingGroup/GNSS-Metadata-Standard
+        GIT_TAG 220d116e10db5e403e21b77a1fa25aa35feda198
+        SOURCE_DIR ${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
+        BINARY_DIR ${GNSSSDR_BINARY_DIR}/gnss-metadata-standard
+    )
+    FetchContent_MakeAvailable(gnss_metadata_standard)
+
+    if(NOT TARGET ION::ion)
+        add_library(ION::ion STATIC IMPORTED)
+        add_dependencies(ION::ion gnss_metadata_standard)
+        if(CMAKE_GENERATOR STREQUAL "Xcode")
+            set_target_properties(ION::ion PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION_DEBUG "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                IMPORTED_LOCATION_RELEASE "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Release/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                IMPORTED_LOCATION_RELWITHDEBINFO "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                IMPORTED_LOCATION_MINSIZEREL "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/source/api/inc"
+            )
+            set_property(TARGET ION::ion APPEND PROPERTY
+                INTERFACE_LINK_LIBRARIES
+                    "$<$<CONFIG:Debug>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:Release>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Release/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Release/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:RelWithDebInfo>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:MinSizeRel>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/MinSizeRel/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:NoOptWithASM>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:Coverage>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:O2WithASM>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:O3WithASM>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/RelWithDebInfo/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+                    "$<$<CONFIG:ASAN>:${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/Debug/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}>"
+            )
+        else()
+            set_target_properties(ION::ion PROPERTIES
+                IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+                IMPORTED_LOCATION "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX}"
+                INTERFACE_INCLUDE_DIRECTORIES "${GNSSSDR_BINARY_DIR}/thirdparty/gnss-metadata-standard/source/api/inc"
+                INTERFACE_LINK_LIBRARIES "${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/GnssMetadata/${CMAKE_FIND_LIBRARY_PREFIXES}api${CMAKE_STATIC_LIBRARY_SUFFIX};${GNSSSDR_BINARY_DIR}/gnss-metadata-standard/source/api/lib/tinyxml2/${CMAKE_FIND_LIBRARY_PREFIXES}xml${CMAKE_STATIC_LIBRARY_SUFFIX}"
+            )
+        endif()
+    endif()
+endif()
+
+
+#####################################################################
+# Check signal sources related to FPGA only.
+#####################################################################
+if(ENABLE_MAX2771 AND NOT ENABLE_FPGA)
+    message(STATUS "The SPIdev driver is enabled, but the FPGA is not enabled. The FPGA is required when using the SPIdev driver.")
+    if(ENABLE_PACKAGING)
+        set(ENABLE_MAX2771 OFF)
+    else()
+        message(FATAL_ERROR "ENABLE_MAX2771 can only be set when ENABLE_FPGA is also set.")
+    endif()
+endif()
+if(ENABLE_DMA_PROXY AND NOT ENABLE_FPGA)
+    message(STATUS "The DMA Proxy driver is enabled, but the FPGA is not enabled. The FPGA is required when using the DMA Proxy driver.")
+    if(ENABLE_PACKAGING)
+        set(ENABLE_DMA_PROXY OFF)
+    else()
+        message(FATAL_ERROR "ENABLE_DMA_PROXY can only be set when ENABLE_FPGA is also set.")
+    endif()
+endif()
+
+
+
+#####################################################################
+# spidev driver - OPTIONAL
+# Linux kernel driver that provides user-space access to Serial
+# Peripheral Interface)
+#####################################################################
+if(ENABLE_MAX2771)
+    if(DEFINED ENV{SDKTARGETSYSROOT})
+        set(TARGET_ROOTFS_PATH $ENV{SDKTARGETSYSROOT})
+    else()
+        set(TARGET_ROOTFS_PATH "")
+    endif()
+    find_program(STRINGS_EXECUTABLE strings)
+    if(NOT STRINGS_EXECUTABLE)
+        message(STATUS "The 'strings' command could not be found. See https://www.gnu.org/software/binutils/")
+        message(STATUS " You can try to install it by typing:")
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                message(STATUS " sudo yum install binutils")
+            elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                message(STATUS " sudo zypper install binutils")
+            else()
+                message(STATUS " sudo apt-get install binutils")
+            endif()
+        endif()
+        message(FATAL_ERROR "Binutils are required to build GNSS-SDR for SoC FPGA devices using the MAX2771 option.")
+    endif()
+    set(DTB_FILE "${TARGET_ROOTFS_PATH}/boot/devicetree/system-top.dtb")
+    if(EXISTS "${DTB_FILE}")
+        message(STATUS "Found DTB file: ${DTB_FILE}")
+        # Run the strings command and grep for "spidev"
+        execute_process(
+            COMMAND ${STRINGS_EXECUTABLE} ${DTB_FILE}
+            COMMAND grep "spidev"
+            OUTPUT_VARIABLE GREP_OUTPUT
+            RESULT_VARIABLE GREP_RESULT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if(GREP_RESULT EQUAL 0)
+            message(STATUS "Found spidev-compatible peripheral in ${DTB_FILE}.")
+        else()
+            message(STATUS "SPIdev driver not found, its installation is required.")
+            if(ENABLE_PACKAGING)
+                set(ENABLE_MAX2771 OFF)
+            else()
+                message(FATAL_ERROR "SPIdev driver is required for building gnss-sdr with -DENABLE_MAX2271=ON.")
+            endif()
+        endif()
+    else()
+        message(FATAL_ERROR "The device tree (DTB) file ${DTB_FILE} cannot be found.")
+    endif()
+endif()
+
+
+
+#####################################################################
+# DMA Proxy driver - OPTIONAL
+# Simplified and efficient interface for user-space applications
+# to leverage DMA capabilities  for Xilinx FPGA and SoC systems
+#####################################################################
+if(ENABLE_DMA_PROXY)
+    if(DEFINED ENV{SDKTARGETSYSROOT})
+        set(TARGET_ROOTFS_PATH $ENV{SDKTARGETSYSROOT})
+    else()
+        set(TARGET_ROOTFS_PATH "")
+    endif()
+    set(DMA_PROXY_FILE "${TARGET_ROOTFS_PATH}/lib/modules/5.10.0-xilinx-v2021.2/extra/dma-proxy.ko")
+    if(EXISTS "${DMA_PROXY_FILE}")
+        message(STATUS "Found dma-proxy.ko file: ${DMA_PROXY_FILE}")
+    else()
+        if(ENABLE_PACKAGING)
+            set(ENABLE_DMA_PROXY OFF)
+        else()
+            message(FATAL_ERROR "DMA Proxy driver is required for building gnss-sdr with -DENABLE_DMA_PROXY=ON.")
         endif()
     endif()
 endif()
@@ -3573,23 +3730,24 @@ add_subdirectory(src)
 add_feature_info(ENABLE_UHD ENABLE_UHD "Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.")
 add_feature_info(ENABLE_OSMOSDR ENABLE_OSMOSDR "Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.")
 add_feature_info(ENABLE_LIMESDR ENABLE_LIMESDR "Enables Limesdr_Signal_Source. Requires gr-limesdr.")
-add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio and libad9361-dev.")
-add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.")
-add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables Ad9361_Fpga_Signal_Source for devices with the AD9361 chipset. Requires libiio and libad9361-dev.")
-add_feature_info(ENABLE_MAX2771 ENABLE_MAX2771 "Enables FPGA_MAX2771_EVKIT_Signal_Source for devices with the MAX2771 chipset. Requires the spidev driver")
-add_feature_info(ENABLE_DMA_PROXY ENABLE_DMA_PROXY "Enables DMA Signal_Source. Requires the DMA Proxy driver")
-add_feature_info(ENABLE_AD936X_SDR ENABLE_AD936X_SDR "Enables Ad936x_Iio_Signal_Source to access AD936X front-ends using libiio. Requires libiio and libad9361-dev.")
+add_feature_info(ENABLE_FMCOMMS2 ENABLE_FMCOMMS2 "Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires libiio, libad9361-dev, and gr-iio.")
+add_feature_info(ENABLE_PLUTOSDR ENABLE_PLUTOSDR "Enables Plutosdr_Signal_Source and Ad936x_Custom_Signal_Source for using ADALM-PLUTO boards. Requires libiio, libad9361-dev, and gr-iio.")
+add_feature_info(ENABLE_AD936X_SDR ENABLE_AD936X_SDR "Enables Ad936x_Custom_Signal_Source for using ADALM-PLUTO boards with custom firmware. Requires libiio and libad9361-dev.")
+add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA offloading.")
+add_feature_info(ENABLE_AD9361 ENABLE_AD9361 "Enables ADRV9361_Z7035_Signal_Source_FPGA and the FMCOMMS5_Signal_Source_FPGA for FPGA SoC devices with the AD9361 chipset. Requires libiio, libad9361-dev, and -DENABLE_FPGA=ON.")
+add_feature_info(ENABLE_MAX2771 ENABLE_MAX2771 "Enables FPGA_MAX2771_EVKIT_Signal_Source for FPGA SoC devices with the with the MAX2771 chipset. Requires the spidev driver and -DENABLE_FPGA=ON.")
+add_feature_info(ENABLE_DMA_PROXY ENABLE_DMA_PROXY "Enables DMA_Signal_Source_FPGA for file post-processing in FPGA SoC devices. Requires the DMA Proxy driver and -DENABLE_FPGA=ON.")
 add_feature_info(ENABLE_RAW_UDP ENABLE_RAW_UDP "Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.")
 add_feature_info(ENABLE_FLEXIBAND ENABLE_FLEXIBAND "Enables Flexiband_Signal_Source for using Teleorbit's Flexiband RF front-end. Requires gr-teleorbit.")
 add_feature_info(ENABLE_ARRAY ENABLE_ARRAY "Enables Raw_Array_Signal_Source and Array_Signal_Conditioner for using CTTC's antenna array. Requires gr-dbfcttc.")
 add_feature_info(ENABLE_ZMQ ENABLE_ZMQ "Enables ZMQ_Signal_Source for GNU Radio ZeroMQ messages. Requires gr-zeromq.")
+add_feature_info(ENABLE_ION ENABLE_ION "Enables ION_GSMS_Signal_Source for the ION Metadata Standard.")
 add_feature_info(ENABLE_GPERFTOOLS ENABLE_GPERFTOOLS "Enables performance analysis. Requires Gperftools.")
 add_feature_info(ENABLE_GPROF ENABLE_GPROF "Enables performance analysis with 'gprof'.")
 add_feature_info(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY "Runs clang-tidy along with the compiler. Requires Clang.")
 add_feature_info(ENABLE_PROFILING ENABLE_PROFILING "Runs volk_gnsssdr_profile at the end of the building.")
 add_feature_info(ENABLE_OPENCL ENABLE_OPENCL "Enables GPS_L1_CA_PCPS_OpenCl_Acquisition (experimental). Requires OpenCL.")
 add_feature_info(ENABLE_CUDA ENABLE_CUDA "Enables GPS_L1_CA_DLL_PLL_Tracking_GPU (experimental). Requires CUDA.")
-add_feature_info(ENABLE_FPGA ENABLE_FPGA "Enables building of processing blocks for FPGA offloading.")
 add_feature_info(ENABLE_ARMA_NO_DEBUG ENABLE_ARMA_NO_DEBUG "Enables passing the ARMA_NO_DEBUG macro to Armadillo, hence disabling bound checking.")
 add_feature_info(ENABLE_PACKAGING ENABLE_PACKAGING "Enables software packaging.")
 add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and building of Google glog.")

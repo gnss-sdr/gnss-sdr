@@ -41,6 +41,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   - `-DENABLE_DMA_PROXY`: Checks if the DMA proxy driver is installed for
     controlling the DMA in the FPGA and enables its usage.
 
+- Add the `ION_GSMS_Signal_Source`, which is able to process raw data files
+  described with the
+  [ION GNSS Software Defined Receiver Metadata Standard](https://sdr.ion.org/).
+  It requires the `-DENABLE_ION=ON` building configuration option.
+
 ### Improvements in Portability:
 
 - Fix building against google-glog 0.7.x.

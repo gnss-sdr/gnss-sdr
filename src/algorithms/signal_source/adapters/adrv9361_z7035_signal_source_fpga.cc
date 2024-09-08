@@ -1,6 +1,6 @@
 /*!
  * \file adrv9361_z7035_signal_source_fpga.cc
- * \brief signal source for the Analog Devices ADRV9361-Z7035 evaluation board
+ * \brief Signal source for the Analog Devices ADRV9361-Z7035 evaluation board
  * directly connected to the FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with
  * conventional SDR acquisition and tracking blocks.
@@ -51,14 +51,14 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
       gain_mode_rx1_(configuration->property(role + ".gain_mode_rx1", default_gain_mode)),
       gain_mode_rx2_(configuration->property(role + ".gain_mode_rx2", default_gain_mode)),
       rf_port_select_(configuration->property(role + ".rf_port_select", default_rf_port_select)),
+      filter_source_(configuration->property(role + ".filter_source", std::string("Off"))),
       filter_filename_(configuration->property(role + ".filter_filename", filter_file_)),
       rf_gain_rx1_(configuration->property(role + ".gain_rx1", default_manual_gain_rx1)),
       rf_gain_rx2_(configuration->property(role + ".gain_rx2", default_manual_gain_rx2)),
       scale_dds_dbfs_(configuration->property(role + ".scale_dds_dbfs", -3.0)),
       phase_dds_deg_(configuration->property(role + ".phase_dds_deg", 0.0)),
       tx_attenuation_db_(configuration->property(role + ".tx_attenuation_db", default_tx_attenuation_db)),
-      freq0_(configuration->property(role + ".freq", 0)),
-      freq1_(configuration->property(role + ".freq1", static_cast<uint64_t>(GPS_L5_FREQ_HZ))),
+      freq0_(configuration->property(role + ".freq", GPS_L5_FREQ_HZ)),
       sample_rate_(configuration->property(role + ".sampling_frequency", default_bandwidth)),
       bandwidth_(configuration->property(role + ".bandwidth", default_bandwidth)),
       freq_dds_tx_hz_(configuration->property(role + ".freq_dds_tx_hz", uint64_t(10000))),
@@ -70,7 +70,6 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
       out_stream_(out_stream),
       item_size_(sizeof(int8_t)),
       enable_dds_lo_(configuration->property(role + ".enable_dds_lo", false)),
-      filter_auto_(configuration->property(role + ".filter_auto", false)),
       quadrature_(configuration->property(role + ".quadrature", true)),
       rf_dc_(configuration->property(role + ".rf_dc", true)),
       bb_dc_(configuration->property(role + ".bb_dc", true)),
@@ -96,15 +95,6 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
         {
             // use ".freq0"
             freq0_ = configuration->property(role + ".freq0", static_cast<uint64_t>(GPS_L1_FREQ_HZ));
-        }
-
-    if (filter_auto_)
-        {
-            filter_source_ = configuration->property(role + ".filter_source", std::string("Auto"));
-        }
-    else
-        {
-            filter_source_ = configuration->property(role + ".filter_source", std::string("Off"));
         }
 
     switch_fpga = std::make_shared<Fpga_Switch>();
@@ -190,12 +180,15 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
         }
 
     std::cout << "LO frequency : " << freq0_ << " Hz\n";
+
+    uint64_t freq1 = 0;  // The local oscillator frequency of the ADRV9361-B is not used when using the ADRV9361-Z7035 board.
+
     try
         {
             config_ad9361_rx_local(bandwidth_,
                 sample_rate_,
                 freq0_,
-                freq1_,
+                freq1,
                 rf_port_select_,
                 rx1_enable_,
                 rx2_enable_,
@@ -257,7 +250,6 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
     buffer_monitor_fpga = std::make_shared<Fpga_buffer_monitor>(num_freq_bands, dump_, dump_filename);
     thread_buffer_monitor = std::thread([&] { run_buffer_monitor_process(); });
 
-
     // dynamic bits selection
     if (enable_dynamic_bit_selection_)
         {
@@ -278,15 +270,23 @@ Adrv9361z7035SignalSourceFPGA::Adrv9361z7035SignalSourceFPGA(const Configuration
 
 Adrv9361z7035SignalSourceFPGA::~Adrv9361z7035SignalSourceFPGA()
 {
-    /* cleanup and exit */
-
+    // cleanup and exit
     if (rf_shutdown_)
         {
             std::cout << "* AD9361 Disabling RX streaming channels\n";
-            if (!disable_ad9361_rx_local())
+            try
                 {
-                    LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
+                    if (!disable_ad9361_rx_local())
+                        {
+                            LOG(WARNING) << "Problem shutting down the AD9361 RX channels";
+                        }
                 }
+            catch (const std::exception &e)
+                {
+                    LOG(WARNING) << "Problem shutting down the AD9361 RX channels: " << e.what();
+                    std::cerr << "Problem shutting down the AD9361 RX channels: " << e.what() << '\n';
+                }
+
             if (enable_dds_lo_)
                 {
                     try
@@ -301,24 +301,27 @@ Adrv9361z7035SignalSourceFPGA::~Adrv9361z7035SignalSourceFPGA()
         }
 
     // disable buffer overflow checking and buffer monitoring
-    std::unique_lock<std::mutex> lock_buffer_monitor(buffer_monitor_mutex);
-    enable_ovf_check_buffer_monitor_active_ = false;
-    lock_buffer_monitor.unlock();
+    {
+        std::lock_guard<std::mutex> lock_buffer_monitor(buffer_monitor_mutex);
+        enable_ovf_check_buffer_monitor_active_ = false;
+    }
 
     if (thread_buffer_monitor.joinable())
         {
             thread_buffer_monitor.join();
         }
-
-    std::unique_lock<std::mutex> lock_dyn_bit_sel(dynamic_bit_selection_mutex);
-    bool bit_selection_enabled = enable_dynamic_bit_selection_;
-    lock_dyn_bit_sel.unlock();
+    bool bit_selection_enabled = false;
+    {
+        std::lock_guard<std::mutex> lock_dyn_bit_sel(dynamic_bit_selection_mutex);
+        bit_selection_enabled = enable_dynamic_bit_selection_;
+    }
 
     if (bit_selection_enabled == true)
         {
-            std::unique_lock<std::mutex> lock(dynamic_bit_selection_mutex);
-            enable_dynamic_bit_selection_ = false;
-            lock.unlock();
+            {
+                std::lock_guard<std::mutex> lock(dynamic_bit_selection_mutex);
+                enable_dynamic_bit_selection_ = false;
+            }
 
             if (thread_dynamic_bit_selection.joinable())
                 {
@@ -337,12 +340,11 @@ void Adrv9361z7035SignalSourceFPGA::run_dynamic_bit_selection_process()
             // setting the bit selection to the top bits
             dynamic_bit_selection_fpga->bit_selection();
             std::this_thread::sleep_for(std::chrono::milliseconds(Gain_control_period_ms));
-            std::unique_lock<std::mutex> lock(dynamic_bit_selection_mutex);
+            std::lock_guard<std::mutex> lock(dynamic_bit_selection_mutex);
             if (enable_dynamic_bit_selection_ == false)
                 {
                     dynamic_bit_selection_active = false;
                 }
-            lock.unlock();
         }
 }
 
@@ -357,12 +359,11 @@ void Adrv9361z7035SignalSourceFPGA::run_buffer_monitor_process()
         {
             buffer_monitor_fpga->check_buffer_overflow_and_monitor_buffer_status();
             std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));
-            std::unique_lock<std::mutex> lock(buffer_monitor_mutex);
+            std::lock_guard<std::mutex> lock(buffer_monitor_mutex);
             if (enable_ovf_check_buffer_monitor_active_ == false)
                 {
                     enable_ovf_check_buffer_monitor_active = false;
                 }
-            lock.unlock();
         }
 }
 

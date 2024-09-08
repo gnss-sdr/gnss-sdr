@@ -25,6 +25,14 @@ if(ENABLE_PLUTOSDR)
     set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
 endif()
 
+if(ENABLE_AD936X_SDR AND NOT ENABLE_PLUTOSDR)
+    ##############################################
+    # CUSTOM AD936X IIO SOURCE
+    ##############################################
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_custom_signal_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_custom_signal_source.h)
+endif()
+
 if(ENABLE_FMCOMMS2)
     ###############################################
     # FMCOMMS2 based SDR Hardware
@@ -103,6 +111,11 @@ if(ENABLE_ZMQ)
     list(APPEND OPT_DRIVER_HEADERS zmq_signal_source.h)
 endif()
 
+if(ENABLE_ION)
+    list(APPEND OPT_DRIVER_SOURCES ion_gsms_signal_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS ion_gsms_signal_source.h)
+endif()
+
 set(SIGNAL_SOURCE_ADAPTER_SOURCES
     signal_source_base.cc
     file_source_base.cc
@@ -169,7 +182,7 @@ target_include_directories(signal_source_adapters
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
 )
 
-if(ENABLE_FPGA OR ENABLE_AD9361)
+if(ENABLE_FPGA OR ENABLE_AD9361 OR ENABLE_ION)
     target_link_libraries(signal_source_adapters
         PUBLIC
             signal_source_libs
@@ -239,14 +252,14 @@ if(ENABLE_LIMESDR AND GRLIMESDR_FOUND)
     )
 endif()
 
-if(ENABLE_AD9361 AND LIBIIO_FOUND)
+if(LIBIIO_FOUND)
     target_link_libraries(signal_source_adapters
         PRIVATE
             Iio::iio
     )
 endif()
 
-if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
+if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
     if(LIBAD9361_VERSION)
         if(LIBAD9361_VERSION VERSION_GREATER 0.1)
             target_compile_definitions(signal_source_adapters

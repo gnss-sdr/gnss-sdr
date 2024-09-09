@@ -1,0 +1,70 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "basic",
+            "displayName": "basic",
+            "description": "Basic common flags",
+            "binaryDir": "${sourceDir}/build-basic",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/usr/bin/gcc",
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_RAW_UDP": "ON",
+                "ENABLE_ZMQ": "ON",
+                "ENABLE_GLOG_AND_GFLAGS": "ON",
+                "ENABLE_LOG": "ON",
+                "ENABLE_UNIT_TESTING": "ON"
+            }
+        },
+        {
+            "name": "config-debug",
+            "displayName": "gnss-standard-debug",
+            "description": "Standard use",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-debug",
+            "inherits": "basic",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_UHD": "ON",
+                "ENABLE_OSMOSDR": "ON",
+                "ENABLE_PLUTOSDR": "ON",
+                "ENABLE_AD936X_SDR": "ON"
+            }
+        },
+        {
+            "name": "config-release",
+            "displayName": "gnss-standard-release",
+            "description": "Standard use",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-release",
+            "inherits": "basic",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_BUILD_TYPE": "Release",
+                "ENABLE_UHD": "ON",
+                "ENABLE_OSMOSDR": "ON",
+                "ENABLE_PLUTOSDR": "ON",
+                "ENABLE_AD936X_SDR": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-basic",
+            "displayName": "Basic build",
+            "configurePreset": "basic"
+        },
+        {
+            "name": "build-debug",
+            "displayName": "Debug build",
+            "configurePreset": "config-debug"
+        },
+        {
+            "name": "build-release",
+            "displayName": "Release build",
+            "configurePreset": "config-release"
+        }
+    ]
+}

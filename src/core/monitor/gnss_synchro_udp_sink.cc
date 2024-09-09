@@ -17,8 +17,8 @@
 
 #include "gnss_synchro_udp_sink.h"
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/serialization/vector.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -35,13 +35,13 @@ Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(
         }
     for (const auto& address : addresses)
         {
-        for (const auto& port : ports)
-            {
-                boost::asio::ip::udp::endpoint endpoint(
-                    boost::asio::ip::address::from_string(address, error), 
-                    boost::lexical_cast<int> (port));
-                endpoints.push_back(endpoint);
-            }
+            for (const auto& port : ports)
+                {
+                    boost::asio::ip::udp::endpoint endpoint(
+                        boost::asio::ip::address::from_string(address, error),
+                        boost::lexical_cast<int>(port));
+                    endpoints.push_back(endpoint);
+                }
         }
 }
 

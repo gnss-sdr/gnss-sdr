@@ -226,7 +226,7 @@ void GNSSFlowgraph::init()
             GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
                 udp_port_vec,
-                udp_addr_vec, 
+                udp_addr_vec,
                 enable_protobuf);
         }
 
@@ -255,7 +255,7 @@ void GNSSFlowgraph::init()
             GnssSynchroAcquisitionMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("AcquisitionMonitor.decimation_factor", 1),
                 udp_port_vec,
-                udp_addr_vec, 
+                udp_addr_vec,
                 enable_protobuf);
         }
 
@@ -284,7 +284,7 @@ void GNSSFlowgraph::init()
             GnssSynchroTrackingMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("TrackingMonitor.decimation_factor", 1),
                 udp_port_vec,
-                udp_addr_vec, 
+                udp_addr_vec,
                 enable_protobuf);
         }
 

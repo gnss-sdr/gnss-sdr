@@ -43,11 +43,11 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     const std::vector<std::string>& udp_addresses,
     bool enable_protobuf)
     : gr::block("gnss_synchro_monitor",
-        gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
-        gr::io_signature::make(0, 0, 0)),
-        count(0),
-        d_nchannels(n_channels),
-        d_decimation_factor(decimation_factor)
+          gr::io_signature::make(n_channels, n_channels, sizeof(Gnss_Synchro)),
+          gr::io_signature::make(0, 0, 0)),
+      count(0),
+      d_nchannels(n_channels),
+      d_decimation_factor(decimation_factor)
 {
     udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_ports, enable_protobuf);
 }

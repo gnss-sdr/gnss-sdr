@@ -24,17 +24,17 @@
 
 Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(
     const std::vector<std::string>& addresses,
-    const std::vector<std::string>& ports, 
+    const std::vector<std::string>& ports,
     bool protobuf_enabled) : socket{io_context},
                              use_protobuf(protobuf_enabled)
 {
     for (const auto& address : addresses)
         {
-        for (const auto& port : ports)
-          {
-            boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), boost::lexical_cast<int> (port));
-            endpoints.push_back(endpoint);
-          }
+            for (const auto& port : ports)
+                {
+                    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), boost::lexical_cast<int>(port));
+                    endpoints.push_back(endpoint);
+                }
         }
 
     if (use_protobuf)

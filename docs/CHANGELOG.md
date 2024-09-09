@@ -45,6 +45,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   described with the
   [ION GNSS Software Defined Receiver Metadata Standard](https://sdr.ion.org/).
   It requires the `-DENABLE_ION=ON` building configuration option.
+- The `Monitor` block is now able to send data to multiple ports.
 
 ### Improvements in Portability:
 

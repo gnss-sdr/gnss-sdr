@@ -900,6 +900,8 @@ src/algorithms/telemetry_decoder/gnuradio_blocks/CMakeFiles/telemetry_decoder_gr
  /usr/include/gnuradio/rpcserver_selector.h \
  /usr/include/gnuradio/config.h /usr/include/gnuradio/block_registry.h \
  /home/juancho/GitHub/gnss-sdr/src/core/system_parameters/gnss_satellite.h \
+ /home/juancho/GitHub/gnss-sdr/src/algorithms/telemetry_decoder/libs/tlm_conf.h \
+ /home/juancho/GitHub/gnss-sdr/src/core/interfaces/configuration_interface.h \
  /usr/include/boost/crc.hpp /usr/include/boost/array.hpp \
  /usr/include/boost/swap.hpp /usr/include/boost/integer.hpp \
  /usr/include/gnuradio/block.h /usr/include/gmpxx.h \

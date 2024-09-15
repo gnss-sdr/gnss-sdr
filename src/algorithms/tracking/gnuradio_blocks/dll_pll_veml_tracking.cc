@@ -1932,6 +1932,11 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_state = 4;
                                     }
                             }
+                    // SBAS addons
+                    current_synchro_data = *d_acquisition_gnss_synchro;
+                    current_synchro_data.Prompt_I = d_Prompt->real();
+                    current_synchro_data.Prompt_Q = d_Prompt->imag();
+                    current_synchro_data.Flag_valid_symbol_output = true;
                     }
                 break;
             }

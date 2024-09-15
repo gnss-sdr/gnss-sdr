@@ -159,7 +159,36 @@ src/algorithms/telemetry_decoder/libs/CMakeFiles/telemetry_decoder_libs.dir/tlm_
   /usr/include/asm-generic/errno-base.h \
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/c++/11/bits/charconv.h \
-  /usr/include/c++/11/bits/basic_string.tcc
+  /usr/include/c++/11/bits/basic_string.tcc \
+  /usr/include/c++/11/iostream \
+  /usr/include/c++/11/ostream \
+  /usr/include/c++/11/ios \
+  /usr/include/c++/11/exception \
+  /usr/include/c++/11/bits/exception_ptr.h \
+  /usr/include/c++/11/bits/cxxabi_init_exception.h \
+  /usr/include/c++/11/typeinfo \
+  /usr/include/c++/11/bits/nested_exception.h \
+  /usr/include/c++/11/bits/ios_base.h \
+  /usr/include/c++/11/bits/locale_classes.h \
+  /usr/include/c++/11/bits/locale_classes.tcc \
+  /usr/include/c++/11/system_error \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/error_constants.h \
+  /usr/include/c++/11/stdexcept \
+  /usr/include/c++/11/streambuf \
+  /usr/include/c++/11/bits/streambuf.tcc \
+  /usr/include/c++/11/bits/basic_ios.h \
+  /usr/include/c++/11/bits/locale_facets.h \
+  /usr/include/c++/11/cwctype \
+  /usr/include/wctype.h \
+  /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_base.h \
+  /usr/include/c++/11/bits/streambuf_iterator.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h \
+  /usr/include/c++/11/bits/locale_facets.tcc \
+  /usr/include/c++/11/bits/basic_ios.tcc \
+  /usr/include/c++/11/bits/ostream.tcc \
+  /usr/include/c++/11/istream \
+  /usr/include/c++/11/bits/istream.tcc
 
 src/algorithms/telemetry_decoder/libs/CMakeFiles/telemetry_decoder_libs.dir/tlm_crc_stats.cc.o: ../src/algorithms/telemetry_decoder/libs/tlm_crc_stats.cc \
   /usr/include/stdc-predef.h \
@@ -1636,17 +1665,9 @@ volk_gnsssdr_module/build/include/volk_gnsssdr/volk_gnsssdr.h:
 
 /usr/include/c++/11/bits/basic_string.tcc:
 
-/usr/include/c++/11/bits/hash_bytes.h:
+/usr/include/c++/11/ostream:
 
-/usr/include/c++/11/bits/move.h:
-
-../src/algorithms/telemetry_decoder/libs/tlm_crc_stats.h:
-
-../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include/volk_gnsssdr/volk_gnsssdr_complex.h:
-
-/usr/include/c++/11/bits/vector.tcc:
-
-/usr/include/c++/11/istream:
+/usr/include/c++/11/bits/unique_ptr.h:
 
 /usr/include/c++/11/exception:
 
@@ -1702,11 +1723,19 @@ volk_gnsssdr_module/build/include/volk_gnsssdr/volk_gnsssdr.h:
 
 /usr/include/c++/11/bits/basic_ios.tcc:
 
-/usr/include/c++/11/ostream:
-
-/usr/include/c++/11/bits/unique_ptr.h:
+/usr/include/c++/11/istream:
 
 /usr/include/c++/11/bits/istream.tcc:
+
+/usr/include/c++/11/bits/hash_bytes.h:
+
+/usr/include/c++/11/bits/move.h:
+
+../src/algorithms/telemetry_decoder/libs/tlm_crc_stats.h:
+
+../src/algorithms/libs/volk_gnsssdr_module/volk_gnsssdr/include/volk_gnsssdr/volk_gnsssdr_complex.h:
+
+/usr/include/c++/11/bits/vector.tcc:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h:
 

@@ -924,6 +924,8 @@ src/algorithms/telemetry_decoder/adapters/CMakeFiles/telemetry_decoder_adapters.
  /usr/include/gnuradio/rpcserver_booter_base.h \
  /usr/include/gnuradio/rpcserver_selector.h \
  /usr/include/gnuradio/config.h /usr/include/gnuradio/block_registry.h \
+ /home/juancho/GitHub/gnss-sdr/src/algorithms/telemetry_decoder/libs/tlm_conf.h \
+ /home/juancho/GitHub/gnss-sdr/src/core/interfaces/configuration_interface.h \
  /usr/include/boost/crc.hpp /usr/include/boost/array.hpp \
  /usr/include/boost/swap.hpp /usr/include/boost/integer.hpp \
  /usr/include/gnuradio/block.h /usr/include/gmpxx.h \
@@ -935,7 +937,6 @@ src/algorithms/telemetry_decoder/adapters/CMakeFiles/telemetry_decoder_adapters.
  /usr/include/c++/11/bits/fstream.tcc \
  /home/juancho/GitHub/gnss-sdr/src/core/interfaces/telemetry_decoder_interface.h \
  /home/juancho/GitHub/gnss-sdr/src/core/interfaces/gnss_block_interface.h \
- /home/juancho/GitHub/gnss-sdr/src/core/interfaces/configuration_interface.h \
  /usr/include/glog/logging.h /usr/include/inttypes.h \
  /usr/include/gflags/gflags.h /usr/include/gflags/gflags_declare.h \
  /usr/include/gflags/gflags_gflags.h /usr/include/glog/log_severity.h \

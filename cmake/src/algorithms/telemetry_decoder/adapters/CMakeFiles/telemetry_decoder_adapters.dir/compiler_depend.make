@@ -13368,6 +13368,8 @@ src/algorithms/telemetry_decoder/adapters/CMakeFiles/telemetry_decoder_adapters.
   /usr/include/gnuradio/rpcserver_selector.h \
   /usr/include/gnuradio/config.h \
   /usr/include/gnuradio/block_registry.h \
+  ../src/algorithms/telemetry_decoder/libs/tlm_conf.h \
+  ../src/core/interfaces/configuration_interface.h \
   /usr/include/boost/crc.hpp \
   /usr/include/boost/array.hpp \
   /usr/include/boost/swap.hpp \
@@ -13383,7 +13385,6 @@ src/algorithms/telemetry_decoder/adapters/CMakeFiles/telemetry_decoder_adapters.
   /usr/include/c++/11/bits/fstream.tcc \
   ../src/core/interfaces/telemetry_decoder_interface.h \
   ../src/core/interfaces/gnss_block_interface.h \
-  ../src/core/interfaces/configuration_interface.h \
   /usr/include/glog/logging.h \
   /usr/include/inttypes.h \
   /usr/include/gflags/gflags.h \

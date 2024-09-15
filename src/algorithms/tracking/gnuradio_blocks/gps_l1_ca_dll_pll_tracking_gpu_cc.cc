@@ -248,7 +248,7 @@ void Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::start_tracking()
     d_pull_in = true;
     d_enable_tracking = true;
     d_acc_carrier_phase_initialized = false;
-
+    
     LOG(INFO) << "PULL-IN Doppler [Hz]=" << d_carrier_doppler_hz
               << " Code Phase correction [samples]=" << delay_correction_samples
               << " PULL-IN Code Phase [samples]=" << d_acq_code_phase_samples;
@@ -526,6 +526,7 @@ int Gps_L1_Ca_Dll_Pll_Tracking_GPU_cc::general_work(int noutput_items __attribut
             tmp_E = std::abs<float>(d_correlator_outs[0]);
             tmp_P = std::abs<float>(d_correlator_outs[1]);
             tmp_L = std::abs<float>(d_correlator_outs[2]);
+
             try
                 {
                     // Dump correlators output

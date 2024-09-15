@@ -24,6 +24,7 @@
 #include "gnss_synchro.h"
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "telemetry_decoder_interface.h"
+#include "tlm_conf.h"
 #include <gnuradio/runtime_types.h>  // for basic_block_sptr, top_block_sptr
 #include <cstddef>                   // for size_t
 #include <string>
@@ -82,6 +83,7 @@ public:
 private:
     sbas_l1_telemetry_decoder_gs_sptr telemetry_decoder_;
     Gnss_Satellite satellite_;
+    Tlm_Conf tlm_parameters_;
     std::string dump_filename_;
     std::string role_;
     unsigned int in_streams_;

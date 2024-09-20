@@ -131,7 +131,7 @@ private:
 #include "unit-tests/signal-processing-blocks/tracking/tracking_loop_filter_test.cc"
 #include "unit-tests/system-parameters/galileo_e1b_reed_solomon_test.cc"
 #include "unit-tests/system-parameters/galileo_e6b_reed_solomon_test.cc"
-#include "unit-tests/system-parameters/glonass_gnav_crc_test.cc"
+#include "unit-tests/system-parameters/galileo_ism_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_ephemeris_test.cc"
 #include "unit-tests/system-parameters/glonass_gnav_nav_message_test.cc"
 #include "unit-tests/system-parameters/has_decoding_test.cc"

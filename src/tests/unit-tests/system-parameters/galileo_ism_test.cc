@@ -17,27 +17,14 @@
 
 #include "galileo_ism.h"
 #include <gtest/gtest.h>
-#include <algorithm>
-#include <bitset>
-#include <vector>
 
 TEST(GalileoISMTest, CRC)
 {
+    // Example from ANNEX G Galileo ICD
     Galileo_ISM gal_ism{};
     uint32_t expected_crc = 3002390191;
-    std::bitset<96> input{"010110000010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"};
-    std::vector<uint8_t> data_bytes;
-    for (size_t i = 0; i < input.size(); i += 8)
-        {
-            std::bitset<8> byte;
-            for (size_t j = 0; j < 8; j++)
-                {
-                    byte[j] = input[i + j];
-                }
-            data_bytes.push_back(static_cast<uint8_t>(byte.to_ulong()));
-        }
-
-    std::reverse(data_bytes.begin(), data_bytes.end());
-    auto computed_crc = gal_ism.compute_crc(data_bytes);
-    EXPECT_TRUE(computed_crc == expected_crc);
+    gal_ism.set_ism_crc(expected_crc);
+    std::bitset<128> input{"01011000001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010110010111101001101011010101111"};
+    bool result = gal_ism.check_ism_crc(input);
+    EXPECT_TRUE(result);
 }

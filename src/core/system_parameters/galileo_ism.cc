@@ -15,9 +15,7 @@
  */
 
 #include "galileo_ism.h"
-#include <boost/dynamic_bitset.hpp>
 #include <algorithm>
-#include <vector>
 
 void Galileo_ISM::set_ism_constellation_id(uint8_t const_id)
 {
@@ -177,12 +175,27 @@ uint16_t Galileo_ISM::get_Tvalidity_hours() const
 
 bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
 {
-    boost::dynamic_bitset<unsigned char> frame_bits(bits.to_string().substr(0, GALILEO_ISM_CRC_DATA_BITS));
-    std::vector<unsigned char> bytes;
-    boost::to_block_range(frame_bits, std::back_inserter(bytes));
-    std::reverse(bytes.begin(), bytes.end());
-    crc32_ism.process_bytes(bytes.data(), GALILEO_ISM_CRC_DATA_BYTES);
-    const uint32_t crc_computed = crc32_ism.checksum();
+    std::bitset<96> extracted;
+    for (int32_t i = 0; i < GALILEO_ISM_CRC_DATA_BITS; ++i)
+        {
+            extracted[i] = bits[i + 32];
+        }
+
+    std::vector<uint8_t> data_bytes((extracted.size() + 7) / 8);
+
+    for (size_t i = 0; i < extracted.size(); i += 8)
+        {
+            uint8_t byte = 0;
+            for (size_t j = 0; j < 8 && i + j < extracted.size(); ++j)
+                {
+                    byte |= (extracted[i + j] << j);
+                }
+            data_bytes[i / 8] = byte;
+        }
+
+    std::reverse(data_bytes.begin(), data_bytes.end());
+    const uint32_t crc_computed = this->compute_crc(data_bytes);
+
     if (this->ism_crc == crc_computed)
         {
             return true;

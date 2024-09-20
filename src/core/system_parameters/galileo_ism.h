@@ -69,10 +69,10 @@ public:
     uint16_t get_WN_ISM() const;
     uint16_t get_t0_ISM() const;
     uint16_t get_Tvalidity_hours() const;
-    uint32_t compute_crc(const std::vector<uint8_t>& data);
 
 private:
     boost::crc_basic<32> crc32_ism;
+    uint32_t compute_crc(const std::vector<uint8_t>& data);
 
     // ICD 2.1 Table 97
     std::unordered_map<uint8_t, double> ISM_PCONST_MAP = {

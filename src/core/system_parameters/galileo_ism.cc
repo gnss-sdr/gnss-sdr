@@ -15,7 +15,6 @@
  */
 
 #include "galileo_ism.h"
-#include <boost/crc.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include <algorithm>
 #include <vector>
@@ -176,15 +175,12 @@ uint16_t Galileo_ISM::get_Tvalidity_hours() const
 }
 
 
-bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits) const
+bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
 {
     boost::dynamic_bitset<unsigned char> frame_bits(bits.to_string().substr(0, GALILEO_ISM_CRC_DATA_BITS));
-
     std::vector<unsigned char> bytes;
     boost::to_block_range(frame_bits, std::back_inserter(bytes));
     std::reverse(bytes.begin(), bytes.end());
-
-    boost::crc_optimal<32, 0xC0A0A0D5, 0xFFFFFFFF, 0xFFFFFFFF, true, true> crc32_ism;
     crc32_ism.process_bytes(bytes.data(), GALILEO_ISM_CRC_DATA_BYTES);
     const uint32_t crc_computed = crc32_ism.checksum();
     if (this->ism_crc == crc_computed)
@@ -196,33 +192,9 @@ bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits) c
 }
 
 
-bool Galileo_ISM::ism_apply_to_sat(uint32_t prn) const
+uint32_t Galileo_ISM::compute_crc(const std::vector<uint8_t>& data)
 {
-    if (prn == 0 || prn > 63)
-        {
-            return false;
-        }
-    std::bitset<32> bs(this->ism_mask);
-    if (this->ism_mask_msb == 0)
-        {
-            if (prn <= 32)
-                {
-                    return bs[prn - 1];
-                }
-            else
-                {
-                    return false;
-                }
-        }
-    else
-        {
-            if (prn > 32)
-                {
-                    return bs[prn - 32];
-                }
-            else
-                {
-                    return false;
-                }
-        }
+    crc32_ism.process_bytes(data.data(), data.size());
+    uint32_t result = crc32_ism.checksum();
+    return result;
 }

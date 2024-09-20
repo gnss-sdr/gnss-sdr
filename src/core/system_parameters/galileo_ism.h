@@ -19,9 +19,11 @@
 #define GNSS_SDR_GALILEO_ISM_H
 
 #include "Galileo_INAV.h"
+#include <boost/crc.hpp>
 #include <bitset>
 #include <cstdint>
 #include <unordered_map>
+#include <vector>
 
 /** \addtogroup Core
  * \{ */
@@ -41,7 +43,7 @@ public:
     /*!
      * Default constructor
      */
-    Galileo_ISM() = default;
+    Galileo_ISM() : crc32_ism(0x814141AB, 0, 0, false, false) {};
 
     void set_ism_constellation_id(uint8_t const_id);
     void set_ism_service_level_id(uint8_t sl_id);
@@ -57,19 +59,21 @@ public:
     void set_ism_Tvalidity(uint8_t tvalidity);
     void set_ism_crc(uint32_t crc);
 
-    bool check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits) const;  //!< Requires ism_crc to be already set
-    bool ism_apply_to_sat(uint32_t prn) const;                                //!< Returns true if ISM parameters apply to the prn satellite, false otherwise
+    bool check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits);
 
-    double get_pconst_value() const;       //!< A priori constellation fault probability
-    double get_psat_value() const;         //!< A priori satellite fault probability
-    float get_ura_m() const;               //!< User Range Accuracy, in m, used for integrity
-    float get_ure_m() const;               //!< User Range Error, in m, used for accuracy
-    float get_bnom_m() const;              //!< Maximum nominal bias for a satellite, in m
-    uint16_t get_WN_ISM() const;           //!< ISM Week Number, in weeks
-    uint16_t get_t0_ISM() const;           //!< ISM Time of Week, in seconds
-    uint16_t get_Tvalidity_hours() const;  //!< Validity duration of ISM content, in hours
+    double get_pconst_value() const;
+    double get_psat_value() const;
+    float get_ura_m() const;
+    float get_ure_m() const;
+    float get_bnom_m() const;
+    uint16_t get_WN_ISM() const;
+    uint16_t get_t0_ISM() const;
+    uint16_t get_Tvalidity_hours() const;
+    uint32_t compute_crc(const std::vector<uint8_t>& data);
 
 private:
+    boost::crc_basic<32> crc32_ism;
+
     // ICD 2.1 Table 97
     std::unordered_map<uint8_t, double> ISM_PCONST_MAP = {
         {0, 1.0e-8},
@@ -146,7 +150,6 @@ private:
         {14, 3.75},
         {15, 4.00}};
 
-
     // ICD 2.1 Table 101
     std::unordered_map<uint8_t, float> ISM_BNOM_MAP = {
         {0, 0.0},
@@ -165,7 +168,6 @@ private:
         {13, 1.80},
         {14, 2.0},
         {15, 2.4}};
-
 
     // ICD 2.1 Table 102
     std::unordered_map<uint8_t, uint16_t> ISM_TVALIDITY_MAP = {

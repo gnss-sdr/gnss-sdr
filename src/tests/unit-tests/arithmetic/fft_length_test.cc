@@ -24,9 +24,13 @@
 #include <functional>
 #include <random>
 
-
+#if USE_GLOG_AND_GFLAGS
 DEFINE_int32(fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
 DEFINE_bool(plot_fft_length_test, false, "Plots results of FFTLengthTest with gnuplot");
+#else
+ABSL_FLAG(int32_t, fft_iterations_test, 1000, "Number of averaged iterations in FFT length timing test");
+ABSL_FLAG(bool, plot_fft_length_test, false, "Plots results of FFTLengthTest with gnuplot");
+#endif
 
 // Note from FFTW documentation: the standard FFTW distribution works most efficiently for arrays whose
 // size can be factored into small primes (2, 3, 5, and 7), and otherwise it uses a slower general-purpose routine.
@@ -63,13 +67,21 @@ TEST(FFTLengthTest, MeasureExecutionTime)
             std::generate_n(d_fft->get_inbuf(), d_fft_size, gen);
 
             start = std::chrono::system_clock::now();
+#if USE_GLOG_AND_GFLAGS
             for (int k = 0; k < FLAGS_fft_iterations_test; k++)
+#else
+            for (int k = 0; k < absl::GetFlag(FLAGS_fft_iterations_test); k++)
+#endif
                 {
                     d_fft->execute();
                 }
             end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
+#if USE_GLOG_AND_GFLAGS
             double exec_time = elapsed_seconds.count() / static_cast<double>(FLAGS_fft_iterations_test);
+#else
+            double exec_time = elapsed_seconds.count() / static_cast<double>(absl::GetFlag(FLAGS_fft_iterations_test));
+#endif
             execution_times.push_back(exec_time * 1e3);
             std::cout << "FFT execution time for length=" << d_fft_size << " : " << exec_time << " [s]\n";
 
@@ -79,10 +91,15 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                     execution_times_powers_of_two.push_back(exec_time / 1e-3);
                 }
         });
-
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_fft_length_test == true)
         {
             const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+    if (absl::GetFlag(FLAGS_plot_fft_length_test) == true)
+        {
+            const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
             if (gnuplot_executable.empty())
                 {
                     std::cout << "WARNING: Although the flag plot_fft_length_test has been set to TRUE,\n";
@@ -99,7 +116,11 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             Gnuplot::set_GNUPlotPath(gnuplot_path);
 
                             Gnuplot g1("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g1.showonscreen();  // window output
                                 }
@@ -111,13 +132,21 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g1.set_grid();
                             g1.set_xlabel("FFT length");
                             g1.set_ylabel("Execution time [ms]");
+#if USE_GLOG_AND_GFLAGS
                             g1.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(FLAGS_fft_iterations_test) + " iterations)");
+#else
+                            g1.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(absl::GetFlag(FLAGS_fft_iterations_test)) + " iterations)");
+#endif
                             g1.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g1.savetops("FFT_execution_times_extended");
                             g1.savetopdf("FFT_execution_times_extended", 18);
 
                             Gnuplot g2("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g2.showonscreen();  // window output
                                 }
@@ -130,11 +159,20 @@ TEST(FFTLengthTest, MeasureExecutionTime)
                             g2.set_xlabel("FFT length");
                             g2.set_ylabel("Execution time [ms]");
                             g2.set_xrange(0, 16384);
+#if USE_GLOG_AND_GFLAGS
                             g2.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(FLAGS_fft_iterations_test) + " iterations)");
+#else
+                            g2.plot_xy(fft_sizes_v, execution_times, "FFT execution time (averaged over " + std::to_string(absl::GetFlag(FLAGS_fft_iterations_test)) + " iterations)");
+#endif
+
                             g2.set_style("points").plot_xy(powers_of_two, execution_times_powers_of_two, "Power of 2");
                             g2.savetops("FFT_execution_times");
                             g2.savetopdf("FFT_execution_times", 18);
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g2.showonscreen();  // window output
                                 }

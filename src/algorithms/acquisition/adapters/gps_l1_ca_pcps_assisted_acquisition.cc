@@ -23,8 +23,12 @@
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     const ConfigurationInterface* configuration,
@@ -51,10 +55,17 @@ GpsL1CaPcpsAssistedAcquisition::GpsL1CaPcpsAssistedAcquisition(
     int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", 2048000);
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
     doppler_min_ = configuration->property(role_ + ".doppler_min", -doppler_max_);
 
     bool enable_monitor_output = configuration->property("AcquisitionMonitor.enable_monitor", false);

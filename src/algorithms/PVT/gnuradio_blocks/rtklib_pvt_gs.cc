@@ -64,7 +64,6 @@
 #include <boost/exception/exception.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/nvp.hpp>  // for nvp, make_nvp
-#include <glog/logging.h>               // for LOG
 #include <gnuradio/io_signature.h>      // for io_signature
 #include <pmt/pmt_sugar.h>              // for mp
 #include <algorithm>                    // for sort, unique
@@ -81,6 +80,12 @@
 #include <sys/msg.h>                    // for msgctl
 #include <typeinfo>                     // for std::type_info, typeid
 #include <utility>                      // for pair
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -462,7 +467,12 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
-            d_udp_sink_ptr = std::make_unique<Monitor_Pvt_Udp_Sink>(udp_addr_vec, conf_.udp_port, conf_.protobuf_enabled);
+            std::string port_string = conf_.udp_ports;
+            std::vector<std::string> udp_port_vec = split_string(port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
+            d_udp_sink_ptr = std::make_unique<Monitor_Pvt_Udp_Sink>(udp_addr_vec, udp_port_vec, conf_.protobuf_enabled);
         }
     else
         {
@@ -2168,7 +2178,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             d_gnss_observables_map_t1 = d_gnss_observables_map;
 
                                             // ### select the rx_time and interpolate observables at that time
-                                            if (!d_gnss_observables_map_t0.empty())
+                                            if (!d_gnss_observables_map_t0.empty() && !d_gnss_observables_map_t1.empty())
                                                 {
                                                     const auto t0_int_ms = static_cast<uint32_t>(d_gnss_observables_map_t0.cbegin()->second.RX_time * 1000.0);
                                                     const uint32_t adjust_next_obs_interval_ms = d_observable_interval_ms - t0_int_ms % d_observable_interval_ms;

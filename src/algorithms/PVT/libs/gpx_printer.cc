@@ -20,13 +20,17 @@
 #include "gnss_sdr_filesystem.h"
 #include "pvt_solution.h"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
 #include <ctime>      // for tm
 #include <exception>  // for exception
 #include <iomanip>    // for operator<<
 #include <iostream>   // for cout, cerr
 #include <sstream>    // for stringstream
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Gpx_Printer::Gpx_Printer(const std::string& base_path) : indent("  "),
                                                          gpx_base_path(base_path),

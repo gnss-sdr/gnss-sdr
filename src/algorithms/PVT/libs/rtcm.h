@@ -29,7 +29,6 @@
 #include "gps_ephemeris.h"
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <glog/logging.h>
 #include <algorithm>  // for std::max, std::min, std::copy_n
 #include <array>
 #include <bitset>
@@ -46,6 +45,12 @@
 #include <thread>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 /** \addtogroup PVT
  * \{ */
@@ -723,10 +728,10 @@ private:
                                 {
                                     if (first == true)
                                         {
-                                            LOG(INFO) << "Client says:";
+                                            DLOG(INFO) << "Client says:";
                                             first = false;
                                         }
-                                    LOG(INFO) << client_says;
+                                    DLOG(INFO) << client_says;
                                     client_says = client_says.substr(80, client_says.length() - 80);
                                 }
                             do_read_message_header();

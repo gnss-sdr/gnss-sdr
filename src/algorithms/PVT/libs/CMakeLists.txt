@@ -92,10 +92,17 @@ target_link_libraries(pvt_libs
         algorithms_libs_rtklib
     PRIVATE
         algorithms_libs
-        Gflags::gflags
-        Glog::glog
+        gnss_sdr_flags
         Matio::matio
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(pvt_libs PUBLIC Glog::glog)
+
+    target_compile_definitions(pvt_libs PUBLIC -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(pvt_libs PUBLIC absl::log)
+endif()
 
 get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 

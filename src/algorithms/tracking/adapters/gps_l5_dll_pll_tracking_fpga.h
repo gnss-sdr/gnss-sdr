@@ -65,11 +65,11 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L5_DLL_PLL_Tracking_Fpga"
+     * \brief Returns "GPS_L5_DLL_PLL_Tracking_FPGA"
      */
     inline std::string implementation() override
     {
-        return "GPS_L5_DLL_PLL_Tracking_Fpga";
+        return "GPS_L5_DLL_PLL_Tracking_FPGA";
     }
 
     /*!

@@ -14,14 +14,78 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Interoperability:
+
+- Improved error handling in UDP connections.
+- Make it possible to receive multiple constellations using a single channel
+  wideband device (HackRF/LimeSDR/USRP). Demonstration:
+  https://www.youtube.com/watch?v=ZQs2sFchJ6w
+  https://www.youtube.com/watch?v=HnZkKj9a-QM
+- Add the following signal sources for use when GNSS-SDR is operating on SoC
+  FPGA boards (`-DENABLE_FPGA=ON`):
+
+  - `ADRV9361_Z7035_Signal_Source_FPGA`: Analog Devices ADRV9361-Z7035 board.
+  - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
+  - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
+  - `DMA_Signal_Source_FPGA`: FPGA DMA working in post-processing mode.
+
+  When building GNSS-SDR for the SoC FPGA, the following options can be passed
+  to CMake with possible values of `ON` or `OFF`, and their default value is
+  `OFF`:
+
+  - `-DENABLE_AD9361`: Checks if the IIO driver is installed and builds the
+    `ADRV9361_Z7035_Signal_Source_FPGA` and the `FMCOMMS5_Signal_Source_FPGA`
+    sources.
+  - `-DENABLE_MAX2771`: Checks if the SPIdev driver is installed and builds the
+    `MAX2771_EVKIT_Signal_Source_FPGA` source.
+  - `-DENABLE_DMA_PROXY`: Checks if the DMA proxy driver is installed for
+    controlling the DMA in the FPGA and enables its usage.
+
+- Add the `ION_GSMS_Signal_Source`, which is able to process raw data files
+  described with the
+  [ION GNSS Software Defined Receiver Metadata Standard](https://sdr.ion.org/).
+  It requires the `-DENABLE_ION=ON` building configuration option.
+- The `Monitor` and `PVT` blocks are now able to send data to multiple UDP
+  ports.
+
 ### Improvements in Portability:
 
-- Fix building against google-glog 0.7.0
+- Fix building against google-glog 0.7.x.
 - Find dependencies in the loongarch64 architecture.
+- Soft transition from [GFlags](https://github.com/gflags/gflags) and
+  [Google Logging (glog)](https://github.com/google/glog) to Abseil
+  [Logging](https://abseil.io/docs/cpp/guides/logging) and
+  [Flags](https://abseil.io/docs/cpp/guides/flags) libraries. While gflags and
+  glog have dutifully served GNSS-SDR for over a decade, they are now showing
+  signs of aging. The latest version of gflags dates back six years now, with
+  its last commit in the master branch occurring two years ago. Glog remains
+  well maintained, with its latest version v0.7.0 released in February 2024, but
+  with no active development of new features and stuck at C++14. Abseil, on the
+  other hand, represents a contemporary evolution in software development,
+  supports C++17 and C++20, and has absorbed the functionalities of flags and
+  logging from its predecessors. Furthermore, as Abseil has become a
+  prerequisite for the latest versions of Protocol Buffers, its eventual
+  inclusion in GNSS-SDR's indirect dependencies is inevitable. Leveraging Abseil
+  allows for eliminating the need for gflags and glog, thereby reducing the
+  number of mandatory dependencies for GNSS-SDR in forthcoming GNU/Linux
+  distributions. For seamless integration, GNSS-SDR requires a quite recent
+  minimum version of Abseil, v20240116. If an older version is detected, the
+  library will not be utilized, and GNSS-SDR will fall back to using gflags and
+  glog, which still can be used and are fully supported. A new CMake
+  configuration option `-DENABLE_GLOG_AND_GFLAGS=ON` is available to force the
+  usage of glog and gflags instead of Abseil, even if a valid version of that
+  library is present. If the Abseil version installed in your system is too old
+  but you still want to try it, you can also force the downloading and building
+  of a recent version with the new CMake configuration flag
+  `-DENABLE_OWN_ABSEIL=ON` (requires CMake >= 3.24, otherwise it has no effect).
+  This change has a downside in maintainability, since the source code becomes
+  plagued with preprocessor directives required to maintain compatibility both
+  with gflags and glog, and with Abseil.
 
 ### Improvements in Usability:
 
 - Tidy up the `conf/` folder.
+- Add `install` and `uninstall` targets to the `nav_msg_listener` utility.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

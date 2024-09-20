@@ -14,7 +14,6 @@
  * -----------------------------------------------------------------------------
  */
 
-#include <gflags/gflags.h>
 #include <gnuradio/analog/sig_source_waveform.h>
 #include <gnuradio/top_block.h>
 #include <chrono>
@@ -38,14 +37,24 @@
 #include <gtest/gtest.h>
 #include <utility>
 
-
+#if USE_GLOG_AND_GFLAGS
+#include <gflags/gflags.h>
 DEFINE_int32(notch_filter_lite_test_nsamples, 1000000, "Number of samples to filter in the tests (max: 2147483647)");
+#else
+#include <absl/flags/flag.h>
+ABSL_FLAG(int32_t, notch_filter_lite_test_nsamples, 1000000, "Number of samples to filter in the tests (max: 2147483647)");
+#endif
+
 
 class NotchFilterLiteTest : public ::testing::Test
 {
 protected:
     NotchFilterLiteTest() : item_size(sizeof(gr_complex)),
+#if USE_GLOG_AND_GFLAGS
                             nsamples(FLAGS_notch_filter_lite_test_nsamples)
+#else
+                            nsamples(absl::GetFlag(FLAGS_notch_filter_lite_test_nsamples))
+#endif
     {
         queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
         config = std::make_shared<InMemoryConfiguration>();

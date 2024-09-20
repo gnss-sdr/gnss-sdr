@@ -18,7 +18,6 @@
 #include "GPS_L1_CA.h"
 #include "cpu_multicorrelator.h"
 #include "gps_sdr_signal_replica.h"
-#include <gflags/gflags.h>
 #include <gnuradio/gr_complex.h>
 #include <gtest/gtest.h>
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
@@ -27,9 +26,13 @@
 #include <random>
 #include <thread>
 
-
+#if USE_GLOG_AND_GFLAGS
 DEFINE_int32(cpu_multicorrelator_iterations_test, 100, "Number of averaged iterations in CPU multicorrelator test timing test");
 DEFINE_int32(cpu_multicorrelator_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
+#else
+ABSL_FLAG(int32_t, cpu_multicorrelator_iterations_test, 100, "Number of averaged iterations in CPU multicorrelator test timing test");
+ABSL_FLAG(int32_t, cpu_multicorrelator_max_threads_test, 12, "Number of maximum concurrent correlators in CPU multicorrelator test timing test");
+#endif
 
 void run_correlator_cpu(Cpu_Multicorrelator* correlator,
     float d_rem_carrier_phase_rad,
@@ -38,7 +41,11 @@ void run_correlator_cpu(Cpu_Multicorrelator* correlator,
     float d_rem_code_phase_chips,
     int correlation_size)
 {
+#if USE_GLOG_AND_GFLAGS
     for (int k = 0; k < FLAGS_cpu_multicorrelator_iterations_test; k++)
+#else
+    for (int k = 0; k < absl::GetFlag(FLAGS_cpu_multicorrelator_iterations_test); k++)
+#endif
         {
             correlator->Carrier_wipeoff_multicorrelator_resampler(d_rem_carrier_phase_rad,
                 d_carrier_phase_step_rad,
@@ -53,7 +60,11 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
+#if USE_GLOG_AND_GFLAGS
     int max_threads = FLAGS_cpu_multicorrelator_max_threads_test;
+#else
+    int max_threads = absl::GetFlag(FLAGS_cpu_multicorrelator_max_threads_test);
+#endif
     std::vector<std::thread> thread_pool;
     std::vector<Cpu_Multicorrelator*> correlator_pool(max_threads);
     unsigned int correlation_sizes[3] = {2048, 4096, 8192};
@@ -138,7 +149,11 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTime)
                     thread_pool.clear();
                     end = std::chrono::system_clock::now();
                     elapsed_seconds = end - start;
+#if USE_GLOG_AND_GFLAGS
                     execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(FLAGS_cpu_multicorrelator_iterations_test);
+#else
+                    execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(absl::GetFlag(FLAGS_cpu_multicorrelator_iterations_test));
+#endif
                     std::cout << "CPU Multicorrelator execution time for length=" << correlation_sizes[correlation_sizes_idx]
                               << " : " << execution_times[correlation_sizes_idx] << " [s]\n";
                 }
@@ -160,7 +175,11 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTimeAlloc)
 {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed_seconds(0);
+#if USE_GLOG_AND_GFLAGS
     int max_threads = FLAGS_cpu_multicorrelator_max_threads_test;
+#else
+    int max_threads = absl::GetFlag(FLAGS_cpu_multicorrelator_max_threads_test);
+#endif
     std::vector<std::thread> thread_pool;
     std::vector<Cpu_Multicorrelator*> correlator_pool(max_threads);
     unsigned int correlation_sizes[3] = {2048, 4096, 8192};
@@ -236,7 +255,11 @@ TEST(CpuMulticorrelatorTest, MeasureExecutionTimeAlloc)
                     thread_pool.clear();
                     end = std::chrono::system_clock::now();
                     elapsed_seconds = end - start;
+#if USE_GLOG_AND_GFLAGS
                     execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(FLAGS_cpu_multicorrelator_iterations_test);
+#else
+                    execution_times[correlation_sizes_idx] = elapsed_seconds.count() / static_cast<double>(absl::GetFlag(FLAGS_cpu_multicorrelator_iterations_test));
+#endif
                     std::cout << "CPU Multicorrelator execution time for length=" << correlation_sizes[correlation_sizes_idx]
                               << " : " << execution_times[correlation_sizes_idx] << " [s]\n";
                 }

@@ -19,14 +19,26 @@
 
 #include "dll_pll_conf_fpga.h"
 #include "gnss_sdr_flags.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-
+#if USE_GLOG_AND_GFLAGS
 Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga() : carrier_lock_th(FLAGS_carrier_lock_th),
                                          cn0_samples(FLAGS_cn0_samples),
                                          cn0_min(FLAGS_cn0_min),
                                          max_code_lock_fail(FLAGS_max_lock_fail),
                                          max_carrier_lock_fail(FLAGS_max_carrier_lock_fail)
+#else
+Dll_Pll_Conf_Fpga::Dll_Pll_Conf_Fpga() : carrier_lock_th(absl::GetFlag(FLAGS_carrier_lock_th)),
+                                         cn0_samples(absl::GetFlag(FLAGS_cn0_samples)),
+                                         cn0_min(absl::GetFlag(FLAGS_cn0_min)),
+                                         max_code_lock_fail(absl::GetFlag(FLAGS_max_lock_fail)),
+                                         max_carrier_lock_fail(absl::GetFlag(FLAGS_max_carrier_lock_fail))
+#endif
 {
     signal[0] = '1';
     signal[1] = 'C';
@@ -88,15 +100,29 @@ void Dll_Pll_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *confi
     pll_pull_in_bw_hz = 50.0;
     dll_pull_in_bw_hz = 3.0;
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", pll_bw_hz);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_pll_bw_hz != 0.0)
         {
             pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
         }
+#else
+    if (absl::GetFlag(FLAGS_pll_bw_hz) != 0.0)
+        {
+            pll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_pll_bw_hz));
+        }
+#endif
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", dll_bw_hz);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_dll_bw_hz != 0.0)
         {
             dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
         }
+#else
+    if (absl::GetFlag(FLAGS_dll_bw_hz) != 0.0)
+        {
+            dll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_dll_bw_hz));
+        }
+#endif
     pll_bw_narrow_hz = configuration->property(role + ".pll_bw_narrow_hz", pll_bw_narrow_hz);
     dll_bw_narrow_hz = configuration->property(role + ".dll_bw_narrow_hz", dll_bw_narrow_hz);
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", early_late_space_chips);

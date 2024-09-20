@@ -17,9 +17,13 @@
 #include "beamformer_filter.h"
 #include "beamformer.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 BeamformerFilter::BeamformerFilter(
     const ConfigurationInterface* configuration, const std::string& role,

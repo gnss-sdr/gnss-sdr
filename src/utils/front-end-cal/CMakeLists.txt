@@ -30,11 +30,16 @@ target_link_libraries(front_end_cal_lib
         core_libs
     PRIVATE
         Boost::headers
-        Gflags::gflags
-        Glog::glog
         Gnuradio::blocks
         Gnuradio::runtime
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(front_end_cal_lib PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(front_end_cal_lib PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(front_end_cal_lib PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)
@@ -59,8 +64,14 @@ target_link_libraries(front-end-cal
         front_end_cal_lib
         gnss_sdr_flags
         Boost::headers
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(front-end-cal PRIVATE Glog::glog)
+    target_compile_definitions(front-end-cal PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(front-end-cal PRIVATE absl::flags absl::flags_parse absl::log absl::log_initialize absl::log_sink absl::log_sink_registry)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(front-end-cal

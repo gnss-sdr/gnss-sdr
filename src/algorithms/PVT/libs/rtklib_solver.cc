@@ -35,7 +35,6 @@
 #include "gnss_sdr_filesystem.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
-#include <glog/logging.h>
 #include <matio.h>
 #include <algorithm>
 #include <cmath>
@@ -43,6 +42,11 @@
 #include <utility>
 #include <vector>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
     const Pvt_Conf &conf,

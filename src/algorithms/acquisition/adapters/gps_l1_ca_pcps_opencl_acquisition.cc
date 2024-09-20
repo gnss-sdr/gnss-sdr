@@ -21,8 +21,13 @@
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
 #include <boost/math/distributions/exponential.hpp>
-#include <glog/logging.h>
 #include <algorithm>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_STD_SPAN
 #include <span>
@@ -58,10 +63,17 @@ GpsL1CaPcpsOpenClAcquisition::GpsL1CaPcpsOpenClAcquisition(
     fs_in_ = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump_ = configuration->property(role + ".dump", false);
     doppler_max_ = configuration->property(role + ".doppler_max", 5000);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             doppler_max_ = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            doppler_max_ = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
     sampled_ms_ = configuration->property(role + ".coherent_integration_time_ms", 1);
 
     bit_transition_flag_ = configuration->property("Acquisition.bit_transition_flag", false);

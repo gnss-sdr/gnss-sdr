@@ -40,7 +40,6 @@
 #include "signal_source_interface.h"
 #include <boost/lexical_cast.hpp>    // for boost::lexical_cast
 #include <boost/tokenizer.hpp>       // for boost::tokenizer
-#include <glog/logging.h>            // for LOG
 #include <gnuradio/basic_block.h>    // for basic_block
 #include <gnuradio/filter/firdes.h>  // for gr::filter::firdes
 #include <gnuradio/io_signature.h>   // for io_signature
@@ -49,6 +48,7 @@
 #include <algorithm>                 // for transform, sort, unique
 #include <cmath>                     // for floor
 #include <cstddef>                   // for size_t
+#include <cstdlib>                   // for exit
 #include <exception>                 // for exception
 #include <iostream>                  // for operator<<
 #include <iterator>                  // for insert_iterator, inserter
@@ -58,6 +58,12 @@
 #include <stdexcept>                 // for invalid_argument
 #include <thread>                    // for std::thread
 #include <utility>                   // for std::move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifdef GR_GREATER_38
 #include <gnuradio/filter/fir_filter_blk.h>
@@ -119,9 +125,9 @@ void GNSSFlowgraph::init()
     sources_count_ = configuration_->property("GNSS-SDR.num_sources", sources_count_deprecated);
 
     // Avoid segmentation fault caused by wrong configuration
-    if (sources_count_ == 2 && block_factory->GetSignalSource(configuration_.get(), queue_.get(), 0)->implementation() == "Multichannel_File_Signal_Source")
+    if (sources_count_ == 2 && configuration_->property("SignalSource.implementation", std::string("")) == "Multichannel_File_Signal_Source")
         {
-            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuraiion file\n";
+            std::cout << " * Please set GNSS-SDR.num_sources=1 in your configuration file\n";
             std::cout << "   if you are using the Multichannel_File_Signal_Source implementation.\n";
             sources_count_ = 1;
         }
@@ -131,7 +137,13 @@ void GNSSFlowgraph::init()
     for (int i = 0; i < sources_count_; i++)
         {
             DLOG(INFO) << "Creating source " << i;
-            sig_source_.push_back(block_factory->GetSignalSource(configuration_.get(), queue_.get(), i));
+            auto check_not_nullptr = block_factory->GetSignalSource(configuration_.get(), queue_.get(), i);
+            if (!check_not_nullptr)
+                {
+                    std::cout << "GNSS-SDR program ended.\n";
+                    exit(1);
+                }
+            sig_source_.push_back(std::move(check_not_nullptr));
             if (enable_fpga_offloading_ == false)
                 {
                     auto& src = sig_source_.back();
@@ -205,11 +217,17 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("Monitor.udp_port", std::string("1234"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             // Instantiate monitor object
             GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
-                configuration_->property("Monitor.udp_port", 1234),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
@@ -229,10 +247,16 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("AcquisitionMonitor.udp_port", std::string("1235"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             GnssSynchroAcquisitionMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("AcquisitionMonitor.decimation_factor", 1),
-                configuration_->property("AcquisitionMonitor.udp_port", 1235),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
@@ -252,14 +276,20 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("TrackingMonitor.udp_port", std::string("1236"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             GnssSynchroTrackingMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("TrackingMonitor.decimation_factor", 1),
-                configuration_->property("TrackingMonitor.udp_port", 1236),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
-     * Instantiate the receiver av message monitor block, if required
+     * Instantiate the receiver nav message monitor block, if required
      */
     enable_navdata_monitor_ = configuration_->property("NavDataMonitor.enable_monitor", false);
     if (enable_navdata_monitor_)
@@ -542,7 +572,7 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
             if (src == nullptr)
                 {
                     help_hint_ += " * Check implementation name for SignalSource block.\n";
-                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Fpga_Signal_Source\n";
+                    help_hint_ += "   Signal Source block implementation for FPGA off-loading should be Ad9361_Signal_Source_Fpga or Fpga_DMA_2Signal_Source\n";
                     return 1;
                 }
             if (src->item_size() == 0)
@@ -961,7 +991,7 @@ int GNSSFlowgraph::connect_signal_sources_to_signal_conditioners()
                                         }
                                     else
                                         {
-                                            if (j == 0)
+                                            if (j == 0 || !src->get_right_block(j))
                                                 {
                                                     // RF_channel 0 backward compatibility with single channel sources
                                                     LOG(INFO) << "connecting sig_source_ " << i << " stream " << 0 << " to conditioner " << signal_conditioner_ID;
@@ -2181,7 +2211,7 @@ void GNSSFlowgraph::set_signals_list()
 
     std::string sv_list = configuration_->property("Galileo.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2221,7 +2251,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("GPS.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2261,7 +2291,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("SBAS.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2301,7 +2331,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("Glonass.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;
@@ -2341,7 +2371,7 @@ void GNSSFlowgraph::set_signals_list()
 
     sv_list = configuration_->property("Beidou.prns", std::string(""));
 
-    if (sv_list.length() > 0)
+    if (!sv_list.empty())
         {
             // Reset the available prns:
             std::set<unsigned int> tmp_set;

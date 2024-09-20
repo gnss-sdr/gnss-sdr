@@ -34,7 +34,6 @@
 #include "tlm_crc_stats.h"           // for Tlm_CRC_Stats
 #include "tlm_utils.h"               // for save_tlm_matfile, tlm_remove_file
 #include "viterbi_decoder.h"         // for Viterbi_Decoder
-#include <glog/logging.h>            // for LOG, DLOG
 #include <gnuradio/io_signature.h>   // for gr::io_signature::make
 #include <pmt/pmt_sugar.h>           // for pmt::mp
 #include <array>                     // for std::array
@@ -48,6 +47,12 @@
 #include <stdexcept>                 // for std::out_of_range
 #include <typeinfo>                  // for typeid
 #include <utility>                   // for std::pair
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

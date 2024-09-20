@@ -32,7 +32,6 @@
 #include "tcp_communication.h"
 #include "tcp_packet_data.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>  // for fill_n
@@ -41,6 +40,12 @@
 #include <memory>
 #include <sstream>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 galileo_e1_tcp_connector_tracking_cc_sptr galileo_e1_tcp_connector_make_tracking_cc(
@@ -111,7 +116,11 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
       d_cn0_estimation_counter(0),
       d_carrier_lock_test(1),
       d_CN0_SNV_dB_Hz(0),
+#if USE_GLOG_AND_GFLAGS
       d_carrier_lock_threshold(static_cast<float>(FLAGS_carrier_lock_th)),
+#else
+      d_carrier_lock_threshold(static_cast<float>(absl::GetFlag(FLAGS_carrier_lock_th))),
+#endif
       d_carrier_lock_fail_counter(0),
       d_enable_tracking(false),
       d_pull_in(false),
@@ -126,8 +135,11 @@ Galileo_E1_Tcp_Connector_Tracking_cc::Galileo_E1_Tcp_Connector_Tracking_cc(
     // Telemetry message port input
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
 
+#if USE_GLOG_AND_GFLAGS
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-
+#else
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(absl::GetFlag(FLAGS_cn0_samples));
+#endif
     // Initialization of local code replica
     // Get space for a vector with the sinboc(1,1) replica sampled 2x/chip
     d_ca_code = volk_gnsssdr::vector<gr_complex>(2 * GALILEO_E1_B_CODE_LENGTH_CHIPS, gr_complex(0.0, 0.0));
@@ -365,10 +377,13 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
             T_prn_samples = T_prn_seconds * static_cast<double>(d_fs_in);
             K_blk_samples = T_prn_samples + d_rem_code_phase_samples + code_error_filt_secs * static_cast<double>(d_fs_in);
             d_current_prn_length_samples = round(K_blk_samples);  // round to a discrete number of samples
-            // d_rem_code_phase_samples = K_blk_samples - d_current_prn_length_samples; //rounding error < 1 sample
 
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
+#if USE_GLOG_AND_GFLAGS
             if (d_cn0_estimation_counter < FLAGS_cn0_samples)
+#else
+            if (d_cn0_estimation_counter < absl::GetFlag(FLAGS_cn0_samples))
+#endif
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
@@ -379,6 +394,8 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                     d_cn0_estimation_counter = 0;
 
                     // Code lock indicator
+
+#if USE_GLOG_AND_GFLAGS
                     d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GALILEO_E1_CODE_PERIOD_S);
 
                     // Carrier lock indicator
@@ -386,6 +403,14 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
 
                     // Loss of lock detection
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+#else
+                    d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples), GALILEO_E1_CODE_PERIOD_S);
+
+                    // Carrier lock indicator
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples));
+
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+#endif
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -396,7 +421,11 @@ int Galileo_E1_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attri
                                     d_carrier_lock_fail_counter--;
                                 }
                         }
+#if USE_GLOG_AND_GFLAGS
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
+#else
+                    if (d_carrier_lock_fail_counter > absl::GetFlag(FLAGS_max_lock_fail))
+#endif
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";

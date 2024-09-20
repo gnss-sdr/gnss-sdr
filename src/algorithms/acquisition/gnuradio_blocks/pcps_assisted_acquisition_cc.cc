@@ -20,7 +20,6 @@
 #include "MATH_CONSTANTS.h"
 #include "concurrent_map.h"
 #include "gps_acq_assist.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <volk/volk.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
@@ -30,6 +29,11 @@
 #include <sstream>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 

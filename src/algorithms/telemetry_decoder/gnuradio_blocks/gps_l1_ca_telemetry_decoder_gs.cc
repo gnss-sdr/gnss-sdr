@@ -24,7 +24,6 @@
 #include "gps_iono.h"              // for Gps_Iono
 #include "gps_utc_model.h"         // for Gps_Utc_Model
 #include "tlm_utils.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
@@ -38,6 +37,12 @@
 #include <memory>           // for shared_ptr
 #include <utility>          // for std::move
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifdef COMPILER_HAS_ROTL
 #include <bit>

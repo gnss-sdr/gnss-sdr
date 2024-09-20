@@ -23,13 +23,18 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/map.hpp>
-#include <glog/logging.h>
 #include <pugixml.hpp>
 #include <cmath>      // for pow
 #include <exception>  // for exception
 #include <iostream>   // for cerr
 #include <utility>    // for pair
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Gnss_Sdr_Supl_Client::Gnss_Sdr_Supl_Client()
     : server_port(0), request(0), mcc(0), mns(0), lac(0), ci(0)

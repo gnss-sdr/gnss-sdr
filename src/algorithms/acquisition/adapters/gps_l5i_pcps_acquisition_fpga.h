@@ -69,11 +69,11 @@ public:
     }
 
     /*!
-     * \brief Returns "GPS_L5i_PCPS_Acquisition_Fpga"
+     * \brief Returns "GPS_L5i_PCPS_Acquisition_FPGA"
      */
     inline std::string implementation() override
     {
-        return "GPS_L5i_PCPS_Acquisition_Fpga";
+        return "GPS_L5i_PCPS_Acquisition_FPGA";
     }
 
     /*!

@@ -161,12 +161,18 @@ public:
     std::string p4;
     std::string p5;
     std::string p6;
+
+#if USE_GLOG_AND_GFLAGS
     std::string implementation = FLAGS_trk_test_implementation;
-
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
-
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_signal_file;
+#else
+    std::string implementation = absl::GetFlag(FLAGS_trk_test_implementation);
+    const int baseband_sampling_freq = absl::GetFlag(FLAGS_fs_gen_sps);
+    std::string filename_rinex_obs = absl::GetFlag(FLAGS_filename_rinex_obs);
+    std::string filename_raw_data = absl::GetFlag(FLAGS_signal_file);
+#endif
 
     std::map<int, double> doppler_measurements_map;
     std::map<int, double> code_delay_measurements_map;
@@ -229,6 +235,7 @@ public:
 
 int TrackingPullInTest::configure_generator(double CN0_dBHz, int file_idx)
 {
+#if USE_GLOG_AND_GFLAGS
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
 
@@ -245,6 +252,24 @@ int TrackingPullInTest::configure_generator(double CN0_dBHz, int file_idx)
     p4 = std::string("-sig_out_file=") + FLAGS_signal_file + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);       // Baseband sampling frequency [MSps]
     p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                          // Signal generator CN0
+#else
+    // Configure signal generator
+    generator_binary = absl::GetFlag(FLAGS_generator_binary);
+
+    p1 = std::string("-rinex_nav_file=") + absl::GetFlag(FLAGS_rinex_nav_file);
+    if (absl::GetFlag(FLAGS_dynamic_position).empty())
+        {
+            p2 = std::string("-static_position=") + absl::GetFlag(FLAGS_static_position) + std::string(",") + std::to_string(absl::GetFlag(FLAGS_duration) * 10);
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(absl::GetFlag(FLAGS_dynamic_position));
+        }
+    p3 = std::string("-rinex_obs_file=") + absl::GetFlag(FLAGS_filename_rinex_obs);                    // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + absl::GetFlag(FLAGS_signal_file) + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);                      // Baseband sampling frequency [MSps]
+    p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                                         // Signal generator CN0
+#endif
     return 0;
 }
 
@@ -291,7 +316,11 @@ void TrackingPullInTest::configure_receiver(
     config->set_property("Tracking.extend_correlation_symbols", std::to_string(extend_correlation_symbols));
     config->set_property("Tracking.pll_bw_narrow_hz", std::to_string(PLL_narrow_bw_hz));
     config->set_property("Tracking.dll_bw_narrow_hz", std::to_string(DLL_narrow_bw_hz));
+#if USE_GLOG_AND_GFLAGS
     gnss_synchro.PRN = FLAGS_test_satellite_PRN;
+#else
+    gnss_synchro.PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
     gnss_synchro.Channel_ID = 0;
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
 
@@ -383,8 +412,12 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
-    // Enable automatic resampler for the acquisition, if required
+// Enable automatic resampler for the acquisition, if required
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_use_acquisition_resampler == true)
+#else
+    if (absl::GetFlag(FLAGS_use_acquisition_resampler) == true)
+#endif
         {
             config->set_property("GNSS-SDR.use_acquisition_resampler", "true");
         }
@@ -406,7 +439,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L1 CA";
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
+#else
+            config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
+#endif
             // acquisition = std::make_shared<GpsL1CaPcpsAcquisitionFineDoppler>(config.get(), "Acquisition", 1, 0);
             acquisition = std::make_shared<GpsL1CaPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
@@ -418,7 +455,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E1B";
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
+#else
+            config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
+#endif
             acquisition = std::make_shared<GalileoE1PcpsAmbiguousAcquisition>(config.get(), "Acquisition", 1, 0);
         }
     else if (implementation == "GPS_L2_M_DLL_PLL_Tracking")
@@ -429,7 +470,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L2CM";
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
+#else
+            config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
+#endif
             acquisition = std::make_shared<GpsL2MPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
     else if (implementation == "Galileo_E5a_DLL_PLL_Tracking_b")
@@ -441,7 +486,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
             config->set_property("Acquisition_5X.coherent_integration_time_ms", "1");
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
+#else
+            config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
+#endif
             config->set_property("Acquisition.CAF_window_hz", "0");  // **Only for E5a** Resolves doppler ambiguity averaging the specified BW in the winner code delay. If set to 0 CAF filter is deactivated. Recommended value 3000 Hz
             config->set_property("Acquisition.Zero_padding", "0");   // **Only for E5a** Avoids power loss and doppler ambiguity in bit transitions by correlating one code with twice the input data length, ensuring that at least one full code is present without transitions. If set to 1 it is ON, if set to 0 it is OFF.
             config->set_property("Acquisition.bit_transition_flag", "false");
@@ -456,7 +505,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "Galileo E5a";
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
+#else
+            config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
+#endif
             acquisition = std::make_shared<GalileoE5aPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
     else if (implementation == "GPS_L5_DLL_PLL_Tracking")
@@ -467,7 +520,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             std::memcpy(static_cast<void*>(tmp_gnss_synchro.Signal), str, 3);  // copy string into synchro char array: 2 char + null
             tmp_gnss_synchro.PRN = SV_ID;
             System_and_Signal = "GPS L5I";
+#if USE_GLOG_AND_GFLAGS
             config->set_property("Acquisition.max_dwells", std::to_string(FLAGS_external_signal_acquisition_dwells));
+#else
+            config->set_property("Acquisition.max_dwells", std::to_string(absl::GetFlag(FLAGS_external_signal_acquisition_dwells)));
+#endif
             acquisition = std::make_shared<GpsL5iPcpsAcquisition>(config.get(), "Acquisition", 1, 0);
         }
     else
@@ -478,26 +535,44 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
 
     acquisition->set_gnss_synchro(&tmp_gnss_synchro);
     acquisition->set_channel(0);
+#if USE_GLOG_AND_GFLAGS
     acquisition->set_doppler_max(config->property("Acquisition.doppler_max", FLAGS_external_signal_acquisition_doppler_max_hz));
     acquisition->set_doppler_step(config->property("Acquisition.doppler_step", FLAGS_external_signal_acquisition_doppler_step_hz));
     acquisition->set_threshold(config->property("Acquisition.threshold", FLAGS_external_signal_acquisition_threshold));
+#else
+    acquisition->set_doppler_max(config->property("Acquisition.doppler_max", absl::GetFlag(FLAGS_external_signal_acquisition_doppler_max_hz)));
+    acquisition->set_doppler_step(config->property("Acquisition.doppler_step", absl::GetFlag(FLAGS_external_signal_acquisition_doppler_step_hz)));
+    acquisition->set_threshold(config->property("Acquisition.threshold", absl::GetFlag(FLAGS_external_signal_acquisition_threshold)));
+#endif
     acquisition->init();
     acquisition->set_local_code();
     acquisition->set_state(1);  // Ensure that acquisition starts at the first sample
     acquisition->connect(top_block_acq);
 
     gr::blocks::file_source::sptr file_source;
+#if USE_GLOG_AND_GFLAGS
     std::string file = FLAGS_signal_file;
+#else
+    std::string file = absl::GetFlag(FLAGS_signal_file);
+#endif
     const char* file_name = file.c_str();
     file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
+#if USE_GLOG_AND_GFLAGS
     file_source->seek(2 * FLAGS_skip_samples, SEEK_SET);  // skip head. ibyte, two bytes per complex sample
+#else
+    file_source->seek(2 * absl::GetFlag(FLAGS_skip_samples), SEEK_SET);  // skip head. ibyte, two bytes per complex sample
+#endif
     gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
     // gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
 
     top_block_acq->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
 
-    // Enable automatic resampler for the acquisition, if required
+// Enable automatic resampler for the acquisition, if required
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_use_acquisition_resampler == true)
+#else
+    if (absl::GetFlag(FLAGS_use_acquisition_resampler) == true)
+#endif
         {
             // create acquisition resamplers if required
             double resampler_ratio = 1.0;
@@ -625,7 +700,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
             top_block_acq->run();
             if (start_msg == true)
                 {
+#if USE_GLOG_AND_GFLAGS
                     std::cout << "Reading external signal file: " << FLAGS_signal_file << '\n';
+#else
+                    std::cout << "Reading external signal file: " << absl::GetFlag(FLAGS_signal_file) << '\n';
+#endif
                     std::cout << "Searching for " << System_and_Signal << " Satellites...\n";
                     std::cout << "[";
                     start_msg = false;
@@ -646,7 +725,11 @@ bool TrackingPullInTest::acquire_signal(int SV_ID)
                     std::cout << " . ";
                 }
             top_block_acq->stop();
+#if USE_GLOG_AND_GFLAGS
             file_source->seek(2 * FLAGS_skip_samples, SEEK_SET);  // skip head. ibyte, two bytes per complex sample
+#else
+            file_source->seek(2 * absl::GetFlag(FLAGS_skip_samples), SEEK_SET);  // skip head. ibyte, two bytes per complex sample
+#endif
             std::cout.flush();
         }
     std::cout << "]\n";
@@ -672,16 +755,23 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     // *************************************************
     // ***** STEP 1: Prepare the parameters sweep ******
     // *************************************************
-    std::vector<double>
-        acq_doppler_error_hz_values;
+    std::vector<double> acq_doppler_error_hz_values;
     std::vector<std::vector<double>> acq_delay_error_chips_values;  // vector of vector
-
+#if USE_GLOG_AND_GFLAGS
     for (double doppler_hz = FLAGS_acq_Doppler_error_hz_start; doppler_hz >= FLAGS_acq_Doppler_error_hz_stop; doppler_hz = doppler_hz + FLAGS_acq_Doppler_error_hz_step)
+#else
+    for (double doppler_hz = absl::GetFlag(FLAGS_acq_Doppler_error_hz_start); doppler_hz >= absl::GetFlag(FLAGS_acq_Doppler_error_hz_stop); doppler_hz = doppler_hz + absl::GetFlag(FLAGS_acq_Doppler_error_hz_step))
+#endif
+
         {
             acq_doppler_error_hz_values.push_back(doppler_hz);
             std::vector<double> tmp_vector;
-            // Code Delay Sweep
+// Code Delay Sweep
+#if USE_GLOG_AND_GFLAGS
             for (double code_delay_chips = FLAGS_acq_Delay_error_chips_start; code_delay_chips >= FLAGS_acq_Delay_error_chips_stop; code_delay_chips = code_delay_chips + FLAGS_acq_Delay_error_chips_step)
+#else
+            for (double code_delay_chips = absl::GetFlag(FLAGS_acq_Delay_error_chips_start); code_delay_chips >= absl::GetFlag(FLAGS_acq_Delay_error_chips_stop); code_delay_chips = code_delay_chips + absl::GetFlag(FLAGS_acq_Delay_error_chips_step))
+#endif
                 {
                     tmp_vector.push_back(code_delay_chips);
                 }
@@ -692,12 +782,17 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     // ***** STEP 2: Generate the input signal (if required) *****
     // ***********************************************************
     std::vector<double> generator_CN0_values;
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_enable_external_signal_file)
+#else
+    if (absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
         {
             generator_CN0_values.push_back(999);  // an external input signal capture is selected, no CN0 information available
         }
     else
         {
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_CN0_dBHz_start == FLAGS_CN0_dBHz_stop)
                 {
                     generator_CN0_values.push_back(FLAGS_CN0_dBHz_start);
@@ -709,15 +804,39 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                             generator_CN0_values.push_back(cn0);
                         }
                 }
+#else
+            if (absl::GetFlag(FLAGS_CN0_dBHz_start) == absl::GetFlag(FLAGS_CN0_dBHz_stop))
+                {
+                    generator_CN0_values.push_back(absl::GetFlag(FLAGS_CN0_dBHz_start));
+                }
+            else
+                {
+                    for (double cn0 = absl::GetFlag(FLAGS_CN0_dBHz_start); cn0 > absl::GetFlag(FLAGS_CN0_dBHz_stop); cn0 = cn0 - absl::GetFlag(FLAGS_CN0_dB_step))
+                        {
+                            generator_CN0_values.push_back(cn0);
+                        }
+                }
+#endif
         }
 
-    // use generator or use an external capture file
+        // use generator or use an external capture file
+
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_enable_external_signal_file)
+#else
+    if (absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
         {
+#if USE_GLOG_AND_GFLAGS
             // create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
             ASSERT_EQ(acquire_signal(FLAGS_test_satellite_PRN), true);
             bool found_satellite = doppler_measurements_map.find(FLAGS_test_satellite_PRN) != doppler_measurements_map.end();
             EXPECT_TRUE(found_satellite) << "Error: satellite SV: " << FLAGS_test_satellite_PRN << " is not acquired";
+#else
+            ASSERT_EQ(acquire_signal(absl::GetFlag(FLAGS_test_satellite_PRN)), true);
+            bool found_satellite = doppler_measurements_map.find(absl::GetFlag(FLAGS_test_satellite_PRN)) != doppler_measurements_map.end();
+            EXPECT_TRUE(found_satellite) << "Error: satellite SV: " << absl::GetFlag(FLAGS_test_satellite_PRN) << " is not acquired";
+#endif
             if (!found_satellite)
                 {
                     return;
@@ -730,18 +849,30 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                     // Configure the signal generator
                     configure_generator(generator_CN0_values.at(current_cn0_idx), current_cn0_idx);
                     // Generate signal raw signal samples and observations RINEX file
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_disable_generator == false)
+#else
+                    if (absl::GetFlag(FLAGS_disable_generator) == false)
+#endif
                         {
                             generate_signal();
                         }
                 }
         }
 
+#if USE_GLOG_AND_GFLAGS
     configure_receiver(FLAGS_PLL_bw_hz_start,
         FLAGS_DLL_bw_hz_start,
         FLAGS_PLL_narrow_bw_hz,
         FLAGS_DLL_narrow_bw_hz,
         FLAGS_extend_correlation_symbols);
+#else
+    configure_receiver(absl::GetFlag(FLAGS_PLL_bw_hz_start),
+        absl::GetFlag(FLAGS_DLL_bw_hz_start),
+        absl::GetFlag(FLAGS_PLL_narrow_bw_hz),
+        absl::GetFlag(FLAGS_DLL_narrow_bw_hz),
+        absl::GetFlag(FLAGS_extend_correlation_symbols));
+#endif
 
     // ******************************************************************************************
     // ***** Obtain the initial signal sinchronization parameters (emulating an acquisition) ****
@@ -752,9 +883,15 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
     uint64_t acq_samplestamp_samples = 0;
 
     Tracking_True_Obs_Reader true_obs_data;
+#if USE_GLOG_AND_GFLAGS
     if (!FLAGS_enable_external_signal_file)
         {
             test_satellite_PRN = FLAGS_test_satellite_PRN;
+#else
+    if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+        {
+            test_satellite_PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
             std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
             true_obs_file.append(std::to_string(test_satellite_PRN));
             true_obs_file.append(".dat");
@@ -763,7 +900,11 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
             // load acquisition data based on the first epoch of the true observations
             ASSERT_EQ(true_obs_data.read_binary_obs(), true)
                 << "Failure reading true tracking dump file.\n"
+#if USE_GLOG_AND_GFLAGS
                 << "Maybe sat PRN #" + std::to_string(FLAGS_test_satellite_PRN) +
+#else
+                << "Maybe sat PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) +
+#endif
                        " is not available?";
             std::cout << "Testing satellite PRN=" << test_satellite_PRN << '\n';
             std::cout << "True Initial Doppler " << true_obs_data.doppler_l1_hz << " [Hz], true Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << "[Chips]\n";
@@ -773,17 +914,30 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
         }
     else
         {
+#if USE_GLOG_AND_GFLAGS
             true_acq_doppler_hz = doppler_measurements_map.find(FLAGS_test_satellite_PRN)->second;
             true_acq_delay_samples = code_delay_measurements_map.find(FLAGS_test_satellite_PRN)->second;
+#else
+            true_acq_doppler_hz = doppler_measurements_map.find(absl::GetFlag(FLAGS_test_satellite_PRN))->second;
+            true_acq_delay_samples = code_delay_measurements_map.find(absl::GetFlag(FLAGS_test_satellite_PRN))->second;
+#endif
             acq_samplestamp_samples = 0;
             std::cout << "Estimated Initial Doppler " << true_acq_doppler_hz
                       << " [Hz], estimated Initial code delay " << true_acq_delay_samples << " [Samples]"
+#if USE_GLOG_AND_GFLAGS
                       << " Acquisition SampleStamp is " << acq_samplestamp_map.find(FLAGS_test_satellite_PRN)->second << '\n';
+#else
+                      << " Acquisition SampleStamp is " << acq_samplestamp_map.find(absl::GetFlag(FLAGS_test_satellite_PRN))->second << '\n';
+#endif
         }
 
     // create the msg queue for valve
     queue = std::make_shared<Concurrent_Queue<pmt::pmt_t>>();
+#if USE_GLOG_AND_GFLAGS
     long long int acq_to_trk_delay_samples = ceil(static_cast<double>(FLAGS_fs_gen_sps) * FLAGS_acq_to_trk_delay_s);
+#else
+    long long int acq_to_trk_delay_samples = ceil(static_cast<double>(absl::GetFlag(FLAGS_fs_gen_sps)) * absl::GetFlag(FLAGS_acq_to_trk_delay_s));
+#endif
     auto resetable_valve_ = gnss_sdr_make_valve(sizeof(gr_complex), acq_to_trk_delay_samples, queue.get(), false);
 
     // CN0 LOOP
@@ -822,19 +976,31 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
                             std::string file;
                             ASSERT_NO_THROW({
+#if USE_GLOG_AND_GFLAGS
                                 if (!FLAGS_enable_external_signal_file)
+#else
+                                if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
                                     {
                                         file = "./" + filename_raw_data + std::to_string(current_cn0_idx);
                                     }
                                 else
                                     {
+#if USE_GLOG_AND_GFLAGS
                                         file = FLAGS_signal_file;
+#else
+                                        file = absl::GetFlag(FLAGS_signal_file);
+#endif
                                     }
                                 const char* file_name = file.c_str();
                                 gr::blocks::file_source::sptr file_source = gr::blocks::file_source::make(sizeof(int8_t), file_name, false);
                                 gr::blocks::interleaved_char_to_complex::sptr gr_interleaved_char_to_complex = gr::blocks::interleaved_char_to_complex::make();
                                 gr::blocks::null_sink::sptr sink = gr::blocks::null_sink::make(sizeof(Gnss_Synchro));
+#if USE_GLOG_AND_GFLAGS
                                 gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * FLAGS_duration);
+#else
+                                gr::blocks::head::sptr head_samples = gr::blocks::head::make(sizeof(gr_complex), baseband_sampling_freq * absl::GetFlag(FLAGS_duration));
+#endif
                                 top_block_trk->connect(file_source, 0, gr_interleaved_char_to_complex, 0);
                                 top_block_trk->connect(gr_interleaved_char_to_complex, 0, head_samples, 0);
                                 if (acq_to_trk_delay_samples > 0)
@@ -848,7 +1014,11 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                     }
                                 top_block_trk->connect(tracking->get_right_block(), 0, sink, 0);
                                 top_block_trk->msg_connect(tracking->get_right_block(), pmt::mp("events"), msg_rx, pmt::mp("events"));
+#if USE_GLOG_AND_GFLAGS
                                 file_source->seek(2 * FLAGS_skip_samples, 0);  // skip head. ibyte, two bytes per complex sample
+#else
+                                file_source->seek(2 * absl::GetFlag(FLAGS_skip_samples), 0);  // skip head. ibyte, two bytes per complex sample
+#endif
                             }) << "Failure connecting the blocks of tracking test.";
 
                             // ********************************************************************
@@ -860,7 +1030,11 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                 {
                                     EXPECT_NO_THROW({
                                         start = std::chrono::system_clock::now();
+#if USE_GLOG_AND_GFLAGS
                                         std::cout << "--- SIMULATING A PULL-IN DELAY OF " << FLAGS_acq_to_trk_delay_s << " SECONDS ---\n";
+#else
+                                        std::cout << "--- SIMULATING A PULL-IN DELAY OF " << absl::GetFlag(FLAGS_acq_to_trk_delay_s) << " SECONDS ---\n";
+#endif
                                         top_block_trk->start();
                                         std::cout << " Waiting for valve...\n";
                                         // wait the valve message indicating the circulation of the amount of samples of the delay
@@ -889,10 +1063,14 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
                             pull_in_results_v.push_back(msg_rx->rx_message != 3);  // save last asynchronous tracking message in order to detect a loss of lock
 
-                            // ********************************
-                            // ***** STEP 7: Plot results *****
-                            // ********************************
+// ********************************
+// ***** STEP 7: Plot results *****
+// ********************************
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     // load the measured values
                                     Tracking_Dump_Reader trk_dump;
@@ -937,8 +1115,11 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                             Doppler.push_back(trk_dump.carrier_doppler_hz);
                                             epoch_counter++;
                                         }
-
+#if USE_GLOG_AND_GFLAGS
                                     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+                                    const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
                                     if (gnuplot_executable.empty())
                                         {
                                             std::cout << "WARNING: Although the flag show_plots has been set to TRUE,\n";
@@ -953,6 +1134,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                     fs::path dir = p.parent_path();
                                                     const std::string& gnuplot_path = dir.native();
                                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
+#if USE_GLOG_AND_GFLAGS
                                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
                                                     if (FLAGS_plot_detail_level >= 2 and FLAGS_show_plots)
@@ -967,6 +1149,22 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                 {
                                                                     g1.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
+#else
+                                                    auto decimate = static_cast<unsigned int>(absl::GetFlag(FLAGS_plot_decimate));
+
+                                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2 and absl::GetFlag(FLAGS_show_plots))
+                                                        {
+                                                            Gnuplot g1("linespoints");
+                                                            g1.showonscreen();  // window output
+                                                            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+                                                                {
+                                                                    g1.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, " + "PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+                                                            else
+                                                                {
+                                                                    g1.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz], (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+#endif
 
                                                             g1.set_grid();
                                                             g1.set_xlabel("Time [s]");
@@ -985,6 +1183,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
 
                                                             Gnuplot g2("points");
                                                             g2.showonscreen();  // window output
+#if USE_GLOG_AND_GFLAGS
                                                             if (!FLAGS_enable_external_signal_file)
                                                                 {
                                                                     g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
@@ -993,7 +1192,16 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                 {
                                                                     g2.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
-
+#else
+                                                            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+                                                                {
+                                                                    g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz], (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+                                                            else
+                                                                {
+                                                                    g2.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips], PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz], (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+#endif
                                                             g2.set_grid();
                                                             g2.set_xlabel("Inphase");
                                                             g2.set_ylabel("Quadrature");
@@ -1002,6 +1210,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                             g2.savetops("Constellation");
 
                                                             Gnuplot g3("linespoints");
+#if USE_GLOG_AND_GFLAGS
                                                             if (!FLAGS_enable_external_signal_file)
                                                                 {
                                                                     g3.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
@@ -1010,6 +1219,16 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                 {
                                                                     g3.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips] PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
+#else
+                                                            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+                                                                {
+                                                                    g3.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+                                                            else
+                                                                {
+                                                                    g3.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips] PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz], (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+#endif
                                                             g3.set_grid();
                                                             g3.set_xlabel("Time [s]");
                                                             g3.set_ylabel("Reported CN0 [dB-Hz]");
@@ -1024,6 +1243,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                             g3.showonscreen();  // window output
 
                                                             Gnuplot g4("linespoints");
+#if USE_GLOG_AND_GFLAGS
                                                             if (!FLAGS_enable_external_signal_file)
                                                                 {
                                                                     g4.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
@@ -1032,6 +1252,16 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                                                                 {
                                                                     g4.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips] PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                                                                 }
+#else
+                                                            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+                                                                {
+                                                                    g4.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+                                                            else
+                                                                {
+                                                                    g4.set_title("D_e=" + std::to_string(acq_doppler_error_hz_values.at(current_acq_doppler_error_idx)) + " [Hz] " + "T_e= " + std::to_string(acq_delay_error_chips_values.at(current_acq_doppler_error_idx).at(current_acq_code_error_idx)) + " [Chips] PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz], (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                                                                }
+#endif
                                                             g4.set_grid();
                                                             g4.set_xlabel("Time [s]");
                                                             g4.set_ylabel("Estimated Doppler [Hz]");
@@ -1075,7 +1305,11 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
             pull_in_result_mesh = pull_in_results_v_v.at(current_cn0_idx);
             // plot grid
             Gnuplot g4("points palette pointsize 2 pointtype 7");
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_show_plots)
+#else
+            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                 {
                     g4.showonscreen();  // window output
                 }
@@ -1087,6 +1321,7 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
             g4.cmd("set key off");
             g4.cmd("set view map");
             std::string title;
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_enable_external_signal_file)
                 {
                     title = std::string("Tracking Pull-in result grid at CN0:" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + " [dB-Hz], PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz].");
@@ -1095,7 +1330,16 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                 {
                     title = std::string("Tracking Pull-in result grid, PLL/DLL BW: " + std::to_string(FLAGS_PLL_bw_hz_start) + "," + std::to_string(FLAGS_DLL_bw_hz_start) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
                 }
-
+#else
+            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+                {
+                    title = std::string("Tracking Pull-in result grid at CN0:" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))) + " [dB-Hz], PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz].");
+                }
+            else
+                {
+                    title = std::string("Tracking Pull-in result grid, PLL/DLL BW: " + std::to_string(absl::GetFlag(FLAGS_PLL_bw_hz_start)) + "," + std::to_string(absl::GetFlag(FLAGS_DLL_bw_hz_start)) + " [Hz], GPS L1 C/A (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+                }
+#endif
             g4.set_title(title);
             g4.set_grid();
             g4.set_xlabel("Acquisition Doppler error [Hz]");
@@ -1105,7 +1349,11 @@ TEST_F(TrackingPullInTest, ValidationOfResults)
                 code_delay_error_mesh,
                 pull_in_result_mesh);
             g4.set_legend();
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_enable_external_signal_file)
+#else
+            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
                 {
                     g4.savetops("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))));
                     g4.savetopdf("trk_pull_in_grid_" + std::to_string(static_cast<int>(round(generator_CN0_values.at(current_cn0_idx)))), 12);

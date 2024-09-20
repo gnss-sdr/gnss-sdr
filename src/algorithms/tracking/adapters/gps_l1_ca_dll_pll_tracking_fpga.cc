@@ -28,10 +28,15 @@
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <algorithm>
 #include <array>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GpsL1CaDllPllTrackingFpga::GpsL1CaDllPllTrackingFpga(
     const ConfigurationInterface* configuration,

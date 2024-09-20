@@ -34,7 +34,9 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     endif()
 
     target_include_directories(obsdiff PUBLIC ${GNSSSDR_SOURCE_DIR}/src/tests/common-files)
-    set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+    if(GNSSTK_VERSION AND "${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
+        set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+    endif()
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(obsdiff
@@ -52,8 +54,10 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
     if(NOT ARMADILLO_FOUND OR ENABLE_OWN_ARMADILLO)
         add_dependencies(obsdiff armadillo-${armadillo_RELEASE})
     endif()
-    if(NOT GFLAGS_FOUND)
-        add_dependencies(obsdiff gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+    if(ENABLE_GLOG_AND_GFLAGS)
+        if(NOT GFLAGS_FOUND)
+            add_dependencies(obsdiff gflags-${GNSSSDR_GFLAGS_LOCAL_VERSION})
+        endif()
     endif()
     if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
         add_dependencies(obsdiff gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION})
@@ -101,10 +105,16 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         PRIVATE
             Armadillo::armadillo
             Threads::Threads
-            Gflags::gflags
             Matio::matio
             Gnsstk::gnsstk
     )
+
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(obsdiff PRIVATE Gflags::gflags)
+        target_compile_definitions(obsdiff PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(obsdiff PUBLIC absl::flags absl::flags_parse)
+    endif()
 
     if(ENABLE_STRIP)
         set_target_properties(obsdiff PROPERTIES LINK_FLAGS "-s")

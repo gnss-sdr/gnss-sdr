@@ -19,10 +19,15 @@
 
 #include "gnss_sdr_valve.h"
 #include "command_event.h"
-#include <glog/logging.h>           // for LOG
 #include <gnuradio/io_signature.h>  // for io_signature
 #include <algorithm>                // for min
 #include <cstring>                  // for memcpy
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Gnss_Sdr_Valve::Gnss_Sdr_Valve(size_t sizeof_stream_item,
     uint64_t nitems,

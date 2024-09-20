@@ -20,13 +20,17 @@
 #include "direct_resampler_conditioner_cb.h"
 #include "direct_resampler_conditioner_cc.h"
 #include "direct_resampler_conditioner_cs.h"
-#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 #include <volk/volk.h>  // for lv_8sc_t
 #include <cmath>
 #include <cstdint>
 #include <limits>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 DirectResamplerConditioner::DirectResamplerConditioner(
     const ConfigurationInterface* configuration,

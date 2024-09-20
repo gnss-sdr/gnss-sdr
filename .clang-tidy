@@ -120,7 +120,6 @@ Checks: '-*,
         readability-uppercase-literal-suffix'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
 FormatStyle: 'file'
 CheckOptions:
   - key:             performance-unnecessary-copy-initialization.ExcludedContainerTypes

@@ -19,7 +19,19 @@ if(NOT GNSSTK_FOUND OR ENABLE_OWN_GNSSTK)
     endif()
 endif()
 
-find_package(Boost COMPONENTS iostreams serialization QUIET)
+if(CMAKE_VERSION VERSION_LESS 3.30)
+    find_package(Boost COMPONENTS iostreams serialization QUIET)
+else()
+    find_package(Boost COMPONENTS iostreams serialization)
+    if(NOT TARGET Boost::iostreams)
+        message(STATUS "Trying deprecated FindBoost Module ...")
+        if(POLICY CMP0167)
+            cmake_policy(SET CMP0167 OLD)
+            find_package(Boost COMPONENTS iostreams serialization)
+        endif()
+    endif()
+endif()
+
 if(CMAKE_VERSION VERSION_LESS 3.5)
     if(NOT TARGET Boost::iostreams)
         add_library(Boost::iostreams IMPORTED SHARED)
@@ -47,7 +59,7 @@ find_program(UNCOMPRESS_EXECUTABLE uncompress
     /usr/sbin
 )
 
-if(Boost_FOUND)
+if(TARGET Boost::iostreams AND TARGET Boost::serialization)
     message(STATUS "The rinex2assist utility tool will be built when doing '${CMAKE_MAKE_PROGRAM_PRETTY_NAME}'")
     if(USE_CMAKE_TARGET_SOURCES)
         add_executable(rinex2assist)
@@ -59,7 +71,10 @@ if(Boost_FOUND)
         add_executable(rinex2assist ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
     endif()
 
-    set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk
+    if(GNSSTK_VERSION AND "${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
+        set_property(TARGET rinex2assist PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
+    endif()
+
     # Do not show warnings raised by GPSTk v3.0.0
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(rinex2assist
@@ -79,10 +94,16 @@ if(Boost_FOUND)
             Boost::iostreams
             Boost::serialization
             ${GNSSTK_LIBRARY}
-            Gflags::gflags
             Threads::Threads
             core_system_parameters
     )
+
+    if(ENABLE_GLOG_AND_GFLAGS)
+        target_link_libraries(rinex2assist PRIVATE Gflags::gflags)
+        target_compile_definitions(rinex2assist PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+    else()
+        target_link_libraries(rinex2assist PRIVATE absl::flags absl::flags_parse)
+    endif()
 
     if(GNSSTK_USES_GPSTK_NAMESPACE)
         target_compile_definitions(rinex2assist PUBLIC -DGNSSTK_USES_GPSTK_NAMESPACE=1)

@@ -23,7 +23,6 @@
 #include "galileo_has_page.h"       // for Galileo_HAS_page
 #include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
 #include "reed_solomon.h"           // for ReedSolomon
-#include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>                // for std::find, std::count
 #include <cmath>                    // for std::remainder
@@ -33,6 +32,12 @@
 #include <sstream>                  // for std::stringstream
 #include <stdexcept>                // for std::out_of_range
 #include <typeinfo>                 // for typeid
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

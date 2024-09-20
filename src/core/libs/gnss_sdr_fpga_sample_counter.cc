@@ -19,7 +19,6 @@
 #include "gnss_sdr_fpga_sample_counter.h"
 #include "gnss_synchro.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for from_double
 #include <pmt/pmt_sugar.h>  // for mp
@@ -29,6 +28,11 @@
 #include <sys/mman.h>       // libraries used by the GIPO
 #include <unistd.h>         // for write, close, read, ssize_t
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \

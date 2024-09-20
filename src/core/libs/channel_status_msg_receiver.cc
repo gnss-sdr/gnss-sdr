@@ -17,13 +17,18 @@
 
 
 #include "channel_status_msg_receiver.h"
-#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/io_signature.h>
 #include <cstddef>
 #include <cstdint>
 #include <typeinfo>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

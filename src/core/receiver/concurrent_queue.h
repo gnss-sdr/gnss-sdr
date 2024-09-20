@@ -19,9 +19,10 @@
 
 #include <chrono>
 #include <condition_variable>
+#include <cstddef>
 #include <mutex>
 #include <queue>
-#include <thread>
+#include <utility>
 
 /** \addtogroup Core
  * \{ */
@@ -33,48 +34,53 @@ template <typename Data>
 
 /*!
  * \brief This class implements a thread-safe std::queue
- *
- * Thread-safe object queue which uses the library
- * boost_thread to perform MUTEX based on the code available at
- * https://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
  */
 class Concurrent_Queue
 {
 public:
-    void push(Data const& data)
+    void push(const Data& data)
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
-        the_queue.push(data);
-        lock.unlock();
+        {
+            std::lock_guard<std::mutex> lock(the_mutex);
+            the_queue.push(data);
+        }
         the_condition_variable.notify_one();
     }
 
-    bool empty() const
+    void push(Data&& data)
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
-        return the_queue.empty();
+        {
+            std::lock_guard<std::mutex> lock(the_mutex);
+            the_queue.push(std::move(data));
+        }
+        the_condition_variable.notify_one();
     }
 
-    size_t size() const
+    bool empty() const noexcept
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
+        return size() == 0;
+    }
+
+    size_t size() const noexcept
+    {
+        std::lock_guard<std::mutex> lock(the_mutex);
         return the_queue.size();
     }
 
     void clear()
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
-        the_queue = std::queue<Data>();
+        std::lock_guard<std::mutex> lock(the_mutex);
+        std::queue<Data>().swap(the_queue);
     }
 
     bool try_pop(Data& popped_value)
     {
-        std::unique_lock<std::mutex> lock(the_mutex);
+        std::lock_guard<std::mutex> lock(the_mutex);
         if (the_queue.empty())
             {
                 return false;
             }
-        popped_value = the_queue.front();
+        popped_value = std::move(the_queue.front());
         the_queue.pop();
         return true;
     }
@@ -82,26 +88,21 @@ public:
     void wait_and_pop(Data& popped_value)
     {
         std::unique_lock<std::mutex> lock(the_mutex);
-        while (the_queue.empty())
-            {
-                the_condition_variable.wait(lock);
-            }
-        popped_value = the_queue.front();
+        the_condition_variable.wait(lock, [this] { return !the_queue.empty(); });
+        popped_value = std::move(the_queue.front());
         the_queue.pop();
     }
 
     bool timed_wait_and_pop(Data& popped_value, int wait_ms)
     {
         std::unique_lock<std::mutex> lock(the_mutex);
-        if (the_queue.empty())
+        if (!the_condition_variable.wait_for(lock,
+                std::chrono::milliseconds(wait_ms),
+                [this] { return !the_queue.empty(); }))
             {
-                the_condition_variable.wait_for(lock, std::chrono::milliseconds(wait_ms));
-                if (the_queue.empty())
-                    {
-                        return false;
-                    }
+                return false;
             }
-        popped_value = the_queue.front();
+        popped_value = std::move(the_queue.front());
         the_queue.pop();
         return true;
     }

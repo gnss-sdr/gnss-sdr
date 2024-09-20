@@ -26,13 +26,18 @@
 #include "gps_iono.h"
 #include "gps_utc_model.h"
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 #include <algorithm>  // for min
 #include <cmath>
 #include <iostream>  // for operator<<
 #include <map>
 #include <stdexcept>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 extern Concurrent_Map<Gps_Ephemeris> global_gps_ephemeris_map;
 extern Concurrent_Map<Gps_Iono> global_gps_iono_map;

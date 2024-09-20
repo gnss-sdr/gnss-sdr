@@ -18,9 +18,13 @@
 #include "custom_udp_signal_source.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_string_literals.h"
-#include <glog/logging.h>
 #include <iostream>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 

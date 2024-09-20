@@ -17,11 +17,15 @@
 #include "tlm_crc_stats.h"
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
-#include <glog/logging.h>
 #include <iomanip>   // for std::setw()
 #include <iostream>  // for cerr, cout
 #include <utility>   // for std::move
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 void Tlm_CRC_Stats::initialize(std::string dump_crc_stats_filename)
 {

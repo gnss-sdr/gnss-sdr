@@ -25,7 +25,12 @@
 #include "GPS_L1_CA.h"
 #include "configuration_interface.h"
 #include "gnss_sdr_flags.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 GpsL1CaDllPllTrackingGPU::GpsL1CaDllPllTrackingGPU(
@@ -49,9 +54,18 @@ GpsL1CaDllPllTrackingGPU::GpsL1CaDllPllTrackingGPU(
     fs_in = configuration->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);
     dump = configuration->property(role + ".dump", false);
     pll_bw_hz = configuration->property(role + ".pll_bw_hz", 50.0);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_pll_bw_hz != 0.0) pll_bw_hz = static_cast<float>(FLAGS_pll_bw_hz);
+#else
+    if (absl::GetFlag(FLAGS_pll_bw_hz) != 0.0) pll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_pll_bw_hz));
+#endif
     dll_bw_hz = configuration->property(role + ".dll_bw_hz", 2.0);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_dll_bw_hz != 0.0) dll_bw_hz = static_cast<float>(FLAGS_dll_bw_hz);
+#else
+    if (absl::GetFlag(FLAGS_dll_bw_hz) != 0.0) dll_bw_hz = static_cast<float>(absl::GetFlag(FLAGS_dll_bw_hz));
+#endif
+
     early_late_space_chips = configuration->property(role + ".early_late_space_chips", 0.5);
     const std::string default_dump_filename("./track_ch");
     dump_filename = configuration->property(role + ".dump_filename", default_dump_filename);

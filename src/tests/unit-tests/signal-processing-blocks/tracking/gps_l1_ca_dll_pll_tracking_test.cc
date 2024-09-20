@@ -138,10 +138,15 @@ public:
     std::string p6;
     std::string implementation = "GPS_L1_CA_DLL_PLL_Tracking";
 
+#if USE_GLOG_AND_GFLAGS
     const int baseband_sampling_freq = FLAGS_fs_gen_sps;
-
     std::string filename_rinex_obs = FLAGS_filename_rinex_obs;
     std::string filename_raw_data = FLAGS_filename_raw_data;
+#else
+    const int baseband_sampling_freq = absl::GetFlag(FLAGS_fs_gen_sps);
+    std::string filename_rinex_obs = absl::GetFlag(FLAGS_filename_rinex_obs);
+    std::string filename_raw_data = absl::GetFlag(FLAGS_filename_raw_data);
+#endif
 
     int configure_generator(double CN0_dBHz, int file_idx);
     int generate_signal();
@@ -193,6 +198,7 @@ public:
 
 int GpsL1CADllPllTrackingTest::configure_generator(double CN0_dBHz, int file_idx)
 {
+#if USE_GLOG_AND_GFLAGS
     // Configure signal generator
     generator_binary = FLAGS_generator_binary;
 
@@ -209,6 +215,25 @@ int GpsL1CADllPllTrackingTest::configure_generator(double CN0_dBHz, int file_idx
     p4 = std::string("-sig_out_file=") + FLAGS_filename_raw_data + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
     p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);             // Baseband sampling frequency [MSps]
     p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                                // Signal generator CN0
+#else
+    // Configure signal generator
+    generator_binary = absl::GetFlag(FLAGS_generator_binary);
+
+    p1 = std::string("-rinex_nav_file=") + absl::GetFlag(FLAGS_rinex_nav_file);
+    if (absl::GetFlag(FLAGS_dynamic_position).empty())
+        {
+            p2 = std::string("-static_position=") + absl::GetFlag(FLAGS_static_position) + std::string(",") + std::to_string(absl::GetFlag(FLAGS_duration) * 10);
+        }
+    else
+        {
+            p2 = std::string("-obs_pos_file=") + std::string(absl::GetFlag(FLAGS_dynamic_position));
+        }
+    p3 = std::string("-rinex_obs_file=") + absl::GetFlag(FLAGS_filename_rinex_obs);                          // RINEX 2.10 observation file output
+    p4 = std::string("-sig_out_file=") + absl::GetFlag(FLAGS_filename_raw_data) + std::to_string(file_idx);  // Baseband signal output file. Will be stored in int8_t IQ multiplexed samples
+    p5 = std::string("-sampling_freq=") + std::to_string(baseband_sampling_freq);                            // Baseband sampling frequency [MSps]
+    p6 = std::string("-CN0_dBHz=") + std::to_string(CN0_dBHz);                                               // Signal generator CN0
+#endif
+
     return 0;
 }
 
@@ -249,7 +274,12 @@ void GpsL1CADllPllTrackingTest::configure_receiver(
     gnss_synchro.System = 'G';
     std::string signal = "1C";
     signal.copy(gnss_synchro.Signal, 2, 0);
+
+#if USE_GLOG_AND_GFLAGS
     gnss_synchro.PRN = FLAGS_test_satellite_PRN;
+#else
+    gnss_synchro.PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
 
     config = std::make_shared<InMemoryConfiguration>();
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(baseband_sampling_freq));
@@ -464,6 +494,7 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
     // ***********************************************************
     // ***** STEP 2: Tracking configuration parameters sweep *****
     // ***********************************************************
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_PLL_bw_hz_start == FLAGS_PLL_bw_hz_stop)
         {
             if (FLAGS_DLL_bw_hz_start == FLAGS_DLL_bw_hz_stop)
@@ -491,25 +522,70 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     DLL_wide_bw_values.push_back(FLAGS_DLL_bw_hz_start);
                 }
         }
+#else
+    if (absl::GetFlag(FLAGS_PLL_bw_hz_start) == absl::GetFlag(FLAGS_PLL_bw_hz_stop))
+        {
+            if (absl::GetFlag(FLAGS_DLL_bw_hz_start) == absl::GetFlag(FLAGS_DLL_bw_hz_stop))
+                {
+                    // NO PLL/DLL BW sweep
+                    PLL_wide_bw_values.push_back(absl::GetFlag(FLAGS_PLL_bw_hz_start));
+                    DLL_wide_bw_values.push_back(absl::GetFlag(FLAGS_DLL_bw_hz_start));
+                }
+            else
+                {
+                    // DLL BW Sweep
+                    for (double dll_bw = absl::GetFlag(FLAGS_DLL_bw_hz_start); dll_bw >= absl::GetFlag(FLAGS_DLL_bw_hz_stop); dll_bw = dll_bw - absl::GetFlag(FLAGS_DLL_bw_hz_step))
+                        {
+                            PLL_wide_bw_values.push_back(absl::GetFlag(FLAGS_PLL_bw_hz_start));
+                            DLL_wide_bw_values.push_back(dll_bw);
+                        }
+                }
+        }
+    else
+        {
+            // PLL BW Sweep
+            for (double pll_bw = absl::GetFlag(FLAGS_PLL_bw_hz_start); pll_bw >= absl::GetFlag(FLAGS_PLL_bw_hz_stop); pll_bw = pll_bw - absl::GetFlag(FLAGS_PLL_bw_hz_step))
+                {
+                    PLL_wide_bw_values.push_back(pll_bw);
+                    DLL_wide_bw_values.push_back(absl::GetFlag(FLAGS_DLL_bw_hz_start));
+                }
+        }
+#endif
 
     // *********************************************
     // ***** STEP 3: Generate the input signal *****
     // *********************************************
     std::vector<double> cno_vector;
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_CN0_dBHz_start == FLAGS_CN0_dBHz_stop)
         {
             generator_CN0_values.push_back(FLAGS_CN0_dBHz_start);
         }
+#else
+    if (absl::GetFlag(FLAGS_CN0_dBHz_start) == absl::GetFlag(FLAGS_CN0_dBHz_stop))
+        {
+            generator_CN0_values.push_back(absl::GetFlag(FLAGS_CN0_dBHz_start));
+        }
+#endif
     else
         {
+#if USE_GLOG_AND_GFLAGS
             for (double cn0 = FLAGS_CN0_dBHz_start; cn0 > FLAGS_CN0_dBHz_stop; cn0 = cn0 - FLAGS_CN0_dB_step)
+#else
+            for (double cn0 = absl::GetFlag(FLAGS_CN0_dBHz_start); cn0 > absl::GetFlag(FLAGS_CN0_dBHz_stop); cn0 = cn0 - absl::GetFlag(FLAGS_CN0_dB_step))
+#endif
                 {
                     generator_CN0_values.push_back(cn0);
                 }
         }
 
-    // use generator or use an external capture file
+        // use generator or use an external capture file
+
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_enable_external_signal_file)
+#else
+    if (absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
         {
             // todo: create and configure an acquisition block and perform an acquisition to obtain the synchronization parameters
         }
@@ -520,7 +596,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     // Configure the signal generator
                     configure_generator(generator_CN0_values.at(current_cn0_idx), current_cn0_idx);
                     // Generate signal raw signal samples and observations RINEX file
+#if USE_GLOG_AND_GFLAGS
                     if (FLAGS_disable_generator == false)
+#else
+                    if (absl::GetFlag(FLAGS_disable_generator) == false)
+#endif
                         {
                             generate_signal();
                         }
@@ -561,17 +641,29 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
 
             configure_receiver(PLL_wide_bw_values.at(config_idx),
                 DLL_wide_bw_values.at(config_idx),
+#if USE_GLOG_AND_GFLAGS
                 FLAGS_PLL_narrow_bw_hz,
                 FLAGS_DLL_narrow_bw_hz,
                 FLAGS_extend_correlation_symbols);
+#else
+                absl::GetFlag(FLAGS_PLL_narrow_bw_hz),
+                absl::GetFlag(FLAGS_DLL_narrow_bw_hz),
+                absl::GetFlag(FLAGS_extend_correlation_symbols));
+#endif
             for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                 {
                     // ******************************************************************************************
                     // ***** Obtain the initial signal sinchronization parameters (emulating an acquisition) ****
                     // ******************************************************************************************
+#if USE_GLOG_AND_GFLAGS
                     if (!FLAGS_enable_external_signal_file)
                         {
                             test_satellite_PRN = FLAGS_test_satellite_PRN;
+#else
+                    if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+                        {
+                            test_satellite_PRN = absl::GetFlag(FLAGS_test_satellite_PRN);
+#endif
                             std::string true_obs_file = std::string("./gps_l1_ca_obs_prn");
                             true_obs_file.append(std::to_string(test_satellite_PRN));
                             true_obs_file.append(".dat");
@@ -580,7 +672,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             // load acquisition data based on the first epoch of the true observations
                             ASSERT_EQ(true_obs_data.read_binary_obs(), true)
                                 << "Failure reading true tracking dump file.\n"
+#if USE_GLOG_AND_GFLAGS
                                 << "Maybe sat PRN #" + std::to_string(FLAGS_test_satellite_PRN) +
+#else
+                                << "Maybe sat PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) +
+#endif
                                        " is not available?";
                             std::cout << "Testing satellite PRN=" << test_satellite_PRN << '\n';
                             std::cout << "Initial Doppler [Hz]=" << true_obs_data.doppler_l1_hz << " Initial code delay [Chips]=" << true_obs_data.prn_delay_chips << '\n';
@@ -694,10 +790,14 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     promptQ_sweep.push_back(promptQ);
                     CN0_dBHz_sweep.push_back(CN0_dBHz);
 
-                    // ***********************************************************
-                    // ***** STEP 6: Compare with true values (if available) *****
-                    // ***********************************************************
+// ***********************************************************
+// ***** STEP 6: Compare with true values (if available) *****
+// ***********************************************************
+#if USE_GLOG_AND_GFLAGS
                     if (!FLAGS_enable_external_signal_file)
+#else
+                    if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
                         {
                             std::vector<double> doppler_error_hz;
                             std::vector<double> code_phase_error_chips;
@@ -726,8 +826,12 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             true_tow_s(epoch_counter) = true_obs_data.tow;
                                             epoch_counter++;
                                         }
-                                    // Align initial measurements and cut the tracking pull-in transitory
+// Align initial measurements and cut the tracking pull-in transitory
+#if USE_GLOG_AND_GFLAGS
                                     double pull_in_offset_s = FLAGS_skip_trk_transitory_s;
+#else
+                                    double pull_in_offset_s = absl::GetFlag(FLAGS_skip_trk_transitory_s);
+#endif
 
                                     arma::uvec initial_meas_point = arma::find(trk_timestamp_s >= (true_timestamp_s(0) + pull_in_offset_s), 1, "first");
                                     if (!initial_meas_point.empty() and tracking_last_msg != 3)
@@ -782,8 +886,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                 }
                         }
                 }  // CN0 LOOP
-
+#if USE_GLOG_AND_GFLAGS
             if (!FLAGS_enable_external_signal_file)
+#else
+            if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+#endif
                 {
                     mean_doppler_error_sweep.push_back(mean_doppler_error);
                     std_dev_doppler_error_sweep.push_back(std_dev_doppler_error);
@@ -801,12 +908,18 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                     generator_CN0_values_sweep_copy.push_back(valid_CN0_values);
                 }
 
-            // ********************************
-            // ***** STEP 7: Plot results *****
-            // ********************************
+// ********************************
+// ***** STEP 7: Plot results *****
+// ********************************
+#if USE_GLOG_AND_GFLAGS
             if (FLAGS_plot_gps_l1_tracking_test == true)
                 {
                     const std::string gnuplot_executable(FLAGS_gnuplot_executable);
+#else
+            if (absl::GetFlag(FLAGS_plot_gps_l1_tracking_test) == true)
+                {
+                    const std::string gnuplot_executable(absl::GetFlag(FLAGS_gnuplot_executable));
+#endif
                     if (gnuplot_executable.empty())
                         {
                             std::cout << "WARNING: Although the flag plot_gps_l1_tracking_test has been set to TRUE,\n";
@@ -821,14 +934,26 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                     fs::path dir = p.parent_path();
                                     const std::string& gnuplot_path = dir.native();
                                     Gnuplot::set_GNUPlotPath(gnuplot_path);
+#if USE_GLOG_AND_GFLAGS
                                     auto decimate = static_cast<unsigned int>(FLAGS_plot_decimate);
 
                                     if (FLAGS_plot_detail_level >= 2)
+#else
+                                    auto decimate = static_cast<unsigned int>(absl::GetFlag(FLAGS_plot_decimate));
+
+                                    if (absl::GetFlag(FLAGS_plot_detail_level) >= 2)
+#endif
+
                                         {
                                             for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                                 {
                                                     Gnuplot g1("linespoints");
+#if USE_GLOG_AND_GFLAGS
                                                     if (FLAGS_show_plots)
+#else
+                                                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
+
                                                         {
                                                             g1.showonscreen();  // window output
                                                         }
@@ -836,7 +961,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                         {
                                                             g1.disablescreen();
                                                         }
+#if USE_GLOG_AND_GFLAGS
                                                     g1.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                                                    g1.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz, " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                                                     g1.set_grid();
                                                     g1.set_xlabel("Time [s]");
                                                     g1.set_ylabel("Correlators' output");
@@ -849,7 +978,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     g1.savetopdf("Correlators_outputs" + std::to_string(generator_CN0_values.at(current_cn0_idx)), 18);
                                                 }
                                             Gnuplot g2("points");
+#if USE_GLOG_AND_GFLAGS
                                             if (FLAGS_show_plots)
+#else
+                                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                                 {
                                                     g2.showonscreen();  // window output
                                                 }
@@ -862,7 +995,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values.size(); current_cn0_idx++)
                                                 {
                                                     g2.reset_plot();
+#if USE_GLOG_AND_GFLAGS
                                                     g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                                                    g2.set_title(std::to_string(generator_CN0_values.at(current_cn0_idx)) + " dB-Hz Constellation " + "PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz" + "GPS L1 C/A (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                                                     g2.set_grid();
                                                     g2.set_xlabel("Inphase");
                                                     g2.set_ylabel("Quadrature");
@@ -874,7 +1011,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             g2.savetopdf("Constellation", 18);
 
                                             Gnuplot g3("linespoints");
+#if USE_GLOG_AND_GFLAGS
                                             g3.set_title("GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                                            g3.set_title("GPS L1 C/A tracking CN0 output (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                                             g3.set_grid();
                                             g3.set_xlabel("Time [s]");
                                             g3.set_ylabel("Reported CN0 [dB-Hz]");
@@ -887,7 +1028,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                             g3.set_legend();
                                             g3.savetops("CN0_output");
                                             g3.savetopdf("CN0_output", 18);
+#if USE_GLOG_AND_GFLAGS
                                             if (FLAGS_show_plots)
+#else
+                                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                                 {
                                                     g3.showonscreen();  // window output
                                                 }
@@ -897,13 +1042,22 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                 }
                                         }
 
-                                    // PLOT ERROR FIGURES (only if it is used the signal generator)
+// PLOT ERROR FIGURES (only if it is used the signal generator)
+#if USE_GLOG_AND_GFLAGS
                                     if (!FLAGS_enable_external_signal_file)
                                         {
                                             if (FLAGS_plot_detail_level >= 1)
                                                 {
                                                     Gnuplot g5("points");
                                                     if (FLAGS_show_plots)
+#else
+                                    if (!absl::GetFlag(FLAGS_enable_external_signal_file))
+                                        {
+                                            if (absl::GetFlag(FLAGS_plot_detail_level) >= 1)
+                                                {
+                                                    Gnuplot g5("points");
+                                                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                                         {
                                                             g5.showonscreen();  // window output
                                                         }
@@ -911,7 +1065,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                         {
                                                             g5.disablescreen();
                                                         }
+#if USE_GLOG_AND_GFLAGS
                                                     g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                                                    g5.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                                                     g5.set_grid();
                                                     g5.set_xlabel("Time [s]");
                                                     g5.set_ylabel("Code delay error [Chips]");
@@ -937,7 +1095,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     g5.savetopdf("Code_error_chips", 18);
 
                                                     Gnuplot g5b("points");
+#if USE_GLOG_AND_GFLAGS
                                                     if (FLAGS_show_plots)
+#else
+                                                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                                         {
                                                             g5b.showonscreen();  // window output
                                                         }
@@ -945,7 +1107,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                         {
                                                             g5b.disablescreen();
                                                         }
+#if USE_GLOG_AND_GFLAGS
                                                     g5b.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                                                    g5b.set_title("Code delay error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                                                     g5b.set_grid();
                                                     g5b.set_xlabel("Time [s]");
                                                     g5b.set_ylabel("Code delay error [meters]");
@@ -971,7 +1137,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     g5b.savetopdf("Code_error_meters", 18);
 
                                                     Gnuplot g6("points");
+#if USE_GLOG_AND_GFLAGS
                                                     if (FLAGS_show_plots)
+#else
+                                                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                                         {
                                                             g6.showonscreen();  // window output
                                                         }
@@ -979,7 +1149,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                         {
                                                             g6.disablescreen();
                                                         }
+#if USE_GLOG_AND_GFLAGS
                                                     g6.set_title("Accumulated carrier phase error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                                                    g6.set_title("Accumulated carrier phase error, PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                                                     g6.set_grid();
                                                     g6.set_xlabel("Time [s]");
                                                     g6.set_ylabel("Accumulated carrier phase error [Cycles]");
@@ -1005,7 +1179,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     g6.savetopdf("Acc_carrier_phase_error_cycles", 18);
 
                                                     Gnuplot g4("points");
+#if USE_GLOG_AND_GFLAGS
                                                     if (FLAGS_show_plots)
+#else
+                                                    if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                                         {
                                                             g4.showonscreen();  // window output
                                                         }
@@ -1018,7 +1196,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                                     for (unsigned int current_cn0_idx = 0; current_cn0_idx < generator_CN0_values_sweep_copy.at(config_idx).size(); current_cn0_idx++)
                                                         {
                                                             g4.reset_plot();
+#if USE_GLOG_AND_GFLAGS
                                                             g4.set_title("Dopper error" + std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz], PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                                                            g4.set_title("Dopper error" + std::to_string(static_cast<int>(round(generator_CN0_values_sweep_copy.at(config_idx).at(current_cn0_idx)))) + "[dB-Hz], PLL/DLL BW: " + std::to_string(PLL_wide_bw_values.at(config_idx)) + "," + std::to_string(DLL_wide_bw_values.at(config_idx)) + " Hz (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                                                             g4.set_grid();
                                                             // g4.cmd("set key box opaque");
                                                             g4.set_xlabel("Time [s]");
@@ -1051,7 +1233,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                 }
         }
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_plot_gps_l1_tracking_test == true)
+#else
+    if (absl::GetFlag(FLAGS_plot_gps_l1_tracking_test) == true)
+#endif
         {
             std::cout << "Plotting performance metrics...\n";
             try
@@ -1060,7 +1246,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                         {
                             // plot metrics
                             Gnuplot g7("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             if (FLAGS_show_plots)
+#else
+                            if (absl::GetFlag(FLAGS_show_plots))
+#endif
                                 {
                                     g7.showonscreen();  // window output
                                 }
@@ -1068,7 +1258,12 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                                 {
                                     g7.disablescreen();
                                 }
+
+#if USE_GLOG_AND_GFLAGS
                             g7.set_title("Doppler error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                            g7.set_title("Doppler error metrics (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                             g7.set_grid();
                             g7.set_xlabel("CN0 [dB-Hz]");
                             g7.set_ylabel("Doppler error [Hz]");
@@ -1093,7 +1288,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             g7.savetopdf("Doppler_error_metrics", 18);
 
                             Gnuplot g8("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             g8.set_title("Accumulated carrier phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                            g8.set_title("Accumulated carrier phase error metrics (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                             g8.set_grid();
                             g8.set_xlabel("CN0 [dB-Hz]");
                             g8.set_ylabel("Accumulated Carrier Phase error [Cycles]");
@@ -1117,7 +1316,11 @@ TEST_F(GpsL1CADllPllTrackingTest, ValidationOfResults)
                             g8.savetopdf("Carrier_error_metrics", 18);
 
                             Gnuplot g9("linespoints");
+#if USE_GLOG_AND_GFLAGS
                             g9.set_title("Code Phase error metrics (PRN #" + std::to_string(FLAGS_test_satellite_PRN) + ")");
+#else
+                            g9.set_title("Code Phase error metrics (PRN #" + std::to_string(absl::GetFlag(FLAGS_test_satellite_PRN)) + ")");
+#endif
                             g9.set_grid();
                             g9.set_xlabel("CN0 [dB-Hz]");
                             g9.set_ylabel("Code Phase error [Chips]");

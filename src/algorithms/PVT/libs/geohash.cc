@@ -135,7 +135,7 @@ std::array<double, 2> Geohash::decode(std::string geohash) const
 
 std::array<double, 4> Geohash::bounds(std::string geohash) const
 {
-    if (geohash.length() == 0)
+    if (geohash.empty())
         {
             throw std::runtime_error("Invalid geohash");
         }

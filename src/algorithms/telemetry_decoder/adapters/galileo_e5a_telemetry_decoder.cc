@@ -22,7 +22,12 @@
 
 #include "galileo_e5a_telemetry_decoder.h"
 #include "configuration_interface.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 GalileoE5aTelemetryDecoder::GalileoE5aTelemetryDecoder(

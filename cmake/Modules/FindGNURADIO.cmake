@@ -12,6 +12,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrLibPaths)
+endif()
+
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
@@ -105,36 +109,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
             HINTS ${PC_LIBDIR}
             PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib
                   ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib64
-                  /usr/lib
-                  /usr/lib64
-                  /usr/lib/x86_64-linux-gnu
-                  /usr/lib/i386-linux-gnu
-                  /usr/lib/arm-linux-gnueabihf
-                  /usr/lib/arm-linux-gnueabi
-                  /usr/lib/aarch64-linux-gnu
-                  /usr/lib/mipsel-linux-gnu
-                  /usr/lib/mips-linux-gnu
-                  /usr/lib/mips64el-linux-gnuabi64
-                  /usr/lib/powerpc-linux-gnu
-                  /usr/lib/powerpc64-linux-gnu
-                  /usr/lib/powerpc64le-linux-gnu
-                  /usr/lib/powerpc-linux-gnuspe
-                  /usr/lib/hppa-linux-gnu
-                  /usr/lib/s390x-linux-gnu
-                  /usr/lib/i386-gnu
-                  /usr/lib/hppa-linux-gnu
-                  /usr/lib/x86_64-kfreebsd-gnu
-                  /usr/lib/i386-kfreebsd-gnu
-                  /usr/lib/m68k-linux-gnu
-                  /usr/lib/sh4-linux-gnu
-                  /usr/lib/sparc64-linux-gnu
-                  /usr/lib/x86_64-linux-gnux32
-                  /usr/lib/alpha-linux-gnu
-                  /usr/lib/riscv64-linux-gnu
-                  /usr/lib/loongarch64-linux-gnu
-                  /usr/local/lib
-                  /usr/local/lib64
-                  /opt/local/lib
+                  ${GNSSSDR_LIB_PATHS}
         )
         list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
     endforeach()
@@ -314,35 +289,7 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
         HINTS ${PC_GNURADIO_IIO_LIBDIR}
         PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib
               ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib64
-              /usr/lib
-              /usr/lib64
-              /usr/lib/x86_64-linux-gnu
-              /usr/lib/i386-linux-gnu
-              /usr/lib/arm-linux-gnueabihf
-              /usr/lib/arm-linux-gnueabi
-              /usr/lib/aarch64-linux-gnu
-              /usr/lib/mipsel-linux-gnu
-              /usr/lib/mips-linux-gnu
-              /usr/lib/mips64el-linux-gnuabi64
-              /usr/lib/powerpc-linux-gnu
-              /usr/lib/powerpc64-linux-gnu
-              /usr/lib/powerpc64le-linux-gnu
-              /usr/lib/powerpc-linux-gnuspe
-              /usr/lib/hppa-linux-gnu
-              /usr/lib/s390x-linux-gnu
-              /usr/lib/i386-gnu
-              /usr/lib/hppa-linux-gnu
-              /usr/lib/x86_64-kfreebsd-gnu
-              /usr/lib/i386-kfreebsd-gnu
-              /usr/lib/m68k-linux-gnu
-              /usr/lib/sh4-linux-gnu
-              /usr/lib/sparc64-linux-gnu
-              /usr/lib/x86_64-linux-gnux32
-              /usr/lib/alpha-linux-gnu
-              /usr/lib/riscv64-linux-gnu
-              /usr/local/lib
-              /usr/local/lib64
-              /opt/local/lib
+              ${GNSSSDR_LIB_PATHS}
     )
 
     if(GNURADIO_IIO_LIBRARIES)

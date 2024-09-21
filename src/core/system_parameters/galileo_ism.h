@@ -43,7 +43,7 @@ public:
     /*!
      * Default constructor
      */
-    Galileo_ISM() : crc32_ism(0x814141AB, 0, 0, false, false) {};
+    Galileo_ISM() : crc32_ism(0x814141AB, 0, 0, false, false){};
 
     void set_ism_constellation_id(uint8_t const_id);
     void set_ism_service_level_id(uint8_t sl_id);

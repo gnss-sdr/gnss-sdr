@@ -17,19 +17,24 @@
 
 #include "monitor_pvt_udp_sink.h"
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <sstream>
 
 
-Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(const std::vector<std::string>& addresses,
-    const uint16_t& port,
+Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(
+    const std::vector<std::string>& addresses,
+    const std::vector<std::string>& ports,
     bool protobuf_enabled) : socket{io_context},
                              use_protobuf(protobuf_enabled)
 {
     for (const auto& address : addresses)
         {
-            boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
-            endpoints.push_back(endpoint);
+            for (const auto& port : ports)
+                {
+                    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), boost::lexical_cast<int>(port));
+                    endpoints.push_back(endpoint);
+                }
         }
 
     if (use_protobuf)

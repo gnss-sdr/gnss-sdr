@@ -48,6 +48,7 @@ public:
     std::string rtcm_output_file_path = std::string(".");
     std::string has_output_file_path = std::string(".");
     std::string udp_addresses;
+    std::string udp_ports;
     std::string udp_eph_addresses;
     std::string log_source_timetag_file;
 
@@ -64,7 +65,6 @@ public:
     int32_t rinexobs_rate_ms = 0;
     int32_t an_rate_ms = 20;
     int32_t max_obs_block_rx_clock_offset_ms = 40;
-    int udp_port = 0;
     int udp_eph_port = 0;
     int rtk_trace_level = 0;
 

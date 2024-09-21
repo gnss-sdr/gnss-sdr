@@ -20,6 +20,11 @@ authors:
     family-names: Majoral
     given-names: Marc
     orcid: "https://orcid.org/0000-0001-6161-6747"
+  - affiliation: "Centre Tecnològic de Telecomunicacions de Catalunya (CTTC)"
+    alias: xguerreropau
+    email: xavier.guerrero@cttc.es
+    family-names: Guerrero
+    given-names: Xavier
   - alias: Gastd
     email: gabriel.araujo.5000@gmail.com
     family-names: Araujo
@@ -56,6 +61,11 @@ authors:
   - email: daniel.co@bluewin.ch
     family-names: Fehr
     given-names: Daniel
+  - alias: cesaaargm
+    affiliation: "Technische Universität Braunschweig"
+    email: c.ghionoiu-martinez@tu-braunschweig.de
+    family-names: "Ghionoiu Martinez"
+    given-names: Cesare
   - alias: piyush0411
     email: piyush04111999@gmail.com
     family-names: Gupta

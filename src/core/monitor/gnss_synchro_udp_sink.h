@@ -45,7 +45,7 @@ using b_io_context = boost::asio::io_service;
 class Gnss_Synchro_Udp_Sink
 {
 public:
-    Gnss_Synchro_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port, bool enable_protobuf);
+    Gnss_Synchro_Udp_Sink(const std::vector<std::string>& addresses, const std::vector<std::string>& ports, bool enable_protobuf);
     bool write_gnss_synchro(const std::vector<Gnss_Synchro>& stocks);
 
 private:

@@ -187,20 +187,25 @@ uint16_t Galileo_ISM::get_Tvalidity_hours() const
 
 bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
 {
-    std::bitset<GALILEO_ISM_CRC_DATA_BITS> extracted;
+    std::bitset<GALILEO_ISM_CRC_DATA_BITS> data_bits;
     for (int32_t i = 0; i < GALILEO_ISM_CRC_DATA_BITS; ++i)
         {
-            extracted[i] = bits[i + 32];
+            data_bits[i] = bits[i + 32];
         }
+    std::bitset<32> crc_bits;
+    for (int32_t i = 0; i < 32; ++i)
+        {
+            crc_bits[i] = bits[i];
+        }
+    ism_crc = crc_bits.to_ulong();
 
-    std::vector<uint8_t> data_bytes((extracted.size() + 7) / 8);
-
-    for (size_t i = 0; i < extracted.size(); i += 8)
+    std::vector<uint8_t> data_bytes((data_bits.size() + 7) / 8);
+    for (size_t i = 0; i < data_bits.size(); i += 8)
         {
             uint8_t byte = 0;
-            for (size_t j = 0; j < 8 && i + j < extracted.size(); ++j)
+            for (size_t j = 0; j < 8 && i + j < data_bits.size(); ++j)
                 {
-                    byte |= (extracted[i + j] << j);
+                    byte |= (data_bits[i + j] << j);
                 }
             data_bytes[i / 8] = byte;
         }
@@ -220,5 +225,7 @@ bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
 uint32_t Galileo_ISM::compute_crc(const std::vector<uint8_t>& data)
 {
     crc32_ism.process_bytes(data.data(), data.size());
-    return crc32_ism.checksum();
+    const uint32_t crc = crc32_ism.checksum();
+    crc32_ism.reset();
+    return crc;
 }

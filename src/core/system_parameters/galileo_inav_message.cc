@@ -1323,8 +1323,6 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "Word type 22 arrived";
             ism_constellation_id = read_octet_unsigned(data_jk_bits, ISM_CONSTELLATION_ID_BIT);
             ism_service_level_id = read_octet_unsigned(data_jk_bits, ISM_SERVICE_LEVEL_ID_BIT);
-            ism_crc = static_cast<uint32_t>(read_navigation_unsigned(data_jk_bits, ISM_CRC_BIT));
-            gal_ism.set_ism_crc(ism_crc);
             if (gal_ism.check_ism_crc(data_jk_bits))
                 {
                     DLOG(INFO) << "I/NAV ARAIM Integrity Support Message CRC OK";

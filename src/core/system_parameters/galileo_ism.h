@@ -43,7 +43,7 @@ public:
     /*!
      * Default constructor
      */
-    Galileo_ISM() : crc32_ism(0x814141AB, 0, 0, false, false){};
+    Galileo_ISM() = default;
 
     void set_ism_constellation_id(uint8_t const_id);
     void set_ism_service_level_id(uint8_t sl_id);
@@ -74,7 +74,7 @@ public:
 
 private:
     uint32_t compute_crc(const std::vector<uint8_t>& data);
-    boost::crc_basic<32> crc32_ism;
+    boost::crc_optimal<32, 0x814141AB, 0, 0, false, false> crc32_ism;
 
     // ICD 2.1 Table 97
     std::unordered_map<uint8_t, double> ISM_PCONST_MAP = {

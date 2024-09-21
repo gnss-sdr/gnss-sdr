@@ -91,6 +91,11 @@ public:
     bool have_new_reduced_ced();
 
     /*
+     * \brief Returns true if new ISM data have arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_ism();
+
+    /*
      * \brief Returns a Galileo_Ephemeris object filled with the latest navigation data received
      */
     Galileo_Ephemeris get_ephemeris() const;
@@ -115,6 +120,9 @@ public:
      */
     Galileo_Ephemeris get_reduced_ced() const;
 
+    /*
+     * \brief Returns a Galileo_ISM object filled with the latest ISM data received
+     */
     Galileo_ISM get_galileo_ism() const;
 
     inline bool get_flag_CRC_test() const
@@ -403,7 +411,6 @@ private:
     uint8_t IODnav_LSB19{};
     uint8_t IODnav_LSB20{};
 
-    uint32_t ism_crc{};
     uint8_t ism_constellation_id{};
     uint8_t ism_service_level_id{};
 
@@ -434,6 +441,7 @@ private:
 
     bool flag_CED{};
     bool enable_rs{};
+    bool have_ISM{};
 };
 
 

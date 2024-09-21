@@ -19,98 +19,92 @@
 
 void Galileo_ISM::set_ism_constellation_id(uint8_t const_id)
 {
-    this->ism_constellation_id = const_id;
+    this->d_ism_constellation_id = const_id;
 }
 
 
 void Galileo_ISM::set_ism_service_level_id(uint8_t sl_id)
 {
-    this->ism_service_level_id = sl_id;
+    this->d_ism_service_level_id = sl_id;
 }
 
 
 void Galileo_ISM::set_ism_wn(uint16_t wn_ism)
 {
-    this->ism_wn = wn_ism;
+    this->d_ism_wn = wn_ism;
 }
 
 
 void Galileo_ISM::set_ism_t0(uint16_t t0)
 {
-    this->ism_t0 = t0;
+    this->d_ism_t0 = t0;
 }
 
 
 void Galileo_ISM::set_ism_mask_msb(bool mask_msb)
 {
-    this->ism_mask_msb = mask_msb;
+    this->d_ism_mask_msb = mask_msb;
 }
 
 
 void Galileo_ISM::set_ism_mask(uint32_t mask)
 {
-    this->ism_mask = mask;
+    this->d_ism_mask = mask;
 }
 
 
 void Galileo_ISM::set_ism_pconst(uint8_t pconst)
 {
-    this->ism_pconst = pconst;
+    this->d_ism_pconst = pconst;
 }
 
 
 void Galileo_ISM::set_ism_psat(uint8_t psat)
 {
-    this->ism_psat = psat;
+    this->d_ism_psat = psat;
 }
 
 
 void Galileo_ISM::set_ism_ura(uint8_t ura)
 {
-    this->ism_ura = ura;
+    this->d_ism_ura = ura;
 }
 
 
 void Galileo_ISM::set_ism_ure(uint8_t ure)
 {
-    this->ism_ure = ure;
+    this->d_ism_ure = ure;
 }
 
 
 void Galileo_ISM::set_ism_bnom(uint8_t bnom)
 {
-    this->ism_bnom = bnom;
+    this->d_ism_bnom = bnom;
 }
 
 
 void Galileo_ISM::set_ism_Tvalidity(uint8_t tvalidity)
 {
-    this->ism_Tvalidity = tvalidity;
-}
-
-
-void Galileo_ISM::set_ism_crc(uint32_t crc)
-{
-    this->ism_crc = crc;
+    this->d_ism_Tvalidity = tvalidity;
 }
 
 
 uint16_t Galileo_ISM::get_WN_ISM() const
 {
-    return this->ism_wn;
+    return this->d_ism_wn;
 }
 
 
 uint16_t Galileo_ISM::get_t0_ISM() const
 {
-    return (this->ism_t0 * 1800);
+    return (this->d_ism_t0 * 1800);
 }
 
 
 double Galileo_ISM::get_pconst_value() const
 {
-    auto it = ISM_PCONST_MAP.find(this->ism_pconst);
-    if (it == ISM_PCONST_MAP.end())
+    auto it = d_ISM_PCONST_MAP.find(this->d_ism_pconst);
+    if (it == d_ISM_PCONST_MAP.end())
         {
             return 0.0;
         }
@@ -120,8 +114,8 @@ double Galileo_ISM::get_pconst_value() const
 
 double Galileo_ISM::get_psat_value() const
 {
-    auto it = ISM_PSAT_MAP.find(this->ism_psat);
-    if (it == ISM_PSAT_MAP.end())
+    auto it = d_ISM_PSAT_MAP.find(this->d_ism_psat);
+    if (it == d_ISM_PSAT_MAP.end())
         {
             return 0.0;
         }
@@ -131,14 +125,14 @@ double Galileo_ISM::get_psat_value() const
 
 bool Galileo_ISM::get_ism_mask_msb() const
 {
-    return ism_mask_msb;
+    return d_ism_mask_msb;
 }
 
 
 float Galileo_ISM::get_ura_m() const
 {
-    auto it = ISM_URA_MAP.find(this->ism_ura);
-    if (it == ISM_URA_MAP.end())
+    auto it = d_ISM_URA_MAP.find(this->d_ism_ura);
+    if (it == d_ISM_URA_MAP.end())
         {
             return 0.0;
         }
@@ -148,8 +142,8 @@ float Galileo_ISM::get_ura_m() const
 
 float Galileo_ISM::get_ure_m() const
 {
-    auto it = ISM_URE_MAP.find(this->ism_ure);
-    if (it == ISM_URE_MAP.end())
+    auto it = d_ISM_URE_MAP.find(this->d_ism_ure);
+    if (it == d_ISM_URE_MAP.end())
         {
             return 0.0;
         }
@@ -159,14 +153,14 @@ float Galileo_ISM::get_ure_m() const
 
 uint32_t Galileo_ISM::get_mask_ISM() const
 {
-    return ism_mask;
+    return d_ism_mask;
 }
 
 
 float Galileo_ISM::get_bnom_m() const
 {
-    auto it = ISM_BNOM_MAP.find(this->ism_bnom);
-    if (it == ISM_BNOM_MAP.end())
+    auto it = d_ISM_BNOM_MAP.find(this->d_ism_bnom);
+    if (it == d_ISM_BNOM_MAP.end())
         {
             return 5.0;  //
         }
@@ -176,8 +170,8 @@ float Galileo_ISM::get_bnom_m() const
 
 uint16_t Galileo_ISM::get_Tvalidity_hours() const
 {
-    auto it = ISM_TVALIDITY_MAP.find(this->ism_Tvalidity);
-    if (it == ISM_TVALIDITY_MAP.end())
+    auto it = d_ISM_TVALIDITY_MAP.find(this->d_ism_Tvalidity);
+    if (it == d_ISM_TVALIDITY_MAP.end())
         {
             return 0.0;
         }
@@ -197,7 +191,7 @@ bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
         {
             crc_bits[i] = bits[i];
         }
-    ism_crc = crc_bits.to_ulong();
+    this->d_ism_crc = crc_bits.to_ulong();
 
     std::vector<uint8_t> data_bytes((data_bits.size() + 7) / 8);
     for (size_t i = 0; i < data_bits.size(); i += 8)
@@ -213,7 +207,7 @@ bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
     std::reverse(data_bytes.begin(), data_bytes.end());
     const uint32_t crc_computed = this->compute_crc(data_bytes);
 
-    if (this->ism_crc == crc_computed)
+    if (this->d_ism_crc == crc_computed)
         {
             return true;
         }
@@ -224,8 +218,36 @@ bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
 
 uint32_t Galileo_ISM::compute_crc(const std::vector<uint8_t>& data)
 {
-    crc32_ism.process_bytes(data.data(), data.size());
-    const uint32_t crc = crc32_ism.checksum();
-    crc32_ism.reset();
+    d_crc32_ism.process_bytes(data.data(), data.size());
+    const uint32_t crc = d_crc32_ism.checksum();
+    d_crc32_ism.reset();
     return crc;
+}
+
+
+bool Galileo_ISM::ism_parameters_apply(uint32_t prn) const
+{
+    // ICD 2.1 Table 96
+    if (prn == 0 || prn > 63 || d_ism_service_level_id != 2 || d_ism_constellation_id != 1)
+        {
+            return false;
+        }
+    std::bitset<32> b(d_ism_mask);
+    if (d_ism_mask_msb == false)
+        {
+            // For numbering in the ICD, the most significant bit/byte is numbered as bit/byte 0
+            if (prn > 32)
+                {
+                    return false;
+                }
+            return b.test(32 - prn);
+        }
+    else
+        {
+            if (prn <= 32)
+                {
+                    return false;
+                }
+            return b.test(64 - prn);
+        }
 }

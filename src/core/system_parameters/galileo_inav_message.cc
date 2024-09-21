@@ -44,7 +44,7 @@ Galileo_Inav_Message::Galileo_Inav_Message()
 }
 
 
-// here the compiler knows how to destrcut rs
+// here the compiler knows how to destroy rs
 Galileo_Inav_Message::~Galileo_Inav_Message() = default;
 
 
@@ -382,6 +382,17 @@ bool Galileo_Inav_Message::have_new_reduced_ced()
     if ((flag_CED == true) && (WN_5 > 0))  // We need the week number to compute GST
         {
             flag_CED = false;
+            return true;
+        }
+    return false;
+}
+
+
+bool Galileo_Inav_Message::have_new_ism()
+{
+    if (have_ISM)
+        {
+            have_ISM = false;
             return true;
         }
     return false;
@@ -1359,6 +1370,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                               << "Tvalidity=" << static_cast<uint32_t>(gal_ism.get_Tvalidity_hours()) << " [h]";
                                 }
                         }
+                    have_ISM = true;
                 }
             break;
 

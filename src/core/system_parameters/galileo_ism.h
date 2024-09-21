@@ -57,7 +57,6 @@ public:
     void set_ism_ure(uint8_t ure);
     void set_ism_bnom(uint8_t bnom);
     void set_ism_Tvalidity(uint8_t tvalidity);
-    void set_ism_crc(uint32_t crc);
 
     bool check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits);
 
@@ -71,13 +70,14 @@ public:
     uint16_t get_t0_ISM() const;
     uint16_t get_Tvalidity_hours() const;
     bool get_ism_mask_msb() const;
+    bool ism_parameters_apply(uint32_t prn) const;
 
 private:
     uint32_t compute_crc(const std::vector<uint8_t>& data);
-    boost::crc_optimal<32, 0x814141AB, 0, 0, false, false> crc32_ism;
+    boost::crc_optimal<32, 0x814141AB, 0, 0, false, false> d_crc32_ism;
 
     // ICD 2.1 Table 97
-    std::unordered_map<uint8_t, double> ISM_PCONST_MAP = {
+    std::unordered_map<uint8_t, double> d_ISM_PCONST_MAP = {
         {0, 1.0e-8},
         {1, 1.0e-7},
         {2, 1.0e-6},
@@ -96,7 +96,7 @@ private:
         {15, 2.0e-4}};
 
     // ICD 2.1 Table 98
-    std::unordered_map<uint8_t, double> ISM_PSAT_MAP = {
+    std::unordered_map<uint8_t, double> d_ISM_PSAT_MAP = {
         {0, 1.0e-7},
         {1, 3.0e-7},
         {2, 6.0e-7},
@@ -115,7 +115,7 @@ private:
         {15, 3.0e-5}};
 
     // ICD 2.1 Table 99
-    std::unordered_map<uint8_t, float> ISM_URA_MAP = {
+    std::unordered_map<uint8_t, float> d_ISM_URA_MAP = {
         {0, 0.75},
         {1, 1.0},
         {2, 1.5},
@@ -134,7 +134,7 @@ private:
         {15, 6.0}};
 
     // ICD 2.1 Table 100
-    std::unordered_map<uint8_t, float> ISM_URE_MAP = {
+    std::unordered_map<uint8_t, float> d_ISM_URE_MAP = {
         {0, 0.25},
         {1, 0.50},
         {2, 0.75},
@@ -153,7 +153,7 @@ private:
         {15, 4.00}};
 
     // ICD 2.1 Table 101
-    std::unordered_map<uint8_t, float> ISM_BNOM_MAP = {
+    std::unordered_map<uint8_t, float> d_ISM_BNOM_MAP = {
         {0, 0.0},
         {1, 0.10},
         {2, 0.20},
@@ -172,7 +172,7 @@ private:
         {15, 2.4}};
 
     // ICD 2.1 Table 102
-    std::unordered_map<uint8_t, uint16_t> ISM_TVALIDITY_MAP = {
+    std::unordered_map<uint8_t, uint16_t> d_ISM_TVALIDITY_MAP = {
         {0, 1},
         {1, 2},
         {2, 3},
@@ -190,19 +190,19 @@ private:
         {14, 720},
         {15, 1440}};
 
-    uint32_t ism_crc{};
-    uint32_t ism_mask{};
-    uint16_t ism_wn{};
-    uint16_t ism_t0{};
-    uint8_t ism_constellation_id{};
-    uint8_t ism_service_level_id{};
-    uint8_t ism_pconst{};
-    uint8_t ism_psat{};
-    uint8_t ism_ura{};
-    uint8_t ism_ure{};
-    uint8_t ism_bnom{};
-    uint8_t ism_Tvalidity{};
-    bool ism_mask_msb{};
+    uint32_t d_ism_crc{};
+    uint32_t d_ism_mask{};
+    uint16_t d_ism_wn{};
+    uint16_t d_ism_t0{};
+    uint8_t d_ism_constellation_id{};
+    uint8_t d_ism_service_level_id{};
+    uint8_t d_ism_pconst{};
+    uint8_t d_ism_psat{};
+    uint8_t d_ism_ura{};
+    uint8_t d_ism_ure{};
+    uint8_t d_ism_bnom{};
+    uint8_t d_ism_Tvalidity{};
+    bool d_ism_mask_msb{};
 };
 
 /** \} */

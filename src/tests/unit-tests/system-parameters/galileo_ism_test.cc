@@ -26,11 +26,10 @@ TEST(GalileoISMTest, CRC)
     bool result = gal_ism.check_ism_crc(input);
     EXPECT_TRUE(result);
     // Check if it can be used twice
-    std::bitset<128> input2 = input;
-    bool result2 = gal_ism.check_ism_crc(input2);
+    bool result2 = gal_ism.check_ism_crc(input);
     EXPECT_TRUE(result2);
     // Check if it fails
-    input2.set(127);
-    bool result3 = gal_ism.check_ism_crc(input2);
+    input.set(127);
+    bool result3 = gal_ism.check_ism_crc(input);
     EXPECT_TRUE(!result3);
 }

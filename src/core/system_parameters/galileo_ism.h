@@ -66,13 +66,15 @@ public:
     float get_ura_m() const;
     float get_ure_m() const;
     float get_bnom_m() const;
+    uint32_t get_mask_ISM() const;
     uint16_t get_WN_ISM() const;
     uint16_t get_t0_ISM() const;
     uint16_t get_Tvalidity_hours() const;
+    bool get_ism_mask_msb() const;
 
 private:
-    boost::crc_basic<32> crc32_ism;
     uint32_t compute_crc(const std::vector<uint8_t>& data);
+    boost::crc_basic<32> crc32_ism;
 
     // ICD 2.1 Table 97
     std::unordered_map<uint8_t, double> ISM_PCONST_MAP = {

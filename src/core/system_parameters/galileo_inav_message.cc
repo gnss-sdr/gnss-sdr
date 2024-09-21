@@ -1332,7 +1332,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                     gal_ism.set_ism_service_level_id(ism_service_level_id);
                     if (ism_constellation_id == 0)
                         {
-                            DLOG(INFO) << "I/NAV ARAIM Integrity Support Message in Test";
+                            LOG(INFO) << "I/NAV ARAIM Integrity Support Message in Test";
                         }
                     if (ism_constellation_id == 1)
                         {
@@ -1348,6 +1348,17 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                                     gal_ism.set_ism_ure(read_octet_unsigned(data_jk_bits, ISM_URE_BIT));
                                     gal_ism.set_ism_bnom(read_octet_unsigned(data_jk_bits, ISM_BNOM_BIT));
                                     gal_ism.set_ism_Tvalidity(read_octet_unsigned(data_jk_bits, ISM_TVALIDITY_BIT));
+                                    LOG(INFO) << "I/NAV ARAIM Integrity Support Message: "
+                                              << "WN_ISM=" << static_cast<uint32_t>(gal_ism.get_WN_ISM()) <<  ", "
+                                              << "t0_ISM=" << static_cast<uint32_t>(gal_ism.get_t0_ISM()) <<  ", "
+                                              << "Mask_MSB_ISM=" << static_cast<uint32_t>(gal_ism.get_ism_mask_msb()) <<  ", "
+                                              << "Mask_ISM=" << gal_ism.get_mask_ISM() <<  ", "
+                                              << "Pconst=" << gal_ism.get_pconst_value() <<  ", "
+                                              << "Psat=" << gal_ism.get_psat_value() <<  ", "
+                                              << "URA=" << gal_ism.get_ura_m() <<  " [m], "
+                                              << "URE=" << gal_ism.get_ure_m() <<  " [m], "
+                                              << "Bnom=" << gal_ism.get_bnom_m() <<  " [m], "
+                                              << "Tvalidity=" << static_cast<uint32_t>(gal_ism.get_Tvalidity_hours()) <<  " [h]";
                                 }
                         }
                 }

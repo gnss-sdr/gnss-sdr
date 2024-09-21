@@ -129,6 +129,12 @@ double Galileo_ISM::get_psat_value() const
 }
 
 
+bool Galileo_ISM::get_ism_mask_msb() const
+{
+    return ism_mask_msb;
+}
+
+
 float Galileo_ISM::get_ura_m() const
 {
     auto it = ISM_URA_MAP.find(this->ism_ura);
@@ -148,6 +154,12 @@ float Galileo_ISM::get_ure_m() const
             return 0.0;
         }
     return it->second;
+}
+
+
+uint32_t Galileo_ISM::get_mask_ISM() const
+{
+    return ism_mask;
 }
 
 
@@ -175,7 +187,7 @@ uint16_t Galileo_ISM::get_Tvalidity_hours() const
 
 bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
 {
-    std::bitset<96> extracted;
+    std::bitset<GALILEO_ISM_CRC_DATA_BITS> extracted;
     for (int32_t i = 0; i < GALILEO_ISM_CRC_DATA_BITS; ++i)
         {
             extracted[i] = bits[i + 32];
@@ -208,6 +220,5 @@ bool Galileo_ISM::check_ism_crc(const std::bitset<GALILEO_DATA_JK_BITS>& bits)
 uint32_t Galileo_ISM::compute_crc(const std::vector<uint8_t>& data)
 {
     crc32_ism.process_bytes(data.data(), data.size());
-    uint32_t result = crc32_ism.checksum();
-    return result;
+    return crc32_ism.checksum();
 }

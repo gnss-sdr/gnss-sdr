@@ -196,7 +196,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     // set the bit transition pattern in secondary code to obtain bit synchronization
                     d_secondary_code_length = static_cast<uint32_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
                     d_secondary_code_string = GPS_CA_PREAMBLE_SYMBOLS_STR;
-                    d_symbols_per_bit = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_symbols_per_bit = 1;//GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
                 }
             else if (d_signal_type == "2S")
                 {

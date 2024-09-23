@@ -16,6 +16,7 @@
 #ifndef GNSS_SDR_FPGA_SPIDEV_H
 #define GNSS_SDR_FPGA_SPIDEV_H
 
+#include <cstdint>
 #include <string>
 
 class Fpga_spidev

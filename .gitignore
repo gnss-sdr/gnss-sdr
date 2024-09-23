@@ -22,6 +22,7 @@ cmake-build-release/
 .vscode/
 .vs/
 Testing/
+
 GSDR*
 PVT_*
 HAS_*

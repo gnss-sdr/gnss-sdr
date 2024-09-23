@@ -41,7 +41,7 @@ using gnss_synchro_monitor_sptr = gnss_shared_ptr<gnss_synchro_monitor>;
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
     int decimation_factor,
-    int udp_port,
+    const std::vector<std::string>& udp_ports,
     const std::vector<std::string>& udp_addresses,
     bool enable_protobuf);
 
@@ -61,13 +61,13 @@ public:
 private:
     friend gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
         int decimation_factor,
-        int udp_port,
+        const std::vector<std::string>& udp_ports,
         const std::vector<std::string>& udp_addresses,
         bool enable_protobuf);
 
     gnss_synchro_monitor(int n_channels,
         int decimation_factor,
-        int udp_port,
+        const std::vector<std::string>& udp_ports,
         const std::vector<std::string>& udp_addresses,
         bool enable_protobuf);
 

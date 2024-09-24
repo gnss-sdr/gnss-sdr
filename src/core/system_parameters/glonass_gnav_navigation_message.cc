@@ -159,6 +159,95 @@ bool Glonass_Gnav_Navigation_Message::CRC_test(std::bitset<GLONASS_GNAV_STRING_B
 }
 
 
+bool Glonass_Gnav_Navigation_Message::hamming_correct(std::bitset<GLONASS_GNAV_STRING_BITS>& bits_io) const
+{
+    std::vector<int> bits(GLONASS_GNAV_STRING_BITS);
+
+    // Populate data and Hamming code vectors
+    for (size_t i = 0; i < bits.size(); i++)
+        {
+            bits[i] = static_cast<int>(bits_io[i]);
+        }
+
+    std::vector<int> C(GLONASS_GNAV_HAMMING_CODE_BITS, 0);
+    int sum_bits;
+    for (size_t m = 0; m < GLONASS_GNAV_HAMMING_CODE_BITS; ++m)
+        {
+            sum_bits = 0;
+            for (int i : GLONASS_GNAV_HAMMING_INDEX[m])
+                sum_bits += bits[i - 1];
+            C[m] = bits[m] ^ (sum_bits % 2);
+        }
+
+    int sum_hamming = 0;
+    for (int i = 0; i < GLONASS_GNAV_HAMMING_CODE_BITS; ++i)
+        {
+            sum_hamming += bits[i];
+        }
+
+    C[GLONASS_GNAV_HAMMING_CODE_BITS - 1] = (sum_hamming % 2) ^ (sum_bits % 2);
+
+    int shortSumC = 0;
+    for (size_t m = 0; m < GLONASS_GNAV_HAMMING_CODE_BITS - 1; ++m)
+        {
+            shortSumC += C[m];
+        }
+
+    if (C[GLONASS_GNAV_HAMMING_CODE_BITS - 1] == 0)
+        {
+            if (shortSumC == 0)
+                {
+                    // (A1) All checksums (C1, ..., C7 and C_Sigma) are equal to zero (all information
+                    // bits and check bits are valid)
+                    return true;
+                }
+        }
+    else
+        {
+            int highestNonZeroIdx = -1;
+            for (int i = 0; i < GLONASS_GNAV_HAMMING_CODE_BITS - 1; ++i)  // C_Sigma should not be taken into account
+                {
+                    if (C[i] != 0)
+                        highestNonZeroIdx = i + 1;  // 1-based indices
+                }
+
+            if (shortSumC == 1)
+                {
+                    // (A2) Only one of the checksums (C1, ..., C7) is equal to 1 and C_Sigma = 1 (all
+                    // information bits are valid and there is an error in one (!) of the check bits.
+                    bits_io[highestNonZeroIdx - 1] = 1 - bits_io[highestNonZeroIdx - 1];
+                    return true;
+                }
+
+            if (highestNonZeroIdx == -1)
+                {
+                    // Error only in parity bit (C_Sigma = 1)
+                    bits_io[GLONASS_GNAV_HAMMING_CODE_BITS - 1] = 1 - bits_io[GLONASS_GNAV_HAMMING_CODE_BITS - 1];
+                    return true;
+                }
+
+            int idx = C[GLONASS_GNAV_HAMMING_CODE_BITS - 2];
+            for (int i = GLONASS_GNAV_HAMMING_CODE_BITS - 3; i >= 0; --i)
+                {
+                    idx <<= 1;
+                    idx += C[i];
+                }
+
+            int position = idx + GLONASS_GNAV_HAMMING_CODE_BITS - highestNonZeroIdx - 1;
+
+            if (position < GLONASS_GNAV_STRING_BITS)
+                {
+                    // (B) Error only in a single information bit
+                    bits_io[position] = 1 - bits_io[position];
+                    return true;
+                }
+        }
+
+    // Irrecoverable error in information bits
+    return false;
+}
+
+
 bool Glonass_Gnav_Navigation_Message::read_navigation_bool(const std::bitset<GLONASS_GNAV_STRING_BITS>& bits, const std::vector<std::pair<int32_t, int32_t>>& parameter) const
 {
     bool value = bits[GLONASS_GNAV_STRING_BITS - parameter[0].first];
@@ -240,8 +329,8 @@ int32_t Glonass_Gnav_Navigation_Message::string_decoder(const std::string& frame
     // Unpack bytes to bits
     std::bitset<GLONASS_GNAV_STRING_BITS> string_bits(frame_string);
 
-    // Perform data verification and exit code if error in bit sequence
-    flag_CRC_test = CRC_test(string_bits);
+    // Perform data correction and exit code if error in bit sequence is irrecoverable
+    flag_CRC_test = hamming_correct(string_bits);
     if (flag_CRC_test == false)
         {
             return 0;

@@ -39,3 +39,19 @@ target_include_directories(navmsg_lib
 add_executable(nav_msg_listener ${NAVLISTENER_SOURCE_DIR}/main.cc)
 
 target_link_libraries(nav_msg_listener PUBLIC navmsg_lib)
+
+install(TARGETS nav_msg_listener
+    RUNTIME DESTINATION bin
+    COMPONENT "nav_msg_listener"
+)
+
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY
+    )
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+    )
+endif()

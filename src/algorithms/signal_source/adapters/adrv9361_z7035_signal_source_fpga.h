@@ -1,6 +1,6 @@
 /*!
  * \file adrv9361_z7035_signal_source_fpga.h
- * \brief signal source for the Analog Devices ADRV9361-Z7035 evaluation board
+ * \brief Signal source for the Analog Devices ADRV9361-Z7035 evaluation board
  * directly connected to the FPGA accelerators.
  * This source implements only the AD9361 control. It is NOT compatible with
  * conventional SDR acquisition and tracking blocks.
@@ -23,7 +23,6 @@
 
 #include "concurrent_queue.h"
 #include "fpga_buffer_monitor.h"
-#include "fpga_dma-proxy.h"
 #include "fpga_dynamic_bit_selection.h"
 #include "fpga_switch.h"
 #include "gnss_block_interface.h"
@@ -78,12 +77,13 @@ private:
     const uint32_t buffer_monitor_period_ms = 1000;
     // buffer overflow and buffer monitoring initial delay
     const uint32_t buffer_monitoring_initial_delay_ms = 2000;
-    // sample block size when running in post-processing mode
-    const int sample_block_size = 16384;
     const int32_t switch_to_real_time_mode = 2;
 
     void run_dynamic_bit_selection_process();
     void run_buffer_monitor_process();
+
+    mutable std::mutex dynamic_bit_selection_mutex;
+    mutable std::mutex buffer_monitor_mutex;
 
     std::thread thread_dynamic_bit_selection;
     std::thread thread_buffer_monitor;
@@ -91,9 +91,6 @@ private:
     std::shared_ptr<Fpga_Switch> switch_fpga;
     std::shared_ptr<Fpga_dynamic_bit_selection> dynamic_bit_selection_fpga;
     std::shared_ptr<Fpga_buffer_monitor> buffer_monitor_fpga;
-
-    std::mutex dynamic_bit_selection_mutex;
-    std::mutex buffer_monitor_mutex;
 
     std::string gain_mode_rx1_;
     std::string gain_mode_rx2_;
@@ -109,7 +106,6 @@ private:
     double tx_attenuation_db_;
 
     uint64_t freq0_;  // frequency of local oscillator for ADRV9361-A 0
-    uint64_t freq1_;  // frequency of local oscillator for ADRV9361-B (if present)
     uint64_t sample_rate_;
     uint64_t bandwidth_;
     uint64_t freq_dds_tx_hz_;
@@ -124,7 +120,6 @@ private:
     size_t item_size_;
 
     bool enable_dds_lo_;
-    bool filter_auto_;
     bool quadrature_;
     bool rf_dc_;
     bool bb_dc_;

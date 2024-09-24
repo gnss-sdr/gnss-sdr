@@ -140,13 +140,11 @@ MAX2771EVKITSignalSourceFPGA::MAX2771EVKITSignalSourceFPGA(const ConfigurationIn
         }
 }
 
+
 std::vector<uint32_t> MAX2771EVKITSignalSourceFPGA::setup_regs(void)
 {
-    std::vector<uint32_t> register_values = std::vector<uint32_t>(MAX2771_NUM_REGS);
-
-
+    auto register_values = std::vector<uint32_t>(MAX2771_NUM_REGS);
     uint32_t LNA_mode = (LNA_active_) ? 0x0 : 0x2;
-
     uint32_t Filter_Bandwidth;
 
     switch (bandwidth_)
@@ -376,10 +374,10 @@ bool MAX2771EVKITSignalSourceFPGA::configure(std::vector<uint32_t> register_valu
     return 0;
 }
 
+
 MAX2771EVKITSignalSourceFPGA::~MAX2771EVKITSignalSourceFPGA()
 {
-    /* cleanup and exit */
-
+    // cleanup and exit
     if (rf_shutdown_)
         {
             chipen_ = false;
@@ -391,7 +389,6 @@ MAX2771EVKITSignalSourceFPGA::~MAX2771EVKITSignalSourceFPGA()
                     std::cerr << "Cannot open SPI device\n";
                     return;
                 }
-
 
             if (configure(register_values))
                 {
@@ -405,9 +402,10 @@ MAX2771EVKITSignalSourceFPGA::~MAX2771EVKITSignalSourceFPGA()
         }
 
     // disable buffer overflow checking and buffer monitoring
-    std::unique_lock<std::mutex> lock_buffer_monitor(buffer_monitor_mutex);
-    enable_ovf_check_buffer_monitor_active_ = false;
-    lock_buffer_monitor.unlock();
+    {
+        std::lock_guard<std::mutex> lock_buffer_monitor(buffer_monitor_mutex);
+        enable_ovf_check_buffer_monitor_active_ = false;
+    }
 
     if (thread_buffer_monitor.joinable())
         {
@@ -426,12 +424,11 @@ void MAX2771EVKITSignalSourceFPGA::run_buffer_monitor_process()
         {
             buffer_monitor_fpga->check_buffer_overflow_and_monitor_buffer_status();
             std::this_thread::sleep_for(std::chrono::milliseconds(buffer_monitor_period_ms));
-            std::unique_lock<std::mutex> lock(buffer_monitor_mutex);
+            std::lock_guard<std::mutex> lock(buffer_monitor_mutex);
             if (enable_ovf_check_buffer_monitor_active_ == false)
                 {
                     enable_ovf_check_buffer_monitor_active = false;
                 }
-            lock.unlock();
         }
 }
 

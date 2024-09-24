@@ -27,6 +27,18 @@ $ cmake ..
 $ make
 ```
 
+Optionally, you can install it:
+
+```
+$ sudo make install
+```
+
+and uninstall it later with:
+
+```
+$ sudo make uninstall
+```
+
 ## Usage
 
 In order to tell GNSS-SDR to generate those messages, you need to include the

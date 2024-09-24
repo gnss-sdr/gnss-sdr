@@ -217,11 +217,17 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("Monitor.udp_port", std::string("1234"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             // Instantiate monitor object
             GnssSynchroMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("Monitor.decimation_factor", 1),
-                configuration_->property("Monitor.udp_port", 1234),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
@@ -241,10 +247,16 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("AcquisitionMonitor.udp_port", std::string("1235"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             GnssSynchroAcquisitionMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("AcquisitionMonitor.decimation_factor", 1),
-                configuration_->property("AcquisitionMonitor.udp_port", 1235),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*
@@ -264,10 +276,16 @@ void GNSSFlowgraph::init()
             std::sort(udp_addr_vec.begin(), udp_addr_vec.end());
             udp_addr_vec.erase(std::unique(udp_addr_vec.begin(), udp_addr_vec.end()), udp_addr_vec.end());
 
+            std::string udp_port_string = configuration_->property("TrackingMonitor.udp_port", std::string("1236"));
+            std::vector<std::string> udp_port_vec = split_string(udp_port_string, '_');
+            std::sort(udp_port_vec.begin(), udp_port_vec.end());
+            udp_port_vec.erase(std::unique(udp_port_vec.begin(), udp_port_vec.end()), udp_port_vec.end());
+
             GnssSynchroTrackingMonitor_ = gnss_synchro_make_monitor(channels_count_,
                 configuration_->property("TrackingMonitor.decimation_factor", 1),
-                configuration_->property("TrackingMonitor.udp_port", 1236),
-                udp_addr_vec, enable_protobuf);
+                udp_port_vec,
+                udp_addr_vec,
+                enable_protobuf);
         }
 
     /*

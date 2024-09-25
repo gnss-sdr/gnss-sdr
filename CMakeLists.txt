@@ -102,6 +102,8 @@ option(ENABLE_STRIP "Create stripped binaries without debugging symbols (in Rele
 
 option(Boost_USE_STATIC_LIBS "Use Boost static libs" OFF)
 
+option(ENABLE_GNUTLS "Forces linking against GnuTLS" OFF)
+
 if(ENABLE_PACKAGING)
     set(ENABLE_ARMA_NO_DEBUG ON)
     set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -2217,97 +2219,9 @@ endif()
 
 
 ################################################################################
-# GnuTLS - https://www.gnutls.org/
+# OpenSSL https://www.openssl.org/ or GnuTLS - https://www.gnutls.org/
 ################################################################################
-find_package(GnuTLS)
-set_package_properties(GnuTLS PROPERTIES
-    URL "https://www.gnutls.org/"
-    PURPOSE "Used for the SUPL protocol implementation."
-    TYPE REQUIRED
-)
-if(GnuTLS_FOUND AND GNUTLS_VERSION_STRING)
-    set_package_properties(GnuTLS PROPERTIES
-        DESCRIPTION "Transport Layer Security Library (found: v${GNUTLS_VERSION_STRING})"
-    )
-else()
-    set_package_properties(GnuTLS PROPERTIES
-        DESCRIPTION "Transport Layer Security Library"
-    )
-endif()
-find_library(GNUTLS_OPENSSL_LIBRARY
-    NAMES gnutls-openssl libgnutls-openssl.so.27
-    PATHS
-        /usr/lib
-        /usr/lib64
-        /usr/lib/x86_64-linux-gnu
-        /usr/lib/aarch64-linux-gnu
-        /usr/lib/arm-linux-gnueabihf
-        /usr/lib/arm-linux-gnueabi
-        /usr/lib/i386-linux-gnu
-        /usr/lib/alpha-linux-gnu
-        /usr/lib/hppa-linux-gnu
-        /usr/lib/i386-gnu
-        /usr/lib/i686-gnu
-        /usr/lib/i686-linux-gnu
-        /usr/lib/x86_64-kfreebsd-gnu
-        /usr/lib/i686-kfreebsd-gnu
-        /usr/lib/m68k-linux-gnu
-        /usr/lib/mips-linux-gnu
-        /usr/lib/mips64el-linux-gnuabi64
-        /usr/lib/mipsel-linux-gnu
-        /usr/lib/powerpc-linux-gnu
-        /usr/lib/powerpc-linux-gnuspe
-        /usr/lib/powerpc64-linux-gnu
-        /usr/lib/powerpc64le-linux-gnu
-        /usr/lib/s390x-linux-gnu
-        /usr/lib/riscv64-linux-gnu
-        /usr/lib/sparc64-linux-gnu
-        /usr/lib/x86_64-linux-gnux32
-        /usr/lib/sh4-linux-gnu
-        /usr/lib/loongarch64-linux-gnu
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/local/lib
-)
-if(NOT GNUTLS_OPENSSL_LIBRARY)
-    if(GnuTLS_FOUND)
-        message(STATUS " But it was not built with openssl compatibility.")
-    endif()
-    message(STATUS " Looking for OpenSSL instead...")
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        set(OPENSSL_ROOT_DIR /usr/local/opt/openssl) # Trick for Homebrew
-    endif()
-    find_package(OpenSSL)
-    set_package_properties(OpenSSL PROPERTIES
-        URL "https://www.openssl.org"
-        DESCRIPTION "Cryptography and SSL/TLS Toolkit (found: v${OPENSSL_VERSION})"
-        PURPOSE "Used for the SUPL protocol implementation."
-        TYPE REQUIRED
-    )
-    if(OPENSSL_FOUND)
-        set_package_properties(GnuTLS PROPERTIES
-            PURPOSE "Not found, but OpenSSL can replace it."
-        )
-        set(GNUTLS_INCLUDE_DIR ${OPENSSL_INCLUDE_DIR})
-        set(GNUTLS_LIBRARIES "")
-        set(GNUTLS_OPENSSL_LIBRARY ${OPENSSL_SSL_LIBRARY})
-    else()
-        message(" The GnuTLS library with openssl compatibility enabled has not been found.")
-        message(" You can try to install the required libraries by typing:")
-        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
-            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
-                message(" sudo yum install openssl-devel")
-            else()
-                message(" sudo apt-get install libgnutls28-dev")
-            endif()
-        endif()
-        if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-            message(" 'sudo port install gnutls', if you are using Macports, or")
-            message(" 'brew install openssl', if you are using Homebrew.")
-        endif()
-        message(FATAL_ERROR "GnuTLS libraries with openssl compatibility are required to build gnss-sdr")
-    endif()
-endif()
+include(GnsssdrCrypto)
 
 
 
@@ -3496,6 +3410,112 @@ endif()
 
 
 
+#####################################################################
+# Check signal sources related to FPGA only.
+#####################################################################
+if(ENABLE_MAX2771 AND NOT ENABLE_FPGA)
+    message(STATUS "The SPIdev driver is enabled, but the FPGA is not enabled. The FPGA is required when using the SPIdev driver.")
+    if(ENABLE_PACKAGING)
+        set(ENABLE_MAX2771 OFF)
+    else()
+        message(FATAL_ERROR "ENABLE_MAX2771 can only be set when ENABLE_FPGA is also set.")
+    endif()
+endif()
+if(ENABLE_DMA_PROXY AND NOT ENABLE_FPGA)
+    message(STATUS "The DMA Proxy driver is enabled, but the FPGA is not enabled. The FPGA is required when using the DMA Proxy driver.")
+    if(ENABLE_PACKAGING)
+        set(ENABLE_DMA_PROXY OFF)
+    else()
+        message(FATAL_ERROR "ENABLE_DMA_PROXY can only be set when ENABLE_FPGA is also set.")
+    endif()
+endif()
+
+
+
+#####################################################################
+# spidev driver - OPTIONAL
+# Linux kernel driver that provides user-space access to Serial
+# Peripheral Interface)
+#####################################################################
+if(ENABLE_MAX2771)
+    if(DEFINED ENV{SDKTARGETSYSROOT})
+        set(TARGET_ROOTFS_PATH $ENV{SDKTARGETSYSROOT})
+    else()
+        set(TARGET_ROOTFS_PATH "")
+    endif()
+    find_program(STRINGS_EXECUTABLE strings)
+    if(NOT STRINGS_EXECUTABLE)
+        message(STATUS "The 'strings' command could not be found. See https://www.gnu.org/software/binutils/")
+        message(STATUS " You can try to install it by typing:")
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|kFreeBSD|GNU")
+            if(${LINUX_DISTRIBUTION} MATCHES "Fedora" OR ${LINUX_DISTRIBUTION} MATCHES "Red Hat")
+                message(STATUS " sudo yum install binutils")
+            elseif(${LINUX_DISTRIBUTION} MATCHES "openSUSE")
+                message(STATUS " sudo zypper install binutils")
+            else()
+                message(STATUS " sudo apt-get install binutils")
+            endif()
+        endif()
+        message(FATAL_ERROR "Binutils are required to build GNSS-SDR for SoC FPGA devices using the MAX2771 option.")
+    endif()
+    set(DTB_FILE "${TARGET_ROOTFS_PATH}/boot/devicetree/system-top.dtb")
+    if(EXISTS "${DTB_FILE}")
+        message(STATUS "Found DTB file: ${DTB_FILE}")
+        # Run the strings command and grep for "spidev"
+        execute_process(
+            COMMAND ${STRINGS_EXECUTABLE} ${DTB_FILE}
+            COMMAND grep "spidev"
+            OUTPUT_VARIABLE GREP_OUTPUT
+            RESULT_VARIABLE GREP_RESULT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        if(GREP_RESULT EQUAL 0)
+            message(STATUS "Found spidev-compatible peripheral in ${DTB_FILE}.")
+        else()
+            message(STATUS "SPIdev driver not found, its installation is required.")
+            if(ENABLE_PACKAGING)
+                set(ENABLE_MAX2771 OFF)
+            else()
+                message(FATAL_ERROR "SPIdev driver is required for building gnss-sdr with -DENABLE_MAX2271=ON.")
+            endif()
+        endif()
+    else()
+        message(FATAL_ERROR "The device tree (DTB) file ${DTB_FILE} cannot be found.")
+    endif()
+endif()
+
+
+
+#####################################################################
+# DMA Proxy driver - OPTIONAL
+# Simplified and efficient interface for user-space applications
+# to leverage DMA capabilities  for Xilinx FPGA and SoC systems
+#####################################################################
+if(ENABLE_DMA_PROXY)
+    if(DEFINED ENV{SDKTARGETSYSROOT})
+        set(TARGET_ROOTFS_PATH $ENV{SDKTARGETSYSROOT})
+    else()
+        string(REGEX MATCH "(.*/tmp-glibc)" MATCHED_PATH "${GNURADIO_RUNTIME_INCLUDE_DIRS}")
+        if(MATCHED_PATH)
+            set(TARGET_ROOTFS_PATH "${MATCHED_PATH}/sysroots-components")
+        else()
+            set(TARGET_ROOTFS_PATH "")
+        endif()
+    endif()
+    file(GLOB_RECURSE DMA_PROXY_FILE "${TARGET_ROOTFS_PATH}/*/dma-proxy.ko")
+    if(EXISTS "${DMA_PROXY_FILE}")
+        message(STATUS "Found dma-proxy.ko file: ${DMA_PROXY_FILE}")
+    else()
+        if(ENABLE_PACKAGING)
+            set(ENABLE_DMA_PROXY OFF)
+        else()
+            message(FATAL_ERROR "DMA Proxy driver is required for building gnss-sdr with -DENABLE_DMA_PROXY=ON.")
+        endif()
+    endif()
+endif()
+
+
+
 ##############################################
 # TELEORBIT FLEXIBAND FRONTEND - OPTIONAL
 ##############################################
@@ -3721,6 +3741,7 @@ add_feature_info(ENABLE_OWN_GLOG ENABLE_OWN_GLOG "Forces the downloading and bui
 add_feature_info(ENABLE_GLOG_AND_GFLAGS ENABLE_GLOG_AND_GFLAGS "Forces the usage of Google glog and Gflags instead of Abseil.")
 add_feature_info(ENABLE_OWN_ABSEIL ENABLE_OWN_ABSEIL "Forces downloading and building Abseil. Supersedes ENABLE_OWN_GLOG.")
 add_feature_info(ENABLE_OWN_ARMADILLO ENABLE_OWN_ARMADILLO "Forces the downloading and building of Armadillo.")
+add_feature_info(ENABLE_GNUTLS ENABLE_GNUTLS "Forces linking against GnuTLS instead of OpenSSL.")
 add_feature_info(ENABLE_LOG ENABLE_LOG "Enables runtime internal logging.")
 add_feature_info(ENABLE_ORC ENABLE_ORC "Use the Optimized Inner Loop Runtime Compiler (ORC) for building volk_gnsssdr.")
 add_feature_info(ENABLE_STRIP ENABLE_STRIP "Enables the generation of stripped binaries (without debugging symbols).")

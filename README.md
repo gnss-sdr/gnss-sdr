@@ -74,7 +74,7 @@ information about this open-source, software-defined GNSS receiver.
       - [Install Armadillo, a C++ linear algebra library](#install-armadillo-a-c-linear-algebra-library)
       - [Install Gflags, a commandline flags processing module for C++](#install-gflags-a-commandline-flags-processing-module-for-c)
       - [Install Glog, a library that implements application-level logging](#install-glog-a-library-that-implements-application-level-logging)
-      - [Install the GnuTLS or OpenSSL libraries](#install-the-gnutls-or-openssl-libraries)
+      - [Install the OpenSSL libraries](#install-the-openssl-libraries)
       - [Install Matio, MATLAB MAT file I/O library](#install-matio-matlab-mat-file-io-library)
       - [Install Protocol Buffers, a portable mechanism for serialization of structured data](#install-protocol-buffers-a-portable-mechanism-for-serialization-of-structured-data)
       - [Install Pugixml, a light-weight C++ XML processing library](#install-pugixml-a-light-weight-c-xml-processing-library)
@@ -167,16 +167,19 @@ $ sudo apt-get install build-essential cmake git pkg-config libboost-dev libboos
        libboost-system-dev libboost-filesystem-dev libboost-thread-dev libboost-chrono-dev \
        libboost-serialization-dev liblog4cpp5-dev libuhd-dev gnuradio-dev gr-osmosdr \
        libblas-dev liblapack-dev libarmadillo-dev libgflags-dev libgoogle-glog-dev \
-       libgnutls-openssl-dev libpcap-dev libmatio-dev libpugixml-dev libgtest-dev \
-       libprotobuf-dev protobuf-compiler python3-mako
+       libssl-dev libpcap-dev libmatio-dev libpugixml-dev libgtest-dev \
+       libprotobuf-dev libcpu-features-dev protobuf-compiler python3-mako
 ```
 
 Please note that the required files from `libgtest-dev` were named `googletest`
 in Debian 9 "stretch" and Ubuntu 18.04 "bionic", and renamed to `libgtest-dev`
 in Debian 10 "buster" and above.
 
-Since Ubuntu 21.04 Hirsute / Debian 11, the package `libcpu-features-dev` is
-also required.
+In distributions older than Ubuntu 21.04 Hirsute / Debian 11, the package
+`libcpu-features-dev` is not required.
+
+In distributions older than Ubuntu 22.04 Jammy / Debian 12, the package
+`libssl-dev` must be replaced by `libgnutls-openssl-dev`.
 
 **Note for Ubuntu 14.04 LTS "trusty" users:** you will need to build from source
 and install GNU Radio manually, as explained below, since GNSS-SDR requires
@@ -431,19 +434,14 @@ Please note that Glog is replaced by the
 [Abseil Logging Library](https://abseil.io/docs/cpp/guides/logging) if Abseil >=
 v20240116 is available in your system.
 
-#### Install the GnuTLS or OpenSSL libraries
+#### Install the OpenSSL libraries
 
 ```
-$ sudo apt-get install libgnutls-openssl-dev    # For Debian/Ubuntu/LinuxMint
-$ sudo yum install openssl-devel                # For Fedora/RHEL
-$ sudo zypper install openssl-devel             # For OpenSUSE
-$ sudo pacman -S openssl                        # For Arch Linux
+$ sudo apt-get install libssl-dev         # For Debian/Ubuntu/LinuxMint
+$ sudo yum install openssl-devel          # For Fedora/CentOS/RHEL
+$ sudo zypper install openssl-devel       # For OpenSUSE
+$ sudo pacman -S openssl                  # For Arch Linux
 ```
-
-In case the [GnuTLS](https://www.gnutls.org/ "GnuTLS's Homepage") library with
-openssl extensions package is not available in your GNU/Linux distribution,
-GNSS-SDR can also work well with
-[OpenSSL](https://www.openssl.org/ "OpenSSL's Homepage").
 
 #### Install [Matio](https://github.com/tbeu/matio "Matio's Homepage"), MATLAB MAT file I/O library
 
@@ -818,7 +816,7 @@ In a terminal, type:
 ```
 $ sudo port selfupdate
 $ sudo port upgrade outdated
-$ sudo port install armadillo cmake pkgconfig protobuf3-cpp pugixml gnutls
+$ sudo port install armadillo cmake pkgconfig protobuf3-cpp pugixml openssl3
 $ sudo port install gnuradio +uhd +grc +zeromq
 $ sudo port install boost matio libad9361-iio libiio
 $ sudo port install py311-mako

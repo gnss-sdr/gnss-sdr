@@ -24,18 +24,18 @@
 #define EXPORT
 #endif
 // clang-format off
-#if USE_OPENSSL_FALLBACK
-#include <openssl/crypto.h>
-#include <openssl/x509.h>
-#include <openssl/pem.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#else
+#if USE_GNUTLS_FALLBACK
 #include <gnutls/gnutls.h>
 #include <gnutls/compat.h>
 #include <gnutls/crypto.h>
 #include <gnutls/openssl.h>
 #include <gnutls/x509.h>
+#else
+#include <openssl/crypto.h>
+#include <openssl/x509.h>
+#include <openssl/pem.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 #endif
 // clang-format on
 #include <PDU.h>

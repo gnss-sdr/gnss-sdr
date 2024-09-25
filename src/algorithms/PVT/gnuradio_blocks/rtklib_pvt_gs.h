@@ -20,6 +20,7 @@
 #include "gnss_block_interface.h"
 #include "gnss_synchro.h"
 #include "gnss_time.h"
+#include "osnma_data.h"
 #include "rtklib.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -34,6 +35,7 @@
 #include <map>                    // for map
 #include <memory>                 // for shared_ptr, unique_ptr
 #include <queue>                  // for std::queue
+#include <set>                    // for std::set
 #include <string>                 // for string
 #include <sys/types.h>            // for key_t
 #include <vector>                 // for vector
@@ -144,6 +146,8 @@ private:
 
     void msg_handler_has_data(const pmt::pmt_t& msg);
 
+    void msg_handler_osnma(const pmt::pmt_t& msg);
+
     void initialize_and_apply_carrier_phase_offset();
 
     void apply_rx_clock_offset(std::map<int, Gnss_Synchro>& observables_map,
@@ -201,6 +205,7 @@ private:
     std::map<int, Gnss_Synchro> d_gnss_observables_map;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t0;
     std::map<int, Gnss_Synchro> d_gnss_observables_map_t1;
+    std::map<uint32_t, std::set<uint32_t>> d_auth_nav_data_map;
 
     std::queue<GnssTime> d_TimeChannelTagTimestamps;
 
@@ -278,6 +283,7 @@ private:
     bool d_log_timetag;
     bool d_use_has_corrections;
     bool d_use_unhealthy_sats;
+    bool d_osnma_strict;
 };
 
 

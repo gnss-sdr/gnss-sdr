@@ -52,6 +52,7 @@
 #include "monitor_pvt.h"
 #include "monitor_pvt_udp_sink.h"
 #include "nmea_printer.h"
+#include "osnma_data.h"
 #include "pvt_conf.h"
 #include "rinex_printer.h"
 #include "rtcm_printer.h"
@@ -184,7 +185,8 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
       d_an_printer_enabled(conf_.an_output_enabled),
       d_log_timetag(conf_.log_source_timetag),
       d_use_has_corrections(conf_.use_has_corrections),
-      d_use_unhealthy_sats(conf_.use_unhealthy_sats)
+      d_use_unhealthy_sats(conf_.use_unhealthy_sats),
+      d_osnma_strict(conf_.osnma_strict)
 {
     // Send feedback message to observables block with the receiver clock offset
     this->message_port_register_out(pmt::mp("pvt_to_observables"));
@@ -216,6 +218,19 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
         boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, boost::placeholders::_1));
 #else
         boost::bind(&rtklib_pvt_gs::msg_handler_has_data, this, _1));
+#endif
+#endif
+
+    // Galileo OSNMA messages port in
+    this->message_port_register_in(pmt::mp("OSNMA_to_PVT"));
+    this->set_msg_handler(pmt::mp("OSNMA_to_PVT"),
+#if HAS_GENERIC_LAMBDA
+        [this](auto&& PH1) { msg_handler_osnma(PH1); });
+#else
+#if USE_BOOST_BIND_PLACEHOLDERS
+        boost::bind(&rtklib_pvt_gs::msg_handler_osnma, this, boost::placeholders::_1));
+#else
+        boost::bind(&rtklib_pvt_gs::msg_handler_osnma, this, _1));
 #endif
 #endif
 
@@ -1639,6 +1654,28 @@ void rtklib_pvt_gs::msg_handler_has_data(const pmt::pmt_t& msg)
 }
 
 
+void rtklib_pvt_gs::msg_handler_osnma(const pmt::pmt_t& msg)
+{
+    try
+        {
+            // Still not sure about what we should receive here.
+            // It should be a structure with the list of PRNs authenticated (NavData and utcData,
+            // so with ADKD0 and ADKD12 validated), their corresponding TOW at the beginning
+            // of the authenticated subframe, and maybe the COP.
+            const size_t msg_type_hash_code = pmt::any_ref(msg).type().hash_code();
+            if (msg_type_hash_code == typeid(std::shared_ptr<OSNMA_NavData>).hash_code())
+                {
+                    const auto osnma_data = wht::any_cast<std::shared_ptr<OSNMA_NavData>>(pmt::any_ref(msg));
+                    d_auth_nav_data_map[osnma_data->get_prn_d()].insert(osnma_data->get_IOD_nav());
+                }
+        }
+    catch (const wht::bad_any_cast& e)
+        {
+            LOG(WARNING) << "msg_handler_osnma Bad any_cast: " << e.what();
+        }
+}
+
+
 std::map<int, Gps_Ephemeris> rtklib_pvt_gs::get_gps_ephemeris_map() const
 {
     return d_internal_pvt_solver->gps_ephemeris_map;
@@ -1997,7 +2034,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
 
                             bool store_valid_observable = false;
 
-                            if (tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_gps != d_internal_pvt_solver->gps_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_gps->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (std::string(in[i][epoch].Signal, 2) == std::string("1C")) && (d_use_unhealthy_sats || (tmp_eph_iter_gps->second.SV_health == 0)))
@@ -2013,10 +2050,25 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             ((std::string(in[i][epoch].Signal, 2) == std::string("5X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5a_DVS == false) && (tmp_eph_iter_gal->second.E5a_HS == 0)))) ||
                                             ((std::string(in[i][epoch].Signal, 2) == std::string("7X")) && (d_use_unhealthy_sats || ((tmp_eph_iter_gal->second.E5b_DVS == false) && (tmp_eph_iter_gal->second.E5b_HS == 0))))))
                                         {
-                                            store_valid_observable = true;
+                                            if (d_osnma_strict && ((std::string(in[i][epoch].Signal, 2) == std::string("1B")) || ((std::string(in[i][epoch].Signal, 2) == std::string("7X")))))
+                                                {
+                                                    // Pick up only authenticated satellites
+                                                    auto IOD_nav_list = d_auth_nav_data_map.find(tmp_eph_iter_gal->second.PRN);
+                                                    if (IOD_nav_list != d_auth_nav_data_map.cend())
+                                                        {
+                                                            if (IOD_nav_list->second.find(tmp_eph_iter_gal->second.IOD_nav) != IOD_nav_list->second.cend())
+                                                                {
+                                                                    store_valid_observable = true;
+                                                                }
+                                                        }
+                                                }
+                                            else
+                                                {
+                                                    store_valid_observable = true;
+                                                }
                                         }
                                 }
-                            if (tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_cnav != d_internal_pvt_solver->gps_cnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_cnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("2S")) || (std::string(in[i][epoch].Signal, 2) == std::string("L5")))))
@@ -2024,7 +2076,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_glo_gnav != d_internal_pvt_solver->glonass_gnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_glo_gnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && ((std::string(in[i][epoch].Signal, 2) == std::string("1G")) || (std::string(in[i][epoch].Signal, 2) == std::string("2G"))))
@@ -2032,7 +2084,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                             store_valid_observable = true;
                                         }
                                 }
-                            if (tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
+                            if (!d_osnma_strict && tmp_eph_iter_bds_dnav != d_internal_pvt_solver->beidou_dnav_ephemeris_map.cend())
                                 {
                                     const uint32_t prn_aux = tmp_eph_iter_bds_dnav->second.PRN;
                                     if ((prn_aux == in[i][epoch].PRN) && (((std::string(in[i][epoch].Signal, 2) == std::string("B1")) || (std::string(in[i][epoch].Signal, 2) == std::string("B3"))) && (d_use_unhealthy_sats || (tmp_eph_iter_bds_dnav->second.SV_health == 0))))
@@ -2042,7 +2094,14 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                 }
                             if (std::string(in[i][epoch].Signal, 2) == std::string("E6"))
                                 {
-                                    store_valid_observable = true;
+                                    if (d_osnma_strict)
+                                        {
+                                            // TODO
+                                        }
+                                    else
+                                        {
+                                            store_valid_observable = true;
+                                        }
                                 }
 
                             if (store_valid_observable)

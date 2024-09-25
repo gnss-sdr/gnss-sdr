@@ -28,6 +28,8 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
     reed_solomon.cc
+    osnma_data.cc
+    osnma_dsm_reader.cc
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
@@ -89,6 +91,9 @@ set(SYSTEM_PARAMETERS_HEADERS
     MATH_CONSTANTS.h
     reed_solomon.h
     galileo_has_page.h
+    Galileo_OSNMA.h
+    osnma_data.h
+    osnma_dsm_reader.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)
@@ -114,6 +119,8 @@ target_link_libraries(core_system_parameters
     PUBLIC
         Boost::date_time
         Boost::serialization
+    PRIVATE
+        Pugixml::pugixml
 )
 
 if(ENABLE_GLOG_AND_GFLAGS)

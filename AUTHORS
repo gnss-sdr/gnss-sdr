@@ -33,41 +33,44 @@ Contact Information
 
 List of authors
 --------------------------------------------------------------------------------
-Carles Fernández-Prades carles.fernandez@cttc.cat        Project manager
-Javier Arribas          javier.arribas@cttc.es           Developer
-Luis Esteve Elfau       luis@epsilon-formacion.com       Developer
-Marc Majoral            marc.majoral@cttc.cat            Developer
-Xavier Guerrero         xavier.guerrero@cttc.es          Developer
-Jordi Vilà-Valls        jordi.vila-valls@isae-supaero.fr Consultant
-Pau Closas              pau.closas@northeastern.edu      Consultant
-Álvaro Cebrián Juan     acebrianjuan@gmail.com           Contributor
-Andres Cecilia Luque    a.cecilia.luque@gmail.com        Contributor
-Anthony Arnold          anthony.arnold@uqconnect.edu.au  Contributor
-Antonio Ramos           antonio.ramosdet@gmail.com       Contributor
-Carlos Avilés           carlos.avilesr@googlemail.com    Contributor
-Cillian O'Driscoll      cillian.odriscoll@gmail.com      Contributor
-Damian Miralles         dmiralles2009@gmail.com          Contributor
-Daniel Fehr             daniel.co@bluewin.ch             Contributor
-David Pubill            david.pubill@cttc.cat            Contributor
-En Shin                 seanstone5923@gmail.com          Contributor
-Fran Fabra              fabra@ice.csic.es                Contributor
-Gabriel Araujo          gabriel.araujo.5000@gmail.com    Contributor
-Gerald LaMountain       gerald@gece.neu.edu              Contributor
-Into Pääkkönen          into.paakkonen@aalto.fi          Contributor
-Irene Pérez Riega       iperrie@inta.es                  Contributor
-Jim Melton              jim.melton@sncorp.com            Contributor
-Josh Schindehette       jschindehette@geontech.com       Contributor
-Leonardo Tonetto        tonetto.dev@gmail.com            Contributor
-Malte Lenhart           malte.lenhart@mailbox.org        Contributor
-Mara Branzanti          mara.branzanti@gmail.com         Contributor
-Marc Molina             marc.molina.pena@gmail.com       Contributor
-Marc Sales              marcsales92@gmail.com            Contributor
-Piyush Gupta            piyush04111999@gmail.com         Contributor
-Rodrigo Muñoz           rodrigo.munoz@proteinlab.cl      Contributor
-Stefan van der Linden   spvdlinden@gmail.com             Contributor
-Víctor Castillo-Agüero  victorcastilloaguero@gmail.com   Contributor
-Will Silberman          wsilberm@google.com              Contributor
-Carlos Paniego          carpanie@hotmail.com             Artwork
+
+Carles Fernández-Prades  carles.fernandez@cttc.cat              Project manager
+Javier Arribas           javier.arribas@cttc.es                 Developer
+Luis Esteve Elfau        luis@epsilon-formacion.com             Developer
+Marc Majoral             marc.majoral@cttc.cat                  Developer
+Xavier Guerrero          xavier.guerrero@cttc.es                Developer
+Jordi Vilà-Valls         jordi.vila-valls@isae-supaero.fr       Consultant
+Pau Closas               pau.closas@northeastern.edu            Consultant
+Álvaro Cebrián Juan      acebrianjuan@gmail.com                 Contributor
+Andres Cecilia Luque     a.cecilia.luque@gmail.com              Contributor
+Anthony Arnold           anthony.arnold@uqconnect.edu.au        Contributor
+Antonio Ramos            antonio.ramosdet@gmail.com             Contributor
+Carlos Avilés            carlos.avilesr@googlemail.com          Contributor
+Cesare Ghionoiu Martinez c.ghionoiu-martinez@tu-braunschweig.de Contributor
+Cillian O'Driscoll       cillian.odriscoll@gmail.com            Contributor
+Damian Miralles          dmiralles2009@gmail.com                Contributor
+Daniel Fehr              daniel.co@bluewin.ch                   Contributor
+David Pubill             david.pubill@cttc.cat                  Contributor
+En Shin                  seanstone5923@gmail.com                Contributor
+Fran Fabra               fabra@ice.csic.es                      Contributor
+Gabriel Araujo           gabriel.araujo.5000@gmail.com          Contributor
+Gerald LaMountain        gerald@gece.neu.edu                    Contributor
+Into Pääkkönen           into.paakkonen@aalto.fi                Contributor
+Irene Pérez Riega        iperrie@inta.es                        Contributor
+Jim Melton               jim.melton@sncorp.com                  Contributor
+Josh Schindehette        jschindehette@geontech.com             Contributor
+Leonardo Tonetto         tonetto.dev@gmail.com                  Contributor
+Malte Lenhart            malte.lenhart@mailbox.org              Contributor
+Mara Branzanti           mara.branzanti@gmail.com               Contributor
+Marc Molina              marc.molina.pena@gmail.com             Contributor
+Marc Sales               marcsales92@gmail.com                  Contributor
+Piyush Gupta             piyush04111999@gmail.com               Contributor
+Rodrigo Muñoz            rodrigo.munoz@proteinlab.cl            Contributor
+Stefan van der Linden    spvdlinden@gmail.com                   Contributor
+Víctor Castillo-Agüero   victorcastilloaguero@gmail.com         Contributor
+Will Silberman           wsilberm@google.com                    Contributor
+Carlos Paniego           carpanie@hotmail.com                   Artwork
+
 
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>

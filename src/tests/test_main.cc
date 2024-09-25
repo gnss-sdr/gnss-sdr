@@ -112,6 +112,8 @@ private:
 #include "unit-tests/signal-processing-blocks/adapter/adapter_test.cc"
 #include "unit-tests/signal-processing-blocks/adapter/pass_through_test.cc"
 #include "unit-tests/signal-processing-blocks/libs/item_type_helpers_test.cc"
+#include "unit-tests/signal-processing-blocks/osnma/gnss_crypto_test.cc"
+#include "unit-tests/signal-processing-blocks/osnma/osnma_msg_receiver_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/geohash_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/nmea_printer_test.cc"
 #include "unit-tests/signal-processing-blocks/pvt/rinex_printer_test.cc"
@@ -181,6 +183,7 @@ private:
 #ifndef EXCLUDE_TESTS_REQUIRING_BINARIES
 #include "unit-tests/signal-processing-blocks/acquisition/glonass_l1_ca_pcps_acquisition_test.cc"
 #include "unit-tests/signal-processing-blocks/acquisition/gps_l2_m_pcps_acquisition_test.cc"
+#include "unit-tests/signal-processing-blocks/osnma/osnma_test_vectors.cc"
 #include "unit-tests/signal-processing-blocks/tracking/gps_l2_m_dll_pll_tracking_test.cc"
 #endif
 // #include "unit-tests/signal-processing-blocks/pvt/rtklib_solver_test.cc"

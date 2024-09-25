@@ -131,6 +131,7 @@ TEST(MatioTest, WriteAndReadGrComplex)
     auto *x_read_real = reinterpret_cast<float *>(x_read_st->Re);
     auto *x_read_imag = reinterpret_cast<float *>(x_read_st->Im);
     std::vector<gr_complex> x_v_read;
+    x_v_read.reserve(size);
     for (unsigned int k = 0; k < size; k++)
         {
             x_v_read.emplace_back(x_read_real[k], x_read_imag[k]);

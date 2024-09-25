@@ -919,6 +919,17 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // Use unhealthy satellites
     pvt_output_parameters.use_unhealthy_sats = configuration->property(role + ".use_unhealthy_sats", pvt_output_parameters.use_unhealthy_sats);
 
+    // OSNMA
+    if (gal_1B_count > 0)
+        {
+            std::string osnma_mode = configuration->property("GNSS-SDR.osnma_mode", std::string(""));
+            bool enable_osnma = configuration->property("GNSS-SDR.osnma_enable", true);
+            if (enable_osnma && osnma_mode == "strict")
+                {
+                    pvt_output_parameters.osnma_strict = true;
+                }
+        }
+
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

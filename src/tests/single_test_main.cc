@@ -18,6 +18,7 @@
 
 #include "concurrent_map.h"
 #include "concurrent_queue.h"
+#include "gnss_sdr_flags.h"
 #include "gps_acq_assist.h"
 #include <gtest/gtest.h>
 #include <fstream>
@@ -36,7 +37,6 @@ using namespace google;
 DECLARE_string(log_dir);
 #endif
 #else
-#include "gnss_sdr_flags.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <absl/log/flags.h>
@@ -44,7 +44,6 @@ DECLARE_string(log_dir);
 #include <absl/log/log.h>
 #include <absl/log/log_sink.h>
 #include <absl/log/log_sink_registry.h>
-
 class TestLogSink : public absl::LogSink
 {
 public:
@@ -78,15 +77,14 @@ Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 int main(int argc, char **argv)
 {
 #if USE_GLOG_AND_GFLAGS
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
     try
         {
             testing::InitGoogleTest(&argc, argv);
+            gflags::ParseCommandLineFlags(&argc, &argv, true);
         }
     catch (...)
         {
         }  // catch the "testing::internal::<unnamed>::ClassUniqueToAlwaysTrue" from gtest
-    google::InitGoogleLogging(argv[0]);
 #else
     absl::ParseCommandLine(argc, argv);
     try

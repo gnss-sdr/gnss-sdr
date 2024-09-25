@@ -7,6 +7,7 @@
 
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
 add_subdirectory(system-tests/libs)
+include_directories("${GNSSSDR_SOURCE_DIR}/src/core/receiver")
 
 include(XcodeRemoveWarningDuplicates)
 
@@ -549,6 +550,18 @@ if(ENABLE_UNIT_TESTING_EXTRA)
             EXPECTED_HASH MD5=066d0d8434a8bc81e161778b7c34cc07
         )
     endif()
+    if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip)
+        message(STATUS "Downloading file: Test_vectors.zip")
+        file(DOWNLOAD https://www.gsc-europa.eu/sites/default/files/sites/all/files/Test_vectors.zip
+                ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip
+            SHOW_PROGRESS
+            EXPECTED_HASH MD5=8158aebee735652c9398e5bb6d944364
+        )
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E tar xzf ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip
+            WORKING_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/
+        )
+    endif()
     message(STATUS "Done.")
     if(ENABLE_INSTALL_TESTS)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat DESTINATION share/gnss-sdr/signal_samples)
@@ -651,6 +664,7 @@ if(ENABLE_UNIT_TESTING)
         if(GNSSTK_OLDER_THAN_9)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
+        target_compile_definitions(run_tests PRIVATE -DBASE_OSNMA_TEST_VECTORS="${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors/")
     endif()
     xcode_remove_warning_duplicates(run_tests)
     if(ENABLE_STRIP)

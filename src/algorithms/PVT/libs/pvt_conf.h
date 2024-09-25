@@ -95,6 +95,7 @@ public:
     bool use_e6_for_pvt = true;
     bool use_has_corrections = true;
     bool use_unhealthy_sats = false;
+    bool osnma_strict = false;
 
     // PVT KF parameters
     bool enable_pvt_kf = false;

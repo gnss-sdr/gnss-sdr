@@ -61,6 +61,8 @@ public:
     virtual bool Event_failed_acquisition_repeat();
     virtual bool Event_failed_acquisition_no_repeat();
 
+    inline uint32_t state() const { return state_; }
+
 private:
     void start_tracking();
     void stop_acquisition();

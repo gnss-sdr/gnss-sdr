@@ -95,6 +95,8 @@ public:
     inline std::shared_ptr<TrackingInterface> tracking() const { return trk_; }
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() const { return nav_; }
 
+    inline uint32_t fsm_state() const { return channel_fsm_->state(); }
+
 private:
     bool glonass_dll_pll_c_aid_tracking_check() const;
     std::shared_ptr<ChannelFsm> channel_fsm_;

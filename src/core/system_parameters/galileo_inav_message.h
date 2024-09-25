@@ -132,6 +132,11 @@ public:
     Galileo_Ephemeris get_reduced_ced() const;
 
     /*
+     * \brief Returns a Galileo_ISMs object filled with the latest ISM data received
+     */
+    Galileo_ISM get_galileo_ism() const;
+
+    /*
      * \brief Returns an OSNMA_msg object filled with the latest NMA message received. Resets msg buffer.
      */
     OSNMA_msg get_osnma_msg();

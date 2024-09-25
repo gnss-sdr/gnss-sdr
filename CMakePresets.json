@@ -2,14 +2,11 @@
     "version": 8,
     "configurePresets": [
         {
-            "name": "basic",
-            "displayName": "basic",
-            "description": "Basic common flags",
-            "binaryDir": "${sourceDir}/build-basic",
+            "name": "debug",
+            "description": "Basic debug flags",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "/usr/bin/gcc",
-                "CMAKE_CXX_COMPILER": "/usr/bin/g++",
-                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_BUILD_TYPE": "Debug",
                 "ENABLE_RAW_UDP": "ON",
                 "ENABLE_ZMQ": "ON",
                 "ENABLE_GLOG_AND_GFLAGS": "ON",
@@ -18,31 +15,13 @@
             }
         },
         {
-            "name": "config-debug",
-            "displayName": "gnss-standard-debug",
-            "description": "Standard use",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build-debug",
-            "inherits": "basic",
+            "name": "ubuntu-ad936x",
+            "description": "Common flags for a Ubuntu with an ad936x",
+            "binaryDir": "${sourceDir}/build-ubuntu-ad936x",
+            "inherits": "debug",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_BUILD_TYPE": "Debug",
-                "ENABLE_UHD": "ON",
-                "ENABLE_OSMOSDR": "ON",
-                "ENABLE_PLUTOSDR": "ON",
-                "ENABLE_AD936X_SDR": "ON"
-            }
-        },
-        {
-            "name": "config-release",
-            "displayName": "gnss-standard-release",
-            "description": "Standard use",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build-release",
-            "inherits": "basic",
-            "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
-                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "/usr/bin/gcc",
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++",
                 "ENABLE_UHD": "ON",
                 "ENABLE_OSMOSDR": "ON",
                 "ENABLE_PLUTOSDR": "ON",
@@ -52,19 +31,12 @@
     ],
     "buildPresets": [
         {
-            "name": "build-basic",
-            "displayName": "Basic build",
-            "configurePreset": "basic"
+            "name": "debug",
+            "configurePreset": "debug"
         },
         {
-            "name": "build-debug",
-            "displayName": "Debug build",
-            "configurePreset": "config-debug"
-        },
-        {
-            "name": "build-release",
-            "displayName": "Release build",
-            "configurePreset": "config-release"
+            "name": "ubuntu-ad936x",
+            "configurePreset": "ubuntu-ad936x"
         }
     ]
 }

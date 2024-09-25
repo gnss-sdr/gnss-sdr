@@ -97,15 +97,14 @@ public:
     bool have_new_reduced_ced();
 
     /*
-<<<<<<< HEAD
      * \brief Returns true if new ISM data have arrived. The flag is set to false when the function is executed
      */
     bool have_new_ism();
-=======
+
+    /*
      * \brief Returns true if new NMA data have arrived. The flag is set to false when the function is executed
      */
     bool have_new_nma();
->>>>>>> d0a6264754a2f7c98fa16bc44321e0b8c62d44db
 
     /*
      * \brief Returns a Galileo_Ephemeris object filled with the latest navigation data received

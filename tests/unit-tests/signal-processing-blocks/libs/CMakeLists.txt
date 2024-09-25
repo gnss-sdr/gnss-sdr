@@ -55,7 +55,7 @@ target_include_directories(signal_processing_testing_lib
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces
     INTERFACE
-        ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
+        ${GNSSSDR_SOURCE_DIR}/tests/common-files
 )
 
 if(USE_GENERIC_LAMBDAS)

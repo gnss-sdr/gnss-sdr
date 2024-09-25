@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2011 Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
 *~
 .*.swp
+*.bin
+*.tar.gz
 docs/doxygen/Doxyfile
 docs/html
 docs/latex
@@ -25,5 +27,6 @@ GSDR*
 PVT_*
 HAS_*
 gnss_sdr_pvt.nmea
+build/
 build-debug/
 build-release/

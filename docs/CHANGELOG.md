@@ -47,6 +47,9 @@ All notable changes to GNSS-SDR will be documented in this file.
   It requires the `-DENABLE_ION=ON` building configuration option.
 - The `Monitor` and `PVT` blocks are now able to send data to multiple UDP
   ports.
+- Add experimental decoding of Galileo's I/NAV ARAIM Integrity Support Message
+  (ISM) as defined in the OS SIS ICD v2.1. Values, if received, are only logged
+  but not used.
 
 ### Improvements in Portability:
 

@@ -23,6 +23,7 @@
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
+#include "galileo_ism.h"
 #include "galileo_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::unique_ptr in C++11
 #include <array>
@@ -96,6 +97,11 @@ public:
     bool have_new_reduced_ced();
 
     /*
+     * \brief Returns true if new ISM data have arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_ism();
+
+    /*
      * \brief Returns true if new NMA data have arrived. The flag is set to false when the function is executed
      */
     bool have_new_nma();
@@ -124,6 +130,11 @@ public:
      * \brief Returns a Galileo_Ephemeris object filled with the latest reduced CED received
      */
     Galileo_Ephemeris get_reduced_ced() const;
+
+    /*
+     * \brief Returns a Galileo_ISMs object filled with the latest ISM data received
+     */
+    Galileo_ISM get_galileo_ism() const;
 
     /*
      * \brief Returns an OSNMA_msg object filled with the latest NMA message received. Resets msg buffer.
@@ -277,6 +288,7 @@ private:
     std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_3(const std::vector<uint8_t>& decoded) const;
     std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_4(const std::vector<uint8_t>& decoded) const;
 
+    Galileo_ISM gal_ism{};
     std::string page_Even{};
 
     std::vector<uint8_t> rs_buffer;   // Reed-Solomon buffer
@@ -456,6 +468,9 @@ private:
     uint8_t IODnav_LSB19{};
     uint8_t IODnav_LSB20{};
 
+    uint8_t ism_constellation_id{};
+    uint8_t ism_service_level_id{};
+
     bool flag_CRC_test{};
     bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received
     bool flag_ephemeris_1{};    // Flag indicating that ephemeris 1/4 (word 1) have been received
@@ -483,6 +498,7 @@ private:
 
     bool flag_CED{};
     bool enable_rs{};
+    bool have_ISM{};
 };
 
 

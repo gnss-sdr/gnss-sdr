@@ -130,6 +130,8 @@ src/tests/run_tests: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/run_tests: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/run_tests: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
 src/tests/run_tests: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
+src/tests/run_tests: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
+src/tests/run_tests: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
 src/tests/run_tests: src/algorithms/data_type_adapter/adapters/libdata_type_adapters.a
 src/tests/run_tests: src/algorithms/data_type_adapter/gnuradio_blocks/libdata_type_gr_blocks.a
 src/tests/run_tests: src/algorithms/input_filter/adapters/libinput_filter_adapters.a

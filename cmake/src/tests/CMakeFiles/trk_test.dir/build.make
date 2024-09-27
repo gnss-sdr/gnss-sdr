@@ -202,6 +202,8 @@ src/tests/trk_test: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/trk_test: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/trk_test: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
 src/tests/trk_test: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
+src/tests/trk_test: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
+src/tests/trk_test: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
 src/tests/trk_test: src/algorithms/data_type_adapter/adapters/libdata_type_adapters.a
 src/tests/trk_test: src/algorithms/data_type_adapter/gnuradio_blocks/libdata_type_gr_blocks.a
 src/tests/trk_test: src/algorithms/input_filter/adapters/libinput_filter_adapters.a

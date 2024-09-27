@@ -127,6 +127,8 @@ src/tests/control_thread_test: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/control_thread_test: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/control_thread_test: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
 src/tests/control_thread_test: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
+src/tests/control_thread_test: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
+src/tests/control_thread_test: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
 src/tests/control_thread_test: src/core/monitor/libcore_monitor.a
 src/tests/control_thread_test: /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0
 src/tests/control_thread_test: src/algorithms/data_type_adapter/adapters/libdata_type_adapters.a

@@ -5611,6 +5611,12 @@ src/core/receiver/CMakeFiles/core_receiver.dir/gnss_block_factory.cc.o: ../src/c
   /usr/include/pcap/socket.h \
   /usr/include/pcap/bpf.h \
   /usr/include/pcap/dlt.h \
+  ../src/algorithms/signal_source/adapters/osmosdr_signal_source.h \
+  /usr/include/osmosdr/source.h \
+  /usr/include/osmosdr/api.h \
+  /usr/include/osmosdr/ranges.h \
+  /usr/include/osmosdr/pimpl.h \
+  /usr/include/osmosdr/time_spec.h \
   ../src/algorithms/signal_source/adapters/uhd_signal_source.h \
   /usr/include/gnuradio/uhd/usrp_source.h \
   /usr/include/gnuradio/uhd/usrp_block.h \
@@ -10021,6 +10027,12 @@ src/core/monitor/gnss_synchro.pb.h:
 
 ../src/algorithms/signal_source/adapters/uhd_signal_source.h:
 
+/usr/include/osmosdr/time_spec.h:
+
+/usr/include/osmosdr/ranges.h:
+
+../src/algorithms/signal_source/adapters/osmosdr_signal_source.h:
+
 /usr/include/pcap/bpf.h:
 
 /usr/include/pcap/pcap-inttypes.h:
@@ -10546,6 +10558,8 @@ src/core/monitor/gnss_synchro.pb.h:
 /usr/include/boost/asio/detail/reactive_socket_recvmsg_op.hpp:
 
 /usr/include/boost/asio/detail/reactive_socket_recv_op.hpp:
+
+/usr/include/osmosdr/api.h:
 
 /usr/include/boost/asio/detail/reactive_socket_service_base.hpp:
 
@@ -11382,6 +11396,8 @@ volk_gnsssdr_module/build/include/volk_gnsssdr/volk_gnsssdr.h:
 /usr/include/armadillo_bits/op_shift_bones.hpp:
 
 /usr/include/armadillo_bits/glue_polyfit_bones.hpp:
+
+/usr/include/osmosdr/pimpl.h:
 
 /usr/include/boost/mpl/vector/aux_/item.hpp:
 
@@ -12404,6 +12420,8 @@ volk_gnsssdr_module/build/include/volk_gnsssdr/volk_gnsssdr.h:
 /usr/include/boost/mpl/aux_/iter_fold_if_impl.hpp:
 
 /usr/include/c++/11/initializer_list:
+
+/usr/include/osmosdr/source.h:
 
 /usr/include/c++/11/bits/concept_check.h:
 

@@ -2,7 +2,7 @@
 * BUILDING CONFIGURATION SUMMARY *
 **********************************
 
-GNSS-SDR version: 0.0.19.git-GSOC-SBAS-04c74f8f5
+GNSS-SDR version: 0.0.19.git-GSOC-SBAS-e79e237f1
 Building on GNU/Linux Ubuntu 22.04 (x86_64)
 CMake version: 3.22.1
 The CXX compiler identification is GNU 11.4.0. Standard: C++17.
@@ -106,6 +106,7 @@ The following REQUIRED packages have been found:
 -- The following features have been enabled:
 
  * ENABLE_UHD, Enables UHD_Signal_Source for using RF front-ends from the USRP family. Requires gr-uhd.
+ * ENABLE_OSMOSDR, Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.
  * ENABLE_RAW_UDP, Enables Custom_UDP_Signal_Source for custom UDP packet sample source. Requires libpcap.
  * ENABLE_ZMQ, Enables ZMQ_Signal_Source for GNU Radio ZeroMQ messages. Requires gr-zeromq.
  * ENABLE_GLOG_AND_GFLAGS, Forces the usage of Google glog and Gflags instead of Abseil.
@@ -114,7 +115,6 @@ The following REQUIRED packages have been found:
 
 -- The following features have been disabled:
 
- * ENABLE_OSMOSDR, Enables Osmosdr_Signal_Source and RtlTcp_Signal_Source for using RF front-ends compatible with the OsmoSDR driver. Requires gr-osmosdr.
  * ENABLE_LIMESDR, Enables Limesdr_Signal_Source. Requires gr-limesdr.
  * ENABLE_FMCOMMS2, Enables Fmcomms2_Signal_Source for FMCOMMS2/3/4 devices. Requires gr-iio and libad9361-dev.
  * ENABLE_PLUTOSDR, Enables Plutosdr_Signal_Source for using ADALM-PLUTO boards. Requires gr-iio.

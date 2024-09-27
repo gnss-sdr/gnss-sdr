@@ -2827,6 +2827,10 @@ src/core/receiver/CMakeFiles/core_receiver.dir/gnss_block_factory.cc.o: \
  /usr/include/pcap/funcattrs.h /usr/include/pcap/compiler-tests.h \
  /usr/include/pcap/pcap-inttypes.h /usr/include/pcap/socket.h \
  /usr/include/pcap/bpf.h /usr/include/pcap/dlt.h \
+ /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/osmosdr_signal_source.h \
+ /usr/include/osmosdr/source.h /usr/include/osmosdr/api.h \
+ /usr/include/osmosdr/ranges.h /usr/include/osmosdr/pimpl.h \
+ /usr/include/osmosdr/time_spec.h \
  /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/uhd_signal_source.h \
  /usr/include/gnuradio/uhd/usrp_source.h \
  /usr/include/gnuradio/uhd/usrp_block.h /usr/include/gnuradio/uhd/api.h \

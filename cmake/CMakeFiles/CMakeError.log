@@ -424,3 +424,27 @@ Source file was:
     #include <span>
     int main()
     { std::span<float> s; }
+Performing C++ SOURCE FILE Test has_span failed with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a4f19/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_a4f19.dir/build.make CMakeFiles/cmTC_a4f19.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a4f19.dir/src.cxx.o
+/usr/bin/c++ -Dhas_span  -std=c++17 -o CMakeFiles/cmTC_a4f19.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx: In function ‘int main()’:
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:12: error: ‘span’ is not a member of ‘std’
+    4 |     { std::span<float> s; }
+      |            ^~~~
+/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx:4:17: error: expected primary-expression before ‘float’
+    4 |     { std::span<float> s; }
+      |                 ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_a4f19.dir/build.make:78: CMakeFiles/cmTC_a4f19.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_a4f19/fast] Error 2
+
+
+Source file was:
+
+    #include <span>
+    int main()
+    { std::span<float> s; }

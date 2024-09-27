@@ -130,6 +130,8 @@ src/tests/flowgraph_test: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/flowgraph_test: /usr/lib/x86_64-linux-gnu/libuhd.so
 src/tests/flowgraph_test: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
 src/tests/flowgraph_test: /usr/lib/x86_64-linux-gnu/libgnuradio-zeromq.so
+src/tests/flowgraph_test: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
+src/tests/flowgraph_test: /usr/lib/x86_64-linux-gnu/libgnuradio-osmosdr.so
 src/tests/flowgraph_test: src/algorithms/input_filter/adapters/libinput_filter_adapters.a
 src/tests/flowgraph_test: src/algorithms/input_filter/gnuradio_blocks/libinput_filter_gr_blocks.a
 src/tests/flowgraph_test: /usr/lib/x86_64-linux-gnu/libgnuradio-filter.so

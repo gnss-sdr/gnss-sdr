@@ -425,6 +425,30 @@ nsr_file_signal_source.cc.s:
 	cd /home/juancho/GitHub/gnss-sdr/cmake && $(MAKE) $(MAKESILENT) -f src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/build.make src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/nsr_file_signal_source.cc.s
 .PHONY : nsr_file_signal_source.cc.s
 
+osmosdr_signal_source.o: osmosdr_signal_source.cc.o
+.PHONY : osmosdr_signal_source.o
+
+# target to build an object file
+osmosdr_signal_source.cc.o:
+	cd /home/juancho/GitHub/gnss-sdr/cmake && $(MAKE) $(MAKESILENT) -f src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/build.make src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o
+.PHONY : osmosdr_signal_source.cc.o
+
+osmosdr_signal_source.i: osmosdr_signal_source.cc.i
+.PHONY : osmosdr_signal_source.i
+
+# target to preprocess a source file
+osmosdr_signal_source.cc.i:
+	cd /home/juancho/GitHub/gnss-sdr/cmake && $(MAKE) $(MAKESILENT) -f src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/build.make src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.i
+.PHONY : osmosdr_signal_source.cc.i
+
+osmosdr_signal_source.s: osmosdr_signal_source.cc.s
+.PHONY : osmosdr_signal_source.s
+
+# target to generate assembly for a file
+osmosdr_signal_source.cc.s:
+	cd /home/juancho/GitHub/gnss-sdr/cmake && $(MAKE) $(MAKESILENT) -f src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/build.make src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.s
+.PHONY : osmosdr_signal_source.cc.s
+
 rtl_tcp_signal_source.o: rtl_tcp_signal_source.cc.o
 .PHONY : rtl_tcp_signal_source.o
 
@@ -661,6 +685,9 @@ help:
 	@echo "... nsr_file_signal_source.o"
 	@echo "... nsr_file_signal_source.i"
 	@echo "... nsr_file_signal_source.s"
+	@echo "... osmosdr_signal_source.o"
+	@echo "... osmosdr_signal_source.i"
+	@echo "... osmosdr_signal_source.s"
 	@echo "... rtl_tcp_signal_source.o"
 	@echo "... rtl_tcp_signal_source.i"
 	@echo "... rtl_tcp_signal_source.s"

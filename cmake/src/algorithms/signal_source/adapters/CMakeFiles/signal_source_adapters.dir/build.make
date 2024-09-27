@@ -209,10 +209,24 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/nsr_
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/signal_source_adapters.dir/nsr_file_signal_source.cc.s"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/nsr_file_signal_source.cc -o CMakeFiles/signal_source_adapters.dir/nsr_file_signal_source.cc.s
 
+src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
+src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o: ../src/algorithms/signal_source/adapters/osmosdr_signal_source.cc
+src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o"
+	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/osmosdr_signal_source.cc
+
+src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.i"
+	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/osmosdr_signal_source.cc > CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.i
+
+src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.s"
+	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/osmosdr_signal_source.cc -o CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.s
+
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o: ../src/algorithms/signal_source/adapters/rtl_tcp_signal_source.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/rtl_tcp_signal_source.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.i: cmake_force
@@ -226,7 +240,7 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o: ../src/algorithms/signal_source/adapters/signal_source_base.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o -MF CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o.d -o CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/signal_source_base.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.i: cmake_force
@@ -240,7 +254,7 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/sign
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o: ../src/algorithms/signal_source/adapters/spir_file_signal_source.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/spir_file_signal_source.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.i: cmake_force
@@ -254,7 +268,7 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o: ../src/algorithms/signal_source/adapters/spir_gss6450_file_signal_source.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/spir_gss6450_file_signal_source.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_gss6450_file_signal_source.cc.i: cmake_force
@@ -268,7 +282,7 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o: ../src/algorithms/signal_source/adapters/two_bit_cpx_file_signal_source.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/two_bit_cpx_file_signal_source.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_cpx_file_signal_source.cc.i: cmake_force
@@ -282,7 +296,7 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o: ../src/algorithms/signal_source/adapters/two_bit_packed_file_signal_source.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/two_bit_packed_file_signal_source.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_bit_packed_file_signal_source.cc.i: cmake_force
@@ -296,7 +310,7 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/two_
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o: ../src/algorithms/signal_source/adapters/uhd_signal_source.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/uhd_signal_source.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_signal_source.cc.i: cmake_force
@@ -310,7 +324,7 @@ src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/uhd_
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/flags.make
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o: ../src/algorithms/signal_source/adapters/zmq_signal_source.cc
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building CXX object src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o -MF CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o.d -o CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o -c /home/juancho/GitHub/gnss-sdr/src/algorithms/signal_source/adapters/zmq_signal_source.cc
 
 src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.i: cmake_force
@@ -333,6 +347,7 @@ signal_source_adapters_OBJECTS = \
 "CMakeFiles/signal_source_adapters.dir/labsat_signal_source.cc.o" \
 "CMakeFiles/signal_source_adapters.dir/multichannel_file_signal_source.cc.o" \
 "CMakeFiles/signal_source_adapters.dir/nsr_file_signal_source.cc.o" \
+"CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o" \
 "CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o" \
 "CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o" \
 "CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o" \
@@ -355,6 +370,7 @@ src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithm
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/labsat_signal_source.cc.o
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/multichannel_file_signal_source.cc.o
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/nsr_file_signal_source.cc.o
+src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/spir_file_signal_source.cc.o
@@ -365,7 +381,7 @@ src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithm
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/zmq_signal_source.cc.o
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/build.make
 src/algorithms/signal_source/adapters/libsignal_source_adapters.a: src/algorithms/signal_source/adapters/CMakeFiles/signal_source_adapters.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Linking CXX static library libsignal_source_adapters.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Linking CXX static library libsignal_source_adapters.a"
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && $(CMAKE_COMMAND) -P CMakeFiles/signal_source_adapters.dir/cmake_clean_target.cmake
 	cd /home/juancho/GitHub/gnss-sdr/cmake/src/algorithms/signal_source/adapters && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/signal_source_adapters.dir/link.txt --verbose=$(VERBOSE)
 

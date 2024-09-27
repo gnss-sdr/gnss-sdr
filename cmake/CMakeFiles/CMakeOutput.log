@@ -1356,3 +1356,68 @@ Source file was:
         std::vector<float> a(5);
         std::vector<float> b(5);
         auto c = std::transform_reduce(std::execution::par, cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };
+Performing C++ SOURCE FILE Test has_std_plus_void succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_2c999/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_2c999.dir/build.make CMakeFiles/cmTC_2c999.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_2c999.dir/src.cxx.o
+/usr/bin/c++ -Dhas_std_plus_void  -std=c++17 -o CMakeFiles/cmTC_2c999.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_2c999
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_2c999.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_2c999.dir/src.cxx.o -o cmTC_2c999 
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+        #include <functional>
+        int main()
+        { [](float a=1, float b=0){return std::plus<>();}; };
+Performing C++ SOURCE FILE Test has_transform_reduce succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_d73fa/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_d73fa.dir/build.make CMakeFiles/cmTC_d73fa.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_d73fa.dir/src.cxx.o
+/usr/bin/c++ -Dhas_transform_reduce  -std=c++17 -o CMakeFiles/cmTC_d73fa.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_d73fa
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d73fa.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_d73fa.dir/src.cxx.o -o cmTC_d73fa 
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };
+Performing C++ SOURCE FILE Test has_transform_reduce_with_execution_policy succeeded with the following output:
+Change Dir: /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a63db/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_a63db.dir/build.make CMakeFiles/cmTC_a63db.dir/build
+gmake[1]: Entering directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a63db.dir/src.cxx.o
+/usr/bin/c++ -Dhas_transform_reduce_with_execution_policy  -std=c++17 -o CMakeFiles/cmTC_a63db.dir/src.cxx.o -c /home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_a63db
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a63db.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_a63db.dir/src.cxx.o -o cmTC_a63db 
+gmake[1]: Leaving directory '/home/juancho/GitHub/gnss-sdr/cmake/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+
+        #include <execution>
+        #include <functional>
+        #include <numeric>
+        #include <vector>
+        int main()
+        {
+        std::vector<float> a(5);
+        std::vector<float> b(5);
+        auto c = std::transform_reduce(std::execution::par, cbegin(a), cend(a), cbegin(b), 0, std::plus<>{}, std::multiplies<>{}); };

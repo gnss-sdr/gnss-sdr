@@ -19,6 +19,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/signal_source_adapters.dir/multichannel_file_signal_source.cc.o.d"
   "CMakeFiles/signal_source_adapters.dir/nsr_file_signal_source.cc.o"
   "CMakeFiles/signal_source_adapters.dir/nsr_file_signal_source.cc.o.d"
+  "CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o"
+  "CMakeFiles/signal_source_adapters.dir/osmosdr_signal_source.cc.o.d"
   "CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o"
   "CMakeFiles/signal_source_adapters.dir/rtl_tcp_signal_source.cc.o.d"
   "CMakeFiles/signal_source_adapters.dir/signal_source_base.cc.o"

@@ -447,7 +447,7 @@ ENABLE_ORC:BOOL=OFF
 
 //Enable the use of OsmoSDR and other front-ends (RTL-based dongles,
 // HackRF, bladeRF, etc.) as signal source
-ENABLE_OSMOSDR:BOOL=OFF
+ENABLE_OSMOSDR:BOOL=ON
 
 //Forces downloading and building of Abseil
 ENABLE_OWN_ABSEIL:BOOL=OFF

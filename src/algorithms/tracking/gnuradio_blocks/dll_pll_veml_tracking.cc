@@ -196,7 +196,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                     // set the bit transition pattern in secondary code to obtain bit synchronization
                     d_secondary_code_length = static_cast<uint32_t>(GPS_CA_PREAMBLE_LENGTH_SYMBOLS);
                     d_secondary_code_string = GPS_CA_PREAMBLE_SYMBOLS_STR;
-                    d_symbols_per_bit = 1;//GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
+                    d_symbols_per_bit = GPS_CA_TELEMETRY_SYMBOLS_PER_BIT;
                 }
             else if (d_signal_type == "2S")
                 {
@@ -1932,11 +1932,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                         d_state = 4;
                                     }
                             }
-                    // SBAS addons
-                    current_synchro_data = *d_acquisition_gnss_synchro;
-                    current_synchro_data.Prompt_I = d_Prompt->real();
-                    current_synchro_data.Prompt_Q = d_Prompt->imag();
-                    current_synchro_data.Flag_valid_symbol_output = true;
                     }
                 break;
             }

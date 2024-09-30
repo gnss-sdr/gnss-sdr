@@ -50,6 +50,9 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Add experimental decoding of Galileo's I/NAV ARAIM Integrity Support Message
   (ISM) as defined in the OS SIS ICD v2.1. Values, if received, are only logged
   but not used.
+- Added new
+  [`Cshort_To_Gr_Complex`](https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/#implementation-cshort_to_gr_complex)
+  Data Type Adapter implementation.
 
 ### Improvements in Portability:
 

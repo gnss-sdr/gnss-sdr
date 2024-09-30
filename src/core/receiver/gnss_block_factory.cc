@@ -36,6 +36,7 @@
 #include "byte_to_short.h"
 #include "channel.h"
 #include "configuration_interface.h"
+#include "cshort_to_grcomplex.h"
 #include "direct_resampler_conditioner.h"
 #include "fifo_signal_source.h"
 #include "file_signal_source.h"
@@ -916,6 +917,12 @@ std::unique_ptr<GNSSBlockInterface> GNSSBlockFactory::GetBlock(
             else if (implementation == "Ishort_To_Complex")
                 {
                     std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<IshortToComplex>(configuration, role, in_streams,
+                        out_streams);
+                    block = std::move(block_);
+                }
+            else if (implementation == "Cshort_To_Gr_Complex")
+                {
+                    std::unique_ptr<GNSSBlockInterface> block_ = std::make_unique<CshortToGrComplex>(configuration, role, in_streams,
                         out_streams);
                     block = std::move(block_);
                 }

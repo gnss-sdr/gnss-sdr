@@ -47,6 +47,12 @@ All notable changes to GNSS-SDR will be documented in this file.
   It requires the `-DENABLE_ION=ON` building configuration option.
 - The `Monitor` and `PVT` blocks are now able to send data to multiple UDP
   ports.
+- Add experimental decoding of Galileo's I/NAV ARAIM Integrity Support Message
+  (ISM) as defined in the OS SIS ICD v2.1. Values, if received, are only logged
+  but not used.
+- Added new
+  [`Cshort_To_Gr_Complex`](https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/#implementation-cshort_to_gr_complex)
+  Data Type Adapter implementation.
 
 ### Improvements in Portability:
 
@@ -81,6 +87,25 @@ All notable changes to GNSS-SDR will be documented in this file.
   This change has a downside in maintainability, since the source code becomes
   plagued with preprocessor directives required to maintain compatibility both
   with gflags and glog, and with Abseil.
+- Historically, GNSS-SDR linked against the GnuTLS library for cryptographic
+  functions. If GnuTLS was not found, then the building system looked for and
+  linked against OpenSSL as a fallback. This was due to the OpenSSL 1.x dual
+  license scheme, which was incompatible with GPL v3.0 license, preventing it
+  from being a mandatory dependency for GNSS-SDR in most GNU/Linux
+  distributions. This issue was solved with the release of OpenSSL 3.0.0, which
+  transitioned to the Apache License 2.0, fully compatible with GPL v3.0.
+  Accordingly, the GNSS-SDR building system now looks for OpenSSL in the first
+  place and, if not found, then it looks for GnuTLS as a fallback.
+
+### Reliability
+
+- Implementation of the Galileo Open Service Navigation Message Authentication
+  (OSNMA), a data authentication function for the Galileo Open Service worldwide
+  users, freely accessible to all. OSNMA provides receivers with the assurance
+  that the received Galileo navigation message is coming from the system itself
+  and has not been modified. OSNMA is enabled by default if the receiver
+  configuration defines Galileo E1 OS channels. More details can be found in
+  [Introducing GNSS Navigation Message Authentication](https://gnss-sdr.org/osnma).
 
 ### Improvements in Usability:
 

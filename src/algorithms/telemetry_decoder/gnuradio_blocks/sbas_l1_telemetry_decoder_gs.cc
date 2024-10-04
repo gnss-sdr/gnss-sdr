@@ -202,8 +202,8 @@ bool sbas_l1_telemetry_decoder_gs::Symbol_Aligner_And_Decoder::get_bits(const st
     const int32_t nbits_requested = symbols.size() / D_SYMBOLS_PER_BIT;
     int32_t nbits_decoded;
     // fill two vectors with the two possible symbol alignments
-    std::vector<double> symbols_vd1(symbols);  // aligned symbol vector -> copy input symbol vector
-    std::vector<double> symbols_vd2;           // shifted symbol vector -> add past sample in front of input vector
+    const std::vector<double> &symbols_vd1(symbols);  // aligned symbol vector -> copy input symbol vector
+    std::vector<double> symbols_vd2;                  // shifted symbol vector -> add past sample in front of input vector
     symbols_vd2.push_back(d_past_symbol);
     for (auto symbol_it = symbols.cbegin(); symbol_it != symbols.cend() - 1; ++symbol_it)
         {

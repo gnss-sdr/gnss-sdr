@@ -27,6 +27,7 @@
 #include "Galileo_E5a.h"
 #include "Galileo_E5b.h"
 #include "Galileo_E6.h"
+#include "Galileo_OSNMA.h"
 #include "channel.h"
 #include "channel_fsm.h"
 #include "channel_interface.h"
@@ -82,6 +83,7 @@ GNSSFlowgraph::GNSSFlowgraph(std::shared_ptr<ConfigurationInterface> configurati
       connected_(false),
       running_(false),
       multiband_(GNSSFlowgraph::is_multiband()),
+      enable_osnma_rx_(false),
       enable_e6_has_rx_(false)
 {
     enable_fpga_offloading_ = configuration_->property("GNSS-SDR.enable_FPGA", false);
@@ -118,6 +120,24 @@ void GNSSFlowgraph::init()
         {
             gal_e6_has_rx_ = nullptr;
             galileo_tow_map_ = nullptr;
+        }
+
+    if (configuration_->property("Channels_1B.count", 0) > 0 && configuration_->property("GNSS-SDR.osnma_enable", true))
+        {
+            enable_osnma_rx_ = true;
+            const auto certFilePath = configuration_->property("GNSS-SDR.osnma_public_key", CRTFILE_DEFAULT);
+            const auto merKleTreePath = configuration_->property("GNSS-SDR.osnma_merkletree", MERKLEFILE_DEFAULT);
+            std::string osnma_mode = configuration_->property("GNSS-SDR.osnma_mode", std::string(""));
+            bool strict_mode = false;
+            if (osnma_mode == "strict")
+                {
+                    strict_mode = true;
+                }
+            osnma_rx_ = osnma_msg_receiver_make(certFilePath, merKleTreePath, strict_mode);
+        }
+    else
+        {
+            osnma_rx_ = nullptr;
         }
 
     // 1. read the number of RF front-ends available (one file_source per RF front-end)
@@ -520,6 +540,14 @@ int GNSSFlowgraph::connect_desktop_flowgraph()
                 }
         }
 
+    if (enable_osnma_rx_)
+        {
+            if (connect_osnma() != 0)
+                {
+                    return 1;
+                }
+        }
+
     // Activate acquisition in enabled channels
     std::lock_guard<std::mutex> lock(signal_list_mutex_);
     for (int i = 0; i < channels_count_; i++)
@@ -635,6 +663,14 @@ int GNSSFlowgraph::connect_fpga_flowgraph()
                     return 1;
                 }
             if (connect_galileo_tow_map() != 0)
+                {
+                    return 1;
+                }
+        }
+
+    if (enable_osnma_rx_)
+        {
+            if (connect_osnma() != 0)
                 {
                     return 1;
                 }
@@ -1361,6 +1397,42 @@ int GNSSFlowgraph::connect_monitors()
                     return 1;
                 }
         }
+    return 0;
+}
+
+
+int GNSSFlowgraph::connect_osnma()
+{
+    try
+        {
+            bool gal_e1_channels = false;
+            for (int i = 0; i < channels_count_; i++)
+                {
+                    const std::string gnss_signal = channels_.at(i)->get_signal().get_signal_str();
+                    switch (mapStringValues_[gnss_signal])
+                        {
+                        case evGAL_1B:
+                            top_block_->msg_connect(channels_.at(i)->get_right_block(), pmt::mp("OSNMA_from_TLM"), osnma_rx_, pmt::mp("OSNMA_from_TLM"));
+                            gal_e1_channels = true;
+                            break;
+
+                        default:
+                            break;
+                        }
+                }
+
+            if (gal_e1_channels == true)
+                {
+                    top_block_->msg_connect(osnma_rx_, pmt::mp("OSNMA_to_PVT"), pvt_->get_left_block(), pmt::mp("OSNMA_to_PVT"));
+                }
+        }
+    catch (const std::exception& e)
+        {
+            LOG(ERROR) << "Can't connect Galileo OSNMA msg ports: " << e.what();
+            top_block_->disconnect_all();
+            return 1;
+        }
+    DLOG(INFO) << "Galileo OSNMA message ports connected";
     return 0;
 }
 

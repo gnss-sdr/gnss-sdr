@@ -7,6 +7,7 @@
 
 add_subdirectory(unit-tests/signal-processing-blocks/libs)
 add_subdirectory(system-tests/libs)
+include_directories("${GNSSSDR_SOURCE_DIR}/src/core/receiver")
 
 include(XcodeRemoveWarningDuplicates)
 
@@ -485,7 +486,12 @@ if(NOT (ENABLE_PACKAGING OR ENABLE_UNIT_TESTING_MINIMAL))
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=d57a02d3c7361bba2e137329b66458ef
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat)
+        endif()
     endif()
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat)
         message(STATUS "Downloading file: GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat")
@@ -493,7 +499,12 @@ if(NOT (ENABLE_PACKAGING OR ENABLE_UNIT_TESTING_MINIMAL))
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=f12ada80a2ad1bab061262e010643529
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat)
+        endif()
     endif()
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat)
         message(STATUS "Downloading file: GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat")
@@ -501,7 +512,12 @@ if(NOT (ENABLE_PACKAGING OR ENABLE_UNIT_TESTING_MINIMAL))
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=b98d6d82885354f168f279817de284b5
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GSoC_CTTC_capture_2012_07_26_4Msps_4ms.dat)
+        endif()
     endif()
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin)
         message(STATUS "Downloading file: NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin")
@@ -509,7 +525,12 @@ if(NOT (ENABLE_PACKAGING OR ENABLE_UNIT_TESTING_MINIMAL))
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin
             SHOW_PROGRESS
             EXPECTED_HASH MD5=0e2dc212309141d236897bc0af187074
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin)
+        endif()
     endif()
     message(STATUS "Done.")
 endif()
@@ -523,7 +544,12 @@ if(ENABLE_UNIT_TESTING_EXTRA)
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=a6fcbefe155137945d3c33c5ef7bd0f9
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/gps_l2c_m_prn7_5msps.dat)
+        endif()
     endif()
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat)
         message(STATUS "Downloading file: Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat")
@@ -531,7 +557,12 @@ if(ENABLE_UNIT_TESTING_EXTRA)
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=ffb72fc63c116be58d5e5ccb1daaed3a
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Glonass_L1_CA_SIM_Fs_62Msps_4ms.dat)
+        endif()
     endif()
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat)
         message(STATUS "Downloading file: BdsB1IStr01_fs25e6_if0_4ms.dat")
@@ -539,7 +570,12 @@ if(ENABLE_UNIT_TESTING_EXTRA)
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=5a4336dad9d80f3313a16dec4fff9233
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB1IStr01_fs25e6_if0_4ms.dat)
+        endif()
     endif()
     if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat)
         message(STATUS "Downloading file: BdsB3IStr01_fs50e6_if0_4ms.dat")
@@ -547,7 +583,30 @@ if(ENABLE_UNIT_TESTING_EXTRA)
                 ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat
             SHOW_PROGRESS
             EXPECTED_HASH MD5=066d0d8434a8bc81e161778b7c34cc07
+            STATUS status_download
         )
+        list(GET status_download 0 result_download)
+        if(NOT (${result_download} EQUAL 0))
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/BdsB3IStr01_fs50e6_if0_4ms.dat)
+        endif()
+    endif()
+    if(NOT EXISTS ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip)
+        message(STATUS "Downloading file: Test_vectors.zip")
+        file(DOWNLOAD https://www.gsc-europa.eu/sites/default/files/sites/all/files/Test_vectors.zip
+                ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip
+            SHOW_PROGRESS
+            EXPECTED_HASH MD5=8158aebee735652c9398e5bb6d944364
+            STATUS status_download
+        )
+        list(GET status_download 0 result_download)
+        if(${result_download} EQUAL 0)
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} -E tar xzf ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip
+                WORKING_DIRECTORY ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/
+            )
+        else()
+            file(REMOVE ${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors.zip)
+        endif()
     endif()
     message(STATUS "Done.")
     if(ENABLE_INSTALL_TESTS)
@@ -651,6 +710,7 @@ if(ENABLE_UNIT_TESTING)
         if(GNSSTK_OLDER_THAN_9)
             target_compile_definitions(run_tests PRIVATE -DGNSSTK_OLDER_THAN_9=1)
         endif()
+        target_compile_definitions(run_tests PRIVATE -DBASE_OSNMA_TEST_VECTORS="${GNSSSDR_BINARY_DIR}/thirdparty/osnma_tests/Test_vectors/")
     endif()
     xcode_remove_warning_duplicates(run_tests)
     if(ENABLE_STRIP)

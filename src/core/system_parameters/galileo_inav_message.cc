@@ -44,7 +44,7 @@ Galileo_Inav_Message::Galileo_Inav_Message()
 }
 
 
-// here the compiler knows how to destrcut rs
+// here the compiler knows how to destroy rs
 Galileo_Inav_Message::~Galileo_Inav_Message() = default;
 
 
@@ -143,8 +143,6 @@ bool Galileo_Inav_Message::read_navigation_bool(const std::bitset<GALILEO_DATA_J
 
 void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even_word)
 {
-    int32_t Page_type = 0;
-
     if (page_string.at(0) == '1')  // if page is odd
         {
             const std::string& page_Odd = page_string;
@@ -153,21 +151,21 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                 {
                     const std::string page_INAV_even = page_Even;
                     const std::string page_INAV = page_INAV_even + page_Odd;  // Join pages: Even + Odd = INAV page
-                    const std::string Even_bit = page_INAV.substr(0, 1);
-                    const std::string Page_type_even = page_INAV.substr(1, 1);
-                    const std::string nominal = "0";
 
                     const std::string Data_k = page_INAV.substr(2, 112);
-                    const std::string Odd_bit = page_INAV.substr(114, 1);
-                    const std::string Page_type_Odd = page_INAV.substr(115, 1);
                     const std::string Data_j = page_INAV.substr(116, 16);
 
-                    const std::string Reserved_1 = page_INAV.substr(132, 40);
-                    const std::string SAR = page_INAV.substr(172, 22);
-                    const std::string Spare = page_INAV.substr(194, 2);
+                    const std::string osnma_sis = page_INAV.substr(132, 40);
+                    // const std::string SAR = page_INAV.substr(172, 22);
+                    // const std::string Spare = page_INAV.substr(194, 2);
                     const std::string CRC_data = page_INAV.substr(196, 24);
-                    const std::string Reserved_2 = page_INAV.substr(220, 8);
-                    const std::string Tail_odd = page_INAV.substr(228, 6);
+                    // const std::string Reserved_2 = page_INAV.substr(220, 8);
+                    // const std::string Tail_odd = page_INAV.substr(228, 6);
+
+                    if (page_position_in_inav_subframe != 255)
+                        {
+                            page_position_in_inav_subframe++;
+                        }
 
                     // ************ CRC checksum control *******/
                     std::stringstream TLM_word_for_CRC_stream;
@@ -180,12 +178,29 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
                         {
                             flag_CRC_test = true;
                             // CRC correct: Decode word
-                            const std::string page_number_bits = Data_k.substr(0, 6);
-                            const std::bitset<GALILEO_PAGE_TYPE_BITS> page_type_bits(page_number_bits);  // from string to bitset
-                            Page_type = static_cast<int32_t>(read_page_type_unsigned(page_type_bits, TYPE));
-                            Page_type_time_stamp = Page_type;
                             const std::string Data_jk_ephemeris = Data_k + Data_j;
                             page_jk_decoder(Data_jk_ephemeris.c_str());
+
+                            // Fill OSNMA data
+                            if (page_position_in_inav_subframe != 255)
+                                {
+                                    if (page_position_in_inav_subframe == 0)
+                                        {  // TODO - is it redundant? receiving Word 2 already resets this
+                                            nma_position_filled = std::array<int8_t, 15>{};
+                                            nma_msg.mack = std::array<uint32_t, 15>{};
+                                            nma_msg.hkroot = std::array<uint8_t, 15>{};
+                                        }
+                                    std::bitset<8> hkroot_bs(osnma_sis.substr(0, 8));
+                                    std::bitset<32> mack_bs(osnma_sis.substr(8, 32));
+                                    if (hkroot_bs.count() != 0 && mack_bs.count() != 0)
+                                        {
+                                            hkroot_sis = static_cast<uint8_t>(hkroot_bs.to_ulong());
+                                            mack_sis = static_cast<uint32_t>(mack_bs.to_ulong());
+                                            nma_msg.mack[page_position_in_inav_subframe] = mack_sis;
+                                            nma_msg.hkroot[page_position_in_inav_subframe] = hkroot_sis;
+                                            nma_position_filled[page_position_in_inav_subframe] = 1;
+                                        }
+                                }
                         }
                     else
                         {
@@ -201,6 +216,7 @@ void Galileo_Inav_Message::split_page(std::string page_string, int32_t flag_even
 }
 
 
+// C: tells if W1-->W4 available from same blcok
 bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephemeris stored in the galileo navigation class
 {
     if ((flag_ephemeris_1 == true) and (flag_ephemeris_2 == true) and (flag_ephemeris_3 == true) and (flag_ephemeris_4 == true) and (flag_iono_and_GST == true))
@@ -335,6 +351,7 @@ bool Galileo_Inav_Message::have_new_ephemeris()  // Check if we have a new ephem
 }
 
 
+// C: tells if W5 is available
 bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new iono data set stored in the galileo navigation class
 {
     if ((flag_iono_and_GST == true) and (flag_utc_model == true))  // the condition on flag_utc_model is added to have a time stamp for iono
@@ -347,6 +364,7 @@ bool Galileo_Inav_Message::have_new_iono_and_GST()  // Check if we have a new io
 }
 
 
+// C: tells if W6 is available
 bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc data set stored in the galileo navigation class
 {
     if (flag_utc_model == true)
@@ -359,6 +377,7 @@ bool Galileo_Inav_Message::have_new_utc_model()  // Check if we have a new utc d
 }
 
 
+// flag_almanac_4 tells if W10 available.
 bool Galileo_Inav_Message::have_new_almanac()  // Check if we have a new almanac data set stored in the galileo navigation class
 {
     if ((flag_almanac_1 == true) and (flag_almanac_2 == true) and (flag_almanac_3 == true) and (flag_almanac_4 == true))
@@ -382,6 +401,17 @@ bool Galileo_Inav_Message::have_new_reduced_ced()
     if ((flag_CED == true) && (WN_5 > 0))  // We need the week number to compute GST
         {
             flag_CED = false;
+            return true;
+        }
+    return false;
+}
+
+
+bool Galileo_Inav_Message::have_new_ism()
+{
+    if (have_ISM)
+        {
+            have_ISM = false;
             return true;
         }
     return false;
@@ -599,6 +629,7 @@ void Galileo_Inav_Message::read_page_1(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "A_1= " << A_1;
     flag_ephemeris_1 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_1 = data_bits.to_string().substr(6, 120);
 }
 
 
@@ -620,6 +651,7 @@ void Galileo_Inav_Message::read_page_2(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "iDot_2= " << iDot_2;
     flag_ephemeris_2 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_2 = data_bits.to_string().substr(6, 120);
 }
 
 
@@ -649,6 +681,7 @@ void Galileo_Inav_Message::read_page_3(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "SISA_3= " << SISA_3;
     flag_ephemeris_3 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_3 = data_bits.to_string().substr(6, 122);
 }
 
 
@@ -657,6 +690,7 @@ void Galileo_Inav_Message::read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& 
     IOD_nav_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, IOD_NAV_4_BIT));
     DLOG(INFO) << "IOD_nav_4= " << IOD_nav_4;
     SV_ID_PRN_4 = static_cast<int32_t>(read_navigation_unsigned(data_bits, SV_ID_PRN_4_BIT));
+    nma_msg.PRN = static_cast<uint32_t>(SV_ID_PRN_4);
     DLOG(INFO) << "SV_ID_PRN_4= " << SV_ID_PRN_4;
     C_ic_4 = static_cast<double>(read_navigation_signed(data_bits, C_IC_4_BIT));
     C_ic_4 = C_ic_4 * C_IC_4_LSB;
@@ -681,6 +715,7 @@ void Galileo_Inav_Message::read_page_4(const std::bitset<GALILEO_DATA_JK_BITS>& 
     DLOG(INFO) << "spare_4 = " << spare_4;
     flag_ephemeris_4 = true;
     DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+    nav_bits_word_4 = data_bits.to_string().substr(6, 120);
 }
 
 
@@ -815,6 +850,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
         {
         case 1:  // Word type 1: Ephemeris (1/4)
             {
+                page_position_in_inav_subframe = 10;
                 read_page_1(data_jk_bits);
                 if (enable_rs)
                     {
@@ -851,6 +887,14 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 2:  // Word type 2: Ephemeris (2/4)
             {
+                // start of subframe, reset osnma parameters TODO - refactor
+                page_position_in_inav_subframe = 0;
+                nma_msg.mack = std::array<uint32_t, 15>{};
+                nma_msg.hkroot = std::array<uint8_t, 15>{};
+                nma_position_filled = std::array<int8_t, 15>{};
+                reset_osnma_nav_bits_adkd4();
+                reset_osnma_nav_bits_adkd0_12();
+
                 read_page_2(data_jk_bits);
                 if (enable_rs)
                     {
@@ -882,6 +926,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             }
         case 3:  // Word type 3: Ephemeris (3/4) and SISA
             {
+                page_position_in_inav_subframe = 11;
                 read_page_3(data_jk_bits);
                 if (enable_rs)
                     {
@@ -914,6 +959,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 4:  // Word type 4: Ephemeris (4/4) and Clock correction parameters
             {
+                page_position_in_inav_subframe = 1;
                 read_page_4(data_jk_bits);
                 if (enable_rs)
                     {
@@ -945,6 +991,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             }
 
         case 5:  // Word type 5: Ionospheric correction, BGD, signal health and data validity status and GST
+            page_position_in_inav_subframe = 12;
             // Ionospheric correction
             ai0_5 = static_cast<double>(read_navigation_unsigned(data_jk_bits, AI0_5_BIT));
             ai0_5 = ai0_5 * AI0_5_LSB;
@@ -992,9 +1039,11 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_iono_and_GST = true;  // set to false externally
             flag_TOW_set = true;       // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            nav_bits_word_5 = data_jk_bits.to_string().substr(6, 67);
             break;
 
         case 6:  // Word type 6: GST-UTC conversion parameters
+            page_position_in_inav_subframe = 2;
             A0_6 = static_cast<double>(read_navigation_signed(data_jk_bits, A0_6_BIT));
             A0_6 = A0_6 * A0_6_LSB;
             DLOG(INFO) << "A0_6= " << A0_6;
@@ -1020,9 +1069,11 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             flag_utc_model = true;  // set to false externally
             flag_TOW_set = true;    // set to false externally
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            nav_bits_word_6 = data_jk_bits.to_string().substr(6, 99);
             break;
 
         case 7:  // Word type 7: Almanac for SVID1 (1/2), almanac reference time and almanac reference week number
+            page_position_in_inav_subframe = 3;
             IOD_a_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_7_BIT));
             DLOG(INFO) << "IOD_a_7= " << IOD_a_7;
             WN_a_7 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_A_7_BIT));
@@ -1057,7 +1108,8 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
             break;
 
-        case 8:  // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)*/
+        case 8:  // Word type 8: Almanac for SVID1 (2/2) and SVID2 (1/2)
+            page_position_in_inav_subframe = 4;
             IOD_a_8 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_8_BIT));
             DLOG(INFO) << "IOD_a_8= " << IOD_a_8;
             af0_8 = static_cast<double>(read_navigation_signed(data_jk_bits, AF0_8_BIT));
@@ -1095,6 +1147,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
 
         case 9:  // Word type 9: Almanac for SVID2 (2/2) and SVID3 (1/2)
+            page_position_in_inav_subframe = 3;
             IOD_a_9 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_9_BIT));
             DLOG(INFO) << "IOD_a_9= " << IOD_a_9;
             WN_a_9 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, WN_A_9_BIT));
@@ -1134,6 +1187,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             break;
 
         case 10:  // Word type 10: Almanac for SVID3 (2/2) and GST-GPS conversion parameters
+            page_position_in_inav_subframe = 4;
             IOD_a_10 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, IOD_A_10_BIT));
             DLOG(INFO) << "IOD_a_10= " << IOD_a_10;
             Omega0_10 = static_cast<double>(read_navigation_signed(data_jk_bits, OMEGA0_10_BIT));
@@ -1172,6 +1226,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
             DLOG(INFO) << "WN_0G_10= " << WN_0G_10;
             flag_almanac_4 = true;
             DLOG(INFO) << "flag_tow_set" << flag_TOW_set;
+            nav_bits_word_10 = data_jk_bits.to_string().substr(86, 42);
             break;
 
         case 16:  // Word type 16: Reduced Clock and Ephemeris Data (CED) parameters
@@ -1205,6 +1260,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 17:  // Word type 17: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 5;
                 if (enable_rs)
                     {
                         IODnav_LSB17 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1234,6 +1290,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 18:  // Word type 18: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 5;
                 if (enable_rs)
                     {
                         IODnav_LSB18 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1263,6 +1320,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 19:  // Word type 19: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 6;
                 if (enable_rs)
                     {
                         IODnav_LSB19 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1292,6 +1350,7 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
 
         case 20:  // Word type 20: FEC2 Reed-Solomon for CED
             {
+                page_position_in_inav_subframe = 6;
                 if (enable_rs)
                     {
                         IODnav_LSB20 = read_octet_unsigned(data_jk_bits, RS_IODNAV_LSBS);
@@ -1319,6 +1378,50 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
                 break;
             }
 
+        case 22:  // Word Type 22: ARAIM Integrity Support Message (ISM)
+            DLOG(INFO) << "Word type 22 arrived";
+            ism_constellation_id = read_octet_unsigned(data_jk_bits, ISM_CONSTELLATION_ID_BIT);
+            ism_service_level_id = read_octet_unsigned(data_jk_bits, ISM_SERVICE_LEVEL_ID_BIT);
+            if (gal_ism.check_ism_crc(data_jk_bits))
+                {
+                    DLOG(INFO) << "I/NAV ARAIM Integrity Support Message CRC OK";
+                    gal_ism.set_ism_constellation_id(ism_constellation_id);
+                    gal_ism.set_ism_service_level_id(ism_service_level_id);
+                    if (ism_constellation_id == 0)
+                        {
+                            LOG(INFO) << "I/NAV ARAIM Integrity Support Message in Test";
+                        }
+                    if (ism_constellation_id == 1)
+                        {
+                            if (ism_service_level_id == 2)
+                                {
+                                    gal_ism.set_ism_wn(static_cast<uint16_t>(read_navigation_unsigned(data_jk_bits, ISM_WN_BIT)));
+                                    gal_ism.set_ism_t0(static_cast<uint16_t>(read_navigation_unsigned(data_jk_bits, ISM_T0_BIT)));
+                                    gal_ism.set_ism_mask_msb(read_navigation_bool(data_jk_bits, ISM_MASK_MSB_BIT));
+                                    gal_ism.set_ism_mask(static_cast<uint32_t>(read_navigation_unsigned(data_jk_bits, ISM_MASK_BIT)));
+                                    gal_ism.set_ism_pconst(read_octet_unsigned(data_jk_bits, ISM_PCONST_BIT));
+                                    gal_ism.set_ism_psat(read_octet_unsigned(data_jk_bits, ISM_PSAT_BIT));
+                                    gal_ism.set_ism_ura(read_octet_unsigned(data_jk_bits, ISM_URA_BIT));
+                                    gal_ism.set_ism_ure(read_octet_unsigned(data_jk_bits, ISM_URE_BIT));
+                                    gal_ism.set_ism_bnom(read_octet_unsigned(data_jk_bits, ISM_BNOM_BIT));
+                                    gal_ism.set_ism_Tvalidity(read_octet_unsigned(data_jk_bits, ISM_TVALIDITY_BIT));
+                                    LOG(INFO) << "I/NAV ARAIM Integrity Support Message: "
+                                              << "WN_ISM=" << static_cast<uint32_t>(gal_ism.get_WN_ISM()) << ", "
+                                              << "t0_ISM=" << static_cast<uint32_t>(gal_ism.get_t0_ISM()) << ", "
+                                              << "Mask_MSB_ISM=" << static_cast<uint32_t>(gal_ism.get_ism_mask_msb()) << ", "
+                                              << "Mask_ISM=" << gal_ism.get_mask_ISM() << ", "
+                                              << "Pconst=" << gal_ism.get_pconst_value() << ", "
+                                              << "Psat=" << gal_ism.get_psat_value() << ", "
+                                              << "URA=" << gal_ism.get_ura_m() << " [m], "
+                                              << "URE=" << gal_ism.get_ure_m() << " [m], "
+                                              << "Bnom=" << gal_ism.get_bnom_m() << " [m], "
+                                              << "Tvalidity=" << static_cast<uint32_t>(gal_ism.get_Tvalidity_hours()) << " [h]";
+                                }
+                        }
+                    have_ISM = true;
+                }
+            break;
+
         case 0:  // Word type 0: I/NAV Spare Word
             Time_0 = static_cast<int32_t>(read_navigation_unsigned(data_jk_bits, TIME_0_BIT));
             DLOG(INFO) << "Time_0= " << Time_0;
@@ -1338,5 +1441,91 @@ int32_t Galileo_Inav_Message::page_jk_decoder(const char* data_jk)
         default:
             break;
         }
+
+    if (page_position_in_inav_subframe > 14 &&
+        page_position_in_inav_subframe != 255)
+        {
+            // something weird happened, reset
+            page_position_in_inav_subframe = 255;
+            nma_position_filled = std::array<int8_t, 15>{};
+            nma_msg.mack = std::array<uint32_t, 15>{};
+            nma_msg.hkroot = std::array<uint8_t, 15>{};
+            reset_osnma_nav_bits_adkd4();
+            reset_osnma_nav_bits_adkd0_12();
+        }
+
     return page_number;
+}
+
+
+Galileo_ISM Galileo_Inav_Message::get_galileo_ism() const
+{
+    return gal_ism;
+}
+
+
+/**
+ * @brief Get data relevant for Galileo OSNMA
+ *
+ * \details This function retrieves various parameters and data to compose the OSNMA_msg.
+ * It fills the TOW and WN fields of the message and retrieves ephemeris, iono, and
+ *
+ * @return The OSNMA message
+ */
+OSNMA_msg Galileo_Inav_Message::get_osnma_msg()
+{
+    nma_position_filled = std::array<int8_t, 15>{};
+    // Fill TOW and WN
+    nma_msg.WN_sf0 = WN_0;
+    int32_t TOW_sf0 = TOW_5 - 25;
+    if (TOW_sf0 < 0)
+        {
+            TOW_sf0 += 604800;
+        }
+    nma_msg.TOW_sf0 = static_cast<uint32_t>(TOW_sf0);
+    return nma_msg;
+}
+
+
+bool Galileo_Inav_Message::have_new_nma()
+{
+    if (std::all_of(nma_position_filled.begin(), nma_position_filled.end(), [](int8_t element) { return element == 1; }))
+        {
+            return true;
+        }
+    else
+        {
+            return false;
+        }
+}
+
+
+std::string Galileo_Inav_Message::get_osnma_adkd_4_nav_bits()
+{
+    nav_bits_adkd_4 = nav_bits_word_6 + nav_bits_word_10;
+    return nav_bits_adkd_4;
+}
+
+
+std::string Galileo_Inav_Message::get_osnma_adkd_0_12_nav_bits()
+{
+    nav_bits_adkd_0_12 = nav_bits_word_1 + nav_bits_word_2 + nav_bits_word_3 + nav_bits_word_4 + nav_bits_word_5;
+    return nav_bits_adkd_0_12;
+}
+
+
+void Galileo_Inav_Message::reset_osnma_nav_bits_adkd0_12()
+{
+    nav_bits_word_1 = "";
+    nav_bits_word_2 = "";
+    nav_bits_word_3 = "";
+    nav_bits_word_4 = "";
+    nav_bits_word_5 = "";
+}
+
+
+void Galileo_Inav_Message::reset_osnma_nav_bits_adkd4()
+{
+    nav_bits_word_6 = "";
+    nav_bits_word_10 = "";
 }

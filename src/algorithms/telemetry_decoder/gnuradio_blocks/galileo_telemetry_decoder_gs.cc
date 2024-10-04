@@ -45,6 +45,7 @@
 #include <limits>                    // for std::numeric_limits
 #include <map>                       // for std::map
 #include <stdexcept>                 // for std::out_of_range
+#include <tuple>                     // for std::tuple
 #include <typeinfo>                  // for typeid
 #include <utility>                   // for std::pair
 
@@ -111,6 +112,7 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
                       d_enable_reed_solomon_inav(false),
                       d_valid_timetag(false),
                       d_E6_TOW_set(false),
+                      d_there_are_e1_channels(conf.there_are_e1_channels),
                       d_there_are_e6_channels(conf.there_are_e6_channels),
                       d_use_ced(conf.use_ced)
 {
@@ -121,12 +123,19 @@ galileo_telemetry_decoder_gs::galileo_telemetry_decoder_gs(
     // Control messages to tracking block
     this->message_port_register_out(pmt::mp("telemetry_to_trk"));
 
+    if (d_there_are_e1_channels)
+        {
+            // register OSM out
+            this->message_port_register_out(pmt::mp("OSNMA_from_TLM"));
+        }
+
     if (d_there_are_e6_channels)
         {
             // register Gal E6 messages HAS out
             this->message_port_register_out(pmt::mp("E6_HAS_from_TLM"));
             // register TOW from map out
             this->message_port_register_out(pmt::mp("TOW_from_TLM"));
+
             // register TOW to TLM input
             this->message_port_register_in(pmt::mp("TOW_to_TLM"));
             // handler for input port
@@ -361,7 +370,6 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     // 1. De-interleave
     std::vector<float> page_part_symbols_soft_value(frame_length);
     deinterleaver(GALILEO_INAV_INTERLEAVER_ROWS, GALILEO_INAV_INTERLEAVER_COLS, page_part_symbols, page_part_symbols_soft_value.data());
-
     // 2. Viterbi decoder
     // 2.1 Take into account the NOT gate in G2 polynomial (Galileo ICD Figure 13, FEC encoder)
     for (int32_t i = 0; i < frame_length; i++)
@@ -431,7 +439,29 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
         }
 
     // 4. Push the new navigation data to the queues
-    if (d_inav_nav.have_new_ephemeris() == true)
+    // extract OSNMA bits, reset container.
+    if (d_inav_nav.get_osnma_adkd_0_12_nav_bits().size() == 549)
+        {
+            DLOG(INFO) << "Galileo OSNMA: new ADKD=0/12 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW5() - 25;
+            const auto tmp_obj_osnma = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf>
+                d_satellite.get_PRN(),
+                d_inav_nav.get_osnma_adkd_0_12_nav_bits(),
+                d_inav_nav.get_TOW5() - 25);
+            this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj_osnma));
+            d_inav_nav.reset_osnma_nav_bits_adkd0_12();
+        }
+    if (d_inav_nav.get_osnma_adkd_4_nav_bits().size() == 141)
+        {
+            DLOG(INFO) << "Galileo OSNMA: new ADKD=4 navData from " << d_satellite << " at TOW_sf=" << d_inav_nav.get_TOW6() - 5;
+            const auto tmp_obj = std::make_shared<std::tuple<uint32_t, std::string, uint32_t>>(  // < PRNd , navDataBits, TOW_Sosf> // TODO conversion from W6 to W_Start_of_subframe
+                d_satellite.get_PRN(),
+                d_inav_nav.get_osnma_adkd_4_nav_bits(),
+                d_inav_nav.get_TOW6() - 5);
+            this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
+            d_inav_nav.reset_osnma_nav_bits_adkd4();
+        }
+
+    if (d_inav_nav.have_new_ephemeris() == true)  // C: tells if W1-->W4 available from same blcok (and W5!)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_ephemeris());
@@ -466,7 +496,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
     else
         {
             // If we still do not have ephemeris, check if we have a reduced CED
-            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))
+            if ((d_band == '1') && d_use_ced && !d_first_eph_sent && (d_inav_nav.have_new_reduced_ced() == true))  // C: W16 has some Eph. params, uneeded for OSNMa I guess
                 {
                     const std::shared_ptr<Galileo_Ephemeris> tmp_obj = std::make_shared<Galileo_Ephemeris>(d_inav_nav.get_reduced_ced());
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
@@ -482,7 +512,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 }
         }
 
-    if (d_inav_nav.have_new_iono_and_GST() == true)
+    if (d_inav_nav.have_new_iono_and_GST() == true)  // C: W5
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Iono> tmp_obj = std::make_shared<Galileo_Iono>(d_inav_nav.get_iono());
@@ -513,7 +543,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
                 }
         }
 
-    if (d_inav_nav.have_new_utc_model() == true)
+    if (d_inav_nav.have_new_utc_model() == true)  // C: tells if W6 is available
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Galileo_Utc_Model> tmp_obj = std::make_shared<Galileo_Utc_Model>(d_inav_nav.get_utc_model());
@@ -548,7 +578,7 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             DLOG(INFO) << "delta_t=" << d_delta_t << "[s]";
         }
 
-    if (d_inav_nav.have_new_almanac() == true)
+    if (d_inav_nav.have_new_almanac() == true)  // flag_almanac_4 tells if W10 available.
         {
             const std::shared_ptr<Galileo_Almanac_Helper> tmp_obj = std::make_shared<Galileo_Almanac_Helper>(d_inav_nav.get_almanac());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
@@ -579,6 +609,12 @@ void galileo_telemetry_decoder_gs::decode_INAV_word(float *page_part_symbols, in
             DLOG(INFO) << "Current parameters:";
             DLOG(INFO) << "d_TOW_at_current_symbol_ms=" << d_TOW_at_current_symbol_ms;
             DLOG(INFO) << "d_nav.WN_0=" << d_inav_nav.get_Galileo_week();
+        }
+    auto newOSNMA = d_inav_nav.have_new_nma();
+    if (d_band == '1' && newOSNMA)
+        {
+            const std::shared_ptr<OSNMA_msg> tmp_obj = std::make_shared<OSNMA_msg>(d_inav_nav.get_osnma_msg());
+            this->message_port_pub(pmt::mp("OSNMA_from_TLM"), pmt::make_any(tmp_obj));
         }
 }
 
@@ -742,7 +778,7 @@ void galileo_telemetry_decoder_gs::decode_CNAV_word(uint64_t time_stamp, float *
                             std::cout << TEXT_MAGENTA << "Receiving Galileo E6 CNAV dummy pages in channel "
                                       << d_channel << " from satellite "
                                       << d_satellite << " with CN0="
-                                      << std::setprecision(2) << cn0 << " dB-Hz" << std::setprecision(default_precision)
+                                      << std::setprecision(2) << cn0 << std::setprecision(default_precision) << " dB-Hz"
                                       << TEXT_RESET << std::endl;
                         }
                 }

@@ -243,7 +243,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("SignalSource.BW_BB", "0.97");
 
     config->set_property("SignalSource.dump", "false");
-    config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
+    config->set_property("SignalSource.dump_filename", "./signal_source.dat");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
@@ -277,7 +277,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_1()
     config->set_property("Acquisition_5X.doppler_step", "250");
     config->set_property("Acquisition_5X.bit_transition_flag", "false");
     config->set_property("Acquisition_5X.dump", "false");
-    config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
+    config->set_property("SignalSource.dump_filename", "./acquisition.dat");
 }
 
 
@@ -313,7 +313,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_2()
     config->set_property("Acquisition_5X.doppler_step", "250");
     config->set_property("Acquisition_5X.bit_transition_flag", "false");
     config->set_property("Acquisition_5X.dump", "false");
-    config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
+    config->set_property("SignalSource.dump_filename", "./acquisition.dat");
 }
 
 
@@ -393,7 +393,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     config->set_property("SignalSource.BW_BB", "0.97");
 
     config->set_property("SignalSource.dump", "false");
-    config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
+    config->set_property("SignalSource.dump_filename", "./signal_source.dat");
 
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
@@ -424,7 +424,7 @@ void GalileoE5aPcpsAcquisitionGSoC2014GensourceTest::config_3()
     config->set_property("Acquisition_5X.doppler_step", "250");
     config->set_property("Acquisition_5X.bit_transition_flag", "false");
     config->set_property("Acquisition_5X.dump", "false");
-    config->set_property("SignalSource.dump_filename", "../data/acquisition.dat");
+    config->set_property("SignalSource.dump_filename", "./acquisition.dat");
 }
 
 

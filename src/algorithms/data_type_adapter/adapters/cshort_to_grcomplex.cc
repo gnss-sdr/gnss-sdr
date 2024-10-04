@@ -32,7 +32,7 @@ CshortToGrComplex::CshortToGrComplex(const ConfigurationInterface* configuration
                                 out_streams_(out_streams),
                                 dump_(configuration->property(role_ + ".dump", false))
 {
-    const std::string default_dump_filename("../data/data_type_adapter.dat");
+    const std::string default_dump_filename("./data_type_adapter.dat");
 
     DLOG(INFO) << "role " << role_;
 

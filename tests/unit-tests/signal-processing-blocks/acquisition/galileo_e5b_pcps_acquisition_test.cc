@@ -200,7 +200,7 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
     config->set_property("SignalSource.dump", "false");
-    config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
+    config->set_property("SignalSource.dump_filename", "./signal_source.dat");
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");

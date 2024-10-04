@@ -79,7 +79,7 @@ void GalileoE5bTrackingTest::init()
     config->set_property("Tracking_7X.implementation", "Galileo_E5b_DLL_PLL_Tracking");
     config->set_property("Tracking_7X.item_type", "gr_complex");
     config->set_property("Tracking_7X.dump", "false");
-    config->set_property("Tracking_7X.dump_filename", "../data/e5b_tracking");
+    config->set_property("Tracking_7X.dump_filename", "./e5b_tracking");
     config->set_property("Tracking_7X.early_late_space_chips", "0.5");
     config->set_property("Tracking_7X.order", "2");
     config->set_property("Tracking_7X.pll_bw_hz", "20.0");

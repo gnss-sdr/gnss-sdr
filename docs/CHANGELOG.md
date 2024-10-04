@@ -121,6 +121,8 @@ All notable changes to GNSS-SDR will be documented in this file.
   - The empty `build` and `data` folders have been removed. Users can create a
     building folder using `mkdir build` or by having CMake handle it:
     `cmake -S . -B build`.
+  - All default names for dump or input files starting with `../data/<filename>`
+    have been changed to `./<filename>`.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

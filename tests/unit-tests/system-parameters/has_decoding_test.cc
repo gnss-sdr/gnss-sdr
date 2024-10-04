@@ -33,7 +33,7 @@
 
 // Usage:
 // ./run_tests --gtest_filter=HAS_Test.Decoder
-// ./run_tests --gtest_filter=HAS_Test.Decoder --has_data_test_file=../data/HAS_Messages_sample/encoded/Sample_HAS_Pages_Encoded_20210713_08.txt --start_page_test_file=70
+// ./run_tests --gtest_filter=HAS_Test.Decoder --has_data_test_file=./HAS_Messages_sample/encoded/Sample_HAS_Pages_Encoded_20210713_08.txt --start_page_test_file=70
 
 #if USE_GLOG_AND_GFLAGS
 DEFINE_string(has_data_test_file, std::string(""), "File containing encoded HAS pages (format: [time sat_id HAS_page_in_hex] in each line)");

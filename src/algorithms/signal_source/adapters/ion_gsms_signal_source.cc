@@ -61,7 +61,7 @@ IONGSMSSignalSource::IONGSMSSignalSource(const ConfigurationInterface* configura
     Concurrent_Queue<pmt::pmt_t>* queue)
     : SignalSourceBase(configuration, role, "ION_GSMS_Signal_Source"s),
       stream_ids_(parse_comma_list(configuration->property(role + ".streams"s, ""s))),
-      metadata_filepath_(configuration->property(role + ".metadata_filename"s, "../data/example_capture_metadata.sdrx"s)),
+      metadata_filepath_(configuration->property(role + ".metadata_filename"s, "./example_capture_metadata.sdrx"s)),
       in_streams_(in_streams),
       out_streams_(out_streams)
 {

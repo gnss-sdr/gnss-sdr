@@ -111,6 +111,16 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 - Tidy up the `conf/` folder.
 - Add `install` and `uninstall` targets to the `nav_msg_listener` utility.
+- **Potential Breaking Change**: The source tree has been refactored to follow a
+  more conventional folder structure. This may disrupt user pipelines that
+  relied on the previous structure and could break development branches that
+  were branched off from `next` before this change. The key changes are:
+
+  - The `tests` and `utils` directories have been moved from the `src` folder to
+    the root of the source tree.
+  - The empty `build` and `data` folders have been removed. Users can create a
+    building folder using `mkdir build` or by having CMake handle it:
+    `cmake -S . -B build`.
 
 See the definitions of concepts and metrics at
 https://gnss-sdr.org/design-forces/

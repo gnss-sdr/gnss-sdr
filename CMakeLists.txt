@@ -3602,6 +3602,10 @@ add_custom_target(uninstall
 # Add subdirectories
 ################################################################################
 add_subdirectory(src)
+if(ENABLE_UNIT_TESTING OR ENABLE_SYSTEM_TESTING)
+    add_subdirectory(tests)
+endif()
+add_subdirectory(utils)
 
 
 

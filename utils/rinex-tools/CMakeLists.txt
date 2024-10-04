@@ -33,7 +33,7 @@ if("${ARMADILLO_VERSION_STRING}" VERSION_GREATER "9.800" OR (NOT ARMADILLO_FOUND
         add_executable(obsdiff ${CMAKE_CURRENT_SOURCE_DIR}/obsdiff.cc obsdiff_flags.h)
     endif()
 
-    target_include_directories(obsdiff PUBLIC ${GNSSSDR_SOURCE_DIR}/src/tests/common-files)
+    target_include_directories(obsdiff PUBLIC ${GNSSSDR_SOURCE_DIR}/tests/common-files)
     if(GNSSTK_VERSION AND "${GNSSTK_VERSION}" VERSION_LESS 3.0.1)
         set_property(TARGET obsdiff PROPERTY CXX_STANDARD 14)  # Required by GPSTk v3.0.0
     endif()

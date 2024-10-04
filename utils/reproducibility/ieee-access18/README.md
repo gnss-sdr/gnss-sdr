@@ -58,9 +58,9 @@ $ tar xvfJ L2_signal_samples.tar.xz
 $ echo "3a04c1eeb970776bb77f5e3b7eaff2df  L2_signal_samples.tar.xz" > data.md5
 $ md5sum -c data.md5
 $ cd ..
-$ cp ../src/utils/reproducibility/ieee-access18/L2-access18.conf .
-$ cp ../src/utils/reproducibility/ieee-access18/plot_dump.m .
-$ cp -r ../src/utils/matlab/libs/geoFunctions .
+$ cp ../utils/reproducibility/ieee-access18/L2-access18.conf .
+$ cp ../utils/reproducibility/ieee-access18/plot_dump.m .
+$ cp -r ../utils/matlab/libs/geoFunctions .
 $ gnss-sdr --c=L2-access18.conf
 $ octave --no-gui plot_dump.m
 $ epspdf Figure2.eps Figure2.pdf

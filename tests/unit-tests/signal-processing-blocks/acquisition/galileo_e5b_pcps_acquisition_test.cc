@@ -222,7 +222,7 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("Acquisition_7X.implementation", "Galileo_E5b_PCPS_Acquisition");
     config->set_property("Acquisition_7X.item_type", "gr_complex");
     config->set_property("Acquisition_7X.coherent_integration_time_ms", std::to_string(integration_time_ms));
-    config->set_property("Acquisition_7X.dump", "true");
+    config->set_property("Acquisition_7X.dump", "false");
     config->set_property("Acquisition_7X.dump_filename", "./acquisition");
     config->set_property("Acquisition_7X.threshold", "0.001");
     config->set_property("Acquisition_7X.doppler_max", "10000");

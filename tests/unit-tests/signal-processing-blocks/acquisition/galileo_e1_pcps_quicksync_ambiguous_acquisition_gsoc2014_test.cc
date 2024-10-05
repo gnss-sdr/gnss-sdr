@@ -306,7 +306,7 @@ void GalileoE1PcpsQuickSyncAmbiguousAcquisitionGSoC2014Test::config_2()
 
     /*Unset this flag to eliminates data logging for the Validation of results
     probabilities test*/
-    dump_test_results = true;
+    dump_test_results = false;
 
     num_of_realizations = 100;
 

@@ -222,7 +222,7 @@ void GalileoE6PcpsAcquisitionTest::init()
     config->set_property("Acquisition_E6.implementation", "Galileo_E6_PCPS_Acquisition");
     config->set_property("Acquisition_E6.item_type", "gr_complex");
     config->set_property("Acquisition_E6.coherent_integration_time_ms", std::to_string(integration_time_ms));
-    config->set_property("Acquisition_E6.dump", "true");
+    config->set_property("Acquisition_E6.dump", "false");
     config->set_property("Acquisition_E6.dump_filename", "./acquisition");
     config->set_property("Acquisition_E6.pfa", "0.01");
     config->set_property("Acquisition_E6.doppler_max", "10000");

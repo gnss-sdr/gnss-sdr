@@ -578,7 +578,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
         }
     // add new symbol to the symbol queue
     d_symbol_history.push_back(current_symbol.Prompt_I);
-    
+
     d_sample_counter++;  // count for the processed symbols
     consume_each(1);
     d_flag_preamble = false;
@@ -684,10 +684,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             LOG(WARNING) << "Exception writing observables dump file " << e.what();
                         }
                 }
+
             // 3. Make the output (move the object contents to the GNU Radio reserved memory)
             *out[0] = std::move(current_symbol);
 
             return 1;
         }
+
     return 0;
 }

@@ -182,7 +182,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     if (system == "GPS")
         {
-            if (PRN_ < 1 or (PRN_ > 32 and PRN_<120))
+            if (PRN_ < 1 or (PRN_ > 32 and PRN_ < 120))
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -272,7 +272,7 @@ void Gnss_Satellite::set_rf_link(int32_t rf_link_)
 uint32_t Gnss_Satellite::get_PRN() const
 {
     // Get satellite's PRN
-    uint32_t PRN_ = PRN;  
+    uint32_t PRN_ = PRN;
     return PRN_;
 }
 
@@ -421,7 +421,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 138:
                     block_ = std::string("WAAS");  // WAAS Anik F1R
-                    break;                   
+                    break;
                 default:
                     block_ = std::string("Unknown");
                 }

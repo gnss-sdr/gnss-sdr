@@ -16,8 +16,8 @@
 
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "gnss_synchro.h"
-#include "viterbi_decoder_sbas.h"
 #include "tlm_utils.h"
+#include "viterbi_decoder_sbas.h"
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
 #include <algorithm>        // for copy
@@ -51,14 +51,14 @@ sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
 sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
     const Tlm_Conf &conf) : gr::block("sbas_l1_telemetry_decoder_gs",
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                 d_dump(true),
-                 d_dump_mat(true),
-                 d_remove_dat(true),
-                 d_dump_filename("tele"),
-                 d_channel(0),
-                 d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                            d_dump(true),
+                            d_dump_mat(true),
+                            d_remove_dat(true),
+                            d_dump_filename("tele"),
+                            d_channel(0),
+                            d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -120,7 +120,6 @@ void sbas_l1_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 void sbas_l1_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
-    //d_nav.set_channel(channel);
     DLOG(INFO) << "Navigation channel set to " << channel;
     // ############# ENABLE DATA FILE LOG #################
     if (d_dump == true)

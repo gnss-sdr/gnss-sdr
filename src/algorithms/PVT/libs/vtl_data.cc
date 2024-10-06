@@ -49,6 +49,16 @@ void Vtl_Data::init_storage(int n_sats)
 
     epoch_tow_s = 0;
     sample_counter = 0;
+
+    imu_data.init_storage();
+}
+
+void Vtl_Data::imu_data_t::init_storage()
+{
+    vel = arma::vec(3);
+    acc = arma::vec(3);
+    ang_vel = arma::vec(3);
+    ang_acc = arma::vec(3);
 }
 
 void Vtl_Data::debug_print()

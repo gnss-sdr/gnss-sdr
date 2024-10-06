@@ -61,6 +61,18 @@ public:
     double PV[6];             // position and Velocity
     double epoch_tow_s;       // current observation RX time [s]
     uint64_t sample_counter;  // current sample counter associated with RX time [samples from start]
+
+    // IMU data
+    struct imu_data_t
+    {
+        void init_storage();
+
+        arma::colvec vel;      // Receiver ENU velocity from IMU [m/s]
+        arma::colvec acc;      // Receiver ENU acceleration from IMU [m/(s^2)]
+        arma::colvec ang_vel;  // Receiver ENU angular velocity from IMU [rad/s]
+        arma::colvec ang_acc;  // Receiver ENU angular velocity from IMU [rad/(s^2)]
+    } imu_data;
+
     void debug_print();
 };
 

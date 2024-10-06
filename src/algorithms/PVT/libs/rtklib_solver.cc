@@ -1203,7 +1203,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
         }
 }
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop, const Vtl_Data::imu_data_t& imu_data)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -1980,6 +1980,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             // receiver clock offset and receiver clock drift
                             vtl_data.rx_dts(0) = rx_position_and_time[3];
                             vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
+
+                            vtl_data.imu_data = imu_data;
 
                             vtl_engine.vtl_loop(vtl_data);
                         }

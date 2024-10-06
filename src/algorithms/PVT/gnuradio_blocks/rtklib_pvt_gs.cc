@@ -1985,6 +1985,40 @@ void rtklib_pvt_gs::update_HAS_corrections()
 int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_items,
     gr_vector_void_star& output_items __attribute__((unused)))
 {
+    std::vector<gr::tag_t> tags{};
+    get_tags_in_range(tags, 0, this->nitems_read(0), this->nitems_read(0) + noutput_items, pmt::mp("extra_data"));
+
+    Vtl_Data::imu_data_t imu_data{};
+    imu_data.init_storage();
+    if (not tags.empty())
+        {
+            // There should only be one tag
+            std::vector<uint8_t> extra_data_bytes = pmt::u8vector_elements(tags.front().value);
+
+            // Conversion from NED to ENU is done here
+            //             |  0  1  0  |
+            // P_NED_ENU = |  1  0  0  |
+            //             |  0  0 -1  |
+
+            // Plus temporary inversion of the North values due to IMU placement
+            // Plus temporary inversion of the Up values due to IMU placement
+            // I think, the IMU is mounted rotated 180 deg around the East axis
+
+            imu_data.vel(0) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[1 * sizeof(float)]));
+            imu_data.vel(1) =- static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[0 * sizeof(float)]));
+            imu_data.vel(2) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[2 * sizeof(float)]));
+            imu_data.acc(0) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[4 * sizeof(float)]));
+            imu_data.acc(1) = -static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[3 * sizeof(float)]));
+            imu_data.acc(2) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[5 * sizeof(float)]));
+
+            imu_data.ang_vel(0) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[7 * sizeof(float)]));
+            imu_data.ang_vel(1) = -static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[6 * sizeof(float)]));
+            imu_data.ang_vel(2) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[8 * sizeof(float)]));
+            imu_data.ang_acc(0) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[10 * sizeof(float)]));
+            imu_data.ang_acc(1) = -static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[9 * sizeof(float)]));
+            imu_data.ang_acc(2) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[11 * sizeof(float)]));
+        }
+
     // *************** time tags ****************
     if (d_enable_rx_clock_correction == false)  // todo: currently only works if clock correction is disabled
         {
@@ -2181,7 +2215,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                     // old_time_debug = d_gnss_observables_map.cbegin()->second.RX_time * 1000.0;
                     uint32_t current_RX_time_ms = 0;
                     // #### solve PVT and store the corrected observable set
-                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, false, d_enable_vtl, d_close_vtl_loop))
+                    if (d_internal_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, false, d_enable_vtl, d_close_vtl_loop, imu_data))
                         {
                             // ****** experimental VTL tests
                             if (d_close_vtl_loop == true and d_enable_vtl == true)
@@ -2373,7 +2407,7 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                             // VTP To.Do: Check why get_PVT is triggered twice. Leave only one get_PVT.
 
                             // flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, false, false, false);
-                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, false, d_enable_vtl, d_close_vtl_loop);
+                            flag_pvt_valid = d_user_pvt_solver->get_PVT(d_gnss_observables_map, d_observable_interval_ms / 1000.0, false, d_enable_vtl, d_close_vtl_loop, imu_data);
                         }
 
                     if (flag_pvt_valid == true)

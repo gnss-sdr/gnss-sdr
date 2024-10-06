@@ -92,7 +92,7 @@ public:
 
     ~Rtklib_Solver();
 
-    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop);
+    bool get_PVT(const std::map<int, Gnss_Synchro>& gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop, const Vtl_Data::imu_data_t& imu_data);
 
     Vtl_Data vtl_data;
 

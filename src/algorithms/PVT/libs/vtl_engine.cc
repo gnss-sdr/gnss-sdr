@@ -36,7 +36,7 @@ Vtl_Engine::~Vtl_Engine()
 {
 }
 
-bool Vtl_Engine::vtl_loop(const Vtl_Data& new_data)
+bool Vtl_Engine::vtl_loop(const Vtl_Data &new_data)
 {
     // TODO: Implement main VTL loop here
     using arma::as_scalar;

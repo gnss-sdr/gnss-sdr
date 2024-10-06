@@ -80,7 +80,7 @@ private:
 
     void set_tag_timestamp_in_sdr_timeframe(const std::vector<Gnss_Synchro>& data, uint64_t rx_clock);
 
-    void propagate_extra_data(const std::vector<Gnss_Synchro> &data);
+    void propagate_extra_data(const std::vector<Gnss_Synchro>& data);
 
     int32_t save_matfile() const;
 

@@ -19,6 +19,7 @@
 #define GNSS_SDR_FILE_SOURCE_BASE_H
 
 #include "concurrent_queue.h"
+#include "extra_data_source.h"
 #include "signal_source_base.h"
 #include <gnuradio/blocks/file_sink.h>  // for dump
 #include <gnuradio/blocks/file_source.h>
@@ -27,8 +28,6 @@
 #include <cstddef>
 #include <string>
 #include <tuple>
-
-#include "extra_data_source.h"
 
 /** \addtogroup Signal_Source
  * \{ */

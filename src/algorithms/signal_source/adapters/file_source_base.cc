@@ -64,11 +64,11 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
       // Configuration for attaching extra data to the sample stream
       attach_extra_data_(configuration->property(role_ + ".extra_data.enabled"s, false)),
       ed_path_(configuration->property(role_ + ".extra_data.filename"s, "../data/extra_data.dat"s)),
-      ed_offset_in_file_(configuration->property(role_ + ".extra_data.file_offset"s, 0UL)),
-      ed_item_size_(configuration->property(role_ + ".extra_data.item_size"s, 1UL)),
+      ed_offset_in_file_(configuration->property(role_ + ".extra_data.file_offset"s, std::size_t{0UL})),
+      ed_item_size_(configuration->property(role_ + ".extra_data.item_size"s, std::size_t{1UL})),
       ed_repeat_(configuration->property(role_ + ".extra_data.repeat"s, false)),
-      ed_offset_in_samples_(configuration->property(role_ + ".extra_data.sample_offset"s, 0UL)),
-      ed_sample_period_(configuration->property(role_ + ".extra_data.sample_period"s, 1UL))
+      ed_offset_in_samples_(configuration->property(role_ + ".extra_data.sample_offset"s, std::size_t{0UL})),
+      ed_sample_period_(configuration->property(role_ + ".extra_data.sample_period"s, std::size_t{1UL}))
 {
     minimum_tail_s_ = std::max(configuration->property("Acquisition_1C.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_2S.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
@@ -605,7 +605,7 @@ ExtraDataSource::sptr FileSourceBase::create_extra_data_source()
 {
     if (attach_extra_data_)
         {
-            extra_data_source_ = std::make_shared<ExtraDataSource>(
+            extra_data_source_ = gnss_make_shared<ExtraDataSource>(
                 ed_path_,
                 ed_offset_in_file_,
                 ed_item_size_,
@@ -617,7 +617,6 @@ ExtraDataSource::sptr FileSourceBase::create_extra_data_source()
         }
     return extra_data_source_;
 }
-
 
 
 // Subclass hooks to augment created objects, as required

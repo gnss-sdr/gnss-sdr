@@ -1203,7 +1203,7 @@ void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, ui
         }
 }
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop, const Vtl_Data::imu_data_t& imu_data)
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop, const Vtl_Data::imu_data_t &imu_data)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -1949,7 +1949,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
                                     vtl_data.sat_var(n) = var[n];
                                     vtl_data.sat_health_flag(n) = svh.at(n);
-                                    vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0] * 0.25;  //(0.25 dBHz)
+                                    vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0] * 0.25; //(0.25 dBHz)
                                     // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
                                     // To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
                                     // corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)

@@ -16,6 +16,7 @@
 
 #include "extra_data_source.h"
 #include <pmt/pmt.h>
+#include <vector>
 
 
 ExtraDataSource::ExtraDataSource(
@@ -25,8 +26,7 @@ ExtraDataSource::ExtraDataSource(
     const bool& repeat,
     const std::size_t& offset_in_samples,
     const std::size_t& sample_period,
-    const gr::io_signature::sptr& io_signature
-    )
+    const gr::io_signature::sptr& io_signature)
     : gr::sync_block("Extra Data Source",
           io_signature, io_signature),
       extra_data_file_(
@@ -40,7 +40,8 @@ ExtraDataSource::ExtraDataSource(
 {
     if (io_signature->min_streams() != 1 and io_signature->max_streams() != 1)
         {
-            std::cout << "ERROR: This block only supports adding data to a single stream." << "\n";
+            std::cout << "ERROR: This block only supports adding data to a single stream."
+                      << "\n";
         }
 }
 

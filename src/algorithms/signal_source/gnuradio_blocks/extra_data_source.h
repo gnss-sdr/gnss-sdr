@@ -18,13 +18,14 @@
 #ifndef GNSS_SDR_EXTRA_DATA_SOURCE_H
 #define GNSS_SDR_EXTRA_DATA_SOURCE_H
 
-#include "gnss_block_interface.h"
 #include "extra_data_file.h"
+#include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>  // for sync_block
 #include <gnuradio/types.h>       // for gr_vector_const_void_star
-#include <cstddef>  // for size_t
+#include <cstddef>                // for size_t
 #include <cstdint>
 #include <string>
+#include <vector>
 
 /** \addtogroup Signal_Source
  * \{ */
@@ -32,7 +33,7 @@
  * \{ */
 
 
-class ExtraDataSource: public gr::sync_block
+class ExtraDataSource : public gr::sync_block
 {
 public:
     using sptr = gnss_shared_ptr<ExtraDataSource>;

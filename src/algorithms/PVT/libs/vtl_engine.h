@@ -42,7 +42,7 @@ public:
     void configure(Vtl_Conf config_);  // set config parameters
 
     // TODO: output functions here (output for tracking KF updates, VTL computed user PVT, etc...)
-    bool vtl_loop(Vtl_Data new_data);
+    bool vtl_loop(const Vtl_Data& new_data);
     void reset();        // reset all internal states
     void debug_print();  // print debug information
 

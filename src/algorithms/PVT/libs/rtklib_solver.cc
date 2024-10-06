@@ -1949,7 +1949,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
                                     vtl_data.sat_var(n) = var[n];
                                     vtl_data.sat_health_flag(n) = svh.at(n);
-                                    vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0] * 0.25; //(0.25 dBHz)
+                                    vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0] * 0.25;  // (0.25 dBHz)
                                     // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
                                     // To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
                                     // corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)

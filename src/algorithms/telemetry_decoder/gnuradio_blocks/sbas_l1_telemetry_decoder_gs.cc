@@ -16,6 +16,7 @@
 
 #include "sbas_l1_telemetry_decoder_gs.h"
 #include "gnss_synchro.h"
+#include "tlm_utils.h"
 #include "viterbi_decoder_sbas.h"
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt_sugar.h>  // for mp
@@ -41,20 +42,23 @@
 
 sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump)
+    const Tlm_Conf &conf)
 {
-    return sbas_l1_telemetry_decoder_gs_sptr(new sbas_l1_telemetry_decoder_gs(satellite, dump));
+    return sbas_l1_telemetry_decoder_gs_sptr(new sbas_l1_telemetry_decoder_gs(satellite, conf));
 }
 
 
 sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump) : gr::block("sbas_l1_telemetry_decoder_gs",
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
-                     gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
-                 d_dump(dump),
-                 d_channel(0),
-                 d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
+    const Tlm_Conf &conf) : gr::block("sbas_l1_telemetry_decoder_gs",
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro)),
+                                gr::io_signature::make(1, 1, sizeof(Gnss_Synchro))),
+                            d_dump(true),
+                            d_dump_mat(true),
+                            d_remove_dat(true),
+                            d_dump_filename("tele"),
+                            d_channel(0),
+                            d_block_size(D_SAMPLES_PER_SYMBOL * D_SYMBOLS_PER_BIT * D_BLOCK_SIZE_IN_BITS)
 {
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
@@ -72,8 +76,10 @@ sbas_l1_telemetry_decoder_gs::sbas_l1_telemetry_decoder_gs(
 
 sbas_l1_telemetry_decoder_gs::~sbas_l1_telemetry_decoder_gs()
 {
+    size_t pos = 0;
     if (d_dump_file.is_open() == true)
         {
+            pos = d_dump_file.tellp();
             try
                 {
                     d_dump_file.close();
@@ -81,6 +87,24 @@ sbas_l1_telemetry_decoder_gs::~sbas_l1_telemetry_decoder_gs()
             catch (const std::exception &ex)
                 {
                     LOG(WARNING) << "Exception in destructor closing the dump file " << ex.what();
+                }
+            if (pos == 0)
+                {
+                    if (!tlm_remove_file(d_dump_filename))
+                        {
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
+                }
+        }
+    if (d_dump && (pos != 0) && d_dump_mat)
+        {
+            save_tlm_matfile(d_dump_filename);
+            if (d_remove_dat)
+                {
+                    if (!tlm_remove_file(d_dump_filename))
+                        {
+                            LOG(WARNING) << "Error deleting temporary file";
+                        }
                 }
         }
 }
@@ -96,7 +120,33 @@ void sbas_l1_telemetry_decoder_gs::set_satellite(const Gnss_Satellite &satellite
 void sbas_l1_telemetry_decoder_gs::set_channel(int32_t channel)
 {
     d_channel = channel;
-    LOG(INFO) << "SBAS channel set to " << channel;
+    DLOG(INFO) << "Navigation channel set to " << channel;
+    // ############# ENABLE DATA FILE LOG #################
+    if (d_dump == true)
+        {
+            if (d_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_dump_filename.append(std::to_string(d_channel));
+                            d_dump_filename.append(".dat");
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                            d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
+                            LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
+                                      << " Log file: " << d_dump_filename.c_str();
+                        }
+                    catch (const std::ofstream::failure &e)
+                        {
+                            LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
+                        }
+                }
+        }
+    /*if (d_dump_crc_stats)
+        {
+            // set the channel number for the telemetry CRC statistics
+            // disable the telemetry CRC statistics if there is a problem opening the output file
+            d_dump_crc_stats = d_Tlm_CRC_Stats->set_channel(d_channel);
+        }*/
 }
 
 
@@ -415,7 +465,6 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
     current_symbol = in[0];
     // copy correlation samples into samples vector
     d_sample_buf.push_back(current_symbol.Prompt_I);  // add new symbol to the symbol queue
-
     // store the time stamp of the first sample in the processed sample block
     const double sample_stamp = static_cast<double>(in[0].Tracking_sample_counter) / static_cast<double>(in[0].fs);
 
@@ -473,6 +522,24 @@ int sbas_l1_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
             d_sample_buf.clear();
         }
 
+    if (d_dump == true)
+        {
+            // MULTIPLEXED FILE RECORDING - Record results to file
+            try
+                {
+                    double tmp_double;
+                    uint64_t tmp_ulong_int;
+                    int32_t tmp_int;
+                    tmp_int = (current_symbol.Prompt_I > 0.0 ? 1 : 0);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                    tmp_int = static_cast<int32_t>(current_symbol.PRN);
+                    d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
+                }
+            catch (const std::ofstream::failure &e)
+                {
+                    LOG(WARNING) << "Exception writing observables dump file " << e.what();
+                }
+        }
     // UPDATE GNSS SYNCHRO DATA
     // actually the SBAS telemetry decoder doesn't support ranging
     current_symbol.Flag_valid_word = false;  // indicate to observable block that this synchro object isn't valid for pseudorange computation

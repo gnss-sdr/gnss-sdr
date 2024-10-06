@@ -23,7 +23,6 @@
 #include <absl/log/log.h>
 #endif
 
-
 Gnss_Satellite::Gnss_Satellite(const std::string& system_, uint32_t PRN_)
 {
     Gnss_Satellite::reset();
@@ -183,7 +182,7 @@ void Gnss_Satellite::set_PRN(uint32_t PRN_)
         }
     if (system == "GPS")
         {
-            if (PRN_ < 1 or PRN_ > 32)
+            if (PRN_ < 1 or (PRN_ > 32 and PRN_ < 120))
                 {
                     DLOG(INFO) << "This PRN is not defined";
                     PRN = 0;
@@ -391,7 +390,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("IIF");  // Plane C
                     break;
                 case 28:
-                    block_ = std::string("III");  // Plane B
+                    block_ = std::string("IIR");  // Plane B
                     break;
                 case 29:
                     block_ = std::string("IIR-M");  // Plane C
@@ -404,6 +403,24 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     break;
                 case 32:
                     block_ = std::string("IIF");  // Plane F
+                    break;
+                case 120:
+                    block_ = std::string("EGNOS Test Platform");  // Inmarsat 3-F2 (Atlantic Ocean Region-East)
+                    break;
+                case 123:
+                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. Astra 5B
+                    break;
+                case 131:                          // NOLINT(bugprone-branch-clone)
+                    block_ = std::string("WAAS");  // WAAS Eutelsat 117 West B
+                    break;
+                case 135:
+                    block_ = std::string("WAAS");  // WAAS Galaxy 15
+                    break;
+                case 136:
+                    block_ = std::string("EGNOS");  // EGNOS Operational Platform. SES-5 (a.k.a. Sirius 5 or Astra 4B)
+                    break;
+                case 138:
+                    block_ = std::string("WAAS");  // WAAS Anik F1R
                     break;
                 default:
                     block_ = std::string("Unknown");
@@ -562,9 +579,6 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                 case 5:
                     block_ = std::string("FOC-FM14");  // Galileo Full Operational Capability (FOC) satellite FM14 / GSAT-0214, launched on November 17, 2016.
                     break;
-                case 6:
-                    block_ = std::string("FOC-FM27");  // Galileo Full Operational Capability (FOC) satellite FM27 / GSAT0227, launched on Apr. 28, 2024. UNDER COMMISSIONING.
-                    break;
                 case 7:
                     block_ = std::string("FOC-FM7");  // Galileo Full Operational Capability (FOC) satellite FM7 / GSAT-0207, launched on November 17, 2016.
                     break;
@@ -584,16 +598,16 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("IOV-FM2");  // Galileo In-Orbit Validation (IOV) satellite FM2 (Flight Model 2) also known as GSAT0102, from French Guiana at 10:30 GMT on October 21, 2011.
                     break;
                 case 13:
-                    block_ = std::string("FOC-FM20");  // Galileo Full Operational Capability (FOC) satellite FM20 / GSAT0220, launched on Jul. 25, 2018.
+                    block_ = std::string("FOC-FM20");  // Galileo Full Operational Capability (FOC) satellite FM20 / GSAT0220, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 case 14:
-                    block_ = std::string("FOC-FM2*");  // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015. Not usable since 18/02/2021.
+                    block_ = std::string("FOC-FM2*");  // Galileo Full Operational Capability (FOC) satellite FM2 / GSAT0202, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in March, 2015. UNDER TESTING.
                     break;
                 case 15:
-                    block_ = std::string("FOC-FM21");  // Galileo Full Operational Capability (FOC) satellite FM21 / GSAT0221, launched on Jul. 25, 2018.
+                    block_ = std::string("FOC-FM21");  // Galileo Full Operational Capability (FOC) satellite FM21 / GSAT0221, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 case 18:
-                    block_ = std::string("FOC-FM1*");  // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014. Not usable since 18/02/2021.
+                    block_ = std::string("FOC-FM1*");  // Galileo Full Operational Capability (FOC) satellite FM1 / GSAT0201, launched into incorrect orbit on August 22, 2014. Moved to usable orbit in December, 2014. UNDER TESTING.
                     break;
                 case 19:
                     block_ = std::string("IOV-FM3");  // Galileo In-Orbit Validation (IOV) satellite FM3 (Flight Model 3) / GSAT0103, launched on October 12, 2012.
@@ -602,7 +616,7 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("IOV-FM4**");  // Galileo In-Orbit Validation (IOV) satellite FM4 (Flight Model 4) / GSAT0104, launched on October 12, 2012. Payload power problem beginning May 27, 2014 led to permanent loss of E5 and E6 transmissions, E1 transmission restored. UNAVAILABLE FROM 2014-05-27 UNTIL FURTHER NOTICE
                     break;
                 case 21:
-                    block_ = std::string("FOC-FM15");  // Galileo Full Operational Capability (FOC) satellite FM15 / GSAT0215, launched on Dec. 12, 2017.
+                    block_ = std::string("FOC-FM15");  // Galileo Full Operational Capability (FOC) satellite FM15 / GSAT0215, launched on Dec. 12, 2017. UNDER COMMISSIONING.
                     break;
                 case 22:
                     block_ = std::string("FOC-FM4**");  // Galileo Full Operational Capability (FOC) satellite FM4 / GSAT0204, launched on March 27, 2015. REMOVED FROM ACTIVE SERVICE ON 2017-12-08 UNTIL FURTHER NOTICE FOR CONSTELLATION MANAGEMENT PURPOSES.
@@ -611,13 +625,13 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("FOC-FM5");  // Galileo Full Operational Capability (FOC) satellite FM5 / GSAT0205, launched on Sept. 11, 2015.
                     break;
                 case 25:
-                    block_ = std::string("FOC-FM16");  // Galileo Full Operational Capability (FOC) satellite FM16 / GSAT0216, launched on Dec. 12, 2017.
+                    block_ = std::string("FOC-FM16");  // Galileo Full Operational Capability (FOC) satellite FM16 / GSAT0216, launched on Dec. 12, 2017. UNDER COMMISSIONING.
                     break;
                 case 26:
                     block_ = std::string("FOC-FM3");  // Galileo Full Operational Capability (FOC) satellite FM3 / GSAT0203, launched on March 27, 2015.
                     break;
                 case 27:
-                    block_ = std::string("FOC-FM17");  // Galileo Full Operational Capability (FOC) satellite FM17 / GSAT0217, launched on Dec. 12, 2017.
+                    block_ = std::string("FOC-FM17");  // Galileo Full Operational Capability (FOC) satellite FM17 / GSAT0217, launched on Dec. 12, 2017. UNDER COMMISSIONING.
                     break;
                 case 29:
                     block_ = std::string("FOC-FM25");  // Galileo Full Operational Capability (FOC) satellite FM25 / GSAT0225, launched on Apr. 28, 2024. UNDER COMMISSIONING.
@@ -626,16 +640,16 @@ std::string Gnss_Satellite::what_block(const std::string& system_, uint32_t PRN_
                     block_ = std::string("FOC-FM6");  // Galileo Full Operational Capability (FOC) satellite FM6 / GSAT0206, launched on Sept. 11, 2015.
                     break;
                 case 31:
-                    block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017.
+                    block_ = std::string("FOC-FM18");  // Galileo Full Operational Capability (FOC) satellite FM18 / GSAT0218, launched on Dec. 12, 2017. UNDER COMMISSIONING.
                     break;
                 case 33:
-                    block_ = std::string("FOC-FM22");  // Galileo Full Operational Capability (FOC) satellite FM22 / GSAT0222, launched on Jul. 25, 2018.
+                    block_ = std::string("FOC-FM22");  // Galileo Full Operational Capability (FOC) satellite FM22 / GSAT0222, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 case 34:
                     block_ = std::string("FOC-FM23");  // Galileo Full Operational Capability (FOC) satellite FM23 / GSAT0223, launched on December 5, 2021.
                     break;
                 case 36:
-                    block_ = std::string("FOC-FM19");  // Galileo Full Operational Capability (FOC) satellite FM19 / GSAT0219, launched on Jul. 25, 2018.
+                    block_ = std::string("FOC-FM19");  // Galileo Full Operational Capability (FOC) satellite FM19 / GSAT0219, launched on Jul. 25, 2018. UNDER COMMISSIONING.
                     break;
                 default:
                     block_ = std::string("Unknown");

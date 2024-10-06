@@ -19,6 +19,7 @@
 
 #include "gnss_block_interface.h"
 #include "gnss_satellite.h"
+#include "tlm_conf.h"
 #include <boost/crc.hpp>  // for crc_optimal
 #include <gnuradio/block.h>
 #include <gnuradio/types.h>  // for gr_vector_const_void_star
@@ -45,7 +46,7 @@ using sbas_l1_telemetry_decoder_gs_sptr = gnss_shared_ptr<sbas_l1_telemetry_deco
 
 sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
     const Gnss_Satellite &satellite,
-    bool dump);
+    const Tlm_Conf &conf);
 
 /*!
  * \brief This class implements a block that decodes the SBAS integrity and
@@ -68,9 +69,9 @@ public:
 private:
     friend sbas_l1_telemetry_decoder_gs_sptr sbas_l1_make_telemetry_decoder_gs(
         const Gnss_Satellite &satellite,
-        bool dump);
+        const Tlm_Conf &conf);
 
-    sbas_l1_telemetry_decoder_gs(const Gnss_Satellite &satellite, bool dump);
+    sbas_l1_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf);
 
     void viterbi_decoder(double *page_part_symbols, int32_t *page_part_bits);
     void align_samples();
@@ -80,6 +81,15 @@ private:
     static const int32_t D_BLOCK_SIZE_IN_BITS = 30;
 
     bool d_dump;
+    bool d_flag_frame_sync;
+    bool d_flag_preamble;
+    bool d_sent_tlm_failed_msg;
+    bool d_flag_PLL_180_deg_phase_locked;
+    bool d_flag_TOW_set;
+    bool d_dump_mat;
+    bool d_remove_dat;
+    bool d_enable_navdata_monitor;
+    bool d_dump_crc_stats;
     Gnss_Satellite d_satellite;
     int32_t d_channel;
 

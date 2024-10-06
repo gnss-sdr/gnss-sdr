@@ -17,7 +17,6 @@
 
 #include "tlm_conf.h"
 
-
 void Tlm_Conf::SetFromConfiguration(const ConfigurationInterface *configuration,
     const std::string &role)
 {

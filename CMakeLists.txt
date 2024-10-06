@@ -3268,8 +3268,13 @@ if(ENABLE_AD9361 OR ENABLE_FMCOMMS2 OR ENABLE_PLUTOSDR)
         else()
             message(FATAL_ERROR "libiio is required for building gnss-sdr with -DENABLE_AD9361=ON.")
         endif()
+    else()
+        if(ENABLE_AD9361)
+            set(ENABLE_FPGA ON)
+        endif()
     endif()
 endif()
+
 
 
 ################################################################################
@@ -3327,6 +3332,7 @@ if(ENABLE_ION)
 endif()
 
 
+
 #####################################################################
 # Check signal sources related to FPGA only.
 #####################################################################
@@ -3368,6 +3374,7 @@ if(ENABLE_MAX2771)
     file(GLOB_RECURSE SPIDEV_FILE "${TARGET_ROOTFS_PATH}/*/spidev.h")
     if(EXISTS "${SPIDEV_FILE}")
         message(STATUS "SPIdev driver found: ${SPIDEV_FILE}")
+        set(ENABLE_FPGA ON)
     else()
         message(STATUS "SPIdev driver not found, its installation is required.")
         if(ENABLE_PACKAGING)
@@ -3399,6 +3406,7 @@ if(ENABLE_DMA_PROXY)
     file(GLOB_RECURSE DMA_PROXY_FILE "${TARGET_ROOTFS_PATH}/*/dma-proxy.ko")
     if(EXISTS "${DMA_PROXY_FILE}")
         message(STATUS "Found dma-proxy.ko file: ${DMA_PROXY_FILE}")
+        set(ENABLE_FPGA ON)
     else()
         if(ENABLE_PACKAGING)
             set(ENABLE_DMA_PROXY OFF)

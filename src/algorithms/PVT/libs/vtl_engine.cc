@@ -133,12 +133,18 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             kf_x(0) = new_data.rx_p(0);
             kf_x(1) = new_data.rx_p(1);
             kf_x(2) = new_data.rx_p(2);
-            kf_x(3) = new_data.rx_v(0);
-            kf_x(4) = new_data.rx_v(1);
-            kf_x(5) = new_data.rx_v(2);
-            kf_x(6) = 0;
-            kf_x(7) = 0;
-            kf_x(8) = 0;
+            kf_x(3) = new_data.imu_data.data_available ? new_data.imu_data.vel(0) : new_data.rx_v(0);
+            kf_x(4) = new_data.imu_data.data_available ? new_data.imu_data.vel(1) : new_data.rx_v(1);
+            kf_x(5) = new_data.imu_data.data_available ? new_data.imu_data.vel(2) : new_data.rx_v(2);
+            kf_x(6) = new_data.imu_data.data_available ? new_data.imu_data.acc(0) : 0.0;
+            kf_x(7) = new_data.imu_data.data_available ? new_data.imu_data.acc(1) : 0.0;
+            kf_x(8) = new_data.imu_data.data_available ? new_data.imu_data.acc(2) : 0.0;
+            // kf_x(3) = new_data.rx_v(0);
+            // kf_x(4) = new_data.rx_v(1);
+            // kf_x(5) = new_data.rx_v(2);
+            // kf_x(6) = 0;
+            // kf_x(7) = 0;
+            // kf_x(8) = 0;
             kf_x(9) = new_data.rx_dts(0) * SPEED_OF_LIGHT_M_S;
             kf_x(10) = new_data.rx_dts(1) * SPEED_OF_LIGHT_M_S;
 
@@ -150,9 +156,9 @@ bool Vtl_Engine::vtl_loop(Vtl_Data new_data)
             // receiver solution from previous KF step
             kf_x = kf_x;
             // acceleration model
-            double acc_x = 0;
-            double acc_y = 0;
-            double acc_z = 0;
+            double acc_x = new_data.imu_data.data_available ? new_data.imu_data.acc(0) : 0.0;
+            double acc_y = new_data.imu_data.data_available ? new_data.imu_data.acc(1) : 0.0;
+            double acc_z = new_data.imu_data.data_available ? new_data.imu_data.acc(2) : 0.0;
             kf_x(6) = acc_x;
             kf_x(7) = acc_y;
             kf_x(8) = acc_z;

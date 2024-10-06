@@ -71,6 +71,8 @@ public:
         arma::colvec acc;      // Receiver ENU acceleration from IMU [m/(s^2)]
         arma::colvec ang_vel;  // Receiver ENU angular velocity from IMU [rad/s]
         arma::colvec ang_acc;  // Receiver ENU angular velocity from IMU [rad/(s^2)]
+
+        bool data_available = false;
     } imu_data;
 
     void debug_print();

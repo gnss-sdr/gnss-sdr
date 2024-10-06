@@ -1999,13 +1999,16 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
             //             |  0  1  0  |
             // P_NED_ENU = |  1  0  0  |
             //             |  0  0 -1  |
-
+            //
+            // TODO:
             // Plus temporary inversion of the North values due to IMU placement
             // Plus temporary inversion of the Up values due to IMU placement
             // I think, the IMU is mounted rotated 180 deg around the East axis
 
+            imu_data.data_available = true;
+
             imu_data.vel(0) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[1 * sizeof(float)]));
-            imu_data.vel(1) =- static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[0 * sizeof(float)]));
+            imu_data.vel(1) = -static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[0 * sizeof(float)]));
             imu_data.vel(2) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[2 * sizeof(float)]));
             imu_data.acc(0) = static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[4 * sizeof(float)]));
             imu_data.acc(1) = -static_cast<double>(*reinterpret_cast<float*>(&extra_data_bytes[3 * sizeof(float)]));

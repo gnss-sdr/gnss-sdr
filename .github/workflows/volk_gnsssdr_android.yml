@@ -50,6 +50,7 @@ jobs:
         shell: bash
         run: |
           cd $GITHUB_WORKSPACE/
+          mkdir build
           cd build
           cmake -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/android-sdk-linux/ndk/24.0.8215888/build/cmake/android.toolchain.cmake \
           -DANDROID_ABI=${{ matrix.arch.name }} \

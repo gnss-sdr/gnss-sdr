@@ -101,10 +101,8 @@ $ git clone https://github.com/gnss-sdr/gnss-sdr
 This will create a folder named gnss-sdr with the following structure:
 \verbatim
  |-gnss-sdr
- |---build       <- where gnss-sdr is built
  |---cmake       <- CMake-related files
  |---conf        <- Configuration files. Each file represents one receiver.
- |---data        <- Populate this folder with your captured data.
  |---docs        <- Contains documentation-related files
  |---install     <- Executables
  |---src         <- Source code folder
@@ -127,13 +125,13 @@ This will create a folder named gnss-sdr with the following structure:
  |-------receiver
  |-------system_parameters
  |-----main
- |-----tests
- |-----utils     <- some utilities (e.g. Matlab scripts)
+ |---tests
+ |---utils     <- some utilities (e.g. Matlab scripts)
 \endverbatim
 
 You are now ready to build GNSS-SDR by using <a href="https://cmake.org/" target="_blank">CMake</a> as building tool:
 \verbatim
-$ cd gnss-sdr/build
+$ cd gnss-sdr && mkdir build && cd build
 $ cmake ..
 $ make
 \endverbatim
@@ -153,10 +151,10 @@ You can create the documentation by doing:
 $ make doc
 \endverbatim
 
-from the <tt>gnss-sdr/build</tt> folder. In both cases, <a href="https://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
+from the building folder. In both cases, <a href="https://www.doxygen.nl/" target="_blank">Doxygen</a> will generate HTML documentation that can be
 retrieved pointing your browser of preference to <tt>gnss-sdr/docs/html/index.html</tt>.
 
-There are two more extra targets available. From the <tt>gnss-sdr/build</tt> folder:
+There are two more extra targets available. In the buiding folder:
 \verbatim
 $ make doc-clean
 \endverbatim
@@ -177,10 +175,9 @@ By default, CMake will build the Release version, meaning that the compiler will
 a RF front-end and you need to attain real time. If working with a file (and thus without real-time constraints), you may want to obtain more information about
 the internals of the receiver, as well as more fine-grained logging. This can be done by building the Debug version, by doing:
 \verbatim
-$ cd gnss-sdr/build
+$ cd gnss-sdr && mkdir build-debug && cd build-debug
 $ cmake -DCMAKE_BUILD_TYPE=Debug ..
 $ make
-$ sudo make install
 \endverbatim
 
 \subsection updating_gnss-sdr Updating GNSS-SDR
@@ -191,8 +188,8 @@ $ git pull https://github.com/gnss-sdr/gnss-sdr next
 \endverbatim
 Before rebuiling the source code, it is safe (and recommended) to remove the remainders of old builds:
 \verbatim
-$ cd gnss-sdr/build
-$ sudo make uninstall
+$ cd <building folder>
+$ sudo make uninstall  ; if you installed it before
 $ rm -rf *
 \endverbatim
 
@@ -215,7 +212,7 @@ and we will be happy to upload it to the server.
 You can use a single configuration file for processing
 different data files, specifying the file to be processed with the <tt>--signal_source</tt> flag:
 \verbatim
-$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=./my_captured_data.dat
 \endverbatim
 This will override the <tt>SignalSource.filename</tt> specified in the configuration file.
 

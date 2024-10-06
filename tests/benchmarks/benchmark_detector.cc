@@ -42,9 +42,9 @@ void bm_forloop(benchmark::State& state)
 
     std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [n = 0]() mutable { return (GPS_CA_PREAMBLE_SYMBOLS_STR[n++] == '1' ? 1 : -1); });
 
+    int32_t corr_value = 0;
     while (state.KeepRunning())
         {
-            int32_t corr_value = 0;
             for (size_t i = 0; i < d_preamble_samples.size(); i++)
                 {
                     if (d_symbol_history[i] < 0.0)
@@ -57,6 +57,10 @@ void bm_forloop(benchmark::State& state)
                         }
                 }
         }
+    if (corr_value)
+        {
+            // avoidl warning
+        };
 }
 
 
@@ -73,14 +77,18 @@ void bm_accumulate(benchmark::State& state)
 
     std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [n = 0]() mutable { return (GPS_CA_PREAMBLE_SYMBOLS_STR[n++] == '1' ? 1 : -1); });
 
+    int32_t corr_value = 0;
     while (state.KeepRunning())
         {
-            int32_t corr_value = 0;
             corr_value += std::accumulate(d_symbol_history.begin(),
                 d_symbol_history.end(),
                 0,
                 [&d_preamble_samples, n = 0](float a, float b) mutable { return (b > 0.0 ? a + d_preamble_samples[n++] : a - d_preamble_samples[n++]); });
         }
+    if (corr_value)
+        {
+            // avoidl warning
+        };
 }
 
 
@@ -97,9 +105,9 @@ void bm_inner_product(benchmark::State& state)
 
     std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [n = 0]() mutable { return (GPS_CA_PREAMBLE_SYMBOLS_STR[n++] == '1' ? 1 : -1); });
 
+    int32_t corr_value = 0;
     while (state.KeepRunning())
         {
-            int32_t corr_value = 0;
             corr_value += std::inner_product(d_symbol_history.begin(),
                 d_symbol_history.end(),
                 d_preamble_samples.begin(),
@@ -111,6 +119,10 @@ void bm_inner_product(benchmark::State& state)
 #endif
                 [](float a, int32_t b) { return (std::signbit(a) ? -b : b); });
         }
+    if (corr_value)
+        {
+            // avoidl warning
+        };
 }
 
 
@@ -128,9 +140,9 @@ void bm_transform_reduce(benchmark::State& state)
 
     std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [n = 0]() mutable { return (GPS_CA_PREAMBLE_SYMBOLS_STR[n++] == '1' ? 1 : -1); });
 
+    int32_t corr_value = 0;
     while (state.KeepRunning())
         {
-            int32_t corr_value = 0;
             corr_value += std::transform_reduce(d_symbol_history.begin(),
                 d_symbol_history.end(),
                 d_preamble_samples.begin(),
@@ -138,6 +150,10 @@ void bm_transform_reduce(benchmark::State& state)
                 std::plus<>(),
                 [](auto a, auto b) { return (std::signbit(a) ? -b : b); });
         }
+    if (corr_value)
+        {
+            // avoidl warning
+        };
 }
 #endif
 
@@ -156,9 +172,9 @@ void bm_transform_reduce_policy(benchmark::State& state)
 
     std::generate(d_preamble_samples.begin(), d_preamble_samples.end(), [n = 0]() mutable { return (GPS_CA_PREAMBLE_SYMBOLS_STR[n++] == '1' ? 1 : -1); });
 
+    int32_t corr_value = 0;
     while (state.KeepRunning())
         {
-            int32_t corr_value = 0;
             corr_value += std::transform_reduce(
                 std::execution::par,
                 d_symbol_history.begin(),
@@ -168,6 +184,10 @@ void bm_transform_reduce_policy(benchmark::State& state)
                 std::plus<>(),
                 [](auto a, auto b) { return (std::signbit(a) ? -b : b); });
         }
+    if (corr_value)
+        {
+            // avoidl warning
+        };
 }
 #endif
 

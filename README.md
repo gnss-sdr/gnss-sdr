@@ -535,18 +535,16 @@ gnss-sdr with the following structure:
 
 ```
  |-gnss-sdr
- |---build      <- where gnss-sdr is built.
  |---cmake      <- CMake-related files.
  |---conf       <- Configuration files. Each file defines one particular receiver.
- |---data       <- Populate this folder with your captured data.
  |---docs       <- Contains documentation-related files.
  |---install    <- Executables will be placed here.
  |---src        <- Source code folder.
  |-----algorithms  <- Signal processing blocks.
  |-----core     <- Control plane, interfaces, systems' parameters.
  |-----main     <- Main function of the C++ program.
- |-----tests    <- QA code.
- |-----utils    <- some utilities (e.g. Matlab scripts).
+ |---tests      <- QA code.
+ |---utils      <- some utilities (e.g. Matlab scripts).
 ```
 
 By default, you will be in the 'main' branch of the Git repository, which
@@ -567,14 +565,14 @@ readings can be found at our
 Go to GNSS-SDR's build directory:
 
 ```
-$ cd gnss-sdr/build
+$ cd gnss-sdr
 ```
 
 Configure and build the application:
 
 ```
-$ cmake ..
-$ make
+$ cmake -S . -B build
+$ cmake --build build
 ```
 
 By default, CMake will build the Release version, meaning that the compiler will
@@ -585,8 +583,8 @@ information about the internals of the receiver, as well as more fine-grained
 logging. This can be done by building the Debug version, by doing:
 
 ```
-$ cmake -DCMAKE_BUILD_TYPE=Debug ..
-$ make
+$ cmake -S . -B build-debug -DCMAKE_BUILD_TYPE=Debug
+$ cmake --build build-debug
 ```
 
 This will create four executables at gnss-sdr/install, namely `gnss-sdr`,
@@ -595,7 +593,7 @@ that folder, but if you prefer to install `gnss-sdr` on your system and have it
 available anywhere else, do:
 
 ```
-$ sudo make install
+$ sudo cmake --install build
 ```
 
 This will also make a copy of the conf/ folder into
@@ -607,21 +605,21 @@ You could be interested in creating the documentation (requires:
 `sudo apt-get install doxygen-latex` in Ubuntu/Debian) by doing:
 
 ```
-$ make doc
+$ cmake --build build --target doc
 ```
 
-from the gnss-sdr/build folder. This will generate HTML documentation that can
-be retrieved pointing your browser of preference to build/docs/html/index.html.
-If a LaTeX installation is detected in your system,
+This will generate HTML documentation that can be retrieved pointing your
+browser of preference to `build/docs/html/index.html`. If a LaTeX installation
+is detected in your system,
 
 ```
-$ make pdfmanual
+$ cmake --build build --target pdfmanual
 ```
 
 will create a PDF manual at build/docs/GNSS-SDR_manual.pdf. Finally,
 
 ```
-$ make doc-clean
+$ cmake --build build --target doc-clean
 ```
 
 will remove the content of previously generated documentation.
@@ -638,30 +636,6 @@ function. This file is read when using a function to know the best version of
 the function to execute. It mimics GNU Radio's [VOLK](https://www.libvolk.org/)
 library, so if you still have not run `volk_profile`, this is a good moment to
 do so.
-
-If you are using [Eclipse](https://www.eclipse.org/ide/) as your development
-environment, CMake can create the project for you. However, if the build
-directory is a subdirectory of the source directory (as is the case of the
-`gnss-sdr/build` folder), this is not supported well by Eclipse. It is strongly
-recommended to use a build directory which is a sibling of the source directory.
-Hence, type from the `gnss-sdr` root folder:
-
-```
-$ cd ..
-$ mkdir eclipse && cd eclipse
-$ cmake -G "Eclipse CDT4 - Unix Makefiles" -DCMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT=TRUE -DCMAKE_ECLIPSE_VERSION=4.5 ../gnss-sdr
-```
-
-and then import the created project into Eclipse:
-
-1. Import project using Menu File -> Import.
-2. Select General -> Existing projects into workspace.
-3. Select your root directory: Browse and select your newly created `eclipse/`
-   directory. Keep "Copy projects into workspace" unchecked.
-4. Click on "Finish" and you will get a fully functional Eclipse project.
-
-After building the project, you will find the generated binaries at
-`eclipse/install`.
 
 #### Build OSMOSDR support (OPTIONAL)
 
@@ -691,9 +665,9 @@ $ sudo ldconfig
 Then, configure GNSS-SDR to build the `Osmosdr_Signal_Source` by:
 
 ```
-$ cmake -DENABLE_OSMOSDR=ON ..
-$ make
-$ sudo make install
+$ cmake -S . -B build -DENABLE_OSMOSDR=ON
+$ cmake --build build
+$ sudo cmake --install build
 ```
 
 (in order to disable the `Osmosdr_Signal_Source` compilation, you can pass
@@ -734,18 +708,18 @@ $ cd ../..
 Then configure GNSS-SDR to build the `Fmcomms2_Signal_Source` implementation:
 
 ```
-$ cd gnss-sdr/build
-$ cmake -DENABLE_FMCOMMS2=ON ..
-$ make
-$ sudo make install
+$ cd gnss-sdr
+$ cmake -S . -B build -DENABLE_FMCOMMS2=ON
+$ cmake --build build
+$ sudo cmake --install build
 ```
 
 or configure it to build `Plutosdr_Signal_Source`:
 
 ```
-$ cmake -DENABLE_PLUTOSDR=ON ..
-$ make
-$ sudo make install
+$ cmake -S . -B build -DENABLE_PLUTOSDR=ON
+$ cmake --build build
+$ sudo cmake --install build
 ```
 
 With `Fmcomms2_Signal_Source` you can use any SDR hardware based on
@@ -760,9 +734,9 @@ devices.
 In order to enable the building of blocks that use OpenCL, type:
 
 ```
-$ cmake -DENABLE_OPENCL=ON ..
-$ make
-$ sudo make install
+$ cmake -S . -B build -DENABLE_OPENCL=ON
+$ cmake --build build
+$ sudo cmake --install build
 ```
 
 #### Build CUDA support (OPTIONAL)
@@ -774,9 +748,9 @@ data-parallel computations, first you need to install the CUDA Toolkit from
 Make sure that the SDK samples build well. Then, build GNSS-SDR by doing:
 
 ```
-$ cmake -DENABLE_CUDA=ON ..
-$ make
-$ sudo make install
+$ cmake -S . -B build -DENABLE_CUDA=ON
+$ cmake --build build
+$ sudo cmake --install build
 ```
 
 Of course, you will also need a GPU that
@@ -879,13 +853,13 @@ non-standard location. If that is the case, you need to inform GNSS-SDR's
 configuration system by defining the `PYTHON_EXECUTABLE` variable as:
 
 ```
-$ cmake -DPYTHON_EXECUTABLE=/path/to/bin/python3 ..
+$ cmake -S . -B build -DPYTHON_EXECUTABLE=/path/to/bin/python3
 ```
 
 In case you have installed Macports in a non-standard location, you can use:
 
 ```
-$ cmake -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/python ..
+$ cmake  -S . -B build -DCMAKE_PREFIX_PATH=/opt/local -DUSE_MACPORTS_PYTHON=/opt/local/bin/python
 ```
 
 changing `/opt/local` by the base directory in which your software is installed.
@@ -901,17 +875,23 @@ software:
 
 ```
 $ git clone https://github.com/gnss-sdr/gnss-sdr
-$ cd gnss-sdr/build
-$ cmake ..
-$ make
+$ cd gnss-sdr
+$ cmake -S . -B build
+$ cmake --build build
 ```
 
-This will create three executables at gnss-sdr/install, namely `gnss-sdr`,
+This will create three executables at `gnss-sdr/install`, namely `gnss-sdr`,
 `run_tests` and `volk_gnsssdr_profile`. You can install the software receiver on
 your system by doing:
 
 ```
-$ sudo make install
+$ sudo cmake --install build
+```
+
+and uninstall it with:
+
+```
+$ sudo cmake --build build --target uninstall
 ```
 
 Note, it is advisable not to run the install step in a homebrew environment.
@@ -919,7 +899,7 @@ Note, it is advisable not to run the install step in a homebrew environment.
 The documentation can be built by:
 
 ```
-$ make doc
+$ cmake --build build --target doc
 ```
 
 and can be viewed doing:
@@ -994,7 +974,7 @@ $ git pull upstream next
 ```
 
 Before rebuilding the source code, it is safe (and recommended) to remove the
-remainders of old compilations:
+remainders of old compilations, _e.g._:
 
 ```
 $ rm -rf gnss-sdr/build/*
@@ -1090,7 +1070,7 @@ You can use a single configuration file for processing different data files,
 specifying the file to be processed with the `--signal_source` flag:
 
 ```
-$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=./my_captured_data.dat
 ```
 
 This will override the `SignalSource.filename` specified in the configuration
@@ -1475,7 +1455,7 @@ SignalSource.port=1234
 SignalSource.swap_iq=false
 SignalSource.repeat=false
 SignalSource.dump=false
-SignalSource.dump_filename=../data/signal_source.dat
+SignalSource.dump_filename=./signal_source.dat
 ```
 
 Example for a dual-frequency receiver:
@@ -1569,7 +1549,7 @@ The block can be configured like this:
 ;#[Freq_Xlating_Fir_Filter] enables FIR filter and a composite frequency translation that shifts IF down to zero Hz.
 InputFilter.implementation=Freq_Xlating_Fir_Filter
 InputFilter.dump=false ; #dump: Dump the filtered data to a file.
-InputFilter.dump_filename=../data/input_filter.dat ; #dump_filename: Log path and filename.
+InputFilter.dump_filename=./input_filter.dat ; #dump_filename: Log path and filename.
 InputFilter.input_item_type=gr_complex
 InputFilter.output_item_type=gr_complex
 InputFilter.taps_item_type=float
@@ -1622,7 +1602,7 @@ implements a nearest neighbourhood interpolation:
 ;#[Pass_Through] disables this block
 Resampler.implementation=Direct_Resampler
 Resampler.dump=false ; Dumps the resampled data to a file.
-Resampler.dump_filename=../data/resampler.dat ; log path and filename.
+Resampler.dump_filename=./resampler.dat ; log path and filename.
 Resampler.item_type=gr_complex
 Resampler.sample_freq_in=8000000 ; sample frequency of the input signal
 Resampler.sample_freq_out=4000000 ; desired sample frequency of the output signal
@@ -1850,7 +1830,7 @@ Tracking_1B.dll_filter_order=2 ; DLL loop filter order [1], [2] or [3]
 Tracking_1B.early_late_space_chips=0.15;
 Tracking_1B.very_early_late_space_chips=0.6;
 Tracking_1B.dump=false
-Tracking_1B.dump_filename=../data/veml_tracking_ch_
+Tracking_1B.dump_filename=./veml_tracking_ch_
 ```
 
 More documentation at the

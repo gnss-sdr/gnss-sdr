@@ -51,6 +51,6 @@ Please check https://gnss-sdr.org/docs/sp-blocks/global-parameters/ for more
 information about the usage of XML files in GNSS-SDR.
 
 You could find useful the utility program
-[rinex2assist](https://github.com/gnss-sdr/gnss-sdr/tree/next/src/utils/rinex2assist)
+[rinex2assist](https://github.com/gnss-sdr/gnss-sdr/tree/next/utils/rinex2assist)
 for the generation of compatible XML files from recent, publicly available RINEX
 navigation data files.

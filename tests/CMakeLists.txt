@@ -366,14 +366,14 @@ if(ENABLE_UNIT_TESTING_EXTRA OR ENABLE_SYSTEM_TESTING_EXTRA OR ENABLE_FPGA)
         if(CMAKE_VERSION VERSION_GREATER 3.17.0)
             set(GNSSTK_PATCH_COMMAND
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static14.patch &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_gcc13.patch
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_static14.patch &&
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_gcc13.patch
             )
         else()
             set(GNSSTK_PATCH_COMMAND
                 cd ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION} &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_static13.patch &&
-                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/src/tests/data/gnsstk_gcc13.patch
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/CMakeLists.txt < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_static13.patch &&
+                ${Patch_EXECUTABLE} ${GNSSSDR_BINARY_DIR}/thirdparty/gnsstk-${GNSSSDR_GNSSTK_LOCAL_VERSION}/core/lib/GNSSCore/ObsID.hpp < ${GNSSSDR_SOURCE_DIR}/tests/data/gnsstk_gcc13.patch
             )
         endif()
         # Patch only once
@@ -623,12 +623,12 @@ if(NOT ENABLE_PACKAGING)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/Galileo_E1_ID_1_Fs_4Msps_8ms.dat DESTINATION share/gnss-sdr/signal_samples)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/GPS_L1_CA_ID_1_Fs_4Msps_2ms.dat DESTINATION share/gnss-sdr/signal_samples)
         install(FILES ${GNSSSDR_BINARY_DIR}/thirdparty/signal_samples/NT1065_GLONASS_L1_20160831_fs6625e6_if0e3_4ms.bin DESTINATION share/gnss-sdr/signal_samples)
-        install(FILES ${GNSSSDR_SOURCE_DIR}/src/tests/data/rtklib_test/obs_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
-        install(FILES ${GNSSSDR_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
+        install(FILES ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/obs_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
+        install(FILES ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION share/gnss-sdr/data/rtklib_test)
         add_definitions(-DTEST_PATH="${CMAKE_INSTALL_PREFIX}/share/gnss-sdr/")
     else()
-        file(COPY ${GNSSSDR_SOURCE_DIR}/src/tests/data/rtklib_test/obs_test1.xml DESTINATION ${GNSSSDR_BINARY_DIR}/thirdparty/data/rtklib_test)
-        file(COPY ${GNSSSDR_SOURCE_DIR}/src/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${GNSSSDR_BINARY_DIR}/thirdparty/data/rtklib_test)
+        file(COPY ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/obs_test1.xml DESTINATION ${GNSSSDR_BINARY_DIR}/thirdparty/data/rtklib_test)
+        file(COPY ${GNSSSDR_SOURCE_DIR}/tests/data/rtklib_test/eph_GPS_L1CA_test1.xml DESTINATION ${GNSSSDR_BINARY_DIR}/thirdparty/data/rtklib_test)
         add_definitions(-DTEST_PATH="${GNSSSDR_BINARY_DIR}/thirdparty/")
     endif()
 endif()
@@ -687,7 +687,7 @@ if(ENABLE_UNIT_TESTING)
     endif()
     target_include_directories(run_tests
         INTERFACE
-            ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
+            ${GNSSSDR_SOURCE_DIR}/tests/common-files
     )
     if(GNURADIO_USES_STD_POINTERS)
         target_compile_definitions(run_tests
@@ -838,7 +838,7 @@ if(ENABLE_FPGA)
         target_link_libraries(gps_l1_ca_dll_pll_tracking_test_fpga INTERFACE "$<LINK_LIBRARY:WHOLE_ARCHIVE,absl::log_flags>")
     endif()
     target_include_directories(gps_l1_ca_dll_pll_tracking_test_fpga
-        INTERFACE ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
+        INTERFACE ${GNSSSDR_SOURCE_DIR}/tests/common-files
     )
     xcode_remove_warning_duplicates(gps_l1_ca_dll_pll_tracking_test_fpga)
     install(TARGETS gps_l1_ca_dll_pll_tracking_test_fpga
@@ -873,7 +873,7 @@ function(add_system_test executable)
     endif()
     target_include_directories(${executable}
         PRIVATE ${OPT_INCLUDES_}
-        INTERFACE ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
+        INTERFACE ${GNSSSDR_SOURCE_DIR}/tests/common-files
     )
     target_link_libraries(${executable} PRIVATE ${OPT_LIBS_} algorithms_libs)
     if(NOT ENABLE_GLOG_AND_GFLAGS)
@@ -1098,7 +1098,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
 
     target_include_directories(gnss_block_test
         PRIVATE ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs
-        INTERFACE ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
+        INTERFACE ${GNSSSDR_SOURCE_DIR}/tests/common-files
     )
 
     if(ENABLE_FPGA)
@@ -1188,7 +1188,7 @@ endif()
 
 target_include_directories(matio_test
     INTERFACE
-        ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
+        ${GNSSSDR_SOURCE_DIR}/tests/common-files
 )
 
 xcode_remove_warning_duplicates(matio_test)
@@ -1238,7 +1238,7 @@ if(NOT ENABLE_PACKAGING AND NOT ENABLE_FPGA)
     endif()
     target_include_directories(acq_test
         INTERFACE
-            ${GNSSSDR_SOURCE_DIR}/src/tests/common-files
+            ${GNSSSDR_SOURCE_DIR}/tests/common-files
     )
     if(PMT_USES_BOOST_ANY)
         target_compile_definitions(acq_test

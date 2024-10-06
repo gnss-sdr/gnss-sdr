@@ -72,7 +72,7 @@ void GalileoE1DllPllVemlTrackingInternalTest::init()
     config->set_property("Tracking_1B.implementation", "Galileo_E1_DLL_PLL_VEML_Tracking");
     config->set_property("Tracking_1B.item_type", "gr_complex");
     config->set_property("Tracking_1B.dump", "false");
-    config->set_property("Tracking_1B.dump_filename", "../data/veml_tracking_ch_");
+    config->set_property("Tracking_1B.dump_filename", "./veml_tracking_ch_");
     config->set_property("Tracking_1B.early_late_space_chips", "0.15");
     config->set_property("Tracking_1B.very_early_late_space_chips", "0.6");
     config->set_property("Tracking_1B.pll_bw_hz", "30.0");

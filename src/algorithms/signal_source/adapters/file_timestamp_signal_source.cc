@@ -34,7 +34,7 @@ FileTimestampSignalSource::FileTimestampSignalSource(const ConfigurationInterfac
     unsigned int out_streams,
     Concurrent_Queue<pmt::pmt_t>* queue)
     : FileSourceBase(configuration, role, "File_Timestamp_Signal_Source"s, queue, "byte"s),
-      timestamp_file_(configuration->property(role + ".timestamp_filename"s, "../data/example_capture_timestamp.dat"s)),
+      timestamp_file_(configuration->property(role + ".timestamp_filename"s, "./example_capture_timestamp.dat"s)),
       timestamp_clock_offset_ms_(configuration->property(role + ".timestamp_clock_offset_ms"s, 0.0))
 {
     if (in_streams > 0)

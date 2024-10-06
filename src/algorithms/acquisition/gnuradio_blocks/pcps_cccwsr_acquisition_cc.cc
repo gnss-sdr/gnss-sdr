@@ -352,7 +352,7 @@ int pcps_cccwsr_acquisition_cc::general_work(int noutput_items,
                                 std::stringstream filename;
                                 std::streamsize n = 2 * sizeof(float) * (d_fft_size);  // complex file write
                                 filename.str("");
-                                filename << "../data/test_statistics_" << d_gnss_synchro->System
+                                filename << "./test_statistics_" << d_gnss_synchro->System
                                          << "_" << d_gnss_synchro->Signal[0] << d_gnss_synchro->Signal[1] << "_sat_"
                                          << d_gnss_synchro->PRN << "_doppler_" << doppler << ".dat";
                                 d_dump_file.open(filename.str().c_str(), std::ios::out | std::ios::binary);

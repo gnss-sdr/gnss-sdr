@@ -396,7 +396,7 @@ void GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test::config_3()
 
     /*Unset this flag to eliminates data logging for the Validation of results
     probabilities test*/
-    dump_test_results = true;
+    dump_test_results = false;
 
     num_of_realizations = 1;
 
@@ -849,7 +849,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                         {
                             std::stringstream filenamepd;
                             filenamepd.str("");
-                            filenamepd << "../data/test_statistics_" << gnss_synchro.System
+                            filenamepd << "./test_statistics_" << gnss_synchro.System
                                        << "_" << gnss_synchro.Signal << "_sat_"
 #if USE_GLOG_AND_GFLAGS
                                        << gnss_synchro.PRN << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";
@@ -876,7 +876,7 @@ TEST_F(GpsL1CaPcpsQuickSyncAcquisitionGSoC2014Test, ValidationOfResultsProbabili
                         {
                             std::stringstream filenamepf;
                             filenamepf.str("");
-                            filenamepf << "../data/test_statistics_" << gnss_synchro.System
+                            filenamepf << "./test_statistics_" << gnss_synchro.System
                                        << "_" << gnss_synchro.Signal << "_sat_"
 #if USE_GLOG_AND_GFLAGS
                                        << gnss_synchro.PRN << "CN0_dB_0_" << FLAGS_value_CN0_dB_0 << "_dBHz.csv";

@@ -187,11 +187,11 @@ private:
     // Configuration for Extra Data source
     bool attach_extra_data_;
     std::string ed_path_;
-    std::size_t ed_offset_in_file_;
-    std::size_t ed_item_size_;
+    uint64_t ed_offset_in_file_;
+    uint64_t ed_item_size_;
     bool ed_repeat_;
-    std::size_t ed_offset_in_samples_;
-    std::size_t ed_sample_period_;
+    uint64_t ed_offset_in_samples_;
+    uint64_t ed_sample_period_;
 };
 
 /** \} */

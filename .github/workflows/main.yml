@@ -167,8 +167,8 @@ jobs:
         run: sudo apt-get install python3-pip && sudo pip3 install cpplint
       - name: run checks
         run: "find ./src/ ./utils ./tests -iname *.h -o -iname *.cc | xargs cpplint
-          --filter=-,+build/class,+build/c++14,+build/deprecated,+build/explicit_make_pair,\
-          +build/include_what_you_use,+build/printf_format,+build/storage_class,\
+          --filter=-,+build/class,+build/c++17,+build/deprecated,+build/explicit_make_pair,\
+          +build/printf_format,+build/storage_class,\
           +readability/constructors,+readability/namespace,+readability/newline,\
           +readability/utf8,+runtime/casting,+runtime/explicit,\
           +runtime/indentation_namespace,+runtime/init,+runtime/invalid_increment,\

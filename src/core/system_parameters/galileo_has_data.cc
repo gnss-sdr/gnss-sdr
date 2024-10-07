@@ -392,7 +392,7 @@ std::vector<float> Galileo_HAS_data::get_delta_clock_subset_correction_m(uint8_t
         }
 
     auto subset_corr_matrix = this->get_delta_clock_subset_correction_m();
-    std::vector<float> delta_clock_subset_correction_m_v = subset_corr_matrix[nsys_sub_index];
+    const std::vector<float>& delta_clock_subset_correction_m_v = subset_corr_matrix[nsys_sub_index];
     std::vector<float> delta_clock_subset_correction_m_aux;
     std::vector<uint8_t> num_satellites_subset = this->get_num_subset_satellites();
     uint8_t num_sats_in_this_system_subset = num_satellites_subset[nsys_sub_index];

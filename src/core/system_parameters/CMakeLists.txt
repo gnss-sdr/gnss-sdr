@@ -19,6 +19,7 @@ set(SYSTEM_PARAMETERS_SOURCES
     galileo_fnav_message.cc
     galileo_has_data.cc
     galileo_inav_message.cc
+    galileo_ism.cc
     galileo_reduced_ced.cc
     beidou_dnav_navigation_message.cc
     beidou_dnav_ephemeris.cc
@@ -28,6 +29,8 @@ set(SYSTEM_PARAMETERS_SOURCES
     glonass_gnav_utc_model.cc
     glonass_gnav_navigation_message.cc
     reed_solomon.cc
+    osnma_data.cc
+    osnma_dsm_reader.cc
 )
 
 set(SYSTEM_PARAMETERS_HEADERS
@@ -55,6 +58,7 @@ set(SYSTEM_PARAMETERS_HEADERS
     galileo_fnav_message.h
     galileo_has_data.h
     galileo_inav_message.h
+    galileo_ism.h
     galileo_reduced_ced.h
     sbas_ephemeris.h
     gps_cnav_ephemeris.h
@@ -89,6 +93,9 @@ set(SYSTEM_PARAMETERS_HEADERS
     MATH_CONSTANTS.h
     reed_solomon.h
     galileo_has_page.h
+    Galileo_OSNMA.h
+    osnma_data.h
+    osnma_dsm_reader.h
 )
 
 list(SORT SYSTEM_PARAMETERS_HEADERS)
@@ -114,6 +121,9 @@ target_link_libraries(core_system_parameters
     PUBLIC
         Boost::date_time
         Boost::serialization
+        Boost::headers
+    PRIVATE
+        Pugixml::pugixml
 )
 
 if(ENABLE_GLOG_AND_GFLAGS)

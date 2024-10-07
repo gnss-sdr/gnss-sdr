@@ -41,7 +41,7 @@ FreqXlatingFirFilter::FreqXlatingFirFilter(const ConfigurationInterface* configu
     const std::string default_input_item_type("gr_complex");
     const std::string default_output_item_type("gr_complex");
     const std::string default_taps_item_type("float");
-    const std::string default_dump_filename("../data/input_filter.dat");
+    const std::string default_dump_filename("./input_filter.dat");
     const double default_intermediate_freq = 0.0;
     const double default_sampling_freq = 4000000.0;
     const int default_number_of_taps = 6;

@@ -349,7 +349,7 @@ bool config_ad9361_rx_local(uint64_t bandwidth_,
 #ifndef LIBAD9361_VERSION_GREATER_THAN_01
     if (filter_source_ == "Design")
         {
-            std::cout << "Option filter_source=Design is not available in this version. Set to filter_source=Off\n";
+            std::cout << "Option filter_source=Design is not available in this version of libad9361. Set to filter_source=Off\n";
             filter_source_ = std::string("Off");
         }
     if (Fpass_ != 0.0 or Fstop_ != 0.0)
@@ -636,7 +636,7 @@ bool config_ad9361_rx_remote(const std::string &remote_host,
         {
             return false;
         }
-    if (setup_filter(std::move(filter_source_), bandwidth_, sample_rate_, freq_, rf_port_select_, ad9361_phy, rx_chan0, chn, 0, std::move(filter_filename_), Fpass_, Fstop_) == -1)
+    if (setup_filter(filter_source_, bandwidth_, sample_rate_, freq_, rf_port_select_, ad9361_phy, rx_chan0, chn, 0, std::move(filter_filename_), Fpass_, Fstop_) == -1)
         {
             return false;
         }

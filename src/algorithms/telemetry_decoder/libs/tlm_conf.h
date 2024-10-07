@@ -42,6 +42,7 @@ public:
     bool enable_reed_solomon{false};  // for INAV message in Galileo E1B
     bool dump_crc_stats{false};       // telemetry CRC statistics
     bool enable_navdata_monitor{false};
+    bool there_are_e1_channels{false};
     bool there_are_e6_channels{false};
     bool use_ced{false};
 };

@@ -39,7 +39,7 @@ PulseBlankingFilter::PulseBlankingFilter(const ConfigurationInterface* configura
       out_streams_(out_streams)
 {
     const std::string default_item_type("gr_complex");
-    const std::string default_dump_filename("../data/input_filter.dat");
+    const std::string default_dump_filename("./input_filter.dat");
     const float default_pfa_ = 0.04;
     const float pfa = configuration->property(role_ + ".pfa", default_pfa_);
     const int default_length_ = 32;

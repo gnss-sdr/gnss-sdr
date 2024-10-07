@@ -7,6 +7,7 @@
 
 set(DATATYPE_ADAPTER_SOURCES
     byte_to_short.cc
+    cshort_to_grcomplex.cc
     ibyte_to_cbyte.cc
     ibyte_to_complex.cc
     ibyte_to_cshort.cc
@@ -16,6 +17,7 @@ set(DATATYPE_ADAPTER_SOURCES
 
 set(DATATYPE_ADAPTER_HEADERS
     byte_to_short.h
+    cshort_to_grcomplex.h
     ibyte_to_cbyte.h
     ibyte_to_complex.h
     ibyte_to_cshort.h

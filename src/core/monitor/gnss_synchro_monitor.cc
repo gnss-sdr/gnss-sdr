@@ -26,21 +26,20 @@
 
 gnss_synchro_monitor_sptr gnss_synchro_make_monitor(int n_channels,
     int decimation_factor,
-    int udp_port,
+    const std::vector<std::string>& udp_ports,
     const std::vector<std::string>& udp_addresses,
     bool enable_protobuf)
 {
     return gnss_synchro_monitor_sptr(new gnss_synchro_monitor(n_channels,
         decimation_factor,
-        udp_port,
+        udp_ports,
         udp_addresses,
         enable_protobuf));
 }
 
-
 gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
     int decimation_factor,
-    int udp_port,
+    const std::vector<std::string>& udp_ports,
     const std::vector<std::string>& udp_addresses,
     bool enable_protobuf)
     : gr::block("gnss_synchro_monitor",
@@ -50,7 +49,7 @@ gnss_synchro_monitor::gnss_synchro_monitor(int n_channels,
       d_nchannels(n_channels),
       d_decimation_factor(decimation_factor)
 {
-    udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_port, enable_protobuf);
+    udp_sink_ptr = std::make_unique<Gnss_Synchro_Udp_Sink>(udp_addresses, udp_ports, enable_protobuf);
 }
 
 

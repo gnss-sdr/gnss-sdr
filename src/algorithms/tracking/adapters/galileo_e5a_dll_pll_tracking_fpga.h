@@ -59,11 +59,11 @@ public:
     }
 
     /*!
-     * \brief Returns "Galileo_E5a_DLL_PLL_Tracking_Fpga"
+     * \brief Returns "Galileo_E5a_DLL_PLL_Tracking_FPGA"
      */
     inline std::string implementation() override
     {
-        return "Galileo_E5a_DLL_PLL_Tracking_Fpga";
+        return "Galileo_E5a_DLL_PLL_Tracking_FPGA";
     }
 
     /*!

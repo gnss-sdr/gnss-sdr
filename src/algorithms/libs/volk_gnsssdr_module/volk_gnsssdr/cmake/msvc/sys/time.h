@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Carles Fernandez-Prades <carles.fernandez(at)cttc.es>
 #ifndef _MSC_VER  // [
 #error "Use this header only with Microsoft Visual C++ compilers!"
-#endif  // _MSC_VER ]
+#else
 
 #ifndef _MSC_SYS_TIME_H
 #define _MSC_SYS_TIME_H
@@ -72,3 +72,6 @@ static inline int gettimeofday(struct timeval *tv, struct timezone *tz)
 
     return 0;
 }
+
+#endif  // _MSC_SYS_TIME_H
+#endif  // _MSC_VER

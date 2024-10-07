@@ -66,11 +66,11 @@ public:
     }
 
     /*!
-     * \brief Returns "Galileo_E5a_Pcps_Acquisition_Fpga"
+     * \brief Returns "Galileo_E5a_Pcps_Acquisition_FPGA"
      */
     inline std::string implementation() override
     {
-        return "Galileo_E5a_Pcps_Acquisition_Fpga";
+        return "Galileo_E5a_Pcps_Acquisition_FPGA";
     }
 
     /*!

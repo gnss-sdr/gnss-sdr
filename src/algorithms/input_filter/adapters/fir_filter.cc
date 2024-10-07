@@ -142,7 +142,7 @@ void FirFilter::init()
     const std::string default_input_item_type("gr_complex");
     const std::string default_output_item_type("gr_complex");
     const std::string default_taps_item_type("float");
-    const std::string default_dump_filename("../data/input_filter.dat");
+    const std::string default_dump_filename("./input_filter.dat");
     const std::string default_filter_type("bandpass");
     const std::vector<double> default_bands = {0.0, 0.4, 0.6, 1.0};
     const std::vector<double> default_ampl = {1.0, 1.0, 0.0, 0.0};

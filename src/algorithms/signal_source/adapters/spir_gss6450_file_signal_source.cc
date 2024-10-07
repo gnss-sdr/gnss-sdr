@@ -54,8 +54,8 @@ SpirGSS6450FileSignalSource::SpirGSS6450FileSignalSource(const ConfigurationInte
       enable_throttle_control_(configuration->property(role + ".enable_throttle_control", false)),
       endian_swap_(configuration->property(role + ".endian", false))
 {
-    const std::string default_filename("../data/my_capture.dat");
-    const std::string default_dump_filename("../data/my_capture_dump.dat");
+    const std::string default_filename("./my_capture.dat");
+    const std::string default_dump_filename("./my_capture_dump.dat");
     filename_ = configuration->property(role + ".filename", default_filename);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_filename);
 

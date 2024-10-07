@@ -290,9 +290,7 @@ class volk_gnsssdr_modtool(object):
         inserted = False;
         insert = False
         for otherline in otherlines:
-
-            if (re.match('\s*', otherline) == None or re.match('\s*#.*', otherline) == None):
-
+            if re.match(r'\s*', otherline) is None or re.match(r'\s*#.*', otherline) is None:
                 insert = True;
             if insert and not inserted:
                 inserted = True;

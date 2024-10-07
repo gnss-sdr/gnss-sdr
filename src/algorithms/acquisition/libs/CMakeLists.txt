@@ -38,11 +38,16 @@ target_link_libraries(acquisition_libs
     INTERFACE
         Gnuradio::runtime
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         algorithms_libs
         core_system_parameters
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(acquisition_libs PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(acquisition_libs PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(acquisition_libs PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

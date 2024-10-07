@@ -26,6 +26,7 @@
 #include <gnuradio/blocks/stream_to_vector.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 /** \addtogroup Acquisition
@@ -95,8 +96,8 @@ public:
      */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
-        channel_fsm_ = channel_fsm;
-        acquisition_cc_->set_channel_fsm(channel_fsm);
+        channel_fsm_ = std::move(channel_fsm);
+        acquisition_cc_->set_channel_fsm(channel_fsm_);
     }
 
     /*!

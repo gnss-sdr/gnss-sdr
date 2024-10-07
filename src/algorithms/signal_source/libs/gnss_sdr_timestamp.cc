@@ -28,22 +28,23 @@
 
 
 Gnss_Sdr_Timestamp::Gnss_Sdr_Timestamp(size_t sizeof_stream_item,
-    std::string timestamp_file, double clock_offset_ms)
+    std::string timestamp_file, double clock_offset_ms, int items_to_samples)
     : gr::sync_block("Timestamp",
           gr::io_signature::make(1, 20, sizeof_stream_item),
           gr::io_signature::make(1, 20, sizeof_stream_item)),
       d_timefile(std::move(timestamp_file)),
       d_clock_offset_ms(clock_offset_ms),
       d_fraction_ms_offset(modf(d_clock_offset_ms, &d_integer_ms_offset)),  // optional clockoffset parameter to convert UTC timestamps to GPS time in some receiver's configuration
+      d_items_to_samples(items_to_samples),
       d_next_timetag_samplecount(0),
       d_get_next_timetag(true)
 {
 }
 
 
-gnss_shared_ptr<Gnss_Sdr_Timestamp> gnss_sdr_make_Timestamp(size_t sizeof_stream_item, std::string timestamp_file, double clock_offset_ms)
+gnss_shared_ptr<Gnss_Sdr_Timestamp> gnss_sdr_make_Timestamp(size_t sizeof_stream_item, std::string timestamp_file, double clock_offset_ms, int items_to_samples)
 {
-    gnss_shared_ptr<Gnss_Sdr_Timestamp> Timestamp_(new Gnss_Sdr_Timestamp(sizeof_stream_item, std::move(timestamp_file), clock_offset_ms));
+    gnss_shared_ptr<Gnss_Sdr_Timestamp> Timestamp_(new Gnss_Sdr_Timestamp(sizeof_stream_item, std::move(timestamp_file), clock_offset_ms, items_to_samples));
     return Timestamp_;
 }
 
@@ -110,8 +111,7 @@ int Gnss_Sdr_Timestamp::work(int noutput_items,
     for (size_t ch = 0; ch < output_items.size(); ch++)
         {
             std::memcpy(output_items[ch], input_items[ch], noutput_items * input_signature()->sizeof_stream_item(ch));
-            uint64_t bytes_to_samples = 2;  // todo: improve this.. hardcoded 2 bytes -> 1 complex sample!
-            int64_t diff_samplecount = uint64diff(this->nitems_written(ch), d_next_timetag_samplecount * bytes_to_samples);
+            int64_t diff_samplecount = uint64diff(this->nitems_written(ch), d_next_timetag_samplecount * d_items_to_samples);
             // std::cout << "diff_samplecount: " << diff_samplecount << ", noutput_items: " << noutput_items << "\n";
             if (diff_samplecount <= noutput_items and std::labs(diff_samplecount) <= noutput_items)
                 {

@@ -18,12 +18,18 @@
 #include "acq_conf_fpga.h"
 #include "item_type_helpers.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <cmath>
 #include <iostream>
+#include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configuration,
-    const std::string &role, uint32_t downs_factor, uint32_t sel_queue_fpga, uint32_t blk_exp, double chip_rate, double code_length_chips)
+    const std::string &role, uint32_t sel_queue_fpga, uint32_t blk_exp, uint32_t downsampling_factor_default, double chip_rate, double code_length_chips)
 {
     // sampling frequency
     const int64_t fs_in_deprecated = configuration->property("GNSS-SDR.internal_fs_hz", fs_in);
@@ -33,8 +39,8 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
     doppler_max = configuration->property(role + ".doppler_max", doppler_max);
 
     // downsampling factor
-    uint32_t downsampling_factor = configuration->property(role + ".downsampling_factor", downs_factor);
-    downsampling_factor = downsampling_factor;
+    downsampling_factor = configuration->property(role + ".downsampling_factor", downsampling_factor_default);
+
     fs_in = fs_in / downsampling_factor;
 
     // code length in samples
@@ -58,7 +64,7 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
             std::cout << "Cannot find the FPGA uio device file corresponding to device name " << acquisition_device_name << std::endl;
             throw std::exception();
         }
-    device_name = device_io_name;
+    device_name = std::move(device_io_name);
 
     // exclusion limit
     excludelimit = static_cast<unsigned int>(1 + ceil((1.0 / chip_rate) * static_cast<float>(fs_in)));

@@ -17,7 +17,12 @@
 
 #include "two_bit_cpx_file_signal_source.h"
 #include "gnss_sdr_string_literals.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -43,7 +48,7 @@ TwoBitCpxFileSignalSource::TwoBitCpxFileSignalSource(
 std::tuple<size_t, bool> TwoBitCpxFileSignalSource::itemTypeToSize()
 {
     auto is_complex = false;
-    auto item_size = size_t(sizeof(char));  // default
+    auto item_size = sizeof(char);  // default
 
     if (item_type() == "byte")
         {

@@ -4,7 +4,7 @@
  * \authors <ul>
  *          <li> 2007-2013, T. Takasu
  *          <li> 2017, Javier Arribas
- *          <li> 2017, Carles Fernandez
+ *          <li> 2017-2023, Carles Fernandez
  *          </ul>
  *
  * This is a derived work from RTKLIB http://www.rtklib.com/
@@ -22,7 +22,7 @@
  * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2023, Carles Fernandez
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -231,6 +231,7 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     int sys;
     int prn;
 
+    double has_relativistic_correction = 0.0;
     trace(4, "eph2pos : time=%s sat=%2d\n", time_str(time, 3), eph->sat);
 
     if (eph->A <= 0.0)
@@ -307,12 +308,102 @@ void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
             rs[0] = x * cosO - y * cosi * sinO;
             rs[1] = x * sinO + y * cosi * cosO;
             rs[2] = y * sin(i);
+            // Apply HAS orbit correction if available
+            if (eph->apply_has_corrections)
+                {
+                    // HAS SIS ICD, Issue 1.0, Section 7.2
+                    double vel_sat[3]{};
+                    double cross_pos_vel[3]{};
+                    double et[3]{};
+                    double ew[3]{};
+                    double en[3]{};
+                    double R[3][3]{};
+                    double corrections[3]{};
+                    double rotated_corrections[3]{};
+                    // Compute satellite velocity
+                    const double OneMinusecosE = 1.0 - (eph->e * cosE);
+                    const double ekdot = (sqrt(mu / (eph->A * eph->A * eph->A)) + eph->deln) / OneMinusecosE;
+                    const double pkdot = sqrt(1.0 - eph->e * eph->e) * ekdot / OneMinusecosE;
+                    const double ukdot = pkdot * (1.0 + 2.0 * (eph->cus * cos2u - eph->cuc * sin2u));
+                    const double ikdot = eph->idot + 2.0 * pkdot * (eph->cis * cos2u - eph->cic * sin2u);
+                    const double rkdot = eph->A * eph->e * sinE * ekdot + 2.0 * pkdot * (eph->crs * cos2u - eph->crc * sin2u);
+                    const double xpkdot = rkdot * cos(u) - y * ukdot;
+                    const double ypkdot = rkdot * sin(u) + x * ukdot;
+                    const double tmp = ypkdot * cosi - rs[2] * ikdot;
+
+                    vel_sat[0] = -(eph->OMGd - omge) * rs[1] + xpkdot * cosO - tmp * sinO;
+                    vel_sat[1] = (eph->OMGd - omge) * rs[0] + xpkdot * sinO + tmp * cosO;
+                    vel_sat[2] = y * cosi * ikdot + ypkdot * sin(i);
+
+                    // Compute HAS relativistic clock correction (HAS SIS ICD, Issue 1.0, Section 7.3)
+                    const double pos_by_vel = rs[0] * vel_sat[0] + rs[1] * vel_sat[1] + rs[2] * vel_sat[2];
+                    has_relativistic_correction = -(2.0 * pos_by_vel) / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
+
+                    // Compute rotation matrix
+                    const double norm_velocity = sqrt(vel_sat[0] * vel_sat[0] + vel_sat[1] * vel_sat[1] + vel_sat[2] * vel_sat[2]);
+                    et[0] = vel_sat[0] / norm_velocity;
+                    et[1] = vel_sat[1] / norm_velocity;
+                    et[2] = vel_sat[2] / norm_velocity;
+
+                    cross_pos_vel[0] = rs[1] * vel_sat[2] - rs[2] * vel_sat[1];
+                    cross_pos_vel[1] = rs[2] * vel_sat[0] - rs[0] * vel_sat[2];
+                    cross_pos_vel[2] = rs[0] * vel_sat[1] - rs[1] * vel_sat[0];
+                    const double norm_cross_pos_vel = sqrt(cross_pos_vel[0] * cross_pos_vel[0] + cross_pos_vel[1] * cross_pos_vel[1] + cross_pos_vel[2] * cross_pos_vel[2]);
+
+                    ew[0] = cross_pos_vel[0] / norm_cross_pos_vel;
+                    ew[1] = cross_pos_vel[1] / norm_cross_pos_vel;
+                    ew[2] = cross_pos_vel[2] / norm_cross_pos_vel;
+
+                    en[0] = et[1] * ew[2] - et[2] * ew[1];
+                    en[1] = et[2] * ew[0] - et[0] * ew[2];
+                    en[2] = et[0] * ew[1] - et[1] * ew[0];
+
+                    R[0][0] = en[0];
+                    R[0][1] = et[0];
+                    R[0][2] = ew[0];
+
+                    R[1][0] = en[1];
+                    R[1][1] = et[1];
+                    R[1][2] = ew[1];
+
+                    R[2][0] = en[2];
+                    R[2][1] = et[2];
+                    R[2][2] = ew[2];
+
+                    // Compute rotated corrections
+                    corrections[0] = eph->has_orbit_radial_correction_m;
+                    corrections[1] = eph->has_orbit_in_track_correction_m;
+                    corrections[2] = eph->has_orbit_cross_track_correction_m;
+
+                    for (int row = 0; row < 3; row++)
+                        {
+                            for (int col = 0; col < 3; col++)
+                                {
+                                    rotated_corrections[row] = R[row][col] * corrections[col];
+                                }
+                        }
+
+                    // Apply HAS orbit corrections
+                    rs[0] += rotated_corrections[0];
+                    rs[1] += rotated_corrections[1];
+                    rs[2] += rotated_corrections[2];
+                }
         }
     tk = timediffweekcrossover(time, eph->toc);
     *dts = eph->f0 + eph->f1 * tk + eph->f2 * tk * tk;
 
     /* relativity correction */
-    *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / std::pow(SPEED_OF_LIGHT_M_S, 2.0);
+    if (eph->apply_has_corrections)
+        {
+            // Apply HAS clock correction (HAS SIS ICD, Issue 1.0, Section 7.3)
+            *dts += (has_relativistic_correction + (eph->has_clock_correction_m / SPEED_OF_LIGHT_M_S));
+            // Note: This is referred to the GST for Galileo satellites. The user must account for
+            // a possible common offset in the broadcast HAS GPS clock corrections
+        }
+    else
+        {
+            *dts -= 2.0 * sqrt(mu * eph->A) * eph->e * sinE / (SPEED_OF_LIGHT_M_S * SPEED_OF_LIGHT_M_S);
+        }
 
     /* position and clock error variance */
     *var = var_uraeph(eph->sva);

@@ -49,7 +49,7 @@ public:
     virtual gr::basic_block_sptr get_right_block_acq() = 0;
     virtual gr::basic_block_sptr get_left_block() = 0;
     virtual gr::basic_block_sptr get_right_block() = 0;
-    virtual Gnss_Signal get_signal() const = 0;
+    virtual Gnss_Signal get_signal() = 0;
     virtual void start_acquisition() = 0;
     virtual void assist_acquisition_doppler(double Carrier_Doppler_hz) = 0;
     virtual void stop_channel() = 0;

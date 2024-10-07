@@ -17,21 +17,25 @@
 #include "beamformer_filter.h"
 #include "beamformer.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <gnuradio/blocks/file_sink.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 BeamformerFilter::BeamformerFilter(
     const ConfigurationInterface* configuration, const std::string& role,
     unsigned int in_stream, unsigned int out_stream)
     : role_(role),
       in_stream_(in_stream),
-      out_stream_(out_stream)
+      out_stream_(out_stream),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/input_filter.dat");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")

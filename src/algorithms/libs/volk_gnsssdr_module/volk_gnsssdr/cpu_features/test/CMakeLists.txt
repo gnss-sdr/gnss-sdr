@@ -25,7 +25,11 @@ add_library(stack_line_reader_for_test ../src/stack_line_reader.c)
 target_compile_definitions(stack_line_reader_for_test PUBLIC STACK_LINE_READER_BUFFER_SIZE=16)
 target_link_libraries(stack_line_reader_for_test string_view filesystem_for_testing)
 ##------------------------------------------------------------------------------
-add_library(all_libraries ../src/hwcaps.c  ../src/stack_line_reader.c)
+add_library(all_libraries
+        ../src/hwcaps.c
+        ../src/hwcaps_linux_or_android.c
+        ../src/hwcaps_freebsd.c
+        ../src/stack_line_reader.c)
 target_link_libraries(all_libraries hwcaps_for_testing stack_line_reader string_view)
 
 #
@@ -74,7 +78,20 @@ endif()
 ##------------------------------------------------------------------------------
 ## cpuinfo_aarch64_test
 if(PROCESSOR_IS_AARCH64)
-  add_executable(cpuinfo_aarch64_test cpuinfo_aarch64_test.cc ../src/impl_aarch64_linux_or_android.c)
+  add_executable(cpuinfo_aarch64_test
+    cpuinfo_aarch64_test.cc
+    ../src/impl_aarch64_cpuid.c
+    ../src/impl_aarch64_linux_or_android.c
+    ../src/impl_aarch64_windows.c
+    ../src/impl_aarch64_macos_or_iphone.c
+    ../src/impl_aarch64_freebsd.c
+  )
+  if(APPLE)
+    target_compile_definitions(cpuinfo_aarch64_test PUBLIC CPU_FEATURES_MOCK_SYSCTL_AARCH64)
+    target_compile_definitions(cpuinfo_aarch64_test PRIVATE HAVE_SYSCTLBYNAME)
+  else()
+    target_compile_definitions(cpuinfo_aarch64_test PUBLIC CPU_FEATURES_MOCK_CPUID_AARCH64)
+  endif()
   target_link_libraries(cpuinfo_aarch64_test all_libraries)
   add_test(NAME cpuinfo_aarch64_test COMMAND cpuinfo_aarch64_test)
 endif()
@@ -91,4 +108,25 @@ if(PROCESSOR_IS_POWER)
   add_executable(cpuinfo_ppc_test cpuinfo_ppc_test.cc  ../src/impl_ppc_linux.c)
   target_link_libraries(cpuinfo_ppc_test all_libraries)
   add_test(NAME cpuinfo_ppc_test COMMAND cpuinfo_ppc_test)
+endif()
+##------------------------------------------------------------------------------
+## cpuinfo_s390x_test
+if(PROCESSOR_IS_S390X)
+  add_executable(cpuinfo_s390x_test cpuinfo_s390x_test.cc  ../src/impl_s390x_linux.c)
+  target_link_libraries(cpuinfo_s390x_test all_libraries)
+  add_test(NAME cpuinfo_s390x_test COMMAND cpuinfo_s390x_test)
+endif()
+##------------------------------------------------------------------------------
+## cpuinfo_riscv_test
+if(PROCESSOR_IS_RISCV)
+  add_executable(cpuinfo_riscv_test cpuinfo_riscv_test.cc  ../src/impl_riscv_linux.c)
+  target_link_libraries(cpuinfo_riscv_test all_libraries)
+  add_test(NAME cpuinfo_riscv_test COMMAND cpuinfo_riscv_test)
+endif()
+##------------------------------------------------------------------------------
+## cpuinfo_loongarch_test
+if(PROCESSOR_IS_LOONGARCH)
+  add_executable(cpuinfo_loongarch_test cpuinfo_loongarch_test.cc  ../src/impl_loongarch_linux.c)
+  target_link_libraries(cpuinfo_loongarch_test all_libraries)
+  add_test(NAME cpuinfo_loongarch_test COMMAND cpuinfo_loongarch_test)
 endif()

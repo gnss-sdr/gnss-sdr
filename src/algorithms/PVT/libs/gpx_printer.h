@@ -42,7 +42,7 @@ public:
     explicit Gpx_Printer(const std::string& base_path = ".");
     ~Gpx_Printer();
     bool set_headers(const std::string& filename, bool time_tag_name = true);
-    bool print_position(const Pvt_Solution* const position, bool print_average_values);
+    bool print_position(const Pvt_Solution* const position);
     bool close_file();
 
 private:

@@ -65,7 +65,7 @@ const prcopt_t PRCOPT_DEFAULT = {            /* defaults processing options */
     {}, {}, {},                              /* baseline, ru, rb */
     {"", ""},                                /* anttype */
     {}, {}, {},                              /* antdel, pcv, exsats */
-    0, 0, 0, {"", ""}, {}, 0, {{}, {}}, {{}, {{}, {}}, {{}, {}}, {}, {}}, 0, {}};
+    0, 0, 0, {"", ""}, {}, 0, {{}, {}}, {{}, {{}, {}}, {{}, {}}, {}, {}}, 0, {}, true};
 
 
 void writesolhead(stream_t *stream, const solopt_t *solopt);

@@ -4,7 +4,7 @@
  * \authors <ul>
  *          <li> 2007-2013, T. Takasu
  *          <li> 2017, Javier Arribas
- *          <li> 2017, Carles Fernandez
+ *          <li> 2017-2023, Carles Fernandez
  *          </ul>
  *
  * This is a derived work from RTKLIB http://www.rtklib.com/
@@ -22,7 +22,7 @@
  * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017, Javier Arribas
- * Copyright (C) 2017, Carles Fernandez
+ * Copyright (C) 2017-2023, Carles Fernandez
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -442,15 +442,20 @@ typedef struct
                            /* SV orbit parameters */
     double A, e, i0, OMG0, omg, M0, deln, OMGd, idot;
     double crc, crs, cuc, cus, cic, cis;
-    double toes;       /* Toe (s) in week */
-    double fit;        /* fit interval (h) */
-    double f0, f1, f2; /* SV clock parameters (af0,af1,af2) */
-    double tgd[4];     /* group delay parameters */
-                       /* GPS/QZS:tgd[0]=TGD */
-                       /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
-                       /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
-    double isc[4];     /* GPS    :isc[0]=ISCL1, isc[1]=ISCL2, isc[2]=ISCL5I, isc[3]=ISCL5Q */
-    double Adot, ndot; /* Adot,ndot for CNAV */
+    double toes;                              /* Toe (s) in week */
+    double fit;                               /* fit interval (h) */
+    double f0, f1, f2;                        /* SV clock parameters (af0,af1,af2) */
+    double tgd[4];                            /* group delay parameters */
+                                              /* GPS/QZS:tgd[0]=TGD */
+                                              /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
+                                              /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
+    double isc[4];                            /* GPS    :isc[0]=ISCL1, isc[1]=ISCL2, isc[2]=ISCL5I, isc[3]=ISCL5Q */
+    double Adot, ndot;                        /* Adot,ndot for CNAV */
+    float has_clock_correction_m;             /* Galileo High Accuracy Service clock correction, in [m] */
+    float has_orbit_radial_correction_m;      /* Galileo High Accuracy Service orbit radial correction, in [m] */
+    float has_orbit_in_track_correction_m;    /* Galileo High Accuracy Service orbit in-track correction, in [m] */
+    float has_orbit_cross_track_correction_m; /* Galileo High Accuracy Service orbit cross-track correction, in [m] */
+    bool apply_has_corrections;
 } eph_t;
 
 
@@ -995,6 +1000,7 @@ typedef struct
     exterr_t exterr;              /* extended receiver error model */
     int freqopt;                  /* disable L2-AR */
     char pppopt[256];             /* ppp option */
+    bool bancroft_init;           /* enable Bancroft initialization for the first iteration of the PVT computation */
 } prcopt_t;
 
 

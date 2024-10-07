@@ -29,12 +29,16 @@
 #include "gnss_sdr_flags.h"
 #include "gnss_sdr_string_literals.h"
 #include "gnss_sdr_valve.h"
-#include <glog/logging.h>
 #include <algorithm>  // for std::max
 #include <cmath>      // for ceil, floor
 #include <iostream>   // for std::cout, std:cerr
 #include <utility>    // for std::move
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 using namespace std::string_literals;
 
@@ -44,8 +48,8 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
     : SignalSourceBase(configuration, role, std::move(impl)),
       queue_(queue),
       role_(role),
-      filename_(configuration->property(role_ + ".filename"s, "../data/example_capture.dat"s)),
-      dump_filename_(configuration->property(role_ + ".dump_filename"s, "../data/my_capture.dat"s)),
+      filename_(configuration->property(role_ + ".filename"s, "./example_capture.dat"s)),
+      dump_filename_(configuration->property(role_ + ".dump_filename"s, "./my_capture.dat"s)),
       item_type_(configuration->property(role_ + ".item_type"s, std::move(default_item_type))),
       item_size_(0),
       header_size_(configuration->property(role_ + ".header_size"s, uint64_t(0))),
@@ -56,7 +60,15 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
       is_complex_(false),
       repeat_(configuration->property(role_ + ".repeat"s, false)),
       enable_throttle_control_(configuration->property(role_ + ".enable_throttle_control"s, false)),
-      dump_(configuration->property(role_ + ".dump"s, false))
+      dump_(configuration->property(role_ + ".dump"s, false)),
+      // Configuration for attaching extra data to the sample stream
+      attach_extra_data_(configuration->property(role_ + ".extra_data.enabled"s, false)),
+      ed_path_(configuration->property(role_ + ".extra_data.filename"s, "../data/extra_data.dat"s)),
+      ed_offset_in_file_(configuration->property(role_ + ".extra_data.file_offset"s, uint64_t{0UL})),
+      ed_item_size_(configuration->property(role_ + ".extra_data.item_size"s, uint64_t{1UL})),
+      ed_repeat_(configuration->property(role_ + ".extra_data.repeat"s, false)),
+      ed_offset_in_samples_(configuration->property(role_ + ".extra_data.sample_offset"s, uint64_t{0UL})),
+      ed_sample_period_(configuration->property(role_ + ".extra_data.sample_period"s, uint64_t{1UL}))
 {
     minimum_tail_s_ = std::max(configuration->property("Acquisition_1C.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
     minimum_tail_s_ = std::max(configuration->property("Acquisition_2S.coherent_integration_time_ms", 0.0) * 0.001 * 2.0, minimum_tail_s_);
@@ -93,7 +105,8 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
                 }
         }
 
-    // override value with commandline flag, if present
+// override value with commandline flag, if present
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_signal_source != "-")
         {
             filename_ = FLAGS_signal_source;
@@ -102,6 +115,16 @@ FileSourceBase::FileSourceBase(ConfigurationInterface const* configuration, std:
         {
             filename_ = FLAGS_s;
         }
+#else
+    if (absl::GetFlag(FLAGS_signal_source) != "-")
+        {
+            filename_ = absl::GetFlag(FLAGS_signal_source);
+        }
+    if (absl::GetFlag(FLAGS_s) != "-")
+        {
+            filename_ = absl::GetFlag(FLAGS_s);
+        }
+#endif
     if (sampling_frequency_ == 0)
         {
             std::cerr << "Warning: parameter " << role_ << ".sampling_frequency is not set, this could lead to wrong results.\n"
@@ -142,6 +165,7 @@ void FileSourceBase::init()
     create_throttle();
     create_valve();
     create_sink();
+    create_extra_data_source();
 }
 
 
@@ -171,7 +195,7 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
     // VALVE
     if (valve())
         {
-            top_block->connect(input, 0, valve(), 0);
+            top_block->connect(std::move(input), 0, valve(), 0);
             DLOG(INFO) << "connected source to valve";
 
             output = valve();
@@ -186,11 +210,19 @@ void FileSourceBase::connect(gr::top_block_sptr top_block)
     // DUMP
     if (sink())
         {
-            top_block->connect(output, 0, sink(), 0);
+            top_block->connect(std::move(output), 0, sink(), 0);
             DLOG(INFO) << "connected output to file sink";
         }
 
-    post_connect_hook(top_block);
+    // EXTRA DATA
+    if (extra_data_source())
+        {
+            top_block->connect(std::move(output), 0, extra_data_source(), 0);
+            DLOG(INFO) << "connected output to extra data source, which now becomes the new output";
+            output = extra_data_source();
+        }
+
+    post_connect_hook(std::move(top_block));
 }
 
 
@@ -219,7 +251,7 @@ void FileSourceBase::disconnect(gr::top_block_sptr top_block)
     // VALVE
     if (valve())
         {
-            top_block->disconnect(input, 0, valve(), 0);
+            top_block->disconnect(std::move(input), 0, valve(), 0);
             DLOG(INFO) << "disconnected source to valve";
 
             output = valve();
@@ -234,17 +266,25 @@ void FileSourceBase::disconnect(gr::top_block_sptr top_block)
     // DUMP
     if (sink())
         {
-            top_block->disconnect(output, 0, sink(), 0);
+            top_block->disconnect(std::move(output), 0, sink(), 0);
             DLOG(INFO) << "disconnected output to file sink";
         }
 
-    post_disconnect_hook(top_block);
+    // EXTRA DATA
+    if (extra_data_source())
+        {
+            // TODO - FIXME: This is NOT okay, `output` is the extra data source, not the valve/source/throttle/whatever is left of this
+            top_block->disconnect(std::move(output), 0, extra_data_source(), 0);
+            DLOG(INFO) << "disconnected output to extra data source";
+            output = extra_data_source();
+        }
+
+    post_disconnect_hook(std::move(top_block));
 }
 
 
 gr::basic_block_sptr FileSourceBase::get_left_block()
 {
-    // TODO: is this right? Shouldn't the left block be a nullptr?
     LOG(WARNING) << "Left block of a signal source should not be retrieved";
     return gr::blocks::file_source::sptr();
 }
@@ -255,6 +295,7 @@ gr::basic_block_sptr FileSourceBase::get_right_block()
     // clang-tidy wants braces around the if-conditions. clang-format wants to break the braces into
     // multiple line blocks. It's much more readable this way
     // clang-format off
+    if (extra_data_source_) { return extra_data_source_; }
     if (valve_) { return valve_; }
     if (throttle_) { return throttle_; }
     return source();
@@ -383,7 +424,7 @@ size_t FileSourceBase::samplesToSkip() const
 
 size_t FileSourceBase::computeSamplesInFile() const
 {
-    auto n_samples = static_cast<size_t>(samples());
+    auto n_samples = samples();
 
     // this could throw, but the existence of the file has been proven before we get here.
     const auto size = fs::file_size(filename());
@@ -463,6 +504,7 @@ gnss_shared_ptr<gr::block> FileSourceBase::file_source() const { return file_sou
 gnss_shared_ptr<gr::block> FileSourceBase::valve() const { return valve_; }
 gnss_shared_ptr<gr::block> FileSourceBase::throttle() const { return throttle_; }
 gnss_shared_ptr<gr::block> FileSourceBase::sink() const { return sink_; }
+ExtraDataSource::sptr FileSourceBase::extra_data_source() const { return extra_data_source_; }
 
 
 gr::blocks::file_source::sptr FileSourceBase::create_file_source()
@@ -557,6 +599,23 @@ gr::blocks::file_sink::sptr FileSourceBase::create_sink()
             create_sink_hook();
         }
     return sink_;
+}
+
+ExtraDataSource::sptr FileSourceBase::create_extra_data_source()
+{
+    if (attach_extra_data_)
+        {
+            extra_data_source_ = gnss_make_shared<ExtraDataSource>(
+                ed_path_,
+                ed_offset_in_file_,
+                ed_item_size_,
+                ed_repeat_,
+                ed_offset_in_samples_,
+                ed_sample_period_,
+                gr::io_signature::make(1, 1, item_size_));
+            DLOG(INFO) << "extra_data_source(" << extra_data_source_->unique_id() << ")";
+        }
+    return extra_data_source_;
 }
 
 

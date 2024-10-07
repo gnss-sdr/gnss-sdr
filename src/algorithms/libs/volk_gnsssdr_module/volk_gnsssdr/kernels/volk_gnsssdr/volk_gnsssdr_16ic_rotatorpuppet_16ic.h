@@ -37,7 +37,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_generic(lv_16sc_t* outVe
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_GENERIC */
@@ -53,7 +53,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_generic_reload(lv_16sc_t
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_generic_reload(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_GENERIC */
@@ -69,7 +69,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_a_sse3(lv_16sc_t* outVec
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_SSE3 */
@@ -85,7 +85,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_a_sse3_reload(lv_16sc_t*
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_a_sse3_reload(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_SSE3 */
@@ -101,7 +101,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_u_sse3(lv_16sc_t* outVec
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_SSE3 */
@@ -117,7 +117,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_u_sse3_reload(lv_16sc_t*
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_u_sse3_reload(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_SSE3 */
@@ -133,7 +133,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_neon(lv_16sc_t* outVecto
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_NEON */
@@ -149,7 +149,7 @@ static inline void volk_gnsssdr_16ic_rotatorpuppet_16ic_neon_reload(lv_16sc_t* o
     phase[0] = lv_cmake(cos(rem_carrier_phase_in_rad), -sin(rem_carrier_phase_in_rad));
     lv_32fc_t phase_inc[1];
     phase_inc[0] = lv_cmake(cos(phase_step_rad), -sin(phase_step_rad));
-    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(outVector, inVector, phase_inc[0], phase, num_points);
+    volk_gnsssdr_16ic_s32fc_x2_rotator_16ic_neon_reload(outVector, inVector, &phase_inc[0], phase, num_points);
 }
 
 #endif /* LV_HAVE_NEON */

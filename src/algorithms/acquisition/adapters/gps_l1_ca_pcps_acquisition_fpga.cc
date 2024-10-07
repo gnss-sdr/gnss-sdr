@@ -24,12 +24,17 @@
 #include "gnss_sdr_fft.h"
 #include "gnss_sdr_flags.h"
 #include "gps_sdr_signal_replica.h"
-#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
 #include <algorithm>              // for copy_n
 #include <cmath>                  // for abs, pow, floor
 #include <complex>                // for complex
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
     const ConfigurationInterface* configuration,
@@ -43,14 +48,21 @@ GpsL1CaPcpsAcquisitionFpga::GpsL1CaPcpsAcquisitionFpga(
                                 in_streams_(in_streams),
                                 out_streams_(out_streams)
 {
-    acq_parameters_.SetFromConfiguration(configuration, role, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GPS_L1_CA_CODE_RATE_CPS, GPS_L1_CA_CODE_LENGTH_CHIPS);
+    acq_parameters_.SetFromConfiguration(configuration, role, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GPS_L1_CA_CODE_RATE_CPS, GPS_L1_CA_CODE_LENGTH_CHIPS);
 
     DLOG(INFO) << "role " << role;
 
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     fs_in_ = acq_parameters_.fs_in;

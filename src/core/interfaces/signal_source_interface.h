@@ -27,7 +27,12 @@
 #define GNSS_SDR_SIGNAL_SOURCE_INTERFACE_H
 
 #include "gnss_block_interface.h"
+
+#if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 /** \addtogroup Core
  * \{ */

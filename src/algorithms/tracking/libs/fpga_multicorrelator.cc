@@ -21,13 +21,18 @@
  */
 
 #include "fpga_multicorrelator.h"
-#include <glog/logging.h>
 #include <volk_gnsssdr/volk_gnsssdr.h>
 #include <cmath>
 #include <fcntl.h>  // for O_RDWR, O_RSYNC
 #include <string>
 #include <sys/mman.h>  // for PROT_READ, PROT_WRITE, MAP_SHARED
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
@@ -57,20 +62,26 @@ Fpga_Multicorrelator_8sc::Fpga_Multicorrelator_8sc(int32_t n_correlators,
       d_Prompt_Data(nullptr),
       d_shifts_chips(nullptr),
       d_prompt_data_shift(nullptr),
-      d_rem_code_phase_chips(0),
-      d_code_phase_step_chips(0),
-      d_rem_carrier_phase_in_rad(0),
-      d_phase_step_rad(0),
+      d_rem_code_phase_chips(0.0),
+      d_code_phase_step_chips(0.0),
+      d_code_phase_rate_step_chips(0.0),
+      d_rem_carrier_phase_in_rad(0.0),
+      d_phase_step_rad(0.0),
+      d_carrier_phase_rate_step_rad(0.0),
       d_code_length_samples(code_length_chips * code_samples_per_chip),
       d_n_correlators(n_correlators),
       d_device_descriptor(0),
       d_map_base(nullptr),
       d_correlator_length_samples(0),
       d_code_phase_step_chips_num(0),
+      d_code_phase_rate_step_chips_num(0),
       d_rem_carr_phase_rad_int(0),
       d_phase_step_rad_int(0),
+      d_carrier_phase_rate_step_rad_int(0),
       d_ca_codes(ca_codes),
       d_data_codes(data_codes),
+      d_secondary_code_0_length(0),
+      d_secondary_code_1_length(0),
       d_track_pilot(track_pilot),
       d_secondary_code_enabled(false)
 {

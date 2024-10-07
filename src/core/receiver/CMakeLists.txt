@@ -70,6 +70,10 @@ if(ENABLE_FPGA)
     target_compile_definitions(core_receiver PUBLIC -DENABLE_FPGA=1)
 endif()
 
+if(ENABLE_ION)
+    target_compile_definitions(core_receiver PRIVATE -DENABLE_ION_SOURCE=1)
+endif()
+
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(core_receiver PUBLIC -DGNURADIO_USES_STD_POINTERS=1)
 endif()
@@ -90,12 +94,24 @@ if(ENABLE_PLUTOSDR)
     target_compile_definitions(core_receiver PRIVATE -DPLUTOSDR_DRIVER=1)
 endif()
 
+if(ENABLE_AD936X_SDR)
+    target_compile_definitions(core_receiver PRIVATE -DAD936X_SDR_DRIVER=1)
+endif()
+
 if(ENABLE_FMCOMMS2)
     target_compile_definitions(core_receiver PRIVATE -DFMCOMMS2_DRIVER=1)
 endif()
 
 if(ENABLE_AD9361)
     target_compile_definitions(core_receiver PRIVATE -DAD9361_DRIVER=1)
+endif()
+
+if(ENABLE_MAX2771)
+    target_compile_definitions(core_receiver PRIVATE -DMAX2771_DRIVER=1)
+endif()
+
+if(ENABLE_DMA_PROXY)
+    target_compile_definitions(core_receiver PRIVATE -DDMA_PROXY_DRIVER=1)
 endif()
 
 if(ENABLE_OSMOSDR)
@@ -172,11 +188,17 @@ target_link_libraries(core_receiver
         telemetry_decoder_adapters
         obs_adapters
         pvt_adapters
+        gnss_sdr_flags
         Boost::headers
-        Gflags::gflags
-        Glog::glog
         Armadillo::armadillo
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(core_receiver PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(core_receiver PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(core_receiver PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_ARMA_NO_DEBUG)
     target_compile_definitions(core_receiver

@@ -26,15 +26,22 @@
 #include "gnss_sdr_make_unique.h"  // for std::make_unique in C++11
 #include "gnss_synchro.h"
 #include "tlm_utils.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
 #include <cstddef>          // for size_t
 #include <cstdlib>          // for abs
 #include <exception>        // for exception
+#include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
+#include <utility>          // for std::move
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #define CRC_ERROR_LIMIT 8
 
@@ -239,7 +246,7 @@ void beidou_b1i_telemetry_decoder_gs::decode_word(
 }
 
 
-void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
+void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols, double cn0)
 {
     // 1. Transform from symbols to bits
     std::string data_bits;
@@ -296,32 +303,64 @@ void beidou_b1i_telemetry_decoder_gs::decode_subframe(float *frame_symbols)
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Ephemeris> tmp_obj = std::make_shared<Beidou_Dnav_Ephemeris>(d_nav.get_ephemeris());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New BEIDOU B1I DNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << '\n';
+            LOG(INFO) << "BEIDOU DNAV Ephemeris have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
+            std::cout << "New BEIDOU B1I DNAV message received in channel " << d_channel
+                      << ": ephemeris from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision) << " dB-Hz" << std::endl;
         }
     if (d_nav.have_new_utc_model() == true)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Utc_Model> tmp_obj = std::make_shared<Beidou_Dnav_Utc_Model>(d_nav.get_utc_model());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New BEIDOU B1I DNAV utc model message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << '\n';
+            LOG(INFO) << "BEIDOU DNAV UTC Model data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
+            std::cout << "New BEIDOU B1I DNAV utc model message received in channel "
+                      << d_channel
+                      << ": UTC model parameters from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                      << " dB-Hz" << std::endl;
         }
     if (d_nav.have_new_iono() == true)
         {
             // get object for this SV (mandatory)
             const std::shared_ptr<Beidou_Dnav_Iono> tmp_obj = std::make_shared<Beidou_Dnav_Iono>(d_nav.get_iono());
             this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel << " from satellite " << d_satellite;
-            std::cout << "New BEIDOU B1I DNAV Iono message received in channel " << d_channel << ": Iono model parameters from satellite " << d_satellite << '\n';
+            LOG(INFO) << "BEIDOU DNAV Iono data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
+            std::cout << "New BEIDOU B1I DNAV Iono message received in channel " << d_channel
+                      << ": Iono model parameters from satellite " << d_satellite
+                      << " with CN0=" << cn0 << std::setprecision(default_precision)
+                      << " dB-Hz" << std::endl;
         }
     if (d_nav.have_new_almanac() == true)
         {
             // uint32_t slot_nbr = d_nav.i_alm_satellite_PRN;
             // std::shared_ptr<Beidou_Dnav_Almanac> tmp_obj = std::make_shared<Beidou_Dnav_Almanac>(d_nav.get_almanac(slot_nbr));
             // this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
-            LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel" << d_channel << " from satellite " << d_satellite << '\n';
-            std::cout << "New BEIDOU B1I DNAV almanac received in channel " << d_channel << " from satellite " << d_satellite << '\n';
+            LOG(INFO) << "BEIDOU DNAV Almanac data have been received in channel" << d_channel << " from satellite " << d_satellite << " with CN0=" << cn0 << " dB-Hz";
+#if __cplusplus == 201103L
+            const int default_precision = std::cout.precision();
+#else
+            const auto default_precision{std::cout.precision()};
+#endif
+            std::cout << "New BEIDOU B1I DNAV almanac received in channel " << d_channel
+                      << " from satellite " << d_satellite
+                      << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                      << " dB-Hz" << std::endl;
         }
 }
 
@@ -402,11 +441,11 @@ void beidou_b1i_telemetry_decoder_gs::set_channel(int32_t channel)
                         {
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << ": exception opening Beidou TLM dump file. " << e.what();
                         }
@@ -506,7 +545,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                                 }
 
                             // call the decoder
-                            decode_subframe(d_subframe_symbols.data());
+                            decode_subframe(d_subframe_symbols.data(), current_symbol.CN0_dB_hz);
 
                             if (d_nav.get_flag_CRC_test() == true)
                                 {
@@ -563,7 +602,7 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                         }
 
                     // call the decoder
-                    decode_subframe(d_subframe_symbols.data());
+                    decode_subframe(d_subframe_symbols.data(), current_symbol.CN0_dB_hz);
 
                     if (d_nav.get_flag_CRC_test() == true)
                         {
@@ -663,14 +702,14 @@ int beidou_b1i_telemetry_decoder_gs::general_work(int noutput_items __attribute_
                             tmp_int = static_cast<int32_t>(current_symbol.PRN);
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception writing Telemetry GPS L5 dump file " << e.what();
                         }
                 }
 
-            // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-            *out[0] = current_symbol;
+            // 3. Make the output (move the object contents to the GNURadio reserved memory)
+            *out[0] = std::move(current_symbol);
             return 1;
         }
     return 0;

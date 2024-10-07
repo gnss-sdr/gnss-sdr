@@ -84,7 +84,7 @@ public:
     inline std::string role() override { return role_; }
     inline std::string implementation() override { return std::string("Channel"); }  //!< Returns "Channel"
     inline size_t item_size() override { return 2 * sizeof(float); }
-    inline Gnss_Signal get_signal() const override { return gnss_signal_; }
+    Gnss_Signal get_signal() override;
     void start_acquisition() override;                          //!< Start the State Machine
     void stop_channel() override;                               //!< Stop the State Machine
     void set_signal(const Gnss_Signal& gnss_signal_) override;  //!< Sets the channel GNSS signal
@@ -96,7 +96,7 @@ public:
     inline std::shared_ptr<TelemetryDecoderInterface> telemetry() const { return nav_; }
 
 private:
-    bool glonass_dll_pll_c_aid_tracking_check();
+    bool glonass_dll_pll_c_aid_tracking_check() const;
     std::shared_ptr<ChannelFsm> channel_fsm_;
     std::shared_ptr<AcquisitionInterface> acq_;
     std::shared_ptr<TrackingInterface> trk_;

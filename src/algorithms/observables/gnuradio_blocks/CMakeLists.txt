@@ -31,11 +31,16 @@ target_link_libraries(obs_gr_blocks
     PRIVATE
         algorithms_libs
         core_system_parameters
-        Gflags::gflags
-        Glog::glog
         Matio::matio
         Gnuradio::pmt
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(obs_gr_blocks PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(obs_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(obs_gr_blocks PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(obs_gr_blocks
     PUBLIC

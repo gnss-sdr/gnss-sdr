@@ -6,12 +6,14 @@
 
 
 set(DATA_TYPE_GR_BLOCKS_SOURCES
+    cshort_to_gr_complex.cc
     interleaved_byte_to_complex_byte.cc
     interleaved_short_to_complex_short.cc
     interleaved_byte_to_complex_short.cc
 )
 
 set(DATA_TYPE_GR_BLOCKS_HEADERS
+    cshort_to_gr_complex.h
     interleaved_byte_to_complex_byte.h
     interleaved_short_to_complex_short.h
     interleaved_byte_to_complex_short.h
@@ -42,6 +44,7 @@ target_link_libraries(data_type_gr_blocks
         Boost::headers
     PRIVATE
         Volk::volk
+        Volkgnsssdr::volkgnsssdr
 )
 
 target_include_directories(data_type_gr_blocks

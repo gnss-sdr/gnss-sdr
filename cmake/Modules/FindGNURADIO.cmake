@@ -12,6 +12,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrLibPaths)
+endif()
+
 if(NOT PKG_CONFIG_FOUND)
     include(FindPkgConfig)
 endif()
@@ -105,35 +109,7 @@ function(GR_MODULE EXTVAR PCNAME INCFILE LIBFILE)
             HINTS ${PC_LIBDIR}
             PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib
                   ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib64
-                  /usr/lib
-                  /usr/lib64
-                  /usr/lib/x86_64-linux-gnu
-                  /usr/lib/i386-linux-gnu
-                  /usr/lib/arm-linux-gnueabihf
-                  /usr/lib/arm-linux-gnueabi
-                  /usr/lib/aarch64-linux-gnu
-                  /usr/lib/mipsel-linux-gnu
-                  /usr/lib/mips-linux-gnu
-                  /usr/lib/mips64el-linux-gnuabi64
-                  /usr/lib/powerpc-linux-gnu
-                  /usr/lib/powerpc64-linux-gnu
-                  /usr/lib/powerpc64le-linux-gnu
-                  /usr/lib/powerpc-linux-gnuspe
-                  /usr/lib/hppa-linux-gnu
-                  /usr/lib/s390x-linux-gnu
-                  /usr/lib/i386-gnu
-                  /usr/lib/hppa-linux-gnu
-                  /usr/lib/x86_64-kfreebsd-gnu
-                  /usr/lib/i386-kfreebsd-gnu
-                  /usr/lib/m68k-linux-gnu
-                  /usr/lib/sh4-linux-gnu
-                  /usr/lib/sparc64-linux-gnu
-                  /usr/lib/x86_64-linux-gnux32
-                  /usr/lib/alpha-linux-gnu
-                  /usr/lib/riscv64-linux-gnu
-                  /usr/local/lib
-                  /usr/local/lib64
-                  /opt/local/lib
+                  ${GNSSSDR_LIB_PATHS}
         )
         list(APPEND ${LIBVAR_NAME} ${${LIBVAR_NAME}_${libname}})
     endforeach()
@@ -313,35 +289,7 @@ if(GNURADIO_VERSION VERSION_GREATER 3.8.99)
         HINTS ${PC_GNURADIO_IIO_LIBDIR}
         PATHS ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib
               ${GNURADIO_INSTALL_PREFIX_USER_PROVIDED}/lib64
-              /usr/lib
-              /usr/lib64
-              /usr/lib/x86_64-linux-gnu
-              /usr/lib/i386-linux-gnu
-              /usr/lib/arm-linux-gnueabihf
-              /usr/lib/arm-linux-gnueabi
-              /usr/lib/aarch64-linux-gnu
-              /usr/lib/mipsel-linux-gnu
-              /usr/lib/mips-linux-gnu
-              /usr/lib/mips64el-linux-gnuabi64
-              /usr/lib/powerpc-linux-gnu
-              /usr/lib/powerpc64-linux-gnu
-              /usr/lib/powerpc64le-linux-gnu
-              /usr/lib/powerpc-linux-gnuspe
-              /usr/lib/hppa-linux-gnu
-              /usr/lib/s390x-linux-gnu
-              /usr/lib/i386-gnu
-              /usr/lib/hppa-linux-gnu
-              /usr/lib/x86_64-kfreebsd-gnu
-              /usr/lib/i386-kfreebsd-gnu
-              /usr/lib/m68k-linux-gnu
-              /usr/lib/sh4-linux-gnu
-              /usr/lib/sparc64-linux-gnu
-              /usr/lib/x86_64-linux-gnux32
-              /usr/lib/alpha-linux-gnu
-              /usr/lib/riscv64-linux-gnu
-              /usr/local/lib
-              /usr/local/lib64
-              /opt/local/lib
+              ${GNSSSDR_LIB_PATHS}
     )
 
     if(GNURADIO_IIO_LIBRARIES)
@@ -406,7 +354,7 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
             if("#include <log4cpp/Category.hh>" STREQUAL "${_file_line}")
                 set(_uses_log4cpp TRUE)
             endif()
-            if("#include <spdlog/common.h>" STREQUAL "${_file_line}")
+            if("#include <spdlog/spdlog.h>" STREQUAL "${_file_line}")
                 set(_uses_spdlog TRUE)
             endif()
         endforeach()
@@ -418,8 +366,10 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
             )
             if(CMAKE_VERSION VERSION_GREATER 3.13)
                 target_link_libraries(Gnuradio::filter INTERFACE Log4cpp::log4cpp)
+                target_link_libraries(Gnuradio::runtime INTERFACE Log4cpp::log4cpp)
             else()
-                set(LOG4CPP_WITH_OLD_CMAKE TRUE)
+                set_target_properties(Gnuradio::filter PROPERTIES INTERFACE_LINK_LIBRARIES Log4cpp::log4cpp)
+                set_target_properties(Gnuradio::runtime PROPERTIES INTERFACE_LINK_LIBRARIES Log4cpp::log4cpp)
             endif()
         endif()
         if(${_uses_spdlog})
@@ -431,8 +381,13 @@ if(GNURADIO_RUNTIME_INCLUDE_DIRS)
                 TYPE REQUIRED
             )
             set(GNURADIO_USES_SPDLOG TRUE)
-            target_link_libraries(Gnuradio::runtime INTERFACE spdlog::spdlog)
-            target_link_libraries(Gnuradio::blocks INTERFACE spdlog::spdlog)
+            if(CMAKE_VERSION VERSION_GREATER 3.13)
+                target_link_libraries(Gnuradio::runtime INTERFACE spdlog::spdlog)
+                target_link_libraries(Gnuradio::blocks INTERFACE spdlog::spdlog)
+            else()
+                set_target_properties(Gnuradio::runtime PROPERTIES INTERFACE_LINK_LIBRARIES spdlog::spdlog)
+                set_target_properties(Gnuradio::blocks PROPERTIES INTERFACE_LINK_LIBRARIES spdlog::spdlog)
+            endif()
         endif()
     endif()
 endif()

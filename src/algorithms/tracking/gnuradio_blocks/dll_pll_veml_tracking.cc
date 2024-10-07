@@ -45,7 +45,6 @@
 #include "gps_sdr_signal_replica.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>   // for io_signature
 #include <gnuradio/thread/thread.h>  // for scoped_lock
 #include <matio.h>                   // for Mat_VarCreate
@@ -60,6 +59,12 @@
 #include <memory>
 #include <numeric>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -126,12 +131,16 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
       d_acc_carrier_phase_initialized(false),
       d_Flag_PLL_180_deg_phase_locked(false)
 {
+#if GNURADIO_GREATER_THAN_38
+    this->set_relative_rate(1, static_cast<uint64_t>(d_trk_parameters.vector_length));
+#else
+    this->set_relative_rate(1.0 / static_cast<double>(d_trk_parameters.vector_length));
+#endif
     // prevent telemetry symbols accumulation in output buffers
     this->set_max_noutput_items(1);
 
     // Telemetry bit synchronization message port input
     this->message_port_register_out(pmt::mp("events"));
-    this->set_relative_rate(1.0 / static_cast<double>(d_trk_parameters.vector_length));
 
     // Telemetry message port input
     this->message_port_register_in(pmt::mp("telemetry_to_trk"));
@@ -570,7 +579,7 @@ dll_pll_veml_tracking::dll_pll_veml_tracking(const Dll_Pll_Conf &conf_)
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -1460,7 +1469,7 @@ void dll_pll_veml_tracking::log_data()
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
-            catch (const std::ifstream::failure &e)
+            catch (const std::ofstream::failure &e)
                 {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
                 }
@@ -1568,7 +1577,7 @@ int32_t dll_pll_veml_tracking::save_matfile() const
     // WRITE MAT FILE
     mat_t *matfp;
     matvar_t *matvar;
-    std::string filename = dump_filename_;
+    std::string filename = std::move(dump_filename_);
     filename.erase(filename.length() - 4, 4);
     filename.append(".mat");
     matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
@@ -1686,11 +1695,11 @@ void dll_pll_veml_tracking::set_channel(uint32_t channel)
                 {
                     try
                         {
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(dump_filename_.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << dump_filename_.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                         }
@@ -1855,7 +1864,7 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                                                 if (next_state)
                                                     {
                                                         LOG(INFO) << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
-                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
+                                                                  << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN);
                                                         std::cout << d_systemName << " " << d_signal_pretty_name << " tracking bit synchronization locked in channel " << d_channel
                                                                   << " for satellite " << Gnss_Satellite(d_systemName, d_acquisition_gnss_synchro->PRN) << '\n';
                                                     }
@@ -2062,7 +2071,6 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
             current_synchro_data.Tracking_sample_counter = this->nitems_read(0);
             current_synchro_data.Flag_valid_symbol_output = !loss_of_lock;
             current_synchro_data.Flag_PLL_180_deg_phase_locked = d_Flag_PLL_180_deg_phase_locked;
-            *out[0] = current_synchro_data;
 
             // generate new tag associated with gnss-synchro object
 
@@ -2084,6 +2092,17 @@ int dll_pll_veml_tracking::general_work(int noutput_items __attribute__((unused)
                     d_timetag_waiting = false;
                 }
 
+            std::vector<gr::tag_t> tags{};
+            // get_tags_in_window(tags, 0, 0, ninput_items[0], pmt::mp("extra_data"));
+            get_tags_in_range(tags, 0, nitems_read(0) - d_current_prn_length_samples, nitems_read(0), pmt::mp("extra_data"));
+
+            for (const auto &tag : tags)
+                {
+                    add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
+                    // std::cout << "[ED TAG (TRK)] [" << std::to_string(tag.offset) << "] ";
+                    // std::cout << std::endl;
+                }
+            *out[0] = std::move(current_synchro_data);
             return 1;
         }
     return 0;

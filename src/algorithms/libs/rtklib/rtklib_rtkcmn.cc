@@ -30,7 +30,6 @@
  *----------------------------------------------------------------------------*/
 
 #include "rtklib_rtkcmn.h"
-#include <glog/logging.h>
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -42,6 +41,12 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 const double GPST0[] = {1980, 1, 6, 0, 0, 0}; /* gps time reference */
 const double GST0[] = {1999, 8, 22, 0, 0, 0}; /* galileo system time reference */
@@ -229,7 +234,7 @@ void fatalerr(const char *format, ...)
     char msg[1024];
     va_list ap;
     va_start(ap, format);
-    vsprintf(msg, format, ap);
+    vsnprintf(msg, sizeof(msg), format, ap);
     va_end(ap);
     fprintf(stderr, "%s", msg);
     exit(-9);
@@ -1034,7 +1039,7 @@ double *zeros(int n, int m)
         {
             return nullptr;
         }
-    if (!(p = static_cast<double *>(calloc(sizeof(double), n * m))))
+    if (!(p = static_cast<double *>(calloc(n * m, sizeof(double)))))
         {
             fatalerr("matrix memory allocation error: n=%d,m=%d\n", n, m);
         }
@@ -1584,11 +1589,11 @@ void time2epoch(gtime_t t, double *ep)
                     break;
                 }
         }
-    ep[0] = 1970 + static_cast<int>(days / 1461) * 4 + static_cast<int>(mon / 12);
+    ep[0] = 1970 + days / 1461 * 4 + mon / 12;
     ep[1] = mon % 12 + 1;
     ep[2] = day + 1;
-    ep[3] = static_cast<int>(sec / 3600);
-    ep[4] = static_cast<int>(sec % 3600 / 60);
+    ep[3] = sec / 3600;
+    ep[4] = sec % 3600 / 60;
     ep[5] = sec % 60 + t.sec;
 }
 
@@ -2847,11 +2852,13 @@ int readantex(const char *file, pcvs_t *pcvs)
                 {
                     strncpy(pcv.type, buff, 20);  // MAXANT (64)
                     pcv.type[20] = '\0';
-                    strncpy(pcv.code, buff + 20, 20);  // MAXANT (64)
-                    pcv.code[20] = '\0';
-                    if (!strncmp(pcv.code + 3, "        ", 8))
+                    int ret = std::snprintf(pcv.code, 20, "%s", buff + 20);  // NOLINT(runtime/printf)
+                    if (ret >= 0 && ret < 20)
                         {
-                            pcv.sat = satid2no(pcv.code);
+                            if (!strncmp(pcv.code + 3, "        ", 8))
+                                {
+                                    pcv.sat = satid2no(pcv.code);
+                                }
                         }
                 }
             else if (strstr(buff + 60, "VALID FROM"))
@@ -2981,7 +2988,7 @@ pcv_t *searchpcv(int sat, const char *type, gtime_t time,
     const pcvs_t *pcvs)
 {
     pcv_t *pcv;
-    char buff[MAXANT] = "";
+    char buff[MAXANT + 1] = "";
     char *types[2];
     char *p;
     int i;
@@ -3103,7 +3110,7 @@ void readpos(const char *file, const char *rcv, double *pos)
                     continue;
                 }
             auto sta = stas[np++];  // NOLINT(readability-qualified-auto)
-            std::strncpy(sta, str, 16);
+            strncpy_no_trunc(sta, 16, str, 256);
             sta[15] = '\0';
         }
     fclose(fp);
@@ -3610,7 +3617,7 @@ int readnav(const char *file, nav_t *nav)
 {
     FILE *fp;
     eph_t eph0 = {0, 0, 0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {0, 0}, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {}, {}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
     geph_t geph0 = {0, 0, 0, 0, 0, 0, {0, 0}, {0, 0}, {}, {}, {}, 0.0, 0.0, 0.0};
     char buff[4096];
     char *p;
@@ -3728,12 +3735,12 @@ int savenav(const char *file, const nav_t *nav)
                 }
             auto id = satno2id(nav->eph[i].sat);
             fprintf(fp,
-                "%s,%d,%d,%d,%d,%d,%d,%d,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
+                "%s,%d,%d,%d,%d,%ld,%ld,%ld,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%d,%d\n",
                 id.data(), nav->eph[i].iode, nav->eph[i].iodc, nav->eph[i].sva,
-                nav->eph[i].svh, static_cast<int>(nav->eph[i].toe.time),
-                static_cast<int>(nav->eph[i].toc.time), static_cast<int>(nav->eph[i].ttr.time),
+                nav->eph[i].svh, static_cast<intmax_t>(nav->eph[i].toe.time),
+                static_cast<intmax_t>(nav->eph[i].toc.time), static_cast<intmax_t>(nav->eph[i].ttr.time),
                 nav->eph[i].A, nav->eph[i].e, nav->eph[i].i0, nav->eph[i].OMG0,
                 nav->eph[i].omg, nav->eph[i].M0, nav->eph[i].deln, nav->eph[i].OMGd,
                 nav->eph[i].idot, nav->eph[i].crc, nav->eph[i].crs, nav->eph[i].cuc,
@@ -3749,11 +3756,11 @@ int savenav(const char *file, const nav_t *nav)
                 }
             auto id = satno2id(nav->geph[i].sat);
             fprintf(fp,
-                "%s,%d,%d,%d,%d,%d,%d,%d,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
+                "%s,%d,%d,%d,%d,%d,%ld,%ld,%.14E,%.14E,%.14E,%.14E,%.14E,%.14E,"
                 "%.14E,%.14E,%.14E,%.14E,%.14E,%.14E\n",
                 id.data(), nav->geph[i].iode, nav->geph[i].frq, nav->geph[i].svh,
-                nav->geph[i].sva, nav->geph[i].age, static_cast<int>(nav->geph[i].toe.time),
-                static_cast<int>(nav->geph[i].tof.time),
+                nav->geph[i].sva, nav->geph[i].age, static_cast<intmax_t>(nav->geph[i].toe.time),
+                static_cast<intmax_t>(nav->geph[i].tof.time),
                 nav->geph[i].pos[0], nav->geph[i].pos[1], nav->geph[i].pos[2],
                 nav->geph[i].vel[0], nav->geph[i].vel[1], nav->geph[i].vel[2],
                 nav->geph[i].acc[0], nav->geph[i].acc[1], nav->geph[i].acc[2],
@@ -4082,7 +4089,7 @@ void trace(int level, const char *format, ...)
     va_list ap;
     char buffer[256];
     va_start(ap, format);
-    vsprintf(buffer, format, ap);
+    vsnprintf(buffer, sizeof(buffer), format, ap);
     va_end(ap);
     std::string str(buffer);
     VLOG(level) << "RTKLIB TRACE[" << level << "]:" << str;
@@ -5015,6 +5022,7 @@ int rtk_uncompress(const char *file, char *uncfile)
     char *p;
     char cmd[2048] = "";
     char tmpfile[1024] = "";
+    tmpfile[1023] = '\0';
     char buff[1024];
     char *fname;
     char *dir = const_cast<char *>("");
@@ -5065,6 +5073,7 @@ int rtk_uncompress(const char *file, char *uncfile)
             std::strncpy(uncfile, tmpfile, 1024);
             uncfile[p - tmpfile] = '\0';
             std::strncpy(buff, tmpfile, 1024);
+            buff[1023] = '\0';
             fname = buff;
             if ((p = strrchr(buff, '/')))
                 {
@@ -5156,6 +5165,7 @@ int expath(const char *path, char *paths[], int nmax)
     int j;
     int n = 0;
     char tmp[1024] = "";
+    tmp[1023] = '\0';
     struct dirent *d;
     DIR *dp;
     const char *file = path;
@@ -5228,6 +5238,7 @@ int expath(const char *path, char *paths[], int nmax)
                                 }
                             std::strncpy(paths[i], paths[j], 1024);
                             std::strncpy(paths[j], tmp, 1024);
+                            paths[j][1023] = '\0';
                         }
                 }
         }

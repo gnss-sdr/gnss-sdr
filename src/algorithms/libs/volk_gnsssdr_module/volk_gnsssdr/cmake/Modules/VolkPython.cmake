@@ -16,32 +16,28 @@ set(__INCLUDED_VOLK_PYTHON_CMAKE TRUE)
 # - cmd an additional command to run
 # - have the result variable to set
 ########################################################################
-macro(VOLK_PYTHON_CHECK_MODULE_RAW desc python_code have)
+macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
+    message(STATUS "Python checking for ${desc}")
     execute_process(
-        COMMAND ${PYTHON_EXECUTABLE} -c "${python_code}"
+        COMMAND ${PYTHON_EXECUTABLE} -c "
+#########################################
+try: import ${mod}
+except:
+    try: ${mod}
+    except: exit(-1)
+try: assert ${cmd}
+except: exit(-1)
+#########################################"
         OUTPUT_QUIET ERROR_QUIET
-        RESULT_VARIABLE return_code
+        RESULT_VARIABLE ${have}
     )
-    if(return_code EQUAL 0)
+    if(${have} EQUAL 0)
         message(STATUS "Python checking for ${desc} - found")
         set(${have} TRUE)
     else()
         message(STATUS "Python checking for ${desc} - not found")
         set(${have} FALSE)
     endif()
-endmacro()
-
-macro(VOLK_PYTHON_CHECK_MODULE desc mod cmd have)
-    volk_python_check_module_raw(
-        "${desc}" "
-#########################################
-try:
-    import ${mod}
-    assert ${cmd}
-except (ImportError, AssertionError): exit(-1)
-except: pass
-#########################################"
-    "${have}")
 endmacro()
 
 
@@ -56,21 +52,62 @@ set(VOLK_PYTHON3_MIN_VERSION "3.4")
 if(CMAKE_VERSION VERSION_LESS 3.12 OR CMAKE_CROSSCOMPILING)
     if(PYTHON_EXECUTABLE)
         message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+        if(CMAKE_VERSION VERSION_LESS "3.24") # For cross-compiling
+            find_package(PythonInterp ${VOLK_PYTHON_MIN3_VERSION} REQUIRED)
+        else()
+            set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
+            find_package(Python COMPONENTS Interpreter)
+            set(PYTHONINTERP_FOUND Python_Interpreter_FOUND)
+            set(PYTHON_VERSION_MAJOR "${Python_VERSION_MAJOR}")
+            set(PYTHON_VERSION_STRING "${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+        endif()
+        if(PYTHON_VERSION_STRING VERSION_LESS "3.0")
+            volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+        endif()
     else()
         message(STATUS "PYTHON_EXECUTABLE not set - trying by default python3")
         message(STATUS "Use -DPYTHON_EXECUTABLE=/path/to/python to build for python 2.7")
-        set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6 3.7 3.8 3.9)
-        find_package(PythonInterp ${VOLK_PYTHON_MIN3_VERSION})
+        if(CMAKE_VERSION VERSION_LESS "3.24") # For cross-compiling
+            set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6 3.7 3.8 3.9 3.10 3.11)
+            find_package(PythonInterp ${VOLK_PYTHON_MIN3_VERSION} REQUIRED)
+        else()
+            find_package(Python COMPONENTS Interpreter)
+            set(PYTHONINTERP_FOUND Python_Interpreter_FOUND)
+            set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}")
+            set(PYTHON_VERSION_MAJOR "${Python_VERSION_MAJOR}")
+            set(PYTHON_VERSION_STRING "${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+        endif()
         if(NOT PYTHONINTERP_FOUND)
             message(STATUS "python3 not found - trying with python2.7")
-            find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+            if(CMAKE_VERSION VERSION_LESS "3.24")
+                find_package(PythonInterp ${VOLK_PYTHON_MIN3_VERSION} REQUIRED)
+            else()
+                find_package(Python2 COMPONENTS Interpreter)
+                set(PYTHONINTERP_FOUND Python2_Interpreter_FOUND)
+                set(PYTHON_VERSION_MAJOR "${Python2_VERSION_MAJOR}")
+                set(PYTHON_EXECUTABLE "${Python2_EXECUTABLE}")
+                set(PYTHON_VERSION_STRING "${Python2_VERSION_MAJOR}.${Python2_VERSION_MINOR}")
+                volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+            endif()
         endif()
     endif()
+    volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
 else()
     if(PYTHON_EXECUTABLE)
         message(STATUS "User set python executable ${PYTHON_EXECUTABLE}")
-        find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+        if(CMAKE_VERSION VERSION_LESS "3.24")
+            find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION} REQUIRED)
+        else()
+            set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
+            find_package(Python COMPONENTS Interpreter)
+            set(PYTHONINTERP_FOUND Python_Interpreter_FOUND)
+            set(PYTHON_VERSION_MAJOR "${Python_VERSION_MAJOR}")
+            set(PYTHON_VERSION_STRING "${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+        endif()
+        volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+        if(PYTHON_VERSION_STRING VERSION_LESS "3.0")
+            volk_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+        endif()
     else()
         if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
             set(_previous ${CMAKE_FIND_FRAMEWORK})
@@ -97,22 +134,73 @@ else()
             endif()
             if(NOT MAKO_FOUND OR NOT SIX_FOUND)
                 unset(PYTHON_EXECUTABLE)
-                find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+                if(CMAKE_VERSION VERSION_LESS "3.24")
+                    find_package(PythonInterp ${VOLK_PYTHON_MIN_VERSION})
+                else()
+                    find_package(Python COMPONENTS Interpreter)
+                    set(PYTHONINTERP_FOUND Python_Interpreter_FOUND)
+                    set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}")
+                    set(PYTHON_VERSION_MAJOR "${Python_VERSION_MAJOR}")
+                    set(PYTHON_VERSION_STRING "${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+                endif()
+                volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+                if(NOT MAKO_FOUND)
+                    unset(PYTHON_EXECUTABLE)
+                    unset(PYTHON_VERSION_STRING)
+                    find_program(PYTHON_EXECUTABLE NAMES python3 python)
+                    if(PYTHON_EXECUTABLE)
+                        set(PYTHONINTERP_FOUND TRUE)
+                        execute_process(COMMAND ${PYTHON_EXECUTABLE} --version OUTPUT_VARIABLE PYTHON_VERSION_STRING_AUX)
+                        string(FIND "${PYTHON_VERSION_STRING_AUX}" " " blank_char_index)
+                        if(blank_char_index GREATER -1)
+                            math(EXPR start_index "${blank_char_index} + 1")
+                            string(SUBSTRING "${PYTHON_VERSION_STRING_AUX}" ${start_index} -1 PYTHON_VERSION_STRING)
+                            string(STRIP ${PYTHON_VERSION_STRING} PYTHON_VERSION_STRING)
+                            string(SUBSTRING "${PYTHON_VERSION_STRING_AUX}" ${start_index} 1 PYTHON_VERSION_MAJOR)
+                            message(STATUS "Found Python: ${PYTHON_EXECUTABLE} (found version: ${PYTHON_VERSION_STRING})")
+                        else()
+                            string(FIND ${PYTHON_EXECUTABLE} "python3" is_python3)
+                            if(is_python3 GREATER -1)
+                                set(PYTHON_VERSION_MAJOR "3")
+                                set(PYTHON_VERSION_STRING "3.10") # ?
+                            else()
+                                set(PYTHON_VERSION_MAJOR "2")
+                                set(PYTHON_VERSION_STRING "2.7")
+                            endif()
+                        endif()
+                        volk_python_check_module("mako >= 0.4.2" mako "mako.__version__ >= '0.4.2'" MAKO_FOUND)
+                        if(MAKO_FOUND AND PYTHON_VERSION_STRING VERSION_LESS "3.0")
+                            gnsssdr_python_check_module("six - python 2 and 3 compatibility library" six "True" SIX_FOUND)
+                        endif()
+                    endif()
+                endif()
             endif()
         endif()
     endif()
 endif()
 
-if(${PYTHON_VERSION_MAJOR} VERSION_EQUAL 3)
+if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL 3)
     set(PYTHON3 TRUE)
 endif()
+
 
 
 ########################################################################
 # Sets the python installation directory VOLK_PYTHON_DIR
 ########################################################################
 if(NOT DEFINED VOLK_PYTHON_DIR)
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
+    if(PYTHON_VERSION_STRING VERSION_GREATER "3.9.99")
+        execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
+import os
+import sys
+if os.name == 'posix':
+    print(os.path.join('lib', 'python' + sys.version[:4], 'dist-packages'))
+if os.name == 'nt':
+    print(os.path.join('Lib', 'site-packages'))
+" OUTPUT_VARIABLE VOLK_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    else()
+        execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "
 import os
 import sys
 if os.name == 'posix':
@@ -120,7 +208,8 @@ if os.name == 'posix':
 if os.name == 'nt':
     print(os.path.join('Lib', 'site-packages'))
 " OUTPUT_VARIABLE VOLK_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+        )
+    endif()
 endif()
 file(TO_CMAKE_PATH ${VOLK_PYTHON_DIR} VOLK_PYTHON_DIR)
 
@@ -132,7 +221,7 @@ function(VOLK_UNIQUE_TARGET desc)
     file(RELATIVE_PATH reldir ${PROJECT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR})
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import re, hashlib
 unique = hashlib.sha256(b'${reldir}${ARGN}').hexdigest()[:5]
-print(re.sub('\\W', '_', '${desc} ${reldir} ' + unique))"
+print(re.sub(r'\\W', '_', '${desc} ${reldir} ' + unique))"
     OUTPUT_VARIABLE _target OUTPUT_STRIP_TRAILING_WHITESPACE)
     add_custom_target(${_target} ALL DEPENDS ${ARGN})
 endfunction()

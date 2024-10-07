@@ -56,7 +56,7 @@ private:
     {
     public:
         int num_states;
-        Prev(int states, int t);
+        Prev(int states, int tt);
         Prev(const Prev& prev);
         Prev& operator=(const Prev& other);
         ~Prev();

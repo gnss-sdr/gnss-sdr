@@ -55,7 +55,8 @@ public:
 
     inline Serdes_Galileo_Eph& operator=(const Serdes_Galileo_Eph& rhs) noexcept  //!< Copy assignment operator
     {
-        this->monitor_ = rhs.monitor_;
+        Serdes_Galileo_Eph temp(rhs);
+        std::swap(this->monitor_, temp.monitor_);
         return *this;
     }
 
@@ -65,10 +66,7 @@ public:
 
     inline Serdes_Galileo_Eph& operator=(Serdes_Galileo_Eph&& other) noexcept  //!< Move assignment operator
     {
-        if (this != &other)
-            {
-                this->monitor_ = std::move(other.monitor_);
-            }
+        std::swap(this->monitor_, other.monitor_);
         return *this;
     }
 

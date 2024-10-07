@@ -1,6 +1,7 @@
 /*!
  * \file file_timestamp_signal_source.h
- * \brief This class reads samples stored in a file and generate stream tags with its timestamp information stored in separated file
+ * \brief This class reads samples stored in a file and generate stream tags
+ * with its timestamp information stored in separated file
  * \author Javier Arribas, jarribas(at)cttc.es
  *
  * -----------------------------------------------------------------------------

@@ -18,9 +18,15 @@
 #include "nav_message_udp_sink.h"
 #include <iostream>
 #include <sstream>
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
-Nav_Message_Udp_Sink::Nav_Message_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port) : socket{io_context}
+Nav_Message_Udp_Sink::Nav_Message_Udp_Sink(const std::vector<std::string>& addresses, const uint16_t& port)
+    : socket{io_context}
 {
     for (const auto& address : addresses)
         {
@@ -35,22 +41,30 @@ bool Nav_Message_Udp_Sink::write_nav_message(const std::shared_ptr<Nav_Message_P
 {
     std::string outbound_data = serdes_nav.createProtobuffer(nav_meg_packet);
 
-    for (const auto& endpoint : endpoints)
+    try
         {
-            socket.open(endpoint.protocol(), error);
-            socket.connect(endpoint, error);
-
-            try
+            for (const auto& endpoint : endpoints)
                 {
-                    if (socket.send(boost::asio::buffer(outbound_data)) == 0)
+                    socket.open(endpoint.protocol(), error);  // NOLINT(bugprone-unused-return-value)
+                    socket.connect(endpoint, error);          // NOLINT(bugprone-unused-return-value)
+                    if (error)
+                        {
+                            LOG(WARNING) << "Error connecting to IP address " << endpoint.address()
+                                         << ", port " << static_cast<int>(endpoint.port()) << ": " << error.message();
+                            return false;
+                        }
+
+                    if (socket.send(boost::asio::buffer(outbound_data)) == 0)  // this can throw
                         {
                             return false;
                         }
                 }
-            catch (boost::system::system_error const& e)
-                {
-                    return false;
-                }
         }
+    catch (const boost::system::system_error& e)
+        {
+            std::cerr << "Error sending navigation data: " << e.what() << '\n';
+            return false;
+        }
+
     return true;
 }

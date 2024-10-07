@@ -24,7 +24,6 @@
 #include "gps_iono.h"              // for Gps_Iono
 #include "gps_utc_model.h"         // for Gps_Utc_Model
 #include "tlm_utils.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
@@ -33,9 +32,17 @@
 #include <cstddef>          // for size_t
 #include <cstring>          // for memcpy
 #include <exception>        // for exception
+#include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr
+#include <utility>          // for std::move
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifdef COMPILER_HAS_ROTL
 #include <bit>
@@ -234,12 +241,12 @@ void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
                         {
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
                                       << " Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                         }
@@ -254,7 +261,7 @@ void gps_l1_ca_telemetry_decoder_gs::set_channel(int32_t channel)
 }
 
 
-bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(bool flag_invert)
+bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(double cn0, bool flag_invert)
 {
     std::array<char, GPS_SUBFRAME_LENGTH> subframe{};
     int32_t frame_bit_index = 0;
@@ -350,11 +357,6 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(bool flag_invert)
             const int32_t subframe_ID = d_nav.subframe_decoder(subframe.data());  // decode the subframe
             if (subframe_ID > 0 && subframe_ID < 6)
                 {
-                    std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
-                              << "subframe "
-                              << subframe_ID << " from satellite "
-                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN()) << '\n';
-
                     switch (subframe_ID)
                         {
                         case 1:
@@ -401,6 +403,17 @@ bool gps_l1_ca_telemetry_decoder_gs::decode_subframe(bool flag_invert)
                         default:
                             break;
                         }
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
+                    const auto default_precision{std::cout.precision()};
+#endif
+                    std::cout << "New GPS NAV message received in channel " << this->d_channel << ": "
+                              << "subframe "
+                              << subframe_ID << " from satellite "
+                              << Gnss_Satellite(std::string("GPS"), d_nav.get_satellite_PRN())
+                              << " with CN0=" << std::setprecision(2) << cn0 << std::setprecision(default_precision)
+                              << " dB-Hz" << std::endl;
                     return true;
                 }
         }
@@ -417,6 +430,122 @@ void gps_l1_ca_telemetry_decoder_gs::reset()
     d_symbol_history.clear();
     d_stat = 0;
     DLOG(INFO) << "Telemetry decoder reset for satellite " << d_satellite;
+}
+
+
+void gps_l1_ca_telemetry_decoder_gs::check_tlm_separation()
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    if (d_stat < 2 && d_sent_tlm_failed_msg == false)
+        {
+            if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
+                {
+                    const int message = 1;  // bad telemetry
+                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
+                    d_sent_tlm_failed_msg = true;
+                }
+        }
+}
+
+
+void gps_l1_ca_telemetry_decoder_gs::frame_synchronization(const Gnss_Synchro &current_gs)
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    switch (d_stat)
+        {
+        case 0:  // no preamble information
+            {
+                // correlate with preamble
+                int32_t corr_value = 0;
+                if (d_symbol_history.size() >= d_required_symbols)
+                    {
+                        // ******* preamble correlation ********
+                        for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
+                            {
+                                if (d_symbol_history[i] < 0.0)  // symbols clipping
+                                    {
+                                        corr_value -= d_preamble_samples[i];
+                                    }
+                                else
+                                    {
+                                        corr_value += d_preamble_samples[i];
+                                    }
+                            }
+                    }
+                if (abs(corr_value) >= d_samples_per_preamble)
+                    {
+                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp
+                        if (corr_value < 0)
+                            {
+                                d_flag_PLL_180_deg_phase_locked = true;
+                            }
+                        else
+                            {
+                                d_flag_PLL_180_deg_phase_locked = false;
+                            }
+                        DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
+                        d_prev_GPS_frame_4bytes = 0;
+                        if (decode_subframe(current_gs.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
+                            {
+                                d_CRC_error_counter = 0;
+                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
+                                d_last_valid_preamble = d_sample_counter;
+                                if (!d_flag_frame_sync)
+                                    {
+                                        d_flag_frame_sync = true;
+                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                    }
+                                d_stat = 1;  // preamble acquired
+                            }
+                    }
+                d_flag_TOW_set = false;
+                break;
+            }
+        case 1:  // preamble acquired
+            {
+                if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
+                    {
+                        DLOG(INFO) << "Preamble received for SAT " << this->d_satellite << "d_sample_counter=" << d_sample_counter << "\n";
+                        // call the decoder
+                        // 0. fetch the symbols into an array
+                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
+
+                        if (decode_subframe(current_gs.CN0_dB_hz, d_flag_PLL_180_deg_phase_locked))
+                            {
+                                d_CRC_error_counter = 0;
+                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
+                                d_last_valid_preamble = d_sample_counter;
+                                if (!d_flag_frame_sync)
+                                    {
+                                        d_flag_frame_sync = true;
+                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
+                                    }
+                            }
+                        else
+                            {
+                                d_CRC_error_counter++;
+                                if (d_CRC_error_counter > 2)
+                                    {
+                                        DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
+                                        d_flag_frame_sync = false;
+                                        d_stat = 0;
+                                        d_TOW_at_current_symbol_ms = 0;
+                                        d_TOW_at_Preamble_ms = 0;
+                                        d_CRC_error_counter = 0;
+                                        d_flag_TOW_set = false;
+                                    }
+                            }
+                    }
+                break;
+            }
+        }
+}
+
+
+bool gps_l1_ca_telemetry_decoder_gs::is_PLL_180_deg_phase_locked()
+{
+    gr::thread::scoped_lock lock(d_setlock);
+    return d_flag_PLL_180_deg_phase_locked;
 }
 
 
@@ -453,108 +582,12 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
     d_sample_counter++;  // count for the processed symbols
     consume_each(1);
     d_flag_preamble = false;
+
     // check if there is a problem with the telemetry of the current satellite
-    if (d_stat < 2 && d_sent_tlm_failed_msg == false)
-        {
-            if ((d_sample_counter - d_last_valid_preamble) > d_max_symbols_without_valid_frame)
-                {
-                    const int message = 1;  // bad telemetry
-                    this->message_port_pub(pmt::mp("telemetry_to_trk"), pmt::make_any(message));
-                    d_sent_tlm_failed_msg = true;
-                }
-        }
+    check_tlm_separation();
 
-    // ******* frame sync ******************
-    switch (d_stat)
-        {
-        case 0:  // no preamble information
-            {
-                // correlate with preamble
-                int32_t corr_value = 0;
-                if (d_symbol_history.size() >= d_required_symbols)
-                    {
-                        // ******* preamble correlation ********
-                        for (int32_t i = 0; i < GPS_CA_PREAMBLE_LENGTH_BITS; i++)
-                            {
-                                if (d_symbol_history[i] < 0.0)  // symbols clipping
-                                    {
-                                        corr_value -= d_preamble_samples[i];
-                                    }
-                                else
-                                    {
-                                        corr_value += d_preamble_samples[i];
-                                    }
-                            }
-                    }
-                if (abs(corr_value) >= d_samples_per_preamble)
-                    {
-                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp
-                        if (corr_value < 0)
-                            {
-                                d_flag_PLL_180_deg_phase_locked = true;
-                            }
-                        else
-                            {
-                                d_flag_PLL_180_deg_phase_locked = false;
-                            }
-                        DLOG(INFO) << "Preamble detection for GPS L1 satellite " << this->d_satellite;
-                        d_prev_GPS_frame_4bytes = 0;
-                        if (decode_subframe(d_flag_PLL_180_deg_phase_locked))
-                            {
-                                d_CRC_error_counter = 0;
-                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_last_valid_preamble = d_sample_counter;
-                                if (!d_flag_frame_sync)
-                                    {
-                                        d_flag_frame_sync = true;
-                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
-                                    }
-                                d_stat = 1;  // preamble acquired
-                            }
-                    }
-                d_flag_TOW_set = false;
-                break;
-            }
-        case 1:  // preamble acquired
-            {
-                if (d_sample_counter >= d_preamble_index + static_cast<uint64_t>(d_preamble_period_symbols))
-                    {
-                        DLOG(INFO) << "Preamble received for SAT " << this->d_satellite << "d_sample_counter=" << d_sample_counter << "\n";
-                        // call the decoder
-                        // 0. fetch the symbols into an array
-                        d_preamble_index = d_sample_counter;  // record the preamble sample stamp (t_P)
-
-                        if (decode_subframe(d_flag_PLL_180_deg_phase_locked))
-                            {
-                                d_CRC_error_counter = 0;
-                                d_flag_preamble = true;  // valid preamble indicator (initialized to false every work())
-                                gr::thread::scoped_lock lock(d_setlock);
-                                d_last_valid_preamble = d_sample_counter;
-                                if (!d_flag_frame_sync)
-                                    {
-                                        d_flag_frame_sync = true;
-                                        DLOG(INFO) << " Frame sync SAT " << this->d_satellite;
-                                    }
-                            }
-                        else
-                            {
-                                d_CRC_error_counter++;
-                                if (d_CRC_error_counter > 2)
-                                    {
-                                        DLOG(INFO) << "Lost of frame sync SAT " << this->d_satellite;
-                                        d_flag_frame_sync = false;
-                                        d_stat = 0;
-                                        d_TOW_at_current_symbol_ms = 0;
-                                        d_TOW_at_Preamble_ms = 0;
-                                        d_CRC_error_counter = 0;
-                                        d_flag_TOW_set = false;
-                                    }
-                            }
-                    }
-                break;
-            }
-        }
+    // frame sync
+    frame_synchronization(current_symbol);
 
     // 2. Add the telemetry decoder information
     if (d_flag_preamble == true)
@@ -592,7 +625,7 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     d_nav_msg_packet.nav_message = "";
                 }
 
-            if (d_flag_PLL_180_deg_phase_locked == true)
+            if (is_PLL_180_deg_phase_locked())
                 {
                     // correct the accumulated phase for the Costas loop phase shift, if required
                     current_symbol.Carrier_phase_rads += GNSS_PI;
@@ -603,9 +636,17 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                     current_symbol.Flag_PLL_180_deg_phase_locked = false;
                 }
 
-            // time tags
+            // TODO - Merge these two loops
             std::vector<gr::tag_t> tags_vec;
-            this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + 1);
+            // get_tags_in_range(tags_vec, 0, this->nitems_read(0)-1, this->nitems_read(0), pmt::mp("extra_data"));
+            // for (const auto & tag : tags_vec)
+            //     {
+            //         add_item_tag(0, this->nitems_written(0) + 1, tag.key, tag.value);
+            //     }
+            // tags_vec.clear();
+
+            // time tags
+            this->get_tags_in_range(tags_vec, 0, this->nitems_read(0), this->nitems_read(0) + 1, pmt::mp("timetag"));
             for (const auto &it : tags_vec)
                 {
                     try
@@ -646,14 +687,14 @@ int gps_l1_ca_telemetry_decoder_gs::general_work(int noutput_items __attribute__
                             tmp_int = static_cast<int32_t>(current_symbol.PRN);
                             d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception writing observables dump file " << e.what();
                         }
                 }
 
-            // 3. Make the output (copy the object contents to the GNU Radio reserved memory)
-            *out[0] = current_symbol;
+            // 3. Make the output (move the object contents to the GNU Radio reserved memory)
+            *out[0] = std::move(current_symbol);
 
             return 1;
         }

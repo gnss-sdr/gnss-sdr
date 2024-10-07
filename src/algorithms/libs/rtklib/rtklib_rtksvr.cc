@@ -38,6 +38,7 @@
 #include "rtklib_solution.h"
 #include "rtklib_stream.h"
 #include <cstring>
+#include <vector>
 
 /* write solution header to output stream ------------------------------------*/
 void writesolhead(stream_t *stream, const solopt_t *solopt)
@@ -595,7 +596,13 @@ void *rtksvrthread(void *arg)
                         }
                     /* rtk positioning */
                     rtksvrlock(svr);
-                    rtkpos(&svr->rtk, obs.data, obs.n, &svr->nav);
+                    std::vector<double> tropo_vec;
+                    std::vector<double> iono_vec;
+                    std::vector<double> pr_corrected_code_bias_vec;
+                    std::vector<double> pr_residual;
+                    std::vector<double> doppler_residual;
+                    rtkpos(&svr->rtk, obs.data, obs.n, &svr->nav, tropo_vec,
+                        iono_vec, pr_corrected_code_bias_vec, pr_residual, doppler_residual);
                     rtksvrunlock(svr);
 
                     if (svr->rtk.sol.stat != SOLQ_NONE)
@@ -681,7 +688,7 @@ int rtksvrinit(rtksvr_t *svr)
         '0', '0', '0', 0, 0, 0};
     eph_t eph0 = {0, -1, -1, 0, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0, 0.0},
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0};
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, {0.0}, {0.0}, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, false};
     geph_t geph0 = {0, -1, 0, 0, 0, 0, {0, 0.0}, {0, 0.0}, {0.0}, {0.0}, {0.0},
         0.0, 0.0, 0.0};
     seph_t seph0 = {0, {0, 0.0}, {0, 0.0}, 0, 0, {0.0}, {0.0}, {0.0}, 0.0, 0.0};

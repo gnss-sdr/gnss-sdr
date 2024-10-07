@@ -5,13 +5,20 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 
-set(OPT_DRIVER_SOURCES "")
-set(OPT_DRIVER_HEADERS "")
 if(ENABLE_RAW_UDP AND PCAP_FOUND)
-    set(OPT_DRIVER_SOURCES gr_complex_ip_packet_source.cc)
-    set(OPT_DRIVER_HEADERS gr_complex_ip_packet_source.h)
+    list(APPEND OPT_DRIVER_SOURCES gr_complex_ip_packet_source.cc)
+    list(APPEND OPT_DRIVER_HEADERS gr_complex_ip_packet_source.h)
 endif()
 
+if(ENABLE_PLUTOSDR OR ENABLE_AD936X_SDR)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ad936x_iio_source.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ad936x_iio_source.h)
+endif()
+
+if(ENABLE_ION)
+    set(OPT_DRIVER_SOURCES ${OPT_DRIVER_SOURCES} ion_gsms.cc)
+    set(OPT_DRIVER_HEADERS ${OPT_DRIVER_HEADERS} ion_gsms.h)
+endif()
 
 set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     fifo_reader.cc
@@ -19,13 +26,14 @@ set(SIGNAL_SOURCE_GR_BLOCKS_SOURCES
     unpack_byte_2bit_cpx_samples.cc
     unpack_byte_4bit_samples.cc
     unpack_intspir_1bit_samples.cc
+    unpack_short_byte_samples.cc
     rtl_tcp_signal_source_c.cc
     unpack_2bit_samples.cc
     unpack_spir_gss6450_samples.cc
     labsat23_source.cc
+    extra_data_source.cc
     ${OPT_DRIVER_SOURCES}
 )
-
 
 set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     fifo_reader.h
@@ -33,10 +41,12 @@ set(SIGNAL_SOURCE_GR_BLOCKS_HEADERS
     unpack_byte_2bit_cpx_samples.h
     unpack_byte_4bit_samples.h
     unpack_intspir_1bit_samples.h
+    unpack_short_byte_samples.h
     rtl_tcp_signal_source_c.h
     unpack_2bit_samples.h
     unpack_spir_gss6450_samples.h
     labsat23_source.h
+    extra_data_source.h
     ${OPT_DRIVER_HEADERS}
 )
 
@@ -66,9 +76,14 @@ target_link_libraries(signal_source_gr_blocks
     PRIVATE
         algorithms_libs
         core_libs
-        Gflags::gflags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(signal_source_gr_blocks PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(signal_source_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(signal_source_gr_blocks PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(signal_source_gr_blocks
     PUBLIC
@@ -131,6 +146,17 @@ else()
     target_compile_definitions(signal_source_gr_blocks
         PRIVATE
             -DHAS_GENERIC_LAMBDA=0
+    )
+endif()
+
+if(Boost_VERSION_STRING VERSION_GREATER "1.57.99")
+    target_compile_definitions(signal_source_gr_blocks
+        PRIVATE
+            -DHAS_BOOST_ENDIAN=1
+    )
+    target_link_libraries(signal_source_gr_blocks
+        PRIVATE
+            Boost::headers
     )
 endif()
 

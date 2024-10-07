@@ -25,6 +25,7 @@
 #include <volk_gnsssdr/volk_gnsssdr_alloc.h>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 /** \addtogroup Acquisition
@@ -65,11 +66,11 @@ public:
     }
 
     /*!
-     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga"
+     * \brief Returns "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA"
      */
     inline std::string implementation() override
     {
-        return "Galileo_E1_PCPS_Ambiguous_Acquisition_Fpga";
+        return "Galileo_E1_PCPS_Ambiguous_Acquisition_FPGA";
     }
 
     /*!
@@ -121,8 +122,8 @@ public:
      */
     inline void set_channel_fsm(std::weak_ptr<ChannelFsm> channel_fsm) override
     {
-        channel_fsm_ = channel_fsm;
-        acquisition_fpga_->set_channel_fsm(channel_fsm);
+        channel_fsm_ = std::move(channel_fsm);
+        acquisition_fpga_->set_channel_fsm(channel_fsm_);
     }
 
     /*!
@@ -181,9 +182,9 @@ public:
     void set_resampler_latency(uint32_t latency_samples __attribute__((unused))) override{};
 
 private:
-    static const uint32_t fpga_downsampling_factor = 4;  // downampling factor in the FPGA
-    static const uint32_t fpga_buff_num = 0;             // L1/E1 band
-    static const uint32_t fpga_blk_exp = 13;             // default block exponent
+    static const uint32_t downsampling_factor_default = 4;
+    static const uint32_t fpga_buff_num = 0;  // L1/E1 band
+    static const uint32_t fpga_blk_exp = 13;  // default block exponent
 
     // the following flags are FPGA-specific and they are using arrange the values of the fft of the local code in the way the FPGA
     // expects. This arrangement is done in the initialisation to avoid consuming unnecessary clock cycles during tracking.
@@ -197,7 +198,6 @@ private:
     volk_gnsssdr::vector<uint32_t> d_all_fft_codes_;  // memory that contains all the code ffts
     std::weak_ptr<ChannelFsm> channel_fsm_;
     Gnss_Synchro* gnss_synchro_;
-    const ConfigurationInterface* configuration_;
     Acq_Conf_Fpga acq_parameters_;
     std::string role_;
     int64_t fs_in_;

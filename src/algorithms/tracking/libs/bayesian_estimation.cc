@@ -29,7 +29,7 @@
  */
 
 #include "bayesian_estimation.h"
-
+#include <utility>
 
 Bayesian_estimator::Bayesian_estimator()
     : kappa_prior(0),
@@ -122,10 +122,10 @@ void Bayesian_estimator::update_sequential(const arma::vec& data)
             Psi_est = Psi_posterior / (nu_posterior + ny + 1);
         }
 
-    mu_prior = mu_posterior;
+    mu_prior = std::move(mu_posterior);
     kappa_prior = kappa_posterior;
     nu_prior = nu_posterior;
-    Psi_prior = Psi_posterior;
+    Psi_prior = std::move(Psi_posterior);
 }
 
 
@@ -161,10 +161,10 @@ void Bayesian_estimator::update_sequential(const arma::vec& data, const arma::ve
             Psi_est = Psi_posterior / (nu_posterior + ny + 1);
         }
 
-    mu_prior = mu_posterior;
+    mu_prior = std::move(mu_posterior);
     kappa_prior = kappa_posterior;
     nu_prior = nu_posterior;
-    Psi_prior = Psi_posterior;
+    Psi_prior = std::move(Psi_posterior);
 }
 
 

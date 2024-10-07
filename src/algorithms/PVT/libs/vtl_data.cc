@@ -16,6 +16,8 @@
 
 
 #include "vtl_data.h"
+#include "armadillo"
+#include "vector"
 
 Vtl_Data::Vtl_Data()
 {
@@ -30,11 +32,33 @@ void Vtl_Data::init_storage(int n_sats)
     sat_dts = arma::mat(n_sats, 2);
     sat_var = arma::vec(n_sats);
     sat_health_flag = arma::vec(n_sats);
+    sat_CN0_dB_hz = arma::colvec(n_sats);
+    sat_LOS = arma::mat(n_sats, 3);
+    int sat_number = n_sats;
+
     pr_m = arma::vec(n_sats);
     doppler_hz = arma::vec(n_sats);
     carrier_phase_rads = arma::vec(n_sats);
+    pr_res = arma::vec(n_sats);
+
+    rx_p = arma::mat(1, 3);
+    rx_v = arma::mat(1, 3);
+    rx_dts = arma::mat(1, 2);
+    rx_var = arma::vec(1);
+    rx_pvt_var = arma::vec(8);
+
     epoch_tow_s = 0;
     sample_counter = 0;
+
+    imu_data.init_storage();
+}
+
+void Vtl_Data::imu_data_t::init_storage()
+{
+    vel = arma::vec(3);
+    acc = arma::vec(3);
+    ang_vel = arma::vec(3);
+    ang_acc = arma::vec(3);
 }
 
 void Vtl_Data::debug_print()
@@ -45,8 +69,10 @@ void Vtl_Data::debug_print()
     sat_dts.print("VTL Sat clocks");
     sat_var.print("VTL Sat clock variances");
     sat_health_flag.print("VTL Sat health");
+    sat_LOS.print("VTL SAT LOS");
+    kf_state.print("EKF STATE");
 
     pr_m.print("Satellite Code pseudoranges [m]");
     doppler_hz.print("satellite Carrier Dopplers [Hz]");
-    carrier_phase_rads.print("satellite accumulated carrier phases [rads]");
+    carrier_phase_rads.print("satellite accumulated carrier phases [rad]");
 }

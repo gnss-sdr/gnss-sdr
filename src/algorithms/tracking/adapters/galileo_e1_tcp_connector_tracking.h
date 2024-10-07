@@ -91,10 +91,10 @@ public:
     void stop_tracking() override;
 
 private:
-    galileo_e1_tcp_connector_tracking_cc_sptr tracking_;
+    galileo_e1_tcp_connector_tracking_cc_sptr tracking_sptr_;
+    std::string role_;
     size_t item_size_;
     unsigned int channel_;
-    std::string role_;
     unsigned int in_streams_;
     unsigned int out_streams_;
 };

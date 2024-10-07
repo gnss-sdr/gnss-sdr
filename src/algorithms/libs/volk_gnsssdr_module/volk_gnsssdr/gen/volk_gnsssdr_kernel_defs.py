@@ -16,7 +16,7 @@ import glob
 ########################################################################
 # Strip comments from a c/cpp file.
 # Input is code string, output is code string without comments.
-# https://stackoverflow.com/questions/241327/remove-c-and-c-comments-using-python
+# https://stackoverflow.com/questions/241327/python-snippet-to-remove-c-and-c-comments
 ########################################################################
 def comment_remover(text):
     def replacer(match):
@@ -120,7 +120,7 @@ class impl_class(object):
             self.args = list()
             fcn_args = the_rest.split(',')
             for fcn_arg in fcn_args:
-                arg_matcher = re.compile(r'^\s*(.*\W)\s*(\w+)\s*$', re.DOTALL | re.MULTILINE)
+                arg_matcher = re.compile(r'^\s*(.*[^\w])\s*(\w+)\s*$', re.DOTALL | re.MULTILINE)
                 m = arg_matcher.match(fcn_arg)
                 arg_type, arg_name = m.groups()
                 self.args.append((arg_type, arg_name))
@@ -164,6 +164,8 @@ class kernel_class(object):
                     kern_name=self.name, header=sub_hdr, body=body,
                 ))
         assert(self._impls)
+        if "generic" not in [impl.name for impl in self._impls]:
+            raise Exception("{} does not have a generic protokernel.".format(self.name))
         self.has_dispatcher = False
         for impl in self._impls:
             if impl.name == 'dispatcher':

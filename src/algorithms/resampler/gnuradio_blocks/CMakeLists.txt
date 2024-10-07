@@ -50,6 +50,11 @@ if(GNURADIO_USES_STD_POINTERS)
     )
 endif()
 
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(resampler_gr_blocks
+        PUBLIC -DGR_GREATER_38=1)
+endif()
+
 target_include_directories(resampler_gr_blocks
     PUBLIC
         ${GNSSSDR_SOURCE_DIR}/src/core/interfaces

@@ -23,8 +23,10 @@
 #include "galileo_almanac_helper.h"
 #include "galileo_ephemeris.h"
 #include "galileo_iono.h"
+#include "galileo_ism.h"
 #include "galileo_utc_model.h"
 #include "gnss_sdr_make_unique.h"  // for std::unique_ptr in C++11
+#include <array>
 #include <bitset>
 #include <cstdint>
 #include <memory>
@@ -38,7 +40,19 @@ class ReedSolomon;  // Forward declaration of the ReedSolomon class
  * \{ */
 /** \addtogroup System_Parameters
  * \{ */
-
+/*!
+ * \brief This class fills the OSNMA_msg structure with the data received from the telemetry blocks.
+ */
+class OSNMA_msg
+{
+public:
+    OSNMA_msg() = default;
+    std::array<uint32_t, 15> mack{};
+    std::array<uint8_t, 15> hkroot{};
+    uint32_t PRN{};      // PRN_a authentication data PRN
+    uint32_t WN_sf0{};   // Week number at the start of OSNMA subframe
+    uint32_t TOW_sf0{};  // TOW at the start of OSNMA subframe
+};
 
 /*!
  * \brief This class handles the Galileo I/NAV Data message, as described in the
@@ -56,13 +70,6 @@ public:
      * \brief Takes in input a page (Odd or Even) of 120 bit, split it according ICD 4.3.2.3 and join Data_k with Data_j
      */
     void split_page(std::string page_string, int32_t flag_even_word);
-
-    /*
-     * \brief Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
-     *
-     * Takes in input Data_jk (128 bit) and split it in ephemeris parameters according ICD 4.3.5
-     */
-    int32_t page_jk_decoder(const char* data_jk);
 
     /*
      * \brief Returns true if new Ephemeris has arrived. The flag is set to false when the function is executed
@@ -90,6 +97,16 @@ public:
     bool have_new_reduced_ced();
 
     /*
+     * \brief Returns true if new ISM data have arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_ism();
+
+    /*
+     * \brief Returns true if new NMA data have arrived. The flag is set to false when the function is executed
+     */
+    bool have_new_nma();
+
+    /*
      * \brief Returns a Galileo_Ephemeris object filled with the latest navigation data received
      */
     Galileo_Ephemeris get_ephemeris() const;
@@ -113,6 +130,36 @@ public:
      * \brief Returns a Galileo_Ephemeris object filled with the latest reduced CED received
      */
     Galileo_Ephemeris get_reduced_ced() const;
+
+    /*
+     * \brief Returns a Galileo_ISMs object filled with the latest ISM data received
+     */
+    Galileo_ISM get_galileo_ism() const;
+
+    /*
+     * \brief Returns an OSNMA_msg object filled with the latest NMA message received. Resets msg buffer.
+     */
+    OSNMA_msg get_osnma_msg();
+
+    /*
+     * @brief Retrieves the OSNMA ADKD 4 NAV bits. Resets the string.
+     */
+    std::string get_osnma_adkd_4_nav_bits();
+
+    /*
+     * @brief Resets the OSNMA ADKD 4 NAV bits.
+     */
+    void reset_osnma_nav_bits_adkd4();
+
+    /*
+     * @brief Retrieves the OSNMA ADKD 0/12 NAV bits. Resets the string.
+     */
+    std::string get_osnma_adkd_0_12_nav_bits();
+
+    /*
+     * @brief Resets the OSNMA ADKD 0/12 NAV bits.
+     */
+    void reset_osnma_nav_bits_adkd0_12();
 
     inline bool get_flag_CRC_test() const
     {
@@ -210,6 +257,11 @@ public:
     inline void init_PRN(uint32_t prn)
     {
         SV_ID_PRN_4 = prn;
+        nma_msg.PRN = prn;
+        nma_msg.mack = std::array<uint32_t, 15>{};
+        nma_msg.hkroot = std::array<uint8_t, 15>{};
+        page_position_in_inav_subframe = 255;
+        nma_position_filled = std::array<int8_t, 15>{};
     }
 
     /*
@@ -236,13 +288,14 @@ private:
     std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_3(const std::vector<uint8_t>& decoded) const;
     std::bitset<GALILEO_DATA_JK_BITS> regenerate_page_4(const std::vector<uint8_t>& decoded) const;
 
+    Galileo_ISM gal_ism{};
     std::string page_Even{};
 
     std::vector<uint8_t> rs_buffer;   // Reed-Solomon buffer
     std::unique_ptr<ReedSolomon> rs;  // The Reed-Solomon decoder
     std::vector<int> inav_rs_pages;   // Pages 1,2,3,4,17,18,19,20. Holds 1 if the page has arrived, 0 otherwise.
 
-    int32_t Page_type_time_stamp{};
+    int32_t page_jk_decoder(const char* data_jk);
     int32_t IOD_ephemeris{};
 
     // Word type 1: Ephemeris (1/4)
@@ -394,10 +447,29 @@ private:
 
     int32_t current_IODnav{};
 
+    // OSNMA
+    uint32_t mack_sis{};
+    uint8_t hkroot_sis{};
+    uint8_t page_position_in_inav_subframe{255};
+    std::array<int8_t, 15> nma_position_filled{};
+    OSNMA_msg nma_msg{};
+    std::string nav_bits_adkd_4{};
+    std::string nav_bits_word_6{};
+    std::string nav_bits_word_10{};
+    std::string nav_bits_adkd_0_12{};
+    std::string nav_bits_word_1{};
+    std::string nav_bits_word_2{};
+    std::string nav_bits_word_3{};
+    std::string nav_bits_word_4{};
+    std::string nav_bits_word_5{};
+
     uint8_t IODnav_LSB17{};
     uint8_t IODnav_LSB18{};
     uint8_t IODnav_LSB19{};
     uint8_t IODnav_LSB20{};
+
+    uint8_t ism_constellation_id{};
+    uint8_t ism_service_level_id{};
 
     bool flag_CRC_test{};
     bool flag_all_ephemeris{};  // Flag indicating that all words containing ephemeris have been received
@@ -426,6 +498,7 @@ private:
 
     bool flag_CED{};
     bool enable_rs{};
+    bool have_ISM{};
 };
 
 

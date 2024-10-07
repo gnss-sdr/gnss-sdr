@@ -17,10 +17,15 @@
 
 #include "nav_message_monitor.h"
 #include "gnss_sdr_make_unique.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <cstddef>   // size_t
 #include <typeinfo>  // typeid
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else

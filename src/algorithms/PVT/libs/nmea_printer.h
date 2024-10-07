@@ -57,7 +57,7 @@ public:
     /*!
      * \brief Print NMEA PVT and satellite info to the initialized device
      */
-    bool Print_Nmea_Line(const Rtklib_Solver* const pvt_data, bool print_average_values);
+    bool Print_Nmea_Line(const Rtklib_Solver* const pvt_data);
 
 private:
     int init_serial(const std::string& serial_device);  // serial port control
@@ -80,8 +80,6 @@ private:
     std::string nmea_devname;
 
     int nmea_dev_descriptor;  // NMEA serial device descriptor (i.e. COM port)
-
-    bool print_avg_pos;
     bool d_flag_nmea_output_file;
 };
 

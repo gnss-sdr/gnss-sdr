@@ -21,7 +21,6 @@
 #include "gnss_sdr_create_directory.h"
 #include "gnss_sdr_filesystem.h"
 #include "gps_sdr_signal_replica.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <volk/volk.h>
@@ -29,6 +28,12 @@
 #include <array>
 #include <sstream>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 pcps_acquisition_fine_doppler_cc_sptr pcps_make_acquisition_fine_doppler_cc(const Acq_Conf &conf_)
@@ -84,7 +89,7 @@ pcps_acquisition_fine_doppler_cc::pcps_acquisition_fine_doppler_cc(const Acq_Con
                 {
                     std::string dump_filename_ = d_dump_filename.substr(d_dump_filename.find_last_of('/') + 1);
                     dump_path = d_dump_filename.substr(0, d_dump_filename.find_last_of('/'));
-                    d_dump_filename = dump_filename_;
+                    d_dump_filename = std::move(dump_filename_);
                 }
             else
                 {
@@ -566,7 +571,7 @@ int pcps_acquisition_fine_doppler_cc::general_work(int noutput_items,
                     auto **out = reinterpret_cast<Gnss_Synchro **>(&output_items[0]);
                     Gnss_Synchro current_synchro_data = Gnss_Synchro();
                     current_synchro_data = *d_gnss_synchro;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     return_value = 1;  // Number of Gnss_Synchro objects produced
                 }
             break;

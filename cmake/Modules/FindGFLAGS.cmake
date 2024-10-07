@@ -25,6 +25,10 @@ if(NOT COMMAND feature_summary)
     include(FeatureSummary)
 endif()
 
+if(NOT GNSSSDR_LIB_PATHS)
+    include(GnsssdrLibPaths)
+endif()
+
 if(NOT GFLAGS_ROOT)
     set(GFLAGS_ROOT_USER_PROVIDED /usr/local)
 else()
@@ -44,6 +48,7 @@ if(APPLE)
             ${GFLAGS_ROOT_USER_PROVIDED}/lib
             /usr/local/lib
             /opt/local/lib
+            /opt/homebrew/opt/gflags/lib
     )
 else()
     find_path(GFlags_ROOT_DIR
@@ -51,39 +56,12 @@ else()
         PATHS
             ${GFLAGS_ROOT_USER_PROVIDED}/lib
             ${GFLAGS_ROOT_USER_PROVIDED}/lib64
-            /usr/lib
-            /usr/lib64
-            /usr/lib/x86_64-linux-gnu
-            /usr/lib/i386-linux-gnu
-            /usr/lib/arm-linux-gnueabihf
-            /usr/lib/arm-linux-gnueabi
-            /usr/lib/aarch64-linux-gnu
-            /usr/lib/mipsel-linux-gnu
-            /usr/lib/mips-linux-gnu
-            /usr/lib/mips64el-linux-gnuabi64
-            /usr/lib/powerpc-linux-gnu
-            /usr/lib/powerpc64-linux-gnu
-            /usr/lib/powerpc64le-linux-gnu
-            /usr/lib/powerpc-linux-gnuspe
-            /usr/lib/hppa-linux-gnu
-            /usr/lib/s390x-linux-gnu
-            /usr/lib/i386-gnu
-            /usr/lib/hppa-linux-gnu
-            /usr/lib/x86_64-kfreebsd-gnu
-            /usr/lib/i386-kfreebsd-gnu
-            /usr/lib/m68k-linux-gnu
-            /usr/lib/sh4-linux-gnu
-            /usr/lib/sparc64-linux-gnu
-            /usr/lib/x86_64-linux-gnux32
-            /usr/lib/alpha-linux-gnu
-            /usr/lib/riscv64-linux-gnu
-            /usr/local/lib
-            /usr/local/lib64
-            /opt/local/lib
+            ${GNSSSDR_LIB_PATHS}
     )
 endif()
 
 if(GFlags_ROOT_DIR)
+    unset(GFlags_INCLUDE_DIRS CACHE)
     # We are testing only a couple of files in the include directories
     find_path(GFlags_INCLUDE_DIRS
         gflags/gflags.h
@@ -93,6 +71,7 @@ if(GFlags_ROOT_DIR)
             /usr/include
             /usr/local/include
             /opt/local/include
+            /opt/homebrew/opt/gflags/include
     )
 
     # Find the libraries

@@ -19,7 +19,6 @@
 #include "gnss_sdr_fpga_sample_counter.h"
 #include "gnss_synchro.h"
 #include "uio_fpga.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for from_double
 #include <pmt/pmt_sugar.h>  // for mp
@@ -29,6 +28,11 @@
 #include <sys/mman.h>       // libraries used by the GIPO
 #include <unistd.h>         // for write, close, read, ssize_t
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp)              \
@@ -206,7 +210,7 @@ int gnss_sdr_fpga_sample_counter::general_work(int noutput_items __attribute__((
     out[0].Channel_ID = -1;
     out[0].fs = fs;
 
-    if ((sample_counter - last_sample_counter) > samples_per_report)
+    if ((sample_counter - last_sample_counter) >= samples_per_report)
         {
             last_sample_counter = sample_counter;
 
@@ -279,7 +283,11 @@ void gnss_sdr_fpga_sample_counter::wait_for_interrupt() const
 
     // enable interrupts
     int32_t reenable = 1;
-    write(fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t));
+    const ssize_t nbytes = TEMP_FAILURE_RETRY(write(fd, reinterpret_cast<void *>(&reenable), sizeof(int32_t)));
+    if (nbytes != sizeof(int32_t))
+        {
+            std::cerr << "Error re-enabling FPGA sample counter interrupt.\n";
+        }
 
     // wait for interrupt
     nb = read(fd, &irq_count, sizeof(irq_count));

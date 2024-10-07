@@ -7,6 +7,7 @@
 
 set(DATATYPE_ADAPTER_SOURCES
     byte_to_short.cc
+    cshort_to_grcomplex.cc
     ibyte_to_cbyte.cc
     ibyte_to_complex.cc
     ibyte_to_cshort.cc
@@ -16,6 +17,7 @@ set(DATATYPE_ADAPTER_SOURCES
 
 set(DATATYPE_ADAPTER_HEADERS
     byte_to_short.h
+    cshort_to_grcomplex.h
     ibyte_to_cbyte.h
     ibyte_to_complex.h
     ibyte_to_cshort.h
@@ -53,10 +55,15 @@ target_link_libraries(data_type_adapters
         Gnuradio::blocks
         data_type_gr_blocks
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Volk::volk
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(data_type_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(data_type_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(data_type_adapters PRIVATE absl::flags absl::log)
+endif()
 
 if(ENABLE_CLANG_TIDY)
     if(CLANG_TIDY_EXE)

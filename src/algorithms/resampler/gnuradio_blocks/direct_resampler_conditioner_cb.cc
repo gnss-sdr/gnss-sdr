@@ -34,12 +34,14 @@ direct_resampler_conditioner_cb_sptr direct_resampler_make_conditioner_cb(
 
 direct_resampler_conditioner_cb::direct_resampler_conditioner_cb(
     double sample_freq_in,
-    double sample_freq_out) : gr::block("direct_resampler_make_conditioner_cb", gr::io_signature::make(1, 1, sizeof(lv_8sc_t)), gr::io_signature::make(1, 1, sizeof(lv_8sc_t))),
-                              d_sample_freq_in(sample_freq_in),
-                              d_sample_freq_out(
-                                  sample_freq_out),
-                              d_phase(0),
-                              d_lphase(0)
+    double sample_freq_out)
+    : gr::block("direct_resampler_make_conditioner_cb",
+          gr::io_signature::make(1, 1, sizeof(lv_8sc_t)),
+          gr::io_signature::make(1, 1, sizeof(lv_8sc_t))),
+      d_sample_freq_in(sample_freq_in),
+      d_sample_freq_out(sample_freq_out),
+      d_phase(0),
+      d_lphase(0)
 {
     const double two_32 = 4294967296.0;
     // Computes the phase step multiplying the resampling ratio by 2^32 = 4294967296
@@ -51,9 +53,11 @@ direct_resampler_conditioner_cb::direct_resampler_conditioner_cb(
         {
             d_phase_step = static_cast<uint32_t>(floor(two_32 * sample_freq_in / sample_freq_out));
         }
-
-    set_relative_rate(1.0 * sample_freq_out / sample_freq_in);
-    set_output_multiple(1);
+#ifdef GR_GREATER_38
+    this->set_relative_rate(static_cast<uint64_t>(sample_freq_out), static_cast<uint64_t>(sample_freq_in));
+#else
+    this->set_relative_rate(sample_freq_out / sample_freq_in);
+#endif
 }
 
 
@@ -61,12 +65,7 @@ void direct_resampler_conditioner_cb::forecast(int noutput_items,
     gr_vector_int &ninput_items_required)
 {
     int nreqd = std::max(static_cast<unsigned>(1), static_cast<int>(static_cast<double>(noutput_items + 1) * sample_freq_in() / sample_freq_out()) + history() - 1);
-    unsigned ninputs = ninput_items_required.size();
-
-    for (unsigned i = 0; i < ninputs; i++)
-        {
-            ninput_items_required[i] = nreqd;
-        }
+    std::fill(ninput_items_required.begin(), ninput_items_required.end(), nreqd);
 }
 
 

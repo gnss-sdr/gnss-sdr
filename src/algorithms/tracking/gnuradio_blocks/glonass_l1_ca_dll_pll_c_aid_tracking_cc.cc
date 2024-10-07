@@ -30,7 +30,6 @@
 #include "gnss_sdr_flags.h"
 #include "lock_detectors.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <matio.h>
 #include <pmt/pmt.h>
@@ -45,6 +44,12 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -146,7 +151,11 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
       d_cn0_estimation_counter(0),
       d_carrier_lock_test(1),
       d_CN0_SNV_dB_Hz(0),
+#if USE_GLOG_AND_GFLAGS
       d_carrier_lock_threshold(FLAGS_carrier_lock_th),
+#else
+      d_carrier_lock_threshold(absl::GetFlag(FLAGS_carrier_lock_th)),
+#endif
       d_carrier_lock_fail_counter(0),
       d_enable_extended_integration(false),
       d_preamble_synchronized(false),
@@ -189,11 +198,18 @@ glonass_l1_ca_dll_pll_c_aid_tracking_cc::glonass_l1_ca_dll_pll_c_aid_tracking_cc
     d_local_code_shift_chips[2] = d_early_late_spc_chips;
 
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
-
+#if USE_GLOG_AND_GFLAGS
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-    systemName["R"] = std::string("Glonass");
+#else
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(absl::GetFlag(FLAGS_cn0_samples));
+#endif
 
-    set_relative_rate(1.0 / static_cast<double>(d_vector_length));
+    systemName["R"] = std::string("Glonass");
+#if GNURADIO_GREATER_THAN_38
+    this->set_relative_rate(1, static_cast<uint64_t>(d_vector_length));
+#else
+    this->set_relative_rate(1.0 / static_cast<double>(d_vector_length));
+#endif
     // set_min_output_buffer((int64_t)300);
 }
 
@@ -510,11 +526,11 @@ void glonass_l1_ca_dll_pll_c_aid_tracking_cc::set_channel(uint32_t channel)
                         {
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str() << '\n';
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                         }
@@ -572,7 +588,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     current_synchro_data.Carrier_phase_rads = d_acc_carrier_phase_cycles * TWO_PI;
                     current_synchro_data.Carrier_Doppler_hz = d_carrier_doppler_hz;
                     current_synchro_data.fs = d_fs_in;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     consume_each(samples_offset);  // shift input to perform alignment with local replica
                     return 1;
                 }
@@ -744,8 +760,13 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                             d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES, GLONASS_L1_CA_CODE_PERIOD_S);
                             // Carrier lock indicator
                             d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), CN0_ESTIMATION_SAMPLES);
-                            // Loss of lock detection
+                            // Loss of lock detectionç
+
+#if USE_GLOG_AND_GFLAGS
                             if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+#else
+                            if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+#endif
                                 {
                                     d_carrier_lock_fail_counter++;
                                 }
@@ -756,7 +777,11 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                                             d_carrier_lock_fail_counter--;
                                         }
                                 }
+#if USE_GLOG_AND_GFLAGS
                             if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
+#else
+                            if (d_carrier_lock_fail_counter > absl::GetFlag(FLAGS_max_lock_fail))
+#endif
                                 {
                                     std::cout << "Loss of lock in channel " << d_channel << "!\n";
                                     LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
@@ -808,7 +833,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
         }
     // assign the GNU Radio block output data
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
     if (d_dump)
         {
             // MULTIPLEXED FILE RECORDING - Record results to file
@@ -870,7 +895,7 @@ int glonass_l1_ca_dll_pll_c_aid_tracking_cc::general_work(int noutput_items __at
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
-            catch (const std::ifstream::failure &e)
+            catch (const std::ofstream::failure &e)
                 {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
                 }

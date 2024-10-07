@@ -20,6 +20,7 @@
 
 #include "gnss_block_interface.h"
 #include <gnuradio/sync_block.h>
+#include <array>
 #include <fstream>  // std::ifstream
 #include <string>
 

@@ -51,7 +51,8 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
     volk_gnsssdr_test_params_t test_params_inacc2 = volk_gnsssdr_test_params_t(2e-1, test_params.scalar(),
         test_params.vlen(), test_params.iter(), test_params.benchmark_mode(), test_params.kernel_regex());
 
-    std::vector<volk_gnsssdr_test_case_t> test_cases;
+    std::vector<volk_gnsssdr_test_case_t>
+        test_cases;
 
     QA(VOLK_INIT_TEST(volk_gnsssdr_8i_accumulator_s8i, test_params_more_iters))
     QA(VOLK_INIT_TEST(volk_gnsssdr_8i_index_max_16u, test_params_more_iters))
@@ -61,7 +62,6 @@ std::vector<volk_gnsssdr_test_case_t> init_test_list(volk_gnsssdr_test_params_t 
     QA(VOLK_INIT_TEST(volk_gnsssdr_8ic_magnitude_squared_8i, test_params_more_iters))
     QA(VOLK_INIT_TEST(volk_gnsssdr_8ic_x2_dot_prod_8ic, test_params))
     QA(VOLK_INIT_TEST(volk_gnsssdr_8ic_x2_multiply_8ic, test_params))
-    QA(VOLK_INIT_TEST(volk_gnsssdr_8ic_s8ic_multiply_8ic, test_params))
     QA(VOLK_INIT_TEST(volk_gnsssdr_8u_x2_multiply_8u, test_params_more_iters))
     QA(VOLK_INIT_TEST(volk_gnsssdr_64f_accumulator_64f, test_params))
     QA(VOLK_INIT_TEST(volk_gnsssdr_32f_sincos_32fc, test_params_inacc))

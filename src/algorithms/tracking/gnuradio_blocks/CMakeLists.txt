@@ -85,8 +85,14 @@ target_link_libraries(tracking_gr_blocks
         algorithms_libs
         Matio::matio
         gnss_sdr_flags
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(tracking_gr_blocks PRIVATE Glog::glog)
+    target_compile_definitions(tracking_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(tracking_gr_blocks PRIVATE absl::flags absl::log)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(tracking_gr_blocks
@@ -160,6 +166,13 @@ if(PMT_USES_BOOST_ANY)
     target_link_libraries(tracking_gr_blocks
         PRIVATE
             Boost::headers
+    )
+endif()
+
+if(GNURADIO_IS_38_OR_GREATER)
+    target_compile_definitions(tracking_gr_blocks
+        PRIVATE
+            -DGNURADIO_GREATER_THAN_38=1
     )
 endif()
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 Google LLC
+// SPDX-FileCopyrightText: 2018 IBM
 // SPDX-License-Identifier: Apache-2.0
 
 #include "cpu_features_macros.h"
@@ -58,6 +58,7 @@
     LINE(PPC_SCV, scv, "scv", 0, PPC_FEATURE2_SCV)                               \
     LINE(PPC_HTM_NO_SUSPEND, htm_no_suspend, "htm-no-suspend", 0,                \
         PPC_FEATURE2_HTM_NO_SUSPEND)
+#undef PPC  // Remove conflict with compiler generated preprocessor
 #define INTROSPECTION_PREFIX PPC
 #define INTROSPECTION_ENUM_PREFIX PPC
 #include "define_introspection_and_hwcaps.inl"

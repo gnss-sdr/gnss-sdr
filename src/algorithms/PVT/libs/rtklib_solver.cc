@@ -4,7 +4,7 @@
  *  data flow and structures
  * \authors <ul>
  *          <li> 2017-2019, Javier Arribas
- *          <li> 2017-2019, Carles Fernandez
+ *          <li> 2017-2023, Carles Fernandez
  *          <li> 2007-2013, T. Takasu
  *          </ul>
  *
@@ -23,7 +23,7 @@
  * -----------------------------------------------------------------------------
  * Copyright (C) 2007-2013, T. Takasu
  * Copyright (C) 2017-2019, Javier Arribas
- * Copyright (C) 2017-2019, Carles Fernandez
+ * Copyright (C) 2017-2023, Carles Fernandez
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-2-Clause
@@ -37,34 +37,39 @@
 #include "rtklib_ephemeris.h"
 #include "rtklib_rtkpos.h"
 #include "rtklib_solution.h"
-#include <glog/logging.h>
 #include <matio.h>
+#include "iostream"
+#include <algorithm>
+#include <cmath>
 #include <exception>
 #include <utility>
 #include <vector>
 
+using namespace std;
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
+    const Pvt_Conf &conf,
     const std::string &dump_filename,
     uint32_t type_of_rx,
     bool flag_dump_to_file,
-    bool flag_dump_to_mat,
-    bool use_e6_for_pvt) : d_dump_filename(dump_filename),
-                           d_rtk(rtk),
-                           d_type_of_rx(type_of_rx),
-                           d_flag_dump_enabled(flag_dump_to_file),
-                           d_flag_dump_mat_enabled(flag_dump_to_mat),
-                           d_use_e6_for_pvt(use_e6_for_pvt)
+    bool flag_dump_to_mat) : d_dump_filename(dump_filename),
+                             d_rtk(rtk),
+                             d_conf(conf),
+                             d_type_of_rx(type_of_rx),
+                             d_flag_dump_enabled(flag_dump_to_file),
+                             d_flag_dump_mat_enabled(flag_dump_to_mat)
 {
     // TODO: temporal VTL config parameters are hardcoded here. Move it to PVT adapter config (javi)
     Vtl_Conf new_vtl_conf;
-    //TODO: new_vtl_conf.parameter1=blablabla
+    // TODO: new_vtl_conf.parameter1=blablabla
 
     vtl_engine.configure(new_vtl_conf);
     vtl_engine.reset();
-
-
-    this->set_averaging_flag(false);
 
     // see freq index at src/algorithms/libs/rtklib/rtklib_rtkcmn.cc
     // function: satwavelen
@@ -138,7 +143,13 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
             d_rtklib_band_index["E6"] = 1;
             d_rtklib_freq_index[1] = 3;
             break;
+        case 108:  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
+            d_rtklib_band_index["E6"] = 2;
+            d_rtklib_freq_index[2] = 3;
+            break;
         }
+    // auto empty_map = std::map < int, HAS_obs_corrections >> ();
+    // d_has_obs_corr_map["L1 C/A"] = empty_map;
 
     // ############# ENABLE DATA FILE LOG #################
     if (d_flag_dump_enabled == true)
@@ -154,6 +165,23 @@ Rtklib_Solver::Rtklib_Solver(const rtk_t &rtk,
                     catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "Exception opening RTKLIB dump file " << e.what();
+                        }
+                }
+            // TODO: if(vtl_enable) then
+            if (d_vtl_dump_file.is_open() == false)
+                {
+                    try
+                        {
+                            d_vtl_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                            uint end_filename = d_dump_filename.length() - 4;
+                            d_vtl_dump_filename = d_dump_filename;
+                            d_vtl_dump_filename = d_vtl_dump_filename.insert(end_filename, "_vtl");
+                            d_vtl_dump_file.open(d_vtl_dump_filename, std::ios::out | std::ios::binary);
+                            LOG(INFO) << "PVT VTL dump enabled Log file: " << d_vtl_dump_filename;
+                        }
+                    catch (const std::ofstream::failure &e)
+                        {
+                            LOG(WARNING) << "Exception opening VTL dump file " << e.what();
                         }
                 }
         }
@@ -195,6 +223,277 @@ Rtklib_Solver::~Rtklib_Solver()
                     LOG(WARNING) << "Exception in destructor saving the PVT .mat dump file " << ex.what();
                 }
         }
+    if (d_flag_dump_mat_enabled)
+        {
+            try
+                {
+                    save_vtl_matfile();
+                }
+            catch (const std::exception &ex)
+                {
+                    LOG(WARNING) << "Exception in destructor saving the PVT VTL .mat dump file " << ex.what();
+                }
+        }
+}
+
+
+bool Rtklib_Solver::save_vtl_matfile() const
+{
+    // READ DUMP FILE
+    const std::string dump_filename = d_vtl_dump_filename;
+    const int32_t number_of_double_vars = 29;
+    const int32_t number_of_uint32_vars = 2;
+    const int32_t number_of_uint8_vars = 1;
+    const int32_t epoch_size_bytes = sizeof(double) * number_of_double_vars +
+                                     sizeof(uint32_t) * number_of_uint32_vars +
+                                     sizeof(uint8_t) * number_of_uint8_vars;
+    std::ifstream dump_file;
+    dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    try
+        {
+            dump_file.open(dump_filename, std::ios::binary | std::ios::ate);
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem opening VTL dump file:" << e.what() << '\n';
+            return false;
+        }
+    // count number of epochs and rewind
+    int64_t num_epoch = 0LL;
+    if (dump_file.is_open())
+        {
+            std::cout << "Generating .mat file for VTL " << dump_filename << '\n';
+            const std::ifstream::pos_type size = dump_file.tellg();
+            num_epoch = static_cast<int64_t>(size) / static_cast<int64_t>(epoch_size_bytes);
+            dump_file.seekg(0, std::ios::beg);
+        }
+    else
+        {
+            return false;
+        }
+
+    auto TOW_at_current_symbol_ms = std::vector<uint32_t>(num_epoch);
+    auto week = std::vector<uint32_t>(num_epoch);
+    auto RX_time = std::vector<double>(num_epoch);
+    auto user_clk_offset = std::vector<double>(num_epoch);
+    auto user_clk_offset_drift = std::vector<double>(num_epoch);
+    auto rtklib_user_clk_offset_drift = std::vector<double>(num_epoch);
+    auto pos_x = std::vector<double>(num_epoch);
+    auto pos_y = std::vector<double>(num_epoch);
+    auto pos_z = std::vector<double>(num_epoch);
+    auto vel_x = std::vector<double>(num_epoch);
+    auto vel_y = std::vector<double>(num_epoch);
+    auto vel_z = std::vector<double>(num_epoch);
+    auto acc_x = std::vector<double>(num_epoch);
+    auto acc_y = std::vector<double>(num_epoch);
+    auto acc_z = std::vector<double>(num_epoch);
+    auto cov_xx = std::vector<double>(num_epoch);
+    auto cov_yy = std::vector<double>(num_epoch);
+    auto cov_zz = std::vector<double>(num_epoch);
+    auto cov_vx = std::vector<double>(num_epoch);
+    auto cov_vy = std::vector<double>(num_epoch);
+    auto cov_vz = std::vector<double>(num_epoch);
+    auto cov_ax = std::vector<double>(num_epoch);
+    auto cov_ay = std::vector<double>(num_epoch);
+    auto cov_az = std::vector<double>(num_epoch);
+    auto latitude = std::vector<double>(num_epoch);
+    auto longitude = std::vector<double>(num_epoch);
+    auto height = std::vector<double>(num_epoch);
+    auto valid_sats = std::vector<uint8_t>(num_epoch);
+    auto gdop = std::vector<double>(num_epoch);
+    auto pdop = std::vector<double>(num_epoch);
+    auto hdop = std::vector<double>(num_epoch);
+    auto vdop = std::vector<double>(num_epoch);
+
+    try
+        {
+            if (dump_file.is_open())
+                {
+                    for (int64_t i = 0; i < num_epoch; i++)
+                        {
+                            dump_file.read(reinterpret_cast<char *>(&TOW_at_current_symbol_ms[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&week[i]), sizeof(uint32_t));
+                            dump_file.read(reinterpret_cast<char *>(&RX_time[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&user_clk_offset[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&user_clk_offset_drift[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&rtklib_user_clk_offset_drift[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pos_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vel_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_x[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_y[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&acc_z[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_xx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_yy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_zz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vx[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vy[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_vz[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_ax[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_ay[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&cov_az[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&latitude[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&longitude[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&height[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&valid_sats[i]), sizeof(uint8_t));
+                            dump_file.read(reinterpret_cast<char *>(&gdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&pdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&hdop[i]), sizeof(double));
+                            dump_file.read(reinterpret_cast<char *>(&vdop[i]), sizeof(double));
+                        }
+                }
+            dump_file.close();
+        }
+    catch (const std::ifstream::failure &e)
+        {
+            std::cerr << "Problem reading VTL dump file:" << e.what() << '\n';
+            return false;
+        }
+
+    // WRITE MAT FILE
+    mat_t *matfp;
+    matvar_t *matvar;
+    std::string filename = dump_filename;
+    filename.erase(filename.length() - 4, 4);
+    filename.append(".mat");
+    matfp = Mat_CreateVer(filename.c_str(), nullptr, MAT_FT_MAT73);
+    if (reinterpret_cast<int64_t *>(matfp) != nullptr)
+        {
+            std::array<size_t, 2> dims{1, static_cast<size_t>(num_epoch)};
+            matvar = Mat_VarCreate("TOW_at_current_symbol_ms", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), TOW_at_current_symbol_ms.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("week", MAT_C_UINT32, MAT_T_UINT32, 2, dims.data(), week.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("RX_time", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), RX_time.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("user_clk_offset", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), user_clk_offset.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("user_clk_offset_drift", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), user_clk_offset_drift.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("rtklib_user_clk_offset_drift", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), rtklib_user_clk_offset_drift.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_x.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_y.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pos_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pos_z.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_x.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_y.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vel_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vel_z.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("acc_x", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), acc_x.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("acc_y", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), acc_y.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("acc_z", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), acc_z.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_xx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_xx.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_yy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_yy.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_zz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_zz.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vx", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vx.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vy", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vy.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_vz", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_vz.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_ax", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_az.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_ay", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_ay.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("cov_az", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), cov_az.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("latitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), latitude.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("longitude", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), longitude.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("height", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), height.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("valid_sats", MAT_C_UINT8, MAT_T_UINT8, 2, dims.data(), valid_sats.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("gdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), gdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("pdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), pdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("hdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), hdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+
+            matvar = Mat_VarCreate("vdop", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims.data(), vdop.data(), 0);
+            Mat_VarWrite(matfp, matvar, MAT_COMPRESSION_ZLIB);  // or MAT_COMPRESSION_NONE
+            Mat_VarFree(matvar);
+        }
+
+    Mat_Close(matfp);
+    return true;
 }
 
 
@@ -465,7 +764,446 @@ Monitor_Pvt Rtklib_Solver::get_monitor_pvt() const
     return d_monitor_pvt;
 }
 
-bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, bool flag_averaging, bool get_vtl_data)
+void Rtklib_Solver::store_has_data(const Galileo_HAS_data &new_has_data)
+{
+    //  Compute time of application HAS SIS ICD, Issue 1.0, Section 7.7
+    uint16_t toh = new_has_data.header.toh;
+    uint32_t hr = std::floor(new_has_data.tow / 3600);
+    uint32_t tmt = 0;
+    if ((hr * 3600 + toh) <= new_has_data.tow)
+        {
+            tmt = hr * 3600 + toh;
+        }
+    else
+        {
+            tmt = (hr - 1) * 3600 + toh;
+        }
+
+    const std::string gps_str("GPS");
+    const std::string gal_str("Galileo");
+    if (new_has_data.header.orbit_correction_flag)
+        {
+            LOG(INFO) << "Received HAS orbit corrections";
+            // for each satellite in GPS ephemeris
+            for (const auto &gpseph : gps_ephemeris_map)
+                {
+                    int prn = gpseph.second.PRN;
+                    int32_t sis_iod = gpseph.second.IODE_SF3;
+                    uint16_t gnss_iod = new_has_data.get_gnss_iod(gps_str, prn);
+                    if (static_cast<int32_t>(gnss_iod) == sis_iod)
+                        {
+                            float radial_m = new_has_data.get_delta_radial_m(gps_str, prn);
+                            if (std::fabs(radial_m + 10.24) < 0.001)  // -10.24 means not available
+                                {
+                                    radial_m = 0.0;
+                                }
+                            float in_track_m = new_has_data.get_delta_in_track_m(gps_str, prn);
+                            if (std::fabs(in_track_m + 16.384) < 0.001)  // -16.384 means not available
+                                {
+                                    in_track_m = 0.0;
+                                }
+                            float cross_track_m = new_has_data.get_delta_in_track_m(gps_str, prn);
+                            if (std::fabs(cross_track_m + 16.384) < 0.001)  // -16.384 means not available
+                                {
+                                    cross_track_m = 0.0;
+                                }
+                            d_has_orbit_corrections_store_map[gps_str][prn].radial_m = radial_m;
+                            d_has_orbit_corrections_store_map[gps_str][prn].in_track_m = in_track_m;
+                            d_has_orbit_corrections_store_map[gps_str][prn].cross_track_m = cross_track_m;
+                            d_has_orbit_corrections_store_map[gps_str][prn].valid_until = tmt +
+                                                                                          new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_orbit_corrections);
+                            d_has_orbit_corrections_store_map[gps_str][prn].iod = gnss_iod;
+                            // TODO: check for end of week
+                        }
+                }
+
+            // for each satellite in Galileo ephemeris
+            for (const auto &galeph : galileo_ephemeris_map)
+                {
+                    int prn = galeph.second.PRN;
+                    int32_t sis_iod = galeph.second.IOD_ephemeris;
+                    uint16_t gnss_iod = new_has_data.get_gnss_iod(gal_str, prn);
+                    if (static_cast<int32_t>(gnss_iod) == sis_iod)
+                        {
+                            float radial_m = new_has_data.get_delta_radial_m(gal_str, prn);
+                            if (std::fabs(radial_m + 10.24) < 0.001)  // -10.24 means not available
+                                {
+                                    radial_m = 0.0;
+                                }
+                            float in_track_m = new_has_data.get_delta_in_track_m(gal_str, prn);
+                            if (std::fabs(in_track_m + 16.384) < 0.001)  // -16.384 means not available
+                                {
+                                    in_track_m = 0.0;
+                                }
+                            float cross_track_m = new_has_data.get_delta_in_track_m(gal_str, prn);
+                            if (std::fabs(cross_track_m + 16.384) < 0.001)  // -16.384 means not available
+                                {
+                                    cross_track_m = 0.0;
+                                }
+                            d_has_orbit_corrections_store_map[gal_str][prn].radial_m = radial_m;
+                            d_has_orbit_corrections_store_map[gal_str][prn].in_track_m = in_track_m;
+                            d_has_orbit_corrections_store_map[gal_str][prn].cross_track_m = cross_track_m;
+                            d_has_orbit_corrections_store_map[gal_str][prn].valid_until = tmt +
+                                                                                          new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_orbit_corrections);
+                            d_has_orbit_corrections_store_map[gal_str][prn].iod = gnss_iod;
+                            // TODO: check for end of week
+                        }
+                }
+        }
+    if (new_has_data.header.clock_fullset_flag)
+        {
+            LOG(INFO) << "Received HAS clock fullset corrections";
+            for (const auto &gpseph : gps_ephemeris_map)
+                {
+                    int prn = gpseph.second.PRN;
+                    int32_t sis_iod = gpseph.second.IODE_SF3;
+                    auto it = d_has_orbit_corrections_store_map[gps_str].find(prn);
+                    if (it != d_has_orbit_corrections_store_map[gps_str].end())
+                        {
+                            uint16_t gnss_iod = it->second.iod;
+                            if (static_cast<int32_t>(gnss_iod) == sis_iod)
+                                {
+                                    float clock_correction_mult_m = new_has_data.get_clock_correction_mult_m(gps_str, prn);
+                                    if ((std::fabs(clock_correction_mult_m + 10.24) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m + 20.48) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m + 30.72) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m + 40.96) < 0.001))
+                                        {
+                                            clock_correction_mult_m = 0.0;
+                                        }
+                                    if ((std::fabs(clock_correction_mult_m - 10.2375) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m - 20.475) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m - 30.7125) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m - 40.95) < 0.001))
+                                        {
+                                            // Satellite should not be used!
+                                            clock_correction_mult_m = 0.0;
+                                        }
+                                    d_has_clock_corrections_store_map[gps_str][prn].clock_correction_m = clock_correction_mult_m;
+                                    d_has_clock_corrections_store_map[gps_str][prn].valid_until = tmt +
+                                                                                                  new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_clock_fullset_corrections);
+                                    // TODO: check for end of week
+                                }
+                        }
+                }
+
+            // for each satellite in Galileo ephemeris
+            for (const auto &galeph : galileo_ephemeris_map)
+                {
+                    int prn = galeph.second.PRN;
+                    int32_t iod_sis = galeph.second.IOD_ephemeris;
+                    auto it = d_has_orbit_corrections_store_map[gal_str].find(prn);
+                    if (it != d_has_orbit_corrections_store_map[gal_str].end())
+                        {
+                            uint16_t gnss_iod = it->second.iod;
+                            if (static_cast<int32_t>(gnss_iod) == iod_sis)
+                                {
+                                    float clock_correction_mult_m = new_has_data.get_clock_correction_mult_m(gal_str, prn);
+                                    // std::cout << "Galileo Satellite " << prn
+                                    //           << " clock correction=" << new_has_data.get_clock_correction_mult_m(gal_str, prn)
+                                    //           << std::endl;
+                                    if ((std::fabs(clock_correction_mult_m + 10.24) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m + 20.48) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m + 30.72) < 0.001) ||
+                                        (std::fabs(clock_correction_mult_m + 40.96) < 0.001))
+                                        {
+                                            clock_correction_mult_m = 0.0;
+                                        }
+                                    d_has_clock_corrections_store_map[gal_str][prn].clock_correction_m = clock_correction_mult_m;
+                                    d_has_clock_corrections_store_map[gal_str][prn].valid_until = tmt +
+                                                                                                  new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_clock_fullset_corrections);
+                                    // TODO: check for end of week
+                                }
+                        }
+                }
+        }
+    if (new_has_data.header.clock_subset_flag)
+        {
+            LOG(INFO) << "Received HAS clock subset corrections";
+            for (const auto &gpseph : gps_ephemeris_map)
+                {
+                    int prn = gpseph.second.PRN;
+                    int32_t sis_iod = gpseph.second.IODE_SF3;
+                    int32_t gnss_iod = d_has_orbit_corrections_store_map[gps_str][prn].iod;
+                    if (gnss_iod == sis_iod)
+                        {
+                            // d_has_clock_corrections_store_map[gps_str][prn].clock_correction_m = new_has_data.get_clock_subset_correction_mult_m(gps_str, prn);
+                            // d_has_clock_corrections_store_map[gps_str][prn].valid_until = tmt + new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_clock_subset_corrections);
+                            // TODO: check for end of week
+                        }
+                }
+        }
+    if (new_has_data.header.code_bias_flag)
+        {
+            LOG(INFO) << "Received HAS code bias corrections";
+            uint32_t valid_until = tmt +
+                                   new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_code_bias_corrections);
+            auto signals_gal = new_has_data.get_signals_in_mask(gal_str);
+            for (const auto &it : signals_gal)
+                {
+                    auto prns = new_has_data.get_PRNs_in_mask(gal_str);
+                    for (auto prn : prns)
+                        {
+                            float code_bias_m = new_has_data.get_code_bias_m(it, prn);
+                            if ((std::fabs(code_bias_m + 20.48) < 0.01))  // -20.48 means not available
+                                {
+                                    code_bias_m = 0.0;
+                                }
+                            d_has_code_bias_store_map[it][prn] = {code_bias_m, valid_until};
+                        }
+                }
+            auto signals_gps = new_has_data.get_signals_in_mask(gps_str);
+            for (const auto &it : signals_gps)
+                {
+                    auto prns = new_has_data.get_PRNs_in_mask(gps_str);
+                    for (auto prn : prns)
+                        {
+                            float code_bias_m = new_has_data.get_code_bias_m(it, prn);
+                            if ((std::fabs(code_bias_m + 20.48) < 0.01))  // -20.48 means not available
+                                {
+                                    code_bias_m = 0.0;
+                                }
+                            d_has_code_bias_store_map[it][prn] = {code_bias_m, valid_until};
+                        }
+                }
+        }
+    if (new_has_data.header.phase_bias_flag)
+        {
+            LOG(INFO) << "Received HAS phase bias corrections";
+            uint32_t valid_until = tmt +
+                                   new_has_data.get_validity_interval_s(new_has_data.validity_interval_index_phase_bias_corrections);
+
+            auto signals_gal = new_has_data.get_signals_in_mask(gal_str);
+            for (const auto &it : signals_gal)
+                {
+                    auto prns = new_has_data.get_PRNs_in_mask(gal_str);
+                    for (auto prn : prns)
+                        {
+                            float phase_bias_correction_cycles = new_has_data.get_phase_bias_cycle(it, prn);
+                            if (std::fabs(phase_bias_correction_cycles + 10.24) < 0.001)  // -10.24 means not available
+                                {
+                                    phase_bias_correction_cycles = 0.0;
+                                }
+                            d_has_phase_bias_store_map[it][prn] = {phase_bias_correction_cycles, valid_until};
+                            // TODO: process Phase Discontinuity Indicator
+                        }
+                }
+            auto signals_gps = new_has_data.get_signals_in_mask(gps_str);
+            for (const auto &it : signals_gps)
+                {
+                    auto prns = new_has_data.get_PRNs_in_mask(gps_str);
+                    for (auto prn : prns)
+                        {
+                            float phase_bias_correction_cycles = new_has_data.get_phase_bias_cycle(it, prn);
+                            if (std::fabs(phase_bias_correction_cycles + 10.24) < 0.001)  // -10.24 means not available
+                                {
+                                    phase_bias_correction_cycles = 0.0;
+                                }
+                            d_has_phase_bias_store_map[it][prn] = {phase_bias_correction_cycles, valid_until};
+                            // TODO: process Phase Discontinuity Indicator
+                        }
+                }
+        }
+}
+
+
+void Rtklib_Solver::update_has_corrections(const std::map<int, Gnss_Synchro> &obs_map)
+{
+    this->check_has_orbit_clock_validity(obs_map);
+    this->get_has_biases(obs_map);
+}
+
+
+void Rtklib_Solver::check_has_orbit_clock_validity(const std::map<int, Gnss_Synchro> &obs_map)
+{
+    for (const auto &it : obs_map)
+        {
+            uint32_t obs_tow = it.second.interp_TOW_ms / 1000.0;
+            auto prn = static_cast<int>(it.second.PRN);
+
+            if (it.second.System == 'G')
+                {
+                    auto it_sys = d_has_orbit_corrections_store_map.find("GPS");
+                    if (it_sys != d_has_orbit_corrections_store_map.end())
+                        {
+                            auto it_map_corr = it_sys->second.find(prn);
+                            if (it_map_corr != it_sys->second.end())
+                                {
+                                    auto has_data_valid_until = it_map_corr->second.valid_until;
+                                    if (has_data_valid_until < obs_tow)
+                                        {
+                                            // Delete outdated data
+                                            it_sys->second.erase(prn);
+                                        }
+                                }
+                        }
+                    auto it_sys_clock = d_has_clock_corrections_store_map.find("GPS");
+                    if (it_sys_clock != d_has_clock_corrections_store_map.end())
+                        {
+                            auto it_map_corr = it_sys_clock->second.find(prn);
+                            if (it_map_corr != it_sys_clock->second.end())
+                                {
+                                    auto has_data_valid_until = it_map_corr->second.valid_until;
+                                    if (has_data_valid_until < obs_tow)
+                                        {
+                                            // Delete outdated data
+                                            it_sys_clock->second.erase(prn);
+                                        }
+                                }
+                        }
+                }
+            if (it.second.System == 'E')
+                {
+                    auto it_sys = d_has_orbit_corrections_store_map.find("Galileo");
+                    if (it_sys != d_has_orbit_corrections_store_map.end())
+                        {
+                            auto it_map_corr = it_sys->second.find(prn);
+                            if (it_map_corr != it_sys->second.end())
+                                {
+                                    auto has_data_valid_until = it_map_corr->second.valid_until;
+                                    if (has_data_valid_until < obs_tow)
+                                        {
+                                            // Delete outdated data
+                                            it_sys->second.erase(prn);
+                                        }
+                                }
+                        }
+                    auto it_sys_clock = d_has_clock_corrections_store_map.find("Galileo");
+                    if (it_sys_clock != d_has_clock_corrections_store_map.end())
+                        {
+                            auto it_map_corr = it_sys_clock->second.find(prn);
+                            if (it_map_corr != it_sys_clock->second.end())
+                                {
+                                    auto has_data_valid_until = it_map_corr->second.valid_until;
+                                    if (has_data_valid_until < obs_tow)
+                                        {
+                                            // Delete outdated data
+                                            it_sys_clock->second.erase(prn);
+                                        }
+                                }
+                        }
+                }
+        }
+}
+
+
+void Rtklib_Solver::get_has_biases(const std::map<int, Gnss_Synchro> &obs_map)
+{
+    d_has_obs_corr_map.clear();
+    if (!d_has_clock_corrections_store_map.empty() && !d_has_orbit_corrections_store_map.empty())
+        {
+            const std::vector<std::string> e1b_signals = {"E1-B I/NAV OS", "E1-C", "E1-B + E1-C"};
+            const std::vector<std::string> e6_signals = {"E6-B C/NAV HAS", "E6-C", "E6-B + E6-C"};
+            const std::vector<std::string> e5_signals = {"E5a-I F/NAV OS", "E5a-Q", "E5a-I+E5a-Q"};
+            const std::vector<std::string> e7_signals = {"E5bI I/NAV OS", "E5b-Q", "E5b-I+E5b-Q"};
+            const std::vector<std::string> g1c_signals = {"L1 C/A"};
+            const std::vector<std::string> g2s_signals = {"L2 CM", "L2 CL", "L2 CM+CL", "L2 P"};
+            const std::vector<std::string> g5_signals = {"L5 I", "L5 Q", "L5 I + L5 Q"};
+
+            for (const auto &it : obs_map)
+                {
+                    uint32_t obs_tow = it.second.interp_TOW_ms / 1000.0;
+                    int prn = static_cast<int>(it.second.PRN);
+                    std::string sig(it.second.Signal, 2);
+                    if (it.second.System == 'E')
+                        {
+                            auto it_sys_clock = d_has_clock_corrections_store_map.find("Galileo");
+                            if (it_sys_clock != d_has_clock_corrections_store_map.end())
+                                {
+                                    auto it_map_corr = it_sys_clock->second.find(prn);
+                                    if (it_map_corr != it_sys_clock->second.end())
+                                        {
+                                            if (sig == "1B")
+                                                {
+                                                    for (const auto &has_signal : e1b_signals)
+                                                        {
+                                                            this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                        }
+                                                }
+                                            else if (sig == "E6")
+                                                {
+                                                    for (const auto &has_signal : e6_signals)
+                                                        {
+                                                            this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                        }
+                                                }
+                                            else if (sig == "5X")
+                                                {
+                                                    for (const auto &has_signal : e5_signals)
+                                                        {
+                                                            this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                        }
+                                                }
+                                            else if (sig == "7X")
+                                                {
+                                                    for (const auto &has_signal : e7_signals)
+                                                        {
+                                                            this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                    if (it.second.System == 'G')
+                        {
+                            auto it_sys_clock = d_has_clock_corrections_store_map.find("GPS");
+                            if (it_sys_clock != d_has_clock_corrections_store_map.end())
+                                {
+                                    auto it_map_corr = it_sys_clock->second.find(prn);
+                                    if (it_map_corr != it_sys_clock->second.end())
+                                        {
+                                            if (sig == "1C")
+                                                {
+                                                    for (const auto &has_signal : g1c_signals)
+                                                        {
+                                                            this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                        }
+                                                }
+                                            else if (sig == "2S")
+                                                {
+                                                    for (const auto &has_signal : g2s_signals)
+                                                        {
+                                                            this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                        }
+                                                }
+                                            else if (sig == "L5")
+                                                {
+                                                    for (const auto &has_signal : g5_signals)
+                                                        {
+                                                            this->get_current_has_obs_correction(has_signal, obs_tow, prn);
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+}
+
+
+void Rtklib_Solver::get_current_has_obs_correction(const std::string &signal, uint32_t tow_obs, int prn)
+{
+    auto code_bias_pair_it = this->d_has_code_bias_store_map[signal].find(prn);
+    if (code_bias_pair_it != this->d_has_code_bias_store_map[signal].end())
+        {
+            uint32_t valid_until = code_bias_pair_it->second.second;
+            if (valid_until > tow_obs)
+                {
+                    this->d_has_obs_corr_map[signal][prn].code_bias_m = code_bias_pair_it->second.first;
+                }
+        }
+    auto phase_bias_pair_it = this->d_has_phase_bias_store_map[signal].find(prn);
+    if (phase_bias_pair_it != this->d_has_phase_bias_store_map[signal].end())
+        {
+            uint32_t valid_until = phase_bias_pair_it->second.second;
+            if (valid_until > tow_obs)
+                {
+                    this->d_has_obs_corr_map[signal][prn].phase_bias_cycle = phase_bias_pair_it->second.first;
+                }
+        }
+}
+
+bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_map, double kf_update_interval_s, bool flag_averaging, bool enable_vtl, bool close_vtl_loop, const Vtl_Data::imu_data_t &imu_data)
 {
     std::map<int, Gnss_Synchro>::const_iterator gnss_observables_iter;
     std::map<int, Galileo_Ephemeris>::const_iterator galileo_ephemeris_iter;
@@ -475,8 +1213,6 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
     std::map<int, Beidou_Dnav_Ephemeris>::const_iterator beidou_ephemeris_iter;
 
     const Glonass_Gnav_Utc_Model &gnav_utc = this->glonass_gnav_utc_model;
-
-    this->set_averaging_flag(flag_averaging);
 
     // ********************************************************************************
     // ****** PREPARE THE DATA (SV EPHEMERIS AND OBSERVATIONS) ************************
@@ -501,7 +1237,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                 case 'G':
                     {
-                        const std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string sig_(gnss_observables_iter->second.Signal, 2);
                         if (sig_ == "1C")
                             {
                                 band1 = true;
@@ -530,7 +1266,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                 {
                 case 'E':
                     {
-                        const std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string gal_str("Galileo");
+                        const std::string sig_(gnss_observables_iter->second.Signal, 2);
                         // Galileo E1
                         if (sig_ == "1B")
                             {
@@ -539,11 +1276,14 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                 if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
+                                        eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second,
+                                            this->d_has_orbit_corrections_store_map[gal_str],
+                                            this->d_has_clock_corrections_store_map[gal_str]);
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
+                                            d_has_obs_corr_map,
                                             galileo_ephemeris_iter->second.WN,
                                             d_rtklib_band_index[sig_]);
                                         valid_obs++;
@@ -568,6 +1308,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {
                                                         d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
+                                                            d_has_obs_corr_map,
                                                             galileo_ephemeris_iter->second.WN,
                                                             d_rtklib_band_index[sig_]);
                                                         found_E1_obs = true;
@@ -578,7 +1319,9 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                             {
                                                 // insert Galileo E5 obs as new obs and also insert its ephemeris
                                                 // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second);
+                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second,
+                                                    this->d_has_orbit_corrections_store_map[gal_str],
+                                                    this->d_has_clock_corrections_store_map[gal_str]);
                                                 // convert observation from GNSS-SDR class to RTKLIB structure
                                                 const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
                                                 obsd_t newobs = {{0, 0}, '0', '0', {}, {},
@@ -586,6 +1329,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
+                                                    d_has_obs_corr_map,
                                                     galileo_ephemeris_iter->second.WN,
                                                     d_rtklib_band_index[sig_]);
                                                 valid_obs++;
@@ -596,7 +1340,51 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                         DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
                                     }
                             }
-                        if (sig_ == "E6" && d_use_e6_for_pvt)
+                        if (sig_ == "E6" && d_conf.use_e6_for_pvt)
+                            {
+                                galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
+                                if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
+                                    {
+                                        bool found_E1_obs = false;
+                                        for (int i = 0; i < valid_obs; i++)
+                                            {
+                                                if (eph_data[i].sat == (static_cast<int>(gnss_observables_iter->second.PRN + NSATGPS + NSATGLO)))
+                                                    {
+                                                        d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
+                                                            gnss_observables_iter->second,
+                                                            d_has_obs_corr_map,
+                                                            galileo_ephemeris_iter->second.WN,
+                                                            d_rtklib_band_index[sig_]);
+                                                        found_E1_obs = true;
+                                                        break;
+                                                    }
+                                            }
+                                        if (!found_E1_obs)
+                                            {
+                                                // insert Galileo E6 obs as new obs and also insert its ephemeris
+                                                // convert ephemeris from GNSS-SDR class to RTKLIB structure
+                                                eph_data[valid_obs] = eph_to_rtklib(galileo_ephemeris_iter->second,
+                                                    this->d_has_orbit_corrections_store_map[gal_str],
+                                                    this->d_has_clock_corrections_store_map[gal_str]);
+                                                // convert observation from GNSS-SDR class to RTKLIB structure
+                                                const auto default_code_ = static_cast<unsigned char>(CODE_NONE);
+                                                obsd_t newobs = {{0, 0}, '0', '0', {}, {},
+                                                    {default_code_, default_code_, default_code_},
+                                                    {}, {0.0, 0.0, 0.0}, {}};
+                                                d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
+                                                    gnss_observables_iter->second,
+                                                    d_has_obs_corr_map,
+                                                    galileo_ephemeris_iter->second.WN,
+                                                    d_rtklib_band_index[sig_]);
+                                                valid_obs++;
+                                            }
+                                    }
+                                else  // the ephemeris are not available for this SV
+                                    {
+                                        DLOG(INFO) << "No ephemeris data for SV " << gnss_observables_iter->second.PRN;
+                                    }
+                            }
+                        if (sig_ == "E6")
                             {
                                 galileo_ephemeris_iter = galileo_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (galileo_ephemeris_iter != galileo_ephemeris_map.cend())
@@ -609,7 +1397,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                         d_obs_data[i + glo_valid_obs] = insert_obs_to_rtklib(d_obs_data[i + glo_valid_obs],
                                                             gnss_observables_iter->second,
                                                             galileo_ephemeris_iter->second.WN,
-                                                            d_rtklib_band_index[sig_]);
+                                                            2);  // Band E6
                                                         found_E1_obs = true;
                                                         break;
                                                     }
@@ -627,7 +1415,8 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
                                                     galileo_ephemeris_iter->second.WN,
-                                                    d_rtklib_band_index[sig_]);
+                                                    2);  // Band E6
+                                                // std::cout << "Week " << galileo_ephemeris_iter->second.WN << '\n';
                                                 valid_obs++;
                                             }
                                     }
@@ -642,18 +1431,23 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     {
                         // GPS L1
                         // 1 GPS - find the ephemeris for the current GPS SV observation. The SV PRN ID is the map key
-                        const std::string sig_(gnss_observables_iter->second.Signal);
+                        const std::string gps_str("GPS");
+                        const std::string sig_(gnss_observables_iter->second.Signal, 2);
                         if (sig_ == "1C")
                             {
                                 gps_ephemeris_iter = gps_ephemeris_map.find(gnss_observables_iter->second.PRN);
                                 if (gps_ephemeris_iter != gps_ephemeris_map.cend())
                                     {
                                         // convert ephemeris from GNSS-SDR class to RTKLIB structure
-                                        eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second, this->is_pre_2009());
+                                        eph_data[valid_obs] = eph_to_rtklib(gps_ephemeris_iter->second,
+                                            this->d_has_orbit_corrections_store_map[gps_str],
+                                            this->d_has_clock_corrections_store_map[gps_str],
+                                            this->is_pre_2009());
                                         // convert observation from GNSS-SDR class to RTKLIB structure
                                         obsd_t newobs{};
                                         d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                             gnss_observables_iter->second,
+                                            d_has_obs_corr_map,
                                             gps_ephemeris_iter->second.WN,
                                             d_rtklib_band_index[sig_],
                                             this->is_pre_2009());
@@ -750,6 +1544,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                                     {}, {0.0, 0.0, 0.0}, {}};
                                                 d_obs_data[valid_obs + glo_valid_obs] = insert_obs_to_rtklib(newobs,
                                                     gnss_observables_iter->second,
+                                                    d_has_obs_corr_map,
                                                     gps_cnav_ephemeris_iter->second.WN,
                                                     d_rtklib_band_index[sig_]);
                                                 valid_obs++;
@@ -1004,65 +1799,13 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             d_nav_data.lam[i][j] = satwavelen(i + 1, d_rtklib_freq_index[j], &d_nav_data);
                         }
                 }
-
-
-            if (get_vtl_data == true)
-                {
-                    //VTL input data extraction from rtklib structures
-                    /* satellite positions, velocities and clocks */
-                    prcopt_t *opt = &d_rtk.opt;
-                    /* count rover/base station observations */
-                    int n_sats = valid_obs + glo_valid_obs;
-                    int nu;
-                    int nr;
-                    for (nu = 0; nu < n_sats && d_obs_data.data()[nu].rcv == 1; nu++)
-                        {
-                        }
-                    for (nr = 0; nu + nr < n_sats && d_obs_data.data()[nu + nr].rcv == 2; nr++)
-                        {
-                        }
-
-                    double *rs;
-                    double *dts;
-                    double *var;
-
-                    std::vector<int> svh(MAXOBS * 2);
-                    rs = mat(6, n_sats);
-                    dts = mat(2, n_sats);
-                    var = mat(1, n_sats);
-                    /* satellite positions, velocities and clocks */
-                    satposs(d_rtk.sol.time, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, opt->sateph, rs, dts, var, svh.data());
-
-                    Vtl_Data new_vtl_data;
-                    new_vtl_data.init_storage(n_sats);
-                    new_vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
-                    new_vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
-                    for (int n = 0; n < n_sats; n++)
-                        {
-                            new_vtl_data.sat_p(n, 0) = rs[0 + 6 * n];
-                            new_vtl_data.sat_p(n, 1) = rs[1 + 6 * n];
-                            new_vtl_data.sat_p(n, 2) = rs[2 + 6 * n];
-                            new_vtl_data.sat_v(n, 0) = rs[3 + 6 * n];
-                            new_vtl_data.sat_v(n, 1) = rs[4 + 6 * n];
-                            new_vtl_data.sat_v(n, 2) = rs[5 + 6 * n];
-
-                            new_vtl_data.sat_dts(n, 0) = dts[0 + 2 * n];
-                            new_vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
-                            new_vtl_data.sat_var(n) = var[n];
-                            new_vtl_data.sat_health_flag(n) = svh.at(n);
-
-                            // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
-                            new_vtl_data.pr_m(n) = d_obs_data.at(n).P[0];
-                            new_vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0];
-                            new_vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
-                        }
-                    new_vtl_data.debug_print();
-
-                    //Call the VTL engine loop
-                    vtl_engine.vtl_loop(new_vtl_data);
-                }
-
-            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data);
+            std::vector<double> tropo_vec;
+            std::vector<double> iono_vec;
+            std::vector<double> pr_corrected_code_bias_vec;
+            std::vector<double> pr_residual_vec;
+            std::vector<double> doppler_residual_vec;
+            result = rtkpos(&d_rtk, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, tropo_vec,
+                iono_vec, pr_corrected_code_bias_vec, pr_residual_vec, doppler_residual_vec);
 
             if (result == 0)
                 {
@@ -1070,6 +1813,10 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     d_rtk.neb = 0;                 // clear error buffer to avoid repeating the error message
                     this->set_time_offset_s(0.0);  // reset rx time estimation
                     this->set_num_valid_observations(0);
+                    if (d_conf.enable_pvt_kf == true)
+                        {
+                            d_pvt_kf.reset_Kf();
+                        }
                 }
             else
                 {
@@ -1103,10 +1850,45 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                             dops(index_aux, azel.data(), 0.0, d_dop.data());
                         }
                     this->set_valid_position(true);
+                    // this->set_averaging_flag(true);
+                    // this->set_averaging_depth(100);
+                    // this->perform_pos_averaging();
                     std::array<double, 4> rx_position_and_time{};
+
+                    if (d_conf.enable_pvt_kf == true)
+                        {
+                            if (d_pvt_kf.is_initialized() == false)
+                                {
+                                    arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
+                                    arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+
+                                    d_pvt_kf.init_Kf(p,
+                                        v,
+                                        kf_update_interval_s,
+                                        d_conf.measures_ecef_pos_sd_m,
+                                        d_conf.measures_ecef_vel_sd_ms,
+                                        d_conf.system_ecef_pos_sd_m,
+                                        d_conf.system_ecef_vel_sd_ms);
+                                }
+                            else
+                                {
+                                    arma::vec p = {pvt_sol.rr[0], pvt_sol.rr[1], pvt_sol.rr[2]};
+                                    arma::vec v = {pvt_sol.rr[3], pvt_sol.rr[4], pvt_sol.rr[5]};
+                                    d_pvt_kf.run_Kf(p, v);
+                                    d_pvt_kf.get_pv_Kf(p, v);
+                                    pvt_sol.rr[0] = p[0];  // [m]
+                                    pvt_sol.rr[1] = p[1];  // [m]
+                                    pvt_sol.rr[2] = p[2];  // [m]
+                                    pvt_sol.rr[3] = v[0];  // [ms]
+                                    pvt_sol.rr[4] = v[1];  // [ms]
+                                    pvt_sol.rr[5] = v[2];  // [ms]
+                                }
+                        }
+
                     rx_position_and_time[0] = pvt_sol.rr[0];  // [m]
                     rx_position_and_time[1] = pvt_sol.rr[1];  // [m]
                     rx_position_and_time[2] = pvt_sol.rr[2];  // [m]
+
                     // todo: fix this ambiguity in the RTKLIB units in receiver clock offset!
                     if (d_rtk.opt.mode == PMODE_SINGLE)
                         {
@@ -1122,6 +1904,99 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                         }
                     this->set_rx_pos({rx_position_and_time[0], rx_position_and_time[1], rx_position_and_time[2]});  // save ECEF position for the next iteration
 
+                    if (enable_vtl == true)
+                        {
+                            // VTL input data extraction from rtklib structures
+                            /* satellite positions, velocities and clocks */
+                            prcopt_t *opt = &d_rtk.opt;
+                            /* count rover/base station observations */
+                            int n_sats = valid_obs + glo_valid_obs;
+                            int nu;
+                            int nr;
+                            for (nu = 0; nu < n_sats && d_obs_data.data()[nu].rcv == 1; nu++)
+                                {
+                                }
+                            for (nr = 0; nu + nr < n_sats && d_obs_data.data()[nu + nr].rcv == 2; nr++)
+                                {
+                                }
+
+                            double *rs;
+                            double *dts;
+                            double *var;
+
+                            std::vector<int> svh(MAXOBS * 2);
+                            rs = mat(6, n_sats);
+                            dts = mat(2, n_sats);
+                            var = mat(1, n_sats);
+                            /* satellite positions, velocities and clocks */
+                            satposs(d_rtk.sol.time, d_obs_data.data(), valid_obs + glo_valid_obs, &d_nav_data, opt->sateph, rs, dts, var, svh.data());
+
+                            // Vtl_Data vtl_data;
+                            vtl_data.init_storage(n_sats);
+                            vtl_data.epoch_tow_s = gnss_observables_map.cbegin()->second.RX_time;
+                            vtl_data.sample_counter = gnss_observables_map.cbegin()->second.Tracking_sample_counter;  // TODO: check if the different tracking instants (different sample_counters) affect the VTL commands
+                            vtl_data.sat_number = n_sats;
+                            for (int n = 0; n < n_sats; n++)
+                                {
+                                    vtl_data.sat_p(n, 0) = rs[0 + 6 * n];
+                                    vtl_data.sat_p(n, 1) = rs[1 + 6 * n];
+                                    vtl_data.sat_p(n, 2) = rs[2 + 6 * n];
+                                    vtl_data.sat_v(n, 0) = rs[3 + 6 * n];
+                                    vtl_data.sat_v(n, 1) = rs[4 + 6 * n];
+                                    vtl_data.sat_v(n, 2) = rs[5 + 6 * n];
+
+                                    vtl_data.sat_dts(n, 0) = dts[0 + 2 * n];
+                                    vtl_data.sat_dts(n, 1) = dts[1 + 2 * n];
+                                    vtl_data.sat_var(n) = var[n];
+                                    vtl_data.sat_health_flag(n) = svh.at(n);
+                                    vtl_data.sat_CN0_dB_hz(n) = d_obs_data.at(n).SNR[0] * 0.25;  // (0.25 dBHz)
+                                    // TODO: first version of VTL works only with ONE frequency band (band #0 is L1)
+                                    // To.Do: check it VTL uses all the information as in rtklib rescode function: v[nv] = P - (r + dtr - SPEED_OF_LIGHT_M_S * dts[i * 2] + dion + dtrp);
+                                    // corrected pr with code bias, iono and tropo. Still needs the dtr(rx clock bias) and satellite clock bias (dts)
+                                    vtl_data.pr_m(n) = pr_corrected_code_bias_vec[n] - tropo_vec[n] - iono_vec[n] + SPEED_OF_LIGHT_M_S * dts[n * 2];
+                                    vtl_data.doppler_hz(n) = d_obs_data.at(n).D[0] - SPEED_OF_LIGHT_M_S * dts[1 + 2 * n] / Lambda_GPS_L1;
+                                    vtl_data.carrier_phase_rads(n) = d_obs_data.at(n).L[0];
+                                    vtl_data.pr_res(n) = pr_residual_vec[n];
+                                }
+                            // VTL input data extraction from rtklib structures
+                            /* Receiver position, velocity and clock */
+                            /* position/velocity (m|m/s):{x,y,z,vx,vy,vz} or {e,n,u,ve,vn,vu} */
+                            vtl_data.rx_p(0) = pvt_sol.rr[0];
+                            vtl_data.rx_p(1) = pvt_sol.rr[1];
+                            vtl_data.rx_p(2) = pvt_sol.rr[2];
+                            vtl_data.rx_v(0) = pvt_sol.rr[3];
+                            vtl_data.rx_v(1) = pvt_sol.rr[4];
+                            vtl_data.rx_v(2) = pvt_sol.rr[5];
+                            /* Receiver position, velocity and clock variances*/
+                            vtl_data.rx_pvt_var[0] = pvt_sol.qr[0];
+                            vtl_data.rx_pvt_var[1] = pvt_sol.qr[1];
+                            vtl_data.rx_pvt_var[2] = pvt_sol.qr[2];
+                            // TODO: get direct estimations for V T variances, instead:
+                            vtl_data.rx_pvt_var[3] = pvt_sol.qr[0];  // in general minor than position.
+                            vtl_data.rx_pvt_var[4] = pvt_sol.qr[1];
+                            vtl_data.rx_pvt_var[5] = pvt_sol.qr[2];
+                            vtl_data.rx_pvt_var[6] = pvt_sol.qr[0];  // time
+                            vtl_data.rx_pvt_var[7] = pvt_sol.qr[0];  // doppler
+                            // receiver clock offset and receiver clock drift
+                            vtl_data.rx_dts(0) = rx_position_and_time[3];
+                            vtl_data.rx_dts(1) = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
+
+                            vtl_data.imu_data = imu_data;
+
+                            vtl_engine.vtl_loop(vtl_data);
+                        }
+                    else
+                        {
+                            // MAGL: the code should not enter here once the vtl has started
+                            //  .. but it does!
+                            // and not only that but pvt_sol.rr seems to have NOT reasonable values
+                            //  pvt_sol.rr[0]=rx_position_and_time[0];  // [m]
+                            //  pvt_sol.rr[1]=rx_position_and_time[1];  // [m]
+                            //  pvt_sol.rr[2]=rx_position_and_time[2];  // [m]
+                            //  pvt_sol.rr[3]=4.2e6;
+                            //  pvt_sol.rr[4]=4.2e6;
+                            //  pvt_sol.rr[5]=4.2e6;
+                        }
                     // compute Ground speed and COG
                     double ground_speed_ms = 0.0;
                     std::array<double, 3> pos{};
@@ -1129,7 +2004,7 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                     ecef2pos(pvt_sol.rr, pos.data());
                     ecef2enu(pos.data(), &pvt_sol.rr[3], enuv.data());
                     this->set_speed_over_ground(norm_rtk(enuv.data(), 2));
-                    double new_cog;
+                    double new_cog = -9999.0;  // COG not estimated due to insuficient velocity
                     if (ground_speed_ms >= 1.0)
                         {
                             new_cog = atan2(enuv[0], enuv[1]) * R2D;
@@ -1211,11 +2086,40 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
 
                     this->set_rx_vel({enuv[0], enuv[1], enuv[2]});
 
+                    // ENU vel [m/s]
+                    d_monitor_pvt.vel_e = enuv[0];
+                    d_monitor_pvt.vel_n = enuv[1];
+                    d_monitor_pvt.vel_u = enuv[2];
+
+                    // Course Over Ground (cog) [deg]
+                    d_monitor_pvt.cog = new_cog;
+
+                    // Galileo HAS status: 1- HAS messages decoded and applied, 0 - HAS not avaliable
+                    if (d_has_obs_corr_map.empty())
+                        {
+                            d_monitor_pvt.galhas_status = 0;
+                        }
+                    else
+                        {
+                            d_monitor_pvt.galhas_status = 1;
+                        }
+
                     const double clock_drift_ppm = pvt_sol.dtr[5] / SPEED_OF_LIGHT_M_S * 1e6;
 
                     this->set_clock_drift_ppm(clock_drift_ppm);
                     // User clock drift [ppm]
                     d_monitor_pvt.user_clk_drift_ppm = clock_drift_ppm;
+
+                    // write UTC time string
+
+                    // Use a facet to display time in a custom format (only hour and minutes).
+                    auto *facet = new boost::posix_time::time_facet();
+                    facet->format("%Y-%m-%dT%H:%M:%S%F");
+                    std::stringstream stream;
+                    stream.imbue(std::locale(std::locale::classic(), facet));
+                    stream << p_time;
+                    stream << 'Z';
+                    d_monitor_pvt.utc_time = stream.str();
 
                     // ######## LOG FILE #########
                     if (d_flag_dump_enabled == true)
@@ -1293,9 +2197,112 @@ bool Rtklib_Solver::get_PVT(const std::map<int, Gnss_Synchro> &gnss_observables_
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));
                                     d_dump_file.write(reinterpret_cast<char *>(&d_dop[3]), sizeof(double));
                                 }
-                            catch (const std::ifstream::failure &e)
+                            catch (const std::ofstream::failure &e)
                                 {
                                     LOG(WARNING) << "Exception writing RTKLIB dump file " << e.what();
+                                }
+
+                            // VTL (optional) MULTIPLEXED FILE RECORDING - Record results to file
+                            // if (enable_vtl == true)
+                            try
+                                {
+                                    double tmp_double;
+                                    uint32_t tmp_uint32;
+                                    // TOW
+                                    tmp_uint32 = gnss_observables_map.cbegin()->second.TOW_at_current_symbol_ms;
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
+                                    // WEEK
+                                    tmp_uint32 = adjgpsweek(d_nav_data.eph[0].week, this->is_pre_2009());
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_uint32), sizeof(uint32_t));
+                                    // PVT GPS time
+                                    tmp_double = gnss_observables_map.cbegin()->second.RX_time;
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // VTL filtered User clock offset [s]
+                                    tmp_double = vtl_engine.get_user_clock_offset_s();
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // VTL filtered User clock offset drift[s/s]
+                                    tmp_double = vtl_engine.get_user_clock_offset_drift_s_s();
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // rtklib User clock offset drift[s/s]
+                                    tmp_double = pvt_sol.dtr[5] / 1e6;  // [ppm] to [s]
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // ECEF POS X,Y,X [m] + ECEF VEL X,Y,X [m/s] + ECEF ACC X,Y,X [m/s] (9 x double)
+                                    std::vector<double> p_vec_m = vtl_engine.get_position_ecef_m();
+                                    tmp_double = p_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    std::vector<double> v_vec_m = vtl_engine.get_velocity_ecef_m_s();
+                                    tmp_double = v_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    std::vector<double> a_vec_m = vtl_engine.get_accel_ecef_m_s2();
+                                    tmp_double = a_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // position/velocity/acceleration variance/ (units^2)  (9 x double)
+
+                                    std::vector<double> p_var_vec_m = vtl_engine.get_position_var_ecef_m();
+                                    tmp_double = p_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = p_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+
+                                    std::vector<double> v_var_vec_m = vtl_engine.get_velocity_var_ecef_m_s();
+                                    tmp_double = v_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = v_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    vector<double> a_var_vec_m = vtl_engine.get_accel_var_ecef_m_s2();
+                                    tmp_double = a_var_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_var_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    tmp_double = a_var_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // GEO user position Latitude [rad]
+                                    vector<double> geo_vec_m = vtl_engine.get_geodetic_rad_m();
+                                    tmp_double = geo_vec_m[0];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // GEO user position Longitude [rad]
+                                    tmp_double = geo_vec_m[1];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+                                    // GEO user position Height [m]
+                                    tmp_double = geo_vec_m[2];
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&tmp_double), sizeof(double));
+
+                                    // NUMBER OF VALID SATS
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&pvt_sol.ns), sizeof(uint8_t));
+
+                                    // GDOP / PDOP / HDOP / VDOP
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[0]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[1]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[2]), sizeof(double));
+                                    d_vtl_dump_file.write(reinterpret_cast<char *>(&d_dop[3]), sizeof(double));
+                                }
+                            catch (const std::ofstream::failure &e)
+                                {
+                                    LOG(WARNING) << "Exception writing VTL dump file " << e.what();
                                 }
                         }
                 }

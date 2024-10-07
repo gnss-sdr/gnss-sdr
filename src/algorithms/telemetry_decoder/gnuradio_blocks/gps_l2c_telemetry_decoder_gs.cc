@@ -24,7 +24,6 @@
 #include "gps_cnav_iono.h"       // for Gps_CNAV_Iono
 #include "gps_cnav_utc_model.h"  // for Gps_CNAV_Utc_Model
 #include "tlm_utils.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <pmt/pmt.h>        // for make_any
 #include <pmt/pmt_sugar.h>  // for mp
@@ -32,9 +31,16 @@
 #include <cmath>            // for round
 #include <cstddef>          // for size_t
 #include <exception>        // for exception
+#include <iomanip>          // for setprecision
 #include <iostream>         // for cout
 #include <memory>           // for shared_ptr, make_shared
+#include <utility>          // for std::move
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 gps_l2c_telemetry_decoder_gs_sptr
 gps_l2c_make_telemetry_decoder_gs(const Gnss_Satellite &satellite, const Tlm_Conf &conf)
@@ -156,12 +162,12 @@ void gps_l2c_telemetry_decoder_gs::set_channel(int channel)
                         {
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Telemetry decoder dump enabled on channel " << d_channel
                                       << " Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening Telemetry GPS L2 dump file " << e.what();
                         }
@@ -257,21 +263,45 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                 {
                     // get ephemeris object for this SV
                     const std::shared_ptr<Gps_CNAV_Ephemeris> tmp_obj = std::make_shared<Gps_CNAV_Ephemeris>(d_CNAV_Message.get_ephemeris());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": ephemeris from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
+                    const auto default_precision{std::cout.precision()};
+#endif
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
+                              << ": ephemeris from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
+                              << " dB-Hz" << TEXT_RESET << std::endl;
                 }
             if (d_CNAV_Message.have_new_iono() == true)
                 {
                     const std::shared_ptr<Gps_CNAV_Iono> tmp_obj = std::make_shared<Gps_CNAV_Iono>(d_CNAV_Message.get_iono());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": iono model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
+                    const auto default_precision{std::cout.precision()};
+#endif
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
+                              << ": iono model parameters from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
+                              << " dB-Hz" << TEXT_RESET << std::endl;
                 }
 
             if (d_CNAV_Message.have_new_utc_model() == true)
                 {
                     const std::shared_ptr<Gps_CNAV_Utc_Model> tmp_obj = std::make_shared<Gps_CNAV_Utc_Model>(d_CNAV_Message.get_utc_model());
-                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel << ": UTC model parameters from satellite " << d_satellite << TEXT_RESET << '\n';
                     this->message_port_pub(pmt::mp("telemetry"), pmt::make_any(tmp_obj));
+#if __cplusplus == 201103L
+                    const int default_precision = std::cout.precision();
+#else
+                    const auto default_precision{std::cout.precision()};
+#endif
+                    std::cout << TEXT_BLUE << "New GPS CNAV message received in channel " << d_channel
+                              << ": UTC model parameters from satellite " << d_satellite
+                              << " with CN0=" << std::setprecision(2) << current_synchro_data.CN0_dB_hz << std::setprecision(default_precision)
+                              << " dB-Hz" << TEXT_RESET << std::endl;
                 }
 
             // update TOW at the preamble instant
@@ -336,13 +366,13 @@ int gps_l2c_telemetry_decoder_gs::general_work(int noutput_items __attribute__((
                     tmp_int = static_cast<int32_t>(current_synchro_data.PRN);
                     d_dump_file.write(reinterpret_cast<char *>(&tmp_int), sizeof(int32_t));
                 }
-            catch (const std::ifstream::failure &e)
+            catch (const std::ofstream::failure &e)
                 {
                     LOG(WARNING) << "Exception writing Telemetry GPS L2 dump file " << e.what();
                 }
         }
 
     // 3. Make the output (copy the object contents to the GNURadio reserved memory)
-    out[0] = current_synchro_data;
+    out[0] = std::move(current_synchro_data);
     return 1;
 }

@@ -30,7 +30,6 @@
 #include "tcp_communication.h"
 #include "tcp_packet_data.h"
 #include "tracking_discriminators.h"
-#include <glog/logging.h>
 #include <gnuradio/io_signature.h>
 #include <algorithm>
 #include <cmath>
@@ -38,6 +37,12 @@
 #include <iostream>
 #include <sstream>
 #include <utility>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 
 gps_l1_ca_tcp_connector_tracking_cc_sptr gps_l1_ca_tcp_connector_make_tracking_cc(
@@ -102,7 +107,11 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
       d_acq_carrier_doppler_hz(0.0),
       d_carrier_lock_test(1),
       d_CN0_SNV_dB_Hz(0),
+#if USE_GLOG_AND_GFLAGS
       d_carrier_lock_threshold(static_cast<float>(FLAGS_carrier_lock_th)),
+#else
+      d_carrier_lock_threshold(static_cast<float>(absl::GetFlag(FLAGS_carrier_lock_th))),
+#endif
       d_control_id(0),
       d_enable_tracking(false),
       d_pull_in(false),
@@ -130,8 +139,11 @@ Gps_L1_Ca_Tcp_Connector_Tracking_cc::Gps_L1_Ca_Tcp_Connector_Tracking_cc(
 
     multicorrelator_cpu.init(2 * d_correlation_length_samples, d_n_correlator_taps);
 
+#if USE_GLOG_AND_GFLAGS
     d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(FLAGS_cn0_samples);
-
+#else
+    d_Prompt_buffer = volk_gnsssdr::vector<gr_complex>(absl::GetFlag(FLAGS_cn0_samples));
+#endif
     systemName["G"] = std::string("GPS");
     systemName["R"] = std::string("GLONASS");
     systemName["S"] = std::string("SBAS");
@@ -257,11 +269,11 @@ void Gps_L1_Ca_Tcp_Connector_Tracking_cc::set_channel(uint32_t channel)
                         {
                             d_dump_filename.append(std::to_string(d_channel));
                             d_dump_filename.append(".dat");
-                            d_dump_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+                            d_dump_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                             d_dump_file.open(d_dump_filename.c_str(), std::ios::out | std::ios::binary);
                             LOG(INFO) << "Tracking dump enabled on channel " << d_channel << " Log file: " << d_dump_filename.c_str();
                         }
-                    catch (const std::ifstream::failure &e)
+                    catch (const std::ofstream::failure &e)
                         {
                             LOG(WARNING) << "channel " << d_channel << " Exception opening trk dump file " << e.what();
                         }
@@ -319,7 +331,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     samples_offset = std::round(d_acq_code_phase_samples + acq_trk_shif_correction_samples);
                     current_synchro_data.Tracking_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);
                     current_synchro_data.fs = d_fs_in;
-                    *out[0] = current_synchro_data;
+                    *out[0] = std::move(current_synchro_data);
                     d_sample_counter_seconds = d_sample_counter_seconds + (static_cast<double>(samples_offset) / static_cast<double>(d_fs_in));
                     d_sample_counter = d_sample_counter + static_cast<uint64_t>(samples_offset);  // count for the processed samples
                     d_pull_in = false;
@@ -400,7 +412,12 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
              * \todo Improve the lock detection algorithm!
              */
             // ####### CN0 ESTIMATION AND LOCK DETECTORS ######
+
+#if USE_GLOG_AND_GFLAGS
             if (d_cn0_estimation_counter < FLAGS_cn0_samples)
+#else
+            if (d_cn0_estimation_counter < absl::GetFlag(FLAGS_cn0_samples))
+#endif
                 {
                     // fill buffer with prompt correlator output values
                     d_Prompt_buffer[d_cn0_estimation_counter] = *d_Prompt;
@@ -409,11 +426,19 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
             else
                 {
                     d_cn0_estimation_counter = 0;
+#if USE_GLOG_AND_GFLAGS
                     d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), FLAGS_cn0_samples, GPS_L1_CA_CODE_PERIOD_S);
                     d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), FLAGS_cn0_samples);
 
                     // ###### TRACKING UNLOCK NOTIFICATION #####
                     if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < FLAGS_cn0_min)
+#else
+                    d_CN0_SNV_dB_Hz = cn0_m2m4_estimator(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples), GPS_L1_CA_CODE_PERIOD_S);
+                    d_carrier_lock_test = carrier_lock_detector(d_Prompt_buffer.data(), absl::GetFlag(FLAGS_cn0_samples));
+
+                    // ###### TRACKING UNLOCK NOTIFICATION #####
+                    if (d_carrier_lock_test < d_carrier_lock_threshold or d_CN0_SNV_dB_Hz < absl::GetFlag(FLAGS_cn0_min))
+#endif
                         {
                             d_carrier_lock_fail_counter++;
                         }
@@ -424,7 +449,11 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                                     d_carrier_lock_fail_counter--;
                                 }
                         }
+#if USE_GLOG_AND_GFLAGS
                     if (d_carrier_lock_fail_counter > FLAGS_max_lock_fail)
+#else
+                    if (d_carrier_lock_fail_counter > absl::GetFlag(FLAGS_max_lock_fail))
+#endif
                         {
                             std::cout << "Loss of lock in channel " << d_channel << "!\n";
                             LOG(INFO) << "Loss of lock in channel " << d_channel << "!";
@@ -468,7 +497,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
     current_synchro_data.Signal[2] = '\0';
 
     current_synchro_data.fs = d_fs_in;
-    *out[0] = current_synchro_data;
+    *out[0] = std::move(current_synchro_data);
 
     if (d_dump)
         {
@@ -531,7 +560,7 @@ int Gps_L1_Ca_Tcp_Connector_Tracking_cc::general_work(int noutput_items __attrib
                     uint32_t prn_ = d_acquisition_gnss_synchro->PRN;
                     d_dump_file.write(reinterpret_cast<char *>(&prn_), sizeof(uint32_t));
                 }
-            catch (const std::ifstream::failure &e)
+            catch (const std::ofstream::failure &e)
                 {
                     LOG(WARNING) << "Exception writing trk dump file " << e.what();
                 }

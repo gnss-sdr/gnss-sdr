@@ -19,9 +19,14 @@
 
 
 #include "tracking_loop_filter.h"
-#include <glog/logging.h>
 #include <cmath>
 #include <cstddef>
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 const int MAX_LOOP_ORDER = 3;
 const int MAX_LOOP_HISTORY_LENGTH = 4;

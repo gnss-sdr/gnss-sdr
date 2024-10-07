@@ -21,7 +21,6 @@
 #include "galileo_e1_signal_replica.h"
 #include "gnss_sdr_fft.h"
 #include "gnss_sdr_flags.h"
-#include <glog/logging.h>
 #include <gnuradio/fft/fft.h>     // for fft_complex
 #include <gnuradio/gr_complex.h>  // for gr_complex
 #include <volk/volk.h>            // for volk_32fc_conjugate_32fc
@@ -30,30 +29,42 @@
 #include <cmath>      // for abs, pow, floor
 #include <complex>    // for complex
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
+
 GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     const ConfigurationInterface* configuration,
     const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : gnss_synchro_(nullptr),
-                                role_(role),
-                                doppler_center_(0),
-                                channel_(0),
-                                doppler_step_(0),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams)
+    : gnss_synchro_(nullptr),
+      role_(role),
+      doppler_center_(0),
+      channel_(0),
+      doppler_step_(0),
+      in_streams_(in_streams),
+      out_streams_(out_streams),
+      acquire_pilot_(configuration->property(role + ".acquire_pilot", false))
 {
-    acq_parameters_.SetFromConfiguration(configuration, role, fpga_downsampling_factor, fpga_buff_num, fpga_blk_exp, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS);
+    acq_parameters_.SetFromConfiguration(configuration, role_, fpga_buff_num, fpga_blk_exp, downsampling_factor_default, GALILEO_E1_CODE_CHIP_RATE_CPS, GALILEO_E1_B_CODE_LENGTH_CHIPS);
 
-    DLOG(INFO) << "role " << role;
-
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_doppler_max != 0)
         {
             acq_parameters_.doppler_max = FLAGS_doppler_max;
         }
+#else
+    if (absl::GetFlag(FLAGS_doppler_max) != 0)
+        {
+            acq_parameters_.doppler_max = absl::GetFlag(FLAGS_doppler_max);
+        }
+#endif
     doppler_max_ = acq_parameters_.doppler_max;
     doppler_step_ = static_cast<unsigned int>(acq_parameters_.doppler_step);
     fs_in_ = acq_parameters_.fs_in;
-    acquire_pilot_ = configuration->property(role + ".acquire_pilot", false);  // could be true in future versions
 
     uint32_t code_length = acq_parameters_.code_length;
     uint32_t nsamples_total = acq_parameters_.samples_per_code;
@@ -131,6 +142,7 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
 
     acq_parameters_.all_fft_codes = d_all_fft_codes_.data();
 
+    DLOG(INFO) << "role " << role_;
     acquisition_fpga_ = pcps_make_acquisition_fpga(acq_parameters_);
 
     if (in_streams_ > 1)

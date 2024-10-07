@@ -69,11 +69,23 @@ target_link_libraries(algorithms_libs_rtklib
     PRIVATE
         core_system_parameters
         algorithms_libs
-        Gflags::gflags
-        Glog::glog
+        Armadillo::armadillo
         LAPACK::LAPACK
         BLAS::BLAS
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(algorithms_libs_rtklib PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(algorithms_libs_rtklib PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(algorithms_libs_rtklib PRIVATE absl::flags absl::log)
+endif()
+
+if(ENABLE_ARMA_NO_DEBUG)
+    target_compile_definitions(algorithms_libs_rtklib
+        PRIVATE -DARMA_NO_BOUND_CHECKING=1
+    )
+endif()
 
 if(FILESYSTEM_FOUND)
     target_compile_definitions(algorithms_libs_rtklib PUBLIC -DHAS_STD_FILESYSTEM=1)

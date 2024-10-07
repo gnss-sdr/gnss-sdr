@@ -65,10 +65,15 @@ target_link_libraries(acquisition_gr_blocks
         Volk::volk
         Volkgnsssdr::volkgnsssdr
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Matio::matio
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(acquisition_gr_blocks PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(acquisition_gr_blocks PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(acquisition_gr_blocks PRIVATE absl::flags absl::log)
+endif()
 
 target_include_directories(acquisition_gr_blocks
     PRIVATE
@@ -99,6 +104,14 @@ if(ENABLE_OPENCL)
         PUBLIC
             ${GNSSSDR_SOURCE_DIR}/src/algorithms/libs/opencl
     )
+endif()
+
+if(VOLK_VERSION)
+    if(VOLK_VERSION VERSION_GREATER 3.0.99)
+        target_compile_definitions(acquisition_gr_blocks
+            PRIVATE -DVOLK_EQUAL_OR_GREATER_31=1
+        )
+    endif()
 endif()
 
 if(ENABLE_CLANG_TIDY)

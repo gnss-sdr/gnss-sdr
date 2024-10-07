@@ -78,11 +78,11 @@ private:
     std::string address_;
     size_t item_size_;
     uint64_t samples_;
+    double rf_gain_;
     int sample_rate_;
     int freq_;
     int gain_;
     int if_gain_;
-    double rf_gain_;
     unsigned int in_stream_;
     unsigned int out_stream_;
     int16_t port_;

@@ -104,8 +104,14 @@ target_link_libraries(acquisition_adapters
     PRIVATE
         gnss_sdr_flags
         Boost::headers
-        Glog::glog
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(acquisition_adapters PRIVATE Glog::glog)
+    target_compile_definitions(acquisition_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(acquisition_adapters PRIVATE absl::flags absl::log)
+endif()
 
 if(GNURADIO_USES_STD_POINTERS)
     target_compile_definitions(acquisition_adapters

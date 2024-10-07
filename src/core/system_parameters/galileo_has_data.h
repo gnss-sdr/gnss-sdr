@@ -52,26 +52,40 @@ class Galileo_HAS_data
 public:
     Galileo_HAS_data() = default;
 
-    std::vector<std::string> get_signals_in_mask(uint8_t nsys) const;         //!< Get a vector of Nsys std::string with signals in mask for system nsys, with 0 <= nsys < Nsys
-    std::vector<std::string> get_systems_string() const;                      //!< Get Nsys system name strings
-    std::vector<std::vector<float>> get_code_bias_m() const;                  //!< Get Nsat x Ncodes code biases in [m]
-    std::vector<std::vector<float>> get_phase_bias_cycle() const;             //!< Get Nsat x Nphases phase biases in [cycles]
-    std::vector<float> get_delta_radial_m() const;                            //!< Get Nsat delta radial corrections in [m]
-    std::vector<float> get_delta_radial_m(uint8_t nsys) const;                //!< Get delta radial corrections in [m] for system nsys, with 0 <= nsys < Nsys
-    std::vector<float> get_delta_in_track_m() const;                          //!< Get Nsat delta in-track corrections in [m]
-    std::vector<float> get_delta_in_track_m(uint8_t nsys) const;              //!< Get delta in-track corrections in [m] for system nsys, with 0 <= nsys < Nsys
-    std::vector<float> get_delta_cross_track_m() const;                       //!< Get Nsat delta cross-track corrections in [m]
-    std::vector<float> get_delta_cross_track_m(uint8_t nsys) const;           //!< Get delta cross-track corrections in [m] for system nsys, with 0 <= nsys < Nsys
-    std::vector<float> get_delta_clock_correction_m() const;                  //!< Get Nsat delta clock C0 corrections in [m]
-    std::vector<float> get_delta_clock_correction_m(uint8_t nsys) const;      //!< Get delta clock C0 corrections in [m] for system nsys, with 0 <= nsys < Nsys
-    std::vector<int> get_PRNs_in_mask(uint8_t nsys) const;                    //!< Get PRNs in mask for system nsys, with 0 <= nsys < Nsys
-    std::vector<int> get_PRNs_in_submask(uint8_t nsys) const;                 //!< Get PRNs in submask for system nsys, with 0 <= nsys < Nsys
-    std::vector<uint16_t> get_gnss_iod(uint8_t nsys) const;                   //!< Get GNSS IODs for for system nsys, with 0 <= nsys < Nsys
-    std::vector<uint8_t> get_num_satellites() const;                          //!< Get Nsys number of satellites
-    uint16_t get_nsat() const;                                                //!< Get total number of satellites with corrections
-    uint16_t get_nsat_sub() const;                                            //!< Get number of satellites in clock subset corrections
-    uint16_t get_validity_interval_s(uint8_t validity_interval_index) const;  //!< Get validity interval in [s] from the validity_interval_index
-    uint8_t get_gnss_id(int nsat) const;                                      //!< Get GNSS ID from the nsat satellite
+    std::vector<std::string> get_signals_in_mask(uint8_t nsys) const;                    //!< Get a vector of Nsys std::string with signals in mask for system nsys, with 0 <= nsys < Nsys
+    std::vector<std::string> get_signals_in_mask(const std::string& system) const;       //!< Get a vector of Nsys std::string with signals in mask for system ("GPS"/"Galileo")
+    std::vector<std::string> get_systems_string() const;                                 //!< Get Nsys system name strings
+    std::vector<std::string> get_systems_subset_string() const;                          //!< Get Nsat system name strings present in clock corrections subset
+    std::vector<std::vector<float>> get_code_bias_m() const;                             //!< Get Nsat x Ncodes code biases in [m]
+    std::vector<std::vector<float>> get_phase_bias_cycle() const;                        //!< Get Nsat x Nphases phase biases in [cycles]
+    std::vector<std::vector<float>> get_delta_clock_subset_correction_m() const;         //!< Get Nsys_sub vectors with Nsat_sub delta clock C0 corrections in [m]
+    std::vector<float> get_delta_radial_m() const;                                       //!< Get Nsat delta radial corrections in [m]
+    std::vector<float> get_delta_radial_m(uint8_t nsys) const;                           //!< Get delta radial corrections in [m] for system nsys, with 0 <= nsys < Nsys
+    std::vector<float> get_delta_in_track_m() const;                                     //!< Get Nsat delta in-track corrections in [m]
+    std::vector<float> get_delta_in_track_m(uint8_t nsys) const;                         //!< Get delta in-track corrections in [m] for system nsys, with 0 <= nsys < Nsys
+    std::vector<float> get_delta_cross_track_m() const;                                  //!< Get Nsat delta cross-track corrections in [m]
+    std::vector<float> get_delta_cross_track_m(uint8_t nsys) const;                      //!< Get delta cross-track corrections in [m] for system nsys, with 0 <= nsys < Nsys
+    std::vector<float> get_delta_clock_correction_m() const;                             //!< Get Nsat delta clock C0 corrections in [m]
+    std::vector<float> get_delta_clock_correction_m(uint8_t nsys) const;                 //!< Get delta clock C0 corrections in [m] for system nsys, with 0 <= nsys < Nsys
+    std::vector<float> get_delta_clock_subset_correction_m(uint8_t nsys) const;          //!< Get delta clock C0 subset corrections in [m] for system nsys, with 0 <= nsys < Nsys
+    std::vector<int> get_PRNs_in_mask(uint8_t nsys) const;                               //!< Get PRNs in mask for system nsys, with 0 <= nsys < Nsys
+    std::vector<int> get_PRNs_in_mask(const std::string& system) const;                  //!< Get PRNs in mask for system ("GPS"/"Galileo")
+    std::vector<int> get_PRNs_in_submask(uint8_t nsys) const;                            //!< Get PRNs in submask for system nsys, with 0 <= nsys < Nsys
+    std::vector<uint16_t> get_gnss_iod(uint8_t nsys) const;                              //!< Get GNSS IODs for for system nsys, with 0 <= nsys < Nsys
+    std::vector<uint8_t> get_num_satellites() const;                                     //!< Get Nsys number of satellites
+    std::vector<uint8_t> get_num_subset_satellites() const;                              //!< Get Nsys_sub number of satellites
+    float get_code_bias_m(const std::string& signal, int PRN) const;                     //!< Get code bias in [m] for a given signal and PRN satellite
+    float get_phase_bias_cycle(const std::string& signal, int PRN) const;                //!< Get phase bias in [cycles] for a given signal and PRN satellite
+    float get_delta_radial_m(const std::string& system, int prn) const;                  //!< Get orbital radial correction in [m] for a given system ("GPS"/"Galileo") and PRN
+    float get_delta_in_track_m(const std::string& system, int prn) const;                //!< Get orbital in_track correction in [m] for a given system ("GPS"/"Galileo") and PRN
+    float get_delta_cross_track_m(const std::string& system, int prn) const;             //!< Get orbital cross_track correction in [m] for a given system ("GPS"/"Galileo") and PRN
+    float get_clock_correction_mult_m(const std::string& system, int prn) const;         //!< Get clock correction in [m], already multiplied by its Delta Clock Multiplier, for a given system ("GPS"/"Galileo") and PRN
+    float get_clock_subset_correction_mult_m(const std::string& system, int prn) const;  //!< Get clock correction subset in [m], already multiplied by its Delta Clock Multiplier
+    uint16_t get_nsat() const;                                                           //!< Get total number of satellites with corrections
+    uint16_t get_nsat_sub() const;                                                       //!< Get number of satellites in clock subset corrections
+    uint16_t get_validity_interval_s(uint8_t validity_interval_index) const;             //!< Get validity interval in [s] from the validity_interval_index
+    uint16_t get_gnss_iod(const std::string& system, int prn) const;                     //!< Get GNSS IOD from a given system ("GPS"/"Galileo") and PRN
+    uint8_t get_gnss_id(int nsat) const;                                                 //!< Get GNSS ID from the nsat satellite
 
     // Mask
     std::vector<uint8_t> gnss_id_mask;                      //!< GNSS ID. See HAS SIS ICD 1.0 Section 5.2.1.1

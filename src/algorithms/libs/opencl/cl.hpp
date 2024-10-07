@@ -187,7 +187,7 @@
 
 #if !defined(CL_CALLBACK)
 #define CL_CALLBACK
-#endif  //CL_CALLBACK
+#endif  // CL_CALLBACK
 
 #include <iterator>
 #include <limits>
@@ -1070,8 +1070,8 @@ namespace detail
 #define __DEFAULT_INITIALIZED 4
 
 /*
-     * Compare and exchange primitives are needed for handling of defaults
-    */
+ * Compare and exchange primitives are needed for handling of defaults
+ */
 
 #ifdef CL_HPP_CPP11_ATOMICS_SUPPORTED
 inline int compare_exchange(std::atomic<int>* dest, int exchange, int comparand)
@@ -3460,9 +3460,9 @@ public:
         bool readOnly, bool useHostPtr = false, cl_int* err = nullptr);
 
     /*!
-    * \brief Construct a Buffer from a host container via iterators using a specified queue.
-    * If useHostPtr is specified iterators must represent contiguous data.
-    */
+     * \brief Construct a Buffer from a host container via iterators using a specified queue.
+     * If useHostPtr is specified iterators must represent contiguous data.
+     */
     template <typename IteratorType>
     Buffer(const CommandQueue& queue, IteratorType startIterator, IteratorType endIterator,
         bool readOnly, bool useHostPtr = false, cl_int* err = nullptr);
@@ -3626,13 +3626,13 @@ public:
     }
 
     /*! \brief Copy constructor to forward copy to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferD3D10(const BufferD3D10& buf) : Buffer(buf) {}
 
     /*! \brief Copy assignment to forward copy to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferD3D10& operator=(const BufferD3D10& buf)
     {
         Buffer::operator=(buf);
@@ -3641,13 +3641,13 @@ public:
 
 #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
     /*! \brief Move constructor to forward move to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferD3D10(BufferD3D10&& buf) CL_HPP_NOEXCEPT : Buffer(std::move(buf)) {}
 
     /*! \brief Move assignment to forward move to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferD3D10& operator=(BufferD3D10&& buf)
     {
         Buffer::operator=(std::move(buf));
@@ -3713,13 +3713,13 @@ public:
     }
 
     /*! \brief Copy constructor to forward copy to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferGL(const BufferGL& buf) : Buffer(buf) {}
 
     /*! \brief Copy assignment to forward copy to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferGL& operator=(const BufferGL& buf)
     {
         Buffer::operator=(buf);
@@ -3728,13 +3728,13 @@ public:
 
 #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
     /*! \brief Move constructor to forward move to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferGL(BufferGL&& buf) CL_HPP_NOEXCEPT : Buffer(std::move(buf)) {}
 
     /*! \brief Move assignment to forward move to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferGL& operator=(BufferGL&& buf)
     {
         Buffer::operator=(std::move(buf));
@@ -4703,26 +4703,26 @@ public:
 #endif  // #if defined(CL_VERSION_1_2)
 
 /*! \brief Class interface for GL Render Buffer Memory Objects.
-*
-*  This is provided to facilitate interoperability with OpenGL.
-*
-*  See Memory for details about copy semantics, etc.
-*
-*  \see Memory
-*/
+ *
+ *  This is provided to facilitate interoperability with OpenGL.
+ *
+ *  See Memory for details about copy semantics, etc.
+ *
+ *  \see Memory
+ */
 class BufferRenderGL :
 #if defined(CL_VERSION_1_2)
     public ImageGL
 #else   // #if defined(CL_VERSION_1_2)
     public Image2DGL
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
 {
 public:
     /*! \brief Constructs a BufferRenderGL in a specified context, from a given
-    *         GL Renderbuffer.
-    *
-    *  Wraps clCreateFromGLRenderbuffer().
-    */
+     *         GL Renderbuffer.
+     *
+     *  Wraps clCreateFromGLRenderbuffer().
+     */
     BufferRenderGL(
         const Context& context,
         cl_mem_flags flags,
@@ -4748,12 +4748,12 @@ public:
     BufferRenderGL() : ImageGL(){};
 #else   // #if defined(CL_VERSION_1_2)
     BufferRenderGL() : Image2DGL(){};
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
 
     /*! \brief Constructor from cl_mem - takes ownership.
-    *
-    *  See Memory for further details.
-    */
+     *
+     *  See Memory for further details.
+     */
 #if defined(CL_VERSION_1_2)
     __CL_EXPLICIT_CONSTRUCTORS BufferRenderGL(const cl_mem& buffer) : ImageGL(buffer)
     {
@@ -4762,27 +4762,27 @@ public:
     __CL_EXPLICIT_CONSTRUCTORS BufferRenderGL(const cl_mem& buffer) : Image2DGL(buffer)
     {
     }
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
 
 
     /*! \brief Assignment from cl_mem - performs shallow copy.
-    *
-    *  See Memory for further details.
-    */
+     *
+     *  See Memory for further details.
+     */
     BufferRenderGL& operator=(const cl_mem& rhs)
     {
 #if defined(CL_VERSION_1_2)
         ImageGL::operator=(rhs);
 #else   // #if defined(CL_VERSION_1_2)
         Image2DGL::operator=(rhs);
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
 
         return *this;
     }
 
     /*! \brief Copy constructor to forward copy to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
 #if defined(CL_VERSION_1_2)
     BufferRenderGL(const BufferRenderGL& buf) : ImageGL(buf)
     {
@@ -4791,25 +4791,25 @@ public:
     BufferRenderGL(const BufferRenderGL& buf) : Image2DGL(buf)
     {
     }
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
 
     /*! \brief Copy assignment to forward copy to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferRenderGL& operator=(const BufferRenderGL& rhs)
     {
 #if defined(CL_VERSION_1_2)
         ImageGL::operator=(rhs);
 #else   // #if defined(CL_VERSION_1_2)
         Image2DGL::operator=(rhs);
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
         return *this;
     }
 
 #if defined(CL_HPP_RVALUE_REFERENCES_SUPPORTED)
     /*! \brief Move constructor to forward move to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
 #if defined(CL_VERSION_1_2)
     BufferRenderGL(BufferRenderGL&& buf) CL_HPP_NOEXCEPT : ImageGL(std::move(buf))
     {
@@ -4818,19 +4818,19 @@ public:
     BufferRenderGL(BufferRenderGL&& buf) CL_HPP_NOEXCEPT : Image2DGL(std::move(buf))
     {
     }
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
 
 
     /*! \brief Move assignment to forward move to the superclass correctly.
-    * Required for MSVC.
-    */
+     * Required for MSVC.
+     */
     BufferRenderGL& operator=(BufferRenderGL&& buf)
     {
 #if defined(CL_VERSION_1_2)
         ImageGL::operator=(std::move(buf));
 #else   // #if defined(CL_VERSION_1_2)
         Image2DGL::operator=(std::move(buf));
-#endif  //#if defined(CL_VERSION_1_2)
+#endif  // #if defined(CL_VERSION_1_2)
 
         return *this;
     }
@@ -5066,7 +5066,7 @@ Local(::size_t size)
     return ret;
 }
 
-//class KernelFunctor;
+// class KernelFunctor;
 
 /*! \brief Class interface for cl_kernel.
  *
@@ -5780,8 +5780,8 @@ public:
             }
     }
     /*!
-    * \brief Constructs a CommandQueue for an implementation defined device in the given context
-    */
+     * \brief Constructs a CommandQueue for an implementation defined device in the given context
+     */
     explicit CommandQueue(
         const Context& context,
         cl_command_queue_properties properties = 0,

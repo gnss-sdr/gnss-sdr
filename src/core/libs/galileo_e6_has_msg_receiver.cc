@@ -23,7 +23,6 @@
 #include "galileo_has_page.h"       // for Galileo_HAS_page
 #include "gnss_sdr_make_unique.h"   // for std::make_unique in C++11
 #include "reed_solomon.h"           // for ReedSolomon
-#include <glog/logging.h>           // for DLOG
 #include <gnuradio/io_signature.h>  // for gr::io_signature::make
 #include <algorithm>                // for std::find, std::count
 #include <cmath>                    // for std::remainder
@@ -33,6 +32,12 @@
 #include <sstream>                  // for std::stringstream
 #include <stdexcept>                // for std::out_of_range
 #include <typeinfo>                 // for typeid
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #if HAS_GENERIC_LAMBDA
 #else
@@ -149,7 +154,7 @@ std::shared_ptr<Galileo_HAS_data> galileo_e6_has_msg_receiver::process_test_page
         {
             d_HAS_data.has_status = d_current_has_status;
             d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow - static_cast<uint32_t>(std::remainder(tow, 3600)) + d_HAS_data.header.toh;
+            d_HAS_data.tow = tow;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
             d_new_message = false;
             d_printed_mids[d_current_message_id] = true;
@@ -201,7 +206,7 @@ void galileo_e6_has_msg_receiver::msg_handler_galileo_e6_has(const pmt::pmt_t& m
         {
             d_HAS_data.has_status = d_current_has_status;
             d_HAS_data.message_id = d_current_message_id;
-            d_HAS_data.tow = tow - static_cast<uint32_t>(std::remainder(tow, 3600)) + d_HAS_data.header.toh;
+            d_HAS_data.tow = tow;
             d_printed_mids[d_current_message_id] = true;
             d_printed_timestamps[d_current_message_id] = timestamp;
             auto has_data_ptr = std::make_shared<Galileo_HAS_data>(d_HAS_data);
@@ -681,6 +686,8 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
             d_HAS_data.satellite_submask = std::vector<uint64_t>(d_HAS_data.Nsys_sub);
             d_HAS_data.delta_clock_correction_clock_subset = std::vector<std::vector<int16_t>>(d_HAS_data.Nsys_sub, std::vector<int16_t>());
 
+            const std::string str_one("1");
+            const std::string str_zero("0");
             for (uint8_t i = 0; i < d_HAS_data.Nsys_sub; i++)
                 {
                     d_HAS_data.gnss_id_clock_subset[i] = read_has_message_body_uint8(message.substr(0, HAS_MSG_ID_CLOCK_SUBSET_LENGTH));
@@ -697,8 +704,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
 
                     // count satellites in the mask
                     std::bitset<HAS_MSG_SATELLITE_MASK_LENGTH> satellite_mask_bits(satellite_mask);
-                    std::string satellite_mask_string = satellite_mask_bits.to_string();
-                    int number_sats_this_gnss_id = std::count(satellite_mask_string.begin(), satellite_mask_string.end(), '1');
+                    int number_sats_this_gnss_id = satellite_mask_bits.count();
 
                     d_HAS_data.satellite_submask[i] = read_has_message_body_uint64(message.substr(0, number_sats_this_gnss_id));
                     message = std::string(message.begin() + number_sats_this_gnss_id, message.end());
@@ -711,11 +717,11 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                         {
                             if ((aux & mask_value) >= 1)
                                 {
-                                    binary.insert(0, "1");
+                                    binary.insert(0, str_one);
                                 }
                             else
                                 {
-                                    binary.insert(0, "0");
+                                    binary.insert(0, str_zero);
                                 }
                             aux <<= 1;
                         }

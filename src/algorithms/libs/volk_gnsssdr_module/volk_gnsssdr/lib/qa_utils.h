@@ -19,6 +19,7 @@
 #include <cstdlib>                              // for NULL
 #include <map>                                  // for map
 #include <string>                               // for string, basic_string
+#include <utility>                              // for move
 #include <vector>                               // for vector
 
 
@@ -69,14 +70,14 @@ private:
 public:
     // ctor
     volk_gnsssdr_test_params_t(float tol, lv_32fc_t scalar, unsigned int vlen, unsigned int iter,
-        bool benchmark_mode, std::string kernel_regex) : _tol(tol), _scalar(scalar), _vlen(vlen), _iter(iter), _benchmark_mode(benchmark_mode), _kernel_regex(kernel_regex){};
+        bool benchmark_mode, std::string kernel_regex) : _tol(tol), _scalar(scalar), _vlen(vlen), _iter(iter), _benchmark_mode(benchmark_mode), _kernel_regex(std::move(kernel_regex)){};
     // setters
     void set_tol(float tol) { _tol = tol; };
     void set_scalar(lv_32fc_t scalar) { _scalar = scalar; };
     void set_vlen(unsigned int vlen) { _vlen = vlen; };
     void set_iter(unsigned int iter) { _iter = iter; };
     void set_benchmark(bool benchmark) { _benchmark_mode = benchmark; };
-    void set_regex(std::string regex) { _kernel_regex = regex; };
+    void set_regex(std::string regex) { _kernel_regex = std::move(regex); };
     // getters
     float tol() { return _tol; };
     lv_32fc_t scalar() { return _scalar; };
@@ -103,10 +104,10 @@ public:
     volk_gnsssdr_test_params_t test_parameters() { return _test_parameters; };
     // normal ctor
     volk_gnsssdr_test_case_t(volk_gnsssdr_func_desc_t desc, void (*kernel_ptr)(), std::string name,
-        volk_gnsssdr_test_params_t test_parameters) : _desc(desc), _kernel_ptr(kernel_ptr), _name(name), _test_parameters(test_parameters), _puppet_master_name("NULL"){};
+        volk_gnsssdr_test_params_t test_parameters) : _desc(desc), _kernel_ptr(kernel_ptr), _name(std::move(name)), _test_parameters(std::move(test_parameters)), _puppet_master_name("NULL"){};
     // ctor for puppets
     volk_gnsssdr_test_case_t(volk_gnsssdr_func_desc_t desc, void (*kernel_ptr)(), std::string name,
-        std::string puppet_master_name, volk_gnsssdr_test_params_t test_parameters) : _desc(desc), _kernel_ptr(kernel_ptr), _name(name), _test_parameters(test_parameters), _puppet_master_name(puppet_master_name){};
+        std::string puppet_master_name, volk_gnsssdr_test_params_t test_parameters) : _desc(desc), _kernel_ptr(kernel_ptr), _name(std::move(name)), _test_parameters(std::move(test_parameters)), _puppet_master_name(std::move(puppet_master_name)){};
 };
 
 /************************************************

@@ -50,11 +50,11 @@
 #include "rtklib_rtkcmn.h"         // for utc2gpst
 #include <armadillo>               // for interaction with geofunctions
 #include <boost/lexical_cast.hpp>  // for bad_lexical_cast
-#include <glog/logging.h>          // for LOG
 #include <pmt/pmt.h>               // for make_any
 #include <algorithm>               // for find, min
 #include <chrono>                  // for milliseconds
 #include <cmath>                   // for floor, fmod, log
+#include <csignal>                 // for signal, SIGINT
 #include <ctime>                   // for time_t, gmtime, strftime
 #include <exception>               // for exception
 #include <iostream>                // for operator<<
@@ -64,6 +64,12 @@
 #include <stdexcept>               // for invalid_argument
 #include <sys/ipc.h>               // for IPC_CREAT
 #include <sys/msg.h>               // for msgctl, msgget
+
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 #ifdef ENABLE_FPGA
 #include <boost/chrono.hpp>  // for steady_clock
@@ -78,9 +84,17 @@ namespace wht = std;
 extern Concurrent_Map<Gps_Acq_Assist> global_gps_acq_assist_map;
 extern Concurrent_Queue<Gps_Acq_Assist> global_gps_acq_assist_queue;
 
+ControlThread *ControlThread::me = nullptr;
 
 ControlThread::ControlThread()
 {
+    ControlThread::me = this;
+
+    /* the class will handle signals */
+    signal(SIGINT, ControlThread::handle_signal);
+    signal(SIGTERM, ControlThread::handle_signal);
+    signal(SIGHUP, ControlThread::handle_signal);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_c == "-")
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_config_file);
@@ -89,6 +103,16 @@ ControlThread::ControlThread()
         {
             configuration_ = std::make_shared<FileConfiguration>(FLAGS_c);
         }
+#else
+    if (absl::GetFlag(FLAGS_c) == "-")
+        {
+            configuration_ = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_config_file));
+        }
+    else
+        {
+            configuration_ = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_c));
+        }
+#endif
     // Basic configuration checks
     auto aux = std::dynamic_pointer_cast<FileConfiguration>(configuration_);
     conf_file_has_section_ = aux->has_section();
@@ -266,6 +290,28 @@ ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 }
 
 
+void ControlThread::handle_signal(int sig)
+{
+    LOG(INFO) << "GNSS-SDR received " << sig << " OS signal";
+    if (sig == SIGINT || sig == SIGTERM || sig == SIGHUP)
+        {
+            ControlThread::me->control_queue_->push(pmt::make_any(command_event_make(200, 0)));
+            ControlThread::me->stop_ = true;
+
+            // Reset signal handling to default behavior
+            if (sig == SIGINT)
+                {
+                    signal(SIGINT, SIG_DFL);
+                }
+        }
+    else if (sig == SIGCHLD)
+        {
+            LOG(INFO) << "Received SIGCHLD signal";
+            // todo
+        }
+}
+
+
 void ControlThread::telecommand_listener()
 {
     if (telecommand_enabled_)
@@ -374,8 +420,12 @@ int ControlThread::run()
 
     // launch GNSS assistance process AFTER the flowgraph is running because the GNU Radio asynchronous queues must be already running to transport msgs
     assist_GNSS();
-    // start the keyboard_listener thread
+// start the keyboard_listener thread
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_keyboard)
+#else
+    if (absl::GetFlag(FLAGS_keyboard))
+#endif
         {
             keyboard_thread_ = std::thread(&ControlThread::keyboard_listener, this);
         }
@@ -414,7 +464,11 @@ int ControlThread::run()
 #endif
 
     // Terminate keyboard thread
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_keyboard && keyboard_thread_.joinable())
+#else
+    if (absl::GetFlag(FLAGS_keyboard) && keyboard_thread_.joinable())
+#endif
         {
             pthread_t id = keyboard_thread_.native_handle();
             keyboard_thread_.detach();

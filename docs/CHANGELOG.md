@@ -4,7 +4,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 )
 
 [comment]: # (
-SPDX-FileCopyrightText: 2011-2022 Carles Fernandez-Prades <carles.fernandez@cttc.es>
+SPDX-FileCopyrightText: 2011-2024 Carles Fernandez-Prades <carles.fernandez@cttc.es>
 )
 <!-- prettier-ignore-end -->
 
@@ -14,12 +14,241 @@ All notable changes to GNSS-SDR will be documented in this file.
 
 ## [Unreleased](https://github.com/gnss-sdr/gnss-sdr/tree/next)
 
+### Improvements in Interoperability:
+
+- Improved error handling in UDP connections.
+- Make it possible to receive multiple constellations using a single channel
+  wideband device (HackRF/LimeSDR/USRP). Demonstration:
+  https://www.youtube.com/watch?v=ZQs2sFchJ6w
+  https://www.youtube.com/watch?v=HnZkKj9a-QM
+- Add the following signal sources for use when GNSS-SDR is operating on SoC
+  FPGA boards (`-DENABLE_FPGA=ON`):
+
+  - `ADRV9361_Z7035_Signal_Source_FPGA`: Analog Devices ADRV9361-Z7035 board.
+  - `FMCOMMS5_Signal_Source_FPGA`: FMCOMMS5 analog front-end.
+  - `MAX2771_EVKIT_Signal_Source_FPGA`: MAX2771 evaluation kit analog front-end.
+  - `DMA_Signal_Source_FPGA`: FPGA DMA working in post-processing mode.
+
+  When building GNSS-SDR for the SoC FPGA, the following options can be passed
+  to CMake with possible values of `ON` or `OFF`, and their default value is
+  `OFF`:
+
+  - `-DENABLE_AD9361`: Checks if the IIO driver is installed and builds the
+    `ADRV9361_Z7035_Signal_Source_FPGA` and the `FMCOMMS5_Signal_Source_FPGA`
+    sources.
+  - `-DENABLE_MAX2771`: Checks if the SPIdev driver is installed and builds the
+    `MAX2771_EVKIT_Signal_Source_FPGA` source.
+  - `-DENABLE_DMA_PROXY`: Checks if the DMA proxy driver is installed for
+    controlling the DMA in the FPGA and enables its usage.
+
+- Add the `ION_GSMS_Signal_Source`, which is able to process raw data files
+  described with the
+  [ION GNSS Software Defined Receiver Metadata Standard](https://sdr.ion.org/).
+  It requires the `-DENABLE_ION=ON` building configuration option.
+- The `Monitor` and `PVT` blocks are now able to send data to multiple UDP
+  ports.
+- Add experimental decoding of Galileo's I/NAV ARAIM Integrity Support Message
+  (ISM) as defined in the OS SIS ICD v2.1. Values, if received, are only logged
+  but not used.
+- Added new
+  [`Cshort_To_Gr_Complex`](https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/#implementation-cshort_to_gr_complex)
+  Data Type Adapter implementation.
+
+### Improvements in Portability:
+
+- Fix building against google-glog 0.7.x.
+- Find dependencies in the loongarch64 architecture.
+- Soft transition from [GFlags](https://github.com/gflags/gflags) and
+  [Google Logging (glog)](https://github.com/google/glog) to Abseil
+  [Logging](https://abseil.io/docs/cpp/guides/logging) and
+  [Flags](https://abseil.io/docs/cpp/guides/flags) libraries. While gflags and
+  glog have dutifully served GNSS-SDR for over a decade, they are now showing
+  signs of aging. The latest version of gflags dates back six years now, with
+  its last commit in the master branch occurring two years ago. Glog remains
+  well maintained, with its latest version v0.7.0 released in February 2024, but
+  with no active development of new features and stuck at C++14. Abseil, on the
+  other hand, represents a contemporary evolution in software development,
+  supports C++17 and C++20, and has absorbed the functionalities of flags and
+  logging from its predecessors. Furthermore, as Abseil has become a
+  prerequisite for the latest versions of Protocol Buffers, its eventual
+  inclusion in GNSS-SDR's indirect dependencies is inevitable. Leveraging Abseil
+  allows for eliminating the need for gflags and glog, thereby reducing the
+  number of mandatory dependencies for GNSS-SDR in forthcoming GNU/Linux
+  distributions. For seamless integration, GNSS-SDR requires a quite recent
+  minimum version of Abseil, v20240116. If an older version is detected, the
+  library will not be utilized, and GNSS-SDR will fall back to using gflags and
+  glog, which still can be used and are fully supported. A new CMake
+  configuration option `-DENABLE_GLOG_AND_GFLAGS=ON` is available to force the
+  usage of glog and gflags instead of Abseil, even if a valid version of that
+  library is present. If the Abseil version installed in your system is too old
+  but you still want to try it, you can also force the downloading and building
+  of a recent version with the new CMake configuration flag
+  `-DENABLE_OWN_ABSEIL=ON` (requires CMake >= 3.24, otherwise it has no effect).
+  This change has a downside in maintainability, since the source code becomes
+  plagued with preprocessor directives required to maintain compatibility both
+  with gflags and glog, and with Abseil.
+- Historically, GNSS-SDR linked against the GnuTLS library for cryptographic
+  functions. If GnuTLS was not found, then the building system looked for and
+  linked against OpenSSL as a fallback. This was due to the OpenSSL 1.x dual
+  license scheme, which was incompatible with GPL v3.0 license, preventing it
+  from being a mandatory dependency for GNSS-SDR in most GNU/Linux
+  distributions. This issue was solved with the release of OpenSSL 3.0.0, which
+  transitioned to the Apache License 2.0, fully compatible with GPL v3.0.
+  Accordingly, the GNSS-SDR building system now looks for OpenSSL in the first
+  place and, if not found, then it looks for GnuTLS as a fallback.
+
+### Reliability
+
+- Implementation of the Galileo Open Service Navigation Message Authentication
+  (OSNMA), a data authentication function for the Galileo Open Service worldwide
+  users, freely accessible to all. OSNMA provides receivers with the assurance
+  that the received Galileo navigation message is coming from the system itself
+  and has not been modified. OSNMA is enabled by default if the receiver
+  configuration defines Galileo E1 OS channels. More details can be found in
+  [Introducing GNSS Navigation Message Authentication](https://gnss-sdr.org/osnma).
+
+### Improvements in Usability:
+
+- Tidy up the `conf/` folder.
+- Add `install` and `uninstall` targets to the `nav_msg_listener` utility.
+- **Potential Breaking Change**: The source tree has been refactored to follow a
+  more conventional folder structure. This may disrupt user pipelines that
+  relied on the previous structure and could break development branches that
+  were branched off from `next` before this change. The key changes are:
+
+  - The `tests` and `utils` directories have been moved from the `src` folder to
+    the root of the source tree.
+  - The empty `build` and `data` folders have been removed. Users can create a
+    building folder using `mkdir build` or by having CMake handle it:
+    `cmake -S . -B build`.
+  - All default names for dump or input files starting with `../data/<filename>`
+    have been changed to `./<filename>`.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
+## [GNSS-SDR v0.0.19.1](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19.1) - 2024-01-26
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10579595.svg)](https://doi.org/10.5281/zenodo.10579595)
+
+- Fix formatting of the `CITATION.cff` file.
+
+## [GNSS-SDR v0.0.19](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.19) - 2024-01-23
+
+### Improvements in Efficiency:
+
+- Fixed some performance inefficiencies detected by Coverity Scan.
+
+### Improvements in Interoperability:
+
+- Added a new PVT configuration boolean flag (`flag_geohash_log_out`) that
+  enables or disables the Position Geohash tag output in INFO log files. Set to
+  `false` by default.
+- New fields have been added to the custom output stream defined by
+  `monitor_pvt.proto`:
+  - `utc_time` (a [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) datetime
+    string),
+  - velocity in the local ENU frame (`vel_e`, `vel_n`, and `vel_u`), in m/s,
+  - the course over ground, `cog`, in degrees,
+  - the status of the Galileo's High Accuracy Service, `galhas_status`:
+    - 0: HAS data not available
+    - 1: HAS Corrections applied
+  - `geohash`, an
+    [encoded geographic location](https://en.wikipedia.org/wiki/Geohash).
+
+### Improvements in Maintainability
+
+- Removed useless casts and shadowed variables, improving source code
+  readability.
+
+### Improvements in Portability:
+
+- Updated local `cpu_features` library to v0.9.0.
+- `volk_gnsssdr`: fix syntax for Python 3.12 without breaking backward
+  compatibility with Python 2.7.
+- Fixed linking against GNU Radio v3.10.9.1.
+- Make use of new API if linking against VOLK >= 3.1.
+- Fixed undefined behaviour in `volk_gnsssdr` arising from incompatibility
+  between complex numbers in C and C++.
+- Now build system paths are not leaked when cross-compiling.
+- Enabled building using macOS Sonoma and `arm64` processor architecture.
+
+### Improvements in Repeatability:
+
+- A Kalman filter is now available in the PVT block, smoothing the outputs of a
+  simple Least Squares solution and improving the precision of delivered fixes.
+  It can be enabled by setting `PVT.enable_pvt_kf=true` in the configuration
+  file. The user can set values for the measurement and process noise
+  covariances with the following optional parameters (here with their default
+  values): `PVT.kf_measures_ecef_pos_sd_m=1.0`, in [m];
+  `PVT.kf_measures_ecef_vel_sd_ms=0.1`, in [m/s];
+  `PVT.kf_system_ecef_pos_sd_m=2.0`, in [m]; and
+  `PVT.kf_system_ecef_vel_sd_ms=0.5`, in [m/s].
+
+### Improvements in Scalability:
+
+- Fixed some potential data race conditions detected by Coverity Scan.
+
+### Improvements in Usability:
+
+- The Galileo E1B Reduced CED parameters usage has been set to `false` by
+  default. You can activate its usage with `Galileo_E1B_Telemetry_Decoder=true`
+  in your configuration file.
+- The generation of Galileo E6B observables has been disabled if the user sets
+  `PVT.use_e6_for_pvt=false`, fixing the PVT computation in some multi-band
+  configurations.
+- Fix bug in the custom binary output (`PVT.enable_monitor=true`) output rate.
+  Before this fix, it was outputting data every 20 ms, instead of observing the
+  `PVT.output_rate_ms` setting.
+- Now the program exits properly if a SIGINT signal is received (_e.g._, the
+  user pressing Ctrl+C, or another user application sending an interruption
+  signal).
+- The estimated CN0 value is now printed in the terminal when navigation data is
+  succesfully decoded.
+- Fixed GPS navigation message satellite validation.
+- Latitude and longitude are now reported in the terminal with six decimal
+  places (the sixth decimal place worths up to 0.11 m), instead of the
+  overkilling nine (the ninth decimal place worths up to 110 microns).
+  Similarly, height in meters is now reported with two decimal places instead of
+  three, and velocity in m/s also with two decimal places instead of three.
+- Fixed the rate at which KML, GPX, GeoJSON, and NMEA annotations are made. The
+  rate is now set by `PVT.output_rate_ms` (`500` ms by default), and can be
+  particularized by `PVT.kml_rate_ms`, `PVT.gpx_rate_ms`, `PVT.geojson_rate_ms`,
+  and `PVT.nmea_rate_ms`. Those values should be multiples of
+  `PVT.output_rate_ms`, or the least common multiple will be taken.
+
+See the definitions of concepts and metrics at
+https://gnss-sdr.org/design-forces/
+
+&nbsp;
+
+## [GNSS-SDR v0.0.18](https://github.com/gnss-sdr/gnss-sdr/releases/tag/v0.0.18) - 2023-04-06
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7805514.svg)](https://doi.org/10.5281/zenodo.7805514)
+
+### Improvements in Accuracy:
+
+- Processing and application of the corrections provided by the Galileo High
+  Accuracy Service (HAS) to the PVT solution. It requires at least a Galileo E1
+  (or E5a) + Galileo E6B configuration. A new configuration parameter
+  `PVT.use_has_corrections`, set to `true` by default, can be used to deactivate
+  the application of HAS corrections but still retrieve the HAS data if set to
+  `false`.
+
 ### Improvements in Availability:
 
 - Fixed bug that made the PVT block to not resolve position anymore after a loss
   of samples event.
 - Improved non-coherent acquisition when `Acquisition_XX.blocking=false`.
 - Implemented processing of BeiDou PRN 34 up to PRN 63 signals.
+- Implemented Hamming code correction for Glonass navigation message.
+- Now the first iteration of the PVT computation is initialized by the Bancroft
+  method. This allows to get PVT fixes in some unusual geometries (_e.g._,
+  GNSS-like signals transmitted by LEO satellites). This initialization is
+  performed by default. You can opt-out by setting `PVT.bancroft_init=false` in
+  your configuration file.
 
 ### Improvements in Interoperability:
 
@@ -33,11 +262,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   [IGS State Space Representation (SSR) Format](https://files.igs.org/pub/data/format/igs_ssr_v1.pdf).
   Specifically, it generates messages of type IGM01 (SSR Orbit Correction),
   IGM02 (SSR Clock Correction), IGM03 (SSR Combined Orbit and Clock Correction),
-  and IGM05 (SSR Code Bias). Please note that the content of the HAS messages is
-  **not** applied to the computed PVT solution. In the Galileo E6B-only
-  receiver, HAS messages are decoded and reported.
+  and IGM05 (SSR Code Bias).
 - Added a `ZMQ_Signal_Source` for working with streams of samples published via
   [ZeroMQ](https://zeromq.org/).
+- Fixed register unpacking for Labsat3W files in `Labsat_Signal_Source`. This
+  fix is only available if gnss-sdr is linked against Boost >= 1.58.0.
 
 ### Improvements in Maintainability:
 
@@ -55,14 +284,35 @@ All notable changes to GNSS-SDR will be documented in this file.
   which caused issues when linking with some compilers.
 - Added support for Xilinx's Zynq UltraScale+ devices (requires the
   `-DENABLE_FPGA=ON` building option).
-- Fixed running time error if the binary is built with the
-  `-Wp,-D_GLIBCXX_ASSERTIONS` compiler option. This is added by default in some
-  GNU/Linux distributions.
+- Fixed running time error if the `gnss-sdr` binary and/or the GNU Radio
+  libraries were built with the `-D_GLIBCXX_ASSERTIONS` compiler option. This is
+  added by default in some GNU/Linux distributions (e.g., ArchLinux and Fedora).
 - Fixed linking against libunwind when the glog library is built locally.
 - The configuration options at building time `-DENABLE_OWN_GLOG`,
   `-DENABLE_OWN_ARMADILLO`, and `-DENABLE_OWN_GNSSTK` can now be switched `ON`
   and `OFF` without the need to start from an empty buiding folder.
 - Improved CMake handling of the spdlog library used by GNU Radio >= 3.10.
+- Make use of the C++20 standard if the environment allows for it.
+- Improved passing of compiler flags to `volk_gnsssdr` if the corresponding
+  environment variables are defined. This fixes warnings in some packaging
+  systems.
+- Improved support for the RISC-V architecture.
+- Test files are now donwloaded at configuration time instead of being included
+  in the source tree. This allows for a smaller package and fixes Lintian
+  `very-long-line-length-in-source-file` warnings since those files were not
+  recognized as binaries. The configuration flag `-DENABLE_PACKAGING=ON` passed
+  to CMake deactivates file downloading.
+- The `ENABLE_GENERIC_ARCH` building option was removed, simplifying the process
+  of buiding the software in non-x86 processor architectures.
+- If the Protocol Buffers dependency is not found, it is downloaded, built and
+  statically linked at buiding time. If CMake >= 3.13 and the
+  [Abseil C++ libraries](https://github.com/abseil/abseil-cpp) >= 20230117 are
+  installed on your system, Protocol Buffers v22.2 will be used. If those
+  requirements are not met, Protocol Buffers v21.4 will be used instead
+  (requires autotools).
+- Since Debian 8 "Jessie", which enjoyed Long Term Support until the end of June
+  2020, is not anymore in the Debian official repositories, we drop its support.
+- Fixes for GCC 13 and Clang 16.
 
 ### Improvements in Usability:
 
@@ -84,6 +334,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   manually set the bandwidth of the bandpass filter on the radio frontend.
 - The new configuration parameter `Channels_XX.RF_channel_ID` allows to specify
   the signal source per channel group.
+- New configuration parameter `PVT.use_unhealthy_sats`, set by default to
+  `false`, allows processing observables of satellites that report an unhealthy
+  status in the navigation message if set to `true`.
+- Added the [Geohash](https://en.wikipedia.org/wiki/Geohash) of the PVT solution
+  in the internal logs.
 - Allowed the CMake project to be a sub-project.
 
 See the definitions of concepts and metrics at
@@ -174,7 +429,7 @@ https://gnss-sdr.org/design-forces/
 - Fixed building against GNU Radio v3.10.X.Y, which does not support the C++20
   standard.
 - Fixed building against GNU Radio v3.10.X.Y, which replaced
-  [log4cpp](http://log4cpp.sourceforge.net/) by the
+  [log4cpp](https://log4cpp.sourceforge.net/) by the
   [spdlog](https://github.com/gabime/spdlog) and
   [fmt](https://github.com/fmtlib/fmt) libraries.
 - Updated `cpu_features` library for improved processor detection.
@@ -321,8 +576,7 @@ https://gnss-sdr.org/design-forces/
   inconsistencies in the configuration file.
 - Fix segmentation fault if the RINEX output was disabled.
 - Added a feature that optionally enables the remote monitoring of GPS and
-  Galileo ephemeris using UDP and
-  [Protocol Buffers](https://developers.google.com/protocol-buffers).
+  Galileo ephemeris using UDP and [Protocol Buffers](https://protobuf.dev/).
 - Now building the software passing the `-DENABLE_FPGA=ON` to CMake does not
   make the receiver unusable when running on non-FPGA-enabled platforms. On
   FPGA-enabled platforms, now it is possible to run non-FPGA-enabled

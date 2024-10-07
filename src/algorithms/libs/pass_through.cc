@@ -18,22 +18,28 @@
 
 #include "pass_through.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <gnuradio/gr_complex.h>
 #include <volk/volk_complex.h>
 #include <cstdint>  // for int8_t
 #include <ostream>  // for operator<<
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-Pass_Through::Pass_Through(const ConfigurationInterface* configuration, const std::string& role,
+Pass_Through::Pass_Through(const ConfigurationInterface* configuration,
+    const std::string& role,
     unsigned int in_streams,
-    unsigned int out_streams) : role_(role),
-                                in_streams_(in_streams),
-                                out_streams_(out_streams)
+    unsigned int out_streams)
+    : role_(role),
+      in_streams_(in_streams),
+      out_streams_(out_streams),
+      inverted_spectrum(configuration->property(role + ".inverted_spectrum", false))
 {
     const std::string default_item_type("gr_complex");
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    inverted_spectrum = configuration->property(role + ".inverted_spectrum", false);
 
     if (item_type_ == "float")
         {

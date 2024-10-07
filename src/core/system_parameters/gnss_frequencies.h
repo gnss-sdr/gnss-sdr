@@ -19,6 +19,9 @@
 #ifndef GNSS_SDR_GNSS_FREQUENCIES_H
 #define GNSS_SDR_GNSS_FREQUENCIES_H
 
+#include <string>
+#include <unordered_map>
+
 /** \addtogroup Core
  * \{ */
 /** \addtogroup System_Parameters
@@ -40,6 +43,21 @@ constexpr double FREQ3_GLO = 1.202025e9;  //!<  GLONASS G3 frequency (Hz)
 constexpr double FREQ1_BDS = 1.561098e9;  //!<  BeiDou B1 frequency (Hz)
 constexpr double FREQ2_BDS = 1.20714e9;   //!<  BeiDou B2 frequency (Hz)
 constexpr double FREQ3_BDS = 1.26852e9;   //!<  BeiDou B3 frequency (Hz)
+
+const std::unordered_map<std::string, double> SIGNAL_FREQ_MAP = {
+    {"1C", FREQ1},
+    {"2S", FREQ2},
+    {"L5", FREQ5},
+    {"1B", FREQ1},
+    {"5X", FREQ5},
+    {"E6", FREQ6},
+    {"7X", FREQ7},
+    {"1G", FREQ1_GLO},
+    {"2G", FREQ2_GLO},
+    {"B1", FREQ1_BDS},
+    {"B2", FREQ2_BDS},
+    {"B3", FREQ3_BDS},
+};
 
 
 /** \} */

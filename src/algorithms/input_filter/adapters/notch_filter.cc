@@ -19,8 +19,12 @@
 #include "configuration_interface.h"
 #include "notch_cc.h"
 #include <boost/lexical_cast.hpp>
-#include <glog/logging.h>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
 NotchFilter::NotchFilter(const ConfigurationInterface* configuration,
     const std::string& role,
@@ -28,7 +32,8 @@ NotchFilter::NotchFilter(const ConfigurationInterface* configuration,
     unsigned int out_streams)
     : role_(role),
       in_streams_(in_streams),
-      out_streams_(out_streams)
+      out_streams_(out_streams),
+      dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
     const std::string default_dump_file("./data/input_filter.dat");
@@ -46,7 +51,6 @@ NotchFilter::NotchFilter(const ConfigurationInterface* configuration,
 
     dump_filename_ = configuration->property(role + ".dump_filename", default_dump_file);
     item_type_ = configuration->property(role + ".item_type", default_item_type);
-    dump_ = configuration->property(role + ".dump", false);
 
     DLOG(INFO) << "role " << role_;
     if (item_type_ == "gr_complex")

@@ -35,7 +35,7 @@ class Acq_Conf_Fpga
 public:
     Acq_Conf_Fpga() = default;
 
-    void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role, uint32_t downs_factor, uint32_t sel_queue_fpga, uint32_t blk_exp, double chip_rate, double code_length_chips);
+    void SetFromConfiguration(const ConfigurationInterface *configuration, const std::string &role, uint32_t sel_queue_fpga, uint32_t blk_exp, uint32_t downsampling_factor_default, double chip_rate, double code_length_chips);
 
     /* PCPS Acquisition configuration */
     std::string device_name = "uio0";

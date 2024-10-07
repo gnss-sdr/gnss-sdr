@@ -47,10 +47,15 @@ target_link_libraries(input_filter_adapters
         algorithms_libs
         input_filter_gr_blocks
     PRIVATE
-        Gflags::gflags
-        Glog::glog
         Volk::volk
 )
+
+if(ENABLE_GLOG_AND_GFLAGS)
+    target_link_libraries(input_filter_adapters PRIVATE Gflags::gflags Glog::glog)
+    target_compile_definitions(input_filter_adapters PRIVATE -DUSE_GLOG_AND_GFLAGS=1)
+else()
+    target_link_libraries(input_filter_adapters PRIVATE absl::flags absl::log)
+endif()
 
 if(GNURADIO_IS_38_OR_GREATER)
     target_compile_definitions(input_filter_adapters PUBLIC -DGR_GREATER_38=1)

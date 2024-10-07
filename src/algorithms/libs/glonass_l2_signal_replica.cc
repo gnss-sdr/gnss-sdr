@@ -27,18 +27,17 @@ void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> dest, uint32_
     const uint32_t code_length = 511;
     std::bitset<code_length> G1{};
     auto G1_register = std::bitset<9>{}.set();  // All true
-    bool feedback1;
-    bool aux;
-    uint32_t delay;
     uint32_t lcv;
     uint32_t lcv2;
+    bool feedback1;
+    bool aux;
 
     /* Generate G1 Register */
     for (lcv = 0; lcv < code_length; lcv++)
         {
             G1[lcv] = G1_register[2];
 
-            feedback1 = G1_register[4] xor G1_register[0];
+            feedback1 = G1_register[4] ^ G1_register[0];
 
             for (lcv2 = 0; lcv2 < 8; lcv2++)
                 {
@@ -62,11 +61,6 @@ void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> dest, uint32_
                 }
         }
 
-    /* Set the delay */
-    delay = code_length;
-    delay += chip_shift;
-    delay %= code_length;
-
     /* Generate PRN from G1 and G2 Registers */
     for (lcv = 0; lcv < code_length; lcv++)
         {
@@ -79,8 +73,6 @@ void glonass_l2_ca_code_gen_complex(own::span<std::complex<float>> dest, uint32_
                 {
                     dest[lcv] = std::complex<float>(-1, 0);
                 }
-            delay++;
-            delay %= code_length;
         }
 }
 

@@ -26,8 +26,12 @@
 #include "gps_ephemeris.h"             // for Gps_Ephemeris
 #include "pvt_conf.h"                  // for Pvt_Conf
 #include "rtklib_rtkpos.h"             // for rtkfree, rtkinit
-#include <glog/logging.h>              // for LOG
 #include <iostream>                    // for std::cout
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 #if USE_STD_COMMON_FACTOR
 #include <numeric>
 namespace bc = std;
@@ -74,6 +78,13 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     // display rate
     pvt_output_parameters.display_rate_ms = bc::lcm(pvt_output_parameters.output_rate_ms, configuration->property(role + ".display_rate_ms", 500));
 
+    // PVT KF settings
+    pvt_output_parameters.enable_pvt_kf = configuration->property(role + ".enable_pvt_kf", false);
+    pvt_output_parameters.measures_ecef_pos_sd_m = configuration->property(role + ".kf_measures_ecef_pos_sd_m", 1.0);
+    pvt_output_parameters.measures_ecef_vel_sd_ms = configuration->property(role + ".kf_measures_ecef_vel_sd_ms", 0.1);
+    pvt_output_parameters.system_ecef_pos_sd_m = configuration->property(role + ".kf_system_ecef_pos_sd_m", 2.0);
+    pvt_output_parameters.system_ecef_vel_sd_ms = configuration->property(role + ".kf_system_ecef_vel_sd_ms", 0.5);
+
     // NMEA Printer settings
     pvt_output_parameters.flag_nmea_tty_port = configuration->property(role + ".flag_nmea_tty_port", false);
     pvt_output_parameters.nmea_dump_filename = configuration->property(role + ".nmea_dump_filename", default_nmea_dump_filename);
@@ -81,6 +92,7 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // RINEX version
     pvt_output_parameters.rinex_version = configuration->property(role + ".rinex_version", 3);
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_RINEX_version == "3.01" || FLAGS_RINEX_version == "3.02" || FLAGS_RINEX_version == "3")
         {
             pvt_output_parameters.rinex_version = 3;
@@ -89,13 +101,29 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {
             pvt_output_parameters.rinex_version = 2;
         }
+#else
+    if (absl::GetFlag(FLAGS_RINEX_version) == "3.01" || absl::GetFlag(FLAGS_RINEX_version) == "3.02" || absl::GetFlag(FLAGS_RINEX_version) == "3")
+        {
+            pvt_output_parameters.rinex_version = 3;
+        }
+    else if (absl::GetFlag(FLAGS_RINEX_version) == "2.10" || absl::GetFlag(FLAGS_RINEX_version) == "2.11" || absl::GetFlag(FLAGS_RINEX_version) == "2")
+        {
+            pvt_output_parameters.rinex_version = 2;
+        }
+#endif
     pvt_output_parameters.rinexobs_rate_ms = bc::lcm(configuration->property(role + ".rinexobs_rate_ms", 1000), pvt_output_parameters.output_rate_ms);
     pvt_output_parameters.rinex_name = configuration->property(role + ".rinex_name", std::string("-"));
+#if USE_GLOG_AND_GFLAGS
     if (FLAGS_RINEX_name != "-")
         {
             pvt_output_parameters.rinex_name = FLAGS_RINEX_name;
         }
-
+#else
+    if (absl::GetFlag(FLAGS_RINEX_name) != "-")
+        {
+            pvt_output_parameters.rinex_name = absl::GetFlag(FLAGS_RINEX_name);
+        }
+#endif
     // RTCM Printer settings
     pvt_output_parameters.flag_rtcm_tty_port = configuration->property(role + ".flag_rtcm_tty_port", false);
     pvt_output_parameters.rtcm_dump_devname = configuration->property(role + ".rtcm_dump_devname", default_rtcm_dump_devname);
@@ -404,6 +432,10 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (gal_E6_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count == 0) && (bds_B3_count == 0))
         {
             pvt_output_parameters.type_of_receiver = 107;  // GPS L1 C/A + Galileo E6B
+        }
+    if ((gps_1C_count != 0) && (gps_2S_count == 0) && (gps_L5_count != 0) && (gal_1B_count != 0) && (gal_E5a_count != 0) && (gal_E5b_count == 0) && (gal_E6_count != 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count == 0) && (bds_B3_count == 0))
+        {
+            pvt_output_parameters.type_of_receiver = 108;  // GPS L1 C/A + Galileo E1B + GPS L5 + Galileo E5a + Galileo E6B
         }
     // BeiDou B1I Receiver
     if ((gps_1C_count == 0) && (gps_2S_count == 0) && (gps_L5_count == 0) && (gal_1B_count == 0) && (gal_E5a_count == 0) && (gal_E5b_count == 0) && (gal_E6_count == 0) && (glo_1G_count == 0) && (glo_2G_count == 0) && (bds_B1_count != 0) && (bds_B3_count == 0))
@@ -764,6 +796,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     const double carrier_phase_error_factor_a = configuration->property(role + ".carrier_phase_error_factor_a", 0.003);
     const double carrier_phase_error_factor_b = configuration->property(role + ".carrier_phase_error_factor_b", 0.003);
 
+    const bool bancroft_init = configuration->property(role + ".bancroft_init", true);
+
     snrmask_t snrmask = {{}, {{}, {}}};
 
     prcopt_t rtklib_configuration_options = {
@@ -822,7 +856,8 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
         {{}, {}},                                                                          /* odisp[2][6*11] ocean tide loading parameters {rov,base} */
         {{}, {{}, {}}, {{}, {}}, {}, {}},                                                  /* exterr_t exterr   extended receiver error model */
         0,                                                                                 /* disable L2-AR */
-        {}                                                                                 /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
+        {},                                                                                /* char pppopt[256]   ppp option   "-GAP_RESION="  default gap to reset iono parameters (ep) */
+        bancroft_init                                                                      /* enable Bancroft initialization for the first iteration of the PVT computation, useful in some geometries */
     };
 
     rtkinit(&rtk, &rtklib_configuration_options);
@@ -847,11 +882,12 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
     pvt_output_parameters.xml_output_path = configuration->property(role + ".xml_output_path", default_output_path);
     pvt_output_parameters.nmea_output_file_path = configuration->property(role + ".nmea_output_file_path", default_output_path);
     pvt_output_parameters.rtcm_output_file_path = configuration->property(role + ".rtcm_output_file_path", default_output_path);
+    pvt_output_parameters.has_output_file_path = configuration->property(role + ".has_output_file_path", default_output_path);
 
     // Read PVT MONITOR Configuration
     pvt_output_parameters.monitor_enabled = configuration->property(role + ".enable_monitor", false);
     pvt_output_parameters.udp_addresses = configuration->property(role + ".monitor_client_addresses", std::string("127.0.0.1"));
-    pvt_output_parameters.udp_port = configuration->property(role + ".monitor_udp_port", 1234);
+    pvt_output_parameters.udp_ports = configuration->property(role + ".monitor_udp_port", std::string("1234"));
     pvt_output_parameters.protobuf_enabled = configuration->property(role + ".enable_protobuf", true);
     if (configuration->property("Monitor.enable_protobuf", false) == true)
         {
@@ -878,7 +914,25 @@ Rtklib_Pvt::Rtklib_Pvt(const ConfigurationInterface* configuration,
 
     // Use E6 for PVT
     pvt_output_parameters.use_e6_for_pvt = configuration->property(role + ".use_e6_for_pvt", pvt_output_parameters.use_e6_for_pvt);
+    pvt_output_parameters.use_has_corrections = configuration->property(role + ".use_has_corrections", pvt_output_parameters.use_has_corrections);
 
+    // Use unhealthy satellites
+    pvt_output_parameters.use_unhealthy_sats = configuration->property(role + ".use_unhealthy_sats", pvt_output_parameters.use_unhealthy_sats);
+
+    // OSNMA
+    if (gal_1B_count > 0)
+        {
+            std::string osnma_mode = configuration->property("GNSS-SDR.osnma_mode", std::string(""));
+            bool enable_osnma = configuration->property("GNSS-SDR.osnma_enable", true);
+            if (enable_osnma && osnma_mode == "strict")
+                {
+                    pvt_output_parameters.osnma_strict = true;
+                }
+        }
+
+    // Vector Tracking Loop (VTL)
+    pvt_output_parameters.enable_vtl = configuration->property(role + ".enable_vtl", pvt_output_parameters.enable_vtl);
+    pvt_output_parameters.close_vtl_loop = configuration->property(role + ".close_vtl_loop", pvt_output_parameters.close_vtl_loop);
     // make PVT object
     pvt_ = rtklib_make_pvt_gs(in_streams_, pvt_output_parameters, rtk);
     DLOG(INFO) << "pvt(" << pvt_->unique_id() << ")";

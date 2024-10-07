@@ -16,25 +16,31 @@
 
 #include "byte_to_short.h"
 #include "configuration_interface.h"
-#include <glog/logging.h>
 #include <utility>
 
+#if USE_GLOG_AND_GFLAGS
+#include <glog/logging.h>
+#else
+#include <absl/log/log.h>
+#endif
 
-ByteToShort::ByteToShort(const ConfigurationInterface* configuration, std::string role,
-    unsigned int in_streams, unsigned int out_streams) : role_(std::move(role)), in_streams_(in_streams), out_streams_(out_streams)
+
+ByteToShort::ByteToShort(const ConfigurationInterface* configuration,
+    std::string role,
+    unsigned int in_streams,
+    unsigned int out_streams) : role_(std::move(role)),
+                                in_streams_(in_streams),
+                                out_streams_(out_streams),
+                                dump_(configuration->property(role_ + ".dump", false))
 {
     const std::string default_input_item_type("byte");
     const std::string default_output_item_type("short");
-    const std::string default_dump_filename("../data/input_filter.dat");
+    const std::string default_dump_filename("./input_filter.dat");
 
     DLOG(INFO) << "role " << role_;
 
     input_item_type_ = configuration->property(role_ + ".input_item_type", default_input_item_type);
-
-    dump_ = configuration->property(role_ + ".dump", false);
     dump_filename_ = configuration->property(role_ + ".dump_filename", default_dump_filename);
-
-    const size_t item_size = sizeof(int16_t);
 
     gr_char_to_short_ = gr::blocks::char_to_short::make();
 
@@ -43,6 +49,7 @@ ByteToShort::ByteToShort(const ConfigurationInterface* configuration, std::strin
     if (dump_)
         {
             DLOG(INFO) << "Dumping output into file " << dump_filename_;
+            const size_t item_size = sizeof(int16_t);
             file_sink_ = gr::blocks::file_sink::make(item_size, dump_filename_.c_str());
         }
     if (in_streams_ > 1)

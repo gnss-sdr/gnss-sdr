@@ -88,16 +88,15 @@ GpsL5iPcpsAcquisitionFpga::GpsL5iPcpsAcquisitionFpga(
         {
             gps_l5i_code_gen_complex_sampled(code, PRN, fs_in_);
 
-            for (uint32_t s = code_length; s < 2 * code_length; s++)
+            if (acq_parameters_.enable_zero_padding)
                 {
-                    code[s] = code[s - code_length];
+                    // Duplicate the code sequence
+                    std::copy(code.begin(), code.begin() + code_length, code.begin() + code_length);
                 }
 
-            for (uint32_t s = 2 * code_length; s < nsamples_total; s++)
-                {
-                    // fill in zero padding
-                    code[s] = std::complex<float>(0.0, 0.0);
-                }
+            // Fill in zero padding for the rest
+            std::fill(code.begin() + (acq_parameters_.enable_zero_padding ? 2 * code_length : code_length), code.end(), std::complex<float>(0.0, 0.0));
+
             std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
             fft_if->execute();                                                                        // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded.data(), fft_if->get_outbuf(), nsamples_total);  // conjugate values

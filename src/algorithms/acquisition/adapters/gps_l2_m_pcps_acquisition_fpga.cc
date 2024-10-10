@@ -87,11 +87,16 @@ GpsL2MPcpsAcquisitionFpga::GpsL2MPcpsAcquisitionFpga(
     for (unsigned int PRN = 1; PRN <= NUM_PRNs; PRN++)
         {
             gps_l2c_m_code_gen_complex_sampled(code, PRN, fs_in_);
-            // fill in zero padding
-            for (unsigned int s = code_length; s < nsamples_total; s++)
+
+            if (acq_parameters_.enable_zero_padding)
                 {
-                    code[s] = std::complex<float>(0.0, 0.0);
+                    // Duplicate the code sequence
+                    std::copy(code.begin(), code.begin() + code_length, code.begin() + code_length);
                 }
+
+            // Fill in zero padding for the rest
+            std::fill(code.begin() + (acq_parameters_.enable_zero_padding ? 2 * code_length : code_length), code.end(), std::complex<float>(0.0, 0.0));
+
             std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
             fft_if->execute();                                                                        // Run the FFT of local code
             volk_32fc_conjugate_32fc(fft_codes_padded.data(), fft_if->get_outbuf(), nsamples_total);  // conjugate values

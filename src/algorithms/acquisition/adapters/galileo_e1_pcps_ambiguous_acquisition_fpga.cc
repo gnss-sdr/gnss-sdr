@@ -81,7 +81,6 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
     int32_t tmp2;
     int32_t local_code;
     int32_t fft_data;
-
     for (uint32_t PRN = 1; PRN <= GALILEO_E1_NUMBER_OF_CODES; PRN++)
         {
             bool cboc = false;  // cboc is set to 0 when using the FPGA
@@ -100,16 +99,14 @@ GalileoE1PcpsAmbiguousAcquisitionFpga::GalileoE1PcpsAmbiguousAcquisitionFpga(
                         cboc, PRN, fs_in_, 0, false);
                 }
 
-            for (uint32_t s = code_length; s < 2 * code_length; s++)
+            if (acq_parameters_.enable_zero_padding)
                 {
-                    code[s] = code[s - code_length];
+                    // Duplicate the code sequence
+                    std::copy(code.begin(), code.begin() + code_length, code.begin() + code_length);
                 }
 
-            // fill in zero padding
-            for (uint32_t s = 2 * code_length; s < nsamples_total; s++)
-                {
-                    code[s] = std::complex<float>(0.0, 0.0);
-                }
+            // Fill in zero padding for the rest
+            std::fill(code.begin() + (acq_parameters_.enable_zero_padding ? 2 * code_length : code_length), code.end(), std::complex<float>(0.0, 0.0));
 
             std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
             fft_if->execute();                                                                        // Run the FFT of local code

@@ -46,9 +46,11 @@ void Acq_Conf_Fpga::SetFromConfiguration(const ConfigurationInterface *configura
     // code length in samples
     code_length = static_cast<uint32_t>(std::round(static_cast<double>(fs_in) / (chip_rate / code_length_chips)));
 
+    enable_zero_padding = configuration->property(role + ".enable_zero_padding", true);
+
     // The FPGA can only use FFT lengths that are a power of two.
-    float nbits = ceilf(log2f(static_cast<float>(code_length) * 2.0F));
-    samples_per_code = pow(2, nbits);
+    float factor = enable_zero_padding ? 2.0F : 1.0F;
+    samples_per_code = pow(2, ceilf(log2f(static_cast<float>(code_length) * factor)));
 
     // repeat satellite
     repeat_satellite = configuration->property(role + ".repeat_satellite", false);

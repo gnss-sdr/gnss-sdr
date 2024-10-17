@@ -53,6 +53,10 @@ All notable changes to GNSS-SDR will be documented in this file.
 - Added new
   [`Cshort_To_Gr_Complex`](https://gnss-sdr.org/docs/sp-blocks/data-type-adapter/#implementation-cshort_to_gr_complex)
   Data Type Adapter implementation.
+- The
+  [Osmosdr_Signal_Source](https://gnss-sdr.org/docs/sp-blocks/signal-source/#implementation-osmosdr_signal_source)
+  has gained two new optional configuration parameters: `iq_balance_mode` and
+  `dc_offset_mode`, both of which are set to Automatic by default.
 
 ### Improvements in Portability:
 

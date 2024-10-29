@@ -319,9 +319,13 @@ Kml_Printer::~Kml_Printer()
         {
             std::cerr << e.what() << '\n';
         }
+    errorlib::error_code ec;
+    if (!fs::remove(fs::path(tmp_file_str), ec))
+        {
+            LOG(INFO) << "Error deleting temporary file";
+        }
     if (!positions_printed)
         {
-            errorlib::error_code ec;
             if (!fs::remove(fs::path(kml_filename), ec))
                 {
                     LOG(INFO) << "Error deleting temporary KML file";

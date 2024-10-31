@@ -36,7 +36,7 @@ NotchFilter::NotchFilter(const ConfigurationInterface* configuration,
       dump_(configuration->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
-    const std::string default_dump_file("./data/input_filter.dat");
+    const std::string default_dump_file("./input_filter.dat");
     const float default_pfa = 0.001;
     const float default_p_c_factor = 0.9;
     const int default_length_ = 32;

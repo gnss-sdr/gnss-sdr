@@ -229,7 +229,7 @@ public:
     {
     }
     const uint32_t tag_id;
-    uint32_t static id_counter;
+    static uint32_t id_counter;
     uint32_t TOW;
     uint32_t WN;
     uint32_t PRNa;

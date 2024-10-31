@@ -106,16 +106,14 @@ GalileoE5bPcpsAcquisitionFpga::GalileoE5bPcpsAcquisitionFpga(const Configuration
 
             galileo_e5_b_code_gen_complex_sampled(code, PRN, signal_, fs_in_, 0);
 
-            for (uint32_t s = code_length; s < 2 * code_length; s++)
+            if (acq_parameters_.enable_zero_padding)
                 {
-                    code[s] = code[s - code_length];
+                    // Duplicate the code sequence
+                    std::copy(code.begin(), code.begin() + code_length, code.begin() + code_length);
                 }
 
-            // fill in zero padding
-            for (uint32_t s = 2 * code_length; s < nsamples_total; s++)
-                {
-                    code[s] = std::complex<float>(0.0, 0.0);
-                }
+            // Fill in zero padding for the rest
+            std::fill(code.begin() + (acq_parameters_.enable_zero_padding ? 2 * code_length : code_length), code.end(), std::complex<float>(0.0, 0.0));
 
             std::copy_n(code.data(), nsamples_total, fft_if->get_inbuf());                            // copy to FFT buffer
             fft_if->execute();                                                                        // Run the FFT of local code

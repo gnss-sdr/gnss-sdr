@@ -59,7 +59,7 @@ GalileoE1PcpsTongAmbiguousAcquisition::GalileoE1PcpsTongAmbiguousAcquisition(
       dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
-    const std::string default_dump_filename("../data/acquisition.dat");
+    const std::string default_dump_filename("./acquisition.dat");
 
     DLOG(INFO) << "role " << role_;
 

@@ -1070,7 +1070,7 @@ You can use a single configuration file for processing different data files,
 specifying the file to be processed with the `--signal_source` flag:
 
 ```
-$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=./my_captured_data.dat
 ```
 
 This will override the `SignalSource.filename` specified in the configuration
@@ -1455,7 +1455,7 @@ SignalSource.port=1234
 SignalSource.swap_iq=false
 SignalSource.repeat=false
 SignalSource.dump=false
-SignalSource.dump_filename=../data/signal_source.dat
+SignalSource.dump_filename=./signal_source.dat
 ```
 
 Example for a dual-frequency receiver:
@@ -1549,7 +1549,7 @@ The block can be configured like this:
 ;#[Freq_Xlating_Fir_Filter] enables FIR filter and a composite frequency translation that shifts IF down to zero Hz.
 InputFilter.implementation=Freq_Xlating_Fir_Filter
 InputFilter.dump=false ; #dump: Dump the filtered data to a file.
-InputFilter.dump_filename=../data/input_filter.dat ; #dump_filename: Log path and filename.
+InputFilter.dump_filename=./input_filter.dat ; #dump_filename: Log path and filename.
 InputFilter.input_item_type=gr_complex
 InputFilter.output_item_type=gr_complex
 InputFilter.taps_item_type=float
@@ -1602,7 +1602,7 @@ implements a nearest neighbourhood interpolation:
 ;#[Pass_Through] disables this block
 Resampler.implementation=Direct_Resampler
 Resampler.dump=false ; Dumps the resampled data to a file.
-Resampler.dump_filename=../data/resampler.dat ; log path and filename.
+Resampler.dump_filename=./resampler.dat ; log path and filename.
 Resampler.item_type=gr_complex
 Resampler.sample_freq_in=8000000 ; sample frequency of the input signal
 Resampler.sample_freq_out=4000000 ; desired sample frequency of the output signal
@@ -1830,7 +1830,7 @@ Tracking_1B.dll_filter_order=2 ; DLL loop filter order [1], [2] or [3]
 Tracking_1B.early_late_space_chips=0.15;
 Tracking_1B.very_early_late_space_chips=0.6;
 Tracking_1B.dump=false
-Tracking_1B.dump_filename=../data/veml_tracking_ch_
+Tracking_1B.dump_filename=./veml_tracking_ch_
 ```
 
 More documentation at the

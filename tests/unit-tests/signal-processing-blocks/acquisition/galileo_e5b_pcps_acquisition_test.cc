@@ -200,7 +200,7 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("SignalSource.data_flag", "false");
     config->set_property("SignalSource.BW_BB", "0.97");
     config->set_property("SignalSource.dump", "false");
-    config->set_property("SignalSource.dump_filename", "../data/signal_source.dat");
+    config->set_property("SignalSource.dump_filename", "./signal_source.dat");
     config->set_property("InputFilter.implementation", "Fir_Filter");
     config->set_property("InputFilter.input_item_type", "gr_complex");
     config->set_property("InputFilter.output_item_type", "gr_complex");
@@ -222,7 +222,7 @@ void GalileoE5bPcpsAcquisitionTest::init()
     config->set_property("Acquisition_7X.implementation", "Galileo_E5b_PCPS_Acquisition");
     config->set_property("Acquisition_7X.item_type", "gr_complex");
     config->set_property("Acquisition_7X.coherent_integration_time_ms", std::to_string(integration_time_ms));
-    config->set_property("Acquisition_7X.dump", "true");
+    config->set_property("Acquisition_7X.dump", "false");
     config->set_property("Acquisition_7X.dump_filename", "./acquisition");
     config->set_property("Acquisition_7X.threshold", "0.001");
     config->set_property("Acquisition_7X.doppler_max", "10000");

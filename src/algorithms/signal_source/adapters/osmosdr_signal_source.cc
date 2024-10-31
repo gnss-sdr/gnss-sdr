@@ -86,6 +86,23 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
             std::cout << "PLL Frequency tune error: " << osmosdr_source_->get_center_freq() - freq_ << " [Hz]...\n";
             LOG(INFO) << "PLL Frequency tune error: " << osmosdr_source_->get_center_freq() - freq_ << " [Hz]...\n";
 
+            // Set IQ balance and DC offset modes
+            // iq balance correction mode: 0 = Off, 1 = Manual, 2 = Automatic
+            // dc offset correction mode: 0 = Off, 1 = Manual, 2 = Automatic
+            int iq_balance_mode = configuration->property(role + ".iq_balance_mode", 2);
+            if (iq_balance_mode < 0 || iq_balance_mode > 2)
+                {
+                    iq_balance_mode = 2;
+                }
+            int dc_offset_mode = configuration->property(role + ".dc_offset_mode", 2);
+            if (dc_offset_mode < 0 || dc_offset_mode > 2)
+                {
+                    dc_offset_mode = 2;
+                }
+
+            osmosdr_source_->set_iq_balance_mode(iq_balance_mode);
+            osmosdr_source_->set_dc_offset_mode(dc_offset_mode);
+
             // 4. set rx gain
             if (this->AGC_enabled_ == true)
                 {
@@ -128,10 +145,9 @@ OsmosdrSignalSource::OsmosdrSignalSource(const ConfigurationInterface* configura
             if (if_bw_ > 0.0)
                 {
                     osmosdr_source_->set_bandwidth(if_bw_, 0);
+                    // Get actual bandwidth
+                    std::cout << "Actual Bandwidth: " << osmosdr_source_->get_bandwidth(0) << " [Hz]...\n";
                 }
-
-            // Get actual bandwidth
-            std::cout << "Actual Bandwidth: " << osmosdr_source_->get_bandwidth(0) << " [Hz]...\n";
         }
     else
         {

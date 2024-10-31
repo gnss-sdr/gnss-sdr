@@ -57,6 +57,7 @@ public:
     uint32_t samples_per_code{1U};
     uint32_t code_length{16000U};
     bool make_2_steps{false};
+    bool enable_zero_padding{true};
     bool repeat_satellite{false};
 
 private:

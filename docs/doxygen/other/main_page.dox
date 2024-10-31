@@ -212,7 +212,7 @@ and we will be happy to upload it to the server.
 You can use a single configuration file for processing
 different data files, specifying the file to be processed with the <tt>--signal_source</tt> flag:
 \verbatim
-$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=../data/my_captured_data.dat
+$ gnss-sdr --config_file=../conf/my_receiver.conf --signal_source=./my_captured_data.dat
 \endverbatim
 This will override the <tt>SignalSource.filename</tt> specified in the configuration file.
 

@@ -57,7 +57,7 @@ GalileoE1Pcps8msAmbiguousAcquisition::GalileoE1Pcps8msAmbiguousAcquisition(
       dump_(configuration_->property(role + ".dump", false))
 {
     const std::string default_item_type("gr_complex");
-    const std::string default_dump_filename("../data/acquisition.dat");
+    const std::string default_dump_filename("./acquisition.dat");
     item_type_ = configuration_->property(role_ + ".item_type", default_item_type);
     int64_t fs_in_deprecated = configuration_->property("GNSS-SDR.internal_fs_hz", 4000000);
     fs_in_ = configuration_->property("GNSS-SDR.internal_fs_sps", fs_in_deprecated);

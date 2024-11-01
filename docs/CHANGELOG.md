@@ -58,6 +58,11 @@ All notable changes to GNSS-SDR will be documented in this file.
   has gained two new optional configuration parameters: `iq_balance_mode` and
   `dc_offset_mode`, both of which are set to Automatic by default.
 
+### Improvements in Maintainability:
+
+- Updated GSL implementation to v0.42.0. See the
+  [gsl-lite release](https://github.com/gsl-lite/gsl-lite/releases/tag/v0.42.0).
+
 ### Improvements in Portability:
 
 - Fix building against google-glog 0.7.x.

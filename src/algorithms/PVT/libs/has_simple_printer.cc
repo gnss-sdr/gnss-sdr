@@ -213,26 +213,29 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                 }
 
             d_has_file << indent << indent << "Cell Mask Availability Flag: " << print_vector(has_data->cell_mask_availability_flag) << '\n';
-            for (uint8_t i = 0; i < has_data->Nsys; i++)
+            if (has_data->header.code_bias_flag == true || has_data->header.phase_bias_flag == true)
                 {
-                    if (has_data->cell_mask_availability_flag[i] == true)
+                    for (uint8_t i = 0; i < has_data->Nsys; i++)
                         {
-                            std::string text;
-                            if (has_data->gnss_id_mask[i] == 0)
+                            if (has_data->cell_mask_availability_flag[i] == true)
                                 {
-                                    text = "Cell Mask for GPS:           ";
+                                    std::string text;
+                                    if (has_data->gnss_id_mask[i] == 0)
+                                        {
+                                            text = "Cell Mask for GPS:           ";
+                                        }
+                                    else if (has_data->gnss_id_mask[i] == 2)
+                                        {
+                                            text = "Cell Mask for Galileo:       ";
+                                        }
+                                    else
+                                        {
+                                            text = "Cell Mask for Reserved:      ";
+                                        }
+                                    d_has_file << indent << indent << text;
+                                    const std::string filler(indent.length() * 2 + text.length(), ' ');
+                                    d_has_file << print_matrix(has_data->cell_mask[i], filler);
                                 }
-                            else if (has_data->gnss_id_mask[i] == 2)
-                                {
-                                    text = "Cell Mask for Galileo:       ";
-                                }
-                            else
-                                {
-                                    text = "Cell Mask for Reserved:      ";
-                                }
-                            d_has_file << indent << indent << text;
-                            const std::string filler(indent.length() * 2 + text.length(), ' ');
-                            d_has_file << print_matrix(has_data->cell_mask[i], filler);
                         }
                 }
             d_has_file << indent << indent << "Nav message:                 " << print_vector(has_data->nav_message) << "  (0: GPS LNAV or Galileo I/NAV)\n";

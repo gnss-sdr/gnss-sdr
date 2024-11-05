@@ -245,7 +245,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << '\n';
                     d_has_file << indent << indent << "Orbit Corrections Block\n";
                     d_has_file << indent << indent << "-----------------------\n";
-                    d_has_file << indent << indent << "Validity interval:     " << static_cast<float>(has_data->validity_interval_index_orbit_corrections) << '\n';
+                    d_has_file << indent << indent << "Validity interval [s]: " << static_cast<float>(has_data->get_validity_interval_s(has_data->validity_interval_index_orbit_corrections)) << '\n';
                     d_has_file << indent << indent << "GNSS IOD:              " << print_vector(has_data->gnss_iod) << '\n';
                     d_has_file << indent << indent << "Delta Radial [m]:      " << print_vector(has_data->delta_radial, HAS_MSG_DELTA_RADIAL_SCALE_FACTOR) << '\n';
                     d_has_file << indent << indent << "Delta In-Track [m]:    " << print_vector(has_data->delta_in_track, HAS_MSG_DELTA_IN_TRACK_SCALE_FACTOR) << '\n';
@@ -257,7 +257,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << '\n';
                     d_has_file << indent << indent << "Clock Full-set Corrections Block\n";
                     d_has_file << indent << indent << "--------------------------------\n";
-                    d_has_file << indent << indent << "Validity interval:          " << static_cast<float>(has_data->validity_interval_index_clock_fullset_corrections) << '\n';
+                    d_has_file << indent << indent << "Validity interval [s]:      " << static_cast<float>(has_data->get_validity_interval_s(has_data->validity_interval_index_clock_fullset_corrections)) << '\n';
                     d_has_file << indent << indent << "Delta Clock Multiplier:     " << print_vector(has_data->delta_clock_multiplier) << '\n';
                     d_has_file << indent << indent << "Delta Clock Correction [m]: " << print_vector(has_data->delta_clock_correction, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
                 }
@@ -267,7 +267,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << '\n';
                     d_has_file << indent << indent << "Clock Subset Corrections Block\n";
                     d_has_file << indent << indent << "------------------------------\n";
-                    d_has_file << indent << indent << "Validity interval:         " << static_cast<float>(has_data->validity_interval_index_clock_subset_corrections) << '\n';
+                    d_has_file << indent << indent << "Validity interval [s]:     " << static_cast<float>(has_data->get_validity_interval_s(has_data->validity_interval_index_clock_subset_corrections)) << '\n';
                     d_has_file << indent << indent << "Nsys_sub:                  " << static_cast<float>(has_data->Nsys_sub) << '\n';
                     d_has_file << indent << indent << "GNSS ID:                   " << print_vector(has_data->gnss_id_clock_subset) << '\n';
                     d_has_file << indent << indent << "Delta Clock Multiplier:    " << print_vector(has_data->delta_clock_multiplier_clock_subset) << '\n';
@@ -313,7 +313,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << '\n';
                     d_has_file << indent << indent << "Code Bias Block\n";
                     d_has_file << indent << indent << "---------------\n";
-                    d_has_file << indent << indent << "Validity interval: " << static_cast<float>(has_data->validity_interval_index_code_bias_corrections) << '\n';
+                    d_has_file << indent << indent << "Validity interval [s]: " << static_cast<float>(has_data->get_validity_interval_s(has_data->validity_interval_index_code_bias_corrections)) << '\n';
                     const std::string text("Code bias [m]:     ");
                     const std::string filler(indent.length() * 2 + text.length(), ' ');
                     d_has_file << indent << indent << text << print_matrix(has_data->code_bias, filler, HAS_MSG_CODE_BIAS_SCALE_FACTOR);
@@ -324,7 +324,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << '\n';
                     d_has_file << indent << indent << "Phase Bias Block\n";
                     d_has_file << indent << indent << "----------------\n";
-                    d_has_file << indent << indent << "Validity interval:             " << static_cast<float>(has_data->validity_interval_index_phase_bias_corrections) << '\n';
+                    d_has_file << indent << indent << "Validity interval [s]:         " << static_cast<float>(has_data->get_validity_interval_s(has_data->validity_interval_index_phase_bias_corrections)) << '\n';
                     const std::string text("Phase bias [cycles]:           ");
                     const std::string filler(indent.length() * 2 + text.length(), ' ');
                     d_has_file << indent << indent << text << print_matrix(has_data->phase_bias, filler, HAS_MSG_PHASE_BIAS_SCALE_FACTOR);

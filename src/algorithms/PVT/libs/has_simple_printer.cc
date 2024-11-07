@@ -246,7 +246,7 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "Orbit Corrections Block\n";
                     d_has_file << indent << indent << "-----------------------\n";
                     d_has_file << indent << indent << "Validity interval [s]: " << static_cast<float>(has_data->get_validity_interval_s(has_data->validity_interval_index_orbit_corrections)) << '\n';
-                    d_has_file << indent << indent << "GNSS IOD:              " << print_vector(has_data->gnss_iod) << '\n';
+                    d_has_file << indent << indent << "GNSS IODref:           " << print_vector(has_data->gnss_iod) << '\n';
                     d_has_file << indent << indent << "Delta Radial [m]:      " << print_vector(has_data->delta_radial, HAS_MSG_DELTA_RADIAL_SCALE_FACTOR) << '\n';
                     d_has_file << indent << indent << "Delta In-Track [m]:    " << print_vector(has_data->delta_in_track, HAS_MSG_DELTA_IN_TRACK_SCALE_FACTOR) << '\n';
                     d_has_file << indent << indent << "Delta Cross Track [m]: " << print_vector(has_data->delta_cross_track, HAS_MSG_DELTA_CROSS_TRACK_SCALE_FACTOR) << '\n';
@@ -258,6 +258,10 @@ bool Has_Simple_Printer::print_message(const Galileo_HAS_data* const has_data)
                     d_has_file << indent << indent << "Clock Full-set Corrections Block\n";
                     d_has_file << indent << indent << "--------------------------------\n";
                     d_has_file << indent << indent << "Validity interval [s]:      " << static_cast<float>(has_data->get_validity_interval_s(has_data->validity_interval_index_clock_fullset_corrections)) << '\n';
+                    if (!has_data->gnss_iod.empty())
+                        {
+                            d_has_file << indent << indent << "GNSS IODref:                " << print_vector(has_data->gnss_iod) << '\n';
+                        }
                     d_has_file << indent << indent << "Delta Clock Multiplier:     " << print_vector(has_data->delta_clock_multiplier) << '\n';
                     d_has_file << indent << indent << "Delta Clock Correction [m]: " << print_vector(has_data->delta_clock_correction, HAS_MSG_DELTA_CLOCK_SCALE_FACTOR) << '\n';
                 }

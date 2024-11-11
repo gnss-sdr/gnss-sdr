@@ -635,6 +635,7 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                         }
                 }
 
+            d_iod_ref_map[std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id)] = d_HAS_data.gnss_iod;
             DLOG(INFO) << debug_print_vector("gnss_iod", d_HAS_data.gnss_iod);
             DLOG(INFO) << debug_print_vector("delta_radial", d_HAS_data.delta_radial);
             DLOG(INFO) << debug_print_vector("delta_in_track", d_HAS_data.delta_in_track);
@@ -659,6 +660,11 @@ void galileo_e6_has_msg_receiver::read_MT1_body(const std::string& message_body)
                 {
                     d_HAS_data.delta_clock_correction[i] = read_has_message_body_int16(message.substr(0, HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH));
                     message = std::string(message.begin() + HAS_MSG_DELTA_CLOCK_CORRECTION_LENGTH, message.end());
+                }
+            auto ref_it = d_iod_ref_map.find(std::make_pair(d_HAS_data.header.iod_set_id, d_HAS_data.header.mask_id));
+            if (ref_it != d_iod_ref_map.end())
+                {
+                    d_HAS_data.gnss_iod = ref_it->second;
                 }
 
             DLOG(INFO) << debug_print_vector("delta_clock_multiplier", d_HAS_data.delta_clock_multiplier);

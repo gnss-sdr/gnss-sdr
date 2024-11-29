@@ -1327,13 +1327,8 @@ std::vector<uint8_t> osnma_msg_receiver::get_merkle_tree_leaves(const DSM_PKR_me
 {
     // build base leaf m_i according to OSNMA SIS ICD v1.1, section 6.2 DSM-PKR Verification
     std::vector<uint8_t> m_i;
-    const size_t size_npk = dsm_pkr_message.npk.size();
-    m_i.reserve(1 + size_npk);
-    m_i.push_back((dsm_pkr_message.npkt << 4) + dsm_pkr_message.npktid);
-    for (size_t i = 0; i < size_npk; i++)
-        {
-            m_i.push_back(dsm_pkr_message.npk[i]);
-        }
+    m_i.push_back(static_cast<uint8_t>((dsm_pkr_message.npkt << 4) + dsm_pkr_message.npktid));
+    m_i.insert(m_i.end(), dsm_pkr_message.npk.begin(), dsm_pkr_message.npk.end());
     return m_i;
 }
 

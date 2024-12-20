@@ -68,9 +68,11 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
         {
             lookup_[i] = (static_cast<float>(i & 0xff) - 127.4F) * (1.0F / 128.0F);
         }
-
-    // 2. Set socket options
+#if BOOST_ASIO_USE_FROM_STRING
     ip::address addr = ip::address::from_string(address, ec);
+#else
+    ip::address addr = ip::make_address(address, ec);
+#endif
     if (ec)
         {
             std::cout << address << " is not an IP address\n";
@@ -78,6 +80,8 @@ rtl_tcp_signal_source_c::rtl_tcp_signal_source_c(const std::string &address,
             return;
         }
     ip::tcp::endpoint ep(addr, port);
+
+    // 2. Set socket options
     socket_.open(ep.protocol(), ec);  // NOLINT(bugprone-unused-return-value)
     if (ec)
         {

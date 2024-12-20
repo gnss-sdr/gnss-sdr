@@ -170,6 +170,14 @@ if(PMT_USES_BOOST_ANY)
     )
 endif()
 
+# Fix for Boost Asio > 1.86. address::from_string was deprecated in Boost 1.71
+if(Boost_VERSION_STRING VERSION_LESS 1.71.0)
+    target_compile_definitions(core_libs
+        PRIVATE
+            -DBOOST_ASIO_USE_FROM_STRING=1
+    )
+endif()
+
 # Do not apply clang-tidy fixes to protobuf generated headers
 get_filename_component(PROTO_INCLUDE_HEADERS_DIR ${PROTO_HDRS} DIRECTORY)
 target_include_directories(core_libs

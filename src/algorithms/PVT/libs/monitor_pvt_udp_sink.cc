@@ -32,7 +32,11 @@ Monitor_Pvt_Udp_Sink::Monitor_Pvt_Udp_Sink(
         {
             for (const auto& port : ports)
                 {
+#if BOOST_ASIO_USE_FROM_STRING
                     boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), boost::lexical_cast<int>(port));
+#else
+                    boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::make_address(address, error), boost::lexical_cast<int>(port));
+#endif
                     endpoints.push_back(endpoint);
                 }
         }

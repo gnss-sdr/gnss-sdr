@@ -132,6 +132,14 @@ if(USE_BOOST_BIND_PLACEHOLDERS)
     )
 endif()
 
+# Fix for Boost Asio > 1.86. address::from_string was deprecated in Boost 1.71
+if(Boost_VERSION_STRING VERSION_LESS 1.71.0)
+    target_compile_definitions(signal_source_gr_blocks
+        PRIVATE
+            -DBOOST_ASIO_USE_FROM_STRING=1
+    )
+endif()
+
 if(USE_GENERIC_LAMBDAS)
     set(has_generic_lambdas HAS_GENERIC_LAMBDA=1)
     set(no_has_generic_lambdas HAS_GENERIC_LAMBDA=0)

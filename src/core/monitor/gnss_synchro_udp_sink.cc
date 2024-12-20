@@ -38,7 +38,11 @@ Gnss_Synchro_Udp_Sink::Gnss_Synchro_Udp_Sink(
             for (const auto& port : ports)
                 {
                     boost::asio::ip::udp::endpoint endpoint(
+#if BOOST_ASIO_USE_FROM_STRING
                         boost::asio::ip::address::from_string(address, error),
+#else
+                        boost::asio::ip::make_address(address, error),
+#endif
                         boost::lexical_cast<int>(port));
                     endpoints.push_back(endpoint);
                 }

@@ -30,7 +30,11 @@ Nav_Message_Udp_Sink::Nav_Message_Udp_Sink(const std::vector<std::string>& addre
 {
     for (const auto& address : addresses)
         {
+#if BOOST_ASIO_USE_FROM_STRING
             boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::address::from_string(address, error), port);
+#else
+            boost::asio::ip::udp::endpoint endpoint(boost::asio::ip::make_address(address, error), port);
+#endif
             endpoints.push_back(endpoint);
         }
     serdes_nav = Serdes_Nav_Message();

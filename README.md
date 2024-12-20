@@ -831,7 +831,7 @@ Install the required dependencies:
 
 ```
 $ brew update && brew upgrade
-$ brew install armadillo cmake hdf5 gnuradio libmatio openssl pkg-config protobuf pugixml
+$ brew install armadillo cmake hdf5 gnuradio libmatio openssl pkg-config protobuf pugixml boost
 $ brew install --cask mactex  # when completed, restart Terminal
 $ brew install graphviz doxygen
 ¢ pip3 install mako

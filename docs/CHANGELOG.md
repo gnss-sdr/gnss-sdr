@@ -105,6 +105,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   transitioned to the Apache License 2.0, fully compatible with GPL v3.0.
   Accordingly, the GNSS-SDR building system now looks for OpenSSL in the first
   place and, if not found, then it looks for GnuTLS as a fallback.
+- Allow linking against Boost 1.87.0.
 
 ### Reliability
 

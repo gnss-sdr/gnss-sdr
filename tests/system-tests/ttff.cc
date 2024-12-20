@@ -142,7 +142,7 @@ void TtffTest::config_1()
 #if USE_GLOG_AND_GFLAGS
     config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(FLAGS_fs_in));
 #else
-
+    config->set_property("GNSS-SDR.internal_fs_sps", std::to_string(absl::GetFlag(FLAGS_fs_in)));
 #endif
     // Set the assistance system parameters
     config->set_property("GNSS-SDR.SUPL_gps_ephemeris_server", "supl.google.com");
@@ -165,7 +165,10 @@ void TtffTest::config_1()
     config->set_property("SignalSource.samples", std::to_string(FLAGS_fs_in * FLAGS_max_measurement_duration));
     config->set_property("SignalSource.device_address", FLAGS_device_address);
 #else
-
+    config->set_property("SignalSource.sampling_frequency", std::to_string(absl::GetFlag(FLAGS_fs_in)));
+    config->set_property("SignalSource.subdevice", absl::GetFlag(FLAGS_subdevice));
+    config->set_property("SignalSource.samples", std::to_string(absl::GetFlag(FLAGS_fs_in) * absl::GetFlag(FLAGS_max_measurement_duration)));
+    config->set_property("SignalSource.device_address", absl::GetFlag(FLAGS_device_address));
 #endif
 
     // Set the Signal Conditioner
@@ -194,7 +197,7 @@ void TtffTest::config_1()
 #if USE_GLOG_AND_GFLAGS
     config->set_property("InputFilter.sampling_frequency", std::to_string(FLAGS_fs_in));
 #else
-
+    config->set_property("InputFilter.sampling_frequency", std::to_string(absl::GetFlag(FLAGS_fs_in)));
 #endif
     config->set_property("InputFilter.IF", std::to_string(zero));
     config->set_property("Resampler.implementation", "Pass_Through");
@@ -204,7 +207,8 @@ void TtffTest::config_1()
     config->set_property("Resampler.sample_freq_in", std::to_string(FLAGS_fs_in));
     config->set_property("Resampler.sample_freq_out", std::to_string(FLAGS_fs_in));
 #else
-
+    config->set_property("Resampler.sample_freq_in", std::to_string(absl::GetFlag(FLAGS_fs_in)));
+    config->set_property("Resampler.sample_freq_out", std::to_string(absl::GetFlag(FLAGS_fs_in)));
 #endif
 
     // Set the number of Channels
@@ -277,7 +281,20 @@ void TtffTest::config_2()
     d_sampling_rate = config2->property("GNSS-SDR.internal_fs_sps", FLAGS_fs_in);
     config2->set_property("SignalSource.samples", std::to_string(d_sampling_rate * FLAGS_max_measurement_duration));
 #else
+    if (absl::GetFlag(FLAGS_config_file_ttff).empty())
+        {
+            std::string path = std::string(TEST_PATH);
+            std::string filename = path + "../../conf/gnss-sdr_GPS_L1_USRP_X300_realtime.conf";
+            config2 = std::make_shared<FileConfiguration>(filename);
+        }
+    else
+        {
+            config2 = std::make_shared<FileConfiguration>(absl::GetFlag(FLAGS_config_file_ttff));
+        }
 
+    int d_sampling_rate;
+    d_sampling_rate = config2->property("GNSS-SDR.internal_fs_sps", absl::GetFlag(FLAGS_fs_in));
+    config2->set_property("SignalSource.samples", std::to_string(d_sampling_rate * absl::GetFlag(FLAGS_max_measurement_duration)));
 #endif
 }
 
@@ -495,7 +512,6 @@ TEST_F(TtffTest /*unused*/, ColdStart /*unused*/)
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << FLAGS_num_measurements << '\n';
 #else
             std::cout << "Starting measurement " << num_measurements + 1 << " / " << absl::GetFlag(FLAGS_num_measurements) << '\n';
-
 #endif
             std::chrono::time_point<std::chrono::system_clock> start;
             std::chrono::time_point<std::chrono::system_clock> end;

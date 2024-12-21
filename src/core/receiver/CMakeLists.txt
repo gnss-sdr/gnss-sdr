@@ -193,6 +193,13 @@ target_link_libraries(core_receiver
         Armadillo::armadillo
 )
 
+if(NOT HAVE_SHM_OPEN)
+    find_library(LIBRT_LIBRARY rt)
+    if(LIBRT_LIBRARY)
+        target_link_libraries(core_receiver PRIVATE ${LIBRT_LIBRARY})
+    endif()
+endif()
+
 if(ENABLE_GLOG_AND_GFLAGS)
     target_link_libraries(core_receiver PRIVATE Gflags::gflags Glog::glog)
     target_compile_definitions(core_receiver PRIVATE -DUSE_GLOG_AND_GFLAGS=1)

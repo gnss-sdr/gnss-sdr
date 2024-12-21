@@ -21,6 +21,7 @@ endif()
 target_link_libraries(pvt_gr_blocks
     PUBLIC
         algorithms_libs_rtklib
+        Boost::headers
         Boost::date_time
         Gnuradio::pmt
         Gnuradio::runtime

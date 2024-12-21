@@ -1085,6 +1085,15 @@ endif()
 
 
 ################################################################################
+# Detect availability of shm_open
+################################################################################
+unset(HAVE_SHM_OPEN CACHE)
+include(CheckFunctionExists)
+check_function_exists(shm_open HAVE_SHM_OPEN)
+
+
+
+################################################################################
 # volk_gnsssdr module - GNSS-SDR's own VOLK library
 ################################################################################
 find_package(VOLKGNSSSDR)

@@ -316,24 +316,6 @@ void receive_msg()
                         }
                 }
 
-            const std::string queue_name_stop = "receiver_control_queue";
-            std::unique_ptr<boost::interprocess::message_queue> d_mq_stop;
-            bool queue_found2 = false;
-            while (!queue_found2)
-                {
-                    try
-                        {
-                            // Attempt to open the message queue
-                            d_mq_stop = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only, queue_name_stop.c_str());
-                            queue_found2 = true;  // Queue found
-                        }
-                    catch (const boost::interprocess::interprocess_exception &)
-                        {
-                            // Queue not found, wait and retry
-                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                        }
-                }
-
             double received_message;
             unsigned int priority;
             std::size_t received_size;
@@ -347,6 +329,23 @@ void receive_msg()
                             LOG(INFO) << "Valid Time-To-First-Fix: " << received_message << " [s]";
                             // Stop the receiver
                             double stop_message = -200.0;
+                            const std::string queue_name_stop = "receiver_control_queue";
+                            std::unique_ptr<boost::interprocess::message_queue> d_mq_stop;
+                            bool queue_found2 = false;
+                            while (!queue_found2)
+                                {
+                                    try
+                                        {
+                                            // Attempt to open the message queue
+                                            d_mq_stop = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only, queue_name_stop.c_str());
+                                            queue_found2 = true;  // Queue found
+                                        }
+                                    catch (const boost::interprocess::interprocess_exception &)
+                                        {
+                                            // Queue not found, wait and retry
+                                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                                        }
+                                }
                             d_mq_stop->send(&stop_message, sizeof(stop_message), 0);
                         }
                     if (received_size == sizeof(double) && std::abs(received_message - (-1.0)) < 10 * std::numeric_limits<double>::epsilon())
@@ -735,24 +734,21 @@ int main(int argc, char **argv)
 
     // Terminate the queue thread
     const std::string queue_name = "gnss_sdr_ttff_message_queue";
-    std::unique_ptr<boost::interprocess::message_queue> mq;
-    bool queue_found = false;
-    while (!queue_found)
-        {
-            try
-                {
-                    // Attempt to open the message queue
-                    mq = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only, queue_name.c_str());
-                    queue_found = true;  // Queue found
-                }
-            catch (const boost::interprocess::interprocess_exception &)
-                {
-                    // Queue not found, wait and retry
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-        }
+    boost::interprocess::message_queue::remove(queue_name.c_str());
+
+    // Create a new message queue
+    auto mq = std::make_unique<boost::interprocess::message_queue>(
+        boost::interprocess::create_only,  // Create a new queue
+        queue_name.c_str(),                // Queue name
+        10,                                // Maximum number of messages
+        sizeof(double)                     // Maximum message size
+    );
     double finish = -1.0;
-    mq->send(&finish, sizeof(finish), 0);
+    if (mq)
+        {
+            mq->send(&finish, sizeof(finish), 0);
+        }
+    receive_msg_thread.join();
     boost::interprocess::message_queue::remove(queue_name.c_str());
 
 #if USE_GLOG_AND_GFLAGS

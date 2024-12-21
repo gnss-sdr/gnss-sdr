@@ -113,13 +113,22 @@ jobs:
 
   clang-format:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - check: 'src'
+            exclude: ''
+          - check: 'tests'
+            exclude: ''
+          - check: 'utils'
+            exclude: '(matlab|scripts|python)'
     steps:
       - uses: actions/checkout@v4
       - name: run clang-format
-        uses: jidicula/clang-format-action@v4.11.0
+        uses: jidicula/clang-format-action@v4
         with:
           clang-format-version: "15"
-          check-path: "src"
+          check-path: ${{ matrix.path }}
           exclude-regex: '(libs\/gsl\/)|^.*\.(cu|proto)$'
 
   clang-tidy:

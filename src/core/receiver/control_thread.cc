@@ -36,34 +36,34 @@
 #include "gnss_flowgraph.h"
 #include "gnss_satellite.h"
 #include "gnss_sdr_flags.h"
-#include "gps_acq_assist.h"        // for Gps_Acq_Assist
-#include "gps_almanac.h"           // for Gps_Almanac
-#include "gps_cnav_ephemeris.h"    // for Gps_CNAV_Ephemeris
-#include "gps_cnav_utc_model.h"    // for Gps_CNAV_Utc_Model
-#include "gps_ephemeris.h"         // for Gps_Ephemeris
-#include "gps_iono.h"              // for Gps_Iono
-#include "gps_utc_model.h"         // for Gps_Utc_Model
-#include "pvt_interface.h"         // for PvtInterface
-#include "rtklib.h"                // for gtime_t, alm_t
-#include "rtklib_conversions.h"    // for alm_to_rtklib
-#include "rtklib_ephemeris.h"      // for alm2pos, eph2pos
-#include "rtklib_rtkcmn.h"         // for utc2gpst
-#include <armadillo>               // for interaction with geofunctions
-#include <boost/lexical_cast.hpp>  // for bad_lexical_cast
-#include <pmt/pmt.h>               // for make_any
-#include <algorithm>               // for find, min
-#include <chrono>                  // for milliseconds
-#include <cmath>                   // for floor, fmod, log
-#include <csignal>                 // for signal, SIGINT
-#include <ctime>                   // for time_t, gmtime, strftime
-#include <exception>               // for exception
-#include <iostream>                // for operator<<
-#include <limits>                  // for numeric_limits
-#include <map>                     // for map
-#include <pthread.h>               // for pthread_cancel
-#include <stdexcept>               // for invalid_argument
-#include <sys/ipc.h>               // for IPC_CREAT
-#include <sys/msg.h>               // for msgctl, msgget
+#include "gnss_sdr_make_unique.h"
+#include "gps_acq_assist.h"                          // for Gps_Acq_Assist
+#include "gps_almanac.h"                             // for Gps_Almanac
+#include "gps_cnav_ephemeris.h"                      // for Gps_CNAV_Ephemeris
+#include "gps_cnav_utc_model.h"                      // for Gps_CNAV_Utc_Model
+#include "gps_ephemeris.h"                           // for Gps_Ephemeris
+#include "gps_iono.h"                                // for Gps_Iono
+#include "gps_utc_model.h"                           // for Gps_Utc_Model
+#include "pvt_interface.h"                           // for PvtInterface
+#include "rtklib.h"                                  // for gtime_t, alm_t
+#include "rtklib_conversions.h"                      // for alm_to_rtklib
+#include "rtklib_ephemeris.h"                        // for alm2pos, eph2pos
+#include "rtklib_rtkcmn.h"                           // for utc2gpst
+#include <armadillo>                                 // for interaction with geofunctions
+#include <boost/interprocess/ipc/message_queue.hpp>  // for message_queue
+#include <boost/lexical_cast.hpp>                    // for bad_lexical_cast
+#include <pmt/pmt.h>                                 // for make_any
+#include <algorithm>                                 // for find, min
+#include <chrono>                                    // for milliseconds
+#include <cmath>                                     // for floor, fmod, log
+#include <csignal>                                   // for signal, SIGINT
+#include <ctime>                                     // for time_t, gmtime, strftime
+#include <exception>                                 // for exception
+#include <iostream>                                  // for operator<<
+#include <limits>                                    // for numeric_limits
+#include <map>                                       // for map
+#include <pthread.h>                                 // for pthread_cancel
+#include <stdexcept>                                 // for invalid_argument
 
 #if USE_GLOG_AND_GFLAGS
 #include <glog/logging.h>
@@ -197,7 +197,7 @@ void ControlThread::init()
     supl_mns_ = 0;
     supl_lac_ = 0;
     supl_ci_ = 0;
-    msqid_ = -1;
+
     agnss_ref_location_ = Agnss_Ref_Location();
     agnss_ref_time_ = Agnss_Ref_Time();
 
@@ -273,14 +273,11 @@ void ControlThread::init()
 ControlThread::~ControlThread()  // NOLINT(modernize-use-equals-default)
 {
     DLOG(INFO) << "Control Thread destructor called";
-    if (msqid_ != -1)
-        {
-            msgctl(msqid_, IPC_RMID, nullptr);
-        }
+    boost::interprocess::message_queue::remove(control_message_queue_name_.c_str());
 
-    if (sysv_queue_thread_.joinable())
+    if (message_queue_thread_.joinable())
         {
-            sysv_queue_thread_.join();
+            message_queue_thread_.join();
         }
 
     if (cmd_interface_thread_.joinable())
@@ -429,7 +426,7 @@ int ControlThread::run()
         {
             keyboard_thread_ = std::thread(&ControlThread::keyboard_listener, this);
         }
-    sysv_queue_thread_ = std::thread(&ControlThread::sysv_queue_listener, this);
+    message_queue_thread_ = std::thread(&ControlThread::message_queue_listener, this);
 
     // start the telecommand listener thread
     cmd_interface_.set_pvt(flowgraph_->get_pvt());
@@ -1214,39 +1211,54 @@ void ControlThread::gps_acq_assist_data_collector() const
 }
 
 
-void ControlThread::sysv_queue_listener()
+void ControlThread::message_queue_listener()
 {
-    typedef struct
-    {
-        long mtype;  // NOLINT(google-runtime-int) required by SysV queue messaging
-        double stop_message;
-    } stop_msgbuf;
-
     bool read_queue = true;
-    stop_msgbuf msg;
     double received_message = 0.0;
-    const int msgrcv_size = sizeof(msg.stop_message);
-
-    const key_t key = 1102;
-
-    if ((msqid_ = msgget(key, 0644 | IPC_CREAT)) == -1)
+    try
         {
-            std::cerr << "GNSS-SDR cannot create SysV message queues\n";
-            read_queue = false;
-        }
+            // Remove any existing queue with the same name
+            boost::interprocess::message_queue::remove(control_message_queue_name_.c_str());
 
-    while (read_queue && !stop_)
-        {
-            if (msgrcv(msqid_, &msg, msgrcv_size, 1, 0) != -1)
+            // Create a new message queue
+            auto mq = std::make_unique<boost::interprocess::message_queue>(
+                boost::interprocess::create_only,     // Create a new queue
+                control_message_queue_name_.c_str(),  // Queue name
+                10,                                   // Maximum number of messages
+                sizeof(double)                        // Maximum message size
+            );
+
+            while (read_queue && !stop_)
                 {
-                    received_message = msg.stop_message;
-                    if ((std::abs(received_message - (-200.0)) < 10 * std::numeric_limits<double>::epsilon()))
+                    unsigned int priority;
+                    std::size_t received_size;
+                    // Receive a message (non-blocking)
+                    if (mq->try_receive(&received_message, sizeof(received_message), received_size, priority))
                         {
-                            std::cout << "Quit order received, stopping GNSS-SDR !!\n";
-                            control_queue_->push(pmt::make_any(command_event_make(200, 0)));
-                            read_queue = false;
+                            // Validate the size of the received message
+                            if (received_size == sizeof(double))
+                                {
+                                    if (std::abs(received_message - (-200.0)) < 10 * std::numeric_limits<double>::epsilon())
+                                        {
+                                            std::cout << "Quit order received, stopping GNSS-SDR !!\n";
+
+                                            // Push the control command to the control queue
+                                            control_queue_->push(pmt::make_any(command_event_make(200, 0)));
+                                            read_queue = false;
+                                        }
+                                }
+                        }
+                    else
+                        {
+                            // No message available, add a small delay to prevent busy-waiting
+                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
                         }
                 }
+        }
+    catch (const boost::interprocess::interprocess_exception &e)
+        {
+            std::cerr << "Error in message queue listener: " << e.what() << '\n';
+            read_queue = false;
         }
 }
 

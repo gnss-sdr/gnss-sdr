@@ -106,6 +106,7 @@ All notable changes to GNSS-SDR will be documented in this file.
   Accordingly, the GNSS-SDR building system now looks for OpenSSL in the first
   place and, if not found, then it looks for GnuTLS as a fallback.
 - Allow linking against Boost 1.87.0.
+- Replace the System V queues by boost::interprocess, improving portability.
 
 ### Reliability
 

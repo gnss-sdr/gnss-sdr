@@ -77,8 +77,6 @@
 #include <locale>                       // for locale
 #include <sstream>                      // for ostringstream
 #include <stdexcept>                    // for length_error
-#include <sys/ipc.h>                    // for IPC_CREAT
-#include <sys/msg.h>                    // for msgctl
 #include <typeinfo>                     // for std::type_info, typeid
 #include <utility>                      // for pair
 
@@ -130,6 +128,7 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
     : gr::sync_block("rtklib_pvt_gs",
           gr::io_signature::make(nchannels, nchannels, sizeof(Gnss_Synchro)),
           gr::io_signature::make(0, 0, 0)),
+      d_queue_name("gnss_sdr_ttff_message_queue"),
       d_dump_filename(conf_.dump_filename),
       d_geohash(std::make_unique<Geohash>()),
       d_gps_ephemeris_sptr_type_hash_code(typeid(std::shared_ptr<Gps_Ephemeris>).hash_code()),
@@ -509,14 +508,26 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
             d_eph_udp_sink_ptr = nullptr;
         }
 
-    // Create Sys V message queue
+    // Create message queue
     d_first_fix = true;
-    d_sysv_msg_key = 1101;
-    const int msgflg = IPC_CREAT | 0666;
-    if ((d_sysv_msqid = msgget(d_sysv_msg_key, msgflg)) == -1)
+    const std::size_t max_num_messages = 100;
+    try
         {
-            std::cout << "GNSS-SDR cannot create System V message queues.\n";
-            LOG(WARNING) << "The System V message queue is not available. Error: " << errno << " - " << strerror(errno);
+            // Remove any existing queue with the same name
+            boost::interprocess::message_queue::remove(d_queue_name.c_str());
+
+            // Create a new message queue
+            d_mq = std::make_unique<boost::interprocess::message_queue>(
+                boost::interprocess::create_only,  // Create a new queue
+                d_queue_name.c_str(),              // Queue name
+                max_num_messages,                  // Maximum number of messages
+                sizeof(double)                     // Maximum message size
+            );
+        }
+
+    catch (const boost::interprocess::interprocess_exception& e)
+        {
+            std::cerr << "Error creating message queue: " << e.what() << std::endl;
         }
 
     // Display time in local time zone
@@ -601,9 +612,9 @@ rtklib_pvt_gs::rtklib_pvt_gs(uint32_t nchannels,
 rtklib_pvt_gs::~rtklib_pvt_gs()
 {
     DLOG(INFO) << "PVT block destructor called.";
-    if (d_sysv_msqid != -1)
+    if (d_mq)
         {
-            msgctl(d_sysv_msqid, IPC_RMID, nullptr);
+            boost::interprocess::message_queue::remove(d_queue_name.c_str());
         }
     try
         {
@@ -1732,21 +1743,19 @@ void rtklib_pvt_gs::clear_ephemeris()
 }
 
 
-bool rtklib_pvt_gs::send_sys_v_ttff_msg(d_ttff_msgbuf ttff) const
+bool rtklib_pvt_gs::send_ttff_msg(double ttff) const
 {
-    if (d_sysv_msqid != -1)
+    if (d_mq)
         {
-            // Fill Sys V message structures
-            int msgsend_size;
-            d_ttff_msgbuf msg;
-            msg.ttff = ttff.ttff;
-            msgsend_size = sizeof(msg.ttff);
-            msg.mtype = 1;  // default message ID
-
-            // SEND SOLUTION OVER A MESSAGE QUEUE
-            // non-blocking Sys V message send
-            msgsnd(d_sysv_msqid, &msg, msgsend_size, IPC_NOWAIT);
-            return true;
+            try
+                {
+                    d_mq->send(&ttff, sizeof(ttff), 0);  // Priority 0
+                    return true;
+                }
+            catch (const boost::interprocess::interprocess_exception& e)
+                {
+                    std::cerr << "Error sending message: " << e.what() << std::endl;
+                }
         }
     return false;
 }
@@ -2389,12 +2398,10 @@ int rtklib_pvt_gs::work(int noutput_items, gr_vector_const_void_star& input_item
                                                 }
                                             std::cout << " is Lat = " << d_user_pvt_solver->get_latitude() << " [deg], Long = " << d_user_pvt_solver->get_longitude()
                                                       << " [deg], Height= " << d_user_pvt_solver->get_height() << " [m]\n";
-                                            d_ttff_msgbuf ttff;
-                                            ttff.mtype = 1;
                                             d_end = std::chrono::system_clock::now();
                                             std::chrono::duration<double> elapsed_seconds = d_end - d_start;
-                                            ttff.ttff = elapsed_seconds.count();
-                                            send_sys_v_ttff_msg(ttff);
+                                            double ttff = elapsed_seconds.count();
+                                            send_ttff_msg(ttff);
                                             d_first_fix = false;
                                         }
                                     if (d_kml_output_enabled)

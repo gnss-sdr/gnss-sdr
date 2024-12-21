@@ -26,15 +26,13 @@
 #include "in_memory_configuration.h"
 #include <boost/exception/diagnostic_information.hpp>
 #include <boost/exception_ptr.hpp>
+#include <boost/interprocess/ipc/message_queue.hpp>
 #include <boost/lexical_cast.hpp>
 #include <gtest/gtest.h>
 #include <pmt/pmt.h>
 #include <chrono>
 #include <exception>
 #include <memory>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/types.h>
 #include <thread>
 #include <unistd.h>
 
@@ -49,35 +47,46 @@ class ControlThreadTest : public ::testing::Test
 {
 public:
     static int stop_receiver();
-    typedef struct
-    {
-        long mtype;  // required by SysV message
-        double message;
-    } message_buffer;
 };
 
 
 int ControlThreadTest::stop_receiver()
 {
-    message_buffer msg_stop;
-    msg_stop.mtype = 1;
-    msg_stop.message = -200.0;
-    int msqid_stop = -1;
-    int msgsend_size = sizeof(msg_stop.message);
-    key_t key_stop = 1102;
-
-    // wait for the receiver control queue to be created
-    while (((msqid_stop = msgget(key_stop, 0644))) == -1)
+    const std::string queue_name = "receiver_control_queue";
+    std::unique_ptr<boost::interprocess::message_queue> d_mq;
+    try
         {
+            bool queue_found = false;
+
+            while (!queue_found)
+                {
+                    try
+                        {
+                            // Attempt to open the message queue
+                            d_mq = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only, queue_name.c_str());
+                            queue_found = true;  // Queue found
+                        }
+                    catch (const boost::interprocess::interprocess_exception&)
+                        {
+                            // Queue not found, wait and retry
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        }
+                }
+
+
+            double stop_message = -200.0;
+
+            // Wait for a couple of seconds before sending
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            // Send the double value
+            d_mq->send(&stop_message, sizeof(stop_message), 0);  // Priority 0
+            return 0;
         }
-
-    // wait for a couple of seconds
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-    // Stop the receiver
-    msgsnd(msqid_stop, &msg_stop, msgsend_size, IPC_NOWAIT);
-
-    return 0;
+    catch (const boost::interprocess::interprocess_exception& e)
+        {
+            std::cerr << "Failed to send stop message: " << e.what() << std::endl;
+            return -1;
+        }
 }
 
 

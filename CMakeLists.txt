@@ -356,11 +356,11 @@ set(GNSSSDR_ABSEIL_MIN_VERSION "20240116")
 ################################################################################
 # Versions to download and build (but not to install system-wide) if not found
 ################################################################################
-set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.0.x")
+set(GNSSSDR_ARMADILLO_LOCAL_VERSION "14.2.x")
 set(GNSSSDR_GFLAGS_LOCAL_VERSION "2.2.2")
 set(GNSSSDR_GLOG_LOCAL_VERSION "0.7.1")
 set(GNSSSDR_MATIO_LOCAL_VERSION "1.5.28")
-set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "29.0")
+set(GNSSSDR_PROTOCOLBUFFERS_LOCAL_VERSION "29.2")
 set(GNSSSDR_PUGIXML_LOCAL_VERSION "1.14")
 set(GNSSSDR_GTEST_LOCAL_VERSION "1.15.2")
 set(GNSSSDR_GNSS_SIM_LOCAL_VERSION "origin/master")

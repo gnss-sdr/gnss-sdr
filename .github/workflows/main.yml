@@ -116,12 +116,9 @@ jobs:
     strategy:
       matrix:
         path:
-          - check: 'src'
-            exclude: ''
-          - check: 'tests'
-            exclude: ''
-          - check: 'utils'
-            exclude: '(matlab|scripts|python)'
+          - 'src'
+          - 'tests'
+          - 'utils'
     steps:
       - uses: actions/checkout@v4
       - name: run clang-format

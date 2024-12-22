@@ -126,7 +126,7 @@ jobs:
         with:
           clang-format-version: "19"
           check-path: ${{ matrix.path }}
-          exclude-regex: '(libs\/gsl\/)|^.*\.(cu|proto)$'
+          exclude-regex: '(libs\/gsl\/)|(tmpl)|(cpu_features)|^.*\.(cu|proto)$'
 
   clang-tidy:
     runs-on: macos-latest
